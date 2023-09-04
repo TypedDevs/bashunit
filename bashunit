@@ -1,9 +1,9 @@
 #!/bin/bash
 
-readonly ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 # Load all assert functions
-source "$ROOT_DIR/src/assert.sh"
+source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
 
 # Execute the test runner
-source "$ROOT_DIR/src/test_runner.sh" $1
+source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" $1
