@@ -6,4 +6,4 @@ readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
 
 # Execute the test runner
-source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" $1
+source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" "$@"

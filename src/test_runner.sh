@@ -1,11 +1,6 @@
 #!/bin/bash
 
-export tests_runner
-
-#
-# Function to call test functions in a script
-#
-call_test_functions() {
+callTestFunctions() {
     # shellcheck disable=SC2034
     local script="$1"
     local prefix="test_"
@@ -17,6 +12,7 @@ call_test_functions() {
     for func_name in $function_names; do
         if [[ $func_name == ${prefix}* ]]; then
             "$func_name" # Call the function
+            unset "$func_name"
         fi
     done
 }
@@ -27,12 +23,12 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-TEST_SCRIPTS=("$1")
+TEST_SCRIPTS=("$@")
 
 # Loop through the test scripts and call test functions
 for test_script in "${TEST_SCRIPTS[@]}"; do
   echo "Running $test_script"
   # shellcheck disable=SC1090
   source "$test_script"
-  call_test_functions "$test_script"
+  callTestFunctions "$test_script"
 done
