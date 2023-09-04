@@ -4,27 +4,23 @@ A minimalistic unit testing library for your bash scripts.
 
 ## Usage
 
-`src/test_runner.sh tests/*`
+`./bashunit <test_script>`
 
 #### Example: Defining your own tests
 
 ```bash
-# src/your_logic.sh
+# example/logic.sh
 
 echo "expected $1"
 ```
 
 ```bash
-# tests/your_logic_test.sh
+# example/logic_test.sh
 
-# load the assert functions
-source "$(dirname "$0")/assert.sh" 
-
-# define the script that you want to execute
-readonly SCRIPT="$PWD/src/your_logic.sh"
+SCRIPT="./logic.sh"
 
 function test_your_logic() {
-  assertEquals "expected 123" "$("$SCRIPT" "123")"
+  assertEquals "expected 123" "$($SCRIPT "123")"
 }
 ```
 
@@ -39,3 +35,11 @@ You can use Git submodules to include external Git repositories within your proj
 ```bash
 git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
 ```
+
+#### Versioning and updates
+
+To update a git-submodule is as simple as:
+1. keep the git-submodule under your git (committed)
+2. go inside the git-submodule and:
+   1. checkout a concrete release tag
+   2. or just pull `main` (preferred)
