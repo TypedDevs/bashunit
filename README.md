@@ -24,7 +24,7 @@ source "$(dirname "$0")/assert.sh"
 readonly SCRIPT="$PWD/src/your_logic.sh"
 
 function test_your_logic() {
-  assert "expected 123" "$("$SCRIPT" "123")"
+  assertEquals "expected 123" "$("$SCRIPT" "123")"
 }
 ```
 

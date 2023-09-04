@@ -2,12 +2,12 @@
 
 export TEST=true
 
-export assert
+export assertEquals
 
 TOTAL_TESTS=0
 FAILED=false
 
-transform_test_function_name() {
+transformTestFunctionName() {
   local originalFnName="$1"
   local result
 
@@ -21,10 +21,10 @@ transform_test_function_name() {
   echo "$result"
 }
 
-assert() {
+assertEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(transform_test_function_name ${FUNCNAME[1]})}"
+  local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
 
   if [[ "$expected" != "$actual" ]]; then
     FAILED=true
@@ -36,7 +36,7 @@ assert() {
   fi
 }
 
-render_result() {
+renderResult() {
   echo ""
   if [[ "$FAILED" == false ]]; then
     echo "All assertions passed. Total:" "$TOTAL_TESTS"
@@ -44,4 +44,4 @@ render_result() {
 }
 
 # Set a trap to call render_result when the script exits
-trap render_result EXIT
+trap renderResult EXIT

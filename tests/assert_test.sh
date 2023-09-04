@@ -2,12 +2,12 @@
 
 source "$(dirname "$0")/assert.sh"
 
-function test_successful_assert() {
-  assert "✔️  Passed: Successful assert" "$(assert "1" "1")"
+function test_successful_assertEquals() {
+  assertEquals "✔️  Passed: Successful assertEquals" "$(assertEquals "1" "1")"
 }
 
-function test_unsuccessful_assert() {
-  assert "❌  Unsuccessful assert failed:
+function test_unsuccessful_assertEquals() {
+  assertEquals "❌  Unsuccessful assertEquals failed:
  Expected '1'
- but got  '2'" "$(assert "1" "2")"
+ but got  '2'" "$(assertEquals "1" "2")"
 }
