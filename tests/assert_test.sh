@@ -1,7 +1,5 @@
 #!/bin/bash
 
-source "$ROOT_DIR/src/assert.sh"
-
 function test_successful_assertEquals() {
   assertEquals "✔️  Passed: Successful assertEquals" "$(assertEquals "1" "1")"
 }

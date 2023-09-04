@@ -2,4 +2,8 @@
 
 readonly ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
+# Load all assert functions
+source "$ROOT_DIR/src/assert.sh"
+
+# Execute the test runner
 source "$ROOT_DIR/src/test_runner.sh" $1
