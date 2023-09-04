@@ -1,0 +1,5 @@
+#!/bin/bash
+
+readonly ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+
+source "$ROOT_DIR/src/test_runner.sh" $1

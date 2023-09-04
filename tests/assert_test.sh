@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "$(dirname "$0")/assert.sh"
+source "$ROOT_DIR/src/assert.sh"
 
 function test_successful_assertEquals() {
   assertEquals "✔️  Passed: Successful assertEquals" "$(assertEquals "1" "1")"

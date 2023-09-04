@@ -30,4 +30,12 @@ function test_your_logic() {
 
 ## Installation
 
-TODO
+Despite there is no dependency manager for bash scripts like "composer", you can install this project in your repo as you pleased. Here, I define one that might be suitable for you using Git submodules.
+
+### Git submodule
+
+You can use Git submodules to include external Git repositories within your project. This approach works well for including Bash scripts or other resources from remote repositories.
+
+```bash
+git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
+```
