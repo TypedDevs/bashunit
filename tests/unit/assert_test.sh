@@ -9,3 +9,7 @@ function test_unsuccessful_assertEquals() {
  Expected '1'
  but got  '2'" "$(assertEquals "1" "2")"
 }
+
+function testCamelCase() {
+  assertEquals "✔️  Passed: CamelCase" "$(assertEquals "1" "1")"
+}

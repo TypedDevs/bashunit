@@ -3,7 +3,7 @@
 callTestFunctions() {
     # shellcheck disable=SC2034
     local script="$1"
-    local prefix="test_"
+    local prefix="test"
 
     # Use declare -F to list all function names
     local function_names

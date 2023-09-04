@@ -15,6 +15,8 @@ transformTestFunctionName() {
   result="${originalFnName#test_}"
   # Replace underscores with spaces
   result="${result//_/ }"
+  # Remove "test" prefix
+  result="${result#test}"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
 
