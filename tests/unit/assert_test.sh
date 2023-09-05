@@ -13,3 +13,7 @@ function test_unsuccessful_assertEquals() {
 function testCamelCase() {
   assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: CamelCase")" "$(assertEquals "1" "1")"
 }
+
+function test_assert_contains() {
+  assertContains "GNU/Linux" "Linux"
+}
