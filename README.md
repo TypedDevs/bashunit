@@ -24,6 +24,8 @@ function test_your_logic() {
 }
 ```
 
+For more, see the [example](example/README.md) directory.
+
 ## Installation
 
 Despite there is no dependency manager for bash scripts like "composer", you can install this project in your repo as you pleased. Here, I define one that might be suitable for you using Git submodules.
