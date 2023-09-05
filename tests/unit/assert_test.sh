@@ -15,5 +15,5 @@ function testCamelCase() {
 }
 
 function test_assert_contains() {
-  assertContains "GNU/Linux" "Linux"
+  assertContains "Linux" "GNU/Linux"
 }

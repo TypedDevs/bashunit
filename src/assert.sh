@@ -4,6 +4,8 @@ export TEST=true
 
 export assertEquals
 
+export assertContains
+
 TOTAL_TESTS=0
 FAILED=false
 
@@ -36,6 +38,21 @@ assertEquals() {
     ((TOTAL_TESTS++))
     printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
   fi
+}
+assertContains() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
+
+  case "$actual" in
+    *"$expected"*)
+      ((TOTAL_TESTS++))
+      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label";;
+    *)
+      FAILED=true
+      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected to contain '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
+      exit 1;;
+  esac
 }
 
 renderResult() {
