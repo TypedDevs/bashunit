@@ -45,3 +45,9 @@ To update a git-submodule is as simple as:
 2. go inside the git-submodule and:
    1. checkout a concrete release tag
    2. or just pull `main` (preferred)
+
+   
+### Run test from the library
+```bash
+./bashunit ./tests/**/* 
+```
