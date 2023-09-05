@@ -1,15 +1,15 @@
 #!/bin/bash
 
 function test_successful_assertEquals() {
-  assertEquals "✔️  Passed: Successful assertEquals" "$(assertEquals "1" "1")"
+  assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: Successful assertEquals")" "$(assertEquals "1" "1")"
 }
 
 function test_unsuccessful_assertEquals() {
-  assertEquals "❌  Unsuccessful assertEquals failed:
+  assertEquals "$(printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: Unsuccessful assertEquals
  Expected '1'
- but got  '2'" "$(assertEquals "1" "2")"
+ but got  '2'")" "$(assertEquals "1" "2")"
 }
 
 function testCamelCase() {
-  assertEquals "✔️  Passed: CamelCase" "$(assertEquals "1" "1")"
+  assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: CamelCase")" "$(assertEquals "1" "1")"
 }
