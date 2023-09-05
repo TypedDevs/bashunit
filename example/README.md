@@ -16,6 +16,8 @@ git submodule update --init --recursive
 tools/bashunit/bashunit logic_test.sh
 ```
 
+<img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
+
 ## Real example
 
 Looking for a more "real" example? There you go:
