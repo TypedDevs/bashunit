@@ -2,6 +2,9 @@
 
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
+# Load color configuration
+source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
+
 # Load all assert functions
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
 

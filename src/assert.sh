@@ -30,11 +30,11 @@ assertEquals() {
 
   if [[ "$expected" != "$actual" ]]; then
     FAILED=true
-    printf "❌  %s failed:\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
+    printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
     exit 1
   else
     ((TOTAL_TESTS++))
-    printf "✔️  Passed: %s\\n" "$label"
+    printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
   fi
 }
 
