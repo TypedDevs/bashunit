@@ -1,5 +1,14 @@
 # Changelog
 
+### 0.2.0
+### 2023-09-05
+
+- Fix keeping in memory test func after running them
+- Create a `./bashunit` entry point
+- Change ROOT_DIR to BASH_UNIT_ROOT_DIR
+- Allow writing test with camelCase as well
+- Allow running example log_test from anywhere
+
 ### 0.1.0
 ### 2023-09-04
 
