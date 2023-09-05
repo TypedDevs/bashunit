@@ -2,7 +2,7 @@
 
 An example using this **bashunit** testing library.
 
-## Usage
+## Demo usage
 
 1) Install the git submodule
 
@@ -15,3 +15,8 @@ git submodule update --init --recursive
 ```bash
 tools/bashunit/bashunit logic_test.sh
 ```
+
+## Real example
+
+Looking for a more "real" example? There you go:
+- [Chemaclass/conventional-commits](https://github.com/Chemaclass/conventional-commits/blob/main/tests/prepare-commit-msg_test.sh)
