@@ -14,6 +14,12 @@ function testCamelCase() {
   assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: CamelCase")" "$(assertEquals "1" "1")"
 }
 
-function test_assert_contains() {
-  assertContains "Linux" "GNU/Linux"
+function test_successful_assertContains() {
+  assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: Successful assertContains")" "$(assertContains "Linux" "GNU/Linux")"
+}
+
+function test_unsuccessful_assertContains() {
+  assertEquals "$(printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: Unsuccessful assertContains
+ Expected   'GNU/Linux'
+ to contain 'Unix'")" "$(assertContains "Unix" "GNU/Linux")"
 }

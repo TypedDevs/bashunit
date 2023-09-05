@@ -3,7 +3,6 @@
 export TEST=true
 
 export assertEquals
-
 export assertContains
 
 TOTAL_TESTS=0
@@ -47,11 +46,13 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((TOTAL_TESTS++))
-      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label";;
+      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+      ;;
     *)
       FAILED=true
-      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected to contain '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
-      exit 1;;
+      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
+      exit 1
+      ;;
   esac
 }
 
