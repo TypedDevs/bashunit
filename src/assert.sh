@@ -9,7 +9,7 @@ export assertNotContains
 TOTAL_TESTS=0
 FAILED=false
 
-transformTestFunctionName() {
+normalizeFnName() {
   local originalFnName="$1"
   local result
 
@@ -28,7 +28,7 @@ transformTestFunctionName() {
 assertEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
+  local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
   if [[ "$expected" != "$actual" ]]; then
     FAILED=true
@@ -42,7 +42,7 @@ assertEquals() {
 assertContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
+  local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
   case "$actual" in
     *"$expected"*)
@@ -60,7 +60,7 @@ assertContains() {
 assertNotContains() {
   local expected="$1"
     local actual="$2"
-    local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
+    local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
     case "$actual" in
       *"$expected"*)
