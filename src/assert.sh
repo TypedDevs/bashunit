@@ -6,8 +6,8 @@ export assertEquals
 export assertContains
 export assertNotContains
 
-TOTAL_TESTS=0
-FAILED=false
+TOTAL_FAILED=0
+TOTAL_PASSED=0
 
 normalizeFnName() {
   local originalFnName="$1"
@@ -31,14 +31,14 @@ assertEquals() {
   local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
   if [[ "$expected" != "$actual" ]]; then
-    FAILED=true
+    ((TOTAL_FAILED++))
     printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
-    exit 1
   else
-    ((TOTAL_TESTS++))
+    ((TOTAL_PASSED++))
     printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
   fi
 }
+
 assertContains() {
   local expected="$1"
   local actual="$2"
@@ -46,11 +46,11 @@ assertContains() {
 
   case "$actual" in
     *"$expected"*)
-      ((TOTAL_TESTS++))
+      ((TOTAL_PASSED++))
       printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
       ;;
     *)
-      FAILED=true
+      ((TOTAL_FAILED++))
       printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
       exit 1
       ;;
@@ -64,12 +64,12 @@ assertNotContains() {
 
     case "$actual" in
       *"$expected"*)
-        FAILED=true
+        ((TOTAL_FAILED++))
         printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
         exit 1
         ;;
       *)
-        ((TOTAL_TESTS++))
+        ((TOTAL_PASSED++))
         printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
         ;;
     esac
@@ -77,8 +77,14 @@ assertNotContains() {
 
 renderResult() {
   echo ""
-  if [[ "$FAILED" == false ]]; then
-    echo "All assertions passed. Total:" "$TOTAL_TESTS"
+  local total_assertions=$((TOTAL_PASSED + TOTAL_FAILED))
+  echo "Total assertions found:" "$total_assertions"
+
+  if [ "$TOTAL_FAILED" -gt 0 ]; then
+    echo "Total assertions failed:" "$TOTAL_FAILED"
+    exit 1
+  else
+    echo "All assertions passed."
   fi
 }
 

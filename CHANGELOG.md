@@ -5,6 +5,7 @@
 - Added `assertContains`
 - Added `assertNotContains`
 - Display Passed tests in green, and Failed tests in red
+- Avoid stop running tests after a failing one test
  
 ### 0.2.0
 ### 2023-09-05
