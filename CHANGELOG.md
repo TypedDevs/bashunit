@@ -1,5 +1,11 @@
 # Changelog
 
+### Unreleased
+
+- Added `assertContains`
+- Added `assertNotContains`
+- Display Passed tests in green, and Failed tests in red
+ 
 ### 0.2.0
 ### 2023-09-05
 
