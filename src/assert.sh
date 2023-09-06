@@ -56,6 +56,24 @@ assertContains() {
   esac
 }
 
+assertNotContains() {
+  local expected="$1"
+    local actual="$2"
+    local label="${3:-$(transformTestFunctionName ${FUNCNAME[1]})}"
+
+    case "$actual" in
+      *"$expected"*)
+        FAILED=true
+        printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
+        exit 1
+        ;;
+      *)
+        ((TOTAL_TESTS++))
+        printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+        ;;
+    esac
+}
+
 renderResult() {
   echo ""
   if [[ "$FAILED" == false ]]; then

@@ -23,3 +23,13 @@ function test_unsuccessful_assertContains() {
  Expected   'GNU/Linux'
  to contain 'Unix'")" "$(assertContains "Unix" "GNU/Linux")"
 }
+
+function test_successful_assertNotContains() {
+  assertEquals "$(printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: Successful assertNotContains")" "$(assertNotContains "Linus" "GNU/Linux")"
+}
+
+function test_unsuccessful_assertNotContains() {
+  assertEquals "$(printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: Unsuccessful assertNotContains
+ Expected   'GNU/Linux'
+ to not contain 'Linux'")" "$(assertNotContains "Linux" "GNU/Linux")"
+}
