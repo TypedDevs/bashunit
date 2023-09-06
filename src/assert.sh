@@ -4,6 +4,7 @@ export TEST=true
 
 export assertEquals
 export assertContains
+export assertNotContains
 
 TOTAL_TESTS=0
 FAILED=false
