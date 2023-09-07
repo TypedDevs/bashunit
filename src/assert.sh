@@ -78,13 +78,13 @@ assertNotContains() {
 renderResult() {
   echo ""
   local total_assertions=$((TOTAL_PASSED + TOTAL_FAILED))
-  echo "Total assertions found:" "$total_assertions"
+  printf "${COLOR_FAINT}Total assertions found:${COLOR_DEFAULT}${COLOR_BOLD} %d${COLOR_DEFAULT}\n" "$total_assertions"
 
   if [ "$TOTAL_FAILED" -gt 0 ]; then
-    echo "Total assertions failed:" "$TOTAL_FAILED"
+    printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT}${COLOR_BOLD} %d${COLOR_DEFAULT}\n" "$TOTAL_FAILED"
     exit 1
   else
-    echo "All assertions passed."
+    printf "${COLOR_ALL_PASSED}All assertions passed.\n${COLOR_DEFAULT}"
   fi
 }
 

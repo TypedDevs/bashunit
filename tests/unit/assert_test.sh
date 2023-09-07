@@ -4,6 +4,10 @@ function test_successful_assertEquals() {
   assertEquals "$(printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: Successful assertEquals")" "$(assertEquals "1" "1")"
 }
 
+#function test_failing() {
+#  assertEquals "1" "2"
+#}
+
 function test_unsuccessful_assertEquals() {
   assertEquals "$(printf "${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertEquals
  Expected '1'
