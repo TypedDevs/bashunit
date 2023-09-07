@@ -2,6 +2,7 @@
 
 export TEST=true
 
+export normalizeFnName
 export assertEquals
 export assertContains
 export assertNotContains

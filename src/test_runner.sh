@@ -1,16 +1,26 @@
 #!/bin/bash
 
 # shellcheck disable=SC2155
-# shellcheck disable=SC2034
+
+getFunctionCode() {
+  local func_name="$1"
+  local script="$2"
+
+  awk -v fn="$func_name" '
+    BEGIN { in_function = 0; }
+    in_function { func_code = func_code $0 "\n"; }
+    $1 == "function" && $2 == fn"()" { in_function = 1; func_code = ""; }
+    in_function && $1 == "}" { in_function = 0; print func_code; }
+  ' "$script"
+}
+
 callTestFunctions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
 
-  # Use declare -F to list all function names
   local function_names=$(declare -F | awk '{print $3}')
-
-  local functions_to_run=()  # Initialize an array to store eligible function names
+  local functions_to_run=()
 
   for func_name in $function_names; do
     if [[ $func_name == ${prefix}* ]]; then
@@ -18,18 +28,25 @@ callTestFunctions() {
       local filter_lower=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
 
       if [[ -z $filter || $func_name_lower == *"$filter_lower"* ]]; then
-        functions_to_run+=("$func_name")  # Add eligible function to the array
+        functions_to_run+=("$func_name")
       fi
     fi
   done
 
-  if [ "${#functions_to_run[@]}" -gt 0 ]; then
-    echo "Running $script"
-    for func_name in "${functions_to_run[@]}"; do
+
+if [ "${#functions_to_run[@]}" -gt 0 ]; then
+  echo "Running $script"
+  for func_name in "${functions_to_run[@]}"; do
+    func_code=$(getFunctionCode "$func_name" "$script")
+
+    if echo "$func_code" | grep -iq "^\s*#.*skip"; then
+      echo "| Skipped:" "$(normalizeFnName "$func_name")"
+    else
       "$func_name"  # Call the function
       unset "$func_name"
-    done
-  fi
+    fi
+  done
+fi
 }
 
 ###############
