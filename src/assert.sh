@@ -32,10 +32,13 @@ assertEquals() {
 
   if [[ "$expected" != "$actual" ]]; then
     ((TOTAL_FAILED++))
-    printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
+    echo -e "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}
+    ${COLOR_FAINT}but got${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}"
   else
     ((TOTAL_PASSED++))
-    printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+    echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
   fi
 }
 
@@ -47,11 +50,14 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((TOTAL_PASSED++))
-      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+      echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
       ;;
     *)
       ((TOTAL_FAILED++))
-      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
+      echo -e "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
+    ${COLOR_FAINT}to contain${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}"
       exit 1
       ;;
   esac
@@ -65,12 +71,15 @@ assertNotContains() {
     case "$actual" in
       *"$expected"*)
         ((TOTAL_FAILED++))
-        printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
+        echo -e "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
+    ${COLOR_FAINT}to not contain${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}"
         exit 1
         ;;
       *)
         ((TOTAL_PASSED++))
-        printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+        echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
         ;;
     esac
 }
@@ -78,13 +87,13 @@ assertNotContains() {
 renderResult() {
   echo ""
   local total_assertions=$((TOTAL_PASSED + TOTAL_FAILED))
-  echo "Total assertions found:" "$total_assertions"
+  echo -e "${COLOR_FAINT}Total assertions found:${COLOR_DEFAULT} ${COLOR_BOLD}${total_assertions}${COLOR_DEFAULT}"
 
   if [ "$TOTAL_FAILED" -gt 0 ]; then
-    echo "Total assertions failed:" "$TOTAL_FAILED"
+    echo -e "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${TOTAL_FAILED}${COLOR_DEFAULT}"
     exit 1
   else
-    echo "All assertions passed."
+    echo -e "${COLOR_ALL_PASSED}All assertions passed.${COLOR_DEFAULT}"
   fi
 }
 
