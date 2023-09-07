@@ -2,8 +2,8 @@
 
 ### Unreleased
 
-- ...
-
+- Add option `--filter` to `./bashunit` script
+  - To trigger tests filtered by name
 
 ### 0.3.0
 ### 2023-09-07
