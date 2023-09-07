@@ -49,5 +49,5 @@ To update a git-submodule is as simple as:
    
 ### Run test from the library
 ```bash
-./bashunit ./tests/**/*.sh 
+./bashunit ./tests/**/*_test.sh 
 ```
