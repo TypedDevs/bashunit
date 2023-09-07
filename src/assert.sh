@@ -5,6 +5,7 @@ export TEST=true
 export assertEquals
 export assertContains
 export assertNotContains
+export renderResult
 
 TOTAL_FAILED=0
 TOTAL_PASSED=0
@@ -84,10 +85,16 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     esac
 }
 
-renderResult() {
+function renderResult() {
+  local totalPassed=$1
+  local totalFailed=$2
+  local totalTests=$3
+
   echo ""
-  local total_assertions=$((TOTAL_PASSED + TOTAL_FAILED))
-  printf "${COLOR_FAINT}Total assertions found:${COLOR_DEFAULT} ${COLOR_BOLD}${total_assertions}${COLOR_DEFAULT}\n"
+  local totalAssertions=$((totalPassed + totalFailed))
+  printf "\
+${COLOR_FAINT}Total tests:${COLOR_DEFAULT} ${COLOR_BOLD}${totalTests}${COLOR_DEFAULT}
+${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}\n"
 
   if [ "$TOTAL_FAILED" -gt 0 ]; then
     printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${TOTAL_FAILED}${COLOR_DEFAULT}\n"
@@ -98,4 +105,4 @@ renderResult() {
 }
 
 # Set a trap to call render_result when the script exits
-trap renderResult EXIT
+trap 'renderResult $TOTAL_PASSED $TOTAL_FAILED $TOTAL_TESTS' EXIT

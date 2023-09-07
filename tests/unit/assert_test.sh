@@ -16,6 +16,12 @@ function testCamelCase() {
   assertEquals "$(printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: CamelCase")" "$(assertEquals "1" "1")"
 }
 
+function test_multiple_asserts() {
+  assertEquals "1" "1" "1 equals 1"
+  assertEquals "2" "2" "2 equals 2"
+  assertEquals "3" "3" "3 equals 3"
+}
+
 function test_successful_assertContains() {
   assertEquals "$(printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: Successful assertContains")" "$(assertContains "Linux" "GNU/Linux")"
 }
