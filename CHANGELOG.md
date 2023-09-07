@@ -2,6 +2,12 @@
 
 ### Unreleased
 
+- ...
+
+
+### 0.3.0
+### 2023-09-07
+
 - Added `assertContains`
 - Added `assertNotContains`
 - Display Passed tests in green, and Failed tests in red
