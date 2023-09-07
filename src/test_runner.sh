@@ -6,10 +6,11 @@ callTestFunctions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
-  local ran_functions=false
 
   # Use declare -F to list all function names
   local function_names=$(declare -F | awk '{print $3}')
+
+  local functions_to_run=()  # Initialize an array to store eligible function names
 
   for func_name in $function_names; do
     if [[ $func_name == ${prefix}* ]]; then
@@ -18,12 +19,11 @@ callTestFunctions() {
 
       if [[ -z $filter || $func_name_lower == *"$filter_lower"* ]]; then
         functions_to_run+=("$func_name")  # Add eligible function to the array
-        ran_functions=true
       fi
     fi
   done
 
-  if [ "$ran_functions" == true ]; then
+  if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for func_name in "${functions_to_run[@]}"; do
       "$func_name"  # Call the function
