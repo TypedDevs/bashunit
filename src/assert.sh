@@ -86,9 +86,9 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
 }
 
 function renderResult() {
-  local totalPassed=$1
-  local totalFailed=$2
-  local totalTests=$3
+  local totalTests=$1
+  local totalPassed=$2
+  local totalFailed=$3
 
   echo ""
   local totalAssertions=$((totalPassed + totalFailed))
@@ -96,8 +96,8 @@ function renderResult() {
 ${COLOR_FAINT}Total tests:${COLOR_DEFAULT} ${COLOR_BOLD}${totalTests}${COLOR_DEFAULT}
 ${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}\n"
 
-  if [ "$TOTAL_FAILED" -gt 0 ]; then
-    printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${TOTAL_FAILED}${COLOR_DEFAULT}\n"
+  if [ "$totalFailed" -gt 0 ]; then
+    printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${totalFailed}${COLOR_DEFAULT}\n"
     exit 1
   else
     printf "${COLOR_ALL_PASSED}All assertions passed.${COLOR_DEFAULT}\n"
@@ -105,4 +105,4 @@ ${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}$
 }
 
 # Set a trap to call render_result when the script exits
-trap 'renderResult $TOTAL_PASSED $TOTAL_FAILED $TOTAL_TESTS' EXIT
+trap 'renderResult $TOTAL_TESTS $TOTAL_PASSED $TOTAL_FAILED' EXIT
