@@ -32,10 +32,10 @@ assertEquals() {
 
   if [[ "$expected" != "$actual" ]]; then
     ((TOTAL_FAILED++))
-    printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
+    printf "${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
   else
     ((TOTAL_PASSED++))
-    printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+    printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\\n" "$label"
   fi
 }
 
@@ -47,11 +47,11 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((TOTAL_PASSED++))
-      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+      printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\\n" "$label"
       ;;
     *)
       ((TOTAL_FAILED++))
-      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
+      printf "${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
       exit 1
       ;;
   esac
@@ -65,12 +65,12 @@ assertNotContains() {
     case "$actual" in
       *"$expected"*)
         ((TOTAL_FAILED++))
-        printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
+        printf "${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
         exit 1
         ;;
       *)
         ((TOTAL_PASSED++))
-        printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
+        printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\\n" "$label"
         ;;
     esac
 }
