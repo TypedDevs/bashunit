@@ -2,8 +2,9 @@
 
 ### Unreleased
 
-- ...
-
+- Better output colors and symbols
+- Add option `--filter` to `./bashunit` script
+  - Trigger tests filtered by name
 
 ### 0.3.0
 ### 2023-09-07
