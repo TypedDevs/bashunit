@@ -32,13 +32,10 @@ assertEquals() {
 
   if [[ "$expected" != "$actual" ]]; then
     ((TOTAL_FAILED++))
-    echo -e "\
-${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}but got${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}"
+    printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected '%s'\\n but got  '%s'\\n" "$label" "$expected" "$actual"
   else
     ((TOTAL_PASSED++))
-    echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
+    printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
   fi
 }
 
@@ -50,14 +47,11 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((TOTAL_PASSED++))
-      echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
+      printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
       ;;
     *)
       ((TOTAL_FAILED++))
-      echo -e "\
-${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}to contain${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}"
+      printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to contain '%s'\\n" "$label" "$actual" "$expected"
       exit 1
       ;;
   esac
@@ -71,15 +65,12 @@ assertNotContains() {
     case "$actual" in
       *"$expected"*)
         ((TOTAL_FAILED++))
-        echo -e "\
-${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}to not contain${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}"
+        printf "❌  ${COLOR_FAILED}Failed${COLOR_DEFAULT}: %s\\n Expected   '%s'\\n to not contain '%s'\\n" "$label" "$actual" "$expected"
         exit 1
         ;;
       *)
         ((TOTAL_PASSED++))
-        echo -e "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}"
+        printf "✔️  ${COLOR_PASSED}Passed${COLOR_DEFAULT}: %s\\n" "$label"
         ;;
     esac
 }
@@ -87,13 +78,13 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
 renderResult() {
   echo ""
   local total_assertions=$((TOTAL_PASSED + TOTAL_FAILED))
-  echo -e "${COLOR_FAINT}Total assertions found:${COLOR_DEFAULT} ${COLOR_BOLD}${total_assertions}${COLOR_DEFAULT}"
+  echo "Total assertions found:" "$total_assertions"
 
   if [ "$TOTAL_FAILED" -gt 0 ]; then
-    echo -e "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${TOTAL_FAILED}${COLOR_DEFAULT}"
+    echo "Total assertions failed:" "$TOTAL_FAILED"
     exit 1
   else
-    echo -e "${COLOR_ALL_PASSED}All assertions passed.${COLOR_DEFAULT}"
+    echo "All assertions passed."
   fi
 }
 
