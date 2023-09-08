@@ -16,10 +16,6 @@ TEST_SCRIPTS_DIR=tests
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
 
 # Display the list of tests scripts found
-init-hooks:
-	$(SRC_SCRIPTS_DIR)/init.sh
-
-# Display the list of tests scripts found
 list-tests:
 	@echo "Test scripts found:"
 	@echo $(TEST_SCRIPTS)
