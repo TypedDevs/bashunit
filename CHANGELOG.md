@@ -8,7 +8,8 @@
 - Added time taken to run the test in ms (only to Linux)
 - Simplified assertions over test results
 - Added pre-commit to the project
-- Allow parallel tests to run base on a .env configuration
+- Allow parallel tests to run base on a .env configuration enabled by default
+- I
 
 ### 0.4.0
 ### 2023-09-08
