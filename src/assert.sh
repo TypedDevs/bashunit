@@ -6,10 +6,9 @@ export assertEquals
 export assertContains
 export assertNotContains
 export assertMatches
-export renderResult
 
-_TOTAL_FAILED=0
-_TOTAL_PASSED=0
+_TOTAL_ASSERTIONS_FAILED=0
+_TOTAL_ASSERTIONS_PASSED=0
 
 normalizeFnName() {
   local originalFnName="$1"
@@ -33,13 +32,13 @@ assertEquals() {
   local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
   if [[ "$expected" != "$actual" ]]; then
-    ((_TOTAL_FAILED++))
+    ((_TOTAL_ASSERTIONS_FAILED++))
     printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}
     ${COLOR_FAINT}but got${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}\n"
   else
-    ((_TOTAL_PASSED++))
+    ((_TOTAL_ASSERTIONS_PASSED++))
     printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
   fi
 }
@@ -51,11 +50,11 @@ assertContains() {
 
   case "$actual" in
     *"$expected"*)
-      ((_TOTAL_PASSED++))
+      ((_TOTAL_ASSERTIONS_PASSED++))
       printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
       ;;
     *)
-      ((_TOTAL_FAILED++))
+      ((_TOTAL_ASSERTIONS_FAILED++))
       printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
@@ -72,7 +71,7 @@ assertNotContains() {
 
     case "$actual" in
       *"$expected"*)
-        ((_TOTAL_FAILED++))
+        ((_TOTAL_ASSERTIONS_FAILED++))
         printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
@@ -80,7 +79,7 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
         exit 1
         ;;
       *)
-        ((_TOTAL_PASSED++))
+        ((_TOTAL_ASSERTIONS_PASSED++))
         printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
         ;;
     esac
@@ -92,10 +91,10 @@ assertMatches() {
   local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_TOTAL_PASSED++))
+    ((_TOTAL_ASSERTIONS_PASSED++))
     printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
   else
-    ((_TOTAL_FAILED++))
+    ((_TOTAL_ASSERTIONS_FAILED++))
           printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
@@ -103,25 +102,3 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     exit 1
   fi
 }
-
-function renderResult() {
-  local totalTests=$1
-  local totalPassed=$2
-  local totalFailed=$3
-
-  echo ""
-  local totalAssertions=$((totalPassed + totalFailed))
-  printf "\
-${COLOR_FAINT}Total tests:${COLOR_DEFAULT} ${COLOR_BOLD}${totalTests}${COLOR_DEFAULT}
-${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}\n"
-
-  if [ "$totalFailed" -gt 0 ]; then
-    printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${totalFailed}${COLOR_DEFAULT}\n"
-    exit 1
-  else
-    printf "${COLOR_ALL_PASSED}All assertions passed.${COLOR_DEFAULT}\n"
-  fi
-}
-
-# Set a trap to call render_result when the script exits
-trap 'renderResult $_TOTAL_TESTS $_TOTAL_PASSED $_TOTAL_FAILED' EXIT
