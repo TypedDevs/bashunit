@@ -6,6 +6,9 @@
 - Added `assertNotMatches`
 - Added `make test/watch` to run your test every second
 - Added time taken to run the test in ms (only to Linux)
+- Simplified assertions over test results
+- Added pre-commit to the project
+- Allow parallel tests to run base on a .env configuration
 
 ### 0.4.0
 ### 2023-09-08
