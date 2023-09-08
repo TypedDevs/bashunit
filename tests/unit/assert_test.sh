@@ -45,3 +45,15 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertNotContains
     ${COLOR_FAINT}to not contain${COLOR_DEFAULT} ${COLOR_BOLD}'Linux'${COLOR_DEFAULT}
 ")" "$(assertNotContains "Linux" "GNU/Linux")"
 }
+
+function test_successful_assertMatches() {
+  assertEquals "$(printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: Successful assertMatches")" "$(assertMatches ".*Linu*" "GNU/Linux")"
+}
+
+function test_unsuccessful_assertMatches() {
+  assertEquals "$(printf "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertMatches
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'GNU/Linux'${COLOR_DEFAULT}
+    ${COLOR_FAINT}to match${COLOR_DEFAULT} ${COLOR_BOLD}'.*Pinux*'${COLOR_DEFAULT}
+")" "$(assertMatches ".*Pinux*" "GNU/Linux")"
+}

@@ -18,4 +18,7 @@ list-tests:
 test: $(TEST_SCRIPTS)
 	./bashunit $(TEST_SCRIPTS)
 
+test/watch: $(TEST_SCRIPTS)
+	watch --color -n 1 ./bashunit $(TEST_SCRIPTS)
+
 .PHONY: test list-tests
