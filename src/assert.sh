@@ -6,6 +6,7 @@ export assertEquals
 export assertContains
 export assertNotContains
 export assertMatches
+export assertNotMatches
 
 _TOTAL_ASSERTIONS_FAILED=0
 _TOTAL_ASSERTIONS_PASSED=0
@@ -95,10 +96,29 @@ assertMatches() {
     printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
   else
     ((_TOTAL_ASSERTIONS_FAILED++))
-          printf "\
+    printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
     ${COLOR_FAINT}to match${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n"
     exit 1
   fi
+}
+
+assertNotMatches() {
+    local expected="$1"
+    local actual="$2"
+    local label="${3:-$(normalizeFnName ${FUNCNAME[1]})}"
+
+    if [[ $actual =~ $expected ]]; then
+      ((_TOTAL_ASSERTIONS_FAILED++))
+            printf "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
+    ${COLOR_FAINT}to not match${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n"
+      exit 1
+    else
+      ((_TOTAL_ASSERTIONS_PASSED++))
+      printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
+    fi
+  }
 }
