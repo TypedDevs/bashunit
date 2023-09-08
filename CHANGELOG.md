@@ -1,5 +1,10 @@
 # Changelog
 
+### Unreleased
+
+- Added `assertMatches`
+- Added `make test/watch` to run your test every second
+
 ### 0.4.0
 ### 2023-09-08
 
@@ -11,7 +16,8 @@
   - Colors
   - Bolds
 - Added count to all test
-  ![Added count to all test](docs/changelog/total_of_test.png)
+
+![Added count to all test](docs/changelog/total_of_test.png)
 
 ### 0.3.0
 ### 2023-09-07

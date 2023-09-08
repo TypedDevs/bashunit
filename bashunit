@@ -8,5 +8,8 @@ source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
 # Load all assert functions
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
 
+# Load results to the TTY
+source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
+
 # Execute the test runner
 source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" "$@"
