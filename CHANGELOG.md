@@ -3,7 +3,9 @@
 ### Unreleased
 
 - Added `assertMatches`
+- Added `assertNotMatches`
 - Added `make test/watch` to run your test every second
+- Added time taken to run the test in ms
 
 ### 0.4.0
 ### 2023-09-08
