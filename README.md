@@ -46,7 +46,10 @@ To update a git-submodule is as simple as:
    1. checkout a concrete release tag
    2. or just pull `main` (preferred)
 
-   
+
+### Conventions we recommend to use
+[google conventions](https://google.github.io/styleguide/)
+
 ### Run test from the library
 ```bash
 make test 
