@@ -1,5 +1,9 @@
 #!/bin/bash
 
+export TOTAL_TESTS
+
+TOTAL_TESTS=0
+
 # shellcheck disable=SC2155
 # shellcheck disable=SC2034
 callTestFunctions() {
@@ -26,6 +30,7 @@ callTestFunctions() {
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for func_name in "${functions_to_run[@]}"; do
+      ((TOTAL_TESTS++))
       "$func_name"  # Call the function
       unset "$func_name"
     done
