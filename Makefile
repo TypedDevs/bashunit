@@ -1,6 +1,16 @@
+SHELL=/bin/bash
+help:
+	@echo ""
+	@echo "usage: make COMMAND"
+	@echo ""
+	@echo "Commands:"
+	@echo "  list-test                📑 list all the test under the tests directory"
+	@echo "  test                     ✅ Run the test"
+	@echo "  test/watch               🔍 Automatically run the test every second"
+
 # Directory where your tests scripts are located
-SRC_SCRIPTS_DIR = src
-TEST_SCRIPTS_DIR = tests
+SRC_SCRIPTS_DIR=src
+TEST_SCRIPTS_DIR=tests
 
 # Find all *_test.sh scripts in the specified directory
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)

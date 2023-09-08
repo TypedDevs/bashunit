@@ -3,6 +3,7 @@
 ### Unreleased
 
 - Added `assertMatches`
+- Added `make test/watch` to run your test every second
 
 ### 0.4.0
 ### 2023-09-08
