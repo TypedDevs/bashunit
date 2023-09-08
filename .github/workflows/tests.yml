@@ -16,7 +16,6 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest' ]
-        containers: [1, 2]
     steps:
       - uses: actions/checkout@v3
       - name: "Tests"
