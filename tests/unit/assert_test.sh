@@ -8,7 +8,7 @@ function test_unsuccessful_assertEquals() {
   assertEquals "$(printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertEquals
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'1'${COLOR_DEFAULT}
-    ${COLOR_FAINT}but got${COLOR_DEFAULT} ${COLOR_BOLD}'2'${COLOR_DEFAULT}
+    ${COLOR_FAINT}but got${COLOR_DEFAULT}  ${COLOR_BOLD}'2'${COLOR_DEFAULT}
 ")" "$(assertEquals "1" "2")"
 }
 

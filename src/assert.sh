@@ -37,7 +37,7 @@ assertEquals() {
     printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: ${label}
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}but got${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}\n"
+    ${COLOR_FAINT}but got${COLOR_DEFAULT}  ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}\n"
   else
     ((_TOTAL_ASSERTIONS_PASSED++))
     printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: ${label}\n"
