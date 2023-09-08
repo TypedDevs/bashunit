@@ -48,7 +48,7 @@ To update a git-submodule is as simple as:
 
 
 ### Conventions we recommend to use
-[google conventions](https://google.github.io/styleguide/)
+[google conventions](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names)
 
 ### Run test from the library
 ```bash
