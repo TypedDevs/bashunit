@@ -66,7 +66,7 @@ function test_render_time_of_execution_when_all_assertions_passed() {
   local assertions_passed=5
   local assertions_failed=1
 
-  if [[ $OS == "Linux" ]]; then
+  if [[ $OS != "OSX" ]]; then
     assertMatches\
       ".*Time taken: [[:digit:]]+ ms"\
       "$(renderResult $total_tests $assertions_passed $assertions_failed)"
@@ -78,7 +78,7 @@ function test_render_time_of_execution_when_not_all_assertions_passed() {
   local assertions_passed=5
   local assertions_failed=1
 
-  if [[ $OS == "Linux" ]]; then
+  if [[ $OS != "OSX" ]]; then
     assertMatches\
       ".*Time taken: [[:digit:]]+ ms"\
       "$(renderResult $total_tests $assertions_passed $assertions_failed)"

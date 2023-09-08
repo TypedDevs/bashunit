@@ -24,7 +24,7 @@ ${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}$
 }
 
 function printExecTime() {
-  if [[ $OS == "Linux" ]]; then
+  if [[ $OS != "OSX" ]]; then
     _TIME_TERMINATION=$((($(date +%s%N) - $_TIME_START)/1000000))
     printf "${COLOR_BOLD}%s${COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
   fi
