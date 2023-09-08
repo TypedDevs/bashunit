@@ -13,16 +13,21 @@ ${COLOR_FAINT}Total assertions:${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}$
 
   if [ "$totalFailed" -gt 0 ]; then
     printf "${COLOR_FAINT}Total assertions failed:${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${totalFailed}${COLOR_DEFAULT}\n"
-    _TIME_TERMINATION=$((($(date +%s%N) - $_TIME_START)/1000000))
-    printf "${COLOR_BOLD}%s${COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
+    printExecTime
     exit 1
   else
     printf "${COLOR_ALL_PASSED}All assertions passed.${COLOR_DEFAULT}\n"
   fi
 
-  _TIME_TERMINATION=$((($(date +%s%N) - $_TIME_START)/1000000))
-  printf "${COLOR_BOLD}%s${COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
+  printExecTime
   exit 0
+}
+
+function printExecTime() {
+  if [[ $OS == "Linux" ]]; then
+    _TIME_TERMINATION=$((($(date +%s%N) - $_TIME_START)/1000000))
+    printf "${COLOR_BOLD}%s${COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
+  fi
 }
 
 # Set a trap to call renderResult when the script exits

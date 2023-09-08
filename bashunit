@@ -2,6 +2,16 @@
 
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
+OS="Unknown"
+
+if [ "$(uname)" == "Linux" ]; then
+    OS="Linux"
+elif [ "$(uname)" == "Darwin" ]; then
+    OS="OSX"
+elif [[ $(uname) == *"MINGW"* ]]; then
+    OS="Windows"
+fi
+
 # Load color configuration
 source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
 

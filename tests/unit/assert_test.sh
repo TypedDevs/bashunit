@@ -20,6 +20,7 @@ function test_multiple_asserts() {
   assertEquals "1" "1" "1 equals 1"
   assertEquals "2" "2" "2 equals 2"
   assertEquals "3" "3" "3 equals 3"
+  assertEquals "4" "4" "4 equals 4"
 }
 
 function test_successful_assertContains() {
