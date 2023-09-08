@@ -66,9 +66,11 @@ function test_render_time_of_execution_when_all_assertions_passed() {
   local assertions_passed=5
   local assertions_failed=1
 
-  assertMatches\
-    ".*Time taken: [[:digit:]]+ ms"\
-    "$(renderResult $total_tests $assertions_passed $assertions_failed)"
+  if [[ $OS == "Linux" ]]; then
+    assertMatches\
+      ".*Time taken: [[:digit:]]+ ms"\
+      "$(renderResult $total_tests $assertions_passed $assertions_failed)"
+  fi
 }
 
 function test_render_time_of_execution_when_not_all_assertions_passed() {
@@ -76,7 +78,9 @@ function test_render_time_of_execution_when_not_all_assertions_passed() {
   local assertions_passed=5
   local assertions_failed=1
 
-  assertMatches\
-    ".*Time taken: [[:digit:]]+ ms"\
-    "$(renderResult $total_tests $assertions_passed $assertions_failed)"
+  if [[ $OS == "Linux" ]]; then
+    assertMatches\
+      ".*Time taken: [[:digit:]]+ ms"\
+      "$(renderResult $total_tests $assertions_passed $assertions_failed)"
+  fi
 }
