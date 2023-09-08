@@ -43,7 +43,7 @@ help:
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
 
-# Find all *_test.sh scripts in the specified directory
+# Find all test scripts in the specified directory
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
 
 # Display the list of tests scripts found
