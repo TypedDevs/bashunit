@@ -7,6 +7,7 @@ _TOTAL_TESTS=0
 # shellcheck disable=SC2155
 # shellcheck disable=SC2034
 callTestFunctions() {
+  _TIME_START=$(date +%s%N);
   local script="$1"
   local filter="$2"
   local prefix="test"
