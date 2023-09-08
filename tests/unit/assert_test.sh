@@ -57,3 +57,15 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertMatches
     ${COLOR_FAINT}to match${COLOR_DEFAULT} ${COLOR_BOLD}'.*Pinux*'${COLOR_DEFAULT}
 ")" "$(assertMatches ".*Pinux*" "GNU/Linux")"
 }
+
+function test_successful_assertNotMatches() {
+  assertEquals "$(printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: Successful assertNotMatches")" "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
+}
+
+function test_unsuccessful_assertNotMatches() {
+  assertEquals "$(printf "\
+${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: Unsuccessful assertNotMatches
+    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'GNU/Linux'${COLOR_DEFAULT}
+    ${COLOR_FAINT}to not match${COLOR_DEFAULT} ${COLOR_BOLD}'.*Linu*'${COLOR_DEFAULT}
+")" "$(assertNotMatches ".*Linu*" "GNU/Linux")"
+}
