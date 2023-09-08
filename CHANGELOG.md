@@ -1,20 +1,17 @@
 # Changelog
 
-### Unreleased
+### 0.4.0
+### 2023-09-08
 
 - Better output colors and symbols
 - Add option `--filter` to `./bashunit` script
   - Trigger tests filtered by name
-
-### 0.4.0
-### 2023-09-08
-
-- Added count to all test
-![Added count to all test](docs/changelog/total_of_test.png)
 - Change the output styles
   - Emojis
   - Colors
   - Bolds
+- Added count to all test
+  ![Added count to all test](docs/changelog/total_of_test.png)
 
 ### 0.3.0
 ### 2023-09-07
