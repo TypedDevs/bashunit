@@ -11,14 +11,14 @@ name: Tests
 jobs:
 
   tests:
-    name: "Run all tests on Ubuntu"
+    name: "Run tests on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest']
         include:
           - os: windows-latest
-            script_name: ./bashunit tests/**/*_test.sh
+            script_name: 'bash -c "./bashunit tests/**/*_test.sh"'
           - os: ubuntu-latest
             script_name: make test
           - os: macos-latest
@@ -26,5 +26,5 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: "Tests"
-        run: echo "ok"
+        run: ${{ matrix.script_name }}
 
