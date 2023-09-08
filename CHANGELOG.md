@@ -11,7 +11,8 @@
   - Colors
   - Bolds
 - Added count to all test
-  ![Added count to all test](docs/changelog/total_of_test.png)
+
+![Added count to all test](docs/changelog/total_of_test.png)
 
 ### 0.3.0
 ### 2023-09-07
