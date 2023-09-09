@@ -53,7 +53,7 @@ PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
 
 # Display the list of tests scripts found
-tests/list:
+test/list:
 	@echo "Test scripts found:"
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
