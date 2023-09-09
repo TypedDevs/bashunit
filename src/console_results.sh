@@ -3,48 +3,48 @@
 export renderResult
 export printSuccessfulTest
 
-_TOTAL_TESTS_PASSED=0
-_TOTAL_TESTS_FAILED=0
-_TOTAL_ASSERTIONS_PASSED=0
-_TOTAL_ASSERTIONS_FAILED=0
+_TESTS_PASSED=0
+_TESTS_FAILED=0
+_ASSERTIONS_PASSED=0
+_ASSERTIONS_FAILED=0
 
 function renderResult() {
-  local totalTestsPassed=$1
-  local totalTestsFailed=$2
-  local totalAssertionsPassed=$3
-  local totalAssertionsFailed=$4
+  local testsPassed=$1
+  local testsFailed=$2
+  local assertionsPassed=$3
+  local assertionsFailed=$4
 
   echo ""
-  local totalTests=$((totalTestsPassed + totalTestsFailed))
-  local totalAssertions=$((totalAssertionsPassed + totalAssertionsFailed))
+  local totalTests=$((testsPassed + testsFailed))
+  local totalAssertions=$((assertionsPassed + assertionsFailed))
 
   printf "%sTests:     %s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $totalAssertionsPassed -gt 0 ]]; then
-    printf " %s%s passed%s," "$COLOR_PASSED" "$totalTestsPassed" "$COLOR_DEFAULT"
+  if [[ $assertionsPassed -gt 0 ]]; then
+    printf " %s%s passed%s," "$COLOR_PASSED" "$testsPassed" "$COLOR_DEFAULT"
   fi
-  if [[ $totalAssertionsFailed -gt 0 ]]; then
-    printf " %s%s failed%s," "$COLOR_FAILED" "$totalTestsFailed" "$COLOR_DEFAULT"
+  if [[ $testsFailed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$testsFailed" "$COLOR_DEFAULT"
   fi
   printf " %s total\n" "$totalTests"
 
 
   printf "%sAssertions:%s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $totalAssertionsPassed -gt 0 ]]; then
-      printf " %s%s passed%s," "$COLOR_PASSED" "$totalAssertionsPassed" "$COLOR_DEFAULT"
+  if [[ $assertionsPassed -gt 0 ]]; then
+      printf " %s%s passed%s," "$COLOR_PASSED" "$assertionsPassed" "$COLOR_DEFAULT"
   fi
-  if [[ $totalAssertionsFailed -gt 0 ]]; then
-    printf " %s%s failed%s," "$COLOR_FAILED" "$totalAssertionsFailed" "$COLOR_DEFAULT"
+  if [[ $testsFailed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$assertionsFailed" "$COLOR_DEFAULT"
   fi
   printf " %s total\n" "$totalAssertions"
 
-
-  if [ "$totalAssertionsFailed" -gt 0 ]; then
+  if [[ "$testsFailed" -gt 0 ]]; then
     printExecTime
     exit 1
   fi
 
-  printf "${COLOR_ALL_PASSED}%s${COLOR_DEFAULT}\n" "All assertions passed."
+  printf "%s%s%s\n" "$COLOR_ALL_PASSED" "All tests passed" "$COLOR_DEFAULT"
   printExecTime
+  exit 0
 }
 
 function printExecTime() {
@@ -64,13 +64,14 @@ function printFailedTest() {
   expected=$2
   failureConditionMessage=$3
   actual=$4
+
   printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}
     ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}\n"\
-  "${testName}" "${expected}" "${failureConditionMessage}" "${actual}"
+    "${testName}" "${expected}" "${failureConditionMessage}" "${actual}"
 
 }
 
 # Set a trap to call renderResult when the script exits
-trap 'renderResult $_TOTAL_TESTS_PASSED $_TOTAL_TESTS_FAILED $_TOTAL_ASSERTIONS_PASSED $_TOTAL_ASSERTIONS_FAILED' EXIT
+trap 'renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT

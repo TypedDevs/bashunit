@@ -42,11 +42,11 @@ runTest() {
   local exit_code=$?
 
   if [[ $exit_code -eq 0 ]]; then
-    ((_TOTAL_TESTS_PASSED++))
+    ((_TESTS_PASSED++))
     local label="${3:-$(normalizeFnName "$func_name")}"
     printSuccessfulTest "${label}"
   else
-    ((_TOTAL_TESTS_FAILED++))
+    ((_TESTS_FAILED++))
   fi
 }
 

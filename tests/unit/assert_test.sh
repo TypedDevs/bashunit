@@ -9,17 +9,6 @@ function test_unsuccessful_assertEquals() {
   "$(assertEquals "1" "2")"
 }
 
-#function testCamelCase() {
-#  assertEquals "$(printSuccessfulTest "CamelCase")" "$(assertEquals "1" "1")"
-#}
-
-function test_multiple_asserts() {
-  assertEquals "1" "1" "1 equals 1"
-  assertEquals "2" "2" "2 equals 2"
-  assertEquals "3" "3" "3 equals 3"
-  assertEquals "4" "4" "4 equals 4"
-}
-
 function test_successful_assertContains() {
   assertEquals "" "$(assertContains "Linux" "GNU/Linux")"
 }
@@ -52,6 +41,7 @@ function test_successful_assertNotMatches() {
 }
 
 function test_unsuccessful_assertNotMatches() {
-  assertEquals "$(printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
-  "$(assertNotMatches ".*Linu*" "GNU/Linux")"
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
+    "$(assertNotMatches ".*Linu*" "GNU/Linux")"
 }

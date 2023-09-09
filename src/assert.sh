@@ -1,14 +1,5 @@
 #!/bin/bash
 
-export TEST=true
-
-export assertEquals
-export assertContains
-export assertNotContains
-export assertMatches
-export assertNotMatches
-
-
 normalizeFnName() {
   local originalFnName="$1"
   local result
@@ -31,11 +22,12 @@ assertEquals() {
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${expected}" "but got" "${actual}"
-    exit 1
+    return 1
   else
-    ((_TOTAL_ASSERTIONS_PASSED++))
+    ((_ASSERTIONS_PASSED++))
+    return 0
   fi
 }
 
@@ -46,12 +38,13 @@ assertContains() {
 
   case "$actual" in
     *"$expected"*)
-      ((_TOTAL_ASSERTIONS_PASSED++))
+      ((_ASSERTIONS_PASSED++))
+      return 0
       ;;
     *)
-      ((_TOTAL_ASSERTIONS_FAILED++))
+      ((_ASSERTIONS_FAILED++))
       printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
-      exit 1
+      return 1
       ;;
   esac
 }
@@ -63,12 +56,13 @@ assertNotContains() {
 
     case "$actual" in
       *"$expected"*)
-        ((_TOTAL_ASSERTIONS_FAILED++))
+        ((_ASSERTIONS_FAILED++))
         printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
-        exit 1
+        return 1
         ;;
       *)
-        ((_TOTAL_ASSERTIONS_PASSED++))
+        ((_ASSERTIONS_PASSED++))
+        return 0
         ;;
     esac
 }
@@ -79,11 +73,12 @@ assertMatches() {
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_TOTAL_ASSERTIONS_PASSED++))
+    ((_ASSERTIONS_PASSED++))
+    return 0
   else
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to match" "${expected}"
-    exit 1
+    return 1
   fi
 }
 
@@ -93,10 +88,11 @@ assertNotMatches() {
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
-    exit 1
+    return 1
   else
-    ((_TOTAL_ASSERTIONS_PASSED++))
+    ((_ASSERTIONS_PASSED++))
+    return 0
   fi
 }
