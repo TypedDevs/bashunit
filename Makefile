@@ -71,4 +71,4 @@ pre_commit/install:
 pre_commit/run: test env/example
 
 lint:
-	shellcheck ./**/*.sh -C
+	shellcheck ./**/*.sh -C && echo "Shellcheck: OK!"
