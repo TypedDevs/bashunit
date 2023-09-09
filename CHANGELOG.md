@@ -9,6 +9,7 @@
 - Simplified assertions over test results
 - Added pre-commit to the project
 - Allow parallel tests to run base on a .env configuration enabled by default
+- Added static analysis tools to the deployment pipelines
 
 ### 0.4.0
 ### 2023-09-08
