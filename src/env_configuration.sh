@@ -5,6 +5,6 @@ set -o allexport
 source .env set
 set +o allexport
 
-if [[ -z "$PARALLEL_RUN" ]]; then
+if [ -z "$PARALLEL_RUN" ]; then
   PARALLEL_RUN=false
 fi

@@ -9,41 +9,41 @@ function callTestFunctions() {
   function_names=$(declare -F | awk '{print $3}')
   local functions_to_run=()
 
-  for func_name in $function_names; do
-    if [[ $func_name == ${prefix}* ]]; then
-      local func_name_lower
-      func_name_lower=$(echo "$func_name" | tr '[:upper:]' '[:lower:]')
-      local filter_lower
-      filter_lower=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
+  for function_name in $function_names; do
+    if [[ $function_name == ${prefix}* ]]; then
+      local lower_case_function_name
+      lower_case_function_name=$(echo "$function_name" | tr '[:upper:]' '[:lower:]')
+      local lower_case_filter
+      lower_case_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
 
-      if [[ -z $filter || $func_name_lower == *"$filter_lower"* ]]; then
-        functions_to_run+=("$func_name")
+      if [[ -z $filter || $lower_case_function_name == *"$lower_case_filter"* ]]; then
+        functions_to_run+=("$function_name")
       fi
     fi
   done
 
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
-    for func_name in "${functions_to_run[@]}"; do
+    for function_name in "${functions_to_run[@]}"; do
       if [ "$PARALLEL_RUN" = true ] ; then
-        runTest "$func_name" &
+        runTest "$function_name" &
       else
-        runTest "$func_name"
+        runTest "$function_name"
       fi
-      unset "$func_name"
+      unset "$function_name"
     done
   fi
 }
 
 function runTest() {
-  local func_name="$1"
+  local function_name="$1"
 
-  "$func_name"
+  "$function_name"
   local exit_code=$?
 
-  if [[ $exit_code -eq 0 ]]; then
+  if [ $exit_code -eq 0 ]; then
     ((_TESTS_PASSED++))
-    local label="${3:-$(normalizeFnName "$func_name")}"
+    local label="${3:-$(normalizeFunctionName "$function_name")}"
     printSuccessfulTest "${label}"
   else
     ((_TESTS_FAILED++))
@@ -57,16 +57,16 @@ function runTest() {
 _FILES=()
 _FILTER=""
 
-while [[ $# -gt 0 ]]; do
-  key="$1"
-  case $key in
+while [ $# -gt 0 ]; do
+  argument="$1"
+  case $argument in
     --filter)
       _FILTER="$2"
       shift
       shift
       ;;
     *)
-      _FILES+=("$key")
+      _FILES+=("$argument")
       shift
       ;;
   esac
@@ -74,15 +74,15 @@ done
 
 if [ ${#_FILES[@]} -eq 0 ]; then
   echo "Error: At least one file path is required."
-  echo "Usage: $0 <test_script>"
+  echo "Usage: $0 <test_file.sh>"
   exit 1
 fi
 
-for test_script in "${_FILES[@]}"; do
+for test_file in "${_FILES[@]}"; do
   # shellcheck disable=SC1090
-  source "$test_script"
-  callTestFunctions "$test_script" "$_FILTER"
+  source "$test_file"
+  callTestFunctions "$test_file" "$_FILTER"
   if [ "$PARALLEL_RUN" = true ] ; then
-      wait
+    wait
   fi
 done
