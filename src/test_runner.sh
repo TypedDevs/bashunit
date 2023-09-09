@@ -32,7 +32,11 @@ callTestFunctions() {
     echo "Running $script"
     for func_name in "${functions_to_run[@]}"; do
       ((_TOTAL_TESTS++))
-      "$func_name"  # Call the function
+      if [ "$PARALLEL_RUN" = true ] ; then
+          "$func_name" & # Call the function
+      else
+        "$func_name"
+      fi
       unset "$func_name"
     done
   fi
@@ -72,4 +76,7 @@ for test_script in "${FILES[@]}"; do
   # shellcheck disable=SC1090
   source "$test_script"
   callTestFunctions "$test_script" "$FILTER"
+  if [ "$PARALLEL_RUN" = true ] ; then
+      wait # Wait to finish the run of all the test from the same file
+  fi
 done

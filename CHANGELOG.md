@@ -6,7 +6,11 @@
 - Added `assertNotMatches`
 - Added `make test/watch` to run your test every second
 - Added time taken to run the test in ms (only to Linux)
-
+- Simplified assertions over test results
+- Added pre-commit to the project
+- Allow parallel tests to run base on a .env configuration enabled by default
+- Added static analysis tools to the deployment pipelines
+![test running on parallel with time execution and watcher](./docs/changelog/test_running_on_parallel_with_the_watcher_and_the_execution_time.gif)
 ### 0.4.0
 ### 2023-09-08
 

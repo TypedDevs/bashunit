@@ -1,3 +1,5 @@
+[![Tests](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml)
+[![Static analysis](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml)
 # bashunit
 
 A minimalistic unit testing library for your bash scripts.
@@ -59,3 +61,10 @@ Run the test with a watcher
 ```bash
 make test/watch
 ```
+
+## To contribute
+To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
+
+### The installation process
+https://github.com/koalaman/shellcheck#installing
+

@@ -1,5 +1,7 @@
 SHELL=/bin/bash
 
+include .env
+
 OS:=
 ifeq ($(OS),Windows_NT)
 	OS +=WIN32
@@ -34,20 +36,23 @@ help:
 	@echo "usage: make COMMAND"
 	@echo ""
 	@echo "Commands:"
-	@echo "  list-tests               List all the test under the tests directory"
 	@echo "  test                     Run the test"
+	@echo "  test/list                List all the test under the tests directory"
 	@echo "  test/watch               Automatically run the test every second"
-	@echo "  shellcheck               Static analysis tool that will run on all .sh files"
+	@echo "  env/example              Makes a copy of the keys on your .env file"
+	@echo "  pre_commit/install       installs the pre-commit hook"
+	@echo "  pre_commit/run           function that will be called when the pre-commit runs"
 
 # Directory where your tests scripts are located
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
+PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 
 # Find all test scripts in the specified directory
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
 
 # Display the list of tests scripts found
-list-tests:
+test/list:
 	@echo "Test scripts found:"
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
@@ -58,9 +63,15 @@ test: $(TEST_SCRIPTS)
 test/watch: $(TEST_SCRIPTS)
 	watch --color -n 1 ./bashunit $(TEST_SCRIPTS)
 
-shellcheck:
-	SHELLCHECK_FOLDER=$(shell echo $(OS) | tr -d '[:space:]')
-	./bin/$(shell echo $(OS) | tr -d '[:space:]')/shellcheck ./**/**.sh -C
+env/example:
+	@echo "Copy the .env into the .env.example file without the values"
+	@sed 's/=.*/=/' .env > .env.example
+
+pre_commit/install:
+	@echo "Installing pre-commit hooks"
+	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
+
+pre_commit/run: test env/example
 
 
 .PHONY: test list-tests

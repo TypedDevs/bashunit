@@ -2,15 +2,9 @@
 
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-OS="Unknown"
+source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
 
-if [ "$(uname)" == "Linux" ]; then
-    OS="Linux"
-elif [ "$(uname)" == "Darwin" ]; then
-    OS="OSX"
-elif [[ $(uname) == *"MINGW"* ]]; then
-    OS="Windows"
-fi
+source "$BASH_UNIT_ROOT_DIR/src/check_os.sh"
 
 # Load color configuration
 source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
@@ -23,3 +17,5 @@ source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 
 # Execute the test runner
 source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" "$@"
+
+exit 0
