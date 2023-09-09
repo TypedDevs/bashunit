@@ -10,7 +10,13 @@ An example using this **bashunit** testing library.
 git submodule update --init --recursive
 ```
 
-2) Run the tests
+2) Update to the latest version
+
+```bash
+git submodule update --remote
+```
+
+3) Run the tests
 
 ```bash
 tools/bashunit/bashunit logic_test.sh
