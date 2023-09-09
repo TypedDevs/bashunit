@@ -19,7 +19,7 @@ function renderResult() {
   local totalAssertions=$((assertionsPassed + assertionsFailed))
 
   printf "%sTests:     %s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $assertionsPassed -gt 0 ]]; then
+  if [[ $testsPassed -gt 0 ]] || [[ $assertionsPassed -gt 0 ]]; then
     printf " %s%s passed%s," "$COLOR_PASSED" "$testsPassed" "$COLOR_DEFAULT"
   fi
   if [[ $testsFailed -gt 0 ]]; then
@@ -29,7 +29,7 @@ function renderResult() {
 
 
   printf "%sAssertions:%s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $assertionsPassed -gt 0 ]]; then
+  if [[ $testsPassed -gt 0 ]] || [[ $assertionsPassed -gt 0 ]]; then
       printf " %s%s passed%s," "$COLOR_PASSED" "$assertionsPassed" "$COLOR_DEFAULT"
   fi
   if [[ $testsFailed -gt 0 ]]; then
