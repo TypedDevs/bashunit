@@ -1,5 +1,6 @@
 #!/bin/bash
 
+_TIME_START=$(date +%s%N);
 _TESTS_PASSED=0
 _TESTS_FAILED=0
 _ASSERTIONS_PASSED=0
