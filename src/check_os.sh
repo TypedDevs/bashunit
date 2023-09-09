@@ -1,11 +1,12 @@
 #!/bin/bash
 
-export OS="Unknown"
+# shellcheck disable=SC2034
+_OS="Unknown"
 
 if [ "$(uname)" == "Linux" ]; then
-    OS="Linux"
+  _OS="Linux"
 elif [ "$(uname)" == "Darwin" ]; then
-    OS="OSX"
+  _OS="OSX"
 elif [[ $(uname) == *"MINGW"* ]]; then
-    OS="Windows"
+  _OS="Windows"
 fi

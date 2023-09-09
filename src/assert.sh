@@ -1,22 +1,11 @@
 #!/bin/bash
 
-export TEST=true
-
-export assertEquals
-export assertContains
-export assertNotContains
-export assertMatches
-export assertNotMatches
-
-_TOTAL_ASSERTIONS_FAILED=0
-_TOTAL_ASSERTIONS_PASSED=0
-
-normalizeFnName() {
-  local originalFnName="$1"
+function normalizeFunctionName() {
+  local original_function_name="$1"
   local result
 
   # Remove "test_" prefix
-  result="${originalFnName#test_}"
+  result="${original_function_name#test_}"
   # Replace underscores with spaces
   result="${result//_/ }"
   # Remove "test" prefix
@@ -27,83 +16,83 @@ normalizeFnName() {
   echo "$result"
 }
 
-assertEquals() {
+function assertEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${expected}" "but got" "${actual}"
-    exit 1
+    return 1
   else
-    ((_TOTAL_ASSERTIONS_PASSED++))
-    printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
+    ((_ASSERTIONS_PASSED++))
+    return 0
   fi
 }
 
-assertContains() {
+function assertContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
   case "$actual" in
     *"$expected"*)
-      ((_TOTAL_ASSERTIONS_PASSED++))
-      printSuccessfulTest "${label}"
+      ((_ASSERTIONS_PASSED++))
+      return 0
       ;;
     *)
-      ((_TOTAL_ASSERTIONS_FAILED++))
+      ((_ASSERTIONS_FAILED++))
       printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
-      exit 1
+      return 1
       ;;
   esac
 }
 
-assertNotContains() {
-  local expected="$1"
-    local actual="$2"
-    local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
-
-    case "$actual" in
-      *"$expected"*)
-        ((_TOTAL_ASSERTIONS_FAILED++))
-        printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
-        exit 1
-        ;;
-      *)
-        ((_TOTAL_ASSERTIONS_PASSED++))
-        printSuccessfulTest "${label}"
-        ;;
-    esac
-}
-
-assertMatches() {
+function assertNotContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+
+  case "$actual" in
+    *"$expected"*)
+      ((_ASSERTIONS_FAILED++))
+      printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
+      return 1
+      ;;
+    *)
+      ((_ASSERTIONS_PASSED++))
+      return 0
+      ;;
+  esac
+}
+
+function assertMatches() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_TOTAL_ASSERTIONS_PASSED++))
-    printSuccessfulTest "${label}"
+    ((_ASSERTIONS_PASSED++))
+    return 0
   else
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to match" "${expected}"
-    exit 1
+    return 1
   fi
 }
 
-assertNotMatches() {
+function assertNotMatches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_TOTAL_ASSERTIONS_FAILED++))
+    ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
-    exit 1
+    return 1
   else
-    ((_TOTAL_ASSERTIONS_PASSED++))
-    printSuccessfulTest "${label}"
+    ((_ASSERTIONS_PASSED++))
+    return 0
   fi
 }

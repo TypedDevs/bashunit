@@ -1,56 +1,75 @@
 #!/bin/bash
 
-export renderResult
-export printSuccessfulTest
+_START_TIME=$(date +%s%N);
+_TESTS_PASSED=0
+_TESTS_FAILED=0
+_ASSERTIONS_PASSED=0
+_ASSERTIONS_FAILED=0
 
 function renderResult() {
-  local totalTests=$1
-  local totalPassed=$2
-  local totalFailed=$3
+  local tests_passed=$1
+  local tests_failed=$2
+  local assertions_passed=$3
+  local assertions_failed=$4
 
   echo ""
-  local totalAssertions=$((totalPassed + totalFailed))
-  printf "\
-${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${totalTests}${COLOR_DEFAULT}
-${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}\n" \
-  "Total tests:" "Total assertions:"
+  local total_tests=$((tests_passed + tests_failed))
+  local total_assertions=$((assertions_passed + assertions_failed))
 
-  if [ "$totalFailed" -gt 0 ]; then
-    printf "${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${totalFailed}${COLOR_DEFAULT}\n"\
-    "Total assertions failed:"
-    printExecTime
+  printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
+  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
+    printf " %s%s passed%s," "$_COLOR_PASSED" "$tests_passed" "$_COLOR_DEFAULT"
+  fi
+  if [[ $tests_failed -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$tests_failed" "$_COLOR_DEFAULT"
+  fi
+  printf " %s total\n" "$total_tests"
+
+
+  printf "%sAssertions:%s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
+  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
+      printf " %s%s passed%s," "$_COLOR_PASSED" "$assertions_passed" "$_COLOR_DEFAULT"
+  fi
+  if [[ $tests_failed -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$assertions_failed" "$_COLOR_DEFAULT"
+  fi
+  printf " %s total\n" "$total_assertions"
+
+  if [[ "$tests_failed" -gt 0 ]]; then
+    printExecutionTime
     exit 1
-  else
-    printf "${COLOR_ALL_PASSED}%s${COLOR_DEFAULT}\n" "All assertions passed."
   fi
 
-  printExecTime
+  printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
+  printExecutionTime
+  exit 0
 }
 
-function printExecTime() {
-  if [[ $OS != "OSX" ]]; then
-    _TIME_TERMINATION=$((($(date +%s%N) - "$_TIME_START") / 1000000))
-    printf "${COLOR_BOLD}%s${COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
+function printExecutionTime() {
+  if [ "$_OS" != "OSX" ]; then
+    _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
+    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
   fi
 }
 
 function printSuccessfulTest() {
-  testName=$1
-  printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\n" "${testName}"
+  local test_name=$1
+  printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
 }
 
 function printFailedTest() {
-  testName=$1
-  expected=$2
-  failureConditionMessage=$3
-  actual=$4
+  local test_name=$1
+  local expected=$2
+  local failure_condition_message=$3
+  local actual=$4
+
   printf "\
-${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s
-    ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}\n"\
-  "${testName}" "${expected}" "${failureConditionMessage}" "${actual}"
+${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
 }
 
 # Set a trap to call renderResult when the script exits
-trap 'renderResult $_TOTAL_TESTS $_TOTAL_ASSERTIONS_PASSED $_TOTAL_ASSERTIONS_FAILED' EXIT
+trap 'renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT

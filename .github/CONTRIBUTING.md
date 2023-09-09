@@ -59,7 +59,11 @@ Installation: https://github.com/koalaman/shellcheck#installing
 #### Example of usage
 
 ```bash
-shellcheck ./**/**/**.sh -C
+# using make
+make lint
+
+# using shellcheck itself
+shellcheck ./**/*.sh -C
 ```
 
 #### We recommend
