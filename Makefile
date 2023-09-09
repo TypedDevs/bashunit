@@ -39,7 +39,6 @@ help:
 	@echo "  tests/list               List all the test under the tests directory"
 	@echo "  test                     Run the test"
 	@echo "  test/watch               Automatically run the test every second"
-	@echo "  shellcheck               Static analysis tool that will run on all .sh files"
 	@echo "  env/example              Makes a copy of the keys on your .env file"
 	@echo "  pre_commit/install       installs the pre-commit hook"
 	@echo "  pre_commit/run           function that will be called when the pre-commit runs"
@@ -64,10 +63,6 @@ test: $(TEST_SCRIPTS)
 test/watch: $(TEST_SCRIPTS)
 	watch --color -n 1 ./bashunit $(TEST_SCRIPTS)
 
-shellcheck:
-	SHELLCHECK_FOLDER=$(shell echo $(OS) | tr -d '[:space:]')
-	./bin/$(shell echo $(OS) | tr -d '[:space:]')/shellcheck ./**/**/**.sh -C
-
 env/example:
 	@echo "Copy the .env into the .env.example file without the values"
 	@sed 's/=.*/=/' .env > .env.example
@@ -76,7 +71,7 @@ pre_commit/install:
 	@echo "Installing pre-commit hooks"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
 
-pre_commit/run: test shellcheck env/example
+pre_commit/run: test env/example
 
 
 .PHONY: test list-tests

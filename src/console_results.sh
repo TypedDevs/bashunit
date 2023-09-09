@@ -25,7 +25,6 @@ ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}
   fi
 
   printExecTime
-  exit 0
 }
 
 function printExecTime() {
