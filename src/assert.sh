@@ -1,6 +1,6 @@
 #!/bin/bash
 
-normalizeFnName() {
+function normalizeFnName() {
   local originalFnName="$1"
   local result
 
@@ -16,7 +16,7 @@ normalizeFnName() {
   echo "$result"
 }
 
-assertEquals() {
+function assertEquals() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
@@ -31,7 +31,7 @@ assertEquals() {
   fi
 }
 
-assertContains() {
+function assertContains() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
@@ -49,7 +49,7 @@ assertContains() {
   esac
 }
 
-assertNotContains() {
+function assertNotContains() {
   local expected="$1"
     local actual="$2"
     local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
@@ -67,7 +67,7 @@ assertNotContains() {
     esac
 }
 
-assertMatches() {
+function assertMatches() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"
@@ -82,7 +82,7 @@ assertMatches() {
   fi
 }
 
-assertNotMatches() {
+function assertNotMatches() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(normalizeFnName "${FUNCNAME[1]}")}"

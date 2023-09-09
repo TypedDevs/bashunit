@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export OS="Unknown"
+OS="Unknown"
 
 if [ "$(uname)" == "Linux" ]; then
     OS="Linux"
