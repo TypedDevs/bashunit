@@ -1,5 +1,14 @@
-[![Tests](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml)
-[![Static analysis](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml)
+<p align="center">
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
+  </a>
+</p>
 
 # bashunit
 
