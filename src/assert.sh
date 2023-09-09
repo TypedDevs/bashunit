@@ -34,11 +34,8 @@ assertEquals() {
 
   if [[ "$expected" != "$actual" ]]; then
     ((_TOTAL_ASSERTIONS_FAILED++))
-    printf "\
-${COLOR_FAILED}%s${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}\n" \
-    "✗ Failed" "Expected" "but got"
+    printFailedTest  "${label}" "${expected}" "but got" "${actual}"
+    exit 1
   else
     ((_TOTAL_ASSERTIONS_PASSED++))
     printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
@@ -53,15 +50,11 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((_TOTAL_ASSERTIONS_PASSED++))
-      printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
+      printSuccessfulTest "${label}"
       ;;
     *)
       ((_TOTAL_ASSERTIONS_FAILED++))
-      printf "\
-${COLOR_FAILED}%s${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n" \
-    "✗ Failed" "Expected" "to contain"
+      printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
       exit 1
       ;;
   esac
@@ -75,16 +68,12 @@ assertNotContains() {
     case "$actual" in
       *"$expected"*)
         ((_TOTAL_ASSERTIONS_FAILED++))
-        printf "\
-${COLOR_FAILED}%s${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n" \
-        "✗ Failed" "Expected" "to not contain"
+        printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
         exit 1
         ;;
       *)
         ((_TOTAL_ASSERTIONS_PASSED++))
-        printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
+        printSuccessfulTest "${label}"
         ;;
     esac
 }
@@ -96,14 +85,10 @@ assertMatches() {
 
   if [[ $actual =~ $expected ]]; then
     ((_TOTAL_ASSERTIONS_PASSED++))
-    printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
+    printSuccessfulTest "${label}"
   else
     ((_TOTAL_ASSERTIONS_FAILED++))
-    printf "\
-${COLOR_FAILED}%s${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n" \
-    "✗ Failed" "Expected" "to match"
+    printFailedTest  "${label}" "${actual}" "to match" "${expected}"
     exit 1
   fi
 }
@@ -115,14 +100,10 @@ assertNotMatches() {
 
   if [[ $actual =~ $expected ]]; then
     ((_TOTAL_ASSERTIONS_FAILED++))
-    printf "\
-${COLOR_FAILED}%s${COLOR_DEFAULT}: ${label}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${actual}'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'${expected}'${COLOR_DEFAULT}\n" \
-    "✗ Failed" "Expected" "to not match"
+    printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
     exit 1
   else
     ((_TOTAL_ASSERTIONS_PASSED++))
-    printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
+    printSuccessfulTest "${label}"
   fi
 }

@@ -36,7 +36,7 @@ function printExecTime() {
 
 function printSuccessfulTest() {
   testName=$1
-  printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s" "${testName}"
+  printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\n" "${testName}"
 }
 
 function printFailedTest() {
@@ -47,7 +47,7 @@ function printFailedTest() {
   printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}
-    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}"\
+    ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}\n"\
   "${testName}" "${expected}" "${failureConditionMessage}" "${actual}"
 
 }
