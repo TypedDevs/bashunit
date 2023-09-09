@@ -8,8 +8,6 @@ export assertNotContains
 export assertMatches
 export assertNotMatches
 
-_TOTAL_ASSERTIONS_FAILED=0
-_TOTAL_ASSERTIONS_PASSED=0
 
 normalizeFnName() {
   local originalFnName="$1"

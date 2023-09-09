@@ -3,27 +3,47 @@
 export renderResult
 export printSuccessfulTest
 
+_TOTAL_TESTS_PASSED=0
+_TOTAL_TESTS_FAILED=0
+_TOTAL_ASSERTIONS_PASSED=0
+_TOTAL_ASSERTIONS_FAILED=0
+
 function renderResult() {
-  local totalTests=$1
-  local totalPassed=$2
-  local totalFailed=$3
+  local totalTestsPassed=$1
+  local totalTestsFailed=$2
+  local totalAssertionsPassed=$3
+  local totalAssertionsFailed=$4
 
   echo ""
-  local totalAssertions=$((totalPassed + totalFailed))
-  printf "\
-${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${totalTests}${COLOR_DEFAULT}
-${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${totalAssertions}${COLOR_DEFAULT}\n" \
-  "Total tests:" "Total assertions:"
+  local totalTests=$((totalTestsPassed + totalTestsFailed))
+  local totalAssertions=$((totalAssertionsPassed + totalAssertionsFailed))
 
-  if [ "$totalFailed" -gt 0 ]; then
-    printf "${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}${COLOR_FAILED}${totalFailed}${COLOR_DEFAULT}\n"\
-    "Total assertions failed:"
+  printf "%sTests:     %s" "$COLOR_FAINT" "$COLOR_DEFAULT"
+  if [[ $totalAssertionsPassed -gt 0 ]]; then
+    printf " %s%s passed%s," "$COLOR_PASSED" "$totalTestsPassed" "$COLOR_DEFAULT"
+  fi
+  if [[ $totalAssertionsFailed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$totalTestsFailed" "$COLOR_DEFAULT"
+  fi
+  printf " %s total\n" "$totalTests"
+
+
+  printf "%sAssertions:%s" "$COLOR_FAINT" "$COLOR_DEFAULT"
+  if [[ $totalAssertionsPassed -gt 0 ]]; then
+      printf " %s%s passed%s," "$COLOR_PASSED" "$totalAssertionsPassed" "$COLOR_DEFAULT"
+  fi
+  if [[ $totalAssertionsFailed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$totalAssertionsFailed" "$COLOR_DEFAULT"
+  fi
+  printf " %s total\n" "$totalAssertions"
+
+
+  if [ "$totalAssertionsFailed" -gt 0 ]; then
     printExecTime
     exit 1
-  else
-    printf "${COLOR_ALL_PASSED}%s${COLOR_DEFAULT}\n" "All assertions passed."
   fi
 
+  printf "${COLOR_ALL_PASSED}%s${COLOR_DEFAULT}\n" "All assertions passed."
   printExecTime
 }
 
@@ -53,4 +73,4 @@ ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s
 }
 
 # Set a trap to call renderResult when the script exits
-trap 'renderResult $_TOTAL_TESTS $_TOTAL_ASSERTIONS_PASSED $_TOTAL_ASSERTIONS_FAILED' EXIT
+trap 'renderResult $_TOTAL_TESTS_PASSED $_TOTAL_TESTS_FAILED $_TOTAL_ASSERTIONS_PASSED $_TOTAL_ASSERTIONS_FAILED' EXIT

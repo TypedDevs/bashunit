@@ -1,9 +1,5 @@
 #!/bin/bash
 
-export _TOTAL_TESTS
-
-_TOTAL_TESTS=0
-
 # shellcheck disable=SC2155
 # shellcheck disable=SC2034
 callTestFunctions() {
@@ -31,7 +27,6 @@ callTestFunctions() {
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for func_name in "${functions_to_run[@]}"; do
-      ((_TOTAL_TESTS++))
       if [ "$PARALLEL_RUN" = true ] ; then
         runTest "$func_name" & # Call the function
       else
@@ -49,11 +44,13 @@ runTest() {
   local exit_code=$?
 
   if [[ $exit_code -eq 0 ]]; then
+    ((_TOTAL_TESTS_PASSED++))
     local label="${3:-$(normalizeFnName "$func_name")}"
     printSuccessfulTest "${label}"
+  else
+    ((_TOTAL_TESTS_FAILED++))
   fi
 }
-
 
 ###############
 #### MAIN #####
