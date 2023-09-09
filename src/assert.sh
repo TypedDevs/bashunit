@@ -38,7 +38,6 @@ assertEquals() {
     exit 1
   else
     ((_TOTAL_ASSERTIONS_PASSED++))
-    printf "${COLOR_PASSED}%s${COLOR_DEFAULT}: ${label}\n" "✓ Passed"
   fi
 }
 
@@ -50,7 +49,6 @@ assertContains() {
   case "$actual" in
     *"$expected"*)
       ((_TOTAL_ASSERTIONS_PASSED++))
-      printSuccessfulTest "${label}"
       ;;
     *)
       ((_TOTAL_ASSERTIONS_FAILED++))
@@ -73,7 +71,6 @@ assertNotContains() {
         ;;
       *)
         ((_TOTAL_ASSERTIONS_PASSED++))
-        printSuccessfulTest "${label}"
         ;;
     esac
 }
@@ -85,7 +82,6 @@ assertMatches() {
 
   if [[ $actual =~ $expected ]]; then
     ((_TOTAL_ASSERTIONS_PASSED++))
-    printSuccessfulTest "${label}"
   else
     ((_TOTAL_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to match" "${expected}"
@@ -104,6 +100,5 @@ assertNotMatches() {
     exit 1
   else
     ((_TOTAL_ASSERTIONS_PASSED++))
-    printSuccessfulTest "${label}"
   fi
 }

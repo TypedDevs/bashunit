@@ -33,14 +33,27 @@ callTestFunctions() {
     for func_name in "${functions_to_run[@]}"; do
       ((_TOTAL_TESTS++))
       if [ "$PARALLEL_RUN" = true ] ; then
-          "$func_name" & # Call the function
+        runTest "$func_name" & # Call the function
       else
-        "$func_name"
+        runTest "$func_name"
       fi
       unset "$func_name"
     done
   fi
 }
+
+runTest() {
+  local func_name="$1"
+
+  "$func_name"
+  echo "Exit code of $func_name: $?" # TODO: If i remove this line the script stops working and passed does not prints
+
+  if [ $? -ne 1 ]; then
+    local label="${3:-$(normalizeFnName "$func_name")}"
+    printSuccessfulTest "${label}"
+  fi
+}
+
 
 ###############
 #### MAIN #####

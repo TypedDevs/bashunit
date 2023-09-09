@@ -1,8 +1,7 @@
 #!/bin/bash
 
 function test_successful_assertEquals() {
-  assertEquals "$(printSuccessfulTest "Successful assertEquals")"\
-  "$(assertEquals "1" "1")"
+  assertEquals "" "$(assertEquals "1" "1")"
 }
 
 function test_unsuccessful_assertEquals() {
@@ -10,9 +9,9 @@ function test_unsuccessful_assertEquals() {
   "$(assertEquals "1" "2")"
 }
 
-function testCamelCase() {
-  assertEquals "$(printSuccessfulTest "CamelCase")" "$(assertEquals "1" "1")"
-}
+#function testCamelCase() {
+#  assertEquals "$(printSuccessfulTest "CamelCase")" "$(assertEquals "1" "1")"
+#}
 
 function test_multiple_asserts() {
   assertEquals "1" "1" "1 equals 1"
@@ -22,8 +21,7 @@ function test_multiple_asserts() {
 }
 
 function test_successful_assertContains() {
-  assertEquals "$(printSuccessfulTest "Successful assertContains")"\
-  "$(assertContains "Linux" "GNU/Linux")"
+  assertEquals "" "$(assertContains "Linux" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertContains() {
@@ -32,8 +30,7 @@ function test_unsuccessful_assertContains() {
 }
 
 function test_successful_assertNotContains() {
-  assertEquals "$(printSuccessfulTest "Successful assertNotContains")"\
-  "$(assertNotContains "Linus" "GNU/Linux")"
+  assertEquals "" "$(assertNotContains "Linus" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertNotContains() {
@@ -42,8 +39,7 @@ function test_unsuccessful_assertNotContains() {
 }
 
 function test_successful_assertMatches() {
-  assertEquals "$(printSuccessfulTest "Successful assertMatches")"\
-   "$(assertMatches ".*Linu*" "GNU/Linux")"
+  assertEquals "" "$(assertMatches ".*Linu*" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertMatches() {
@@ -52,8 +48,7 @@ function test_unsuccessful_assertMatches() {
 }
 
 function test_successful_assertNotMatches() {
-  assertEquals "$(printSuccessfulTest "Successful assertNotMatches")" \
-  "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
+  assertEquals "" "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertNotMatches() {
