@@ -11,11 +11,9 @@ callTestFunctions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
-
   # Use declare -F to list all function names
   local function_names=$(declare -F | awk '{print $3}')
-
-  local functions_to_run=()  # Initialize an array to store eligible function names
+  local functions_to_run=()
 
   for func_name in $function_names; do
     if [[ $func_name == ${prefix}* ]]; then
@@ -23,7 +21,7 @@ callTestFunctions() {
       local filter_lower=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
 
       if [[ -z $filter || $func_name_lower == *"$filter_lower"* ]]; then
-        functions_to_run+=("$func_name")  # Add eligible function to the array
+        functions_to_run+=("$func_name")
       fi
     fi
   done
@@ -33,7 +31,7 @@ callTestFunctions() {
     for func_name in "${functions_to_run[@]}"; do
       ((_TOTAL_TESTS++))
       if [ "$PARALLEL_RUN" = true ] ; then
-          "$func_name" & # Call the function
+        "$func_name" &
       else
         "$func_name"
       fi
@@ -66,9 +64,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [ ${#FILES[@]} -eq 0 ]; then
-    echo "Error: At least one file path is required."
-    echo "Usage: $0 <test_script>"
-    exit 1
+  echo "Error: At least one file path is required."
+  echo "Usage: $0 <test_script>"
+  exit 1
 fi
 
 # Print the "Running $script" message before entering the loop
