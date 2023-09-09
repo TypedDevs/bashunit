@@ -1,5 +1,15 @@
-[![Tests](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml)
-[![Static analysis](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml)
+<p align="center">
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
+  </a>
+</p>
+
 # bashunit
 
 A minimalistic unit testing library for your bash scripts.
@@ -42,29 +52,14 @@ git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
 
 #### Versioning and updates
 
-To update a git-submodule is as simple as:
+To update a git-submodule:
 1. keep the git-submodule under your git (committed)
 2. go inside the git-submodule and:
-   1. checkout a concrete release tag
-   2. or just pull `main` (preferred)
+   1. `git submodule update --remote` (preferred)
+   2. or pull `main`
+   3. or checkout a concrete release tag
 
-### Conventions we recommend to use
+## Contribute
 
-[google conventions](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names)
-
-### Run test from the library
-```bash
-make test 
-```
-
-Run the test with a watcher
-```bash
-make test/watch
-```
-
-## To contribute
-To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
-
-### The installation process
-https://github.com/koalaman/shellcheck#installing
-
+You are welcome to contribute reporting issues, sharing ideas,
+or [with your Pull Requests](.github/CONTRIBUTING.md).

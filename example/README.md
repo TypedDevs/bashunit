@@ -4,13 +4,21 @@ An example using this **bashunit** testing library.
 
 ## Demo usage
 
+This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/de/v2/Git-Tools-Submodule) inside the `tools/bashunit` directory.
+
 1) Install the git submodule
 
 ```bash
 git submodule update --init --recursive
 ```
 
-2) Run the tests
+2) Update to the latest version
+
+```bash
+git submodule update --remote
+```
+
+3) Run the tests
 
 ```bash
 tools/bashunit/bashunit logic_test.sh
