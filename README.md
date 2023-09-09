@@ -62,3 +62,9 @@ Run the test with a watcher
 make test/watch
 ```
 
+## To contribute
+To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
+
+### The installation process
+https://github.com/koalaman/shellcheck#installing
+
