@@ -40,8 +40,8 @@ help:
 	@echo "  test/list                List all the test under the tests directory"
 	@echo "  test/watch               Automatically run the test every second"
 	@echo "  env/example              Makes a copy of the keys on your .env file"
-	@echo "  pre_commit/install       installs the pre-commit hook"
-	@echo "  pre_commit/run           function that will be called when the pre-commit runs"
+	@echo "  pre_commit/install       Installs the pre-commit hook"
+	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
 
 # Directory where your tests scripts are located
 SRC_SCRIPTS_DIR=src

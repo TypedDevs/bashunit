@@ -46,9 +46,9 @@ runTest() {
   local func_name="$1"
 
   "$func_name"
-  echo "Exit code of $func_name: $?" # TODO: If i remove this line the script stops working and passed does not prints
+  local exit_code=$?
 
-  if [ $? -ne 1 ]; then
+  if [[ $exit_code -eq 0 ]]; then
     local label="${3:-$(normalizeFnName "$func_name")}"
     printSuccessfulTest "${label}"
   fi
