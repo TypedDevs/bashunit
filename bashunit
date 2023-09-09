@@ -23,3 +23,5 @@ source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 
 # Execute the test runner
 source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" "$@"
+
+exit 0
