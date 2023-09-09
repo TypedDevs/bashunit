@@ -9,35 +9,35 @@ _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 
 function renderResult() {
-  local testsPassed=$1
-  local testsFailed=$2
-  local assertionsPassed=$3
-  local assertionsFailed=$4
+  local tests_passed=$1
+  local tests_failed=$2
+  local assertions_passed=$3
+  local assertions_failed=$4
 
   echo ""
-  local totalTests=$((testsPassed + testsFailed))
-  local totalAssertions=$((assertionsPassed + assertionsFailed))
+  local total_tests=$((tests_passed + tests_failed))
+  local total_assertions=$((assertions_passed + assertions_failed))
 
   printf "%sTests:     %s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $testsPassed -gt 0 ]] || [[ $assertionsPassed -gt 0 ]]; then
-    printf " %s%s passed%s," "$COLOR_PASSED" "$testsPassed" "$COLOR_DEFAULT"
+  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
+    printf " %s%s passed%s," "$COLOR_PASSED" "$tests_passed" "$COLOR_DEFAULT"
   fi
-  if [[ $testsFailed -gt 0 ]]; then
-    printf " %s%s failed%s," "$COLOR_FAILED" "$testsFailed" "$COLOR_DEFAULT"
+  if [[ $tests_failed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$tests_failed" "$COLOR_DEFAULT"
   fi
-  printf " %s total\n" "$totalTests"
+  printf " %s total\n" "$total_tests"
 
 
   printf "%sAssertions:%s" "$COLOR_FAINT" "$COLOR_DEFAULT"
-  if [[ $testsPassed -gt 0 ]] || [[ $assertionsPassed -gt 0 ]]; then
-      printf " %s%s passed%s," "$COLOR_PASSED" "$assertionsPassed" "$COLOR_DEFAULT"
+  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
+      printf " %s%s passed%s," "$COLOR_PASSED" "$assertions_passed" "$COLOR_DEFAULT"
   fi
-  if [[ $testsFailed -gt 0 ]]; then
-    printf " %s%s failed%s," "$COLOR_FAILED" "$assertionsFailed" "$COLOR_DEFAULT"
+  if [[ $tests_failed -gt 0 ]]; then
+    printf " %s%s failed%s," "$COLOR_FAILED" "$assertions_failed" "$COLOR_DEFAULT"
   fi
-  printf " %s total\n" "$totalAssertions"
+  printf " %s total\n" "$total_assertions"
 
-  if [[ "$testsFailed" -gt 0 ]]; then
+  if [[ "$tests_failed" -gt 0 ]]; then
     printExecTime
     exit 1
   fi
@@ -55,21 +55,21 @@ function printExecTime() {
 }
 
 function printSuccessfulTest() {
-  testName=$1
-  printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\n" "${testName}"
+  local test_name=$1
+  printf "${COLOR_PASSED}✓ Passed${COLOR_DEFAULT}: %s\n" "${test_name}"
 }
 
 function printFailedTest() {
-  testName=$1
-  expected=$2
-  failureConditionMessage=$3
-  actual=$4
+  local test_name=$1
+  local expected=$2
+  local failure_condition_message=$3
+  local actual=$4
 
   printf "\
 ${COLOR_FAILED}✗ Failed${COLOR_DEFAULT}: %s
     ${COLOR_FAINT}Expected${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}
     ${COLOR_FAINT}%s${COLOR_DEFAULT} ${COLOR_BOLD}'%s'${COLOR_DEFAULT}\n"\
-    "${testName}" "${expected}" "${failureConditionMessage}" "${actual}"
+    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
 }
 
