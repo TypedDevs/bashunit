@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -o allexport
+# shellcheck source=/dev/null
 source .env set
 set +o allexport
 

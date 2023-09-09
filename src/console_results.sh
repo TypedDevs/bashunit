@@ -46,7 +46,7 @@ function renderResult() {
 }
 
 function printExecTime() {
-  if [[ $OS != "OSX" ]]; then
+  if [[ $_OS != "OSX" ]]; then
     _TIME_TERMINATION=$((($(date +%s%N) - "$_TIME_START") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_TIME_TERMINATION} ms"
   fi

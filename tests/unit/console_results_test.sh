@@ -155,7 +155,7 @@ function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
 }
 
 function test_render_time_of_execution_when_all_assertions_passed() {
-  if [[ $OS != "OSX" ]]; then
+  if [[ $_OS != "OSX" ]]; then
     assertMatches\
       ".*Time taken: [[:digit:]]+ ms"\
       "$(renderResult)"
@@ -163,7 +163,7 @@ function test_render_time_of_execution_when_all_assertions_passed() {
 }
 
 function test_render_time_of_execution_when_not_all_assertions_passed() {
-  if [[ $OS != "OSX" ]]; then
+  if [[ $_OS != "OSX" ]]; then
     assertMatches\
       ".*Time taken: [[:digit:]]+ ms"\
       "$(renderResult)"
