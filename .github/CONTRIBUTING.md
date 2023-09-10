@@ -33,6 +33,12 @@ Please post code and output as text ([using proper markup](https://guides.github
 
 Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` look really stupid in the commit history of a project.
 
+## Change the configuration
+To change the configuration for the project we use the `.env` file if you would like to know what variables should be there use the following command:
+```bash
+cp .env.example .env
+```
+
 ## Testing
 
 Run tests from the library:
@@ -63,9 +69,17 @@ Installation: https://github.com/koalaman/shellcheck#installing
 make lint
 
 # using shellcheck itself
-shellcheck ./**/*.sh -C
+shellcheck ./**/**/*.sh -C
 ```
 
 #### We recommend
+
+To install the pre-commit of the project with the following command:
+
+**Please note that you will need to have Shellcheck installed on your computer.**
+
+```bash
+make pre_commit/install
+```
 
 [Shell Guide](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names) by Google Conventions.
