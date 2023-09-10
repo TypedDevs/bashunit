@@ -14,10 +14,6 @@ jobs:
     name: Editor config lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-      - run: npm i -g eclint
-      - run: eclint check 'src/**/**/*'
+      - uses: snow-actions/eclint@v1.0.1
+        env:
+          ALWAYS_LINT_ALL_FILES: true
