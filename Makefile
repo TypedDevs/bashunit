@@ -68,7 +68,7 @@ pre_commit/install:
 	@echo "Installing pre-commit hooks"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
 
-pre_commit/run: test env/example
+pre_commit/run: test lint env/example
 
 lint:
-	@shellcheck ./**/*.sh -C && echo "Shellcheck: OK!"
+	@shellcheck ./**/**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
