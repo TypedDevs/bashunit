@@ -96,3 +96,20 @@ function assertNotMatches() {
     return 0
   fi
 }
+
+#
+# Usage: assertExitCode 1
+#
+function assertExitCode() {
+  local expected_exit_code="$1"
+  local actual_exit_code=$?
+
+  echo "Expected exit code: $expected_exit_code"
+  echo "Actual exit code: $actual_exit_code"
+
+  if [ $actual_exit_code -eq "$expected_exit_code" ]; then
+    return 0
+  else
+    return 1
+  fi
+}
