@@ -8,13 +8,11 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
 
 1) Install the git submodule
     ```bash
-    git submodule update --init --recursive
-    ```
-2) Update to the latest version
-    ```bash
+    git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
+    # (Optional) Update to the latest version
     git submodule update --remote
     ```
-3) Run the tests
+2) Run the tests
     ```bash
     tools/bashunit/bashunit logic_test.sh
     ```
