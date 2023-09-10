@@ -1,13 +1,24 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo_name_dark.svg">
-  <img alt="bashunit" src="docs/assets/logo_name.svg" width="400">
-</picture>
+<p align="center">
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml">
+    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+  </a>
+  <a href="https://github.com/Chemaclass/bashunit/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
+  </a>
+</p>
+<br>
 
-[![Tests](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml)
-[![Static analysis](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg)](https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml)
-[![MIT Software License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/Chemaclass/bashunit/blob/main/LICENSE)
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo_name_dark.svg">
+    <img alt="bashunit" src="docs/assets/logo_name.svg" width="400">
+  </picture>
+</p>
 
-A minimalistic unit testing library for your bash scripts.
+<h1 align="center">Minimalistic Bash Testing</h1>
 
 ## Usage
 
