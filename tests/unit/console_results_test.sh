@@ -1,9 +1,9 @@
 #!/bin/bash
 
-tests_passed=9
-tests_failed=9
-assertions_passed=9
-assertions_failed=9
+tests_passed=0
+tests_failed=0
+assertions_passed=0
+assertions_failed=0
 
 function test_not_render_passed_tests_when_no_passed_tests_nor_assertions() {
   local tests_passed=0
