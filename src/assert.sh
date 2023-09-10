@@ -109,5 +109,4 @@ function assertExitCode() {
     printFailedTest  "${label}" "${actual_exit_code}" "to not match" "${expected_exit_code}"
     return 1
   fi
-
 }
