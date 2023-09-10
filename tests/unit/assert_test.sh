@@ -45,3 +45,19 @@ function test_unsuccessful_assertNotMatches() {
     "$(printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
     "$(assertNotMatches ".*Linu*" "GNU/Linux")"
 }
+
+function test_successful_assertExitCode() {
+  function x() {
+    exit 0
+  }
+  assertEquals "" "$(assertExitCode "0" "$(x)")"
+}
+
+function test_unsuccessful_assertExitCode() {
+  function x() {
+    exit 1
+  }
+   assertEquals\
+    "$(printFailedTest "Unsuccessful assertExitCode" "1" "to not match" "0")"\
+    "$(assertExitCode "0" "$(x)")"
+}

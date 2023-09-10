@@ -97,19 +97,16 @@ function assertNotMatches() {
   fi
 }
 
-#
-# Usage: assertExitCode 1
-#
 function assertExitCode() {
-  local expected_exit_code="$1"
   local actual_exit_code=$?
-
-  echo "Expected exit code: $expected_exit_code"
-  echo "Actual exit code: $actual_exit_code"
-
+  local expected_exit_code="$1"
+  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
   if [ $actual_exit_code -eq "$expected_exit_code" ]; then
     return 0
   else
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual_exit_code}" "to not match" "${expected_exit_code}"
     return 1
   fi
+
 }
