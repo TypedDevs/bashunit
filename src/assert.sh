@@ -102,6 +102,7 @@ function assertExitCode() {
   local expected_exit_code="$1"
   local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
   if [ $actual_exit_code -eq "$expected_exit_code" ]; then
+    ((_ASSERTIONS_PASSED++))
     return 0
   else
     ((_ASSERTIONS_FAILED++))
