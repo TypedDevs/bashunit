@@ -19,5 +19,5 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
-      - run: npm i eclint
+      - run: npm i -g eclint
       - run: eclint check 'src/**/**/*'
