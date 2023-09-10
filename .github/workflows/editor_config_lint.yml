@@ -1,0 +1,21 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+name: Editor config lint
+
+jobs:
+
+  shellcheck:
+    name: Editor config lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: zbeekman/EditorConfig-Action@v1.1.0
+        env:
+          ALWAYS_LINT_ALL_FILES: true
+
+
