@@ -29,7 +29,7 @@ function test_render_passed_tests_when_passed_tests() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Tests:[^\n]*1 passed[^\n]*1 total.*"\
+    $'.*Tests:[^\n]*\e\[32m1 passed\e\[0m[^\n]*1 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -40,7 +40,7 @@ function test_render_passed_tests_when_passed_assertions() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Tests:[^\n]*0 passed[^\n]*0 total.*"\
+    $'.*Tests:[^\n]*\e\[32m0 passed\e\[0m[^\n]*0 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -51,7 +51,7 @@ function test_render_passed_assertions_when_passed_tests() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Assertions:[^\n]*0 passed[^\n]*0 total.*"\
+    $'.*Assertions:[^\n]*\e\[32m0 passed\e\[0m[^\n]*0 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -62,7 +62,7 @@ function test_render_passed_assertions_when_passed_assertions() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Assertions:[^\n]*1 passed[^\n]*1 total.*"\
+    $'.*Assertions:[^\n]*\e\[32m1 passed\e\[0m[^\n]*1 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -95,7 +95,7 @@ function test_render_failed_tests_when_failed_tests() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Tests:[^\n]*1 failed[^\n]*1 total.*"\
+    $'.*Tests:[^\n]*\e\[31m1 failed\e\[0m[^\n]*1 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -106,7 +106,7 @@ function test_render_failed_assertions_when_failed_tests() {
   local assertions_failed=0
 
   assertMatches\
-    ".*Assertions:[^\n]*0 failed[^\n]*0 total.*"\
+    $'.*Assertions:[^\n]*\e\[31m0 failed\e\[0m[^\n]*0 total.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
@@ -128,7 +128,7 @@ function test_render_all_tests_passed_when_not_failed_tests() {
   local assertions_failed=0
 
   assertMatches\
-    ".*All tests passed.*"\
+    $'.*\e\[42mAll tests passed\e\[0m.*'\
     "$(renderResult $test_passed $test_failed $assertions_passed $assertions_failed)"
 }
 
