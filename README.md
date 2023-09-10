@@ -1,4 +1,8 @@
 <p align="center">
+   <img alt="Gacela logo" src="logo.svg" width="400">
+</p>
+
+<p align="center">
   <a href="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml">
     <img src="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
   </a>

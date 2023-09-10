@@ -2,6 +2,7 @@
 
 ### Unreleased
 
+- Added logo
 - Added `assertMatches`
 - Added `assertNotMatches`
 - Added `make test/watch` to run your test every second
