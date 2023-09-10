@@ -2,6 +2,7 @@
 
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
+source "$BASH_UNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASH_UNIT_ROOT_DIR/src/check_os.sh"
 source "$BASH_UNIT_ROOT_DIR/src/colors.sh"

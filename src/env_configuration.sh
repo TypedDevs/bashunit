@@ -2,9 +2,9 @@
 
 set -o allexport
 # shellcheck source=/dev/null
-source .env set
+[[ -f ".env" ]] && source .env set
 set +o allexport
 
 if [ -z "$PARALLEL_RUN" ]; then
-  PARALLEL_RUN=false
+  PARALLEL_RUN=_DEFAULT_PARALLEL_RUN
 fi

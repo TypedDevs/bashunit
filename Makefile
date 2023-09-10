@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-include .env
+-include .env
 
 OS:=
 ifeq ($(OS),Windows_NT)
@@ -42,7 +42,7 @@ help:
 	@echo "  env/example              Makes a copy of the keys on your .env file"
 	@echo "  pre_commit/install       Installs the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
-	@echo "  lint                     Run shellcheck"
+	@echo "  lint                     Run shellcheck static analysis tool"
 
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
@@ -71,4 +71,4 @@ pre_commit/install:
 pre_commit/run: test env/example
 
 lint:
-	shellcheck ./**/*.sh -C && echo "Shellcheck: OK!"
+	@shellcheck ./**/*.sh -C && echo "Shellcheck: OK!"
