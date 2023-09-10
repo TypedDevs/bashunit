@@ -47,17 +47,17 @@ function test_unsuccessful_assertNotMatches() {
 }
 
 function test_successful_assertExitCode() {
-  function x() {
+  function fake_function_exiting_zero() {
     exit 0
   }
-  assertEquals "" "$(assertExitCode "0" "$(x)")"
+  assertEquals "" "$(assertExitCode "0" "$(fake_function_exiting_zero)")"
 }
 
 function test_unsuccessful_assertExitCode() {
-  function x() {
+  function fake_function_exiting_one() {
     exit 1
   }
    assertEquals\
     "$(printFailedTest "Unsuccessful assertExitCode" "1" "to not match" "0")"\
-    "$(assertExitCode "0" "$(x)")"
+    "$(assertExitCode "0" "$(fake_function_exiting_one)")"
 }
