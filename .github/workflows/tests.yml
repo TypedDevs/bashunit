@@ -18,11 +18,11 @@ jobs:
         os: [ 'ubuntu-latest', 'macos-latest', 'windows-latest']
         include:
           - os: windows-latest
-            script_name: 'cp .env.example .env && bash -c "./bashunit tests/**/*_test.sh"'
+            script_name: 'bash -c "./bashunit tests/**/*_test.sh"'
           - os: ubuntu-latest
-            script_name: 'cp .env.example .env && make test'
+            script_name: 'make test'
           - os: macos-latest
-            script_name: 'cp .env.example .env && make test'
+            script_name: 'make test'
     steps:
       - uses: actions/checkout@v3
       - name: "Tests"
