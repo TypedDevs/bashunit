@@ -25,10 +25,10 @@ function assertEquals() {
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${expected}" "but got" "${actual}"
     return 1
-  else
-    ((_ASSERTIONS_PASSED++))
-    return 0
   fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
 
 function assertContains() {
@@ -36,17 +36,14 @@ function assertContains() {
   local actual="$2"
   local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
-  case "$actual" in
-    *"$expected"*)
-      ((_ASSERTIONS_PASSED++))
-      return 0
-      ;;
-    *)
+  if ! [[ $actual == *"$expected"* ]]; then
       ((_ASSERTIONS_FAILED++))
       printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
       return 1
-      ;;
-  esac
+    fi
+
+    ((_ASSERTIONS_PASSED++))
+    return 0
 }
 
 function assertNotContains() {
@@ -54,17 +51,14 @@ function assertNotContains() {
   local actual="$2"
   local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
-  case "$actual" in
-    *"$expected"*)
-      ((_ASSERTIONS_FAILED++))
-      printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
-      return 1
-      ;;
-    *)
-      ((_ASSERTIONS_PASSED++))
-      return 0
-      ;;
-  esac
+  if [[ $actual == *"$expected"* ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
+    return 1
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
 
 function assertMatches() {
@@ -72,14 +66,14 @@ function assertMatches() {
   local actual="$2"
   local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
 
-  if [[ $actual =~ $expected ]]; then
-    ((_ASSERTIONS_PASSED++))
-    return 0
-  else
+  if ! [[ $actual =~ $expected ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to match" "${expected}"
     return 1
   fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
 
 function assertNotMatches() {
@@ -91,22 +85,23 @@ function assertNotMatches() {
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
     return 1
-  else
-    ((_ASSERTIONS_PASSED++))
-    return 0
   fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
 
 function assertExitCode() {
   local actual_exit_code=$?
   local expected_exit_code="$1"
   local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
-  if [ $actual_exit_code -eq "$expected_exit_code" ]; then
-    ((_ASSERTIONS_PASSED++))
-    return 0
-  else
+
+  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to not match" "${expected_exit_code}"
     return 1
   fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
