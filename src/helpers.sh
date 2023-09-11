@@ -5,7 +5,7 @@
 #
 # @result string Eg: "Some logic"
 #
-function normalizeFunctionName() {
+function normalizeTestFunctionName() {
   local original_function_name="$1"
   local result
 

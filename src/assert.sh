@@ -3,7 +3,7 @@
 function assertEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
     ((_ASSERTIONS_FAILED++))
@@ -18,7 +18,7 @@ function assertEquals() {
 function assertContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
       ((_ASSERTIONS_FAILED++))
@@ -33,7 +33,7 @@ function assertContains() {
 function assertNotContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
@@ -48,7 +48,7 @@ function assertNotContains() {
 function assertMatches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual =~ $expected ]]; then
     ((_ASSERTIONS_FAILED++))
@@ -63,7 +63,7 @@ function assertMatches() {
 function assertNotMatches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
     ((_ASSERTIONS_FAILED++))
@@ -78,7 +78,7 @@ function assertNotMatches() {
 function assertExitCode() {
   local actual_exit_code=$?
   local expected_exit_code="$1"
-  local label="${3:-$(normalizeFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
