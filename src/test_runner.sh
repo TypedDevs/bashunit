@@ -1,12 +1,10 @@
 #!/bin/bash
 
-function callTestFunctions() {
-  local script="$1"
-  local filter="$2"
-  local prefix="test"
-  # Use declare -F to list all function names
-  local function_names
-  function_names=$(declare -F | awk '{print $3}')
+function getFunctionsToRun() {
+  local prefix=$1
+  local function_names=$2
+  local filter=$3
+
   local functions_to_run=()
 
   for function_name in $function_names; do
@@ -21,6 +19,20 @@ function callTestFunctions() {
       fi
     fi
   done
+
+  echo "${functions_to_run[@]}"
+}
+
+function callTestFunctions() {
+  local script="$1"
+  local filter="$2"
+  local prefix="test"
+  # Use declare -F to list all function names
+  local function_names
+  function_names=$(declare -F | awk '{print $3}')
+  local functions_to_run
+  # shellcheck disable=SC2207
+  functions_to_run=($(getFunctionsToRun "$prefix" "$function_names" "$filter"))
 
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
