@@ -24,6 +24,92 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
     ```
    <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
 
+## Documentation
+
+### assertEquals
+```bash
+assertEquals "expected" "actual"
+```
+
+**Example:**
+```bash
+function test_text_should_be_equal() {
+  assertEquals "expected 123" "expected 123")"
+}
+```
+
+### assertContains
+```bash
+assertEquals "expected" "actual"
+```
+
+**Example:**
+```bash
+function test_text_should_contain() {
+  assertContains "expect" "expected 123")"
+}
+```
+
+### assertNotContains
+```bash
+assertNotContains "expected" "actual"
+```
+
+**Example:**
+```bash
+function test_text_should_not_contain() {
+  assertNotContains "expecs" "expected 123")"
+}
+```
+
+### assertMatches
+```bash
+assertMatches "expected" "actual"
+```
+
+**Example:**
+```bash
+function test_text_should_not_contain() {
+  assertMatches ".*xpec*" "expected 123"
+}
+```
+
+### assertNotMatches
+```bash
+assertNotMatches "expected" "actual"
+```
+
+**Example:**
+```bash
+function test_text_should_not_contain() {
+  assertNotMatches ".*xpes.*" "expected 123"
+}
+```
+
+### assertNotMatches
+```bash
+assertExitCode "expected" [execution of the function to test]
+```
+
+**Examples:**
+```bash
+function test_should_validate_a_non_ok_exit_code() {
+  function fake_function() {
+    return 1
+  }
+  fake_function
+  assertExitCode "1"
+}
+```
+```bash
+function test_other_way_of_using_the_exit_code() {
+  function fake_function() {
+    return 1
+  }
+  assertExitCode "1" "$(fake_function)"
+}
+```
+
 ## Real example
 
 Looking for a more "real" example? There you go:
