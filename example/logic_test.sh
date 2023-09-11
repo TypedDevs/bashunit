@@ -16,11 +16,11 @@ function test_text_should_not_contain() {
 }
 
 function test_text_should_match_a_regular_expression() {
-  assertNotContains ".*xpec*" "$($SCRIPT "123")"
+  assertMatches ".*xpec*" "$($SCRIPT "123")"
 }
 
 function test_text_should_not_match_a_regular_expression() {
-  assertNotContains ".*xpes*" "$($SCRIPT "123")"
+  assertNotMatches ".*xpes.*" "$($SCRIPT "123")"
 }
 
 function test_should_validate_an_ok_exit_code() {
