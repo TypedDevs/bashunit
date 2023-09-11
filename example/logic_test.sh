@@ -31,7 +31,7 @@ function test_should_validate_an_ok_exit_code() {
   assertExitCode "0"
 }
 
-# shellcheck disable=SC2317
+
 function test_should_validate_a_non_ok_exit_code() {
   function fake_function() {
     return 1
@@ -40,7 +40,6 @@ function test_should_validate_a_non_ok_exit_code() {
   assertExitCode "1"
 }
 
-# shellcheck disable=SC2317
 function test_other_way_of_using_the_exit_code() {
   function fake_function() {
       return 1
