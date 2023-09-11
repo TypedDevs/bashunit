@@ -42,7 +42,7 @@ function test_should_validate_a_non_ok_exit_code() {
 
 function test_other_way_of_using_the_exit_code() {
   function fake_function() {
-      return 1
-    }
-    assertExitCode "1" "$(fake_function)"
+    return 1
+  }
+  assertExitCode "1" "$(fake_function)"
 }
