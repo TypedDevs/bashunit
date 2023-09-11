@@ -1,5 +1,9 @@
 # Changelog
 
+### Unreleased
+
+- Added assertExitCode
+
 ### 0.5.0
 ### 2023-09-10
 
