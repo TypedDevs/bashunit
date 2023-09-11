@@ -24,10 +24,6 @@ function test_text_should_not_match_a_regular_expression() {
   assertNotContains ".*xpes*" "$($SCRIPT "123")"
 }
 
-function test_text_should_not_match_a_regular_expression() {
-  assertNotContains ".*xpes*" "$($SCRIPT "123")"
-}
-
 function test_should_validate_an_ok_exit_code() {
   function fake_function() {
     return 0
