@@ -40,7 +40,7 @@ function test_text_should_be_equal() {
 
 ### assertContains
 ```bash
-assertEquals "expected" "actual"
+assertContains "expected" "actual"
 ```
 
 **Example:**
@@ -86,7 +86,7 @@ function test_text_should_not_contain() {
 }
 ```
 
-### assertNotMatches
+### assertExitCode
 ```bash
 assertExitCode "expected" [execution of the function to test]
 ```
