@@ -3,6 +3,8 @@
 ### Unreleased
 
 - Added assertExitCode
+- Improved the readability of the assert by using guard clause
+- Assert that other assertion functions return the right exit code
 
 ### 0.5.0
 ### 2023-09-10
