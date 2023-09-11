@@ -73,7 +73,7 @@ pre_commit/install:
 pre_commit/run: test lint env/example
 
 lint:
-	@shellcheck ./**/**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
 
 test/example:
 	@./bashunit $(EXAMPLE_TEST_SCRIPTS)
