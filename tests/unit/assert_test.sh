@@ -78,6 +78,8 @@ function test_unsuccessful_assertExitCode() {
   assertEquals\
     "$(printFailedTest "Unsuccessful assertExitCode" "1" "to not match" "0")"\
     "$(assertExitCode "0" "$(fake_function)")"
+
+  assertExitCode "1" "$(assertExitCode "0" "$(fake_function)")"
 }
 
 function test_successful_return_assertExitCode() {
