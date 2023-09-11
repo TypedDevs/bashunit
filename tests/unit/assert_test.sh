@@ -47,17 +47,34 @@ function test_unsuccessful_assertNotMatches() {
 }
 
 function test_successful_assertExitCode() {
-  function fake_function_exiting_zero() {
+  function fake_function() {
     exit 0
   }
-  assertEquals "" "$(assertExitCode "0" "$(fake_function_exiting_zero)")"
+  assertEquals "" "$(assertExitCode "0" "$(fake_function)")"
 }
 
 function test_unsuccessful_assertExitCode() {
-  function fake_function_exiting_one() {
+  function fake_function() {
     exit 1
   }
-   assertEquals\
+  assertEquals\
     "$(printFailedTest "Unsuccessful assertExitCode" "1" "to not match" "0")"\
-    "$(assertExitCode "0" "$(fake_function_exiting_one)")"
+    "$(assertExitCode "0" "$(fake_function)")"
 }
+
+function test_successful_return_assertExitCode() {
+  function fake_function() {
+    return 0
+  }
+  fake_function
+  assertExitCode "0"
+}
+
+function test_unsuccessful_return_assertExitCode() {
+  function fake_function() {
+    return 1
+  }
+  fake_function
+  assertExitCode "1"
+}
+
