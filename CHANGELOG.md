@@ -5,6 +5,9 @@
 - Added assertExitCode
 - Improved the readability of the assert by using guard clause
 - Assert that other assertion functions return the right exit code
+- Update functional examples
+- Update documentation
+- Add support for the static analysis on Mac OS
 
 ### 0.5.0
 ### 2023-09-10
