@@ -39,6 +39,7 @@ help:
 	@echo "  test                     Run the test"
 	@echo "  test/list                List all the test under the tests directory"
 	@echo "  test/watch               Automatically run the test every second"
+	@echo "  test/example             Run test from the example directory"
 	@echo "  env/example              Makes a copy of the keys on your .env file"
 	@echo "  pre_commit/install       Installs the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
@@ -46,6 +47,7 @@ help:
 
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
+EXAMPLE_TEST_SCRIPTS=./example/logic_test.sh
 PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 
 TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
@@ -71,4 +73,7 @@ pre_commit/install:
 pre_commit/run: test lint env/example
 
 lint:
-	@shellcheck ./**/**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+
+test/example:
+	@./bashunit $(EXAMPLE_TEST_SCRIPTS)

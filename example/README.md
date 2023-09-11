@@ -16,8 +16,13 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
     ```bash
     tools/bashunit/bashunit logic_test.sh
     ```
+   <img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
 
-<img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
+   or use from the root directory use the `make` command
+    ```bash
+    make test/example
+    ```
+   <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
 
 ## Real example
 
