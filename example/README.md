@@ -34,7 +34,7 @@ assertEquals "expected" "actual"
 **Example:**
 ```bash
 function test_text_should_be_equal() {
-  assertEquals "expected 123" "expected 123")"
+  assertEquals "expected 123" "expected 123"
 }
 ```
 
@@ -46,7 +46,7 @@ assertContains "expected" "actual"
 **Example:**
 ```bash
 function test_text_should_contain() {
-  assertContains "expect" "expected 123")"
+  assertContains "expect" "expected 123"
 }
 ```
 
@@ -58,7 +58,7 @@ assertNotContains "expected" "actual"
 **Example:**
 ```bash
 function test_text_should_not_contain() {
-  assertNotContains "expecs" "expected 123")"
+  assertNotContains "expecs" "expected 123"
 }
 ```
 
