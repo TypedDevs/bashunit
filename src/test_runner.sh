@@ -43,7 +43,7 @@ function runTest() {
 
   if [ $exit_code -eq 0 ]; then
     ((_TESTS_PASSED++))
-    local label="${3:-$(normalizeFunctionName "$function_name")}"
+    local label="${3:-$(normalizeTestFunctionName "$function_name")}"
     printSuccessfulTest "${label}"
   else
     ((_TESTS_FAILED++))
