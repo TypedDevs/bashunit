@@ -9,6 +9,9 @@
 - Update documentation
 - Add support for the static analysis on Mac OS
 - Fix bug with watcher for the development of bashunit
+- Added `assertSuccessfulCode`
+- Added `assertGeneralError`
+- Added `assertCommandNotFound`
 
 ### 0.5.0
 ### 2023-09-10
