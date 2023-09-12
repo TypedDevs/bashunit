@@ -68,7 +68,7 @@ function test_successful_assertExitCode() {
   }
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertExitCode "0" "$(fake_function)")"
 
-  assertExitCode "0" "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
+  assertExitCode "0" "$(fake_function)"
 }
 
 function test_unsuccessful_assertExitCode() {
@@ -76,7 +76,7 @@ function test_unsuccessful_assertExitCode() {
     exit 1
   }
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertExitCode" "1" "to not match" "0")"\
+    "$(printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
     "$(assertExitCode "0" "$(fake_function)")"
 
   assertExitCode "1" "$(assertExitCode "0" "$(fake_function)")"
@@ -96,6 +96,63 @@ function test_unsuccessful_return_assertExitCode() {
   }
   fake_function
   assertExitCode "1"
+}
+
+function test_successful_assertSuccessfulCode() {
+  function fake_function() {
+    return 0
+  }
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertSuccessfulCode "$(fake_function)")"
+
+  assertSuccessfulCode "$(fake_function)"
+}
+
+function test_unsuccessful_assertSuccessfulCode() {
+  function fake_function() {
+    return 2
+  }
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
+    "$(assertSuccessfulCode "$(fake_function)")"
+
+  assertExitCode "1" "$(assertSuccessfulCode "$(fake_function)")"
+}
+
+function test_successful_assertGeneralError() {
+  function fake_function() {
+    return 1
+  }
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertGeneralError "$(fake_function)")"
+
+  assertGeneralError "$(fake_function)"
+}
+
+function test_unsuccessful_assertGeneralError() {
+  function fake_function() {
+    return 2
+  }
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
+    "$(assertGeneralError "$(fake_function)")"
+
+  assertExitCode "1" "$(assertGeneralError "$(fake_function)")"
+}
+
+function test_successful_assertCommandNotFound() {
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertCommandNotFound "$(a_non_existing_function)")"
+
+  assertExitCode "0" "$(assertCommandNotFound "$(a_non_existing_function)")"
+}
+
+function test_unsuccessful_assertCommandNotFound() {
+  function fake_function() {
+    return 0
+  }
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
+    "$(assertCommandNotFound "$(fake_function)")"
+
+  assertExitCode "1" "$(assertCommandNotFound "$(fake_function)")"
 }
 
 unset SUCCESSFUL_EMPTY_MESSAGE

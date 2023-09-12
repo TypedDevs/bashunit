@@ -57,10 +57,11 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	./bashunit $(TEST_SCRIPTS)
+	@./bashunit $(TEST_SCRIPTS)
 
 test/watch: $(TEST_SCRIPTS)
-	fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 -I{} ./bashunit $(TEST_SCRIPTS)
+	@./bashunit $(TEST_SCRIPTS)
+	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
 
 env/example:
 	@echo "Copy the .env into the .env.example file without the values"
