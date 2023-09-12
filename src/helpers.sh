@@ -36,6 +36,9 @@ function getFunctionsToRun() {
       lower_case_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
 
       if [[ -z $filter || $lower_case_function_name == *"$lower_case_filter"* ]]; then
+        if [[ "${functions_to_run[*]}" =~ ${function_name} ]]; then
+          return 1
+        fi
         functions_to_run+=("$function_name")
       fi
     fi

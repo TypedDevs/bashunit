@@ -39,3 +39,9 @@ function test_getFunctionsToRun_filter_no_matching_functions_should_return_empty
   result3=$(getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")
   assertEquals "" "$result3"
 }
+
+function test_getFunctionsToRun_fail_when_duplicates() {
+  local functions=("prefix_function1" "prefix_function1")
+
+  assertGeneralError "$(getFunctionsToRun "prefix" "" "${functions[*]}")"
+}
