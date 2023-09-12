@@ -2,16 +2,16 @@
 
 ### Unreleased
 
-- Added assertExitCode
-- Improved the readability of the assert by using guard clause
-- Assert that other assertion functions return the right exit code
-- Update functional examples
-- Update documentation
-- Add support for the static analysis on Mac OS
-- Fix bug with watcher for the development of bashunit
+- Added `assertExitCode`
 - Added `assertSuccessfulCode`
 - Added `assertGeneralError`
 - Added `assertCommandNotFound`
+- Improved the readability of the assert by using guard clause
+- Assert that other assertion functions return the right exit code
+- Update documentation
+- Add support for the static analysis on MacOS
+- Fix bug with watcher for the development of bashunit
+- Fix error on count assertions
 
 ### 0.5.0
 ### 2023-09-10
