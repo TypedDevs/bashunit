@@ -44,13 +44,14 @@ cp .env.example .env
 Run tests from the library:
 ```bash
 # using make
-make test 
+make test
 
 # using bashunit itself
 ./bashunit tests/**/*_test.sh
 ```
 
-Run the test with a watcher:
+Run the test with a watcher for development:
+this will require to have installed [fswatcher](https://github.com/emcrisostomo/fswatch)
 ```bash
 # you have to install `watch` for your OS
 make test/watch
