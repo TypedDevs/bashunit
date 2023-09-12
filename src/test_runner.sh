@@ -25,7 +25,7 @@ function callTestFunctions() {
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for function_name in "${functions_to_run[@]}"; do
-      if [ "$PARALLEL_RUN" = true ] ; then
+      if [ "$PARALLEL_RUN" == true ] ; then
         runTest "$function_name" &
       else
         runTest "$function_name"
@@ -37,11 +37,11 @@ function callTestFunctions() {
 
 function runTest() {
   local function_name="$1"
+  local current_assertions_failed="$_ASSERTIONS_FAILED"
 
   "$function_name"
-  local exit_code=$?
 
-  if [ $exit_code -eq 0 ]; then
+  if [ "$current_assertions_failed" == "$_ASSERTIONS_FAILED" ]; then
     ((_TESTS_PASSED++))
     local label="${3:-$(normalizeTestFunctionName "$function_name")}"
     printSuccessfulTest "${label}"
