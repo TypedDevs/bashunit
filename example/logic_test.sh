@@ -46,3 +46,37 @@ function test_other_way_of_using_the_exit_code() {
   }
   assertExitCode "1" "$(fake_function)"
 }
+
+function test_successful_exit_code() {
+  function fake_function() {
+    return 0
+  }
+  assertSuccessfulCode "$(fake_function)"
+}
+
+function test_other_way_of_using_the_successful_exit_code() {
+  function fake_function() {
+    return 0
+  }
+  fake_function
+  assertSuccessfulCode
+}
+
+function test_general_error() {
+  function fake_function() {
+    return 1
+  }
+  assertGeneralError "$(fake_function)"
+}
+
+function test_other_way_of_using_the_general_error() {
+  function fake_function() {
+    return 1
+  }
+  fake_function
+  assertGeneralError
+}
+
+function test_should_assert_exit_code_of_a_non_existing_command() {
+  assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)"
+}
