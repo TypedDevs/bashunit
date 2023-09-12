@@ -1,6 +1,11 @@
 #!/bin/bash
 
 function assertEquals() {
+  local exit_code=$?
+  if [[ $exit_code != "0" ]]; then
+    return $exit_code
+  fi
+
   local expected="$1"
   local actual="$2"
   local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
