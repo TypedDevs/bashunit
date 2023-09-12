@@ -1,0 +1,20 @@
+{
+  "name": "bashunit-docs",
+  "version": "0.0.0",
+  "description": "Docs for a simple testing library for bash scripts",
+  "main": "index.js",
+  "repository": "git@github.com:Chemaclass/bashunit.git",
+  "author": "Jose Maria Valera Reales <chema@typeddevs.com>",
+  "license": "MIT",
+  "private": false,
+  "type": "module",
+  "devDependencies": {
+    "vitepress": "^1.0.0-rc.12",
+    "vue": "^3.3.4"
+  },
+  "scripts": {
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  }
+}
