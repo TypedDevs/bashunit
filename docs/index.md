@@ -3,16 +3,15 @@
 layout: home
 
 hero:
-  name: "bashunit"
-  text: "A simple testing library for bash scripts"
-  tagline: My great project tagline
+  name: bashunit
+  tagline: A simple testing library for bash scripts
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Getting Started
+      link: /getting-started
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Assertions
+      link: /assertions
 
 features:
   - title: Feature A

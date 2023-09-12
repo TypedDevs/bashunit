@@ -1,31 +1,6 @@
+# Assertions
 
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="../docs/assets/logo_name_dark.svg">
-    <img alt="bashunit" src="../docs/assets/logo_name.svg" width="400">
-  </picture>
-</p>
-
-A simple testing library for bash scripts.
-
-## Functions
-
-### [Asserts](../src/assert.sh)
-
-- `assertEquals` expected actual message
-- `assertContains` expected actual message
-- `assertNotContains` expected actual message
-- `assertMatches` expected actual message
-- `assertNotMatches` expected actual message
-- `assertExitCode` expected actual message
-- `assertSuccessfulCode`
-- `assertGeneralError`
-- `assertCommandNotFound`
-
-
-## Documentation
-
-### assertEquals
+## assertEquals
 **Syntax**
 ```bash
 assertEquals "expected" "actual"
@@ -38,7 +13,7 @@ function test_text_should_be_equal() {
 }
 ```
 
-### assertContains
+## assertContains
 **Syntax**
 ```bash
 assertContains "expected" "actual"
@@ -51,7 +26,7 @@ function test_text_should_contain() {
 }
 ```
 
-### assertNotContains
+## assertNotContains
 **Syntax**
 ```bash
 assertNotContains "expected" "actual"
@@ -64,7 +39,7 @@ function test_text_should_not_contain() {
 }
 ```
 
-### assertMatches
+## assertMatches
 **Syntax**
 ```bash
 assertMatches "expected" "actual"
@@ -77,7 +52,7 @@ function test_text_should_not_contain() {
 }
 ```
 
-### assertNotMatches
+## assertNotMatches
 **Syntax**
 ```bash
 assertNotMatches "expected" "actual"
@@ -90,7 +65,7 @@ function test_text_should_not_contain() {
 }
 ```
 
-### assertExitCode
+## assertExitCode
 **Syntax**
 ```bash
 assertExitCode "expected" [execution of the function to test]
@@ -115,7 +90,7 @@ function test_other_way_of_using_the_exit_code() {
 }
 ```
 
-### assertSuccessfulCode
+## assertSuccessfulCode
 **Syntax**
 ```bash
 assertSuccessfulCode [execute the function or command to assert]
@@ -140,7 +115,7 @@ function test_other_way_of_using_the_successful_exit_code() {
 }
 ```
 
-### assertGeneralError
+## assertGeneralError
 **Syntax**
 ```bash
 assertGeneralError [execute the function or command to assert]
@@ -165,7 +140,7 @@ function test_other_way_of_using_the_general_error() {
 }
 ```
 
-### assertCommandNotFound
+## assertCommandNotFound
 **Syntax**
 ```bash
 assertGeneralError [execute the function or command to assert]
