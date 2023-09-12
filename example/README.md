@@ -24,9 +24,16 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
     ```
    <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
 
+    If you want to run the test with the watcher you'll need to have installed [fswatch](https://github.com/emcrisostomo/fswatch)
+    and run the following command:
+    ```bash
+    make test/watch/example
+    ```
+
 ## Documentation
 
 ### assertEquals
+**Syntax**
 ```bash
 assertEquals "expected" "actual"
 ```
@@ -39,6 +46,7 @@ function test_text_should_be_equal() {
 ```
 
 ### assertContains
+**Syntax**
 ```bash
 assertContains "expected" "actual"
 ```
@@ -51,6 +59,7 @@ function test_text_should_contain() {
 ```
 
 ### assertNotContains
+**Syntax**
 ```bash
 assertNotContains "expected" "actual"
 ```
@@ -63,6 +72,7 @@ function test_text_should_not_contain() {
 ```
 
 ### assertMatches
+**Syntax**
 ```bash
 assertMatches "expected" "actual"
 ```
@@ -75,6 +85,7 @@ function test_text_should_not_contain() {
 ```
 
 ### assertNotMatches
+**Syntax**
 ```bash
 assertNotMatches "expected" "actual"
 ```
@@ -87,6 +98,7 @@ function test_text_should_not_contain() {
 ```
 
 ### assertExitCode
+**Syntax**
 ```bash
 assertExitCode "expected" [execution of the function to test]
 ```
@@ -107,6 +119,69 @@ function test_other_way_of_using_the_exit_code() {
     return 1
   }
   assertExitCode "1" "$(fake_function)"
+}
+```
+
+### assertSuccessfulCode
+**Syntax**
+```bash
+assertSuccessfulCode [execute the function or command to assert]
+```
+
+**Examples:**
+```bash
+function test_successful_exit_code() {
+  function fake_function() {
+    return 0
+  }
+  assertSuccessfulCode "$(fake_function)"
+}
+```
+```bash
+function test_other_way_of_using_the_successful_exit_code() {
+  function fake_function() {
+    return 0
+  }
+  fake_function
+  assertSuccessfulCode
+}
+```
+
+### assertGeneralError
+**Syntax**
+```bash
+assertGeneralError [execute the function or command to assert]
+```
+
+**Examples:**
+```bash
+function test_general_error() {
+  function fake_function() {
+    return 1
+  }
+  assertGeneralError "$(fake_function)"
+}
+```
+```bash
+function test_other_way_of_using_the_general_error() {
+  function fake_function() {
+    return 1
+  }
+  fake_function
+  assertGeneralError
+}
+```
+
+### assertCommandNotFound
+**Syntax**
+```bash
+assertGeneralError [execute the function or command to assert]
+```
+
+**Examples:**
+```bash
+function test_should_assert_exit_code_of_a_non_existing_command() {
+  assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)"
 }
 ```
 
