@@ -20,3 +20,34 @@ function normalizeTestFunctionName() {
 
   echo "$result"
 }
+
+function getFunctionsToRun() {
+  local prefix=$1
+  local filter=$2
+  local function_names=$3
+
+  local functions_to_run=()
+
+  for function_name in $function_names; do
+    if [[ $function_name != ${prefix}* ]]; then
+      continue
+    fi
+
+    local lower_case_function_name
+    lower_case_function_name=$(echo "$function_name" | tr '[:upper:]' '[:lower:]')
+    local lower_case_filter
+    lower_case_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
+
+    if [[ -n $filter && $lower_case_function_name != *"$lower_case_filter"* ]]; then
+      continue
+    fi
+
+    if [[ "${functions_to_run[*]}" =~ ${function_name} ]]; then
+      return 1
+    fi
+
+    functions_to_run+=("$function_name")
+  done
+
+  echo "${functions_to_run[@]}"
+}

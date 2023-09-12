@@ -7,20 +7,9 @@ function callTestFunctions() {
   # Use declare -F to list all function names
   local function_names
   function_names=$(declare -F | awk '{print $3}')
-  local functions_to_run=()
-
-  for function_name in $function_names; do
-    if [[ $function_name == ${prefix}* ]]; then
-      local lower_case_function_name
-      lower_case_function_name=$(echo "$function_name" | tr '[:upper:]' '[:lower:]')
-      local lower_case_filter
-      lower_case_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
-
-      if [[ -z $filter || $lower_case_function_name == *"$lower_case_filter"* ]]; then
-        functions_to_run+=("$function_name")
-      fi
-    fi
-  done
+  local functions_to_run
+  # shellcheck disable=SC2207
+  functions_to_run=($(getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
