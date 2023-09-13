@@ -1,4 +1,5 @@
 #!/bin/bash
+
 SUCCESSFUL_EMPTY_MESSAGE=""
 
 function test_successful_assertEquals() {
@@ -176,5 +177,3 @@ function test_unsuccessful_assertArrayNotContains() {
     "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assertArrayNotContains "123" "${distros[@]}")"
 }
-
-unset SUCCESSFUL_EMPTY_MESSAGE
