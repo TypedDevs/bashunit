@@ -72,3 +72,50 @@ You are welcome to contribute reporting issues, sharing ideas,
 or [with your Pull Requests](.github/CONTRIBUTING.md).
 
 ## Contributors
+
+<table>
+<tr>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/Chemaclass>
+            <img src=https://avatars.githubusercontent.com/u/5256287?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jose Maria Valera Reales/>
+            <br />
+            <sub style="font-size:14px"><b>Jose Maria Valera Reales</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/khru>
+            <img src=https://avatars.githubusercontent.com/u/6353105?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Emmanuel Valverde Ramos/>
+            <br />
+            <sub style="font-size:14px"><b>Emmanuel Valverde Ramos</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/Tito-Kati>
+            <img src=https://avatars.githubusercontent.com/u/13595197?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Antonio Gonzalez/>
+            <br />
+            <sub style="font-size:14px"><b>Antonio Gonzalez</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/CosmeValera>
+            <img src=https://avatars.githubusercontent.com/u/80126839?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Cosme Valera Reales/>
+            <br />
+            <sub style="font-size:14px"><b>Cosme Valera Reales</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/JesusValera>
+            <img src=https://avatars.githubusercontent.com/u/6381924?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jesus Valera Reales/>
+            <br />
+            <sub style="font-size:14px"><b>Jesus Valera Reales</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/fabriziofs>
+            <img src=https://avatars.githubusercontent.com/u/62360034?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Fabrizio Fasanando/>
+            <br />
+            <sub style="font-size:14px"><b>Fabrizio Fasanando</b></sub>
+        </a>
+    </td>
+</tr>
+</table>
