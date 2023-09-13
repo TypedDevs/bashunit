@@ -14,6 +14,8 @@
 - Add support for the static analysis on MacOS
 - Fix bug with watcher for the development of bashunit
 - Fix error on count assertions
+- Added pipeline to add contributors to the readme
+- Added documentation with vitepress
 
 ### 0.5.0
 ### 2023-09-10
