@@ -150,35 +150,31 @@ function test_unsuccessful_assertCommandNotFound() {
 }
 
 function test_successful_assertArrayContains() {
-  local distros=(Ubuntu 1234 Linux\ Mint)
+  local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayContains "1234" "${distros[@]}")"
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayContains "123" "${distros[@]}")"
 }
 
 function test_unsuccessful_assertArrayContains() {
-  local distros=(Ubuntu 1234 Linux\ Mint)
+  local distros=(Ubuntu 123 Linux\ Mint)
 
   assertEquals\
-    "$(printFailedTest\
-    "Unsuccessful assertArrayContains"\
-    "Ubuntu 1234 Linux Mint"\
-    "to contain"\
-    "a_non_existing_element")"\
-    "$(assertArrayContains "a_non_existing_element" "${distros[@]}")"
+    "$(printFailedTest "Unsuccessful assertArrayContains" "Ubuntu 123 Linux Mint" "to contain" "non_existing_element")"\
+    "$(assertArrayContains "non_existing_element" "${distros[@]}")"
 }
 
-function test_successful_assertArrayContains() {
-  local distros=(Ubuntu 1234 Linux\ Mint)
+function test_successful_assertArrayNotContains() {
+  local distros=(Ubuntu 123 Linux\ Mint)
 
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
 }
 
 function test_unsuccessful_assertArrayNotContains() {
-  local distros=(Ubuntu 1234 Linux\ Mint)
+  local distros=(Ubuntu 123 Linux\ Mint)
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 1234 Linux Mint" "to not contain" "1234")"\
-    "$(assertArrayNotContains "1234" "${distros[@]}")"
+    "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
+    "$(assertArrayNotContains "123" "${distros[@]}")"
 }
 
 unset SUCCESSFUL_EMPTY_MESSAGE
