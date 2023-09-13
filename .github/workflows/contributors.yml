@@ -2,7 +2,6 @@ name: Add contributors
 on:
   schedule:
     - cron:  '20 20 * * *'
-  pull_request:
   push:
     branches:
       - main
