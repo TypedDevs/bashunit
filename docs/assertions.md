@@ -4,15 +4,18 @@ When creating tests, you'll need to verify your commands and functions. We provi
 Below is their documentation.
 
 ## assertEquals
-**Syntax**
-```bash
-assertEquals "expected" "actual"
-```
+> `assertEquals "expected" "actual"`
 
-**Example:**
+Reports an error if the two variables `expected` and `actual` are not equal.
+
+*Example:*
 ```bash
-function test_text_should_be_equal() {
-  assertEquals "expected 123" "expected 123"
+function test_success() {
+  assertEquals "expected" "expected"
+}
+
+function test_failure() {
+  assertEquals "expected" "unexpected"
 }
 ```
 
