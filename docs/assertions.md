@@ -183,4 +183,4 @@ function test_should_assert_that_an_array_not_contains_1234() {
 
 ## Example
 
-Check out this [simple example](../example) using **bashunit**, or a more "real" example in the original repository where the idea grew up: [Chemaclass/conventional-commits](https://github.com/Chemaclass/conventional-commits/blob/main/tests/prepare-commit-msg_test.sh).
+Check out this [simple example](https://github.com/TypedDevs/bashunit/tree/main/example) using **bashunit**, or a more "real" example in the original repository where the idea grew up: [Chemaclass/conventional-commits](https://github.com/Chemaclass/conventional-commits/blob/main/tests/prepare-commit-msg_test.sh).
