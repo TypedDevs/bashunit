@@ -8,27 +8,32 @@ Below is their documentation.
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
+[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes the same arguments.
+
 *Example:*
 ```bash
 function test_success() {
-  assertEquals "expected" "expected"
+  assertEquals "foo" "foo"
 }
 
 function test_failure() {
-  assertEquals "expected" "unexpected"
+  assertEquals "foo" "bar"
 }
 ```
 
 ## assertContains
-**Syntax**
-```bash
-assertContains "expected" "actual"
-```
+> `assertContains "needle" "haystack"`
 
-**Example:**
+Reports an error if `needle` is not a substring of `haystack`.
+
+*Example:*
 ```bash
-function test_text_should_contain() {
-  assertContains "expect" "expected 123"
+function test_success() {
+  assertContains "expected" "expected"
+}
+
+function test_failure() {
+  assertContains "expected" "unexpected"
 }
 ```
 
@@ -38,7 +43,7 @@ function test_text_should_contain() {
 assertNotContains "expected" "actual"
 ```
 
-**Example:**
+*Example:*
 ```bash
 function test_text_should_not_contain() {
   assertNotContains "expecs" "expected 123"
@@ -51,7 +56,7 @@ function test_text_should_not_contain() {
 assertMatches "expected" "actual"
 ```
 
-**Example:**
+*Example:*
 ```bash
 function test_text_should_not_contain() {
   assertMatches ".*xpec*" "expected 123"
@@ -64,7 +69,7 @@ function test_text_should_not_contain() {
 assertNotMatches "expected" "actual"
 ```
 
-**Example:**
+*Example:*
 ```bash
 function test_text_should_not_contain() {
   assertNotMatches ".*xpes.*" "expected 123"
@@ -184,6 +189,24 @@ assertArrayNotContains "expected" "actual elements on the array"
 function test_should_assert_that_an_array_not_contains_1234() {
   local distros=(Ubuntu 1234 Linux\ Mint)
   assertArrayNotContains "a_non_existing_element" "${distros[@]}"
+}
+```
+
+## assertNotEquals
+> `assertNotEquals "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are equal.
+
+[assertEquals](#assertequals) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertNotEquals "foo" "bar"
+}
+
+function test_failure() {
+  assertNotEquals "foo" "foo"
 }
 ```
 
