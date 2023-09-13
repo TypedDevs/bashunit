@@ -16,13 +16,6 @@ jobs:
         os: [ 'ubuntu-latest' ]
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - name: Lint Code Base
-        uses: github/super-linter@v4
-        env:
-          VALIDATE_ALL_CODEBASE: true
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          EDITORCONFIG_FILE_NAME: .editorconfig
+      - uses: editorconfig-checker/action-editorconfig-checker@main
+      - run: editorconfig-checker
 
