@@ -6,6 +6,8 @@
 - Added `assertSuccessfulCode`
 - Added `assertGeneralError`
 - Added `assertCommandNotFound`
+- Added `assertArrayContains`
+- Added `assertArrayNotContains`
 - Improved the readability of the assert by using guard clause
 - Assert that other assertion functions return the right exit code
 - Update documentation

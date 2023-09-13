@@ -135,3 +135,33 @@ function assertCommandNotFound() {
   ((_ASSERTIONS_PASSED++))
   return 0
 }
+
+function assertArrayContains() {
+  local expected="$1"
+  label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
+  shift
+  local actual=("$@")
+  if ! [[ "${actual[*]}" == *"$expected"* ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
+    return 1
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
+}
+
+function assertArrayNotContains() {
+  local expected="$1"
+  label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
+  shift
+  local actual=("$@")
+  if [[ "${actual[*]}" == *"$expected"* ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual[*]}" "to not contain" "${expected}"
+    return 1
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
+}

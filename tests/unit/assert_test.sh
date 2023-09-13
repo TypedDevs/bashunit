@@ -155,4 +155,35 @@ function test_unsuccessful_assertCommandNotFound() {
   assertGeneralError "$(assertCommandNotFound "$(fake_function)")"
 }
 
+# shellcheck disable=SC2317
+function test_successful_assertArrayContains() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayContains "1234" "${distros[@]}")"
+  assertSuccessfulCode "$(assertArrayContains "1234" "${distros[@]}")"
+}
+
+function test_unsuccessful_assertArrayContains() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertArrayContains" "Ubuntu 1234 Linux Mint" "to contain" "a_non_existing_element")"\
+    "$(assertArrayContains "a_non_existing_element" "${distros[@]}")"
+  assertGeneralError "$(assertArrayContains "a_non_existing_element" "${distros[@]}")"
+}
+
+function test_successful_assertArrayContains() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
+  assertSuccessfulCode "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
+}
+
+function test_unsuccessful_assertArrayNotContains() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 1234 Linux Mint" "to not contain" "1234")"\
+    "$(assertArrayNotContains "1234" "${distros[@]}")"
+  assertGeneralError "$(assertArrayNotContains "1234" "${distros[@]}")"
+}
+
 unset SUCCESSFUL_EMPTY_MESSAGE
