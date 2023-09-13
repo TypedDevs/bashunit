@@ -15,6 +15,21 @@ function assertEquals() {
   return 0
 }
 
+function assertNotEquals() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" == "$actual" ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${expected}" "but got" "${actual}"
+    return 1
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+  return 0
+}
+
 function assertContains() {
   local expected="$1"
   local actual="$2"
