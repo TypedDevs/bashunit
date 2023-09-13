@@ -1,16 +1,18 @@
 <p align="center">
-  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml">
-    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
+    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
   </a>
-  <a href="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml">
-    <img src="https://github.com/Chemaclass/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
+    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
   </a>
-  <a href="https://github.com/Chemaclass/bashunit/blob/main/LICENSE">
+  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
+    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Static analysis">
+  </a>
+  <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
   </a>
 </p>
 <br>
-
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo_name_dark.svg">
