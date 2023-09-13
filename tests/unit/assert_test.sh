@@ -141,7 +141,7 @@ function test_unsuccessful_assertGeneralError() {
 function test_successful_assertCommandNotFound() {
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
 
-  assertExitCode "0" "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
+  assertSuccessfulCode "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
 }
 
 function test_unsuccessful_assertCommandNotFound() {
@@ -152,7 +152,7 @@ function test_unsuccessful_assertCommandNotFound() {
     "$(printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
     "$(assertCommandNotFound "$(fake_function)")"
 
-  assertExitCode "1" "$(assertCommandNotFound "$(fake_function)")"
+  assertGeneralError "$(assertCommandNotFound "$(fake_function)")"
 }
 
 unset SUCCESSFUL_EMPTY_MESSAGE

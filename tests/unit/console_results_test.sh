@@ -139,3 +139,19 @@ function test_render_time_of_execution_when_not_all_assertions_passed() {
       "$(renderResult)"
   fi
 }
+
+function test_render_time_of_execution_when_all_assertions_passed_on_mac() {
+  if [[ $_OS == "OSX" ]]; then
+    assertNotMatches\
+      "Time taken: [[:digit:]]+ ms"\
+      "$(renderResult)"
+  fi
+}
+
+function test_render_time_of_execution_when_not_all_assertions_passed_on_mac() {
+  if [[ $_OS == "OSX" ]]; then
+    assertNotMatches\
+      "Time taken: [[:digit:]]+ ms"\
+      "$(renderResult)"
+  fi
+}
