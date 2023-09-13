@@ -65,7 +65,10 @@ To update a git-submodule:
    2. or pull `main`
    3. or checkout a concrete release tag
 
+
 ## Contribute
 
 You are welcome to contribute reporting issues, sharing ideas,
 or [with your Pull Requests](.github/CONTRIBUTING.md).
+
+## Contributors
