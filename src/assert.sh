@@ -142,13 +142,13 @@ function assertArrayContains() {
   shift
   local actual=("$@")
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
-      ((_ASSERTIONS_FAILED++))
-      printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
-      return 1
-    fi
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
+    return 1
+  fi
 
-    ((_ASSERTIONS_PASSED++))
-    return 0
+  ((_ASSERTIONS_PASSED++))
+  return 0
 }
 
 function assertArrayNotContains() {
