@@ -42,11 +42,11 @@ function test_your_logic() {
 }
 ```
 
-For more, see the [example](example/README.md) directory.
+Check out the [example](example/README.md) directory for more.
 
 ## Installation
 
-Despite there is no dependency manager for bash scripts like "composer", you can install this project in your repo as you pleased. Here, I define one that might be suitable for you using Git submodules.
+Although there's no Bash script dependency manager like npm for JavaScript, Maven for Java, or pip for Python, you can install this project in your repository according to your preferences. Here, I provide a Git submodule option that will work for you.
 
 ### Git submodule
 
