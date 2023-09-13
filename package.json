@@ -1,10 +1,10 @@
 {
   "name": "bashunit-docs",
   "version": "0.0.0",
-  "description": "Docs for a simple testing library for bash scripts",
+  "description": "Docs for bashunit a simple testing library for bash scripts",
   "main": "index.js",
-  "repository": "git@github.com:Chemaclass/bashunit.git",
-  "author": "Jose Maria Valera Reales <chema@typeddevs.com>",
+  "repository": "git@github.com:TypedDevs/bashunit.git",
+  "author": "Jose Maria Valera Reales <chema@typeddevs.com> Emmanuel Valverde Ramos <manu@typeddevs.com> Antonio Gonzalez Gea <antonio@typeddevs.com> Fabrizio Fasanando Sotelo <fabrizio@typeddevs.com>",
   "license": "MIT",
   "private": false,
   "type": "module",

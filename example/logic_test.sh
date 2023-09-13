@@ -80,3 +80,13 @@ function test_other_way_of_using_the_general_error() {
 function test_should_assert_exit_code_of_a_non_existing_command() {
   assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)"
 }
+
+function test_should_assert_that_an_array_contains_1234() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+  assertArrayContains "1234" "${distros[@]}"
+}
+
+function test_should_assert_that_an_array_not_contains_1234() {
+  local distros=(Ubuntu 1234 Linux\ Mint)
+  assertArrayNotContains "a_non_existing_element" "${distros[@]}"
+}
