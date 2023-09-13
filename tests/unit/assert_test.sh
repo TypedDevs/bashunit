@@ -149,7 +149,6 @@ function test_unsuccessful_assertCommandNotFound() {
     "$(assertCommandNotFound "$(fake_function)")"
 }
 
-# shellcheck disable=SC2317
 function test_successful_assertArrayContains() {
   local distros=(Ubuntu 1234 Linux\ Mint)
 

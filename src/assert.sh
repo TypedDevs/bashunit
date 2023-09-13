@@ -146,6 +146,7 @@ function assertArrayContains() {
   label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
+
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
@@ -160,6 +161,7 @@ function assertArrayNotContains() {
   label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
+
   if [[ "${actual[*]}" == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual[*]}" "to not contain" "${expected}"
