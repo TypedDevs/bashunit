@@ -78,3 +78,7 @@ lint:
 
 test/example:
 	@./bashunit $(EXAMPLE_TEST_SCRIPTS)
+
+test/watch/example:
+	@./bashunit $(EXAMPLE_TEST_SCRIPTS)
+	@fswatch -m poll_monitor -or $(EXAMPLE_TEST_SCRIPTS) | xargs -n1 ./bashunit $(EXAMPLE_TEST_SCRIPTS)

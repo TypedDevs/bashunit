@@ -1,2 +1,10 @@
+# ide
 .idea/
 .env
+
+# docs
+node_modules
+yarn-error.log
+yarn.lock
+docs/.vitepress/cache
+docs/.vitepress/dist
