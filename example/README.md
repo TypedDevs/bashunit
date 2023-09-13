@@ -8,7 +8,7 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
 
 1) Install the git submodule
     ```bash
-    git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
+    git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
     # (Optional) Update to the latest version
     git submodule update --remote
     ```

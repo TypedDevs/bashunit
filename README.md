@@ -55,7 +55,7 @@ Although there's no Bash script dependency manager like `npm` for JavaScript, `M
 You can use Git submodules to include external Git repositories within your project. This approach works well for including Bash scripts or other resources from remote repositories.
 
 ```bash
-git submodule add git@github.com:Chemaclass/bashunit.git tools/bashunit
+git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
 ```
 
 #### Versioning and updates

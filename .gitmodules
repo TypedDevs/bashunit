@@ -1,3 +1,3 @@
 [submodule "example/tools/bashunit"]
 	path = example/tools/bashunit
-	url = git@github.com:Chemaclass/bashunit.git
+	url = git@github.com:TypedDevs/bashunit.git
