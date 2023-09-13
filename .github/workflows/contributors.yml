@@ -4,7 +4,7 @@ on:
     - cron:  '20 20 * * *'
   push:
     branches:
-      - master
+      - main
 
 jobs:
   add-contributors:
