@@ -21,6 +21,7 @@
 ### 2023-09-10
 
 - Added logo
+- Added `assertNotEquals`
 - Added `assertMatches`
 - Added `assertNotMatches`
 - Added `make test/watch` to run your test every second
