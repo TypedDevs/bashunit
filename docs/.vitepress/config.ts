@@ -6,7 +6,7 @@ export default defineConfig({
   description: 'A simple testing library for bash scripts',
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
-    logo: '/assets/logo.svg',
+    logo: '/logo.svg',
 
     sidebar: [
       {
