@@ -26,27 +26,16 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 
+[assertNotContains](#assertnotcontains) is the inverse of this assertion and takes the same arguments.
+
 *Example:*
 ```bash
 function test_success() {
-  assertContains "expected" "expected"
+  assertContains "foo" "foobar"
 }
 
 function test_failure() {
-  assertContains "expected" "unexpected"
-}
-```
-
-## assertNotContains
-**Syntax**
-```bash
-assertNotContains "expected" "actual"
-```
-
-*Example:*
-```bash
-function test_text_should_not_contain() {
-  assertNotContains "expecs" "expected 123"
+  assertContains "baz" "foobar"
 }
 ```
 
@@ -207,6 +196,24 @@ function test_success() {
 
 function test_failure() {
   assertNotEquals "foo" "foo"
+}
+```
+
+## assertNotContains
+> `assertNotContains "needle" "haystack"`
+
+Reports an error if `needle` is a substring of `haystack`.
+
+[assertContains](#assertcontains) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertNotContains "baz" "foobar"
+}
+
+function test_failure() {
+  assertNotContains "foo" "foobar"
 }
 ```
 
