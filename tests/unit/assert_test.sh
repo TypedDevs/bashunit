@@ -13,6 +13,18 @@ function test_unsuccessful_assertEquals() {
   assertGeneralError "$(assertEquals "1" "2")"
 }
 
+function test_successful_assertNotEquals() {
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotEquals "1" "2")"
+  assertSuccessfulCode "$(assertNotEquals "1" "2")"
+}
+
+function test_unsuccessful_assertNotEquals() {
+  assertEquals "$(printFailedTest "Unsuccessful assertNotEquals" "1" "but got" "1")"\
+  "$(assertNotEquals "1" "1")"
+
+  assertGeneralError "$(assertNotEquals "1" "1")"
+}
+
 function test_successful_assertContains() {
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertContains "Linux" "GNU/Linux")"
   assertSuccessfulCode "$(assertContains "Linux" "GNU/Linux")"
