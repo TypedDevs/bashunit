@@ -46,7 +46,7 @@ Check out the [example](example/README.md) directory for more.
 
 ## Installation
 
-Although there's no Bash script dependency manager like npm for JavaScript, Maven for Java, or pip for Python, you can install this project in your repository according to your preferences. Here, I provide a Git submodule option that will work for you.
+Although there's no Bash script dependency manager like `npm` for JavaScript, `Maven` for Java, `pip` for Python, or `composer` for PHP; you can install this project in your repository according to your preferences. Here, I provide a Git submodule option that will work for you.
 
 ### Git submodule
 
