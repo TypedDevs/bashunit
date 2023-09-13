@@ -9,6 +9,7 @@ on:
 
 jobs:
   add-contributors:
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
