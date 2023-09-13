@@ -169,7 +169,7 @@ function test_unsuccessful_assertArrayContains() {
 
   assertGeneralError "$(assertArrayContains "a_non_existing_element" "${distros[@]}")"
 }
-
+# shellcheck disable=SC2317
 function test_successful_assertArrayContains() {
   local distros=(Ubuntu 1234 Linux\ Mint)
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
