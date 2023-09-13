@@ -8,6 +8,9 @@
   <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
     <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Static analysis">
   </a>
+  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
+    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Static analysis">
+  </a>
   <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
   </a>
