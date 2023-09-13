@@ -1,5 +1,8 @@
 # Assertions
 
+When creating tests, you'll need to verify your commands and functions. We provide assertions for these checks.
+Below is their documentation.
+
 ## assertEquals
 **Syntax**
 ```bash
