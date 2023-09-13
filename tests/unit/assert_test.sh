@@ -179,10 +179,10 @@ function test_successful_assertArrayContains() {
 
 function test_unsuccessful_assertArrayNotContains() {
   local distros=(Ubuntu 1234 Linux\ Mint)
-  assertEquals\
-      "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 1234 Linux Mint" "to not contain" "1234")"\
-      "$(assertArrayNotContains "1234" "${distros[@]}")"
 
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 1234 Linux Mint" "to not contain" "1234")"\
+    "$(assertArrayNotContains "1234" "${distros[@]}")"
   assertGeneralError "$(assertArrayNotContains "1234" "${distros[@]}")"
 }
 
