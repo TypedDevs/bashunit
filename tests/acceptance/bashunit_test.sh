@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function test_bash_unit_when_a_test_passes() {
   local test_file=./tests/acceptance/fake_success_test.sh
   local fixture_route=./tests/acceptance/fixtures/assert_success
