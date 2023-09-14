@@ -57,6 +57,42 @@ function test_failure() {
 }
 ```
 
+## assertExitCode
+> `assertExitCode "expected" ["callable"]`
+
+Reports an error if the exit code of `callable` is not equal to `expected`.
+
+If `callable` is not provided, it takes the last executed command or function instead.
+
+*Example:*
+```bash
+function test_without_callable() {
+  function fake_function() {
+    return 1
+  }
+
+  fake_function # function took instead `callable`
+
+  assertExitCode "1"
+}
+
+function test_with_callable() {
+  function fake_function() {
+    return 1
+  }
+
+  assertExitCode "1" "$(fake_function)"
+}
+
+function test_failure() {
+  function fake_function() {
+    return 1
+  }
+
+  assertExitCode "0" "$(fake_function)"
+}
+```
+
 ## assertNotEquals
 > `assertNotEquals "expected" "actual"`
 
