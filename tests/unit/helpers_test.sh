@@ -19,25 +19,19 @@ function test_normalizeTestFunctionName_camel_case() {
 function test_getFunctionsToRun_no_filter_should_return_all_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  local result1
-  result1=$(getFunctionsToRun "prefix" "" "${functions[*]}")
-  assertEquals "prefix_function1 prefix_function2 prefix_function3" "$result1"
+  assertEquals "prefix_function1 prefix_function2 prefix_function3" "$(getFunctionsToRun "prefix" "" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_with_filter_should_return_matching_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  local result2
-  result2=$(getFunctionsToRun "prefix" "function1" "${functions[*]}")
-  assertEquals "prefix_function1" "$result2"
+  assertEquals "prefix_function1" "$(getFunctionsToRun "prefix" "function1" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_filter_no_matching_functions_should_return_empty() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  local result3
-  result3=$(getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")
-  assertEquals "" "$result3"
+  assertEquals "" "$(getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_fail_when_duplicates() {
