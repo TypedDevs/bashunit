@@ -31,7 +31,14 @@ Please post code and output as text ([using proper markup](https://guides.github
 5. Ensure the code complies with our coding guidelines (see below).
 6. Send that pull request!
 
-Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` look really stupid in the commit history of a project.
+## Specific set up for documentation application
+
+1. You should have installed `node`(_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn`.
+2. Install dependencies with `yarn install`.
+3. Run local development server with `yarn doc:dev`.
+4. Implement your changes.
+
+Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` looks bad in the commit history of a project.
 
 ## Change the configuration
 To change the configuration for the project we use the `.env` file if you would like to know what variables should be there use the following command:
