@@ -1,6 +1,0 @@
-Running ./tests/acceptance/fake_success_test.sh
-\e[32m✓ Passed\e[0m: Succeed
-
-\e[2mTests:     \e[0m \e[32m1 passed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[32m1 passed\e[0m, 1 total
-\e[42mAll tests passed\e[0m
