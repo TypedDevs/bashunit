@@ -2,6 +2,8 @@ SHELL=/bin/bash
 
 -include .env
 
+EDITOR_CONFIG_CHECKER := $(shell which ec 2> /dev/null)
+
 OS:=
 ifeq ($(OS),Windows_NT)
 	OS +=WIN32
@@ -71,10 +73,17 @@ pre_commit/install:
 	@echo "Installing pre-commit hooks"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
 
-pre_commit/run: test lint env/example
+pre_commit/run: test lint editorconfig env/example
 
 lint:
 	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+
+editorconfig:
+ifndef EDITOR_CONFIG_CHECKER
+	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig check not installed checked not preformed"
+else
+	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "Editorconfig check: OK!"
+endif
 
 test/example:
 	@./bashunit $(EXAMPLE_TEST_SCRIPTS)

@@ -8,11 +8,24 @@ function assertEquals() {
   if [[ "$expected" != "$actual" ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${expected}" "but got" "${actual}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
+}
+
+function assertNotEquals() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" == "$actual" ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${expected}" "but got" "${actual}"
+    return
+  fi
+
+  ((_ASSERTIONS_PASSED++))
 }
 
 function assertContains() {
@@ -21,13 +34,12 @@ function assertContains() {
   local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
-      ((_ASSERTIONS_FAILED++))
-      printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
-      return 1
-    fi
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
+    return
+  fi
 
-    ((_ASSERTIONS_PASSED++))
-    return 0
+  ((_ASSERTIONS_PASSED++))
 }
 
 function assertNotContains() {
@@ -38,11 +50,10 @@ function assertNotContains() {
   if [[ $actual == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertMatches() {
@@ -53,11 +64,10 @@ function assertMatches() {
   if ! [[ $actual =~ $expected ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to match" "${expected}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertNotMatches() {
@@ -68,11 +78,10 @@ function assertNotMatches() {
   if [[ $actual =~ $expected ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertExitCode() {
@@ -83,11 +92,10 @@ function assertExitCode() {
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertSuccessfulCode() {
@@ -98,11 +106,10 @@ function assertSuccessfulCode() {
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertGeneralError() {
@@ -113,11 +120,10 @@ function assertGeneralError() {
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 
@@ -129,11 +135,10 @@ function assertCommandNotFound() {
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertArrayContains() {
@@ -141,14 +146,14 @@ function assertArrayContains() {
   label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
+
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }
 
 function assertArrayNotContains() {
@@ -156,12 +161,12 @@ function assertArrayNotContains() {
   label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
+
   if [[ "${actual[*]}" == *"$expected"* ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual[*]}" "to not contain" "${expected}"
-    return 1
+    return
   fi
 
   ((_ASSERTIONS_PASSED++))
-  return 0
 }

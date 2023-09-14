@@ -61,17 +61,28 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-if [ ${#_FILES[@]} -eq 0 ]; then
-  echo "Error: At least one file path is required."
-  echo "Usage: $0 <test_file.sh>"
-  exit 1
-fi
 
-for test_file in "${_FILES[@]}"; do
-  # shellcheck disable=SC1090
-  source "$test_file"
-  callTestFunctions "$test_file" "$_FILTER"
-  if [ "$PARALLEL_RUN" = true ] ; then
-    wait
+
+function loadTestFiles() {
+  if [ ${#_FILES[@]} -eq 0 ]; then
+    echo "Error: At least one file path is required."
+    echo "Usage: $0 <test_file.sh>"
+    exit 1
   fi
-done
+
+  for test_file in "${_FILES[@]}"; do
+    if [[ ! -f $test_file ]];
+    then
+      continue
+    fi
+    # shellcheck disable=SC1090
+    source "$test_file"
+    callTestFunctions "$test_file" "$_FILTER"
+    if [ "$PARALLEL_RUN" = true ] ; then
+      wait
+    fi
+  done
+}
+
+loadTestFiles
+

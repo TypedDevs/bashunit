@@ -11,6 +11,9 @@
   <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
     <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
   </a>
+<a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
+    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
+  </a>
   <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
     <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
   </a>
@@ -115,6 +118,15 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
             <sub style="font-size:14px"><b>Jesus Valera Reales</b></sub>
         </a>
     </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/valerangel>
+            <img src=https://avatars.githubusercontent.com/u/29772162?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=valerangel/>
+            <br />
+            <sub style="font-size:14px"><b>valerangel</b></sub>
+        </a>
+    </td>
+</tr>
+<tr>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
         <a href=https://github.com/fabriziofs>
             <img src=https://avatars.githubusercontent.com/u/62360034?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Fabrizio Fasanando/>
