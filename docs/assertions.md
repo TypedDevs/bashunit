@@ -39,6 +39,24 @@ function test_failure() {
 }
 ```
 
+## assertMatches
+> `assertMatches "pattern" "value"`
+
+Reports an error if `value` does not match the regular expression `pattern`.
+
+[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertMatches "^foo" "foobar"
+}
+
+function test_failure() {
+  assertMatches "^bar" "foobar"
+}
+```
+
 ## assertNotEquals
 > `assertNotEquals "expected" "actual"`
 
@@ -72,5 +90,23 @@ function test_success() {
 
 function test_failure() {
   assertNotContains "foo" "foobar"
+}
+```
+
+## assertNotMatches
+> `assertNotMatches "pattern" "value"`
+
+Reports an error if `value` matches the regular expression `pattern`.
+
+[assertMatches](#assertmatches) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertNotMatches "foo$" "foobar"
+}
+
+function test_failure() {
+  assertNotMatches "bar$" "foobar"
 }
 ```
