@@ -1,0 +1,5 @@
+Running ./tests/acceptance/fake_success_test.sh
+[32m✓ Passed[0m: Succeed
+
+[2mTests:     [0m [32m1 passed[0m, 1 total
+[2mAssertions:[0m [32m1 passed[0m, 1 total
