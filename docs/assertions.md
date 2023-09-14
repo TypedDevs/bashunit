@@ -64,9 +64,19 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
+[assertSuccessfulCode](#assertsuccessfulcode) and [assertGeneralError](#assertgeneralerror) are more semantic versions of this assertion, for which you don't need to specify an exit code.
+
 *Example:*
 ```bash
-function test_without_callable() {
+function test_success_with_callable() {
+  function fake_function() {
+    return 1
+  }
+
+  assertExitCode "1" "$(fake_function)"
+}
+
+function test_success_without_callable() {
   function fake_function() {
     return 1
   }
@@ -76,12 +86,42 @@ function test_without_callable() {
   assertExitCode "1"
 }
 
-function test_with_callable() {
+function test_failure() {
   function fake_function() {
     return 1
   }
 
-  assertExitCode "1" "$(fake_function)"
+  assertExitCode "0" "$(fake_function)"
+}
+```
+
+## assertSuccessfulCode
+> `assertSuccessfulCode ["callable"]`
+
+Reports an error if the exit code of `callable` is not successful (`0`).
+
+If `callable` is not provided, it takes the last executed command or function instead.
+
+[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+
+*Example:*
+```bash
+function test_success_with_callable() {
+  function fake_function() {
+    return 0
+  }
+
+  assertSuccessfulCode "$(fake_function)"
+}
+
+function test_success_without_callable() {
+  function fake_function() {
+    return 0
+  }
+
+  fake_function # function took instead `callable`
+
+  assertSuccessfulCode
 }
 
 function test_failure() {
@@ -89,7 +129,45 @@ function test_failure() {
     return 1
   }
 
-  assertExitCode "0" "$(fake_function)"
+  assertSuccessfulCode "$(fake_function)"
+}
+```
+
+## assertGeneralError
+> `assertGeneralError ["callable"]`
+
+Reports an error if the exit code of `callable` is not a general error (`1`).
+
+If `callable` is not provided, it takes the last executed command or function instead.
+
+[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+
+*Example:*
+```bash
+function test_success_with_callable() {
+  function fake_function() {
+    return 1
+  }
+
+  assertGeneralError "$(fake_function)"
+}
+
+function test_success_without_callable() {
+  function fake_function() {
+    return 1
+  }
+
+  fake_function # function took instead `callable`
+
+  assertGeneralError
+}
+
+function test_failure() {
+  function fake_function() {
+    return 0
+  }
+
+  assertGeneralError "$(fake_function)"
 }
 ```
 
