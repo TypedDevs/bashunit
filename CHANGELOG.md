@@ -27,6 +27,7 @@
 - Added `make test/watch` to run your test every second
 - Added time taken to run the test in ms (only to Linux)
 - Simplified assertions over test results
+- Added acceptance test to the library
 - Added pre-commit to the project
 - Allow parallel tests to run base on a .env configuration enabled by default
 - Added static analysis tools to the deployment pipelines
