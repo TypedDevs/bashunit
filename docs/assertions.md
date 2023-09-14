@@ -1,15 +1,15 @@
 # Assertions
 
-When creating tests, you'll need to verify your commands and functions. We
-provide assertions for these checks. Below is their documentation.
+When creating tests, you'll need to verify your commands and functions.
+We provide assertions for these checks.
+Below is their documentation.
 
 ## assertEquals
 > `assertEquals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
-[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes
-the same arguments.
+[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -27,8 +27,7 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assertNotContains](#assertnotcontains) is the inverse of this assertion and
-takes the same arguments.
+[assertNotContains](#assertnotcontains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -46,8 +45,7 @@ function test_failure() {
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes
-the same arguments.
+[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -65,40 +63,59 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not equal to `expected`.
 
-If `callable` is not provided, it takes the last executed command or function
-instead.
+If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertSuccessfulCode](#assertsuccessfulcode),
-[assertGeneralError](#assertgeneralerror) and
-[assertCommandNotFound](#assertcommandnotfound) are more semantic versions of
-this assertion, for which you don't need to specify an exit code.
+[assertSuccessfulCode](#assertsuccessfulcode), [assertGeneralError](#assertgeneralerror) and [assertCommandNotFound](#assertcommandnotfound)
+are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 *Example:*
 ```bash
 function test_success_with_callable() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  assertExitCode "1" "$(fake_function)"
+  assertExitCode "1" "$(foo)"
 }
 
 function test_success_without_callable() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  fake_function # function took instead `callable`
+  foo # function took instead `callable`
 
   assertExitCode "1"
 }
 
 function test_failure() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  assertExitCode "0" "$(fake_function)"
+  assertExitCode "0" "$(foo)"
+}
+```
+
+## assertArrayContains
+> `assertArrayContains "needle" "haystack"`
+
+Reports an error if `needle` is not an element of `haystack`.
+
+[assertArrayNotContains](#assertarraynotcontains) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local haystack=(foo bar baz)
+
+  assertArrayContains "bar" "${haystack[@]}"
+}
+
+function test_failure() {
+  local haystack=(foo bar baz)
+
+  assertArrayContains "foobar" "${haystack[@]}"
 }
 ```
 
@@ -107,38 +124,36 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not successful (`0`).
 
-If `callable` is not provided, it takes the last executed command or function
-instead.
+If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where
-you can specify the expected exit code.
+[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
 function test_success_with_callable() {
-  function fake_function() {
+  function foo() {
     return 0
   }
 
-  assertSuccessfulCode "$(fake_function)"
+  assertSuccessfulCode "$(foo)"
 }
 
 function test_success_without_callable() {
-  function fake_function() {
+  function foo() {
     return 0
   }
 
-  fake_function # function took instead `callable`
+  foo # function took instead `callable`
 
   assertSuccessfulCode
 }
 
 function test_failure() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  assertSuccessfulCode "$(fake_function)"
+  assertSuccessfulCode "$(foo)"
 }
 ```
 
@@ -147,61 +162,57 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not a general error (`1`).
 
-If `callable` is not provided, it takes the last executed command or function
-instead.
+If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where
-you can specify the expected exit code.
+[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
 function test_success_with_callable() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  assertGeneralError "$(fake_function)"
+  assertGeneralError "$(foo)"
 }
 
 function test_success_without_callable() {
-  function fake_function() {
+  function foo() {
     return 1
   }
 
-  fake_function # function took instead `callable`
+  foo # function took instead `callable`
 
   assertGeneralError
 }
 
 function test_failure() {
-  function fake_function() {
+  function foo() {
     return 0
   }
 
-  assertGeneralError "$(fake_function)"
+  assertGeneralError "$(foo)"
 }
 ```
 
 ## assertCommandNotFound
 > `assertGeneralError ["callable"]`
 
-Reports an error if `callable` exists. In other words, if executing `callable`
-does not return a command not found exit code (`127`).
+Reports an error if `callable` exists.
+In other words, if executing `callable` does not return a command not found exit code (`127`).
 
-If `callable` is not provided, it takes the last executed command or function
-instead.
+If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where
-you can specify the expected exit code.
+[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
 function test_success_with_callable() {
-  assertCommandNotFound "$(non_existing_callable > /dev/null 2>&1)"
+  assertCommandNotFound "$(foo > /dev/null 2>&1)"
 }
 
 function test_success_without_callable() {
-  non_existing_callable > /dev/null 2>&1
+  foo > /dev/null 2>&1
 
   assertCommandNotFound
 }
@@ -216,8 +227,7 @@ function test_failure() {
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
-[assertEquals](#assertequals) is the inverse of this assertion and takes the
-same arguments.
+[assertEquals](#assertequals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -235,8 +245,7 @@ function test_failure() {
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assertContains](#assertcontains) is the inverse of this assertion and takes the
-same arguments.
+[assertContains](#assertcontains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -254,8 +263,7 @@ function test_failure() {
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assertMatches](#assertmatches) is the inverse of this assertion and takes the
-same arguments.
+[assertMatches](#assertmatches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -265,5 +273,27 @@ function test_success() {
 
 function test_failure() {
   assertNotMatches "bar$" "foobar"
+}
+```
+
+## assertArrayNotContains
+> `assertArrayNotContains "needle" "haystack"`
+
+Reports an error if `needle` is an element of `haystack`.
+
+[assertArrayContains](#assertarraycontains) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local haystack=(foo bar baz)
+
+  assertArrayNotContains "foobar" "${haystack[@]}"
+}
+
+function test_failure() {
+  local haystack=(foo bar baz)
+
+  assertArrayNotContains "baz" "${haystack[@]}"
 }
 ```
