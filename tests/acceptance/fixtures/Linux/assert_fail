@@ -1,7 +1,7 @@
 Running ./tests/acceptance/fake_fail_test.sh
-[31m✗ Failed[0m: Fail
-    [2mExpected[0m [1m'1'[0m
-    [2mbut got[0m [1m'0'[0m
+\e[31m✗ Failed\e[0m: Fail
+    \e[2mExpected\e[0m \e[1m'1'\e[0m
+    \e[2mbut got\e[0m \e[1m'0'\e[0m
 
-[2mTests:     [0m [31m1 failed[0m, 1 total
-[2mAssertions:[0m [31m1 failed[0m, 1 total
+\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
+\e[2mAssertions:\e[0m \e[31m1 failed\e[0m, 1 total
