@@ -10,6 +10,6 @@ source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 source "$BASH_UNIT_ROOT_DIR/src/helpers.sh"
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
 
-source "$BASH_UNIT_ROOT_DIR/src/test_runner.sh" "$@"
+source "$BASH_UNIT_ROOT_DIR/src/runner.sh" "$@"
 
 exit 0
