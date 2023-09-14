@@ -42,6 +42,28 @@ function runTest() {
   printSuccessfulTest "${label}"
 }
 
+function loadTestFiles() {
+  if [ ${#_FILES[@]} -eq 0 ]; then
+    echo "Error: At least one file path is required."
+    echo "Usage: $0 <test_file.sh>"
+    exit 1
+  fi
+
+  for test_file in "${_FILES[@]}"; do
+    if [[ ! -f $test_file ]]; then
+      continue
+    fi
+
+    #shellcheck source=/dev/null
+    source "$test_file"
+
+    callTestFunctions "$test_file" "$_FILTER"
+    if [[ "$PARALLEL_RUN" = true ]]; then
+      wait
+    fi
+  done
+}
+
 ###############
 #### MAIN #####
 ###############
@@ -64,29 +86,6 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-
-
-function loadTestFiles() {
-  if [ ${#_FILES[@]} -eq 0 ]; then
-    echo "Error: At least one file path is required."
-    echo "Usage: $0 <test_file.sh>"
-    exit 1
-  fi
-
-  for test_file in "${_FILES[@]}"; do
-    if [[ ! -f $test_file ]]; then
-      continue
-    fi
-
-    #shellcheck source=/dev/null
-    source "$test_file"
-
-    callTestFunctions "$test_file" "$_FILTER"
-  done
-}
-
 loadTestFiles
-
-wait
 
 renderResult "$(getTestsPassed)" "$(getTestsFailed)" "$(getAssertionsPassed)" "$(getAssertionsFailed)"
