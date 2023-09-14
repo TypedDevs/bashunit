@@ -26,17 +26,20 @@ function callTestFunctions() {
 
 function runTest() {
   local function_name="$1"
-  local current_assertions_failed="$_ASSERTIONS_FAILED"
+  local current_assertions_failed
+  current_assertions_failed="$(getAssertionsFailed)"
 
   "$function_name"
 
-  if [ "$current_assertions_failed" == "$_ASSERTIONS_FAILED" ]; then
-    ((_TESTS_PASSED++))
-    local label="${3:-$(normalizeTestFunctionName "$function_name")}"
-    printSuccessfulTest "${label}"
-  else
-    ((_TESTS_FAILED++))
+  if [ "$current_assertions_failed" != "$(getAssertionsFailed)" ]; then
+    addTestsFailed
+    return
   fi
+
+  addTestsPassed
+
+  local label="${3:-$(normalizeTestFunctionName "$function_name")}"
+  printSuccessfulTest "${label}"
 }
 
 ###############
@@ -71,18 +74,19 @@ function loadTestFiles() {
   fi
 
   for test_file in "${_FILES[@]}"; do
-    if [[ ! -f $test_file ]];
-    then
+    if [[ ! -f $test_file ]]; then
       continue
     fi
-    # shellcheck disable=SC1090
+
+    #shellcheck source=/dev/null
     source "$test_file"
+
     callTestFunctions "$test_file" "$_FILTER"
-    if [ "$PARALLEL_RUN" = true ] ; then
-      wait
-    fi
   done
 }
 
 loadTestFiles
 
+wait
+
+renderResult "$(getTestsPassed)" "$(getTestsFailed)" "$(getAssertionsPassed)" "$(getAssertionsFailed)"

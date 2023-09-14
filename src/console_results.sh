@@ -1,10 +1,6 @@
 #!/bin/bash
 
 _START_TIME=$(date +%s%N);
-_TESTS_PASSED=0
-_TESTS_FAILED=0
-_ASSERTIONS_PASSED=0
-_ASSERTIONS_FAILED=0
 
 function renderResult() {
   local tests_passed=$1
@@ -37,12 +33,11 @@ function renderResult() {
 
   if [[ "$tests_failed" -gt 0 ]]; then
     printExecutionTime
-    exit 1
+    return
   fi
 
   printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
   printExecutionTime
-  exit 0
 }
 
 function printExecutionTime() {
@@ -70,6 +65,3 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
 }
-
-# Set a trap to call renderResult when the script exits
-trap 'renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT
