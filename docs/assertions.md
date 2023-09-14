@@ -1,14 +1,15 @@
 # Assertions
 
-When creating tests, you'll need to verify your commands and functions. We provide assertions for these checks.
-Below is their documentation.
+When creating tests, you'll need to verify your commands and functions. We
+provide assertions for these checks. Below is their documentation.
 
 ## assertEquals
 > `assertEquals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
-[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes the same arguments.
+[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes
+the same arguments.
 
 *Example:*
 ```bash
@@ -26,7 +27,8 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assertNotContains](#assertnotcontains) is the inverse of this assertion and takes the same arguments.
+[assertNotContains](#assertnotcontains) is the inverse of this assertion and
+takes the same arguments.
 
 *Example:*
 ```bash
@@ -44,7 +46,8 @@ function test_failure() {
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes the same arguments.
+[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes
+the same arguments.
 
 *Example:*
 ```bash
@@ -62,9 +65,13 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not equal to `expected`.
 
-If `callable` is not provided, it takes the last executed command or function instead.
+If `callable` is not provided, it takes the last executed command or function
+instead.
 
-[assertSuccessfulCode](#assertsuccessfulcode) and [assertGeneralError](#assertgeneralerror) are more semantic versions of this assertion, for which you don't need to specify an exit code.
+[assertSuccessfulCode](#assertsuccessfulcode),
+[assertGeneralError](#assertgeneralerror) and
+[assertCommandNotFound](#assertcommandnotfound) are more semantic versions of
+this assertion, for which you don't need to specify an exit code.
 
 *Example:*
 ```bash
@@ -100,9 +107,11 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not successful (`0`).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+If `callable` is not provided, it takes the last executed command or function
+instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assertExitCode](#assertexitcode) is the full version of this assertion where
+you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -138,9 +147,11 @@ function test_failure() {
 
 Reports an error if the exit code of `callable` is not a general error (`1`).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+If `callable` is not provided, it takes the last executed command or function
+instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assertExitCode](#assertexitcode) is the full version of this assertion where
+you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -171,12 +182,42 @@ function test_failure() {
 }
 ```
 
+## assertCommandNotFound
+> `assertGeneralError ["callable"]`
+
+Reports an error if `callable` exists. In other words, if executing `callable`
+does not return a command not found exit code (`127`).
+
+If `callable` is not provided, it takes the last executed command or function
+instead.
+
+[assertExitCode](#assertexitcode) is the full version of this assertion where
+you can specify the expected exit code.
+
+*Example:*
+```bash
+function test_success_with_callable() {
+  assertCommandNotFound "$(non_existing_callable > /dev/null 2>&1)"
+}
+
+function test_success_without_callable() {
+  non_existing_callable > /dev/null 2>&1
+
+  assertCommandNotFound
+}
+
+function test_failure() {
+  assertCommandNotFound "$(ls > /dev/null 2>&1)"
+}
+```
+
 ## assertNotEquals
 > `assertNotEquals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
-[assertEquals](#assertequals) is the inverse of this assertion and takes the same arguments.
+[assertEquals](#assertequals) is the inverse of this assertion and takes the
+same arguments.
 
 *Example:*
 ```bash
@@ -194,7 +235,8 @@ function test_failure() {
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assertContains](#assertcontains) is the inverse of this assertion and takes the same arguments.
+[assertContains](#assertcontains) is the inverse of this assertion and takes the
+same arguments.
 
 *Example:*
 ```bash
@@ -212,7 +254,8 @@ function test_failure() {
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assertMatches](#assertmatches) is the inverse of this assertion and takes the same arguments.
+[assertMatches](#assertmatches) is the inverse of this assertion and takes the
+same arguments.
 
 *Example:*
 ```bash

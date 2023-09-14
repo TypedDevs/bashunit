@@ -1,16 +1,3 @@
-## assertCommandNotFound
-**Syntax**
-```bash
-assertGeneralError [execute the function or command to assert]
-```
-
-**Examples:**
-```bash
-function test_should_assert_exit_code_of_a_non_existing_command() {
-  assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)"
-}
-```
-
 ## assertArrayContains
 **Syntax**
 ```bash
