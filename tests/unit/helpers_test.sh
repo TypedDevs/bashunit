@@ -61,6 +61,7 @@ function test_unsuccessful_unsetIfExists() {
 }
 
 function test_successful_unsetIfExists() {
+  # shellcheck disable=SC2317
   function fake_function() {
     return 0
   }
