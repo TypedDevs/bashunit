@@ -57,6 +57,16 @@ function runTearDownAfterScript() {
   executeFunctionIfExists 'tearDownAfterScript'
 }
 
+function cleanSetUpAndTearDownAfterTest() {
+  unsetIfExists 'setUp'
+  unsetIfExists 'tearDown'
+}
+
+function cleanSetUpAndTearDownAfterScript() {
+  unsetIfExists 'setUpBeforeScript'
+  unsetIfExists 'tearDownAfterScript'
+}
+
 ###############
 #### MAIN #####
 ###############
@@ -101,6 +111,8 @@ function loadTestFiles() {
       wait
     fi
     runTearDownAfterScript
+
+    cleanSetUpAndTearDownAfterScript
   done
 }
 

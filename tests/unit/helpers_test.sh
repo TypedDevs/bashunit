@@ -55,3 +55,20 @@ function test_no_function_is_executed_with_execute_function_if_exists() {
 
   assertEmpty "$(executeFunctionIfExists "$function_name")"
 }
+
+function test_unsuccessful_unsetIfExists() {
+  assertGeneralError "$(unsetIfExists "fake_function")"
+}
+
+function test_successful_unsetIfExists() {
+  # shellcheck disable=SC2317
+  function fake_function() {
+    return 0
+  }
+
+  assertSuccessfulCode "$(unsetIfExists "fake_function")"
+}
+
+function tearDown() {
+  unset fake_function
+}
