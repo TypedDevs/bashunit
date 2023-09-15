@@ -8,6 +8,8 @@
 - Added `assertCommandNotFound`
 - Added `assertArrayContains`
 - Added `assertArrayNotContains`
+- Added `assertEmpty`
+- Added `assertNotEmpty`
 - Improved the readability of the assert by using guard clause
 - Update documentation
 - Add support for the static analysis on MacOS

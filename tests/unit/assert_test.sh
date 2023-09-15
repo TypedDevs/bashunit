@@ -12,6 +12,26 @@ function test_unsuccessful_assertEquals() {
     "$(assertEquals "1" "2")"
 }
 
+function test_successful_assertEmpty() {
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertEmpty "")"
+}
+
+function test_unsuccessful_assertEmpty() {
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertEmpty" "to be empty" "but got" "1")"\
+    "$(assertEmpty "1")"
+}
+
+function test_successful_assertNotEmpty() {
+  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotEmpty "a_random_string")"
+}
+
+function test_unsuccessful_assertNotEmpty() {
+  assertEquals\
+    "$(printFailedTest "Unsuccessful assertNotEmpty" "to not be empty" "but got" "")"\
+    "$(assertNotEmpty "")"
+}
+
 function test_successful_assertNotEquals() {
   assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotEquals "1" "2")"
 }
