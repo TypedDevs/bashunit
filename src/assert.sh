@@ -129,7 +129,7 @@ function assertSuccessfulCode() {
   local expected_exit_code=0
   local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
+  if [[ $actual_exit_code != "$expected_exit_code" ]]; then
     ((_ASSERTIONS_FAILED++))
     printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
