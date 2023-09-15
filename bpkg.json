@@ -1,0 +1,7 @@
+{
+  "name": "bashunit",
+  "description": "A simple testing library for bash scripts.",
+  "scripts": [ "bashunit" ],
+  "install": "make install",
+  "global": "true"
+}
