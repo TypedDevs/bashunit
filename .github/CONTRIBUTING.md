@@ -114,3 +114,4 @@ For us the documentation its really important, we are a small group and we want 
 
 ## ADR
 If you want to change something related to the architecture or apply a change that it's a decision on how the library works please use [ADR](https://adr.github.io/) otherwise we will request you to do so on the PR.
+* [ADR templates](https://github.com/joelparkerhenderson/architecture-decision-record)
