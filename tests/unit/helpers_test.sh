@@ -53,5 +53,5 @@ function test_dummyFunction_is_executed_with_execute_function_if_exists() {
 function test_no_function_is_executed_with_execute_function_if_exists() {
   local function_name='notExistingFunction'
 
-  assertEquals "" "$(executeFunctionIfExists "$function_name")"
+  assertEmpty "$(executeFunctionIfExists "$function_name")"
 }
