@@ -28,7 +28,9 @@ function runTest() {
   local function_name="$1"
   local current_assertions_failed="$_ASSERTIONS_FAILED"
 
+  runSetUp
   "$function_name"
+  runTearDown
 
   if [ "$current_assertions_failed" == "$_ASSERTIONS_FAILED" ]; then
     ((_TESTS_PASSED++))
@@ -37,6 +39,22 @@ function runTest() {
   else
     ((_TESTS_FAILED++))
   fi
+}
+
+function runSetUp() {
+  executeFunctionIfExists 'setUp'
+}
+
+function runSetUpBeforeScript() {
+  executeFunctionIfExists 'setUpBeforeScript'
+}
+
+function runTearDown() {
+  executeFunctionIfExists 'tearDown'
+}
+
+function runTearDownAfterScript() {
+  executeFunctionIfExists 'tearDownAfterScript'
 }
 
 ###############
@@ -77,10 +95,12 @@ function loadTestFiles() {
     fi
     # shellcheck disable=SC1090
     source "$test_file"
+    runSetUpBeforeScript
     callTestFunctions "$test_file" "$_FILTER"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
+    runTearDownAfterScript
   done
 }
 

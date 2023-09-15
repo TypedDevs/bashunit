@@ -51,3 +51,11 @@ function getFunctionsToRun() {
 
   echo "${functions_to_run[@]}"
 }
+
+function executeFunctionIfExists() {
+  local function_name=$1
+
+  if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
+    "$function_name"
+  fi
+}

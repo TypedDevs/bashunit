@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function dummyFunction() {
+  echo "dummyFunction executed"
+}
+
 function test_normalizeTestFunctionName_empty() {
   assertEquals "" "$(normalizeTestFunctionName)"
 }
@@ -38,4 +42,16 @@ function test_getFunctionsToRun_fail_when_duplicates() {
   local functions=("prefix_function1" "prefix_function1")
 
   assertGeneralError "$(getFunctionsToRun "prefix" "" "${functions[*]}")"
+}
+
+function test_dummyFunction_is_executed_with_execute_function_if_exists() {
+  local function_name='dummyFunction'
+
+  assertEquals "dummyFunction executed" "$(executeFunctionIfExists "$function_name")"
+}
+
+function test_no_function_is_executed_with_execute_function_if_exists() {
+  local function_name='notExistingFunction'
+
+  assertEquals "" "$(executeFunctionIfExists "$function_name")"
 }
