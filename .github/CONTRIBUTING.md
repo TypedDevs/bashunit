@@ -33,7 +33,7 @@ Please post code and output as text ([using proper markup](https://guides.github
 
 ## Specific set up for documentation application
 
-1. You should have installed `node`(_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn`.
+1. You'll need `node`(_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn` for set up the environment.
    * Using `nvm` you can execute `nvm use`(reads _.nvmrc_ file) in the project root directory and follow the instructions to use the correct `node` version
 2. Install dependencies with `yarn install`.
 3. Run local development server with `yarn doc:dev`.
