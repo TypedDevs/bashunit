@@ -14,11 +14,11 @@ hero:
       link: /assertions
 
 features:
-  - title: Enjoy the DX
-    details: Focus on simplicity and developer experience.
-  - title: Testing library
-    details: Ensure the behavior of your logic.
-  - title: Bash unix shell
-    details: The most popular command language shell.
+  - title: Flexible
+    details: Robust assertions for comparing, matching, and validating results, ensuring thorough testing of your codebase.
+  - title: Accessible
+    details: An intuitive API and clear documentation for a smooth developer experience, reducing testing complexity.
+  - title: Updated
+    details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
 ---
 
