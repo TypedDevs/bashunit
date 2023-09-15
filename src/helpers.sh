@@ -59,3 +59,14 @@ function executeFunctionIfExists() {
     "$function_name"
   fi
 }
+
+function unsetIfExists() {
+  local function_name=$1
+
+  if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
+    unset "$function_name"
+    return 0
+  fi
+
+  return 1
+}
