@@ -60,6 +60,7 @@ make test/watch
 ## Coding Guidelines
 
 ### Shellcheck
+
 To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
 
 Installation: https://github.com/koalaman/shellcheck#installing
@@ -75,21 +76,21 @@ shellcheck ./**/**/*.sh -C
 ```
 
 ### Editorconfig checker
-To contribute to this repository you must have installed [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all the files of the project against the .editorconfig file of the project
-to make sure that you fulfil the standard.
 
-To run it use the following command:
+To contribute to this repository, consider installing [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all project files regarding the `.editorconfig` to ensure we all fulfill the standard.
+
+To run it, use the following command:
 ```bash
 ec -config .editorconfig
 ```
 
-if you do not want to install this library on your local machine this command will be executed on the pipelines to ensure that the quality standards of the project
+This command will be executed on the CI to ensure the project's quality standards.
 
 #### We recommend
 
 To install the pre-commit of the project with the following command:
 
-**Please note that you will need to have Shellcheck installed on your computer.**
+**Please note that you will need to have Shellcheck installed on your computer.** See above how to install shellcheck in your local.
 
 ```bash
 make pre_commit/install
