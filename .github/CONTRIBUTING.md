@@ -39,6 +39,7 @@ Please post code and output as text ([using proper markup](https://guides.github
 2. Install dependencies with `yarn install`.
 3. Run local development server with `yarn docs:dev`.
 4. Implement your changes.
+5. Before submitting your Pull Request you can run `docs:build` to ensure everything works.
 
 Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` looks bad in the commit history of a project.
 
