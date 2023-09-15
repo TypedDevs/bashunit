@@ -1,9 +1,7 @@
 #!/bin/bash
 
-SUCCESSFUL_EMPTY_MESSAGE=""
-
 function test_successful_assertEquals() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertEquals "1" "1")"
+  assertEmpty "$(assertEquals "1" "1")"
 }
 
 function test_unsuccessful_assertEquals() {
@@ -13,7 +11,7 @@ function test_unsuccessful_assertEquals() {
 }
 
 function test_successful_assertEmpty() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertEmpty "")"
+  assertEmpty "$(assertEmpty "")"
 }
 
 function test_unsuccessful_assertEmpty() {
@@ -23,7 +21,7 @@ function test_unsuccessful_assertEmpty() {
 }
 
 function test_successful_assertNotEmpty() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotEmpty "a_random_string")"
+  assertEmpty "$(assertNotEmpty "a_random_string")"
 }
 
 function test_unsuccessful_assertNotEmpty() {
@@ -33,7 +31,7 @@ function test_unsuccessful_assertNotEmpty() {
 }
 
 function test_successful_assertNotEquals() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotEquals "1" "2")"
+  assertEmpty "$(assertNotEquals "1" "2")"
 }
 
 function test_unsuccessful_assertNotEquals() {
@@ -43,7 +41,7 @@ function test_unsuccessful_assertNotEquals() {
 }
 
 function test_successful_assertContains() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertContains "Linux" "GNU/Linux")"
+  assertEmpty "$(assertContains "Linux" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertContains() {
@@ -53,7 +51,7 @@ function test_unsuccessful_assertContains() {
 }
 
 function test_successful_assertNotContains() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotContains "Linus" "GNU/Linux")"
+  assertEmpty "$(assertNotContains "Linus" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertNotContains() {
@@ -63,7 +61,7 @@ function test_unsuccessful_assertNotContains() {
 }
 
 function test_successful_assertMatches() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertMatches ".*Linu*" "GNU/Linux")"
+  assertEmpty "$(assertMatches ".*Linu*" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertMatches() {
@@ -73,7 +71,7 @@ function test_unsuccessful_assertMatches() {
 }
 
 function test_successful_assertNotMatches() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
+  assertEmpty "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
 }
 
 function test_unsuccessful_assertNotMatches() {
@@ -87,7 +85,7 @@ function test_successful_assertExitCode() {
     exit 0
   }
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertExitCode "0" "$(fake_function)")"
+  assertEmpty "$(assertExitCode "0" "$(fake_function)")"
 }
 
 function test_unsuccessful_assertExitCode() {
@@ -125,7 +123,7 @@ function test_successful_assertSuccessfulCode() {
     return 0
   }
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertSuccessfulCode "$(fake_function)")"
+  assertEmpty "$(assertSuccessfulCode "$(fake_function)")"
 }
 
 function test_unsuccessful_assertSuccessfulCode() {
@@ -143,7 +141,7 @@ function test_successful_assertGeneralError() {
     return 1
   }
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertGeneralError "$(fake_function)")"
+  assertEmpty "$(assertGeneralError "$(fake_function)")"
 }
 
 function test_unsuccessful_assertGeneralError() {
@@ -157,7 +155,7 @@ function test_unsuccessful_assertGeneralError() {
 }
 
 function test_successful_assertCommandNotFound() {
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
+  assertEmpty "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
 }
 
 function test_unsuccessful_assertCommandNotFound() {
@@ -173,7 +171,7 @@ function test_unsuccessful_assertCommandNotFound() {
 function test_successful_assertArrayContains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayContains "123" "${distros[@]}")"
+  assertEmpty "$(assertArrayContains "123" "${distros[@]}")"
 }
 
 function test_unsuccessful_assertArrayContains() {
@@ -187,7 +185,7 @@ function test_unsuccessful_assertArrayContains() {
 function test_successful_assertArrayNotContains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEquals "$SUCCESSFUL_EMPTY_MESSAGE" "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
+  assertEmpty "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
 }
 
 function test_unsuccessful_assertArrayNotContains() {

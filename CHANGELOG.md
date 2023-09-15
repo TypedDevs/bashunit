@@ -10,6 +10,7 @@
 - Added `assertArrayNotContains`
 - Added `assertEmpty`
 - Added `assertNotEmpty`
+- Added `setUp`, `setUpBeforeScript`, `tearDown` and `tearDownAfterScript` function execution before and/or after test and/or script execution
 - Improved the readability of the assert by using guard clause
 - Update documentation
 - Add support for the static analysis on MacOS
@@ -17,7 +18,6 @@
 - Fix error on count assertions
 - Added pipeline to add contributors to the readme
 - Added documentation with vitepress
-- Added `setUp`, `setUpBeforeScript`, `tearDown` and `tearDownAfterScript` function execution before and/or after test and/or script execution
 
 ### 0.5.0
 ### 2023-09-10
