@@ -6,7 +6,7 @@ function test_successful_assertEquals() {
 
 function test_unsuccessful_assertEquals() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertEquals" "1" "but got" "2")"\
+    "$(Console::printFailedTest "Unsuccessful assertEquals" "1" "but got" "2")"\
     "$(assertEquals "1" "2")"
 }
 
@@ -16,7 +16,7 @@ function test_successful_assertEmpty() {
 
 function test_unsuccessful_assertEmpty() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertEmpty" "to be empty" "but got" "1")"\
+    "$(Console::printFailedTest "Unsuccessful assertEmpty" "to be empty" "but got" "1")"\
     "$(assertEmpty "1")"
 }
 
@@ -26,7 +26,7 @@ function test_successful_assertNotEmpty() {
 
 function test_unsuccessful_assertNotEmpty() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertNotEmpty" "to not be empty" "but got" "")"\
+    "$(Console::printFailedTest "Unsuccessful assertNotEmpty" "to not be empty" "but got" "")"\
     "$(assertNotEmpty "")"
 }
 
@@ -36,7 +36,7 @@ function test_successful_assertNotEquals() {
 
 function test_unsuccessful_assertNotEquals() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertNotEquals" "1" "but got" "1")"\
+    "$(Console::printFailedTest "Unsuccessful assertNotEquals" "1" "but got" "1")"\
     "$(assertNotEquals "1" "1")"
 }
 
@@ -46,7 +46,7 @@ function test_successful_assertContains() {
 
 function test_unsuccessful_assertContains() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertContains" "GNU/Linux" "to contain" "Unix")"\
+    "$(Console::printFailedTest "Unsuccessful assertContains" "GNU/Linux" "to contain" "Unix")"\
     "$(assertContains "Unix" "GNU/Linux")"
 }
 
@@ -56,7 +56,7 @@ function test_successful_assertNotContains() {
 
 function test_unsuccessful_assertNotContains() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertNotContains" "GNU/Linux" "to not contain" "Linux")"\
+    "$(Console::printFailedTest "Unsuccessful assertNotContains" "GNU/Linux" "to not contain" "Linux")"\
     "$(assertNotContains "Linux" "GNU/Linux")"
 }
 
@@ -66,7 +66,7 @@ function test_successful_assertMatches() {
 
 function test_unsuccessful_assertMatches() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertMatches" "GNU/Linux" "to match" ".*Pinux*")"\
+    "$(Console::printFailedTest "Unsuccessful assertMatches" "GNU/Linux" "to match" ".*Pinux*")"\
     "$(assertMatches ".*Pinux*" "GNU/Linux")"
 }
 
@@ -76,7 +76,7 @@ function test_successful_assertNotMatches() {
 
 function test_unsuccessful_assertNotMatches() {
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
+    "$(Console::printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
     "$(assertNotMatches ".*Linu*" "GNU/Linux")"
 }
 
@@ -94,7 +94,7 @@ function test_unsuccessful_assertExitCode() {
   }
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
+    "$(Console::printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
     "$(assertExitCode "0" "$(fake_function)")"
 }
 
@@ -132,7 +132,7 @@ function test_unsuccessful_assertSuccessfulCode() {
   }
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
+    "$(Console::printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
     "$(assertSuccessfulCode "$(fake_function)")"
 }
 
@@ -150,7 +150,7 @@ function test_unsuccessful_assertGeneralError() {
   }
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
+    "$(Console::printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
     "$(assertGeneralError "$(fake_function)")"
 }
 
@@ -164,7 +164,7 @@ function test_unsuccessful_assertCommandNotFound() {
   }
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
+    "$(Console::printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
     "$(assertCommandNotFound "$(fake_function)")"
 }
 
@@ -178,7 +178,11 @@ function test_unsuccessful_assertArrayContains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertArrayContains" "Ubuntu 123 Linux Mint" "to contain" "non_existing_element")"\
+    "$(Console::printFailedTest \
+      "Unsuccessful assertArrayContains"\
+      "Ubuntu 123 Linux Mint"\
+      "to contain"\
+      "non_existing_element")"\
     "$(assertArrayContains "non_existing_element" "${distros[@]}")"
 }
 
@@ -192,6 +196,6 @@ function test_unsuccessful_assertArrayNotContains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assertEquals\
-    "$(printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
+    "$(Console::printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assertArrayNotContains "123" "${distros[@]}")"
 }
