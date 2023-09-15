@@ -9,7 +9,6 @@
 - Added `assertArrayContains`
 - Added `assertArrayNotContains`
 - Improved the readability of the assert by using guard clause
-- Assert that other assertion functions return the right exit code
 - Update documentation
 - Add support for the static analysis on MacOS
 - Fix bug with watcher for the development of bashunit
