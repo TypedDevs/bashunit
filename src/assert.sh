@@ -14,6 +14,32 @@ function assertEquals() {
   ((_ASSERTIONS_PASSED++))
 }
 
+function assertEmpty() {
+  local expected="$1"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" != "" ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "to be empty" "but got" "${expected}"
+    return
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+}
+
+function assertNotEmpty() {
+  local expected="$1"
+  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" == "" ]]; then
+    ((_ASSERTIONS_FAILED++))
+    printFailedTest  "${label}" "to not be empty" "but got" "${expected}"
+    return
+  fi
+
+  ((_ASSERTIONS_PASSED++))
+}
+
 function assertNotEquals() {
   local expected="$1"
   local actual="$2"
