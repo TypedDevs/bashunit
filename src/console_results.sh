@@ -6,7 +6,7 @@ _TESTS_FAILED=0
 _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 
-function renderResult() {
+function Console::renderResult() {
   local tests_passed=$1
   local tests_failed=$2
   local assertions_passed=$3
@@ -36,28 +36,28 @@ function renderResult() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$tests_failed" -gt 0 ]]; then
-    printExecutionTime
+    Console::printExecutionTime
     exit 1
   fi
 
   printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
-  printExecutionTime
+  Console::printExecutionTime
   exit 0
 }
 
-function printExecutionTime() {
+function Console::printExecutionTime() {
   if [ "$_OS" != "OSX" ]; then
     _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
   fi
 }
 
-function printSuccessfulTest() {
+function Console::printSuccessfulTest() {
   local test_name=$1
   printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
 }
 
-function printFailedTest() {
+function Console::printFailedTest() {
   local test_name=$1
   local expected=$2
   local failure_condition_message=$3
@@ -72,4 +72,4 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 }
 
 # Set a trap to call renderResult when the script exits
-trap 'renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT
+trap 'Console::renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT

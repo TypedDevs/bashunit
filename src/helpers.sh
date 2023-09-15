@@ -5,7 +5,7 @@
 #
 # @result string Eg: "Some logic"
 #
-function normalizeTestFunctionName() {
+function Helper::normalizeTestFunctionName() {
   local original_function_name="$1"
   local result
 
@@ -21,7 +21,7 @@ function normalizeTestFunctionName() {
   echo "$result"
 }
 
-function getFunctionsToRun() {
+function Helper::getFunctionsToRun() {
   local prefix=$1
   local filter=$2
   local function_names=$3
@@ -52,7 +52,7 @@ function getFunctionsToRun() {
   echo "${functions_to_run[@]}"
 }
 
-function executeFunctionIfExists() {
+function Helper::executeFunctionIfExists() {
   local function_name=$1
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
@@ -60,7 +60,7 @@ function executeFunctionIfExists() {
   fi
 }
 
-function unsetIfExists() {
+function Helper::unsetIfExists() {
   local function_name=$1
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then

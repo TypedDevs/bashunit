@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function callTestFunctions() {
+function Runner::callTestFunctions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -9,62 +9,62 @@ function callTestFunctions() {
   function_names=$(declare -F | awk '{print $3}')
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(getFunctionsToRun "$prefix" "$filter" "$function_names"))
+  functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for function_name in "${functions_to_run[@]}"; do
       if [ "$PARALLEL_RUN" == true ] ; then
-        runTest "$function_name" &
+        Runner::runTest "$function_name" &
       else
-        runTest "$function_name"
+        Runner::runTest "$function_name"
       fi
       unset "$function_name"
     done
   fi
 }
 
-function runTest() {
+function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed="$_ASSERTIONS_FAILED"
 
-  runSetUp
+  Runner::runSetUp
   "$function_name"
-  runTearDown
+  Runner::runTearDown
 
   if [ "$current_assertions_failed" == "$_ASSERTIONS_FAILED" ]; then
     ((_TESTS_PASSED++))
-    local label="${3:-$(normalizeTestFunctionName "$function_name")}"
-    printSuccessfulTest "${label}"
+    local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
+    Console::printSuccessfulTest "${label}"
   else
     ((_TESTS_FAILED++))
   fi
 }
 
-function runSetUp() {
-  executeFunctionIfExists 'setUp'
+function Runner::runSetUp() {
+  Helper::executeFunctionIfExists 'setUp'
 }
 
-function runSetUpBeforeScript() {
-  executeFunctionIfExists 'setUpBeforeScript'
+function Runner::runSetUpBeforeScript() {
+  Helper::executeFunctionIfExists 'setUpBeforeScript'
 }
 
-function runTearDown() {
-  executeFunctionIfExists 'tearDown'
+function Runner::runTearDown() {
+  Helper::executeFunctionIfExists 'tearDown'
 }
 
-function runTearDownAfterScript() {
-  executeFunctionIfExists 'tearDownAfterScript'
+function Runner::runTearDownAfterScript() {
+  Helper::executeFunctionIfExists 'tearDownAfterScript'
 }
 
-function cleanSetUpAndTearDownAfterTest() {
-  unsetIfExists 'setUp'
-  unsetIfExists 'tearDown'
+function Runner::cleanSetUpAndTearDownAfterTest() {
+  Helper::unsetIfExists 'setUp'
+  Helper::unsetIfExists 'tearDown'
 }
 
-function cleanSetUpAndTearDownAfterScript() {
-  unsetIfExists 'setUpBeforeScript'
-  unsetIfExists 'tearDownAfterScript'
+function Runner::cleanSetUpAndTearDownAfterScript() {
+  Helper::unsetIfExists 'setUpBeforeScript'
+  Helper::unsetIfExists 'tearDownAfterScript'
 }
 
 ###############
@@ -91,7 +91,7 @@ done
 
 
 
-function loadTestFiles() {
+function Runner::loadTestFiles() {
   if [ ${#_FILES[@]} -eq 0 ]; then
     echo "Error: At least one file path is required."
     echo "Usage: $0 <test_file.sh>"
@@ -105,16 +105,16 @@ function loadTestFiles() {
     fi
     # shellcheck disable=SC1090
     source "$test_file"
-    runSetUpBeforeScript
-    callTestFunctions "$test_file" "$_FILTER"
+    Runner::runSetUpBeforeScript
+    Runner::callTestFunctions "$test_file" "$_FILTER"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
-    runTearDownAfterScript
+    Runner::runTearDownAfterScript
 
-    cleanSetUpAndTearDownAfterScript
+    Runner::cleanSetUpAndTearDownAfterScript
   done
 }
 
-loadTestFiles
+Runner::loadTestFiles
 
