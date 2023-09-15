@@ -21,6 +21,14 @@ function test_succeed() { assertEquals \"1\" \"1\" ; }" > $test_file
 }
 
 function test_bash_unit_when_a_test_fail() {
+  function addAssertionsFailed() {
+    return
+  }
+
+  function getAssertionsFailed() {
+    return "1"
+  }
+
   local test_file=./tests/acceptance/fake_fail_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_fail_test.sh
 \e[31m✗ Failed\e[0m: Fail

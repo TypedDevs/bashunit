@@ -1,52 +1,36 @@
 #!/bin/bash
 
-_LOCK_FILE="/dev/shm/_LOCK_FILE"
-_TESTS_PASSED="/dev/shm/_TESTS_PASSED"
-_TESTS_FAILED=0
-_ASSERTIONS_PASSED=0
-_ASSERTIONS_FAILED=0
-
-echo 0 > "$_TESTS_PASSED"
+STATE="/dev/shm/_BASHUNIT_STATE"
+echo "" > $STATE
 
 function getTestsPassed() {
-  local _tests_passed
-  _tests_passed=$(cat $_TESTS_PASSED)
-
-  echo "$_tests_passed"
+  grep -o "P" $STATE | wc -l
 }
 
 function addTestsPassed() {
-  (
-    flock -x 200
-
-    local _tests_passed
-    _tests_passed=$(getTestsPassed)
-
-    echo $((_tests_passed + 1)) > "$_TESTS_PASSED"
-  ) 200>"$_LOCK_FILE"
+  echo -n "P" >> $STATE
 }
 
 function getTestsFailed() {
-  echo "$_TESTS_FAILED"
+  grep -o "F" $STATE | wc -l
 }
 
 function addTestsFailed() {
-  ((_TESTS_FAILED++))
+  echo -n "F" >> $STATE
 }
 
 function getAssertionsPassed() {
-  echo "$_ASSERTIONS_PASSED"
+  grep -o "p" $STATE | wc -l
 }
 
 function addAssertionsPassed() {
-  ((_ASSERTIONS_PASSED++))
+  echo -n "p" >> $STATE
 }
 
 function getAssertionsFailed() {
-  echo "$_ASSERTIONS_FAILED"
+  grep -o "f" $STATE | wc -l
 }
 
 function addAssertionsFailed() {
-  ((_ASSERTIONS_FAILED++))
+  echo -n "f" >> $STATE
 }
-
