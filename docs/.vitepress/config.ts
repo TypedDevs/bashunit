@@ -14,8 +14,13 @@ export default defineConfig({
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     externalLinkIcon: true,
+    siteTitle: false,
 
-    logo: '/logo.svg',
+    logo: {
+      light: '/logo_navbar.svg',
+      dark: '/logo_navbar_dark.svg',
+      alt: 'bashunit'
+    },
 
     sidebar: [
       {
