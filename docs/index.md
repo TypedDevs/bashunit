@@ -4,7 +4,11 @@ layout: home
 
 hero:
   name: bashunit
-  tagline: A simple testing library for bash scripts
+  text: A simple testing library for bash scripts
+  tagline: Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
+  image:
+    src: /logo.svg
+    alt: bashunit
   actions:
     - theme: brand
       text: Getting Started
@@ -14,11 +18,33 @@ hero:
       link: /assertions
 
 features:
-  - title: Flexible
+  - icon:
+      src: /flexible.svg
+    title: Flexible
     details: Robust assertions for comparing, matching, and validating results, ensuring thorough testing of your codebase.
-  - title: Accessible
+  - icon:
+      src: /accessible.svg
+    title: Accessible
     details: An intuitive API and clear documentation for a smooth developer experience, reducing testing complexity.
-  - title: Updated
+  - icon:
+      src: /updated.svg
+    title: Updated
     details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
+  - icon:
+      src: /multiplatform.svg
+    title: Multiplatform
+    details: Seamlessly operates on Linux, macOS, and Windows (via WSL), facilitating a consistent testing environment across major platforms.
 ---
 
+<script setup lang="ts">
+import VanillaTilt from 'vanilla-tilt';
+
+window.onload = () => {
+  const heroImage = document.querySelector('.VPHero .VPImage');
+
+  VanillaTilt.init(heroImage, {
+    'full-page-listening': true,
+    reverse: true
+  });
+};
+</script>
