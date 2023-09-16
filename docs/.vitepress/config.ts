@@ -31,6 +31,11 @@ export default defineConfig({
 
     search: {
       provider: 'local'
+    },
+
+    footer: {
+      message: 'Released under the MIT License.',
+      copyright: 'Copyright © 2023-present TypedDevs'
     }
   }
 })
