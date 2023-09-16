@@ -5,6 +5,9 @@ layout: home
 hero:
   name: bashunit
   tagline: A simple testing library for bash scripts
+  image:
+    src: /logo.svg
+    alt: bashunit
   actions:
     - theme: brand
       text: Getting Started
