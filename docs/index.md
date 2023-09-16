@@ -26,5 +26,9 @@ features:
       src: /updated.svg
     title: Updated
     details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
+  - icon:
+      src: /multiplatform.svg
+    title: Multiplatform
+    details: Seamlessly operates on Linux, macOS, and Windows (via WSL), facilitating a consistent testing environment across major platforms.
 ---
 
