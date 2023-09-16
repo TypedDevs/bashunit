@@ -3,7 +3,7 @@
 function assertEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
     addAssertionsFailed
@@ -14,10 +14,36 @@ function assertEquals() {
   addAssertionsPassed
 }
 
+function assertEmpty() {
+  local expected="$1"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" != "" ]]; then
+    addAssertionsFailed
+    Console::printFailedTest  "${label}" "to be empty" "but got" "${expected}"
+    return
+  fi
+
+  addAssertionsPassed
+}
+
+function assertNotEmpty() {
+  local expected="$1"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$expected" == "" ]]; then
+    addAssertionsFailed
+    Console::printFailedTest  "${label}" "to not be empty" "but got" "${expected}"
+    return
+  fi
+
+  addAssertionsPassed
+}
+
 function assertNotEquals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "$actual" ]]; then
     addAssertionsFailed
@@ -31,7 +57,7 @@ function assertNotEquals() {
 function assertContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
     addAssertionsFailed
@@ -45,7 +71,7 @@ function assertContains() {
 function assertNotContains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual == *"$expected"* ]]; then
     addAssertionsFailed
@@ -59,7 +85,7 @@ function assertNotContains() {
 function assertMatches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual =~ $expected ]]; then
     addAssertionsFailed
@@ -73,7 +99,7 @@ function assertMatches() {
 function assertNotMatches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
     addAssertionsFailed
@@ -87,7 +113,7 @@ function assertNotMatches() {
 function assertExitCode() {
   local actual_exit_code=$?
   local expected_exit_code="$1"
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     addAssertionsFailed
@@ -101,7 +127,7 @@ function assertExitCode() {
 function assertSuccessfulCode() {
   local actual_exit_code=$?
   local expected_exit_code=0
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     addAssertionsFailed
@@ -115,7 +141,7 @@ function assertSuccessfulCode() {
 function assertGeneralError() {
   local actual_exit_code=$?
   local expected_exit_code=1
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     addAssertionsFailed
@@ -130,7 +156,7 @@ function assertGeneralError() {
 function assertCommandNotFound() {
   local actual_exit_code=$?
   local expected_exit_code=127
-  local label="${3:-$(normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [ $actual_exit_code -ne "$expected_exit_code" ]; then
     addAssertionsFailed
@@ -143,7 +169,7 @@ function assertCommandNotFound() {
 
 function assertArrayContains() {
   local expected="$1"
-  label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
+  label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
 
@@ -158,7 +184,7 @@ function assertArrayContains() {
 
 function assertArrayNotContains() {
   local expected="$1"
-  label="$(normalizeTestFunctionName "${FUNCNAME[1]}")"
+  label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
 

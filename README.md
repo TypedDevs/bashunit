@@ -105,12 +105,28 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
         </a>
     </td>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/fabriziofs>
+            <img src=https://avatars.githubusercontent.com/u/62360034?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Fabrizio Fasanando/>
+            <br />
+            <sub style="font-size:14px"><b>Fabrizio Fasanando</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
+        <a href=https://github.com/cmayo>
+            <img src=https://avatars.githubusercontent.com/u/109357?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Carlos Mayo/>
+            <br />
+            <sub style="font-size:14px"><b>Carlos Mayo</b></sub>
+        </a>
+    </td>
+    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
         <a href=https://github.com/CosmeValera>
             <img src=https://avatars.githubusercontent.com/u/80126839?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Cosme Valera Reales/>
             <br />
             <sub style="font-size:14px"><b>Cosme Valera Reales</b></sub>
         </a>
     </td>
+</tr>
+<tr>
     <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
         <a href=https://github.com/JesusValera>
             <img src=https://avatars.githubusercontent.com/u/6381924?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jesus Valera Reales/>
@@ -123,15 +139,6 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
             <img src=https://avatars.githubusercontent.com/u/29772162?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=valerangel/>
             <br />
             <sub style="font-size:14px"><b>valerangel</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/fabriziofs>
-            <img src=https://avatars.githubusercontent.com/u/62360034?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Fabrizio Fasanando/>
-            <br />
-            <sub style="font-size:14px"><b>Fabrizio Fasanando</b></sub>
         </a>
     </td>
 </tr>

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function callTestFunctions() {
+function Runner::callTestFunctions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -9,27 +9,29 @@ function callTestFunctions() {
   function_names=$(declare -F | awk '{print $3}')
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(getFunctionsToRun "$prefix" "$filter" "$function_names"))
+  functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [ "${#functions_to_run[@]}" -gt 0 ]; then
     echo "Running $script"
     for function_name in "${functions_to_run[@]}"; do
       if [ "$PARALLEL_RUN" == true ] ; then
-        runTest "$function_name" &
+        Runner::runTest "$function_name" &
       else
-        runTest "$function_name"
+        Runner::runTest "$function_name"
       fi
       unset "$function_name"
     done
   fi
 }
 
-function runTest() {
+function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
   current_assertions_failed="$(getAssertionsFailed)"
 
+  Runner::runSetUp
   "$function_name"
+  Runner::runTearDown
 
   if [ "$current_assertions_failed" != "$(getAssertionsFailed)" ]; then
     addTestsFailed
@@ -42,7 +44,7 @@ function runTest() {
   printSuccessfulTest "${label}"
 }
 
-function loadTestFiles() {
+function Runner::loadTestFiles() {
   if [ ${#_FILES[@]} -eq 0 ]; then
     echo "Error: At least one file path is required."
     echo "Usage: $0 <test_file.sh>"
@@ -57,11 +59,43 @@ function loadTestFiles() {
     #shellcheck source=/dev/null
     source "$test_file"
 
-    callTestFunctions "$test_file" "$_FILTER"
-    if [[ "$PARALLEL_RUN" = true ]]; then
+    Runner::runSetUpBeforeScript
+    Runner::callTestFunctions "$test_file" "$_FILTER"
+
+    if [[ "$PARALLEL_RUN" == true ]]; then
       wait
     fi
+
+    Runner::runTearDownAfterScript
+
+    Runner::cleanSetUpAndTearDownAfterScript
   done
+}
+
+function Runner::runSetUp() {
+  Helper::executeFunctionIfExists 'setUp'
+}
+
+function Runner::runSetUpBeforeScript() {
+  Helper::executeFunctionIfExists 'setUpBeforeScript'
+}
+
+function Runner::runTearDown() {
+  Helper::executeFunctionIfExists 'tearDown'
+}
+
+function Runner::runTearDownAfterScript() {
+  Helper::executeFunctionIfExists 'tearDownAfterScript'
+}
+
+function Runner::cleanSetUpAndTearDownAfterTest() {
+  Helper::unsetIfExists 'setUp'
+  Helper::unsetIfExists 'tearDown'
+}
+
+function Runner::cleanSetUpAndTearDownAfterScript() {
+  Helper::unsetIfExists 'setUpBeforeScript'
+  Helper::unsetIfExists 'tearDownAfterScript'
 }
 
 ###############
@@ -86,6 +120,6 @@ while [ $# -gt 0 ]; do
   esac
 done
 
-loadTestFiles
+Runner::loadTestFiles
 
 renderResult "$(getTestsPassed)" "$(getTestsFailed)" "$(getAssertionsPassed)" "$(getAssertionsFailed)"

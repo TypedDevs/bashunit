@@ -31,7 +31,18 @@ Please post code and output as text ([using proper markup](https://guides.github
 5. Ensure the code complies with our coding guidelines (see below).
 6. Send that pull request!
 
-Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` look really stupid in the commit history of a project.
+Please make sure you have [set up your username and email address](https://git-scm.com/book/en/v2/Getting-Started-First-Time-Git-Setup) for use with Git. Strings such as `silly nick name <root@localhost>` looks bad in the commit history of a project.
+
+## Specific set up for documentation application
+
+Our documentation is build with [VitePress](https://vitepress.dev/), for set up a local environment to contribute follow these steps:
+1. You'll need `node`(_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn` for set up the environment.
+   * Using `nvm` you can execute `nvm use`(reads _.nvmrc_ file) in the project root directory and follow the instructions to use the correct `node` version.
+   * To install `yarn` you can use `npm i -g yarn`.
+2. Install dependencies with `yarn install`.
+3. Run local development server with `yarn docs:dev`.
+4. Implement your changes.
+5. Before submitting your Pull Request run `docs:build` to ensure everything works.
 
 ## Change the configuration
 To change the configuration for the project we use the `.env` file if you would like to know what variables should be there use the following command:
@@ -60,6 +71,7 @@ make test/watch
 ## Coding Guidelines
 
 ### Shellcheck
+
 To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
 
 Installation: https://github.com/koalaman/shellcheck#installing
@@ -75,24 +87,31 @@ shellcheck ./**/**/*.sh -C
 ```
 
 ### Editorconfig checker
-To contribute to this repository you must have installed [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all the files of the project against the .editorconfig file of the project
-to make sure that you fulfil the standard.
 
-To run it use the following command:
+To contribute to this repository, consider installing [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all project files regarding the `.editorconfig` to ensure we all fulfill the standard.
+
+To run it, use the following command:
 ```bash
 ec -config .editorconfig
 ```
 
-if you do not want to install this library on your local machine this command will be executed on the pipelines to ensure that the quality standards of the project
+This command will be executed on the CI to ensure the project's quality standards.
 
 #### We recommend
 
 To install the pre-commit of the project with the following command:
 
-**Please note that you will need to have Shellcheck installed on your computer.**
+**Please note that you will need to have Shellcheck installed on your computer.** See above how to install shellcheck in your local.
 
 ```bash
 make pre_commit/install
 ```
 
 [Shell Guide](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names) by Google Conventions.
+
+### Documentation
+For us the documentation its really important, we are a small group and we want to mantain this project for long, to do that we will need your help
+
+## ADR
+If you want to change something related to the architecture or apply a change that it's a decision on how the library works please use [ADR](https://adr.github.io/) otherwise we will request you to do so on the PR.
+* [ADR templates](https://github.com/joelparkerhenderson/architecture-decision-record)

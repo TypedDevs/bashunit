@@ -8,8 +8,10 @@
 - Added `assertCommandNotFound`
 - Added `assertArrayContains`
 - Added `assertArrayNotContains`
+- Added `assertEmpty`
+- Added `assertNotEmpty`
+- Added `setUp`, `setUpBeforeScript`, `tearDown` and `tearDownAfterScript` function execution before and/or after test and/or script execution
 - Improved the readability of the assert by using guard clause
-- Assert that other assertion functions return the right exit code
 - Update documentation
 - Add support for the static analysis on MacOS
 - Fix bug with watcher for the development of bashunit

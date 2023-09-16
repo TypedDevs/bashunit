@@ -1,0 +1,7 @@
+{
+  "name": "bashunit",
+  "description": "A simple testing library for bash scripts.",
+  "scripts": [ "bashunit" ],
+  "install": "install -b bashunit ${PREFIX:-/usr/local}/bin/bashunit",
+  "global": "false"
+}

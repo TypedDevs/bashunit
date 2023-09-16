@@ -48,3 +48,7 @@ function test_fail() { assertEquals \"1\" \"0\" ; }" > $test_file
 
   rm $test_file
 }
+
+function test_when_running_bashunit_without_error_then_exit_code_should_be_success() {
+  assertSuccessfulCode "$(./bashunit)"
+}

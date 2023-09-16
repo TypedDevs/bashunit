@@ -14,11 +14,11 @@ hero:
       link: /assertions
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Flexible
+    details: Robust assertions for comparing, matching, and validating results, ensuring thorough testing of your codebase.
+  - title: Accessible
+    details: An intuitive API and clear documentation for a smooth developer experience, reducing testing complexity.
+  - title: Updated
+    details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
 ---
 
