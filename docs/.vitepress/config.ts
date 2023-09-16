@@ -26,6 +26,7 @@ export default defineConfig({
     ],
 
     socialLinks: [
+      { icon: 'x', link: 'https://x.com/bashunit' },
       { icon: 'github', link: 'https://github.com/TypedDevs/bashunit' }
     ],
 
