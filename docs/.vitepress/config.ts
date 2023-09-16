@@ -4,6 +4,11 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   title: 'bashunit',
   description: 'A simple testing library for bash scripts',
+
+  head: [
+    ['link', { rel: 'icon', href: '/favicon.ico' }]
+  ],
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     logo: '/logo.svg',
