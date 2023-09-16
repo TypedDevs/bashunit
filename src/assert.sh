@@ -115,7 +115,7 @@ function assertExitCode() {
   local expected_exit_code="$1"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
@@ -129,7 +129,7 @@ function assertSuccessfulCode() {
   local expected_exit_code=0
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -143,7 +143,7 @@ function assertGeneralError() {
   local expected_exit_code=1
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -158,7 +158,7 @@ function assertCommandNotFound() {
   local expected_exit_code=127
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return

@@ -11,10 +11,10 @@ function Runner::callTestFunctions() {
   # shellcheck disable=SC2207
   functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
-  if [ "${#functions_to_run[@]}" -gt 0 ]; then
+  if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     echo "Running $script"
     for function_name in "${functions_to_run[@]}"; do
-      if [ "$PARALLEL_RUN" == true ] ; then
+      if [[ "$PARALLEL_RUN" == true ]]; then
         Runner::runTest "$function_name" &
       else
         Runner::runTest "$function_name"
@@ -33,19 +33,18 @@ function Runner::runTest() {
   "$function_name"
   Runner::runTearDown
 
-  if [ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]; then
+  if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
     State::addTestsFailed
     return
   fi
 
-  State::addTestsPassed
-
   local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
   Console::printSuccessfulTest "${label}"
+  State::addTestsPassed
 }
 
 function Runner::loadTestFiles() {
-  if [ ${#_FILES[@]} -eq 0 ]; then
+  if [[ ${#_FILES[@]} -eq 0 ]]; then
     echo "Error: At least one file path is required."
     echo "Usage: $0 <test_file.sh>"
     exit 1
@@ -105,7 +104,7 @@ function Runner::cleanSetUpAndTearDownAfterScript() {
 _FILES=()
 _FILTER=""
 
-while [ $# -gt 0 ]; do
+while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
     --filter)
