@@ -1,36 +1,38 @@
 #!/bin/bash
 
-STATE="/dev/shm/_BASHUNIT_STATE"
-echo "" > $STATE
+_TESTS_PASSED=0
+_TESTS_FAILED=0
+_ASSERTIONS_PASSED=0
+_ASSERTIONS_FAILED=0
 
-function getTestsPassed() {
-  grep -o "P" $STATE | wc -l
+function State::getTestsPassed() {
+  echo "$_TESTS_PASSED"
 }
 
-function addTestsPassed() {
-  echo -n "P" >> $STATE
+function State::addTestsPassed() {
+  ((_TESTS_PASSED++))
 }
 
-function getTestsFailed() {
-  grep -o "F" $STATE | wc -l
+function State::getTestsFailed() {
+  echo "$_TESTS_FAILED"
 }
 
-function addTestsFailed() {
-  echo -n "F" >> $STATE
+function State::addTestsFailed() {
+  ((_TESTS_FAILED++))
 }
 
-function getAssertionsPassed() {
-  grep -o "p" $STATE | wc -l
+function State::getAssertionsPassed() {
+  echo "$_ASSERTIONS_PASSED"
 }
 
-function addAssertionsPassed() {
-  echo -n "p" >> $STATE
+function State::addAssertionsPassed() {
+  ((_ASSERTIONS_PASSED++))
 }
 
-function getAssertionsFailed() {
-  grep -o "f" $STATE | wc -l
+function State::getAssertionsFailed() {
+  echo "$_ASSERTIONS_FAILED"
 }
 
-function addAssertionsFailed() {
-  echo -n "f" >> $STATE
+function State::addAssertionsFailed() {
+  ((_ASSERTIONS_FAILED++))
 }

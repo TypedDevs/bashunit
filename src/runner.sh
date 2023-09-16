@@ -27,21 +27,21 @@ function Runner::callTestFunctions() {
 function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
-  current_assertions_failed="$(getAssertionsFailed)"
+  current_assertions_failed="$(State::getAssertionsFailed)"
 
   Runner::runSetUp
   "$function_name"
   Runner::runTearDown
 
-  if [ "$current_assertions_failed" != "$(getAssertionsFailed)" ]; then
-    addTestsFailed
+  if [ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]; then
+    State::addTestsFailed
     return
   fi
 
-  addTestsPassed
+  State::addTestsPassed
 
-  local label="${3:-$(normalizeTestFunctionName "$function_name")}"
-  printSuccessfulTest "${label}"
+  local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
+  Console::printSuccessfulTest "${label}"
 }
 
 function Runner::loadTestFiles() {
@@ -122,4 +122,8 @@ done
 
 Runner::loadTestFiles
 
-renderResult "$(getTestsPassed)" "$(getTestsFailed)" "$(getAssertionsPassed)" "$(getAssertionsFailed)"
+trap 'Console::renderResult '\
+'"$(State::getTestsPassed)" '\
+'"$(State::getTestsFailed)" '\
+'"$(State::getAssertionsPassed)" '\
+'"$(State::getAssertionsFailed)"' EXIT

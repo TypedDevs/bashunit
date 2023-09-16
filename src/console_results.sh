@@ -33,11 +33,12 @@ function Console::renderResult() {
 
   if [[ "$tests_failed" -gt 0 ]]; then
     Console::printExecutionTime
-    return
+    exit 1
   fi
 
   printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
   Console::printExecutionTime
+  exit 0
 }
 
 function Console::printExecutionTime() {
