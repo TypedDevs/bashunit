@@ -172,3 +172,8 @@ h1, h2, h3, h4, h5, h6 {
   object-fit: contain;
   object-position: center;
 }
+
+.VPHero .VPImage {
+  translate: -50% -50%;
+  transform: none;
+}
