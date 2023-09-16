@@ -2,8 +2,9 @@ import { defineConfig } from 'vitepress'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
-  title: 'bashunit',
-  description: 'A simple testing library for bash scripts',
+  title: 'bashunit - A simple testing library for bash scripts',
+  titleTemplate: 'bashunit',
+  description: 'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.',
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
