@@ -14,11 +14,8 @@ function Runner::callTestFunctions() {
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     echo "Running $script"
     for function_name in "${functions_to_run[@]}"; do
-      if [[ "$PARALLEL_RUN" == true ]]; then
-        Runner::runTest "$function_name" &
-      else
-        Runner::runTest "$function_name"
-      fi
+      Runner::runTest "$function_name"
+
       unset "$function_name"
     done
   fi
@@ -60,13 +57,7 @@ function Runner::loadTestFiles() {
 
     Runner::runSetUpBeforeScript
     Runner::callTestFunctions "$test_file" "$_FILTER"
-
-    if [[ "$PARALLEL_RUN" == true ]]; then
-      wait
-    fi
-
     Runner::runTearDownAfterScript
-
     Runner::cleanSetUpAndTearDownAfterScript
   done
 }
