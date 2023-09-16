@@ -4,7 +4,8 @@ layout: home
 
 hero:
   name: bashunit
-  tagline: A simple testing library for bash scripts
+  text: A simple testing library for bash scripts
+  tagline: Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
   image:
     src: /logo.svg
     alt: bashunit
