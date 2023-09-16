@@ -13,6 +13,8 @@ export default defineConfig({
 
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
+    externalLinkIcon: true,
+
     logo: '/logo.svg',
 
     sidebar: [
