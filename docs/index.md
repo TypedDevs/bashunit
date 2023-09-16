@@ -14,11 +14,17 @@ hero:
       link: /assertions
 
 features:
-  - title: Flexible
+  - icon:
+      src: /flexible.svg
+    title: Flexible
     details: Robust assertions for comparing, matching, and validating results, ensuring thorough testing of your codebase.
-  - title: Accessible
+  - icon:
+      src: /accessible.svg
+    title: Accessible
     details: An intuitive API and clear documentation for a smooth developer experience, reducing testing complexity.
-  - title: Updated
+  - icon:
+      src: /updated.svg
+    title: Updated
     details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
 ---
 
