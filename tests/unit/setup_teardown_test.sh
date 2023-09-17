@@ -25,4 +25,3 @@ function test_counter_is_incremented_after_setup_before_script_and_setup() {
 function test_counter_is_decremented_and_incremented_after_teardown_and_setup() {
   assertEquals "3" "$TEST_COUNTER"
 }
-

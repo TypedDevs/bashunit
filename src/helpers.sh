@@ -22,6 +22,22 @@ function Helper::normalizeTestFunctionName() {
 }
 
 #
+# @param $1 string Eg: "your_script.sh"
+#
+# @result string Eg: "func1,func2"
+#
+function Helper::getDuplicateFunctionNames() {
+  local script="$1"
+
+  grep -E '^\s*(function)?\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script" | \
+    awk '{gsub(/\(|\)/, ""); print $2}' | \
+    sort | \
+    uniq -d | \
+    tr '\n' ','| \
+    sed 's/,$//'
+}
+
+#
 # @param $1 string Eg: "prefix"
 # @param $2 string Eg: "filter"
 # @param $3 array Eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"

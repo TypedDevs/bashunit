@@ -1,5 +1,10 @@
 #!/bin/bash
 
+function tearDown() {
+  Helper::unsetIfExists fake_function
+  Helper::unsetIfExists dummyFunction
+}
+
 function dummyFunction() {
   echo "dummyFunction executed"
 }
@@ -71,6 +76,16 @@ function test_successful_unsetIfExists() {
   assertSuccessfulCode "$(Helper::unsetIfExists "fake_function")"
 }
 
-function tearDown() {
-  unset fake_function
+function test_getDuplicateFunctionNames_with_duplicates() {
+  local duplicates
+  duplicates="$(Helper::getDuplicateFunctionNames "$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh")"
+
+  assertEquals "func1,func2" "$duplicates"
+}
+
+function test_getDuplicateFunctionNames_without_duplicates() {
+  local duplicates
+  duplicates="$(Helper::getDuplicateFunctionNames "$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh")"
+
+  assertEquals "" "$duplicates"
 }

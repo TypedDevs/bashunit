@@ -81,77 +81,77 @@ function test_unsuccessful_assertNotMatches() {
 }
 
 function test_successful_assertExitCode() {
-  function fake_function() {
+  function fake_function1() {
     exit 0
   }
 
-  assertEmpty "$(assertExitCode "0" "$(fake_function)")"
+  assertEmpty "$(assertExitCode "0" "$(fake_function1)")"
 }
 
 function test_unsuccessful_assertExitCode() {
-  function fake_function() {
+  function fake_function2() {
     exit 1
   }
 
   assertEquals\
     "$(Console::printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
-    "$(assertExitCode "0" "$(fake_function)")"
+    "$(assertExitCode "0" "$(fake_function2)")"
 }
 
 function test_successful_return_assertExitCode() {
-  function fake_function() {
+  function fake_function3() {
     return 0
   }
 
-  fake_function
+  fake_function3
 
   assertExitCode "0"
 }
 
 function test_unsuccessful_return_assertExitCode() {
-  function fake_function() {
+  function fake_function4() {
     return 1
   }
 
-  fake_function
+  fake_function4
 
   assertExitCode "1"
 }
 
 function test_successful_assertSuccessfulCode() {
-  function fake_function() {
+  function fake_function5() {
     return 0
   }
 
-  assertEmpty "$(assertSuccessfulCode "$(fake_function)")"
+  assertEmpty "$(assertSuccessfulCode "$(fake_function5)")"
 }
 
 function test_unsuccessful_assertSuccessfulCode() {
-  function fake_function() {
+  function fake_function6() {
     return 2
   }
 
   assertEquals\
     "$(Console::printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
-    "$(assertSuccessfulCode "$(fake_function)")"
+    "$(assertSuccessfulCode "$(fake_function6)")"
 }
 
 function test_successful_assertGeneralError() {
-  function fake_function() {
+  function fake_function7() {
     return 1
   }
 
-  assertEmpty "$(assertGeneralError "$(fake_function)")"
+  assertEmpty "$(assertGeneralError "$(fake_function7)")"
 }
 
 function test_unsuccessful_assertGeneralError() {
-  function fake_function() {
+  function fake_function8() {
     return 2
   }
 
   assertEquals\
     "$(Console::printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
-    "$(assertGeneralError "$(fake_function)")"
+    "$(assertGeneralError "$(fake_function8)")"
 }
 
 function test_successful_assertCommandNotFound() {
@@ -159,13 +159,13 @@ function test_successful_assertCommandNotFound() {
 }
 
 function test_unsuccessful_assertCommandNotFound() {
-  function fake_function() {
+  function fake_function9() {
     return 0
   }
 
   assertEquals\
     "$(Console::printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
-    "$(assertCommandNotFound "$(fake_function)")"
+    "$(assertCommandNotFound "$(fake_function9)")"
 }
 
 function test_successful_assertArrayContains() {

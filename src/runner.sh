@@ -110,6 +110,40 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+
+function Runner::loadTestFiles() {
+  if [ ${#_FILES[@]} -eq 0 ]; then
+    echo "Error: At least one file path is required."
+    echo "Usage: $0 <test_file.sh>"
+    exit 1
+  fi
+
+  for test_file in "${_FILES[@]}"; do
+    if [[ ! -f $test_file ]]; then
+      continue
+    fi
+    # shellcheck disable=SC1090
+    source "$test_file"
+
+    local duplicates
+    duplicates="$(Helper::getDuplicateFunctionNames "$test_file")"
+    if [[ -n "$duplicates" ]]; then
+      echo "Duplicate functions found $duplicates"
+      echo "In $test_file"
+      exit 1
+    fi
+
+    Runner::runSetUpBeforeScript
+    Runner::callTestFunctions "$test_file" "$_FILTER"
+    if [ "$PARALLEL_RUN" = true ] ; then
+      wait
+    fi
+    Runner::runTearDownAfterScript
+
+    Runner::cleanSetUpAndTearDownAfterScript
+  done
+}
+
 Runner::loadTestFiles
 
 trap 'Console::renderResult '\
