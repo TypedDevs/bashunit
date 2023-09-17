@@ -128,8 +128,12 @@ function Runner::loadTestFiles() {
     local duplicates
     duplicates="$(Helper::getDuplicateFunctionNames "$test_file")"
     if [[ -n "$duplicates" ]]; then
-      echo "Duplicate functions found $duplicates"
-      echo "In $test_file"
+      _DUPLICATED_FOUND=true
+      echo "Duplicate functions found in '$test_file'"
+      IFS=',' read -ra elements <<< "$duplicates"
+      for element in "${elements[@]}"; do
+          echo "- $element"
+      done
       exit 1
     fi
 
@@ -150,4 +154,5 @@ trap 'Console::renderResult '\
 '"$(State::getTestsPassed)" '\
 '"$(State::getTestsFailed)" '\
 '"$(State::getAssertionsPassed)" '\
-'"$(State::getAssertionsFailed)"' EXIT
+'"$(State::getAssertionsFailed)" ' \
+'$_DUPLICATED_FOUND' EXIT

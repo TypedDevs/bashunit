@@ -1,14 +1,20 @@
 #!/bin/bash
 
 _START_TIME=$(date +%s%N);
+_DUPLICATED_FOUND=false
 
 function Console::renderResult() {
   local tests_passed=$1
   local tests_failed=$2
   local assertions_passed=$3
   local assertions_failed=$4
+  local duplicated_found="${5:-false}"
 
   echo ""
+  if [[ $duplicated_found == true ]]; then
+    return
+  fi
+
   local total_tests=$((tests_passed + tests_failed))
   local total_assertions=$((assertions_passed + assertions_failed))
 
