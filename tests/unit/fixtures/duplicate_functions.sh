@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# shellcheck disable=SC2317
 function func1() {
     echo "Function 1"
 }
