@@ -40,6 +40,24 @@ function test_failure() {
 }
 ```
 
+## assertEmpty
+> `assertEmpty "actual"`
+
+Reports an error if `actual` is not empty.
+
+[assertNotEmpty](#assertnotempty) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertEmpty ""
+}
+
+function test_failure() {
+  assertEmpty "foo"
+}
+```
+
 ## assertMatches
 > `assertMatches "pattern" "value"`
 
@@ -255,6 +273,24 @@ function test_success() {
 
 function test_failure() {
   assertNotContains "foo" "foobar"
+}
+```
+
+## assertNotEmpty
+> `assertNotEmpty "actual"`
+
+Reports an error if `actual` is empty.
+
+[assertEmpty](#assertempty) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  assertNotEmpty "foo"
+}
+
+function test_failure() {
+  assertNotEmpty ""
 }
 ```
 
