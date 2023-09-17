@@ -13,7 +13,7 @@
 - Added `setUp`, `setUpBeforeScript`, `tearDown` and `tearDownAfterScript` function execution before and/or after test and/or script execution
 - Improved the readability of the assert by using guard clause
 - Update documentation
-- Add support for the static analysis on MacOS
+- Add support for the static analysis on macOS
 - Fix bug with watcher for the development of bashunit
 - Fix error on count assertions
 - Added pipeline to add contributors to the readme
@@ -33,9 +33,7 @@
 - Added pre-commit to the project
 - Allow parallel tests to run base on a .env configuration enabled by default
 - Added static analysis tools to the deployment pipelines
-  ![test running on parallel with time execution and watcher](./docs/changelog/test_running_on_parallel_with_the_watcher_and_the_execution_time.gif)
 - New summary output
-  ![the new an fancy summary output](./docs/changelog/test_summary.png)
 
 ### 0.4.0
 ### 2023-09-08
@@ -48,8 +46,6 @@
     - Colors
     - Bolds
 - Added count to all test
-
-![Added count to all test](docs/changelog/total_of_test.png)
 
 ### 0.3.0
 ### 2023-09-07
