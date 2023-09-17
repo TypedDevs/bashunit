@@ -162,6 +162,11 @@ h1, h2, h3, h4, h5, h6 {
   --vp-home-hero-name-color: #eceeee;
 }
 
+.VPHero .VPImage {
+  translate: -50% -50%;
+  transform: none;
+}
+
 .VPFeature .VPImage {
   all: unset;
   background: #2e3436;
@@ -171,9 +176,4 @@ h1, h2, h3, h4, h5, h6 {
   height: 2rem;
   object-fit: contain;
   object-position: center;
-}
-
-.VPHero .VPImage {
-  translate: -50% -50%;
-  transform: none;
 }
