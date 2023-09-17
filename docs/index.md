@@ -37,14 +37,15 @@ features:
 ---
 
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
 
-window.onload = () => {
+onMounted(() => {
   const heroImage = document.querySelector('.VPHero .VPImage');
 
   VanillaTilt.init(heroImage, {
     'full-page-listening': true,
     reverse: true
   });
-};
+});
 </script>
