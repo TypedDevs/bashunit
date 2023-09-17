@@ -36,13 +36,16 @@ features:
     details: Seamlessly operates on Linux, macOS, and Windows (via WSL), facilitating a consistent testing environment across major platforms.
 ---
 
-<script setup lang="ts" type="module">
+<script setup lang="ts">
+import { onMounted } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
 
-const heroImage = document.querySelector('.VPHero .VPImage');
+onMounted(() => {
+  const heroImage = document.querySelector('.VPHero .VPImage');
 
-VanillaTilt.init(heroImage, {
-  'full-page-listening': true,
-  reverse: true
+  VanillaTilt.init(heroImage, {
+    'full-page-listening': true,
+    reverse: true
+  });
 });
 </script>
