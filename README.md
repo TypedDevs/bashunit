@@ -26,7 +26,11 @@
   </picture>
 </p>
 
-<h1 align="center">Minimalistic Bash Testing</h1>
+<h1 align="center">A simple testing library for bash scripts</h1>
+
+<p align="center">
+    Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
+</p>
 
 ## Usage
 
