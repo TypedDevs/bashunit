@@ -3,7 +3,7 @@
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
-# @result string Eg: "Some logic camelCase"
+# @return string Eg: "Some logic camelCase"
 #
 function Helper::normalizeTestFunctionName() {
   local original_function_name="$1"
@@ -24,7 +24,7 @@ function Helper::normalizeTestFunctionName() {
 #
 # @param $1 string Eg: "your_script.sh"
 #
-# @result string Eg: "func1,func2"
+# @return string Eg: "func1,func2"
 #
 function Helper::getDuplicateFunctions() {
   local script="$1"
@@ -42,7 +42,7 @@ function Helper::getDuplicateFunctions() {
 # @param $2 string Eg: "filter"
 # @param $3 array Eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"
 #
-# @result array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
+# @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
 function Helper::getFunctionsToRun() {
   local prefix=$1
