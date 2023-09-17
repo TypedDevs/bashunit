@@ -17,7 +17,7 @@
 - Fix bug with watcher for the development of bashunit
 - Fix error on count assertions
 - Added pipeline to add contributors to the readme
-- Added documentation with vitepress
+- Added documentation with VitePress
 
 ### 0.5.0
 ### 2023-09-10
@@ -42,11 +42,11 @@
 
 - Better output colors and symbols
 - Add option `--filter` to `./bashunit` script
-  - Trigger tests filtered by name
+    - Trigger tests filtered by name
 - Change the output styles
-  - Emojis
-  - Colors
-  - Bolds
+    - Emojis
+    - Colors
+    - Bolds
 - Added count to all test
 
 ![Added count to all test](docs/changelog/total_of_test.png)

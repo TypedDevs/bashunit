@@ -1,29 +1,29 @@
 <p align="center">
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Contributors">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
-  </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Contributors">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
+    </a>
 <a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
-  </a>
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
+    </a>
 </p>
 <br>
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
-    <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
-  </picture>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
+        <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
+    </picture>
 </p>
 
 <h1 align="center">A simple testing library for bash scripts</h1>
@@ -73,9 +73,9 @@ git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
 To update a git-submodule:
 1. keep the git-submodule under your git (committed)
 2. go inside the git-submodule and:
-   1. `git submodule update --remote` (preferred)
-   2. or pull `main`
-   3. or checkout a concrete release tag
+    1. `git submodule update --remote` (preferred)
+    2. or pull `main`
+    3. or checkout a concrete release tag
 
 
 ## Contribute
