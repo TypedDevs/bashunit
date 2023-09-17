@@ -1,32 +1,36 @@
 <p align="center">
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Contributors">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
-  </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Contributors">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
+    </a>
 <a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
-    <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
-  </a>
-  <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
-    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
-  </a>
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
+    </a>
+    <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
+        <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
+    </a>
 </p>
 <br>
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
-    <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
-  </picture>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
+        <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
+    </picture>
 </p>
 
-<h1 align="center">Minimalistic Bash Testing</h1>
+<h1 align="center">A simple testing library for bash scripts</h1>
+
+<p align="center">
+    Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
+</p>
 
 ## Usage
 
@@ -69,9 +73,9 @@ git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
 To update a git-submodule:
 1. keep the git-submodule under your git (committed)
 2. go inside the git-submodule and:
-   1. `git submodule update --remote` (preferred)
-   2. or pull `main`
-   3. or checkout a concrete release tag
+    1. `git submodule update --remote` (preferred)
+    2. or pull `main`
+    3. or checkout a concrete release tag
 
 
 ## Contribute
@@ -81,65 +85,6 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
 
 ## Contributors
 
-<table>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/khru>
-            <img src=https://avatars.githubusercontent.com/u/6353105?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Emmanuel Valverde Ramos/>
-            <br />
-            <sub style="font-size:14px"><b>Emmanuel Valverde Ramos</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/Chemaclass>
-            <img src=https://avatars.githubusercontent.com/u/5256287?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jose Maria Valera Reales/>
-            <br />
-            <sub style="font-size:14px"><b>Jose Maria Valera Reales</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/Tito-Kati>
-            <img src=https://avatars.githubusercontent.com/u/13595197?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Antonio Gonzalez Gea/>
-            <br />
-            <sub style="font-size:14px"><b>Antonio Gonzalez Gea</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/fabriziofs>
-            <img src=https://avatars.githubusercontent.com/u/62360034?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Fabrizio Fasanando/>
-            <br />
-            <sub style="font-size:14px"><b>Fabrizio Fasanando</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/cmayo>
-            <img src=https://avatars.githubusercontent.com/u/109357?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Carlos Mayo/>
-            <br />
-            <sub style="font-size:14px"><b>Carlos Mayo</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/CosmeValera>
-            <img src=https://avatars.githubusercontent.com/u/80126839?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Cosme Valera Reales/>
-            <br />
-            <sub style="font-size:14px"><b>Cosme Valera Reales</b></sub>
-        </a>
-    </td>
-</tr>
-<tr>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/JesusValera>
-            <img src=https://avatars.githubusercontent.com/u/6381924?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=Jesus Valera Reales/>
-            <br />
-            <sub style="font-size:14px"><b>Jesus Valera Reales</b></sub>
-        </a>
-    </td>
-    <td align="center" style="word-wrap: break-word; width: 150.0; height: 150.0">
-        <a href=https://github.com/valerangel>
-            <img src=https://avatars.githubusercontent.com/u/29772162?v=4 width="100;"  style="border-radius:50%;align-items:center;justify-content:center;overflow:hidden;padding-top:10px" alt=valerangel/>
-            <br />
-            <sub style="font-size:14px"><b>valerangel</b></sub>
-        </a>
-    </td>
-</tr>
-</table>
+<p align="center">
+    <img src="docs/public/contributors.svg" alt="Contributors list" />
+</p>

@@ -8,17 +8,23 @@ on:
 
 jobs:
   add-contributors:
-    permissions: write-all
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: BobAnkh/add-contributors@master
+      - uses: wow-actions/contributors-list@v1
         with:
-          CONTRIBUTOR: '## Contributors'
-          COLUMN_PER_ROW: '6'
-          ACCESS_TOKEN: ${{secrets.GITHUB_TOKEN}}
-          IMG_WIDTH: '100'
-          FONT_SIZE: '14'
-          PATH: '/README.md'
-          COMMIT_MESSAGE: 'docs(README): update contributors'
-          AVATAR_SHAPE: 'round'
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          round: true
+          svgPath: docs/public/contributors.svg
+          svgWidth: 760
+          avatarSize: 100
+          avatarMargin: 10
+          userNameHeight: 26
+          itemTemplate: >
+            <g transform="translate({{ x }}, {{ y }})">
+              <a xlink:href="{{{ url }}}" class="contributor-link" target="_blank" rel="nofollow sponsored" title="{{{ name }}}" id="{{{ name }}}">
+                <image width="{{ width }}" height="{{ height }}" xlink:href="{{{ avatar }}}" />
+                <text x="50" y="116" text-anchor="middle" alignment-baseline="middle" font-size="16" font-family="sans-serif">{{{ name }}}</text>
+              </a>
+            </g>
+          commitMessage: 'docs: update contributors'
+
