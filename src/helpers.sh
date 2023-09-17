@@ -26,7 +26,7 @@ function Helper::normalizeTestFunctionName() {
 #
 # @result string Eg: "func1,func2"
 #
-function Helper::getDuplicateFunctionNames() {
+function Helper::getDuplicateFunctions() {
   local script="$1"
 
   grep -E '^\s*(function)?\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script" | \

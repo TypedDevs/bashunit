@@ -126,7 +126,7 @@ function Runner::loadTestFiles() {
     source "$test_file"
 
     local duplicates
-    duplicates="$(Helper::getDuplicateFunctionNames "$test_file")"
+    duplicates="$(Helper::getDuplicateFunctions "$test_file")"
     if [[ -n "$duplicates" ]]; then
       _DUPLICATED_FOUND=true
       echo "Duplicate functions found in '$test_file'"
