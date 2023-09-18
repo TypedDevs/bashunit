@@ -29,12 +29,24 @@ function Helper::normalizeTestFunctionName() {
 function Helper::getDuplicateFunctions() {
   local script="$1"
 
-  grep -E '^\s*(function)?\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script" | \
-    awk '{gsub(/\(|\)/, ""); print $2}' | \
-    sort | \
-    uniq -d | \
-    tr '\n' ','| \
-    sed 's/,$//'
+  local filtered_lines
+  filtered_lines=$(grep -E '^\s*(function)?\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
+
+  local function_names
+  function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
+
+  local sorted_names
+  sorted_names=$(echo "$function_names" | sort)
+
+  local duplicates
+  duplicates=$(echo "$sorted_names" | uniq -d)
+
+
+  if [ -n "$duplicates" ]; then
+    echo true
+  else
+    echo false
+  fi
 }
 
 #
