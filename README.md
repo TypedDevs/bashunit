@@ -1,4 +1,4 @@
-<p align="center">
+<p style="text-align: center;">
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
     </a>
@@ -19,16 +19,16 @@
     </a>
 </p>
 <br>
-<p align="center">
+<p style="text-align: center;">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
         <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
     </picture>
 </p>
 
-<h1 align="center">A simple testing library for bash scripts</h1>
+<h1 style="text-align: center;">A simple testing library for bash scripts</h1>
 
-<p align="center">
+<p style="text-align: center;">
     Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
 </p>
 
@@ -85,6 +85,6 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
 
 ## Contributors
 
-<p align="center">
-    <img src="docs/public/contributors.svg" alt="Contributors list" />
+<p style="text-align: center;">
+    <img src="https://contributors.nn.ci/api?repo=TypedDevs/bashunit" alt="Contributors list" />
 </p>
