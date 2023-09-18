@@ -14,11 +14,11 @@ Reports an error if the two variables `expected` and `actual` are not equal.
 *Example:*
 ```bash
 function test_success() {
-    assertEquals "foo" "foo"
+  assertEquals "foo" "foo"
 }
 
 function test_failure() {
-    assertEquals "foo" "bar"
+  assertEquals "foo" "bar"
 }
 ```
 
@@ -32,11 +32,11 @@ Reports an error if `needle` is not a substring of `haystack`.
 *Example:*
 ```bash
 function test_success() {
-    assertContains "foo" "foobar"
+  assertContains "foo" "foobar"
 }
 
 function test_failure() {
-    assertContains "baz" "foobar"
+  assertContains "baz" "foobar"
 }
 ```
 
@@ -50,11 +50,11 @@ Reports an error if `actual` is not empty.
 *Example:*
 ```bash
 function test_success() {
-    assertEmpty ""
+  assertEmpty ""
 }
 
 function test_failure() {
-    assertEmpty "foo"
+  assertEmpty "foo"
 }
 ```
 
@@ -68,11 +68,11 @@ Reports an error if `value` does not match the regular expression `pattern`.
 *Example:*
 ```bash
 function test_success() {
-    assertMatches "^foo" "foobar"
+  assertMatches "^foo" "foobar"
 }
 
 function test_failure() {
-    assertMatches "^bar" "foobar"
+  assertMatches "^bar" "foobar"
 }
 ```
 
@@ -89,29 +89,29 @@ are more semantic versions of this assertion, for which you don't need to specif
 *Example:*
 ```bash
 function test_success_with_callable() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    assertExitCode "1" "$(foo)"
+  assertExitCode "1" "$(foo)"
 }
 
 function test_success_without_callable() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    foo # function took instead `callable`
+  foo # function took instead `callable`
 
-    assertExitCode "1"
+  assertExitCode "1"
 }
 
 function test_failure() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    assertExitCode "0" "$(foo)"
+  assertExitCode "0" "$(foo)"
 }
 ```
 
@@ -125,15 +125,15 @@ Reports an error if `needle` is not an element of `haystack`.
 *Example:*
 ```bash
 function test_success() {
-    local haystack=(foo bar baz)
+  local haystack=(foo bar baz)
 
-    assertArrayContains "bar" "${haystack[@]}"
+  assertArrayContains "bar" "${haystack[@]}"
 }
 
 function test_failure() {
-    local haystack=(foo bar baz)
+  local haystack=(foo bar baz)
 
-    assertArrayContains "foobar" "${haystack[@]}"
+  assertArrayContains "foobar" "${haystack[@]}"
 }
 ```
 
@@ -149,29 +149,29 @@ If `callable` is not provided, it takes the last executed command or function in
 *Example:*
 ```bash
 function test_success_with_callable() {
-    function foo() {
-        return 0
-    }
+  function foo() {
+    return 0
+  }
 
-    assertSuccessfulCode "$(foo)"
+  assertSuccessfulCode "$(foo)"
 }
 
 function test_success_without_callable() {
-    function foo() {
-        return 0
-    }
+  function foo() {
+    return 0
+  }
 
-    foo # function took instead `callable`
+  foo # function took instead `callable`
 
-    assertSuccessfulCode
+  assertSuccessfulCode
 }
 
 function test_failure() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    assertSuccessfulCode "$(foo)"
+  assertSuccessfulCode "$(foo)"
 }
 ```
 
@@ -187,29 +187,29 @@ If `callable` is not provided, it takes the last executed command or function in
 *Example:*
 ```bash
 function test_success_with_callable() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    assertGeneralError "$(foo)"
+  assertGeneralError "$(foo)"
 }
 
 function test_success_without_callable() {
-    function foo() {
-        return 1
-    }
+  function foo() {
+    return 1
+  }
 
-    foo # function took instead `callable`
+  foo # function took instead `callable`
 
-    assertGeneralError
+  assertGeneralError
 }
 
 function test_failure() {
-    function foo() {
-        return 0
-    }
+  function foo() {
+    return 0
+  }
 
-    assertGeneralError "$(foo)"
+  assertGeneralError "$(foo)"
 }
 ```
 
@@ -226,17 +226,17 @@ If `callable` is not provided, it takes the last executed command or function in
 *Example:*
 ```bash
 function test_success_with_callable() {
-    assertCommandNotFound "$(foo > /dev/null 2>&1)"
+  assertCommandNotFound "$(foo > /dev/null 2>&1)"
 }
 
 function test_success_without_callable() {
-    foo > /dev/null 2>&1
+  foo > /dev/null 2>&1
 
-    assertCommandNotFound
+  assertCommandNotFound
 }
 
 function test_failure() {
-    assertCommandNotFound "$(ls > /dev/null 2>&1)"
+  assertCommandNotFound "$(ls > /dev/null 2>&1)"
 }
 ```
 
@@ -250,11 +250,11 @@ Reports an error if the two variables `expected` and `actual` are equal.
 *Example:*
 ```bash
 function test_success() {
-    assertNotEquals "foo" "bar"
+  assertNotEquals "foo" "bar"
 }
 
 function test_failure() {
-    assertNotEquals "foo" "foo"
+  assertNotEquals "foo" "foo"
 }
 ```
 
@@ -268,11 +268,11 @@ Reports an error if `needle` is a substring of `haystack`.
 *Example:*
 ```bash
 function test_success() {
-    assertNotContains "baz" "foobar"
+  assertNotContains "baz" "foobar"
 }
 
 function test_failure() {
-    assertNotContains "foo" "foobar"
+  assertNotContains "foo" "foobar"
 }
 ```
 
@@ -286,11 +286,11 @@ Reports an error if `actual` is empty.
 *Example:*
 ```bash
 function test_success() {
-    assertNotEmpty "foo"
+  assertNotEmpty "foo"
 }
 
 function test_failure() {
-    assertNotEmpty ""
+  assertNotEmpty ""
 }
 ```
 
@@ -304,11 +304,11 @@ Reports an error if `value` matches the regular expression `pattern`.
 *Example:*
 ```bash
 function test_success() {
-    assertNotMatches "foo$" "foobar"
+  assertNotMatches "foo$" "foobar"
 }
 
 function test_failure() {
-    assertNotMatches "bar$" "foobar"
+  assertNotMatches "bar$" "foobar"
 }
 ```
 
@@ -322,14 +322,14 @@ Reports an error if `needle` is an element of `haystack`.
 *Example:*
 ```bash
 function test_success() {
-    local haystack=(foo bar baz)
+  local haystack=(foo bar baz)
 
-    assertArrayNotContains "foobar" "${haystack[@]}"
+  assertArrayNotContains "foobar" "${haystack[@]}"
 }
 
 function test_failure() {
-    local haystack=(foo bar baz)
+  local haystack=(foo bar baz)
 
-    assertArrayNotContains "baz" "${haystack[@]}"
+  assertArrayNotContains "baz" "${haystack[@]}"
 }
 ```
