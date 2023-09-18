@@ -2,7 +2,8 @@ SHELL=/bin/bash
 
 -include .env
 
-EDITOR_CONFIG_CHECKER := $(shell which ec 2> /dev/null)
+STATIC_ANALYSIS_CHECKER := $(shell which shellcheck 2> /dev/null)
+LINTER_CHECKER := $(shell which ec 2> /dev/null)
 
 OS:=
 ifeq ($(OS),Windows_NT)
@@ -45,7 +46,8 @@ help:
 	@echo "  env/example              Makes a copy of the keys on your .env file"
 	@echo "  pre_commit/install       Installs the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
-	@echo "  lint                     Run shellcheck static analysis tool"
+	@echo "  sa                       Run shellcheck static analysis tool"
+	@echo "  lint                     Run editorconfig linter tool"
 
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
@@ -73,14 +75,18 @@ pre_commit/install:
 	@echo "Installing pre-commit hooks"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
 
-pre_commit/run: test lint editorconfig env/example
+pre_commit/run: test sa lint env/example
+
+sa:
+ifndef STATIC_ANALYSIS_CHECKER
+	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analisys not preformed!" && exit 1
+else
+	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+endif
 
 lint:
-	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
-
-editorconfig:
-ifndef EDITOR_CONFIG_CHECKER
-	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig check not installed checked not preformed"
+ifndef LINTER_CHECKER
+	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig not installed: Lint not preformed!" && exit 1
 else
 	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "Editorconfig check: OK!"
 endif
