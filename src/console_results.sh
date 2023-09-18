@@ -1,7 +1,6 @@
 #!/bin/bash
 
 _START_TIME=$(date +%s%N);
-_DUPLICATED_FOUND=false
 
 function Console::renderResult() {
   local tests_passed=$1
@@ -70,5 +69,4 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
-
 }

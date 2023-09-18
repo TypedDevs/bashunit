@@ -4,6 +4,7 @@ _TESTS_PASSED=0
 _TESTS_FAILED=0
 _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
+_DUPLICATED_FOUND=false
 
 function State::getTestsPassed() {
   echo "$_TESTS_PASSED"
@@ -35,4 +36,12 @@ function State::getAssertionsFailed() {
 
 function State::addAssertionsFailed() {
   ((_ASSERTIONS_FAILED++))
+}
+
+function State::getDuplicatedFound() {
+  echo "$_DUPLICATED_FOUND"
+}
+
+function State::setDuplicatedFound() {
+  _DUPLICATED_FOUND=true
 }
