@@ -13,6 +13,7 @@ max_line_length = 120
 
 [**.md]
 indent_style = space
+indent_size = 4
 
 [{Makefile,**.mk}]
 indent_style = tab
