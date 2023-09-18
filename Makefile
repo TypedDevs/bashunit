@@ -81,14 +81,14 @@ sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analisys not preformed!" && exit 1
 else
-	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "Shellcheck: OK!"
+	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
 
 lint:
 ifndef LINTER_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig not installed: Lint not preformed!" && exit 1
 else
-	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "Editorconfig check: OK!"
+	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
 endif
 
 test/example:

@@ -70,7 +70,7 @@ make test/watch
 
 ## Coding Guidelines
 
-### Shellcheck
+### ShellCheck
 
 To contribute to this repository you must have [ShellCheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
 
@@ -86,7 +86,7 @@ make sa
 shellcheck ./**/**/*.sh -C
 ```
 
-### Editorconfig checker
+### editorconfig-checker
 
 To contribute to this repository, consider installing [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all project files regarding the `.editorconfig` to ensure we all fulfill the standard.
 
