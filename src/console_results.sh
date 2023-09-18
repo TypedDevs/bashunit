@@ -1,10 +1,6 @@
 #!/bin/bash
 
 _START_TIME=$(date +%s%N);
-_TESTS_PASSED=0
-_TESTS_FAILED=0
-_ASSERTIONS_PASSED=0
-_ASSERTIONS_FAILED=0
 
 function Console::renderResult() {
   local tests_passed=$1
@@ -46,7 +42,7 @@ function Console::renderResult() {
 }
 
 function Console::printExecutionTime() {
-  if [ "$_OS" != "OSX" ]; then
+  if [[ "$_OS" != "OSX" ]]; then
     _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
   fi
@@ -70,6 +66,3 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
 }
-
-# Set a trap to call renderResult when the script exits
-trap 'Console::renderResult $_TESTS_PASSED $_TESTS_FAILED $_ASSERTIONS_PASSED $_ASSERTIONS_FAILED' EXIT

@@ -6,12 +6,12 @@ function assertEquals() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${expected}" "but got" "${actual}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertEmpty() {
@@ -19,12 +19,12 @@ function assertEmpty() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "" ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "to be empty" "but got" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "to be empty" "but got" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertNotEmpty() {
@@ -32,12 +32,12 @@ function assertNotEmpty() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "" ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "to not be empty" "but got" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "to not be empty" "but got" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertNotEquals() {
@@ -46,12 +46,12 @@ function assertNotEquals() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "$actual" ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${expected}" "but got" "${actual}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertContains() {
@@ -60,12 +60,12 @@ function assertContains() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual}" "to contain" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual}" "to contain" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertNotContains() {
@@ -74,12 +74,12 @@ function assertNotContains() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual == *"$expected"* ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual}" "to not contain" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual}" "to not contain" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertMatches() {
@@ -88,12 +88,12 @@ function assertMatches() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual =~ $expected ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual}" "to match" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual}" "to match" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertNotMatches() {
@@ -102,12 +102,12 @@ function assertNotMatches() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual}" "to not match" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual}" "to not match" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertExitCode() {
@@ -115,13 +115,13 @@ function assertExitCode() {
   local expected_exit_code="$1"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertSuccessfulCode() {
@@ -129,13 +129,13 @@ function assertSuccessfulCode() {
   local expected_exit_code=0
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [[ $actual_exit_code != "$expected_exit_code" ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertGeneralError() {
@@ -143,13 +143,13 @@ function assertGeneralError() {
   local expected_exit_code=1
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 
@@ -158,13 +158,13 @@ function assertCommandNotFound() {
   local expected_exit_code=127
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [ $actual_exit_code -ne "$expected_exit_code" ]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertArrayContains() {
@@ -174,12 +174,12 @@ function assertArrayContains() {
   local actual=("$@")
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual[*]}" "to contain" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual[*]}" "to contain" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }
 
 function assertArrayNotContains() {
@@ -189,10 +189,10 @@ function assertArrayNotContains() {
   local actual=("$@")
 
   if [[ "${actual[*]}" == *"$expected"* ]]; then
-    ((_ASSERTIONS_FAILED++))
-    Console::printFailedTest  "${label}" "${actual[*]}" "to not contain" "${expected}"
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
   fi
 
-  ((_ASSERTIONS_PASSED++))
+  State::addAssertionsPassed
 }

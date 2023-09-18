@@ -1,2 +1,4 @@
 #!/bin/bash
-export _DEFAULT_PARALLEL_RUN=false
+
+# shellcheck disable=SC2034
+_DEFAULT_PARALLEL_RUN=false
