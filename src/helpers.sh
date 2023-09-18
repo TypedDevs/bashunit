@@ -26,7 +26,7 @@ function Helper::normalizeTestFunctionName() {
 #
 # @return string Eg: "func1,func2"
 #
-function Helper::getDuplicateFunctions() {
+function Helper::checkDuplicateFunctions() {
   local script="$1"
 
   local filtered_lines
@@ -41,11 +41,8 @@ function Helper::getDuplicateFunctions() {
   local duplicates
   duplicates=$(echo "$sorted_names" | uniq -d)
 
-
   if [ -n "$duplicates" ]; then
-    echo true
-  else
-    echo false
+    exit 1
   fi
 }
 

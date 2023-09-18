@@ -66,6 +66,9 @@ function test_no_function_is_executed_with_execute_function_if_exists() {
 function test_unsuccessful_unsetIfExists() {
   assertGeneralError "$(Helper::unsetIfExists "fake_function")"
 }
+function test_unsuccessful_unsetIfExists() {
+  assertGeneralError "$(Helper::unsetIfExists "fake_function")"
+}
 
 function test_successful_unsetIfExists() {
   # shellcheck disable=SC2317
@@ -77,15 +80,11 @@ function test_successful_unsetIfExists() {
 }
 
 function test_getDuplicateFunctionNames_with_duplicates() {
-  local duplicates
-  duplicates="$(Helper::getDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh")"
-
-  assertEquals true "$duplicates"
+  Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh"
+  assertGeneralError
 }
 
 function test_getDuplicateFunctionNames_without_duplicates() {
-  local duplicates
-  duplicates="$(Helper::getDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh")"
-
-  assertEquals false "$duplicates"
+  Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh"
+  assertSuccessfulCode
 }
