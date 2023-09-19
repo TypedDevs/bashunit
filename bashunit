@@ -6,7 +6,7 @@ trap 'Console::renderResult '\
 '"$(State::getTestsPassed)" '\
 '"$(State::getTestsFailed)" '\
 '"$(State::getAssertionsPassed)" '\
-'"$(State::getAssertionsFailed)" ' EXIT
+'"$(State::getAssertionsFailed)"' EXIT
 
 source "$BASH_UNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
