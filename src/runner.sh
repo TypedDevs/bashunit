@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2317
+
 function Runner::callTestFunctions() {
   local script="$1"
   local filter="$2"
