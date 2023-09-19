@@ -45,7 +45,10 @@ function Runner::runTest() {
 }
 
 function Runner::loadTestFiles() {
-  if [[ ${#_FILES[@]} == 0 ]]; then
+  local filter=$1
+  local files=$2
+
+  if [[ ${#files[@]} == 0 ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
     printf "%sUsage: %s <test_file.sh>%s\n" "${_COLOR_DEFAULT}" "$0" "${_COLOR_DEFAULT}"
     exit 1
@@ -60,7 +63,7 @@ function Runner::loadTestFiles() {
     source "$test_file"
 
     Runner::runSetUpBeforeScript
-    Runner::callTestFunctions "$test_file" "$_FILTER"
+    Runner::callTestFunctions "$test_file" "$filter"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
@@ -99,8 +102,8 @@ function Runner::cleanSetUpAndTearDownAfterScript() {
 #### MAIN #####
 ###############
 
-_FILES=()
 _FILTER=""
+_FILES=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
@@ -117,4 +120,4 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-Runner::loadTestFiles
+Runner::loadTestFiles "$_FILTER" "${_FILES[@]}"
