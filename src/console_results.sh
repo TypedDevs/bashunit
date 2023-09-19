@@ -4,7 +4,7 @@ _START_TIME=$(date +%s%N);
 
 function Console::renderResult() {
   if [[ "$(State::isDuplicatedTestFunctionsFound)" == true ]]; then
-    printf "\e[31m> Duplicate test functions found\e[0m\n"
+    printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
     return
   fi
 
