@@ -70,6 +70,7 @@ function test_unsuccessful_unsetIfExists() {
   assertGeneralError "$(Helper::unsetIfExists "fake_function")"
 }
 function test_unsuccessful_unsetIfExists() {
+  # TODO: this is duplicated and it should failed; should be fixed on 'feat/stop-exec-when-found-duplicate'
   assertGeneralError "$(Helper::unsetIfExists "fake_function")"
 }
 

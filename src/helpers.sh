@@ -1,5 +1,7 @@
 #!/bin/bash
 
+_DUPLICATED_TEST_FUNCTIONS_FOUND_ERROR_CODE=100
+
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
@@ -37,7 +39,7 @@ function Helper::checkDuplicateFunctions() {
   duplicates=$(echo "$sorted_names" | uniq -d)
 
   if [ -n "$duplicates" ]; then
-    exit 1
+    exit "$_DUPLICATED_TEST_FUNCTIONS_FOUND_ERROR_CODE"
   fi
 }
 

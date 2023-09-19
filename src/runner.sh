@@ -15,6 +15,8 @@ function Runner::callTestFunctions() {
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     echo "Running $script"
+    Helper::checkDuplicateFunctions "$script"
+
     for function_name in "${functions_to_run[@]}"; do
       Runner::runTest "$function_name"
 
@@ -127,14 +129,6 @@ function Runner::loadTestFiles() {
     # shellcheck disable=SC1090
     source "$test_file"
 
-    local duplicates
-    duplicates="$(Helper::checkDuplicateFunctions "$test_file")"
-    if [[ $duplicates == true ]]; then
-      State::setDuplicatedFound
-      echo "Duplicate functions found in '$test_file'"
-      exit 1
-    fi
-
     Runner::runSetUpBeforeScript
     Runner::callTestFunctions "$test_file" "$_FILTER"
     if [ "$PARALLEL_RUN" = true ] ; then
@@ -147,9 +141,3 @@ function Runner::loadTestFiles() {
 }
 
 Runner::loadTestFiles
-
-trap 'Console::renderResult '\
-'"$(State::getTestsPassed)" '\
-'"$(State::getTestsFailed)" '\
-'"$(State::getAssertionsPassed)" '\
-'"$(State::getAssertionsFailed)" ' EXIT

@@ -4,7 +4,6 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 ASSERTIONS_PASSED=0
 ASSERTIONS_FAILED=0
-DUPLICATED_FOUND=false
 
 function test_not_render_passed_tests_when_no_passed_tests_nor_assertions() {
   local TESTS_PASSED=0
@@ -12,7 +11,7 @@ function test_not_render_passed_tests_when_no_passed_tests_nor_assertions() {
 
   assertNotMatches\
     "Tests:[^\n]*passed[^\n]*total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_passed_assertions_when_no_passed_tests_nor_assertions() {
@@ -21,7 +20,7 @@ function test_not_render_passed_assertions_when_no_passed_tests_nor_assertions()
 
   assertNotMatches\
     "Assertions:[^\n]*passed[^\n]*total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_tests_when_passed_tests() {
@@ -29,7 +28,7 @@ function test_render_passed_tests_when_passed_tests() {
 
   assertMatches\
     $'Tests:[^\n]*\e\[32m1 passed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_tests_when_passed_assertions() {
@@ -38,7 +37,7 @@ function test_render_passed_tests_when_passed_assertions() {
 
   assertMatches\
     $'Tests:[^\n]*\e\[32m0 passed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_assertions_when_passed_tests() {
@@ -47,7 +46,7 @@ function test_render_passed_assertions_when_passed_tests() {
 
   assertMatches\
     $'Assertions:[^\n]*\e\[32m0 passed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_assertions_when_passed_assertions() {
@@ -55,7 +54,7 @@ function test_render_passed_assertions_when_passed_assertions() {
 
   assertMatches\
     $'Assertions:[^\n]*\e\[32m1 passed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_failed_tests_when_not_failed_tests() {
@@ -63,7 +62,7 @@ function test_not_render_failed_tests_when_not_failed_tests() {
 
   assertNotMatches\
     "Tests:[^\n]*failed[^\n]*total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_failed_assertions_when_not_failed_tests() {
@@ -71,7 +70,7 @@ function test_not_render_failed_assertions_when_not_failed_tests() {
 
   assertNotMatches\
     "Assertions:[^\n]*failed[^\n]*total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_failed_tests_when_failed_tests() {
@@ -79,7 +78,7 @@ function test_render_failed_tests_when_failed_tests() {
 
   assertMatches\
     $'Tests:[^\n]*\e\[31m1 failed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_failed_assertions_when_failed_tests() {
@@ -88,7 +87,7 @@ function test_render_failed_assertions_when_failed_tests() {
 
   assertMatches\
     $'Assertions:[^\n]*\e\[31m0 failed\e\[0m[^\n]*total'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_all_tests_passed_when_failed_tests() {
@@ -96,7 +95,7 @@ function test_not_render_all_tests_passed_when_failed_tests() {
 
   assertNotMatches\
     "All tests passed"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_all_tests_passed_when_not_failed_tests() {
@@ -104,7 +103,7 @@ function test_render_all_tests_passed_when_not_failed_tests() {
 
   assertMatches\
     $'\e\[42mAll tests passed\e\[0m'\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_total_tests_is_the_sum_of_passed_and_failed_tests() {
@@ -113,7 +112,7 @@ function test_total_tests_is_the_sum_of_passed_and_failed_tests() {
 
   assertMatches\
     "Tests:[^\n]*6 total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
@@ -122,7 +121,7 @@ function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
 
   assertMatches\
     "Assertions:[^\n]*4 total"\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
+    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_time_of_execution_when_all_assertions_passed() {

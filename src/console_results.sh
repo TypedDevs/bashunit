@@ -3,6 +3,12 @@
 _START_TIME=$(date +%s%N);
 
 function Console::renderResult() {
+  local exit_code=$?
+  if [[ "$exit_code" == "$_DUPLICATED_TEST_FUNCTIONS_FOUND_ERROR_CODE" ]]; then
+    echo "Duplicate functions found"
+    return
+  fi
+
   local tests_passed=$1
   local tests_failed=$2
   local assertions_passed=$3
