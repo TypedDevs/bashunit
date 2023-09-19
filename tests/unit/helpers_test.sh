@@ -2,6 +2,9 @@
 
 function tearDown() {
   Helper::unsetIfExists fake_function
+}
+
+function tearDownAfterScript() {
   Helper::unsetIfExists dummyFunction
 }
 
@@ -79,12 +82,12 @@ function test_successful_unsetIfExists() {
   assertSuccessfulCode "$(Helper::unsetIfExists "fake_function")"
 }
 
-function test_getDuplicateFunctionNames_with_duplicates() {
-  Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh"
-  assertGeneralError
+function test_checkDuplicateFunctions_with_duplicates() {
+  assertGeneralError \
+    "$(Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh")"
 }
 
-function test_getDuplicateFunctionNames_without_duplicates() {
-  Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh"
-  assertSuccessfulCode
+function test_checkDuplicateFunctions_without_duplicates() {
+  assertSuccessfulCode \
+    "$(Helper::checkDuplicateFunctions "$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh")"
 }

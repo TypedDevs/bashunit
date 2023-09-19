@@ -1,13 +1,13 @@
 #!/bin/bash
 
-function func1() {
+function test_func1() {
     echo "Function 1"
 }
 
-function func2() {
+function test_func2() {
     echo "Function 2"
 }
 
-function func3() {
+function test_func3() {
     echo "Function 3"
 }

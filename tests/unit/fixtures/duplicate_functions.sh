@@ -10,7 +10,7 @@ function func2() {
 }
 
 function func1() {
-    echo "Function 1 Duplicate"
+    echo "Function 1 Duplicate but not test"
 }
 
 function func3() {
@@ -18,5 +18,13 @@ function func3() {
 }
 
 function func2() {
-    echo "Function 2 Duplicate"
+    echo "Function 2 Duplicate but not test"
+}
+
+function test_func() {
+    echo "Function Duplicate"
+}
+
+function test_func() {
+    echo "Function Duplicate"
 }

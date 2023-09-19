@@ -21,16 +21,11 @@ function Helper::normalizeTestFunctionName() {
   echo "$result"
 }
 
-#
-# @param $1 string Eg: "your_script.sh"
-#
-# @return string Eg: "func1,func2"
-#
 function Helper::checkDuplicateFunctions() {
   local script="$1"
 
   local filtered_lines
-  filtered_lines=$(grep -E '^\s*(function)?\s*[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
+  filtered_lines=$(grep -E '^\s*(function)?\s*test[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
 
   local function_names
   function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')

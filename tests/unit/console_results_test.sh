@@ -125,14 +125,6 @@ function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
 }
 
-function test_duplicate_test_functions() {
-  local DUPLICATED_FOUND=true
-
-  assertEquals\
-    ""\
-    "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED $DUPLICATED_FOUND)"
-}
-
 function test_render_time_of_execution_when_all_assertions_passed() {
   if [[ $_OS != "OSX" ]]; then
     assertMatches\
