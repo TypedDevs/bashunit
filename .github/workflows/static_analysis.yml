@@ -11,7 +11,7 @@ name: Static analysis
 jobs:
 
   shellcheck:
-    name: Shellcheck
+    name: ShellCheck
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

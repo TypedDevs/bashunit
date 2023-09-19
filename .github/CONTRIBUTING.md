@@ -36,9 +36,9 @@ Please make sure you have [set up your username and email address](https://git-s
 ## Specific set up for documentation application
 
 Our documentation is build with [VitePress](https://vitepress.dev/), for set up a local environment to contribute follow these steps:
-1. You'll need `node`(_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn` for set up the environment.
-   * Using `nvm` you can execute `nvm use`(reads _.nvmrc_ file) in the project root directory and follow the instructions to use the correct `node` version.
-   * To install `yarn` you can use `npm i -g yarn`.
+1. You'll need `node` (_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn` for set up the environment.
+    * Using `nvm` you can execute `nvm use`(reads _.nvmrc_ file) in the project root directory and follow the instructions to use the correct `node` version.
+    * To install `yarn` you can use `npm i -g yarn`.
 2. Install dependencies with `yarn install`.
 3. Run local development server with `yarn docs:dev`.
 4. Implement your changes.
@@ -70,9 +70,9 @@ make test/watch
 
 ## Coding Guidelines
 
-### Shellcheck
+### ShellCheck
 
-To contribute to this repository you must have [shellcheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
+To contribute to this repository you must have [ShellCheck](https://github.com/koalaman/shellcheck) installed on your local machine or IDE, since it is the static code analyzer that is being used in continuous integration pipelines.
 
 Installation: https://github.com/koalaman/shellcheck#installing
 
@@ -80,18 +80,24 @@ Installation: https://github.com/koalaman/shellcheck#installing
 
 ```bash
 # using make
-make lint
+make sa
 
-# using shellcheck itself
+# using ShellCheck itself
 shellcheck ./**/**/*.sh -C
 ```
 
-### Editorconfig checker
+### editorconfig-checker
 
 To contribute to this repository, consider installing [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker) to check all project files regarding the `.editorconfig` to ensure we all fulfill the standard.
 
+Installation: https://github.com/editorconfig-checker/editorconfig-checker#installation
+
 To run it, use the following command:
 ```bash
+# using make
+make lint
+
+# using editorconfig-checker itself
 ec -config .editorconfig
 ```
 
@@ -101,7 +107,8 @@ This command will be executed on the CI to ensure the project's quality standard
 
 To install the pre-commit of the project with the following command:
 
-**Please note that you will need to have Shellcheck installed on your computer.** See above how to install shellcheck in your local.
+**Please note that you will need to have ShellCheck and editorconfig-checker installed on your computer.**
+See above how to install in your local.
 
 ```bash
 make pre_commit/install
