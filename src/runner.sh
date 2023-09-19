@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2317
+
 function Runner::callTestFunctions() {
   local script="$1"
   local filter="$2"
@@ -13,6 +15,8 @@ function Runner::callTestFunctions() {
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     echo "Running $script"
+    Helper::checkDuplicateFunctions "$script"
+
     for function_name in "${functions_to_run[@]}"; do
       Runner::runTest "$function_name"
 
@@ -41,9 +45,9 @@ function Runner::runTest() {
 }
 
 function Runner::loadTestFiles() {
-  if [[ ${#_FILES[@]} -eq 0 ]]; then
-    echo "Error: At least one file path is required."
-    echo "Usage: $0 <test_file.sh>"
+  if [[ ${#_FILES[@]} == 0 ]]; then
+    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    printf "%sUsage: %s <test_file.sh>%s\n" "${_COLOR_DEFAULT}" "$0" "${_COLOR_DEFAULT}"
     exit 1
   fi
 
@@ -51,12 +55,15 @@ function Runner::loadTestFiles() {
     if [[ ! -f $test_file ]]; then
       continue
     fi
-
+    # shellcheck disable=SC1090
     #shellcheck source=/dev/null
     source "$test_file"
 
     Runner::runSetUpBeforeScript
     Runner::callTestFunctions "$test_file" "$_FILTER"
+    if [ "$PARALLEL_RUN" = true ] ; then
+      wait
+    fi
     Runner::runTearDownAfterScript
     Runner::cleanSetUpAndTearDownAfterScript
   done
@@ -111,9 +118,3 @@ while [[ $# -gt 0 ]]; do
 done
 
 Runner::loadTestFiles
-
-trap 'Console::renderResult '\
-'"$(State::getTestsPassed)" '\
-'"$(State::getTestsFailed)" '\
-'"$(State::getAssertionsPassed)" '\
-'"$(State::getAssertionsFailed)"' EXIT

@@ -18,6 +18,7 @@
 - Fix error on count assertions
 - Added pipeline to add contributors to the readme
 - Added documentation with VitePress
+- Stop runner when found duplicate test functions
 
 ## [0.5.0](https://github.com/TypedDevs/bashunit/compare/0.4.0...0.5.0) - 2023-09-10
 

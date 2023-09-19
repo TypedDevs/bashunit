@@ -17,6 +17,8 @@ function test_succeed() { assertEquals \"1\" \"1\" ; }" > $test_file
    "$fixture"\
     "$(./bashunit "$test_file")"
 
+  assertSuccessfulCode "$(./bashunit "$test_file")"
+
   rm $test_file
 }
 
@@ -37,6 +39,8 @@ function test_fail() { assertEquals \"1\" \"0\" ; }" > $test_file
   assertContains\
    "$fixture"\
     "$(./bashunit "$test_file")"
+
+  assertGeneralError "$(./bashunit "$test_file")"
 
   rm $test_file
 }

@@ -3,7 +3,7 @@
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
-# @result string Eg: "Some logic camelCase"
+# @return string Eg: "Some logic camelCase"
 #
 function Helper::normalizeTestFunctionName() {
   local original_function_name="$1"
@@ -21,12 +21,32 @@ function Helper::normalizeTestFunctionName() {
   echo "$result"
 }
 
+function Helper::checkDuplicateFunctions() {
+  local script="$1"
+
+  local filtered_lines
+  filtered_lines=$(grep -E '^\s*(function)?\s*test[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
+
+  local function_names
+  function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
+
+  local sorted_names
+  sorted_names=$(echo "$function_names" | sort)
+
+  local duplicates
+  duplicates=$(echo "$sorted_names" | uniq -d)
+  if [ -n "$duplicates" ]; then
+    State::setDuplicatedTestFunctionsFound
+    return 1
+  fi
+}
+
 #
 # @param $1 string Eg: "prefix"
 # @param $2 string Eg: "filter"
 # @param $3 array Eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"
 #
-# @result array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
+# @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
 function Helper::getFunctionsToRun() {
   local prefix=$1

@@ -3,12 +3,18 @@
 _START_TIME=$(date +%s%N);
 
 function Console::renderResult() {
+  if [[ "$(State::isDuplicatedTestFunctionsFound)" == true ]]; then
+    printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    return
+  fi
+
   local tests_passed=$1
   local tests_failed=$2
   local assertions_passed=$3
   local assertions_failed=$4
 
   echo ""
+
   local total_tests=$((tests_passed + tests_failed))
   local total_assertions=$((assertions_passed + assertions_failed))
 
@@ -64,5 +70,4 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
-
 }
