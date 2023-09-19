@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.5.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
+
+## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
 - Added `assertExitCode`
 - Added `assertSuccessfulCode`
