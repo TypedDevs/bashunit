@@ -1,12 +1,9 @@
-<p style="text-align: center;">
+<p align="center">
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/tests.yml/badge.svg" alt="Tests">
     </a>
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
-    </a>
-    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml">
-        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/contributors.yml/badge.svg" alt="Contributors">
     </a>
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
@@ -19,16 +16,16 @@
     </a>
 </p>
 <br>
-<p style="text-align: center;">
+<p align="center">
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
         <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
     </picture>
 </p>
 
-<h1 style="text-align: center;">A simple testing library for bash scripts</h1>
+<h1 align="center">A simple testing library for bash scripts</h1>
 
-<p style="text-align: center;">
+<p align="center">
     Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
 </p>
 
@@ -36,7 +33,7 @@
 
 `./bashunit <test_script>`
 
-#### Example: Defining your own tests
+### Example: Defining your own tests
 
 ```bash
 # example/logic.sh
@@ -68,7 +65,7 @@ You can use Git submodules to include external Git repositories within your proj
 git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
 ```
 
-#### Versioning and updates
+### Versioning and updates
 
 To update a git-submodule:
 1. keep the git-submodule under your git (committed)
@@ -85,6 +82,6 @@ or [with your Pull Requests](.github/CONTRIBUTING.md).
 
 ## Contributors
 
-<p style="text-align: center;">
+<p align="center">
     <img src="https://contributors.nn.ci/api?repo=TypedDevs/bashunit" alt="Contributors list" />
 </p>
