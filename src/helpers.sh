@@ -1,7 +1,5 @@
 #!/bin/bash
 
-_DUPLICATED_TEST_FUNCTIONS_FOUND=false
-
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
@@ -37,10 +35,9 @@ function Helper::checkDuplicateFunctions() {
 
   local duplicates
   duplicates=$(echo "$sorted_names" | uniq -d)
-
   if [ -n "$duplicates" ]; then
-    _DUPLICATED_TEST_FUNCTIONS_FOUND=true
-    exit
+    State::setDuplicatedTestFunctionsFound
+    return 1
   fi
 }
 

@@ -3,7 +3,7 @@
 _START_TIME=$(date +%s%N);
 
 function Console::renderResult() {
-  if [[ "$_DUPLICATED_TEST_FUNCTIONS_FOUND" == true ]]; then
+  if [[ "$(State::isDuplicatedTestFunctionsFound)" == true ]]; then
     printf "\e[31m> Duplicate test functions found\e[0m\n"
     return
   fi
