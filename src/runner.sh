@@ -43,10 +43,9 @@ function Runner::runTest() {
   Console::printSuccessfulTest "${label}"
   State::addTestsPassed
 }
-
 function Runner::loadTestFiles() {
   local filter=$1
-  local files=$2
+  local files=("${@:2}") # Store all arguments starting from the second as an array
 
   if [[ ${#files[@]} == 0 ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
@@ -54,7 +53,7 @@ function Runner::loadTestFiles() {
     exit 1
   fi
 
-  for test_file in "${_FILES[@]}"; do
+  for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
@@ -121,3 +120,4 @@ while [[ $# -gt 0 ]]; do
 done
 
 Runner::loadTestFiles "$_FILTER" "${_FILES[@]}"
+
