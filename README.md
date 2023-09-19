@@ -50,7 +50,7 @@ echo "expected $1"
 SCRIPT="./logic.sh"
 
 function test_your_logic() {
-  assertEquals "expected 123" "$($SCRIPT "123")"
+    assertEquals "expected 123" "$($SCRIPT "123")"
 }
 ```
 

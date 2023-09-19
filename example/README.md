@@ -16,13 +16,13 @@ This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/d
     ```bash
     tools/bashunit/bashunit logic_test.sh
     ```
-   <img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
+    <img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
 
-   or use from the root directory use the `make` command
+    or use from the root directory use the `make` command
     ```bash
     make test/example
     ```
-   <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
+    <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
 
     If you want to run the test with the watcher you'll need to have installed [fswatch](https://github.com/emcrisostomo/fswatch)
     and run the following command:
