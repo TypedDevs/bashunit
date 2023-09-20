@@ -29,56 +29,16 @@
     Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
 </p>
 
-## Usage
+## Documentation
 
-`./bashunit <test_script>`
-
-### Example: Defining your own tests
-
-```bash
-# example/logic.sh
-
-echo "expected $1"
-```
-
-```bash
-# example/logic_test.sh
-
-SCRIPT="./logic.sh"
-
-function test_your_logic() {
-    assertEquals "expected 123" "$($SCRIPT "123")"
-}
-```
-
-Check out the [example](example/README.md) directory for more.
-
-## Installation
-
-Although there's no Bash script dependency manager like `npm` for JavaScript, `Maven` for Java, `pip` for Python, or `composer` for PHP; you can install this project in your repository according to your preferences. Here, I provide a Git submodule option that will work for you.
-
-### Git submodule
-
-You can use Git submodules to include external Git repositories within your project. This approach works well for including Bash scripts or other resources from remote repositories.
-
-```bash
-git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
-```
-
-### Versioning and updates
-
-To update a git-submodule:
-1. keep the git-submodule under your git (committed)
-2. go inside the git-submodule and:
-    1. `git submodule update --remote` (preferred)
-    2. or pull `main`
-    3. or checkout a concrete release tag
-
+You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.typeddevs.com).
 
 ## Contribute
 
 You are welcome to contribute reporting issues, sharing ideas,
-or [with your Pull Requests](.github/CONTRIBUTING.md).
+or with your pull requests.
+
+Make sure to read our [contribution guide](.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this library.
 
 ## Contributors
 
