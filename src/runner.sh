@@ -53,17 +53,57 @@ function Runner::callTestFunctions() {
   fi
 }
 
+function Runner::parseExecutionResult() {
+  local execution_result=$1
+
+  local assertions_failed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
+  )
+  local assertions_passed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
+  )
+
+  _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
+  _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
+
+  local print_execution_result="$(echo "$execution_result" | sed '$ d')"
+
+  if [ -n "$print_execution_result" ]; then
+    echo "$print_execution_result"
+  fi
+}
+
 function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
+  local test_execution_result
   current_assertions_failed="$(State::getAssertionsFailed)"
 
-  Runner::runSetUp
-  "$function_name"
-  Runner::runTearDown
+  test_execution_result=$(
+    State::initializeAssertionsCount
+
+    set -e
+    Runner::runSetUp
+    "$function_name"
+    Runner::runTearDown
+
+    State::exportAssertionsCount
+  )
+  local test_result_code=$?
+  Runner::parseExecutionResult "$test_execution_result"
 
   if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
     State::addTestsFailed
+    return
+  fi
+
+  if [[ $test_result_code -ne 0 ]]; then
+    State::addTestsFailed
+    Console::printErrorTest "$function_name" "$test_result_code"
     return
   fi
 
