@@ -4,33 +4,9 @@ An example using this **bashunit** testing library.
 
 ## Demo usage
 
-This demo uses **bashunit** itself as [git-submodule](https://git-scm.com/book/de/v2/Git-Tools-Submodule) inside the `tools/bashunit` directory.
+This demo uses **bashunit** itself. There, you'll find various tests showcasing the file and different **bashunit** functionalities.
 
-1) Install the git submodule
-    ```bash
-    git submodule add git@github.com:TypedDevs/bashunit.git tools/bashunit
-    # (Optional) Update to the latest version
-    git submodule update --remote
-    ```
-2) Run the tests
-    ```bash
-    tools/bashunit/bashunit logic_test.sh
-    ```
-    <img alt="Demo using the bashunit from different paths" src="demo.png" width="800" >
-
-    or use from the root directory use the `make` command
-    ```bash
-    make test/example
-    ```
-    <img alt="Demo using the bashunit from different paths" src="demo_make.png" width="800" >
-
-    If you want to run the test with the watcher you'll need to have installed [fswatch](https://github.com/emcrisostomo/fswatch)
-    and run the following command:
-    ```bash
-    make test/watch/example
-    ```
-
-## Real example
-
-Looking for a more "real" example? There you go:
-- [Chemaclass/conventional-commits](https://github.com/Chemaclass/conventional-commits/blob/main/tests/prepare-commit-msg_test.sh)
+To run the tests from this example, simply execute the following command from the project root folder.
+```bash
+make test/example
+```

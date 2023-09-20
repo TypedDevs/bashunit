@@ -22,15 +22,25 @@ export default defineConfig({
       alt: 'bashunit'
     },
 
-    sidebar: [
-      {
+    sidebar: [{
+      items: [{
+        text: 'Getting Started',
+        link: '/getting-started',
+        items: [{
+          text: 'Installation',
+          link: '/getting-started#installation',
+        }, {
+          text: 'Usage',
+          link: '/getting-started#usage',
+        }]
+      }, {
+        text: 'Assertions',
+        link: '/assertions'
+      }, {
         text: 'Examples',
-        items: [
-          { text: 'Getting Started', link: '/getting-started' },
-          { text: 'Assertions', link: '/assertions' }
-        ]
-      }
-    ],
+        link: '/examples'
+      }]
+    }],
 
     socialLinks: [
       { icon: 'x', link: 'https://x.com/bashunit' },
