@@ -8,10 +8,12 @@ function assertEquals() {
   if [[ "$expected" != "$actual" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertEmpty() {
@@ -21,10 +23,12 @@ function assertEmpty() {
   if [[ "$expected" != "" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "to be empty" "but got" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertNotEmpty() {
@@ -34,10 +38,12 @@ function assertNotEmpty() {
   if [[ "$expected" == "" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "to not be empty" "but got" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertNotEquals() {
@@ -48,10 +54,12 @@ function assertNotEquals() {
   if [[ "$expected" == "$actual" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertContains() {
@@ -62,10 +70,12 @@ function assertContains() {
   if ! [[ $actual == *"$expected"* ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual}" "to contain" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertNotContains() {
@@ -76,10 +86,12 @@ function assertNotContains() {
   if [[ $actual == *"$expected"* ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual}" "to not contain" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertMatches() {
@@ -90,10 +102,12 @@ function assertMatches() {
   if ! [[ $actual =~ $expected ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual}" "to match" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertNotMatches() {
@@ -104,10 +118,12 @@ function assertNotMatches() {
   if [[ $actual =~ $expected ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual}" "to not match" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertExitCode() {
@@ -118,10 +134,12 @@ function assertExitCode() {
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertSuccessfulCode() {
@@ -132,10 +150,12 @@ function assertSuccessfulCode() {
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertGeneralError() {
@@ -146,10 +166,12 @@ function assertGeneralError() {
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 
@@ -161,10 +183,12 @@ function assertCommandNotFound() {
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertArrayContains() {
@@ -176,10 +200,12 @@ function assertArrayContains() {
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual[*]}" "to contain" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }
 
 function assertArrayNotContains() {
@@ -191,8 +217,10 @@ function assertArrayNotContains() {
   if [[ "${actual[*]}" == *"$expected"* ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual[*]}" "to not contain" "${expected}"
-    return
+    return 1
   fi
 
   State::addAssertionsPassed
+
+  return 0
 }

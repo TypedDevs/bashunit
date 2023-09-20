@@ -44,3 +44,24 @@ function test_fail() { assertEquals \"1\" \"0\" ; }" > $test_file
 
   rm $test_file
 }
+
+function test_bash_unit_when_a_test_execution_error() {
+  local test_file=./tests/acceptance/fake_error_test.sh
+  fixture=$(printf "Running ./tests/acceptance/fake_error_test.sh
+\e[31m✗ Failed\e[0m: test_error with error code 127
+
+\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
+\e[2mAssertions:\e[0m \e[31m0 failed\e[0m, 0 total")
+
+  echo "
+#!/bin/bash
+function test_error() { invalidFunctionName 2>/dev/null ; }" > $test_file
+
+  assertContains\
+   "$fixture"\
+    "$(./bashunit "$test_file")"
+
+  assertGeneralError "$(./bashunit "$test_file")"
+
+  rm $test_file
+}

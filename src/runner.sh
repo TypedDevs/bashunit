@@ -28,10 +28,11 @@ function Runner::callTestFunctions() {
 function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
+  local test_result_code=0
   current_assertions_failed="$(State::getAssertionsFailed)"
 
   Runner::runSetUp
-  "$function_name"
+  "$function_name" || test_result_code=$?
   Runner::runTearDown
 
   if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
@@ -39,10 +40,17 @@ function Runner::runTest() {
     return
   fi
 
+  if [[ $test_result_code -ne 0 ]]; then
+    State::addTestsFailed
+    Console::printErrorTest "$function_name" "$test_result_code"
+    return
+  fi
+
   local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
   Console::printSuccessfulTest "${label}"
   State::addTestsPassed
 }
+
 function Runner::loadTestFiles() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
