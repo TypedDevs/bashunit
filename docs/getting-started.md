@@ -51,7 +51,7 @@ git submodule update --remote
 
 Once **bashunit** is installed, you're ready to get started.
 
-1.  First, create a folder to house your tests:
+1.  First, create a folder to place your tests:
     ```bash
     mkdir tests
     ```
