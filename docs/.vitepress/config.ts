@@ -34,6 +34,9 @@ export default defineConfig({
           link: '/getting-started#usage',
         }]
       }, {
+        text: 'Test files',
+        link: '/test-files'
+      }, {
         text: 'Assertions',
         link: '/assertions'
       }, {
