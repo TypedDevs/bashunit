@@ -177,3 +177,7 @@ h1, h2, h3, h4, h5, h6 {
   object-fit: contain;
   object-position: center;
 }
+
+.box {
+  background-color: #3b3c392e;
+}
