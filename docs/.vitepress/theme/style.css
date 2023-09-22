@@ -141,7 +141,7 @@ h1, h2, h3, h4, h5, h6 {
   --vp-c-bg: #232729;
   --vp-c-bg-alt: #171a1b;
   --vp-c-bg-elv: #0c0d0e;
-  --vp-c-bg-soft: #0c0d0e;
+  --vp-c-bg-soft: #1a1a1a;
 }
 
 /**
@@ -176,8 +176,4 @@ h1, h2, h3, h4, h5, h6 {
   height: 2rem;
   object-fit: contain;
   object-position: center;
-}
-
-.box {
-  background-color: #3b3c392e;
 }
