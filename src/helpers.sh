@@ -39,8 +39,6 @@ function Helper::checkDuplicateFunctions() {
     State::setDuplicatedTestFunctionsFound
     return 1
   fi
-
-  return 0
 }
 
 #

@@ -19,8 +19,6 @@ function assert_equals() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_empty instead.
@@ -41,8 +39,6 @@ function assert_empty() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_not_empty instead.
@@ -63,8 +59,6 @@ function assert_not_empty() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_not_equals instead.
@@ -86,8 +80,6 @@ function assert_not_equals() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_contains instead.
@@ -109,8 +101,6 @@ function assert_contains() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_not_contains instead.
@@ -132,8 +122,6 @@ function assert_not_contains() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_matches instead.
@@ -155,8 +143,6 @@ function assert_matches() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_not_matches instead.
@@ -178,8 +164,6 @@ function assert_not_matches() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_exit_code instead.
@@ -202,8 +186,6 @@ function assert_exit_code() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_successful_code instead.
@@ -226,8 +208,6 @@ function assert_successful_code() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_general_error instead.
@@ -250,8 +230,6 @@ function assert_general_error() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_command_not_found instead.
@@ -274,8 +252,6 @@ function assert_command_not_found() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_array_contains instead.
@@ -298,8 +274,6 @@ function assert_array_contains() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
 # Deprecated: Please use assert_array_not_contains instead.
@@ -320,7 +294,5 @@ function assert_array_not_contains() {
   fi
 
   State::addAssertionsPassed
-
-  return 0
 }
 
