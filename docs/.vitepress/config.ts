@@ -11,6 +11,10 @@ export default defineConfig({
     ['link', { rel: 'icon', href: '/favicon.ico' }]
   ],
 
+  sitemap: {
+    hostname: 'https://bashunit.typeddevs.com'
+  },
+
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     externalLinkIcon: true,
