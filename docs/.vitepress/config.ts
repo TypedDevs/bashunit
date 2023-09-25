@@ -42,10 +42,10 @@ export default defineConfig({
         link: '/test-files',
         items: [{
           text: 'Test file names',
-          link: '/test-files#testfilenames',
+          link: '/test-files#test-file-names',
         }, {
           text: 'Test function names',
-          link: '/test-files#testfunctionnames',
+          link: '/test-files#test-function-names',
         }]
       }, {
         text: 'Assertions',
