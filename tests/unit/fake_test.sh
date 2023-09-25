@@ -1,8 +1,19 @@
-function test_successful_fake() {
-  function code() {
-    ps a | grep apache
-  }
+#!/bin/bash
 
+function tearDown() {
+  unset code
+  unset _ps
+  rm /tmp/fake_params 2> /dev/null
+}
+
+function setUp() {
+  function code() {
+      # shellcheck disable=SC2009
+      ps a | grep apache
+    }
+}
+
+function test_successful_fake() {
   fake ps<<EOF
   PID TTY          TIME CMD
   13525 pts/7    00:00:01 bash
@@ -11,7 +22,6 @@ function test_successful_fake() {
 EOF
 
   assertEmpty "$(assertSuccessfulCode "$(code)")"
-  unset code
 }
 
 function test_successful_override_ps_with_echo_with_fake() {
@@ -21,6 +31,7 @@ function test_successful_override_ps_with_echo_with_fake() {
 
 function test_successful_parameters_of_fake_function() {
   function code() {
+    # shellcheck disable=SC2009
     ps ax | grep apache
   }
 
@@ -30,14 +41,10 @@ function test_successful_parameters_of_fake_function() {
   code || true
 
   assertEquals ax "$(head -n1 /tmp/fake_params)"
-  unset code
-  unset _ps
 }
 
 function test_unsuccessful_parameters_of_fake_function() {
-  function code() {
-    ps a | grep apache
-  }
+
 
   # shellcheck disable=SC2016
   fake ps 'echo ${FAKE_PARAMS[@]} >/tmp/fake_params'
@@ -47,12 +54,4 @@ function test_unsuccessful_parameters_of_fake_function() {
   assertEquals\
     "$(Console::printFailedTest "Unsuccessful parameters of fake function" "ax" "but got" "a")"\
     "$(assertEquals ax "$(head -n1 /tmp/fake_params)")"
-
-  unset code
-  unset _ps
-}
-
-
-function tearDown() {
-  rm /tmp/fake_params 2> /dev/null
 }
