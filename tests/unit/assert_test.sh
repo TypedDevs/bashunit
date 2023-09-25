@@ -199,3 +199,25 @@ function test_unsuccessful_assertArrayNotContains() {
     "$(Console::printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assertArrayNotContains "123" "${distros[@]}")"
 }
+
+function test_successful_fake() {
+  function code() {
+    ps a | grep apache
+  }
+
+  # shellcheck disable=SC1009
+  fake ps<<EOF
+    PID TTY          TIME CMD
+    13525 pts/7    00:00:01 bash
+    24162 pts/7    00:00:00 ps
+    8387 ?            0:00 /usr/sbin/apache2 -k start
+  EOF
+
+  assertEmpty "$(assertSuccessfulCode "$(code)")"
+  unset code
+}
+
+function test_override_ps_with_echo_with_fake() {
+  fake ps echo hello world
+  assertEquals "hello world" "$(ps)"
+}
