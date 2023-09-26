@@ -20,4 +20,28 @@ source "$BASH_UNIT_ROOT_DIR/src/test_doubles.sh"
 
 source "$BASH_UNIT_ROOT_DIR/src/runner.sh" "$@"
 
+###############
+#### MAIN #####
+###############
+
+_FILTER=""
+_FILES=()
+
+while [[ $# -gt 0 ]]; do
+  argument="$1"
+  case $argument in
+    --filter)
+      _FILTER="$2"
+      shift
+      shift
+      ;;
+    *)
+      _FILES+=("$argument")
+      shift
+      ;;
+  esac
+done
+
+Runner::loadTestFiles "$_FILTER" "${_FILES[@]}"
+
 exit 0
