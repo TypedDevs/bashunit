@@ -45,8 +45,6 @@ function test_successful_parameters_of_fake_function() {
 }
 
 function test_unsuccessful_parameters_of_fake_function() {
-
-
   # shellcheck disable=SC2016
   fake ps 'echo ${FAKE_PARAMS[@]} >/tmp/fake_params'
 
