@@ -16,6 +16,7 @@ source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
 source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 source "$BASH_UNIT_ROOT_DIR/src/helpers.sh"
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
+source "$BASH_UNIT_ROOT_DIR/src/test_doubles.sh"
 
 source "$BASH_UNIT_ROOT_DIR/src/runner.sh" "$@"
 

@@ -197,17 +197,3 @@ function assertArrayNotContains() {
   State::addAssertionsPassed
 }
 
-
-function fake() {
-  local command=$1
-  shift
-  if [ $# -gt 0 ]
-  then
-    # shellcheck disable=SC2294,SC2145
-    eval "function $command() { export FAKE_PARAMS=(\"\$@\") ; $@ ; }"
-  else
-    eval "function $command() { echo \"$($CAT)\" ; }"
-  fi
-  # shellcheck disable=SC2163
-  export -f "$command"
-}
