@@ -16,8 +16,9 @@ function mock() {
 function spy() {
   local command=$1
   export "${command}_times"=0
+  export "${command}_params"
 
-  eval "function $command() { export ${command}_params=(\"\$*\"); ((${command}_times++)); }"
+  eval "function $command() { ${command}_params=(\"\$*\"); ((${command}_times++)); }"
 
   export -f "${command?}"
 }
