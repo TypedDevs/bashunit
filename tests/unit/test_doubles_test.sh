@@ -15,10 +15,10 @@ function setUp() {
 
 function test_successful_mock() {
   mock ps<<EOF
-  PID TTY          TIME CMD
-  13525 pts/7    00:00:01 bash
-  24162 pts/7    00:00:00 ps
-  8387 ?            0:00 /usr/sbin/apache2 -k start
+PID TTY          TIME CMD
+13525 pts/7    00:00:01 bash
+24162 pts/7    00:00:00 ps
+8387  ?        00:00:00 /usr/sbin/apache2 -k start
 EOF
 
   assertEmpty "$(assertSuccessfulCode "$(code)")"
