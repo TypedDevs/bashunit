@@ -16,7 +16,7 @@ function test_text_should_not_contain() {
 }
 
 function test_text_should_match_a_regular_expression() {
-  assertMatches ".*xpec*" "$($SCRIPT "123")"
+  assert_matches ".*xpec*" "$($SCRIPT "123")"
 }
 
 function test_text_should_not_match_a_regular_expression() {

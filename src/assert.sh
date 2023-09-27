@@ -124,7 +124,14 @@ function assert_not_contains() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_matches instead.
 function assertMatches() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_matches "$1" "$2" "$label"
+}
+
+function assert_matches() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

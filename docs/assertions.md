@@ -58,8 +58,8 @@ function test_failure() {
 }
 ```
 
-## assertMatches
-> `assertMatches "pattern" "value"`
+## assert_matches
+> `assert_matches "pattern" "value"`
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
@@ -68,11 +68,11 @@ Reports an error if `value` does not match the regular expression `pattern`.
 *Example:*
 ```bash
 function test_success() {
-  assertMatches "^foo" "foobar"
+  assert_matches "^foo" "foobar"
 }
 
 function test_failure() {
-  assertMatches "^bar" "foobar"
+  assert_matches "^bar" "foobar"
 }
 ```
 
@@ -299,7 +299,7 @@ function test_failure() {
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assertMatches](#assertmatches) is the inverse of this assertion and takes the same arguments.
+[assert_matches](#assert_matches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash

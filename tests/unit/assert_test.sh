@@ -60,14 +60,14 @@ function test_unsuccessful_assert_not_contains() {
     "$(assert_not_contains "Linux" "GNU/Linux")"
 }
 
-function test_successful_assertMatches() {
-  assert_empty "$(assertMatches ".*Linu*" "GNU/Linux")"
+function test_successful_assert_matches() {
+  assert_empty "$(assert_matches ".*Linu*" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertMatches() {
+function test_unsuccessful_assert_matches() {
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertMatches" "GNU/Linux" "to match" ".*Pinux*")"\
-    "$(assertMatches ".*Pinux*" "GNU/Linux")"
+    "$(Console::printFailedTest "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")"\
+    "$(assert_matches ".*Pinux*" "GNU/Linux")"
 }
 
 function test_successful_assertNotMatches() {
