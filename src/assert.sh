@@ -61,7 +61,14 @@ function assert_not_empty() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_not_equals instead.
 function assertNotEquals() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_not_equals "$1" "$2" "$label"
+}
+
+function assert_not_equals() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

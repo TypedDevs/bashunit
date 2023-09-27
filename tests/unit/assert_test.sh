@@ -30,14 +30,14 @@ function test_unsuccessful_assert_not_empty() {
     "$(assert_not_empty "")"
 }
 
-function test_successful_assertNotEquals() {
-  assert_empty "$(assertNotEquals "1" "2")"
+function test_successful_assert_not_equals() {
+  assert_empty "$(assert_not_equals "1" "2")"
 }
 
-function test_unsuccessful_assertNotEquals() {
+function test_unsuccessful_assert_not_equals() {
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertNotEquals" "1" "but got" "1")"\
-    "$(assertNotEquals "1" "1")"
+    "$(Console::printFailedTest "Unsuccessful assert not equals" "1" "but got" "1")"\
+    "$(assert_not_equals "1" "1")"
 }
 
 function test_successful_assertContains() {

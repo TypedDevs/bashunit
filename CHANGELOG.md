@@ -8,6 +8,7 @@
 - `assertHaveBeenCalledTimes`
 - Rename assertions from camelCase to snake_case:
   - `assertEquals` -> `assert_equals`
+  - `assertNotEquals` -> `assert_not_equals`
   - `assertEmpty` -> `assert_empty`
   - `assertNotEmpty` -> `assert_not_empty`
 

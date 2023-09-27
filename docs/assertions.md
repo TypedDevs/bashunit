@@ -9,7 +9,7 @@ Below is their documentation.
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
-[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes the same arguments.
+[assert_not_equals](#assert_not_equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -240,8 +240,8 @@ function test_failure() {
 }
 ```
 
-## assertNotEquals
-> `assertNotEquals "expected" "actual"`
+## assert_not_equals
+> `assert_not_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
@@ -250,11 +250,11 @@ Reports an error if the two variables `expected` and `actual` are equal.
 *Example:*
 ```bash
 function test_success() {
-  assertNotEquals "foo" "bar"
+  assert_not_equals "foo" "bar"
 }
 
 function test_failure() {
-  assertNotEquals "foo" "foo"
+  assert_not_equals "foo" "foo"
 }
 ```
 
