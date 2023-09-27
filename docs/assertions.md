@@ -45,7 +45,7 @@ function test_failure() {
 
 Reports an error if `actual` is not empty.
 
-[assertNotEmpty](#assertnotempty) is the inverse of this assertion and takes the same arguments.
+[assert_not_empty](#assert_not_empty) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -276,8 +276,8 @@ function test_failure() {
 }
 ```
 
-## assertNotEmpty
-> `assertNotEmpty "actual"`
+## assert_not_empty
+> `assert_not_empty "actual"`
 
 Reports an error if `actual` is empty.
 
@@ -286,11 +286,11 @@ Reports an error if `actual` is empty.
 *Example:*
 ```bash
 function test_success() {
-  assertNotEmpty "foo"
+  assert_not_empty "foo"
 }
 
 function test_failure() {
-  assertNotEmpty ""
+  assert_not_empty ""
 }
 ```
 

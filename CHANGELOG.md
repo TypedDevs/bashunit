@@ -9,6 +9,7 @@
 - Rename assertions from camelCase to snake_case:
   - `assertEquals` -> `assert_equals`
   - `assertEmpty` -> `assert_empty`
+  - `assertNotEmpty` -> `assert_not_empty`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 

@@ -20,14 +20,14 @@ function test_unsuccessful_assert_empty() {
     "$(assert_empty "1")"
 }
 
-function test_successful_assertNotEmpty() {
-  assert_empty "$(assertNotEmpty "a_random_string")"
+function test_successful_assert_not_empty() {
+  assert_empty "$(assert_not_empty "a_random_string")"
 }
 
-function test_unsuccessful_assertNotEmpty() {
+function test_unsuccessful_assert_not_empty() {
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertNotEmpty" "to not be empty" "but got" "")"\
-    "$(assertNotEmpty "")"
+    "$(Console::printFailedTest "Unsuccessful assert not empty" "to not be empty" "but got" "")"\
+    "$(assert_not_empty "")"
 }
 
 function test_successful_assertNotEquals() {
