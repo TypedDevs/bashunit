@@ -21,9 +21,16 @@ function assert_equals() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_empty instead.
 function assertEmpty() {
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_empty "$1" "$label"
+}
+
+function assert_empty() {
   local expected="$1"
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "" ]]; then
     State::addAssertionsFailed
