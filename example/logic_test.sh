@@ -4,7 +4,7 @@ ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")/.."
 SCRIPT="$ROOT_DIR/example/logic.sh"
 
 function test_text_should_be_equal() {
-  assertEquals "expected 123" "$($SCRIPT "123")"
+  assert_equals "expected 123" "$($SCRIPT "123")"
 }
 
 function test_text_should_contain() {

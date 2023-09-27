@@ -1,6 +1,13 @@
 #!/bin/bash
 
+# Deprecated: Please use assert_equals instead.
 function assertEquals() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_equals "$1" "$2" "$label"
+}
+
+function assert_equals() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

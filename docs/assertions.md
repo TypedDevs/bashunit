@@ -4,8 +4,8 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
-## assertEquals
-> `assertEquals "expected" "actual"`
+## assert_equals
+> `assert_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
@@ -14,11 +14,11 @@ Reports an error if the two variables `expected` and `actual` are not equal.
 *Example:*
 ```bash
 function test_success() {
-  assertEquals "foo" "foo"
+  assert_equals "foo" "foo"
 }
 
 function test_failure() {
-  assertEquals "foo" "bar"
+  assert_equals "foo" "bar"
 }
 ```
 
@@ -245,7 +245,7 @@ function test_failure() {
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
-[assertEquals](#assertequals) is the inverse of this assertion and takes the same arguments.
+[assert_equals](#assert_equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash

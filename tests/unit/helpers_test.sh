@@ -13,25 +13,25 @@ function dummyFunction() {
 }
 
 function test_normalizeTestFunctionName_empty() {
-  assertEquals "" "$(Helper::normalizeTestFunctionName)"
+  assert_equals "" "$(Helper::normalizeTestFunctionName)"
 }
 
 function test_normalizeTestFunctionName_one_word() {
-  assertEquals "Word" "$(Helper::normalizeTestFunctionName "word")"
+  assert_equals "Word" "$(Helper::normalizeTestFunctionName "word")"
 }
 
 function test_normalizeTestFunctionName_snake_case() {
-  assertEquals "Some logic" "$(Helper::normalizeTestFunctionName "test_some_logic")"
+  assert_equals "Some logic" "$(Helper::normalizeTestFunctionName "test_some_logic")"
 }
 
 function test_normalizeTestFunctionName_camel_case() {
-  assertEquals "SomeLogic" "$(Helper::normalizeTestFunctionName "testSomeLogic")"
+  assert_equals "SomeLogic" "$(Helper::normalizeTestFunctionName "testSomeLogic")"
 }
 
 function test_getFunctionsToRun_no_filter_should_return_all_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assertEquals\
+  assert_equals\
     "prefix_function1 prefix_function2 prefix_function3"\
     "$(Helper::getFunctionsToRun "prefix" "" "${functions[*]}")"
 }
@@ -39,13 +39,13 @@ function test_getFunctionsToRun_no_filter_should_return_all_functions() {
 function test_getFunctionsToRun_with_filter_should_return_matching_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assertEquals "prefix_function1" "$(Helper::getFunctionsToRun "prefix" "function1" "${functions[*]}")"
+  assert_equals "prefix_function1" "$(Helper::getFunctionsToRun "prefix" "function1" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_filter_no_matching_functions_should_return_empty() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assertEquals "" "$(Helper::getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")"
+  assert_equals "" "$(Helper::getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_fail_when_duplicates() {
@@ -57,7 +57,7 @@ function test_getFunctionsToRun_fail_when_duplicates() {
 function test_dummyFunction_is_executed_with_execute_function_if_exists() {
   local function_name='dummyFunction'
 
-  assertEquals "dummyFunction executed" "$(Helper::executeFunctionIfExists "$function_name")"
+  assert_equals "dummyFunction executed" "$(Helper::executeFunctionIfExists "$function_name")"
 }
 
 function test_no_function_is_executed_with_execute_function_if_exists() {

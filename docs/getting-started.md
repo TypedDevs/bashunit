@@ -61,7 +61,7 @@ Once **bashunit** is installed, you're ready to get started.
     #!/bin/bash
 
     function test_bashunit_is_working() {
-      assertEquals "bashunit is working" "bashunit is working"
+      assert_equals "bashunit is working" "bashunit is working"
     }
     ```
     ::: tip

@@ -11,7 +11,7 @@ function test_bash_unit_when_a_test_passes() {
 
   echo "
 #!/bin/bash
-function test_succeed() { assertEquals \"1\" \"1\" ; }" > $test_file
+function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   assertContains\
    "$fixture"\
@@ -34,7 +34,7 @@ function test_bash_unit_when_a_test_fail() {
 
   echo "
 #!/bin/bash
-function test_fail() { assertEquals \"1\" \"0\" ; }" > $test_file
+function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
   assertContains\
    "$fixture"\
