@@ -145,7 +145,14 @@ function assert_matches() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_not_matches instead.
 function assertNotMatches() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_not_matches "$1" "$2" "$label"
+}
+
+function assert_not_matches() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

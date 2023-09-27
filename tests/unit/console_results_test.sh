@@ -9,7 +9,7 @@ function test_not_render_passed_tests_when_no_passed_tests_nor_assertions() {
   local TESTS_PASSED=0
   local ASSERTIONS_PASSED=0
 
-  assertNotMatches\
+  assert_not_matches\
     "Tests:[^\n]*passed[^\n]*total"\
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
@@ -18,7 +18,7 @@ function test_not_render_passed_assertions_when_no_passed_tests_nor_assertions()
   local TESTS_PASSED=0
   local ASSERTIONS_PASSED=0
 
-  assertNotMatches\
+  assert_not_matches\
     "Assertions:[^\n]*passed[^\n]*total"\
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
@@ -60,7 +60,7 @@ function test_render_passed_assertions_when_passed_assertions() {
 function test_not_render_failed_tests_when_not_failed_tests() {
   local TESTS_FAILED=0
 
-  assertNotMatches\
+  assert_not_matches\
     "Tests:[^\n]*failed[^\n]*total"\
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
@@ -68,7 +68,7 @@ function test_not_render_failed_tests_when_not_failed_tests() {
 function test_not_render_failed_assertions_when_not_failed_tests() {
   local TESTS_FAILED=0
 
-  assertNotMatches\
+  assert_not_matches\
     "Assertions:[^\n]*failed[^\n]*total"\
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
@@ -93,7 +93,7 @@ function test_render_failed_assertions_when_failed_tests() {
 function test_not_render_all_tests_passed_when_failed_tests() {
   local TESTS_FAILED=1
 
-  assertNotMatches\
+  assert_not_matches\
     "All tests passed"\
     "$(Console::renderResult $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
@@ -142,7 +142,7 @@ function test_render_time_of_execution_when_not_all_assertions_passed() {
 
 function test_should_not_render_time_of_execution_when_all_assertions_passed_on_mac() {
   if [[ $_OS == "OSX" ]]; then
-    assertNotMatches\
+    assert_not_matches\
       "Time taken: [[:digit:]]+ ms"\
       "$(Console::renderResult)"
   fi
@@ -150,7 +150,7 @@ function test_should_not_render_time_of_execution_when_all_assertions_passed_on_
 
 function test_should_not_render_time_of_execution_when_not_all_assertions_passed_on_mac() {
   if [[ $_OS == "OSX" ]]; then
-    assertNotMatches\
+    assert_not_matches\
       "Time taken: [[:digit:]]+ ms"\
       "$(Console::renderResult)"
   fi

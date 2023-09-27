@@ -20,7 +20,7 @@ function test_text_should_match_a_regular_expression() {
 }
 
 function test_text_should_not_match_a_regular_expression() {
-  assertNotMatches ".*xpes.*" "$($SCRIPT "123")"
+  assert_not_matches ".*xpes.*" "$($SCRIPT "123")"
 }
 
 function test_should_validate_an_ok_exit_code() {
