@@ -13,7 +13,7 @@ function test_bash_unit_when_a_test_passes() {
 #!/bin/bash
 function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assertContains\
+  assert_contains\
    "$fixture"\
     "$(./bashunit "$test_file")"
 
@@ -36,7 +36,7 @@ function test_bash_unit_when_a_test_fail() {
 #!/bin/bash
 function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
-  assertContains\
+  assert_contains\
    "$fixture"\
     "$(./bashunit "$test_file")"
 

@@ -40,14 +40,14 @@ function test_unsuccessful_assert_not_equals() {
     "$(assert_not_equals "1" "1")"
 }
 
-function test_successful_assertContains() {
-  assert_empty "$(assertContains "Linux" "GNU/Linux")"
+function test_successful_assert_contains() {
+  assert_empty "$(assert_contains "Linux" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertContains() {
+function test_unsuccessful_assert_contains() {
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertContains" "GNU/Linux" "to contain" "Unix")"\
-    "$(assertContains "Unix" "GNU/Linux")"
+    "$(Console::printFailedTest "Unsuccessful assert contains" "GNU/Linux" "to contain" "Unix")"\
+    "$(assert_contains "Unix" "GNU/Linux")"
 }
 
 function test_successful_assertNotContains() {

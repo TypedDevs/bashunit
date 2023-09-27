@@ -82,7 +82,14 @@ function assert_not_equals() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_contains instead.
 function assertContains() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_contains "$1" "$2" "$label"
+}
+
+function assert_contains() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

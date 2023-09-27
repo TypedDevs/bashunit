@@ -22,8 +22,8 @@ function test_failure() {
 }
 ```
 
-## assertContains
-> `assertContains "needle" "haystack"`
+## assert_contains
+> `assert_contains "needle" "haystack"`
 
 Reports an error if `needle` is not a substring of `haystack`.
 
@@ -32,11 +32,11 @@ Reports an error if `needle` is not a substring of `haystack`.
 *Example:*
 ```bash
 function test_success() {
-  assertContains "foo" "foobar"
+  assert_contains "foo" "foobar"
 }
 
 function test_failure() {
-  assertContains "baz" "foobar"
+  assert_contains "baz" "foobar"
 }
 ```
 
@@ -263,7 +263,7 @@ function test_failure() {
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assertContains](#assertcontains) is the inverse of this assertion and takes the same arguments.
+[assert_contains](#assert_contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash

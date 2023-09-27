@@ -8,7 +8,7 @@ function test_text_should_be_equal() {
 }
 
 function test_text_should_contain() {
-  assertContains "expect" "$($SCRIPT "123")"
+  assert_contains "expect" "$($SCRIPT "123")"
 }
 
 function test_text_should_not_contain() {
