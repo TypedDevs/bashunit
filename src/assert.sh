@@ -103,7 +103,14 @@ function assert_contains() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_not_contains instead.
 function assertNotContains() {
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_not_contains "$1" "$2" "$label"
+}
+
+function assert_not_contains() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"

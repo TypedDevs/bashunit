@@ -13,15 +13,15 @@ function test_text_should_contain() {
 }
 
 function test_text_should_not_contain() {
-  assertNotContains "expecs" "$($SCRIPT "123")"
+  assert_not_contains "expecs" "$($SCRIPT "123")"
 }
 
 function test_text_should_match_a_regular_expression() {
-  assertNotContains ".*xpec*" "$($SCRIPT "123")"
+  assert_not_contains ".*xpec*" "$($SCRIPT "123")"
 }
 
 function test_text_should_not_match_a_regular_expression() {
-  assertNotContains ".*xpes*" "$($SCRIPT "123")"
+  assert_not_contains ".*xpes*" "$($SCRIPT "123")"
 }
 
 function test_should_validate_an_ok_exit_code() {

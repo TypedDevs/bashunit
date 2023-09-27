@@ -12,6 +12,7 @@
   - `assertEmpty` -> `assert_empty`
   - `assertNotEmpty` -> `assert_not_empty`
   - `assertContains` -> `assert_contains`
+  - `assertNotContains` -> `assert_not_contains`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
