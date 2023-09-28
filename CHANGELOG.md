@@ -4,8 +4,8 @@
 - `mock`
 - `spy`
 - `assert_have_been_called_with`
-- `assertHaveBeenCalled`
-- `assertHaveBeenCalledTimes`
+- `assert_have_been_called`
+- `assert_have_been_called_times`
 - Rename assertions from camelCase to snake_case:
     - `assertEquals` -> `assert_equals`
     - `assertNotEquals` -> `assert_not_equals`
@@ -21,7 +21,9 @@
     - `assertCommandNotFound` -> `assert_command_not_found`
     - `assertArrayContains` -> `assert_array_contains`
     - `assertArrayNotContains` -> `assert_array_not_contains`
+    - `assertHaveBeenCalled` -> `assert_have_been_called`
     - `assertHaveBeenCalledWith` -> `assert_have_been_called_with`
+    - `assertHaveBeenCalledTimes` -> `assert_have_been_called_times`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 

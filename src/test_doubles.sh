@@ -44,11 +44,16 @@ function assert_have_been_called_with() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_have_been_called instead.
 function assertHaveBeenCalled() {
+  assert_have_been_called "$1" "$2"
+}
+
+function assert_have_been_called() {
   local command=$1
   local actual
   actual="${command}_times"
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ${!actual} -eq 0 ]]; then
     State::addAssertionsFailed
@@ -59,7 +64,12 @@ function assertHaveBeenCalled() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_have_been_called_times instead.
 function assertHaveBeenCalledTimes() {
+  assert_have_been_called_times "$1" "$2" "$3"
+}
+
+function assert_have_been_called_times() {
   local expected=$1
   local command=$2
   local actual
