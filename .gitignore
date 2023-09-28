@@ -7,3 +7,6 @@ node_modules
 yarn-error.log
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+# installation
+bin/bashunit
