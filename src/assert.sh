@@ -166,12 +166,20 @@ function assert_not_matches() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_exit_code instead.
 function assertExitCode() {
   local actual_exit_code=$?
-  local expected_exit_code="$1"
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
-  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+  assert_exit_code "$1" "$label" "$actual_exit_code"
+}
+
+function assert_exit_code() {
+  local actual_exit_code=${3-"$?"}
+  local expected_exit_code="$1"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return

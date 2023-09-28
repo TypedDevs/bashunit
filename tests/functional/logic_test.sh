@@ -31,7 +31,7 @@ function test_should_validate_an_ok_exit_code() {
 
   fake_function
 
-  assertExitCode "0"
+  assert_exit_code "0"
 }
 
 function test_should_validate_a_non_ok_exit_code() {
@@ -41,7 +41,7 @@ function test_should_validate_a_non_ok_exit_code() {
 
   fake_function
 
-  assertExitCode "1"
+  assert_exit_code "1"
 }
 
 function test_other_way_of_using_the_exit_code() {
@@ -49,5 +49,5 @@ function test_other_way_of_using_the_exit_code() {
     return 1
   }
 
-  assertExitCode "1" "$(fake_function)"
+  assert_exit_code "1" "$(fake_function)"
 }

@@ -76,8 +76,8 @@ function test_failure() {
 }
 ```
 
-## assertExitCode
-> `assertExitCode "expected" ["callable"]`
+## assert_exit_code
+> `assert_exit_code "expected" ["callable"]`
 
 Reports an error if the exit code of `callable` is not equal to `expected`.
 
@@ -93,7 +93,7 @@ function test_success_with_callable() {
     return 1
   }
 
-  assertExitCode "1" "$(foo)"
+  assert_exit_code "1" "$(foo)"
 }
 
 function test_success_without_callable() {
@@ -103,7 +103,7 @@ function test_success_without_callable() {
 
   foo # function took instead `callable`
 
-  assertExitCode "1"
+  assert_exit_code "1"
 }
 
 function test_failure() {
@@ -111,7 +111,7 @@ function test_failure() {
     return 1
   }
 
-  assertExitCode "0" "$(foo)"
+  assert_exit_code "0" "$(foo)"
 }
 ```
 
@@ -144,7 +144,7 @@ Reports an error if the exit code of `callable` is not successful (`0`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -182,7 +182,7 @@ Reports an error if the exit code of `callable` is not a general error (`1`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -221,7 +221,7 @@ In other words, if executing `callable` does not return a command not found exit
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash

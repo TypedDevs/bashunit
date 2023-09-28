@@ -80,42 +80,42 @@ function test_unsuccessful_assert_not_matches() {
     "$(assert_not_matches ".*Linu*" "GNU/Linux")"
 }
 
-function test_successful_assertExitCode() {
+function test_successful_assert_exit_code() {
   function fake_function() {
     exit 0
   }
 
-  assert_empty "$(assertExitCode "0" "$(fake_function)")"
+  assert_empty "$(assert_exit_code "0" "$(fake_function)")"
 }
 
-function test_unsuccessful_assertExitCode() {
+function test_unsuccessful_assert_exit_code() {
   function fake_function() {
     exit 1
   }
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
-    "$(assertExitCode "0" "$(fake_function)")"
+    "$(Console::printFailedTest "Unsuccessful assert exit code" "1" "to be" "0")"\
+    "$(assert_exit_code "0" "$(fake_function)")"
 }
 
-function test_successful_return_assertExitCode() {
+function test_successful_return_assert_exit_code() {
   function fake_function() {
     return 0
   }
 
   fake_function
 
-  assertExitCode "0"
+  assert_exit_code "0"
 }
 
-function test_unsuccessful_return_assertExitCode() {
+function test_unsuccessful_return_assert_exit_code() {
   function fake_function() {
     return 1
   }
 
   fake_function
 
-  assertExitCode "1"
+  assert_exit_code "1"
 }
 
 function test_successful_assertSuccessfulCode() {
