@@ -27,7 +27,7 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assert_not_contains](#assert_not_contains) is the inverse of this assertion and takes the same arguments.
+[assert_not_contains](#assert-not-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
