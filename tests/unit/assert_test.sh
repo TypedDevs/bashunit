@@ -154,18 +154,18 @@ function test_unsuccessful_assert_general_error() {
     "$(assert_general_error "$(fake_function)")"
 }
 
-function test_successful_assertCommandNotFound() {
-  assert_empty "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
+function test_successful_assert_command_not_found() {
+  assert_empty "$(assert_command_not_found "$(a_non_existing_function > /dev/null 2>&1)")"
 }
 
-function test_unsuccessful_assertCommandNotFound() {
+function test_unsuccessful_assert_command_not_found() {
   function fake_function() {
     return 0
   }
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
-    "$(assertCommandNotFound "$(fake_function)")"
+    "$(Console::printFailedTest "Unsuccessful assert command not found" "0" "to be exactly" "127")"\
+    "$(assert_command_not_found "$(fake_function)")"
 }
 
 function test_successful_assertArrayContains() {

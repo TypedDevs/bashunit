@@ -89,7 +89,7 @@ function test_other_way_of_using_the_general_error() {
 }
 
 function test_should_assert_exit_code_of_a_non_existing_command() {
-  assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)"
+  assert_command_not_found "$(a_non_existing_function > /dev/null 2>&1)"
 }
 
 function test_should_assert_that_an_array_contains_1234() {

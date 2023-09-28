@@ -17,14 +17,15 @@
   - `assertNotMatches` -> `assert_not_matches`
   - `assertExitCode` -> `assert_exit_code`
   - `assertSuccessfulCode` -> `assert_successful_code`
-  - `assert_general_error` -> `assert_general_error`
+  - `assertGeneralError` -> `assert_general_error`
+  - `assertCommandNotFound` -> `assert_command_not_found`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
 - Added `assertExitCode`
 - Added `assert_successful_code`
 - Added `assert_general_error`
-- Added `assertCommandNotFound`
+- Added `assert_command_not_found`
 - Added `assertArrayContains`
 - Added `assertArrayNotContains`
 - Added `assertEmpty`

@@ -232,11 +232,18 @@ function assert_general_error() {
   State::addAssertionsPassed
 }
 
-
+# Deprecated: Please use assert_command_not_found instead.
 function assertCommandNotFound() {
   local actual_exit_code=$?
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_command_not_found "{command}" "$label" "$actual_exit_code"
+}
+
+function assert_command_not_found() {
+  local actual_exit_code=${3-"$?"}
   local expected_exit_code=127
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed
