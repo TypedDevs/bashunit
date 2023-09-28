@@ -23,11 +23,6 @@ function spy() {
   export -f "${command?}"
 }
 
-# Deprecated: Please use assert_have_been_called instead.
-function assertHaveBeenCalled() {
-  assert_have_been_called "$1" "$2"
-}
-
 function assert_have_been_called() {
   local command=$1
   local actual
@@ -41,11 +36,6 @@ function assert_have_been_called() {
   fi
 
   State::addAssertionsPassed
-}
-
-# Deprecated: Please use assert_have_been_called_with instead.
-function assertHaveBeenCalledWith() {
-  assert_have_been_called_with "$1" "$2" "$3"
 }
 
 function assert_have_been_called_with() {
@@ -62,11 +52,6 @@ function assert_have_been_called_with() {
   fi
 
   State::addAssertionsPassed
-}
-
-# Deprecated: Please use assert_have_been_called_times instead.
-function assertHaveBeenCalledTimes() {
-  assert_have_been_called_times "$1" "$2" "$3"
 }
 
 function assert_have_been_called_times() {
