@@ -75,7 +75,7 @@ function test_general_error() {
     return 1
   }
 
-  assertGeneralError "$(fake_function)"
+  assert_general_error "$(fake_function)"
 }
 
 function test_other_way_of_using_the_general_error() {
@@ -85,7 +85,7 @@ function test_other_way_of_using_the_general_error() {
 
   fake_function
 
-  assertGeneralError
+  assert_general_error
 }
 
 function test_should_assert_exit_code_of_a_non_existing_command() {

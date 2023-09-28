@@ -83,7 +83,7 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_successful_code](#assert_successful_code), [assertGeneralError](#assertgeneralerror) and [assertCommandNotFound](#assertcommandnotfound)
+[assert_successful_code](#assert_successful_code), [assert_general_error](#assert_general_error) and [assertCommandNotFound](#assertcommandnotfound)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 *Example:*
@@ -175,8 +175,8 @@ function test_failure() {
 }
 ```
 
-## assertGeneralError
-> `assertGeneralError ["callable"]`
+## assert_general_error
+> `assert_general_error ["callable"]`
 
 Reports an error if the exit code of `callable` is not a general error (`1`).
 
@@ -191,7 +191,7 @@ function test_success_with_callable() {
     return 1
   }
 
-  assertGeneralError "$(foo)"
+  assert_general_error "$(foo)"
 }
 
 function test_success_without_callable() {
@@ -201,7 +201,7 @@ function test_success_without_callable() {
 
   foo # function took instead `callable`
 
-  assertGeneralError
+  assert_general_error
 }
 
 function test_failure() {
@@ -209,12 +209,12 @@ function test_failure() {
     return 0
   }
 
-  assertGeneralError "$(foo)"
+  assert_general_error "$(foo)"
 }
 ```
 
 ## assertCommandNotFound
-> `assertGeneralError ["callable"]`
+> `assert_general_error ["callable"]`
 
 Reports an error if `callable` exists.
 In other words, if executing `callable` does not return a command not found exit code (`127`).

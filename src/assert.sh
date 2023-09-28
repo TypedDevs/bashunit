@@ -210,10 +210,18 @@ function assert_successful_code() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_general_error instead.
 function assertGeneralError() {
   local actual_exit_code=$?
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  assert_general_error "$1" "$label" "$actual_exit_code"
+}
+
+function assert_general_error() {
+  local actual_exit_code=${3-"$?"}
   local expected_exit_code=1
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     State::addAssertionsFailed

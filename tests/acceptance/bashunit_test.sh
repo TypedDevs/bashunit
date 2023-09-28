@@ -40,7 +40,7 @@ function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
    "$fixture"\
     "$(./bashunit "$test_file")"
 
-  assertGeneralError "$(./bashunit "$test_file")"
+  assert_general_error "$(./bashunit "$test_file")"
 
   rm $test_file
 }

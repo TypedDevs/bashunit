@@ -16,12 +16,14 @@
   - `assertMatches` -> `assert_matches`
   - `assertNotMatches` -> `assert_not_matches`
   - `assertExitCode` -> `assert_exit_code`
+  - `assertSuccessfulCode` -> `assert_successful_code`
+  - `assert_general_error` -> `assert_general_error`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
 - Added `assertExitCode`
 - Added `assert_successful_code`
-- Added `assertGeneralError`
+- Added `assert_general_error`
 - Added `assertCommandNotFound`
 - Added `assertArrayContains`
 - Added `assertArrayNotContains`

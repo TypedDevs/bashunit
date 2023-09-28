@@ -136,22 +136,22 @@ function test_unsuccessful_assert_successful_code() {
     "$(assert_successful_code "$(fake_function)")"
 }
 
-function test_successful_assertGeneralError() {
+function test_successful_assert_general_error() {
   function fake_function() {
     return 1
   }
 
-  assert_empty "$(assertGeneralError "$(fake_function)")"
+  assert_empty "$(assert_general_error "$(fake_function)")"
 }
 
-function test_unsuccessful_assertGeneralError() {
+function test_unsuccessful_assert_general_error() {
   function fake_function() {
     return 2
   }
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
-    "$(assertGeneralError "$(fake_function)")"
+    "$(Console::printFailedTest "Unsuccessful assert general error" "2" "to be exactly" "1")"\
+    "$(assert_general_error "$(fake_function)")"
 }
 
 function test_successful_assertCommandNotFound() {

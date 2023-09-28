@@ -51,7 +51,7 @@ function test_getFunctionsToRun_filter_no_matching_functions_should_return_empty
 function test_getFunctionsToRun_fail_when_duplicates() {
   local functions=("prefix_function1" "prefix_function1")
 
-  assertGeneralError "$(Helper::getFunctionsToRun "prefix" "" "${functions[*]}")"
+  assert_general_error "$(Helper::getFunctionsToRun "prefix" "" "${functions[*]}")"
 }
 
 function test_dummyFunction_is_executed_with_execute_function_if_exists() {
@@ -67,7 +67,7 @@ function test_no_function_is_executed_with_execute_function_if_exists() {
 }
 
 function test_unsuccessful_unsetIfExists() {
-  assertGeneralError "$(Helper::unsetIfExists "fake_function")"
+  assert_general_error "$(Helper::unsetIfExists "fake_function")"
 }
 
 function test_successful_unsetIfExists() {
@@ -83,7 +83,7 @@ function test_checkDuplicateFunctions_with_duplicates() {
   local file
   file="$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh"
 
-  assertGeneralError "$(Helper::checkDuplicateFunctions "$file")"
+  assert_general_error "$(Helper::checkDuplicateFunctions "$file")"
 }
 
 function test_checkDuplicateFunctions_without_duplicates() {
