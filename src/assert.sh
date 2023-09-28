@@ -261,7 +261,8 @@ function assertArrayContains() {
 
 function assert_array_contains() {
   local expected="$1"
-  local label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
+  local label
+  label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
 
   local actual=("${@}")

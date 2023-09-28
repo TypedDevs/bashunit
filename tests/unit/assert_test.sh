@@ -196,6 +196,7 @@ function test_unsuccessful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
+    "$(Console::printFailedTest\
+      "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
