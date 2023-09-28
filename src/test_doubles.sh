@@ -23,6 +23,26 @@ function spy() {
   export -f "${command?}"
 }
 
+# Deprecated: Please use assert_have_been_called instead.
+function assertHaveBeenCalled() {
+  assert_have_been_called "$1" "$2"
+}
+
+function assert_have_been_called() {
+  local command=$1
+  local actual
+  actual="${command}_times"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ ${!actual} -eq 0 ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${command}" "has not been called at least" "once"
+    return
+  fi
+
+  State::addAssertionsPassed
+}
+
 # Deprecated: Please use assert_have_been_called_with instead.
 function assertHaveBeenCalledWith() {
   assert_have_been_called_with "$1" "$2" "$3"
@@ -38,26 +58,6 @@ function assert_have_been_called_with() {
   if [[ "$expected" != "${!actual}" ]]; then
     State::addAssertionsFailed
     Console::printFailedTest "${label}" "${expected}" "but got" "${!actual}"
-    return
-  fi
-
-  State::addAssertionsPassed
-}
-
-# Deprecated: Please use assert_have_been_called instead.
-function assertHaveBeenCalled() {
-  assert_have_been_called "$1" "$2"
-}
-
-function assert_have_been_called() {
-  local command=$1
-  local actual
-  actual="${command}_times"
-  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
-
-  if [[ ${!actual} -eq 0 ]]; then
-    State::addAssertionsFailed
-    Console::printFailedTest "${label}" "${command}" "has not been called at least" "once"
     return
   fi
 
