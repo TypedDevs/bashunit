@@ -254,11 +254,19 @@ function assert_command_not_found() {
   State::addAssertionsPassed
 }
 
+# Deprecated: Please use assert_array_contains instead.
 function assertArrayContains() {
   local expected="$1"
-  label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
+
+  assert_array_contains "$expected" "${@:2}"
+}
+
+function assert_array_contains() {
+  local expected="$1"
+  local label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift
-  local actual=("$@")
+
+  local actual=("${@}")
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     State::addAssertionsFailed
@@ -268,6 +276,7 @@ function assertArrayContains() {
 
   State::addAssertionsPassed
 }
+
 
 function assertArrayNotContains() {
   local expected="$1"

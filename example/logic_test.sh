@@ -95,7 +95,7 @@ function test_should_assert_exit_code_of_a_non_existing_command() {
 function test_should_assert_that_an_array_contains_1234() {
   local distros=(Ubuntu 1234 Linux\ Mint)
 
-  assertArrayContains "1234" "${distros[@]}"
+  assert_array_contains "1234" "${distros[@]}"
 }
 
 function test_should_assert_that_an_array_not_contains_1234() {

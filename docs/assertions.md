@@ -115,8 +115,8 @@ function test_failure() {
 }
 ```
 
-## assertArrayContains
-> `assertArrayContains "needle" "haystack"`
+## assert_array_contains
+> `assert_array_contains "needle" "haystack"`
 
 Reports an error if `needle` is not an element of `haystack`.
 
@@ -127,13 +127,13 @@ Reports an error if `needle` is not an element of `haystack`.
 function test_success() {
   local haystack=(foo bar baz)
 
-  assertArrayContains "bar" "${haystack[@]}"
+  assert_array_contains "bar" "${haystack[@]}"
 }
 
 function test_failure() {
   local haystack=(foo bar baz)
 
-  assertArrayContains "foobar" "${haystack[@]}"
+  assert_array_contains "foobar" "${haystack[@]}"
 }
 ```
 
@@ -317,7 +317,7 @@ function test_failure() {
 
 Reports an error if `needle` is an element of `haystack`.
 
-[assertArrayContains](#assertarraycontains) is the inverse of this assertion and takes the same arguments.
+[assert_array_contains](#assert_array_contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash

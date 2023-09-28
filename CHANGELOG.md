@@ -19,6 +19,7 @@
   - `assertSuccessfulCode` -> `assert_successful_code`
   - `assertGeneralError` -> `assert_general_error`
   - `assertCommandNotFound` -> `assert_command_not_found`
+  - `assertArrayContains` -> `assert_array_contains`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
@@ -26,7 +27,7 @@
 - Added `assert_successful_code`
 - Added `assert_general_error`
 - Added `assert_command_not_found`
-- Added `assertArrayContains`
+- Added `assert_array_contains`
 - Added `assertArrayNotContains`
 - Added `assertEmpty`
 - Added `assertNotEmpty`

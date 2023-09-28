@@ -168,22 +168,22 @@ function test_unsuccessful_assert_command_not_found() {
     "$(assert_command_not_found "$(fake_function)")"
 }
 
-function test_successful_assertArrayContains() {
+function test_successful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assert_empty "$(assertArrayContains "123" "${distros[@]}")"
+  assert_empty "$(assert_array_contains "123" "${distros[@]}")"
 }
 
-function test_unsuccessful_assertArrayContains() {
+function test_unsuccessful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assert_equals\
     "$(Console::printFailedTest \
-      "Unsuccessful assertArrayContains"\
+      "Unsuccessful assert array contains"\
       "Ubuntu 123 Linux Mint"\
       "to contain"\
       "non_existing_element")"\
-    "$(assertArrayContains "non_existing_element" "${distros[@]}")"
+    "$(assert_array_contains "non_existing_element" "${distros[@]}")"
 }
 
 function test_successful_assertArrayNotContains() {
