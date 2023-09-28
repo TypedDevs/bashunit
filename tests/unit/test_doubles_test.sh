@@ -33,7 +33,7 @@ function test_successful_spy() {
   spy ps
   ps a_random_parameter_1 a_random_parameter_2
 
-  assertHaveBeenCalledWith "a_random_parameter_1 a_random_parameter_2" ps
+  assert_have_been_called_with "a_random_parameter_1 a_random_parameter_2" ps
   assertHaveBeenCalled ps
 }
 

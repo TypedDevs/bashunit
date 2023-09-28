@@ -3,7 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
 - `mock`
 - `spy`
-- `assertHaveBeenCalledWith`
+- `assert_have_been_called_with`
 - `assertHaveBeenCalled`
 - `assertHaveBeenCalledTimes`
 - Rename assertions from camelCase to snake_case:
@@ -21,6 +21,7 @@
     - `assertCommandNotFound` -> `assert_command_not_found`
     - `assertArrayContains` -> `assert_array_contains`
     - `assertArrayNotContains` -> `assert_array_not_contains`
+    - `assertHaveBeenCalledWith` -> `assert_have_been_called_with`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 

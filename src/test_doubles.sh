@@ -23,7 +23,12 @@ function spy() {
   export -f "${command?}"
 }
 
+# Deprecated: Please use assert_have_been_called_with instead.
 function assertHaveBeenCalledWith() {
+  assert_have_been_called_with "$1" "$2" "$3"
+}
+
+function assert_have_been_called_with() {
   local expected=$1
   local command=$2
   local actual
