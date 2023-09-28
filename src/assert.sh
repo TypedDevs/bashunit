@@ -256,9 +256,7 @@ function assert_command_not_found() {
 
 # Deprecated: Please use assert_array_contains instead.
 function assertArrayContains() {
-  local expected="$1"
-
-  assert_array_contains "$expected" "${@:2}"
+  assert_array_contains "$1" "${@:2}"
 }
 
 function assert_array_contains() {
@@ -277,8 +275,12 @@ function assert_array_contains() {
   State::addAssertionsPassed
 }
 
-
+# Deprecated: Please use assert_array_not_contains instead.
 function assertArrayNotContains() {
+  assert_array_not_contains "$1" "${@:1}"
+}
+
+function assert_array_not_contains() {
   local expected="$1"
   label="$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
   shift

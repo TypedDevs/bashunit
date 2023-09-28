@@ -120,7 +120,7 @@ function test_failure() {
 
 Reports an error if `needle` is not an element of `haystack`.
 
-[assertArrayNotContains](#assertarraynotcontains) is the inverse of this assertion and takes the same arguments.
+[assert_array_not_contains](#assert_array_not_contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -312,8 +312,8 @@ function test_failure() {
 }
 ```
 
-## assertArrayNotContains
-> `assertArrayNotContains "needle" "haystack"`
+## assert_array_not_contains
+> `assert_array_not_contains "needle" "haystack"`
 
 Reports an error if `needle` is an element of `haystack`.
 
@@ -324,12 +324,12 @@ Reports an error if `needle` is an element of `haystack`.
 function test_success() {
   local haystack=(foo bar baz)
 
-  assertArrayNotContains "foobar" "${haystack[@]}"
+  assert_array_not_contains "foobar" "${haystack[@]}"
 }
 
 function test_failure() {
   local haystack=(foo bar baz)
 
-  assertArrayNotContains "baz" "${haystack[@]}"
+  assert_array_not_contains "baz" "${haystack[@]}"
 }
 ```

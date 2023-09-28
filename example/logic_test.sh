@@ -101,5 +101,5 @@ function test_should_assert_that_an_array_contains_1234() {
 function test_should_assert_that_an_array_not_contains_1234() {
   local distros=(Ubuntu 1234 Linux\ Mint)
 
-  assertArrayNotContains "a_non_existing_element" "${distros[@]}"
+  assert_array_not_contains "a_non_existing_element" "${distros[@]}"
 }

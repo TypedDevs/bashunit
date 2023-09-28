@@ -20,6 +20,7 @@
   - `assertGeneralError` -> `assert_general_error`
   - `assertCommandNotFound` -> `assert_command_not_found`
   - `assertArrayContains` -> `assert_array_contains`
+  - `assertArrayNotContains` -> `assert_array_not_contains`
 
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
@@ -28,7 +29,7 @@
 - Added `assert_general_error`
 - Added `assert_command_not_found`
 - Added `assert_array_contains`
-- Added `assertArrayNotContains`
+- Added `assert_array_not_contains`
 - Added `assertEmpty`
 - Added `assertNotEmpty`
 - Added `setUp`, `setUpBeforeScript`, `tearDown` and `tearDownAfterScript` function execution before and/or after test and/or script execution

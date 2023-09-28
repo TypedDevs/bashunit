@@ -186,16 +186,16 @@ function test_unsuccessful_assert_array_contains() {
     "$(assert_array_contains "non_existing_element" "${distros[@]}")"
 }
 
-function test_successful_assertArrayNotContains() {
+function test_successful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assert_empty "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
+  assert_empty "$(assert_array_not_contains "a_non_existing_element" "${distros[@]}")"
 }
 
-function test_unsuccessful_assertArrayNotContains() {
+function test_unsuccessful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
-    "$(assertArrayNotContains "123" "${distros[@]}")"
+    "$(Console::printFailedTest "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
+    "$(assert_array_not_contains "123" "${distros[@]}")"
 }
