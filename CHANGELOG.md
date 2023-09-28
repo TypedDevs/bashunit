@@ -20,7 +20,7 @@
 ## [0.6.0](https://github.com/TypedDevs/bashunit/compare/0.5.0...0.6.0) - 2023-09-19
 
 - Added `assertExitCode`
-- Added `assertSuccessfulCode`
+- Added `assert_successful_code`
 - Added `assertGeneralError`
 - Added `assertCommandNotFound`
 - Added `assertArrayContains`

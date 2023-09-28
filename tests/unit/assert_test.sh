@@ -118,22 +118,22 @@ function test_unsuccessful_return_assert_exit_code() {
   assert_exit_code "1"
 }
 
-function test_successful_assertSuccessfulCode() {
+function test_successful_assert_successful_code() {
   function fake_function() {
     return 0
   }
 
-  assert_empty "$(assertSuccessfulCode "$(fake_function)")"
+  assert_empty "$(assert_successful_code "$(fake_function)")"
 }
 
-function test_unsuccessful_assertSuccessfulCode() {
+function test_unsuccessful_assert_successful_code() {
   function fake_function() {
     return 2
   }
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
-    "$(assertSuccessfulCode "$(fake_function)")"
+    "$(Console::printFailedTest "Unsuccessful assert successful code" "2" "to be exactly" "0")"\
+    "$(assert_successful_code "$(fake_function)")"
 }
 
 function test_successful_assertGeneralError() {

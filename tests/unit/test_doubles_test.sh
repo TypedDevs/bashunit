@@ -21,7 +21,7 @@ PID TTY          TIME CMD
 8387  ?        00:00:00 /usr/sbin/apache2 -k start
 EOF
 
-  assert_empty "$(assertSuccessfulCode "$(code)")"
+  assert_empty "$(assert_successful_code "$(code)")"
 }
 
 function test_successful_override_ps_with_echo_with_mock() {

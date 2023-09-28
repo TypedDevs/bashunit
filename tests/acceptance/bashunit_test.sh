@@ -17,7 +17,7 @@ function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
    "$fixture"\
     "$(./bashunit "$test_file")"
 
-  assertSuccessfulCode "$(./bashunit "$test_file")"
+  assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
 }

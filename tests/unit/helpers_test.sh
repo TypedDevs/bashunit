@@ -76,7 +76,7 @@ function test_successful_unsetIfExists() {
     return 0
   }
 
-  assertSuccessfulCode "$(Helper::unsetIfExists "fake_function")"
+  assert_successful_code "$(Helper::unsetIfExists "fake_function")"
 }
 
 function test_checkDuplicateFunctions_with_duplicates() {
@@ -90,5 +90,5 @@ function test_checkDuplicateFunctions_without_duplicates() {
   local file
   file="$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh"
 
-  assertSuccessfulCode "$(Helper::checkDuplicateFunctions "$file")"
+  assert_successful_code "$(Helper::checkDuplicateFunctions "$file")"
 }

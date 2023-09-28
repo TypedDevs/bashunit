@@ -57,7 +57,7 @@ function test_successful_exit_code() {
     return 0
   }
 
-  assertSuccessfulCode "$(fake_function)"
+  assert_successful_code "$(fake_function)"
 }
 
 function test_other_way_of_using_the_successful_exit_code() {
@@ -67,7 +67,7 @@ function test_other_way_of_using_the_successful_exit_code() {
 
   fake_function
 
-  assertSuccessfulCode
+  assert_successful_code
 }
 
 function test_general_error() {
