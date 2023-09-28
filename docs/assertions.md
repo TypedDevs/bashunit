@@ -9,7 +9,7 @@ Below is their documentation.
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
-[assert_not_equals](#assert_not_equals) is the inverse of this assertion and takes the same arguments.
+[assert_not_equals](#assert-not-equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -45,7 +45,7 @@ function test_failure() {
 
 Reports an error if `actual` is not empty.
 
-[assert_not_empty](#assert_not_empty) is the inverse of this assertion and takes the same arguments.
+[assert_not_empty](#assert-not-empty) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -63,7 +63,7 @@ function test_failure() {
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assert_not_matches](#assert_not_matches) is the inverse of this assertion and takes the same arguments.
+[assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -83,7 +83,7 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_successful_code](#assert_successful_code), [assert_general_error](#assert_general_error) and [assert_command_not_found](#assert_command_not_found)
+[assert_successful_code](#assert-successful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 *Example:*
@@ -120,7 +120,7 @@ function test_failure() {
 
 Reports an error if `needle` is not an element of `haystack`.
 
-[assert_array_not_contains](#assert_array_not_contains) is the inverse of this assertion and takes the same arguments.
+[assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -144,7 +144,7 @@ Reports an error if the exit code of `callable` is not successful (`0`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -182,7 +182,7 @@ Reports an error if the exit code of `callable` is not a general error (`1`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -221,7 +221,7 @@ In other words, if executing `callable` does not return a command not found exit
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert_exit_code) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -245,7 +245,7 @@ function test_failure() {
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
-[assert_equals](#assert_equals) is the inverse of this assertion and takes the same arguments.
+[assert_equals](#assert-equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -263,7 +263,7 @@ function test_failure() {
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assert_contains](#assert_contains) is the inverse of this assertion and takes the same arguments.
+[assert_contains](#assert-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -281,7 +281,7 @@ function test_failure() {
 
 Reports an error if `actual` is empty.
 
-[assert_empty](#assert_empty) is the inverse of this assertion and takes the same arguments.
+[assert_empty](#assert-empty) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -299,7 +299,7 @@ function test_failure() {
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assert_matches](#assert_matches) is the inverse of this assertion and takes the same arguments.
+[assert_matches](#assert-matches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
@@ -317,7 +317,7 @@ function test_failure() {
 
 Reports an error if `needle` is an element of `haystack`.
 
-[assert_array_contains](#assert_array_contains) is the inverse of this assertion and takes the same arguments.
+[assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
