@@ -1,201 +1,202 @@
 #!/bin/bash
 
-function test_successful_assertEquals() {
-  assertEmpty "$(assertEquals "1" "1")"
+function test_successful_assert_equals() {
+  assert_empty "$(assert_equals "1" "1")"
 }
 
-function test_unsuccessful_assertEquals() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertEquals" "1" "but got" "2")"\
-    "$(assertEquals "1" "2")"
+function test_unsuccessful_assert_equals() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert equals" "1" "but got" "2")"\
+    "$(assert_equals "1" "2")"
 }
 
-function test_successful_assertEmpty() {
-  assertEmpty "$(assertEmpty "")"
+function test_successful_assert_empty() {
+  assert_empty "$(assert_empty "")"
 }
 
-function test_unsuccessful_assertEmpty() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertEmpty" "to be empty" "but got" "1")"\
-    "$(assertEmpty "1")"
+function test_unsuccessful_assert_empty() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert empty" "to be empty" "but got" "1")"\
+    "$(assert_empty "1")"
 }
 
-function test_successful_assertNotEmpty() {
-  assertEmpty "$(assertNotEmpty "a_random_string")"
+function test_successful_assert_not_empty() {
+  assert_empty "$(assert_not_empty "a_random_string")"
 }
 
-function test_unsuccessful_assertNotEmpty() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertNotEmpty" "to not be empty" "but got" "")"\
-    "$(assertNotEmpty "")"
+function test_unsuccessful_assert_not_empty() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert not empty" "to not be empty" "but got" "")"\
+    "$(assert_not_empty "")"
 }
 
-function test_successful_assertNotEquals() {
-  assertEmpty "$(assertNotEquals "1" "2")"
+function test_successful_assert_not_equals() {
+  assert_empty "$(assert_not_equals "1" "2")"
 }
 
-function test_unsuccessful_assertNotEquals() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertNotEquals" "1" "but got" "1")"\
-    "$(assertNotEquals "1" "1")"
+function test_unsuccessful_assert_not_equals() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert not equals" "1" "but got" "1")"\
+    "$(assert_not_equals "1" "1")"
 }
 
-function test_successful_assertContains() {
-  assertEmpty "$(assertContains "Linux" "GNU/Linux")"
+function test_successful_assert_contains() {
+  assert_empty "$(assert_contains "Linux" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertContains() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertContains" "GNU/Linux" "to contain" "Unix")"\
-    "$(assertContains "Unix" "GNU/Linux")"
+function test_unsuccessful_assert_contains() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert contains" "GNU/Linux" "to contain" "Unix")"\
+    "$(assert_contains "Unix" "GNU/Linux")"
 }
 
-function test_successful_assertNotContains() {
-  assertEmpty "$(assertNotContains "Linus" "GNU/Linux")"
+function test_successful_assert_not_contains() {
+  assert_empty "$(assert_not_contains "Linus" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertNotContains() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertNotContains" "GNU/Linux" "to not contain" "Linux")"\
-    "$(assertNotContains "Linux" "GNU/Linux")"
+function test_unsuccessful_assert_not_contains() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"\
+    "$(assert_not_contains "Linux" "GNU/Linux")"
 }
 
-function test_successful_assertMatches() {
-  assertEmpty "$(assertMatches ".*Linu*" "GNU/Linux")"
+function test_successful_assert_matches() {
+  assert_empty "$(assert_matches ".*Linu*" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertMatches() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertMatches" "GNU/Linux" "to match" ".*Pinux*")"\
-    "$(assertMatches ".*Pinux*" "GNU/Linux")"
+function test_unsuccessful_assert_matches() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")"\
+    "$(assert_matches ".*Pinux*" "GNU/Linux")"
 }
 
-function test_successful_assertNotMatches() {
-  assertEmpty "$(assertNotMatches ".*Pinux*" "GNU/Linux")"
+function test_successful_assert_not_matches() {
+  assert_empty "$(assert_not_matches ".*Pinux*" "GNU/Linux")"
 }
 
-function test_unsuccessful_assertNotMatches() {
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertNotMatches" "GNU/Linux" "to not match" ".*Linu*")"\
-    "$(assertNotMatches ".*Linu*" "GNU/Linux")"
+function test_unsuccessful_assert_not_matches() {
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"\
+    "$(assert_not_matches ".*Linu*" "GNU/Linux")"
 }
 
-function test_successful_assertExitCode() {
+function test_successful_assert_exit_code() {
   function fake_function() {
     exit 0
   }
 
-  assertEmpty "$(assertExitCode "0" "$(fake_function)")"
+  assert_empty "$(assert_exit_code "0" "$(fake_function)")"
 }
 
-function test_unsuccessful_assertExitCode() {
+function test_unsuccessful_assert_exit_code() {
   function fake_function() {
     exit 1
   }
 
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertExitCode" "1" "to be" "0")"\
-    "$(assertExitCode "0" "$(fake_function)")"
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert exit code" "1" "to be" "0")"\
+    "$(assert_exit_code "0" "$(fake_function)")"
 }
 
-function test_successful_return_assertExitCode() {
+function test_successful_return_assert_exit_code() {
   function fake_function() {
     return 0
   }
 
   fake_function
 
-  assertExitCode "0"
+  assert_exit_code "0"
 }
 
-function test_unsuccessful_return_assertExitCode() {
+function test_unsuccessful_return_assert_exit_code() {
   function fake_function() {
     return 1
   }
 
   fake_function
 
-  assertExitCode "1"
+  assert_exit_code "1"
 }
 
-function test_successful_assertSuccessfulCode() {
+function test_successful_assert_successful_code() {
   function fake_function() {
     return 0
   }
 
-  assertEmpty "$(assertSuccessfulCode "$(fake_function)")"
+  assert_empty "$(assert_successful_code "$(fake_function)")"
 }
 
-function test_unsuccessful_assertSuccessfulCode() {
+function test_unsuccessful_assert_successful_code() {
   function fake_function() {
     return 2
   }
 
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertSuccessfulCode" "2" "to be exactly" "0")"\
-    "$(assertSuccessfulCode "$(fake_function)")"
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert successful code" "2" "to be exactly" "0")"\
+    "$(assert_successful_code "$(fake_function)")"
 }
 
-function test_successful_assertGeneralError() {
+function test_successful_assert_general_error() {
   function fake_function() {
     return 1
   }
 
-  assertEmpty "$(assertGeneralError "$(fake_function)")"
+  assert_empty "$(assert_general_error "$(fake_function)")"
 }
 
-function test_unsuccessful_assertGeneralError() {
+function test_unsuccessful_assert_general_error() {
   function fake_function() {
     return 2
   }
 
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertGeneralError" "2" "to be exactly" "1")"\
-    "$(assertGeneralError "$(fake_function)")"
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert general error" "2" "to be exactly" "1")"\
+    "$(assert_general_error "$(fake_function)")"
 }
 
-function test_successful_assertCommandNotFound() {
-  assertEmpty "$(assertCommandNotFound "$(a_non_existing_function > /dev/null 2>&1)")"
+function test_successful_assert_command_not_found() {
+  assert_empty "$(assert_command_not_found "$(a_non_existing_function > /dev/null 2>&1)")"
 }
 
-function test_unsuccessful_assertCommandNotFound() {
+function test_unsuccessful_assert_command_not_found() {
   function fake_function() {
     return 0
   }
 
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertCommandNotFound" "0" "to be exactly" "127")"\
-    "$(assertCommandNotFound "$(fake_function)")"
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert command not found" "0" "to be exactly" "127")"\
+    "$(assert_command_not_found "$(fake_function)")"
 }
 
-function test_successful_assertArrayContains() {
+function test_successful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEmpty "$(assertArrayContains "123" "${distros[@]}")"
+  assert_empty "$(assert_array_contains "123" "${distros[@]}")"
 }
 
-function test_unsuccessful_assertArrayContains() {
+function test_unsuccessful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEquals\
+  assert_equals\
     "$(Console::printFailedTest \
-      "Unsuccessful assertArrayContains"\
+      "Unsuccessful assert array contains"\
       "Ubuntu 123 Linux Mint"\
       "to contain"\
       "non_existing_element")"\
-    "$(assertArrayContains "non_existing_element" "${distros[@]}")"
+    "$(assert_array_contains "non_existing_element" "${distros[@]}")"
 }
 
-function test_successful_assertArrayNotContains() {
+function test_successful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEmpty "$(assertArrayNotContains "a_non_existing_element" "${distros[@]}")"
+  assert_empty "$(assert_array_not_contains "a_non_existing_element" "${distros[@]}")"
 }
 
-function test_unsuccessful_assertArrayNotContains() {
+function test_unsuccessful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
-  assertEquals\
-    "$(Console::printFailedTest "Unsuccessful assertArrayNotContains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
-    "$(assertArrayNotContains "123" "${distros[@]}")"
+  assert_equals\
+    "$(Console::printFailedTest\
+      "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
+    "$(assert_array_not_contains "123" "${distros[@]}")"
 }

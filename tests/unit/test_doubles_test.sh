@@ -21,28 +21,28 @@ PID TTY          TIME CMD
 8387  ?        00:00:00 /usr/sbin/apache2 -k start
 EOF
 
-  assertEmpty "$(assertSuccessfulCode "$(code)")"
+  assert_empty "$(assert_successful_code "$(code)")"
 }
 
 function test_successful_override_ps_with_echo_with_mock() {
   mock ps echo hello world
-  assertEquals "hello world" "$(ps)"
+  assert_equals "hello world" "$(ps)"
 }
 
 function test_successful_spy() {
   spy ps
   ps a_random_parameter_1 a_random_parameter_2
 
-  assertHaveBeenCalledWith "a_random_parameter_1 a_random_parameter_2" ps
-  assertHaveBeenCalled ps
+  assert_have_been_called_with "a_random_parameter_1 a_random_parameter_2" ps
+  assert_have_been_called ps
 }
 
 function test_unsuccessful_spy_called() {
   spy ps
 
-  assertEquals\
+  assert_equals\
     "$(Console::printFailedTest "Unsuccessful spy called" "ps" "has not been called at least" "once")"\
-    "$(assertHaveBeenCalled ps)"
+    "$(assert_have_been_called ps)"
 }
 
 
@@ -52,6 +52,6 @@ function test_successful_spy_called_times() {
   ps
   ps
 
-  assertHaveBeenCalledTimes 2 ps
+  assert_have_been_called_times 2 ps
 }
 

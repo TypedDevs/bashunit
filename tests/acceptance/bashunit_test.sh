@@ -11,13 +11,13 @@ function test_bash_unit_when_a_test_passes() {
 
   echo "
 #!/bin/bash
-function test_succeed() { assertEquals \"1\" \"1\" ; }" > $test_file
+function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assertContains\
+  assert_contains\
    "$fixture"\
     "$(./bashunit "$test_file")"
 
-  assertSuccessfulCode "$(./bashunit "$test_file")"
+  assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
 }
@@ -34,13 +34,13 @@ function test_bash_unit_when_a_test_fail() {
 
   echo "
 #!/bin/bash
-function test_fail() { assertEquals \"1\" \"0\" ; }" > $test_file
+function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
-  assertContains\
+  assert_contains\
    "$fixture"\
     "$(./bashunit "$test_file")"
 
-  assertGeneralError "$(./bashunit "$test_file")"
+  assert_general_error "$(./bashunit "$test_file")"
 
   rm $test_file
 }

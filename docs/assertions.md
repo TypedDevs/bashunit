@@ -4,86 +4,86 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
-## assertEquals
-> `assertEquals "expected" "actual"`
+## assert_equals
+> `assert_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal.
 
-[assertNotEquals](#assertnotequals) is the inverse of this assertion and takes the same arguments.
+[assert_not_equals](#assert-not-equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertEquals "foo" "foo"
+  assert_equals "foo" "foo"
 }
 
 function test_failure() {
-  assertEquals "foo" "bar"
+  assert_equals "foo" "bar"
 }
 ```
 
-## assertContains
-> `assertContains "needle" "haystack"`
+## assert_contains
+> `assert_contains "needle" "haystack"`
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assertNotContains](#assertnotcontains) is the inverse of this assertion and takes the same arguments.
+[assert_not_contains](#assert-not-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertContains "foo" "foobar"
+  assert_contains "foo" "foobar"
 }
 
 function test_failure() {
-  assertContains "baz" "foobar"
+  assert_contains "baz" "foobar"
 }
 ```
 
-## assertEmpty
-> `assertEmpty "actual"`
+## assert_empty
+> `assert_empty "actual"`
 
 Reports an error if `actual` is not empty.
 
-[assertNotEmpty](#assertnotempty) is the inverse of this assertion and takes the same arguments.
+[assert_not_empty](#assert-not-empty) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertEmpty ""
+  assert_empty ""
 }
 
 function test_failure() {
-  assertEmpty "foo"
+  assert_empty "foo"
 }
 ```
 
-## assertMatches
-> `assertMatches "pattern" "value"`
+## assert_matches
+> `assert_matches "pattern" "value"`
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assertNotMatches](#assertnotmatches) is the inverse of this assertion and takes the same arguments.
+[assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertMatches "^foo" "foobar"
+  assert_matches "^foo" "foobar"
 }
 
 function test_failure() {
-  assertMatches "^bar" "foobar"
+  assert_matches "^bar" "foobar"
 }
 ```
 
-## assertExitCode
-> `assertExitCode "expected" ["callable"]`
+## assert_exit_code
+> `assert_exit_code "expected" ["callable"]`
 
 Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertSuccessfulCode](#assertsuccessfulcode), [assertGeneralError](#assertgeneralerror) and [assertCommandNotFound](#assertcommandnotfound)
+[assert_successful_code](#assert-successful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 *Example:*
@@ -93,7 +93,7 @@ function test_success_with_callable() {
     return 1
   }
 
-  assertExitCode "1" "$(foo)"
+  assert_exit_code "1" "$(foo)"
 }
 
 function test_success_without_callable() {
@@ -103,7 +103,7 @@ function test_success_without_callable() {
 
   foo # function took instead `callable`
 
-  assertExitCode "1"
+  assert_exit_code "1"
 }
 
 function test_failure() {
@@ -111,40 +111,40 @@ function test_failure() {
     return 1
   }
 
-  assertExitCode "0" "$(foo)"
+  assert_exit_code "0" "$(foo)"
 }
 ```
 
-## assertArrayContains
-> `assertArrayContains "needle" "haystack"`
+## assert_array_contains
+> `assert_array_contains "needle" "haystack"`
 
 Reports an error if `needle` is not an element of `haystack`.
 
-[assertArrayNotContains](#assertarraynotcontains) is the inverse of this assertion and takes the same arguments.
+[assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
   local haystack=(foo bar baz)
 
-  assertArrayContains "bar" "${haystack[@]}"
+  assert_array_contains "bar" "${haystack[@]}"
 }
 
 function test_failure() {
   local haystack=(foo bar baz)
 
-  assertArrayContains "foobar" "${haystack[@]}"
+  assert_array_contains "foobar" "${haystack[@]}"
 }
 ```
 
-## assertSuccessfulCode
-> `assertSuccessfulCode ["callable"]`
+## assert_successful_code
+> `assert_successful_code ["callable"]`
 
 Reports an error if the exit code of `callable` is not successful (`0`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -153,7 +153,7 @@ function test_success_with_callable() {
     return 0
   }
 
-  assertSuccessfulCode "$(foo)"
+  assert_successful_code "$(foo)"
 }
 
 function test_success_without_callable() {
@@ -163,7 +163,7 @@ function test_success_without_callable() {
 
   foo # function took instead `callable`
 
-  assertSuccessfulCode
+  assert_successful_code
 }
 
 function test_failure() {
@@ -171,18 +171,18 @@ function test_failure() {
     return 1
   }
 
-  assertSuccessfulCode "$(foo)"
+  assert_successful_code "$(foo)"
 }
 ```
 
-## assertGeneralError
-> `assertGeneralError ["callable"]`
+## assert_general_error
+> `assert_general_error ["callable"]`
 
 Reports an error if the exit code of `callable` is not a general error (`1`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
@@ -191,7 +191,7 @@ function test_success_with_callable() {
     return 1
   }
 
-  assertGeneralError "$(foo)"
+  assert_general_error "$(foo)"
 }
 
 function test_success_without_callable() {
@@ -201,7 +201,7 @@ function test_success_without_callable() {
 
   foo # function took instead `callable`
 
-  assertGeneralError
+  assert_general_error
 }
 
 function test_failure() {
@@ -209,127 +209,127 @@ function test_failure() {
     return 0
   }
 
-  assertGeneralError "$(foo)"
+  assert_general_error "$(foo)"
 }
 ```
 
-## assertCommandNotFound
-> `assertGeneralError ["callable"]`
+## assert_command_not_found
+> `assert_general_error ["callable"]`
 
 Reports an error if `callable` exists.
 In other words, if executing `callable` does not return a command not found exit code (`127`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assertExitCode](#assertexitcode) is the full version of this assertion where you can specify the expected exit code.
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 *Example:*
 ```bash
 function test_success_with_callable() {
-  assertCommandNotFound "$(foo > /dev/null 2>&1)"
+  assert_command_not_found "$(foo > /dev/null 2>&1)"
 }
 
 function test_success_without_callable() {
   foo > /dev/null 2>&1
 
-  assertCommandNotFound
+  assert_command_not_found
 }
 
 function test_failure() {
-  assertCommandNotFound "$(ls > /dev/null 2>&1)"
+  assert_command_not_found "$(ls > /dev/null 2>&1)"
 }
 ```
 
-## assertNotEquals
-> `assertNotEquals "expected" "actual"`
+## assert_not_equals
+> `assert_not_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are equal.
 
-[assertEquals](#assertequals) is the inverse of this assertion and takes the same arguments.
+[assert_equals](#assert-equals) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertNotEquals "foo" "bar"
+  assert_not_equals "foo" "bar"
 }
 
 function test_failure() {
-  assertNotEquals "foo" "foo"
+  assert_not_equals "foo" "foo"
 }
 ```
 
-## assertNotContains
-> `assertNotContains "needle" "haystack"`
+## assert_not_contains
+> `assert_not_contains "needle" "haystack"`
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assertContains](#assertcontains) is the inverse of this assertion and takes the same arguments.
+[assert_contains](#assert-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertNotContains "baz" "foobar"
+  assert_not_contains "baz" "foobar"
 }
 
 function test_failure() {
-  assertNotContains "foo" "foobar"
+  assert_not_contains "foo" "foobar"
 }
 ```
 
-## assertNotEmpty
-> `assertNotEmpty "actual"`
+## assert_not_empty
+> `assert_not_empty "actual"`
 
 Reports an error if `actual` is empty.
 
-[assertEmpty](#assertempty) is the inverse of this assertion and takes the same arguments.
+[assert_empty](#assert-empty) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertNotEmpty "foo"
+  assert_not_empty "foo"
 }
 
 function test_failure() {
-  assertNotEmpty ""
+  assert_not_empty ""
 }
 ```
 
-## assertNotMatches
-> `assertNotMatches "pattern" "value"`
+## assert_not_matches
+> `assert_not_matches "pattern" "value"`
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assertMatches](#assertmatches) is the inverse of this assertion and takes the same arguments.
+[assert_matches](#assert-matches) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
-  assertNotMatches "foo$" "foobar"
+  assert_not_matches "foo$" "foobar"
 }
 
 function test_failure() {
-  assertNotMatches "bar$" "foobar"
+  assert_not_matches "bar$" "foobar"
 }
 ```
 
-## assertArrayNotContains
-> `assertArrayNotContains "needle" "haystack"`
+## assert_array_not_contains
+> `assert_array_not_contains "needle" "haystack"`
 
 Reports an error if `needle` is an element of `haystack`.
 
-[assertArrayContains](#assertarraycontains) is the inverse of this assertion and takes the same arguments.
+[assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
 
 *Example:*
 ```bash
 function test_success() {
   local haystack=(foo bar baz)
 
-  assertArrayNotContains "foobar" "${haystack[@]}"
+  assert_array_not_contains "foobar" "${haystack[@]}"
 }
 
 function test_failure() {
   local haystack=(foo bar baz)
 
-  assertArrayNotContains "baz" "${haystack[@]}"
+  assert_array_not_contains "baz" "${haystack[@]}"
 }
 ```

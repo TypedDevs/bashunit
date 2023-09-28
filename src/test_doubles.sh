@@ -23,7 +23,22 @@ function spy() {
   export -f "${command?}"
 }
 
-function assertHaveBeenCalledWith() {
+function assert_have_been_called() {
+  local command=$1
+  local actual
+  actual="${command}_times"
+  local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ ${!actual} -eq 0 ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${command}" "has not been called at least" "once"
+    return
+  fi
+
+  State::addAssertionsPassed
+}
+
+function assert_have_been_called_with() {
   local expected=$1
   local command=$2
   local actual
@@ -39,22 +54,7 @@ function assertHaveBeenCalledWith() {
   State::addAssertionsPassed
 }
 
-function assertHaveBeenCalled() {
-  local command=$1
-  local actual
-  actual="${command}_times"
-  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
-
-  if [[ ${!actual} -eq 0 ]]; then
-    State::addAssertionsFailed
-    Console::printFailedTest "${label}" "${command}" "has not been called at least" "once"
-    return
-  fi
-
-  State::addAssertionsPassed
-}
-
-function assertHaveBeenCalledTimes() {
+function assert_have_been_called_times() {
   local expected=$1
   local command=$2
   local actual
