@@ -6,6 +6,7 @@ export default defineConfig({
   titleTemplate: 'bashunit',
   description: 'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.',
   lang: 'en-US',
+  cleanUrls: true,
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
