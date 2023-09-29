@@ -70,3 +70,28 @@ function test_error() {
 
   rm $test_file
 }
+
+function test_bash_unit_output_dots() {
+  local test_file=./tests/acceptance/fake_dots_test.sh
+  local fixture
+  fixture=$(printf "Running ./tests/acceptance/fake_fail_test.sh
+...
+
+\e[2mTests:     \e[0m \e[32m1 passed\e[0m, 1 total
+\e[2mAssertions:\e[0m \e[32m1 passed\e[0m, 1 total
+\e[42mAll tests passed\e[0m")
+
+  echo "
+#!/bin/bash
+function test_1() { assert_equals \"1\" \"1\" ; }
+function test_2() { assert_equals \"1\" \"1\" ; }
+function test_3() { assert_equals \"1\" \"1\" ; }" > $test_file
+
+  assert_contains\
+   "$fixture"\
+    "$(./bashunit "$test_file" --dots)"
+
+  assert_general_error "$(./bashunit "$test_file")"
+
+  rm $test_file
+}
