@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
+- Added `--dots` argument for a simpler output
 - `mock`
 - `spy`
 - `assert_have_been_called`
