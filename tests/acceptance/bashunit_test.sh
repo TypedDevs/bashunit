@@ -74,24 +74,23 @@ function test_error() {
 function test_bash_unit_output_dots() {
   local test_file=./tests/acceptance/fake_dots_test.sh
   local fixture
-  fixture=$(printf "Running ./tests/acceptance/fake_fail_test.sh
-...
-
-\e[2mTests:     \e[0m \e[32m1 passed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[32m1 passed\e[0m, 1 total
+  fixture=$(printf "....
+\e[2mTests:     \e[0m \e[32m4 passed\e[0m, 4 total
+\e[2mAssertions:\e[0m \e[32m6 passed\e[0m, 6 total
 \e[42mAll tests passed\e[0m")
 
   echo "
 #!/bin/bash
 function test_1() { assert_equals \"1\" \"1\" ; }
-function test_2() { assert_equals \"1\" \"1\" ; }
-function test_3() { assert_equals \"1\" \"1\" ; }" > $test_file
+function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
+function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
+function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains\
+  assert_equals\
    "$fixture"\
     "$(./bashunit "$test_file" --dots)"
 
-  assert_general_error "$(./bashunit "$test_file")"
+  assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
 }

@@ -24,6 +24,7 @@ source "$BASH_UNIT_ROOT_DIR/src/runner.sh"
 ###############
 
 _FILTER=""
+_DOTS=false
 _FILES=()
 
 while [[ $# -gt 0 ]]; do
@@ -32,6 +33,10 @@ while [[ $# -gt 0 ]]; do
     --filter)
       _FILTER="$2"
       shift
+      shift
+      ;;
+    --dots)
+      _DOTS=true
       shift
       ;;
     *)
