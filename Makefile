@@ -61,7 +61,7 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS) --dots
+	@./bashunit $(TEST_SCRIPTS) --simple
 
 test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)

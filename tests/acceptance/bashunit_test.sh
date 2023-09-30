@@ -71,7 +71,7 @@ function test_error() {
   rm $test_file
 }
 
-function test_bash_unit_output_dots() {
+function test_bash_unit_simple_output() {
   local test_file=./tests/acceptance/fake_dots_test.sh
   local fixture
   fixture=$(printf "....
@@ -88,7 +88,7 @@ function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   assert_contains\
    "$fixture"\
-    "$(./bashunit "$test_file" --dots)"
+    "$(./bashunit "$test_file" --simple)"
 
   assert_successful_code "$(./bashunit "$test_file")"
 

@@ -1,7 +1,7 @@
 # Changelog
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
-- Added `--dots` argument for a simpler output
+- Added `--simple` argument for a simpler output
 - Manage error when test execution fails
 - Split install and build scripts
 - Added these functions
