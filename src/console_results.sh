@@ -58,7 +58,7 @@ _SUCCESSFUL_TEST_COUNT=0
 function Console::printSuccessfulTest() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
-  if [[ "$_VERBOSE" == false ]]; then
+  if [[ "$_SIMPLE_OUTPUT" == true ]]; then
     if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
       printf "."
     else
