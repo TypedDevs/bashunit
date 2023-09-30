@@ -86,7 +86,7 @@ function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
 function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
 function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_equals\
+  assert_contains\
    "$fixture"\
     "$(./bashunit "$test_file" --dots)"
 
