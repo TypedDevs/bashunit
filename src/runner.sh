@@ -42,7 +42,7 @@ function Runner::callTestFunctions() {
   functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if [[ "$_VERBOSE" == true ]]; then
+    if [[ "$_DOTS" == false ]]; then
       echo "Running $script"
     fi
 

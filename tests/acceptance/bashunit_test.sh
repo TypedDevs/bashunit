@@ -15,7 +15,7 @@ function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   assert_contains\
    "$fixture"\
-    "$(./bashunit "$test_file" --verbose)"
+    "$(./bashunit "$test_file")"
 
   assert_successful_code "$(./bashunit "$test_file")"
 
@@ -38,7 +38,7 @@ function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
   assert_contains\
    "$fixture"\
-    "$(./bashunit "$test_file" --verbose)"
+    "$(./bashunit "$test_file")"
 
   assert_general_error "$(./bashunit "$test_file")"
 
@@ -64,7 +64,7 @@ function test_error() {
 
   assertContains\
    "$fixture"\
-    "$(./bashunit "$test_file" --verbose)"
+    "$(./bashunit "$test_file")"
 
   assertGeneralError "$(./bashunit "$test_file")"
 
@@ -88,7 +88,7 @@ function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   assert_contains\
    "$fixture"\
-    "$(./bashunit "$test_file")"
+    "$(./bashunit "$test_file" --dots)"
 
   assert_successful_code "$(./bashunit "$test_file")"
 
