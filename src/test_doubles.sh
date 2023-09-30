@@ -18,7 +18,7 @@ function spy() {
   export "${command}_times"=0
   export "${command}_params"
 
-  eval "function $command() { ${command}_params=(\"\$*\"); ((${command}_times++)); }"
+  eval "function $command() { ${command}_params=(\"\$*\"); ((${command}_times++)) || true; }"
 
   export -f "${command?}"
 }

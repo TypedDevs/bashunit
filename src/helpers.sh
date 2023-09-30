@@ -98,8 +98,5 @@ function Helper::unsetIfExists() {
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
     unset "$function_name"
-    return 0
   fi
-
-  return 1
 }

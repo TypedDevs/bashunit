@@ -39,6 +39,8 @@ function test_should_validate_a_non_ok_exit_code() {
     return 1
   }
 
+  set +e
+
   fake_function
 
   assert_exit_code "1"

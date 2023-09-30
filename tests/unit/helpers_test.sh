@@ -66,8 +66,8 @@ function test_no_function_is_executed_with_execute_function_if_exists() {
   assert_empty "$(Helper::executeFunctionIfExists "$function_name")"
 }
 
-function test_unsuccessful_unsetIfExists() {
-  assert_general_error "$(Helper::unsetIfExists "fake_function")"
+function test_successful_unsetIfExists_non_existent_function() {
+  assert_successful_code "$(Helper::unsetIfExists "fake_function")"
 }
 
 function test_successful_unsetIfExists() {
