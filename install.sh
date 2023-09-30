@@ -1,8 +1,11 @@
 #!/bin/bash
 
+# shellcheck disable=SC2164
+# shellcheck disable=SC2103
+
 cd "$(dirname "$0")"
-rm -rf lib/bashunit
-mkdir lib
+rm -f lib/bashunit
+[ -d "lib" ] || mkdir lib
 cd lib
 
 TAG=${1-main}
@@ -10,6 +13,10 @@ TAG=${1-main}
 if [[ $TAG == main ]]; then
   echo "> Using main branch"
   git clone git@github.com:TypedDevs/bashunit.git temp_bashunit
+  cd temp_bashunit
+  git pull
+  git checkout feat/install-and-build-scripts # temporal for testing
+  cd ..
 else
   echo "> Using a concrete tag '$TAG'"
   curl -L -O -J "https://github.com/TypedDevs/bashunit/archive/refs/tags/$TAG.tar.gz"
