@@ -3,10 +3,12 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
 
+DIR=${DIR-lib}
+
 cd "$(dirname "$0")"
-rm -f lib/bashunit
-[ -d "lib" ] || mkdir lib
-cd lib
+rm -f "$DIR"/bashunit
+[ -d "$DIR" ] || mkdir "$DIR"
+cd "$DIR"
 
 TAG=${1-main}
 
