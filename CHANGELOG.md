@@ -4,6 +4,7 @@
 - Added `--verbose` argument
     - use a "dotted" simpler version by default
 - Manage error when test execution fails
+- Split install and build scripts
 - Added these functions
     - `mock`
     - `spy`
