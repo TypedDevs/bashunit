@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "Running pre-commit checks..."
+echo "Running pre-commit checks"
 
 make pre_commit/run
 EXIT_CODE=$?
