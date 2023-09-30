@@ -24,6 +24,7 @@ source "$BASH_UNIT_ROOT_DIR/src/runner.sh"
 ###############
 
 _FILTER=""
+_VERBOSE=false
 _FILES=()
 
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,11 @@ while [[ $# -gt 0 ]]; do
   case $argument in
     --filter)
       _FILTER="$2"
+      shift
+      shift
+      ;;
+    --verbose|-v)
+      _VERBOSE=true
       shift
       shift
       ;;

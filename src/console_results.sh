@@ -54,9 +54,20 @@ function Console::printExecutionTime() {
   fi
 }
 
+_SUCCESSFUL_TEST_COUNT=0
 function Console::printSuccessfulTest() {
-  local test_name=$1
-  printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+  ((_SUCCESSFUL_TEST_COUNT++))
+
+  if [[ "$_VERBOSE" == false ]]; then
+    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
+      printf "."
+    else
+      echo "."
+    fi
+  else
+    local test_name=$1
+    printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+  fi
 }
 
 function Console::printFailedTest() {

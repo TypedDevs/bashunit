@@ -42,7 +42,10 @@ function Runner::callTestFunctions() {
   functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    echo "Running $script"
+    if [[ "$_VERBOSE" == true ]]; then
+      echo "Running $script"
+    fi
+
     Helper::checkDuplicateFunctions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
