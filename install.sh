@@ -15,7 +15,6 @@ if [[ $TAG == main ]]; then
   git clone git@github.com:TypedDevs/bashunit.git temp_bashunit
   cd temp_bashunit
   git pull
-  git checkout feat/install-and-build-scripts # temporal for testing
   cd ..
 else
   echo "> Using a concrete tag '$TAG'"
