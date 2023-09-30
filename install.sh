@@ -12,7 +12,7 @@ TAG=${1-main}
 
 if [[ $TAG == main ]]; then
   echo "> Using main branch"
-  git clone git@github.com:TypedDevs/bashunit.git temp_bashunit
+  git clone https://github.com/TypedDevs/bashunit temp_bashunit
 else
   echo "> Using a concrete tag '$TAG'"
   curl -L -O -J "https://github.com/TypedDevs/bashunit/archive/refs/tags/$TAG.tar.gz"
