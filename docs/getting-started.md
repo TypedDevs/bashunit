@@ -10,7 +10,20 @@ Thanks to **bashunit**, verifying and validating your Bash code has never been s
 
 Although there's no Bash script dependency manager like npm for JavaScript, Maven for Java, pip for Python, or composer for PHP;
 you can add **bashunit** as a dependency in your repository according to your preferences.
-Here, We provide a Git submodule option that will work for you.
+
+Here, we provide different options that you can use to install **bashunit** in your application.
+
+### Using install.sh
+
+You can use the installer tool that will generate an executable file with the whole library in a single file:
+
+```bash
+curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh | bash
+```
+
+This will create a file inside a lib folder, such as: `lib/bashunit`.
+
+> Committing (or not) this file into your project it's up to you. In the end, it is a dev dependency.
 
 ### On a Git project using Git submodules
 
