@@ -58,8 +58,8 @@ _SUCCESSFUL_TEST_COUNT=0
 function Console::printSuccessfulTest() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
-  if [[ "$_DOTS" != false ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % _DOTS != 0 )); then
+  if [[ "$_VERBOSE" == false ]]; then
+    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
       printf "."
     else
       echo "."

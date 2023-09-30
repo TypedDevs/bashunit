@@ -1,7 +1,8 @@
 # Changelog
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
-- Added `--dots` argument for a simpler output
+- Added `--verbose` argument
+  - use a "dotted" simpler version by default
 - `mock`
 - `spy`
 - `assert_have_been_called`
