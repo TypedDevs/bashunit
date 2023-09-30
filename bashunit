@@ -35,7 +35,7 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    --verbose)
+    --verbose|-v)
       _VERBOSE=true
       shift
       shift
