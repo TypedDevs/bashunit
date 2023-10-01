@@ -224,7 +224,7 @@ function test_assert_file_exists_should_not_work_with_folders() {
 
   assert_equals\
     "$(Console::printFailedTest \
-    "Assert file exists should not work with folders" "$a_dir" "to exist but" "do not exist")"\
+      "Assert file exists should not work with folders" "$a_dir" "to exist but" "do not exist")"\
     "$(assert_file_exists "$a_dir")"
 
   unset $a_dir
