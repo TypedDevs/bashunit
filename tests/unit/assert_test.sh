@@ -274,7 +274,7 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
 
   assert_equals\
     "$(Console::printFailedTest\
-     "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")"\
+      "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")"\
     "$(assert_is_file "$a_folder")"
 
   unset $a_folder
