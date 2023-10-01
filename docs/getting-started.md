@@ -1,10 +1,10 @@
 # Getting Started
 
-**bashunit** is a dedicated testing tool crafted specifically for Bash scripts. It empowers you to conduct thorough tests on your Bash codebase, ensuring that your scripts operate reliably and as intended.
+**bashunit** is a dedicated testing tool crafted specifically for Bash scripts. It empowers you with tests on your Bash codebase, ensuring that your scripts operate reliably and as intended.
 
-With an intuitive API and lucid documentation, it streamlines the process for developers to implement and manage tests. This is beneficial regardless of the project's size or intricacy in Bash.
+With an intuitive API and documentation, it streamlines the process for developers to implement and manage tests. This is beneficial regardless of the project's size or intricacy in Bash.
 
-Thanks to **bashunit**, verifying and validating your Bash code has never been so straightforward and efficient.
+Thanks to **bashunit**, verifying and validating your Bash code has never been so easy and efficient.
 
 ## Installation
 
