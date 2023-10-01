@@ -8,6 +8,7 @@ function tearDown() {
 function setUp() {
   function code() {
     # shellcheck disable=SC2009
+    # shellcheck disable=SC2317
     ps a | grep apache
   }
 }
