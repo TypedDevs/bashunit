@@ -297,11 +297,19 @@ Reports an error if `file` is not empty.
 *Example:*
 ```bash
 function test_success() {
-  TODO
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_is_file_empty "$file_path"
+  rm "$file_path"
 }
 
 function test_failure() {
-  TODO
+  local file_path="foo.txt"
+  echo "bar" > "$file_path"
+
+  assert_is_file_empty "$file_path"
+  rm "$file_path"
 }
 ```
 
