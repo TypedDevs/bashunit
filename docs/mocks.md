@@ -1,8 +1,8 @@
-# Mocks
+# Test doubles
 
 When creating tests, you might need to override existing function to be able to write isolated tests from external behaviour. To accomplish this, you can use mocks. You can also check that a function was called with certain arguments or even a number of times with a spy.
 
-## mock
+## `mock`
 > `mock "function" "body"`
 
 Override the behaviour of a function
@@ -15,7 +15,7 @@ function test_success() {
 }
 ```
 
-## spy
+## `spy`
 > `spy "function"
 
 Override the behaviour of a function

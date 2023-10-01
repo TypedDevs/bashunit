@@ -52,8 +52,8 @@ export default defineConfig({
         text: 'Assertions',
         link: '/assertions'
       },{
-        text: 'Mocks',
-        link: '/mocks'
+        text: 'Test doubles',
+        link: '/test-doubles'
       }, {
         text: 'Examples',
         link: '/examples'
