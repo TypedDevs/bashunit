@@ -267,3 +267,36 @@ function test_unsuccessful_assert_is_file() {
 
   unset $a_file
 }
+
+function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
+  local a_folder
+  a_folder="$(dirname "${BASH_SOURCE[0]}")"
+
+  assert_equals\
+    "$(Console::printFailedTest\
+     "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")"\
+    "$(assert_is_file "$a_folder")"
+
+  unset $a_folder
+}
+
+function test_successful_assert_is_file_empty() {
+  readonly path="/tmp/a_random_file_$(date +%s)"
+  touch $path
+
+
+  assert_empty "$(assert_is_file_empty "$path")"
+
+  rm $path
+}
+
+function test_unsuccessful_assert_is_file_empty() {
+  local a_file
+  a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
+    "$(assert_is_file_empty "$a_file")"
+
+  unset $a_file
+}
