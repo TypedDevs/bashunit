@@ -5,12 +5,13 @@ When creating tests, you might need to override existing function to be able to 
 ## `mock`
 > `mock "function" "body"`
 
-Override the behaviour of a function
+Override the behaviour of a function.
 
 *Example:*
 ```bash
 function test_success() {
   mock ps echo hello world
+
   assert_equals "hello world" "$(ps)"
 }
 ```
@@ -18,7 +19,7 @@ function test_success() {
 ## `spy`
 > `spy "function"
 
-Override the behaviour of a function
+Spies are mocks that record some information based on how they were called.
 
 *Example:*
 ```bash
