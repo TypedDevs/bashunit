@@ -240,6 +240,79 @@ function test_failure() {
 }
 ```
 
+## assert_file_exists
+> `assert_file_exists "file"`
+
+Reports an error if `file` does not exists, or it is a directory.
+
+[assert_file_not_exists](#assert-file-not-exists) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_file_exists "$file_path"
+  rm "$file_path"
+}
+
+function test_failure() {
+  local file_path="foo.txt"
+  rm -f $file_path
+
+  assert_file_exists "$file_path"
+}
+```
+
+## assert_is_file
+> `assert_is_file "file"`
+
+Reports an error if `file` is not a file.
+
+*Example:*
+```bash
+function test_success() {
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_is_file "$file_path"
+  rm "$file_path"
+}
+
+function test_failure() {
+  local dir_path="bar"
+  mkdir "$dir_path"
+
+  assert_is_file "$dir_path"
+  rmdir "$dir_path"
+}
+```
+
+## assert_is_file_empty
+> `assert_is_file_empty "file"`
+
+Reports an error if `file` is not empty.
+
+*Example:*
+```bash
+function test_success() {
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_is_file_empty "$file_path"
+  rm "$file_path"
+}
+
+function test_failure() {
+  local file_path="foo.txt"
+  echo "bar" > "$file_path"
+
+  assert_is_file_empty "$file_path"
+  rm "$file_path"
+}
+```
+
 ## assert_not_equals
 > `assert_not_equals "expected" "actual"`
 
@@ -331,5 +404,31 @@ function test_failure() {
   local haystack=(foo bar baz)
 
   assert_array_not_contains "baz" "${haystack[@]}"
+}
+```
+
+## assert_file_not_exists
+> `assert_file_not_exists "file"`
+
+Reports an error if `file` does exists.
+
+[assert_file_exists](#assert-file-exists) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local file_path="foo.txt"
+  touch "$file_path"
+  rm "$file_path"
+
+  assert_file_not_exists "$file_path"
+}
+
+function test_failed() {
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_file_not_exists "$file_path"
+  rm "$file_path"
 }
 ```
