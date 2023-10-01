@@ -205,7 +205,7 @@ function test_successful_assert_file_exists() {
 
   assert_empty "$(assert_file_exists "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_unsuccessful_assert_file_exists() {
@@ -215,7 +215,7 @@ function test_unsuccessful_assert_file_exists() {
     "$(Console::printFailedTest "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")"\
     "$(assert_file_exists "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_assert_file_exists_should_not_work_with_folders() {
@@ -227,7 +227,7 @@ function test_assert_file_exists_should_not_work_with_folders() {
       "Assert file exists should not work with folders" "$a_dir" "to exist but" "do not exist")"\
     "$(assert_file_exists "$a_dir")"
 
-  unset $a_dir
+  unset "$a_dir"
 }
 
 function test_successful_assert_file_not_exists() {
@@ -235,7 +235,7 @@ function test_successful_assert_file_not_exists() {
 
   assert_empty "$(assert_file_not_exists "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_unsuccessful_assert_file_not_exists() {
@@ -246,7 +246,7 @@ function test_unsuccessful_assert_file_not_exists() {
     "$(Console::printFailedTest "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")"\
     "$(assert_file_not_exists "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_successful_assert_is_file() {
@@ -255,7 +255,7 @@ function test_successful_assert_is_file() {
 
   assert_empty "$(assert_is_file "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_unsuccessful_assert_is_file() {
@@ -265,7 +265,7 @@ function test_unsuccessful_assert_is_file() {
     "$(Console::printFailedTest "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")"\
     "$(assert_is_file "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
 
 function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
@@ -277,7 +277,7 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
       "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")"\
     "$(assert_is_file "$a_folder")"
 
-  unset $a_folder
+  unset "$a_folder"
 }
 
 function test_successful_assert_is_file_empty() {
@@ -298,5 +298,5 @@ function test_unsuccessful_assert_is_file_empty() {
     "$(Console::printFailedTest "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
     "$(assert_is_file_empty "$a_file")"
 
-  unset $a_file
+  unset "$a_file"
 }
