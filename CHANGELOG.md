@@ -12,6 +12,8 @@
     - `assert_have_been_called_times`
     - `assert_file_exists`
     - `assert_file_not_exists`
+    - `assert_is_file_empty`
+    - `assert_is_file`
 - Rename assertions from camelCase to snake_case:
     - `assertEquals` -> `assert_equals`
     - `assertNotEquals` -> `assert_not_equals`
