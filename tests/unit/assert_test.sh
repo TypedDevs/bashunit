@@ -198,3 +198,53 @@ function test_unsuccessful_assert_array_not_contains() {
       "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
+
+function test_successful_assert_file_exists() {
+  local a_file
+  a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+  assert_empty "$(assert_file_exists "$a_file")"
+
+  unset $a_file
+}
+
+function test_unsuccessful_assert_file_exists() {
+  local a_file="a_random_file_that_will_not_exist"
+
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")"\
+    "$(assert_file_exists "$a_file")"
+
+  unset $a_file
+}
+
+function test_assert_file_exists_should_not_work_with_folders() {
+  local a_dir
+  a_dir="$(dirname "${BASH_SOURCE[0]}")"
+
+  assert_equals\
+    "$(Console::printFailedTest \
+    "Assert file exists should not work with folders" "$a_dir" "to exist but" "do not exist")"\
+    "$(assert_file_exists "$a_dir")"
+
+  unset $a_dir
+}
+
+function test_successful_assert_file_not_exists() {
+  local a_file="a_random_file_that_will_not_exist"
+
+  assert_empty "$(assert_file_not_exists "$a_file")"
+
+  unset $a_file
+}
+
+function test_unsuccessful_assert_file_not_exists() {
+  local a_file
+  a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")"\
+    "$(assert_file_not_exists "$a_file")"
+
+  unset $a_file
+}
