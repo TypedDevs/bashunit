@@ -273,11 +273,19 @@ Reports an error if `file` is not a file.
 *Example:*
 ```bash
 function test_success() {
-  TODO
+  local file_path="foo.txt"
+  touch "$file_path"
+
+  assert_is_file "$file_path"
+  rm "$file_path"
 }
 
 function test_failure() {
-  TODO
+  local dir_path="bar"
+  mkdir "$dir_path"
+
+  assert_is_file "$dir_path"
+  rmdir "$dir_path"
 }
 ```
 
