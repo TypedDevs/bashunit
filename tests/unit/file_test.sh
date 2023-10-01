@@ -1,11 +1,5 @@
 #!/bin/bash
 
-function tearDown() {
-  unset "$a_file"
-  unset "$a_dir"
-  unset "$a_folder"
-}
-
 function test_successful_assert_file_exists() {
   local a_file
   a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
