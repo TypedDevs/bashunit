@@ -15,7 +15,7 @@ Here, we provide different options that you can use to install **bashunit** in y
 
 ### Using install.sh
 
-You can use the installer tool that will generate an executable with the whole library in a single file:
+There is a tool that will generate an executable with the whole library in a single file:
 
 ```bash
 curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh | bash
@@ -23,8 +23,21 @@ curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh | b
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
-> Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+#### Define custom tag and folder
 
+The installation script can receive two optional arguments:
+
+```bash
+curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh\
+  | bash -s 0.7.0 bin
+```
+- `$1`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, or main by default
+- `$2`: the destiny folder to save the executable bashunit, or lib by default
+
+In this example, it will download the `0.7.0` inside `bin/bashunit`
+
+> Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+>
 ### On a Git project using Git submodules
 
 You can use Git submodules to include external Git repositories, like **bashunit**, within your Git project.
