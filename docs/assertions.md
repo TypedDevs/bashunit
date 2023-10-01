@@ -313,6 +313,117 @@ function test_failure() {
 }
 ```
 
+## assert_directory_exists
+> `assert_directory_exists "directory"`
+
+Reports an error if `directory` does not exist.
+
+[assert_directory_not_exists](#assert-directory-not-exists) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/var"
+
+  assert_directory_exists "$directory"
+}
+
+function test_failure() {
+  local directory="/nonexistent_directory"
+
+  assert_directory_exists "$directory"
+}
+```
+
+## assert_is_directory
+> `assert_is_directory "directory"`
+
+Reports an error if `directory` is not a directory.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/var"
+
+  assert_is_directory "$directory"
+}
+
+function test_failure() {
+  local file="/etc/hosts"
+
+  assert_is_directory "$file"
+}
+```
+
+## assert_is_directory_empty
+> `assert_is_directory_empty "directory"`
+
+Reports an error if `directory` is not an empty directory.
+
+[assert_is_directory_not_empty](#assert-is-directory-not-empty) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/home/user/empty_directory"
+  mkdir "$directory"
+
+  assert_is_directory_empty "$directory"
+}
+
+function test_failure() {
+  local directory="/etc"
+
+  assert_is_directory_empty "$directory"
+}
+```
+
+## assert_is_directory_readable
+> `assert_is_directory_readable "directory"`
+
+Reports an error if `directory` is not a readable directory.
+
+[assert_is_directory_not_readable](#assert-is-directory-not-readable) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/var"
+
+  assert_is_directory_readable "$directory"
+}
+
+function test_failure() {
+  local directory="/home/user/test"
+  chmod -r "$directory"
+
+  assert_is_directory_readable "$directory"
+}
+```
+
+## assert_is_directory_writable
+> `assert_is_directory_writable "directory"`
+
+Reports an error if `directory` is not a writable directory.
+
+[assert_is_directory_not_writable](#assert-is-directory-not-writable) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/tmp"
+
+  assert_is_directory_writable "$directory"
+}
+
+function test_failure() {
+  local directory="/home/user/test"
+  chmod -w "$directory"
+
+  assert_is_directory_writable "$directory"
+}
+```
+
 ## assert_not_equals
 > `assert_not_equals "expected" "actual"`
 
@@ -430,5 +541,96 @@ function test_failed() {
 
   assert_file_not_exists "$file_path"
   rm "$file_path"
+}
+```
+
+## assert_directory_not_exists
+> `assert_directory_not_exists "directory"`
+
+Reports an error if `directory` exists.
+
+[assert_directory_exists](#assert-directory-exists) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/nonexistent_directory"
+
+  assert_directory_not_exists "$directory"
+}
+
+function test_failure() {
+  local directory="/var"
+
+  assert_directory_not_exists "$directory"
+}
+```
+
+## assert_is_directory_not_empty
+> `assert_is_directory_not_empty "directory"`
+
+Reports an error if `directory` is empty.
+
+[assert_is_directory_empty](#assert-is-directory-empty) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/etc"
+
+  assert_is_directory_not_empty "$directory"
+}
+
+function test_failure() {
+  local directory="/home/user/empty_directory"
+  mkdir "$directory"
+
+  assert_is_directory_not_empty "$directory"
+}
+```
+
+## assert_is_directory_not_readable
+> `assert_is_directory_not_readable "directory"`
+
+Reports an error if `directory` is readable.
+
+[assert_is_directory_readable](#assert-is-directory-readable) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/home/user/test"
+  chmod -r "$directory"
+
+  assert_is_directory_not_readable "$directory"
+}
+
+function test_failure() {
+  local directory="/var"
+
+  assert_is_directory_not_readable "$directory"
+}
+```
+
+## assert_is_directory_not_writable
+> `assert_is_directory_not_writable "directory"`
+
+Reports an error if `directory` is writable.
+
+[assert_is_directory_writable](#assert-is-directory-writable) is the inverse of this assertion and takes the same arguments.
+
+*Example:*
+```bash
+function test_success() {
+  local directory="/home/user/test"
+  chmod -w "$directory"
+
+  assert_is_directory_not_writable "$directory"
+}
+
+function test_failure() {
+  local directory="/tmp"
+
+  assert_is_directory_not_writable "$directory"
 }
 ```
