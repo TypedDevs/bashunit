@@ -410,7 +410,7 @@ function test_failure() {
 ## assert_file_not_exists
 > `assert_file_not_exists "file"`
 
-Reports an error if `file` does not exists.
+Reports an error if `file` does exists.
 
 [assert_file_exists](#assert-file-exists) is the inverse of this assertion and takes the same arguments.
 
@@ -419,15 +419,16 @@ Reports an error if `file` does not exists.
 function test_success() {
   local file_path="foo.txt"
   touch "$file_path"
+  rm "$file_path"
+
+  assert_file_not_exists "$file_path"
+}
+
+function test_failed() {
+  local file_path="foo.txt"
+  touch "$file_path"
 
   assert_file_not_exists "$file_path"
   rm "$file_path"
-}
-
-function test_failure() {
-  local file_path="foo.txt"
-  rm -f $file_path
-
-  assert_file_not_exists "$file_path"
 }
 ```
