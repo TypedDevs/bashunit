@@ -2,15 +2,15 @@
 
 function tearDown() {
   unset code
-  unset _ps
+  unset ps
 }
 
 function setUp() {
   function code() {
-      # shellcheck disable=SC2009
-      # shellcheck disable=SC2317
-      ps a | grep apache
-    }
+    # shellcheck disable=SC2009
+    # shellcheck disable=SC2317
+    ps a | grep apache
+  }
 }
 
 function test_successful_mock() {
@@ -41,10 +41,9 @@ function test_unsuccessful_spy_called() {
   spy ps
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful spy called" "ps" "has not been called at least" "once")"\
+    "$(Console::printFailedTest "Unsuccessful spy called" "ps" "to has been called" "once")"\
     "$(assert_have_been_called ps)"
 }
-
 
 function test_successful_spy_called_times() {
   spy ps
@@ -55,3 +54,14 @@ function test_successful_spy_called_times() {
   assert_have_been_called_times 2 ps
 }
 
+
+function test_unsuccessful_spy_called_times() {
+  spy ps
+
+  ps
+  ps
+
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
+    "$(assert_have_been_called_times 1 ps)"
+}

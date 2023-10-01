@@ -49,11 +49,11 @@ export default defineConfig({
           link: '/test-files#test-function-names',
         }]
       }, {
-        text: 'Assertions',
-        link: '/assertions'
-      },{
         text: 'Test doubles',
         link: '/test-doubles'
+      }, {
+        text: 'Assertions',
+        link: '/assertions'
       }, {
         text: 'Examples',
         link: '/examples'
