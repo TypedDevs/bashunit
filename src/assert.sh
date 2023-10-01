@@ -224,3 +224,16 @@ function assert_file_not_exists() {
   State::addAssertionsPassed
 }
 
+
+function assert_is_file() {
+  local expected="$1"
+  local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+
+  if [[ ! -f "$expected" ]]; then
+    State::addAssertionsFailed
+    Console::printFailedTest "${label}" "${expected}" "to be a file" "but is not a file"
+    return
+  fi
+
+  State::addAssertionsPassed
+}

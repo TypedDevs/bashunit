@@ -248,3 +248,22 @@ function test_unsuccessful_assert_file_not_exists() {
 
   unset $a_file
 }
+
+function test_successful_assert_is_file() {
+  local a_file
+  a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+  assert_empty "$(assert_is_file "$a_file")"
+
+  unset $a_file
+}
+
+function test_unsuccessful_assert_is_file() {
+  local a_file="a_random_file_that_will_not_exist"
+
+  assert_equals\
+    "$(Console::printFailedTest "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")"\
+    "$(assert_is_file "$a_file")"
+
+  unset $a_file
+}
