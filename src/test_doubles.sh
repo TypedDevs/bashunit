@@ -31,7 +31,7 @@ function assert_have_been_called() {
 
   if [[ ${!actual} -eq 0 ]]; then
     State::addAssertionsFailed
-    Console::printFailedTest "${label}" "${command}" "has not been called at least" "once"
+    Console::printFailedTest "${label}" "${command}" "to has been called" "once"
     return
   fi
 
@@ -63,7 +63,7 @@ function assert_have_been_called_times() {
 
   if [[ ${!actual} -ne $expected ]]; then
     State::addAssertionsFailed
-    Console::printFailedTest "${label}" "${command}" "has not been called" "${expected} times"
+    Console::printFailedTest "${label}" "${command}" "to has been called" "${expected} times"
     return
   fi
 

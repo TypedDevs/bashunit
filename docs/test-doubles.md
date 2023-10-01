@@ -5,11 +5,11 @@ When creating tests, you might need to override existing function to be able to 
 ## mock
 > `mock "function" "body"`
 
-Override the behaviour of a function.
+Allows you to override the behavior of a callable.
 
 *Example:*
 ```bash
-function test_success() {
+function test_example() {
   mock ps echo hello world
 
   assert_equals "hello world" "$(ps)"
@@ -19,27 +19,36 @@ function test_success() {
 ## spy
 > `spy "function"`
 
-Spies are mocks that record some information based on how they were called.
+Overrides the original behavior of a callable to allow you to make various assertions about its calls.
 
 *Example:*
 ```bash
-function test_success_spy_call_with() {
+function test_example() {
   spy ps
-  ps a_random_parameter_1 a_random_parameter_2
 
-  assert_have_been_called_with "a_random_parameter_1 a_random_parameter_2" ps
+  ps foo bar
+
+  assert_have_been_called_with "foo bar" ps
   assert_have_been_called ps
 }
 ```
 
 ### assert_have_been_called
-> `assert_have_been_called ["a spy"]`
+> `assert_have_been_called "spy"`
 
-Informs you if the `spy` has been called at least once.
+Reports an error if `spy` is not called.
 
 *Example:*
 ```bash
-function test_that_spy_has_been_called() {
+function test_success() {
+  spy ps
+
+  ps
+
+  assert_have_been_called ps
+}
+
+function test_failure() {
   spy ps
 
   assert_have_been_called ps
@@ -47,33 +56,51 @@ function test_that_spy_has_been_called() {
 ```
 
 ### assert_have_been_called_with
-> `assert_have_been_called_with ["arguments"] ["a spy"]`
+> `assert_have_been_called_with "expected" "spy"`
 
-Informs you if the `spy` has been called with the arguments passed.
+Reports an error if `callable` is not called with `expected`.
 
 *Example:*
 ```bash
-function test_that_spy_has_been_called_with() {
+function test_success() {
   spy ps
+
   ps foo bar
+
+  assert_have_been_called_with "foo bar" ps
+}
+
+function test_failure() {
+  spy ps
+
+  ps bar foo
 
   assert_have_been_called_with "foo bar" ps
 }
 ```
 
 ### assert_have_been_called_times
-> assert_have_been_called_times [a spy]
+> assert_have_been_called_times "expected" "spy"
 
-Informs you if the `spy` has been called a certain amount of times.
+Reports an error if `spy` is not called exactly `expected` times.
 
 *Example:*
 ```bash
-function test_that_spy_has_been_called_times() {
+function test_success() {
   spy ps
 
   ps
   ps
 
   assert_have_been_called_times 2 ps
+}
+
+function test_failure() {
+  spy ps
+
+  ps
+  ps
+
+  assert_have_been_called_times 1 ps
 }
 ```
