@@ -282,12 +282,12 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
 
 function test_successful_assert_is_file_empty() {
   readonly path="/tmp/a_random_file_$(date +%s)"
-  touch $path
+  touch "$path"
 
 
   assert_empty "$(assert_is_file_empty "$path")"
 
-  rm $path
+  rm "$path"
 }
 
 function test_unsuccessful_assert_is_file_empty() {
