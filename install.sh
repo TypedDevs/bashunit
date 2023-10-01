@@ -3,14 +3,13 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
 
-DIR=${DIR-lib}
+TAG=${1-main}
+DIR=${2-lib}
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
 [ -d "$DIR" ] || mkdir "$DIR"
 cd "$DIR"
-
-TAG=${1-main}
 
 if [[ $TAG == main ]]; then
   echo "> Using main branch"
