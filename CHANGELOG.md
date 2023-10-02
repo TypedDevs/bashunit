@@ -2,7 +2,11 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.7.0...main)
 
-- ...
+- Rename these functions from camelCase to snake_case:
+    - `setUp` -> `set_up`
+    - `tearDown` -> `tear_down`
+    - `setUpBeforeScript` -> `set_up_before_script`
+    - `tearDownAfterScript` -> `tear_down_after_script`
 
 ## [0.7.0](https://github.com/TypedDevs/bashunit/compare/0.6.0...0.7.0) - 2023-10-02
 

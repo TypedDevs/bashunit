@@ -120,27 +120,35 @@ function Runner::runTest() {
 }
 
 function Runner::runSetUp() {
-  Helper::executeFunctionIfExists 'setUp'
+  Helper::executeFunctionIfExists 'setUp' # Deprecated: please use set_up instead.
+  Helper::executeFunctionIfExists 'set_up'
 }
 
 function Runner::runSetUpBeforeScript() {
-  Helper::executeFunctionIfExists 'setUpBeforeScript'
+  Helper::executeFunctionIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
+  Helper::executeFunctionIfExists 'set_up_before_script'
 }
 
 function Runner::runTearDown() {
-  Helper::executeFunctionIfExists 'tearDown'
+  Helper::executeFunctionIfExists 'tearDown' # Deprecated: please use tear_down instead.
+  Helper::executeFunctionIfExists 'tear_down'
 }
 
 function Runner::runTearDownAfterScript() {
-  Helper::executeFunctionIfExists 'tearDownAfterScript'
+  Helper::executeFunctionIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
+  Helper::executeFunctionIfExists 'tear_down_after_script'
 }
 
 function Runner::cleanSetUpAndTearDownAfterTest() {
-  Helper::unsetIfExists 'setUp'
-  Helper::unsetIfExists 'tearDown'
+  Helper::unsetIfExists 'setUp' # Deprecated: please use set_up instead.
+  Helper::unsetIfExists 'set_up'
+  Helper::unsetIfExists 'tearDown' # Deprecated: please use tear_down instead.
+  Helper::unsetIfExists 'tear_down'
 }
 
 function Runner::cleanSetUpAndTearDownAfterScript() {
-  Helper::unsetIfExists 'setUpBeforeScript'
-  Helper::unsetIfExists 'tearDownAfterScript'
+  Helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
+  Helper::unsetIfExists 'set_up_before_script'
+  Helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
+  Helper::unsetIfExists 'tear_down_after_script'
 }
