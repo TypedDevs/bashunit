@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# shellcheck disable=SC2317
-
 function Runner::loadTestFiles() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
@@ -16,8 +14,8 @@ function Runner::loadTestFiles() {
     if [[ ! -f $test_file ]]; then
       continue
     fi
-    # shellcheck disable=SC1090
-    #shellcheck source=/dev/null
+
+    # shellcheck source=/dev/null
     source "$test_file"
 
     Runner::runSetUpBeforeScript
