@@ -104,12 +104,12 @@ function Runner::runTest() {
   Runner::parseExecutionResult "$test_execution_result"
 
   if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
-    State::addTestsFailed
+    state::add_tests_failed
     return
   fi
 
   if [[ $test_result_code -ne 0 ]]; then
-    State::addTestsFailed
+    state::add_tests_failed
     Console::printErrorTest "$function_name" "$test_result_code"
     return
   fi

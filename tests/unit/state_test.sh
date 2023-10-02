@@ -15,7 +15,7 @@ function test_add_and_get_tests_failed() {
     local tests_failed=$(
         _TESTS_FAILED=0
 
-        State::addTestsFailed
+        state::add_tests_failed
         state::get_tests_failed
     )
 
