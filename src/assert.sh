@@ -6,12 +6,12 @@ function assert_equals() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_empty() {
@@ -19,12 +19,12 @@ function assert_empty() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "to be empty" "but got" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_empty() {
@@ -32,12 +32,12 @@ function assert_not_empty() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "to not be empty" "but got" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_equals() {
@@ -46,12 +46,12 @@ function assert_not_equals() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "$actual" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_contains() {
@@ -60,12 +60,12 @@ function assert_contains() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual}" "to contain" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_contains() {
@@ -74,12 +74,12 @@ function assert_not_contains() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual == *"$expected"* ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual}" "to not contain" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_matches() {
@@ -88,12 +88,12 @@ function assert_matches() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if ! [[ $actual =~ $expected ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual}" "to match" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_matches() {
@@ -102,12 +102,12 @@ function assert_not_matches() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual}" "to not match" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_exit_code() {
@@ -116,12 +116,12 @@ function assert_exit_code() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_successful_code() {
@@ -130,12 +130,12 @@ function assert_successful_code() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_general_error() {
@@ -144,12 +144,12 @@ function assert_general_error() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_command_not_found() {
@@ -158,12 +158,12 @@ function assert_command_not_found() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_array_contains() {
@@ -175,12 +175,12 @@ function assert_array_contains() {
   local actual=("${@}")
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual[*]}" "to contain" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_array_not_contains() {
@@ -190,12 +190,12 @@ function assert_array_not_contains() {
   local actual=("$@")
 
   if [[ "${actual[*]}" == *"$expected"* ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_file_exists() {
@@ -203,12 +203,12 @@ function assert_file_exists() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -f "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_file_not_exists() {
@@ -216,12 +216,12 @@ function assert_file_not_exists() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ -f "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to not exist but" "the file exists"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_file() {
@@ -229,12 +229,12 @@ function assert_is_file() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -f "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be a file" "but is not a file"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_file_empty() {
@@ -242,12 +242,12 @@ function assert_is_file_empty() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ -s "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_directory_exists() {
@@ -255,12 +255,12 @@ function assert_directory_exists() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_directory_not_exists() {
@@ -268,12 +268,12 @@ function assert_directory_not_exists() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ -d "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to not exist but" "the directory exists"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory() {
@@ -281,12 +281,12 @@ function assert_is_directory() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be a directory" "but is not a directory"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_empty() {
@@ -294,12 +294,12 @@ function assert_is_directory_empty() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_empty() {
@@ -307,12 +307,12 @@ function assert_is_directory_not_empty() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to not be empty" "but is empty"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_readable() {
@@ -320,12 +320,12 @@ function assert_is_directory_readable() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be readable" "but is not readable"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_readable() {
@@ -333,12 +333,12 @@ function assert_is_directory_not_readable() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be not readable" "but is readable"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_writable() {
@@ -346,12 +346,12 @@ function assert_is_directory_writable() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || ! -w "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be writable" "but is not writable"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_writable() {
@@ -359,10 +359,10 @@ function assert_is_directory_not_writable() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -w "$expected" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "to be not writable" "but is writable"
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }

@@ -6,51 +6,51 @@ _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-function State::getTestsPassed() {
+function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
 }
 
-function State::addTestsPassed() {
+function state::add_tests_passed() {
   ((_TESTS_PASSED++)) || true
 }
 
-function State::getTestsFailed() {
+function state::get_tests_failed() {
   echo "$_TESTS_FAILED"
 }
 
-function State::addTestsFailed() {
+function state::add_tests_failed() {
   ((_TESTS_FAILED++)) || true
 }
 
-function State::getAssertionsPassed() {
+function state::get_assertions_passed() {
   echo "$_ASSERTIONS_PASSED"
 }
 
-function State::addAssertionsPassed() {
+function state::add_assertions_passed() {
   ((_ASSERTIONS_PASSED++)) || true
 }
 
-function State::getAssertionsFailed() {
+function state::get_assertions_failed() {
   echo "$_ASSERTIONS_FAILED"
 }
 
-function State::addAssertionsFailed() {
+function state::add_assertions_failed() {
   ((_ASSERTIONS_FAILED++)) || true
 }
 
-function State::isDuplicatedTestFunctionsFound() {
+function state::is_duplicated_test_functions_found() {
   echo "$_DUPLICATED_TEST_FUNCTIONS_FOUND"
 }
 
-function State::setDuplicatedTestFunctionsFound() {
+function state::set_duplicated_test_functions_found() {
   _DUPLICATED_TEST_FUNCTIONS_FOUND=true
 }
 
-function State::initializeAssertionsCount() {
+function state::initialize_assertions_count() {
     _ASSERTIONS_PASSED=0
     _ASSERTIONS_FAILED=0
 }
 
-function State::exportAssertionsCount() {
+function state::export_assertions_count() {
   echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED##"
 }

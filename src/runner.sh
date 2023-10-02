@@ -88,35 +88,35 @@ function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
   local test_execution_result
-  current_assertions_failed="$(State::getAssertionsFailed)"
+  current_assertions_failed="$(state::get_assertions_failed)"
 
   test_execution_result=$(
-    State::initializeAssertionsCount
+    state::initialize_assertions_count
 
     set -e
     Runner::runSetUp
     "$function_name"
     Runner::runTearDown
 
-    State::exportAssertionsCount
+    state::export_assertions_count
   )
   local test_result_code=$?
   Runner::parseExecutionResult "$test_execution_result"
 
-  if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
-    State::addTestsFailed
+  if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
+    state::add_tests_failed
     return
   fi
 
   if [[ $test_result_code -ne 0 ]]; then
-    State::addTestsFailed
+    state::add_tests_failed
     Console::printErrorTest "$function_name" "$test_result_code"
     return
   fi
 
   local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
   Console::printSuccessfulTest "${label}"
-  State::addTestsPassed
+  state::add_tests_passed
 }
 
 function Runner::runSetUp() {

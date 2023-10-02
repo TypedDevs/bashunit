@@ -3,7 +3,7 @@
 _START_TIME=$(date +%s%N);
 
 function Console::renderResult() {
-  if [[ "$(State::isDuplicatedTestFunctionsFound)" == true ]]; then
+  if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
     printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
     return
   fi
