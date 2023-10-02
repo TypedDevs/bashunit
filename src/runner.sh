@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function Runner::loadTestFiles() {
+function runner::load_test_files() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
