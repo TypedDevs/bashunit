@@ -35,7 +35,7 @@ function assert_have_been_called() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_have_been_called_with() {
@@ -51,7 +51,7 @@ function assert_have_been_called_with() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_have_been_called_times() {
@@ -67,5 +67,5 @@ function assert_have_been_called_times() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }

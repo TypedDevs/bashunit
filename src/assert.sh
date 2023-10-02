@@ -11,7 +11,7 @@ function assert_equals() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_empty() {
@@ -24,7 +24,7 @@ function assert_empty() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_empty() {
@@ -37,7 +37,7 @@ function assert_not_empty() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_equals() {
@@ -51,7 +51,7 @@ function assert_not_equals() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_contains() {
@@ -65,7 +65,7 @@ function assert_contains() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_contains() {
@@ -79,7 +79,7 @@ function assert_not_contains() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_matches() {
@@ -93,7 +93,7 @@ function assert_matches() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_not_matches() {
@@ -107,7 +107,7 @@ function assert_not_matches() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_exit_code() {
@@ -121,7 +121,7 @@ function assert_exit_code() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_successful_code() {
@@ -135,7 +135,7 @@ function assert_successful_code() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_general_error() {
@@ -149,7 +149,7 @@ function assert_general_error() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_command_not_found() {
@@ -163,7 +163,7 @@ function assert_command_not_found() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_array_contains() {
@@ -180,7 +180,7 @@ function assert_array_contains() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_array_not_contains() {
@@ -195,7 +195,7 @@ function assert_array_not_contains() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_file_exists() {
@@ -208,7 +208,7 @@ function assert_file_exists() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_file_not_exists() {
@@ -221,7 +221,7 @@ function assert_file_not_exists() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_file() {
@@ -234,7 +234,7 @@ function assert_is_file() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_file_empty() {
@@ -247,7 +247,7 @@ function assert_is_file_empty() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_directory_exists() {
@@ -260,7 +260,7 @@ function assert_directory_exists() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_directory_not_exists() {
@@ -273,7 +273,7 @@ function assert_directory_not_exists() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory() {
@@ -286,7 +286,7 @@ function assert_is_directory() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_empty() {
@@ -299,7 +299,7 @@ function assert_is_directory_empty() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_empty() {
@@ -312,7 +312,7 @@ function assert_is_directory_not_empty() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_readable() {
@@ -325,7 +325,7 @@ function assert_is_directory_readable() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_readable() {
@@ -338,7 +338,7 @@ function assert_is_directory_not_readable() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_writable() {
@@ -351,7 +351,7 @@ function assert_is_directory_writable() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }
 
 function assert_is_directory_not_writable() {
@@ -364,5 +364,5 @@ function assert_is_directory_not_writable() {
     return
   fi
 
-  State::addAssertionsPassed
+  state::add_assertions_passed
 }

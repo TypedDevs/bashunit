@@ -26,7 +26,7 @@ function test_add_and_get_assertions_passed() {
     local assertions_passed=$(
         _ASSERTIONS_PASSED=0
 
-        State::addAssertionsPassed
+        state::add_assertions_passed
         state::get_assertions_passed
     )
 

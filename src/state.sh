@@ -26,7 +26,7 @@ function state::get_assertions_passed() {
   echo "$_ASSERTIONS_PASSED"
 }
 
-function State::addAssertionsPassed() {
+function state::add_assertions_passed() {
   ((_ASSERTIONS_PASSED++)) || true
 }
 
