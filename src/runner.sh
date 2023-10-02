@@ -19,7 +19,7 @@ function runner::load_test_files() {
     source "$test_file"
 
     Runner::runSetUpBeforeScript
-    Runner::callTestFunctions "$test_file" "$filter"
+    runner::call_test_functions "$test_file" "$filter"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
@@ -28,7 +28,7 @@ function runner::load_test_files() {
   done
 }
 
-function Runner::callTestFunctions() {
+function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
