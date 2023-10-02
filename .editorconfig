@@ -20,6 +20,10 @@ indent_style = space
 indent_size = 2
 max_line_length = 120
 
+[**.json]
+indent_style = space
+indent_size = 2
+
 [docs/**.md] # YAML support
 indent_size = 2
 
