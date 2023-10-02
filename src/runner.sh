@@ -1,8 +1,6 @@
 #!/bin/bash
 
-# shellcheck disable=SC2317
-
-function Runner::loadTestFiles() {
+function runner::load_test_files() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
@@ -16,21 +14,21 @@ function Runner::loadTestFiles() {
     if [[ ! -f $test_file ]]; then
       continue
     fi
-    # shellcheck disable=SC1090
-    #shellcheck source=/dev/null
+
+    # shellcheck source=/dev/null
     source "$test_file"
 
-    Runner::runSetUpBeforeScript
-    Runner::callTestFunctions "$test_file" "$filter"
+    runner::run_set_up_before_script
+    runner::call_test_functions "$test_file" "$filter"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
-    Runner::runTearDownAfterScript
-    Runner::cleanSetUpAndTearDownAfterScript
+    runner::run_tear_down_after_script
+    runner::clean_set_up_and_tear_down_after_script
   done
 }
 
-function Runner::callTestFunctions() {
+function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -49,14 +47,14 @@ function Runner::callTestFunctions() {
     Helper::checkDuplicateFunctions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
-      Runner::runTest "$function_name"
+      runner::run_test "$function_name"
 
       unset "$function_name"
     done
   fi
 }
 
-function Runner::parseExecutionResult() {
+function runner::parse_execution_result() {
   local execution_result=$1
 
   local assertions_failed
@@ -84,7 +82,7 @@ function Runner::parseExecutionResult() {
   fi
 }
 
-function Runner::runTest() {
+function runner::run_test() {
   local function_name="$1"
   local current_assertions_failed
   local test_execution_result
@@ -94,14 +92,14 @@ function Runner::runTest() {
     state::initialize_assertions_count
 
     set -e
-    Runner::runSetUp
+    runner::run_set_up
     "$function_name"
-    Runner::runTearDown
+    runner::run_tear_down
 
     state::export_assertions_count
   )
   local test_result_code=$?
-  Runner::parseExecutionResult "$test_execution_result"
+  runner::parse_execution_result "$test_execution_result"
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
@@ -119,34 +117,27 @@ function Runner::runTest() {
   state::add_tests_passed
 }
 
-function Runner::runSetUp() {
+function runner::run_set_up() {
   Helper::executeFunctionIfExists 'setUp' # Deprecated: please use set_up instead.
   Helper::executeFunctionIfExists 'set_up'
 }
 
-function Runner::runSetUpBeforeScript() {
+function runner::run_set_up_before_script() {
   Helper::executeFunctionIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   Helper::executeFunctionIfExists 'set_up_before_script'
 }
 
-function Runner::runTearDown() {
+function runner::run_tear_down() {
   Helper::executeFunctionIfExists 'tearDown' # Deprecated: please use tear_down instead.
   Helper::executeFunctionIfExists 'tear_down'
 }
 
-function Runner::runTearDownAfterScript() {
+function runner::run_tear_down_after_script() {
   Helper::executeFunctionIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
   Helper::executeFunctionIfExists 'tear_down_after_script'
 }
 
-function Runner::cleanSetUpAndTearDownAfterTest() {
-  Helper::unsetIfExists 'setUp' # Deprecated: please use set_up instead.
-  Helper::unsetIfExists 'set_up'
-  Helper::unsetIfExists 'tearDown' # Deprecated: please use tear_down instead.
-  Helper::unsetIfExists 'tear_down'
-}
-
-function Runner::cleanSetUpAndTearDownAfterScript() {
+function runner::clean_set_up_and_tear_down_after_script() {
   Helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   Helper::unsetIfExists 'set_up_before_script'
   Helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.

@@ -47,6 +47,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-Runner::loadTestFiles "$_FILTER" "${_FILES[@]}"
+runner::load_test_files "$_FILTER" "${_FILES[@]}"
 
 exit 0
