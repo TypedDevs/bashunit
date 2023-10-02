@@ -14,18 +14,13 @@ cd "$DIR"
 if [[ $TAG == main ]]; then
   echo "> Using main branch"
   git clone https://github.com/TypedDevs/bashunit temp_bashunit
+  cd temp_bashunit
+  ./build.sh
+  cd ..
+  cp temp_bashunit/bin/bashunit bashunit
+  rm -rf temp_bashunit
 else
   echo "> Using a concrete tag '$TAG'"
-  curl -L -O -J "https://github.com/TypedDevs/bashunit/archive/refs/tags/$TAG.tar.gz"
-  tar -zxvf "bashunit-$TAG.tar.gz"
-  cp "bin/bashunit-$TAG" temp_bashunit
-  rm "bin/bashunit-$TAG"
-  rm "bashunit-$TAG.tar.gz"
+  curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit"
+  chmod +x "bashunit"
 fi
-
-## Common
-cd temp_bashunit
-./build.sh
-cd ..
-cp temp_bashunit/bin/bashunit bashunit
-rm -rf temp_bashunit
