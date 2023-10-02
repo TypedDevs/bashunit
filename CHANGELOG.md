@@ -1,6 +1,11 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.6.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.7.0...main)
+
+- ...
+
+## [0.7.0](https://github.com/TypedDevs/bashunit/compare/0.6.0...0.7.0) - 2023-10-02
+
 - Added `--simple` argument for a simpler output
 - Manage error when test execution fails
 - Split install and build scripts
