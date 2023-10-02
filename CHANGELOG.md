@@ -14,6 +14,15 @@
     - `assert_file_not_exists`
     - `assert_is_file_empty`
     - `assert_is_file`
+    - `assert_directory_exists`
+    - `assert_directory_not_exists`
+    - `assert_is_directory`
+    - `assert_is_directory_empty`
+    - `assert_is_directory_not_empty`
+    - `assert_is_directory_readable`
+    - `assert_is_directory_not_readable`
+    - `assert_is_directory_writable`
+    - `assert_is_directory_not_writable`
 - Rename assertions from camelCase to snake_case:
     - `assertEquals` -> `assert_equals`
     - `assertNotEquals` -> `assert_not_equals`
