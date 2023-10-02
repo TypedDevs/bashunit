@@ -30,7 +30,7 @@ function state::add_assertions_passed() {
   ((_ASSERTIONS_PASSED++)) || true
 }
 
-function State::getAssertionsFailed() {
+function state::get_assertions_failed() {
   echo "$_ASSERTIONS_FAILED"
 }
 

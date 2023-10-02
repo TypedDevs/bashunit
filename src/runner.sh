@@ -88,7 +88,7 @@ function Runner::runTest() {
   local function_name="$1"
   local current_assertions_failed
   local test_execution_result
-  current_assertions_failed="$(State::getAssertionsFailed)"
+  current_assertions_failed="$(state::get_assertions_failed)"
 
   test_execution_result=$(
     State::initializeAssertionsCount
@@ -103,7 +103,7 @@ function Runner::runTest() {
   local test_result_code=$?
   Runner::parseExecutionResult "$test_execution_result"
 
-  if [[ "$current_assertions_failed" != "$(State::getAssertionsFailed)" ]]; then
+  if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
     return
   fi

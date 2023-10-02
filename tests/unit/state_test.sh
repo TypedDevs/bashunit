@@ -38,7 +38,7 @@ function test_add_and_get_assertions_failed() {
         _ASSERTIONS_FAILED=0
 
         State::addAssertionsFailed
-        State::getAssertionsFailed
+        state::get_assertions_failed
     )
 
     assertEquals "1" "$assertions_failed"
