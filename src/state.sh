@@ -51,6 +51,6 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_FAILED=0
 }
 
-function State::exportAssertionsCount() {
+function state::export_assertions_count() {
   echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED##"
 }

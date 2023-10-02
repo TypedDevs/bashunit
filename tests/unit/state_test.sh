@@ -61,7 +61,7 @@ function test_initialize_assertions_count() {
         _ASSERTIONS_FAILED=5
 
         state::initialize_assertions_count
-        State::exportAssertionsCount
+        state::export_assertions_count
     )
 
     assertEquals "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##" "$export_assertions_count"
@@ -72,7 +72,7 @@ function test_export_assertions_count() {
         _ASSERTIONS_PASSED=10
         _ASSERTIONS_FAILED=5
 
-        State::exportAssertionsCount
+        state::export_assertions_count
     )
 
     assertEquals "##ASSERTIONS_FAILED=5##ASSERTIONS_PASSED=10##" "$export_assertions_count"

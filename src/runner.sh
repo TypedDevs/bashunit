@@ -98,7 +98,7 @@ function Runner::runTest() {
     "$function_name"
     Runner::runTearDown
 
-    State::exportAssertionsCount
+    state::export_assertions_count
   )
   local test_result_code=$?
   Runner::parseExecutionResult "$test_execution_result"
