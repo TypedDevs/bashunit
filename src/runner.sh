@@ -24,7 +24,7 @@ function runner::load_test_files() {
       wait
     fi
     runner::run_tear_down_after_script
-    Runner::cleanSetUpAndTearDownAfterScript
+    runner::clean_set_up_and_tear_down_after_script
   done
 }
 
@@ -137,7 +137,7 @@ function runner::run_tear_down_after_script() {
   Helper::executeFunctionIfExists 'tear_down_after_script'
 }
 
-function Runner::cleanSetUpAndTearDownAfterScript() {
+function runner::clean_set_up_and_tear_down_after_script() {
   Helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   Helper::unsetIfExists 'set_up_before_script'
   Helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
