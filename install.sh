@@ -18,7 +18,8 @@ else
   echo "> Using a concrete tag '$TAG'"
   curl -L -O -J "https://github.com/TypedDevs/bashunit/archive/refs/tags/$TAG.tar.gz"
   tar -zxvf "bashunit-$TAG.tar.gz"
-  cp "bashunit-$TAG/bin/bashunit" temp_bashunit
+  cp "bin/bashunit-$TAG" temp_bashunit
+  rm "bin/bashunit-$TAG"
   rm "bashunit-$TAG.tar.gz"
 fi
 
