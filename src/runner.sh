@@ -137,13 +137,6 @@ function runner::run_tear_down_after_script() {
   Helper::executeFunctionIfExists 'tear_down_after_script'
 }
 
-function Runner::cleanSetUpAndTearDownAfterTest() {
-  Helper::unsetIfExists 'setUp' # Deprecated: please use set_up instead.
-  Helper::unsetIfExists 'set_up'
-  Helper::unsetIfExists 'tearDown' # Deprecated: please use tear_down instead.
-  Helper::unsetIfExists 'tear_down'
-}
-
 function Runner::cleanSetUpAndTearDownAfterScript() {
   Helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   Helper::unsetIfExists 'set_up_before_script'
