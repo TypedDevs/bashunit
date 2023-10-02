@@ -23,7 +23,7 @@ function runner::load_test_files() {
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
     fi
-    Runner::runTearDownAfterScript
+    runner::run_tear_down_after_script
     Runner::cleanSetUpAndTearDownAfterScript
   done
 }
@@ -94,7 +94,7 @@ function runner::run_test() {
     set -e
     runner::run_set_up
     "$function_name"
-    Runner::runTearDown
+    runner::run_tear_down
 
     state::export_assertions_count
   )
@@ -127,12 +127,12 @@ function runner::run_set_up_before_script() {
   Helper::executeFunctionIfExists 'set_up_before_script'
 }
 
-function Runner::runTearDown() {
+function runner::run_tear_down() {
   Helper::executeFunctionIfExists 'tearDown' # Deprecated: please use tear_down instead.
   Helper::executeFunctionIfExists 'tear_down'
 }
 
-function Runner::runTearDownAfterScript() {
+function runner::run_tear_down_after_script() {
   Helper::executeFunctionIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
   Helper::executeFunctionIfExists 'tear_down_after_script'
 }
