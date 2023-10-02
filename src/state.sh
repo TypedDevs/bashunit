@@ -6,7 +6,7 @@ _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-function State::getTestsPassed() {
+function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
 }
 

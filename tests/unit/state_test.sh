@@ -5,7 +5,7 @@ function test_add_and_get_tests_passed() {
         _TESTS_PASSED=0
 
         State::addTestsPassed
-        State::getTestsPassed
+        state::get_tests_passed
     )
 
     assertEquals "1" "$tests_passed"
