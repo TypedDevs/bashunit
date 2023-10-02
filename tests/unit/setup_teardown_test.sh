@@ -2,19 +2,19 @@
 
 TEST_COUNTER=1
 
-function setUpBeforeScript() {
+function set_up_before_script() {
   TEST_COUNTER=$(( TEST_COUNTER + 1 ))
 }
 
-function setUp() {
+function set_up() {
   TEST_COUNTER=$(( TEST_COUNTER + 1 ))
 }
 
-function tearDown() {
+function tear_down() {
   TEST_COUNTER=$(( TEST_COUNTER - 1 ))
 }
 
-function tearDownAfterScript() {
+function tear_down_after_script() {
   TEST_COUNTER=$(( TEST_COUNTER - 1 ))
 }
 

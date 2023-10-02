@@ -30,49 +30,49 @@ test_getFunctionsToRun_with_filter_should_return_matching_functions() { ... }
 You're free to use any of Bash's syntax options to define these functions.
 :::
 
-## `setUp` function
+## `set_up` function
 
-The `setUp` auxiliary function is called, if it is present in the test file, before each test function in the test file is executed.
+The `set_up` auxiliary function is called, if it is present in the test file, before each test function in the test file is executed.
 This provides a hook to prepare the environment or set initial variables specific to each test case.
 For example, you might want to create temporary directories or files that your test will manipulate.
 
 ```bash
-function setUp() {
+function set_up() {
   touch temp_file.txt
 }
 ```
 
-## `tearDown` function
+## `tear_down` function
 
-The `tearDown` auxiliary function is called, if it is present in the test file, immediately after each test function in the test file is executed.
-This auxiliary function offers you a place to clean up any resources allocated or changes made during the `setUp` or test function itself.
+The `tear_down` auxiliary function is called, if it is present in the test file, immediately after each test function in the test file is executed.
+This auxiliary function offers you a place to clean up any resources allocated or changes made during the `set_up` or test function itself.
 This helps to ensure that each test starts with a fresh state.
 
 ```bash
-function tearDown() {
+function tear_down() {
   rm temp_file.txt
 }
 ```
 
-## `setUpBeforeScript` function
+## `set_up_before_script` function
 
-The `setUpBeforeScript` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
+The `set_up_before_script` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
 This is useful for global setup that applies to all test functions in the script, such as loading shared resources.
 
 ```bash
-function setUpBeforeScript() {
+function set_up_before_script() {
   open_database_connection
 }
 ```
 
-## `tearDownAfterScript` function
+## `tear_down_after_script` function
 
-The `tearDownAfterScript` auxiliary function is called, if it is present in the test file, only once when all the test functions in the test file have been executed.
-This auxiliary function is similar to how `setUpBeforeScript` works but at the end of the tests.
+The `tear_down_after_script` auxiliary function is called, if it is present in the test file, only once when all the test functions in the test file have been executed.
+This auxiliary function is similar to how `set_up_before_script` works but at the end of the tests.
 It provides a hook for any cleanup that should occur after all tests have run, such as deleting temporary files or releasing resources.
 
 ```bash
-function tearDownAfterScript() {
+function tear_down_after_script() {
   close_database_connection
 }
 ```
