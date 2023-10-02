@@ -46,7 +46,7 @@ function state::set_duplicated_test_functions_found() {
   _DUPLICATED_TEST_FUNCTIONS_FOUND=true
 }
 
-function State::initializeAssertionsCount() {
+function state::initialize_assertions_count() {
     _ASSERTIONS_PASSED=0
     _ASSERTIONS_FAILED=0
 }

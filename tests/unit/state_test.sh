@@ -60,7 +60,7 @@ function test_initialize_assertions_count() {
         _ASSERTIONS_PASSED=10
         _ASSERTIONS_FAILED=5
 
-        State::initializeAssertionsCount
+        state::initialize_assertions_count
         State::exportAssertionsCount
     )
 

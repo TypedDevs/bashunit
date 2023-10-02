@@ -91,7 +91,7 @@ function Runner::runTest() {
   current_assertions_failed="$(state::get_assertions_failed)"
 
   test_execution_result=$(
-    State::initializeAssertionsCount
+    state::initialize_assertions_count
 
     set -e
     Runner::runSetUp
