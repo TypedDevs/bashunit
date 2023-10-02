@@ -29,10 +29,10 @@ The installation script can receive two optional arguments:
 
 ```bash
 curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh\
-  | bash -s 0.7.0 bin
+  | bash -s bin 0.7.0
 ```
-- `$1`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, or main by default
-- `$2`: the destiny folder to save the executable bashunit, or lib by default
+- `$1`: the destiny folder to save the executable bashunit, or `lib` by default
+- `$2`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, or `main` by default
 
 In this example, it will download the `0.7.0` inside `bin/bashunit`
 
