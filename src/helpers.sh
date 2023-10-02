@@ -36,7 +36,7 @@ function Helper::checkDuplicateFunctions() {
   local duplicates
   duplicates=$(echo "$sorted_names" | uniq -d)
   if [ -n "$duplicates" ]; then
-    State::setDuplicatedTestFunctionsFound
+    state::set_duplicated_test_functions_found
     return 1
   fi
 }

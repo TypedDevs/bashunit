@@ -42,7 +42,7 @@ function state::is_duplicated_test_functions_found() {
   echo "$_DUPLICATED_TEST_FUNCTIONS_FOUND"
 }
 
-function State::setDuplicatedTestFunctionsFound() {
+function state::set_duplicated_test_functions_found() {
   _DUPLICATED_TEST_FUNCTIONS_FOUND=true
 }
 

@@ -48,7 +48,7 @@ function test_set_and_is_duplicated_test_functions_found() {
     local duplicated_test_functions_found=$(
         _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-        State::setDuplicatedTestFunctionsFound
+        state::set_duplicated_test_functions_found
         state::is_duplicated_test_functions_found
     )
 
