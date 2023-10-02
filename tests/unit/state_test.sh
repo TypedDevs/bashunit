@@ -37,7 +37,7 @@ function test_add_and_get_assertions_failed() {
     local assertions_failed=$(
         _ASSERTIONS_FAILED=0
 
-        State::addAssertionsFailed
+        state::add_assertions_failed
         state::get_assertions_failed
     )
 

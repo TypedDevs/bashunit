@@ -34,7 +34,7 @@ function state::get_assertions_failed() {
   echo "$_ASSERTIONS_FAILED"
 }
 
-function State::addAssertionsFailed() {
+function state::add_assertions_failed() {
   ((_ASSERTIONS_FAILED++)) || true
 }
 

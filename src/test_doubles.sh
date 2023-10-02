@@ -30,7 +30,7 @@ function assert_have_been_called() {
   local label="${2:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ${!actual} -eq 0 ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${command}" "to has been called" "once"
     return
   fi
@@ -46,7 +46,7 @@ function assert_have_been_called_with() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "${!actual}" ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${expected}" "but got" "${!actual}"
     return
   fi
@@ -62,7 +62,7 @@ function assert_have_been_called_times() {
   local label="${3:-$(Helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
 
   if [[ ${!actual} -ne $expected ]]; then
-    State::addAssertionsFailed
+    state::add_assertions_failed
     Console::printFailedTest "${label}" "${command}" "to has been called" "${expected} times"
     return
   fi
