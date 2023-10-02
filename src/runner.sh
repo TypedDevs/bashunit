@@ -116,7 +116,7 @@ function Runner::runTest() {
 
   local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
   Console::printSuccessfulTest "${label}"
-  State::addTestsPassed
+  state::add_tests_passed
 }
 
 function Runner::runSetUp() {

@@ -4,7 +4,7 @@ function test_add_and_get_tests_passed() {
     local tests_passed=$(
         _TESTS_PASSED=0
 
-        State::addTestsPassed
+        state::add_tests_passed
         state::get_tests_passed
     )
 

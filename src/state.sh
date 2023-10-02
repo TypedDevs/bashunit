@@ -10,7 +10,7 @@ function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
 }
 
-function State::addTestsPassed() {
+function state::add_tests_passed() {
   ((_TESTS_PASSED++)) || true
 }
 
