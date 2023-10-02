@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitepress'
+import pkg from '../../package.json'
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -64,6 +65,20 @@ export default defineConfig({
       { icon: 'x', link: 'https://x.com/bashunit' },
       { icon: 'github', link: 'https://github.com/TypedDevs/bashunit' }
     ],
+
+    nav: [{
+      text: pkg.version,
+      items: [
+        {
+          text: 'Changelog',
+          link: 'https://github.com/TypedDevs/bashunit/blob/main/CHANGELOG.md'
+        },
+        {
+          text: 'Contributing',
+          link: 'https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md'
+        }
+      ]
+    }],
 
     search: {
       provider: 'local'
