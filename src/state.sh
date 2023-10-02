@@ -38,7 +38,7 @@ function state::add_assertions_failed() {
   ((_ASSERTIONS_FAILED++)) || true
 }
 
-function State::isDuplicatedTestFunctionsFound() {
+function state::is_duplicated_test_functions_found() {
   echo "$_DUPLICATED_TEST_FUNCTIONS_FOUND"
 }
 

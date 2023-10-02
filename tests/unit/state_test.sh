@@ -49,7 +49,7 @@ function test_set_and_is_duplicated_test_functions_found() {
         _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
         State::setDuplicatedTestFunctionsFound
-        State::isDuplicatedTestFunctionsFound
+        state::is_duplicated_test_functions_found
     )
 
     assertEquals "true" "$duplicated_test_functions_found"
