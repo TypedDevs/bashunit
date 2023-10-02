@@ -3,8 +3,8 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
 
-TAG=${1-main}
-DIR=${2-lib}
+DIR=${1-lib}
+TAG=${2-main}
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
