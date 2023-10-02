@@ -54,7 +54,7 @@ function runner::call_test_functions() {
   fi
 }
 
-function Runner::parseExecutionResult() {
+function runner::parse_execution_result() {
   local execution_result=$1
 
   local assertions_failed
@@ -99,7 +99,7 @@ function Runner::runTest() {
     state::export_assertions_count
   )
   local test_result_code=$?
-  Runner::parseExecutionResult "$test_execution_result"
+  runner::parse_execution_result "$test_execution_result"
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
