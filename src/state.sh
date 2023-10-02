@@ -14,7 +14,7 @@ function state::add_tests_passed() {
   ((_TESTS_PASSED++)) || true
 }
 
-function State::getTestsFailed() {
+function state::get_tests_failed() {
   echo "$_TESTS_FAILED"
 }
 

@@ -16,7 +16,7 @@ function test_add_and_get_tests_failed() {
         _TESTS_FAILED=0
 
         State::addTestsFailed
-        State::getTestsFailed
+        state::get_tests_failed
     )
 
     assertEquals "1" "$tests_failed"
