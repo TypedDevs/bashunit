@@ -47,7 +47,7 @@ function runner::call_test_functions() {
     Helper::checkDuplicateFunctions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
-      Runner::runTest "$function_name"
+      runner::run_test "$function_name"
 
       unset "$function_name"
     done
@@ -82,7 +82,7 @@ function runner::parse_execution_result() {
   fi
 }
 
-function Runner::runTest() {
+function runner::run_test() {
   local function_name="$1"
   local current_assertions_failed
   local test_execution_result
