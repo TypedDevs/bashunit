@@ -18,7 +18,7 @@ function runner::load_test_files() {
     # shellcheck source=/dev/null
     source "$test_file"
 
-    Runner::runSetUpBeforeScript
+    runner::run_set_up_before_script
     runner::call_test_functions "$test_file" "$filter"
     if [ "$PARALLEL_RUN" = true ] ; then
       wait
@@ -92,7 +92,7 @@ function runner::run_test() {
     state::initialize_assertions_count
 
     set -e
-    Runner::runSetUp
+    runner::run_set_up
     "$function_name"
     Runner::runTearDown
 
@@ -117,12 +117,12 @@ function runner::run_test() {
   state::add_tests_passed
 }
 
-function Runner::runSetUp() {
+function runner::run_set_up() {
   Helper::executeFunctionIfExists 'setUp' # Deprecated: please use set_up instead.
   Helper::executeFunctionIfExists 'set_up'
 }
 
-function Runner::runSetUpBeforeScript() {
+function runner::run_set_up_before_script() {
   Helper::executeFunctionIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   Helper::executeFunctionIfExists 'set_up_before_script'
 }
