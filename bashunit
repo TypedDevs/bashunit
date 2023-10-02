@@ -5,7 +5,7 @@ readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 trap 'Console::renderResult '\
 '"$(state::get_tests_passed)" '\
 '"$(state::get_tests_failed)" '\
-'"$(State::getAssertionsPassed)" '\
+'"$(state::get_assertions_passed)" '\
 '"$(State::getAssertionsFailed)"' EXIT
 
 source "$BASH_UNIT_ROOT_DIR/src/default_env_config.sh"

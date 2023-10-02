@@ -27,7 +27,7 @@ function test_add_and_get_assertions_passed() {
         _ASSERTIONS_PASSED=0
 
         State::addAssertionsPassed
-        State::getAssertionsPassed
+        state::get_assertions_passed
     )
 
     assertEquals "1" "$assertions_passed"

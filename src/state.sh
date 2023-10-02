@@ -22,7 +22,7 @@ function state::add_tests_failed() {
   ((_TESTS_FAILED++)) || true
 }
 
-function State::getAssertionsPassed() {
+function state::get_assertions_passed() {
   echo "$_ASSERTIONS_PASSED"
 }
 
