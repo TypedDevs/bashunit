@@ -45,7 +45,8 @@ onMounted(() => {
 
   VanillaTilt.init(heroImage, {
     'full-page-listening': true,
-    reverse: true
+    reverse: true,
+    gyroscope: false
   });
 });
 </script>
