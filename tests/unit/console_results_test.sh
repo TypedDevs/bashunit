@@ -11,7 +11,7 @@ function test_not_render_passed_tests_when_no_passed_tests_nor_assertions() {
 
   assert_not_matches\
     "Tests:[^\n]*passed[^\n]*total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_passed_assertions_when_no_passed_tests_nor_assertions() {
@@ -20,7 +20,7 @@ function test_not_render_passed_assertions_when_no_passed_tests_nor_assertions()
 
   assert_not_matches\
     "Assertions:[^\n]*passed[^\n]*total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_tests_when_passed_tests() {
@@ -28,7 +28,7 @@ function test_render_passed_tests_when_passed_tests() {
 
   assert_matches\
     $'Tests:[^\n]*\e\[32m1 passed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_tests_when_passed_assertions() {
@@ -37,7 +37,7 @@ function test_render_passed_tests_when_passed_assertions() {
 
   assert_matches\
     $'Tests:[^\n]*\e\[32m0 passed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_assertions_when_passed_tests() {
@@ -46,7 +46,7 @@ function test_render_passed_assertions_when_passed_tests() {
 
   assert_matches\
     $'Assertions:[^\n]*\e\[32m0 passed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_passed_assertions_when_passed_assertions() {
@@ -54,7 +54,7 @@ function test_render_passed_assertions_when_passed_assertions() {
 
   assert_matches\
     $'Assertions:[^\n]*\e\[32m1 passed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_failed_tests_when_not_failed_tests() {
@@ -62,7 +62,7 @@ function test_not_render_failed_tests_when_not_failed_tests() {
 
   assert_not_matches\
     "Tests:[^\n]*failed[^\n]*total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_failed_assertions_when_not_failed_tests() {
@@ -70,7 +70,7 @@ function test_not_render_failed_assertions_when_not_failed_tests() {
 
   assert_not_matches\
     "Assertions:[^\n]*failed[^\n]*total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_failed_tests_when_failed_tests() {
@@ -78,7 +78,7 @@ function test_render_failed_tests_when_failed_tests() {
 
   assert_matches\
     $'Tests:[^\n]*\e\[31m1 failed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_failed_assertions_when_failed_tests() {
@@ -87,7 +87,7 @@ function test_render_failed_assertions_when_failed_tests() {
 
   assert_matches\
     $'Assertions:[^\n]*\e\[31m0 failed\e\[0m[^\n]*total'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_not_render_all_tests_passed_when_failed_tests() {
@@ -95,7 +95,7 @@ function test_not_render_all_tests_passed_when_failed_tests() {
 
   assert_not_matches\
     "All tests passed"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_all_tests_passed_when_not_failed_tests() {
@@ -103,7 +103,7 @@ function test_render_all_tests_passed_when_not_failed_tests() {
 
   assert_matches\
     $'\e\[42mAll tests passed\e\[0m'\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_total_tests_is_the_sum_of_passed_and_failed_tests() {
@@ -112,7 +112,7 @@ function test_total_tests_is_the_sum_of_passed_and_failed_tests() {
 
   assert_matches\
     "Tests:[^\n]*6 total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
@@ -121,14 +121,14 @@ function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
 
   assert_matches\
     "Assertions:[^\n]*4 total"\
-    "$(console::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
+    "$(console_results::render_result $TESTS_PASSED $TESTS_FAILED $ASSERTIONS_PASSED $ASSERTIONS_FAILED)"
 }
 
 function test_render_time_of_execution_when_all_assertions_passed() {
   if [[ $_OS != "OSX" ]]; then
     assert_matches\
       "Time taken: [[:digit:]]+ ms"\
-      "$(console::render_result)"
+      "$(console_results::render_result)"
   fi
 }
 
@@ -136,7 +136,7 @@ function test_render_time_of_execution_when_not_all_assertions_passed() {
   if [[ $_OS != "OSX" ]]; then
     assert_matches\
       "Time taken: [[:digit:]]+ ms"\
-      "$(console::render_result)"
+      "$(console_results::render_result)"
   fi
 }
 
@@ -144,7 +144,7 @@ function test_should_not_render_time_of_execution_when_all_assertions_passed_on_
   if [[ $_OS == "OSX" ]]; then
     assert_not_matches\
       "Time taken: [[:digit:]]+ ms"\
-      "$(console::render_result)"
+      "$(console_results::render_result)"
   fi
 }
 
@@ -152,6 +152,6 @@ function test_should_not_render_time_of_execution_when_not_all_assertions_passed
   if [[ $_OS == "OSX" ]]; then
     assert_not_matches\
       "Time taken: [[:digit:]]+ ms"\
-      "$(console::render_result)"
+      "$(console_results::render_result)"
   fi
 }

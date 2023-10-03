@@ -108,12 +108,12 @@ function runner::run_test() {
 
   if [[ $test_result_code -ne 0 ]]; then
     state::add_tests_failed
-    console::printErrorTest "$function_name" "$test_result_code"
+    console_results::printErrorTest "$function_name" "$test_result_code"
     return
   fi
 
   local label="${3:-$(helper::normalize_test_function_name "$function_name")}"
-  console::print_successful_test "${label}"
+  console_results::print_successful_test "${label}"
   state::add_tests_passed
 }
 

@@ -6,7 +6,7 @@ declare -r BASH_UNIT_VERSION="0.7.0"
 
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-trap 'console::render_result '\
+trap 'console_results::render_result '\
 '"$(state::get_tests_passed)" '\
 '"$(state::get_tests_failed)" '\
 '"$(state::get_assertions_passed)" '\

@@ -7,7 +7,7 @@ function assert_equals() {
 
   if [[ "$expected" != "$actual" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
+    console_results::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
@@ -20,7 +20,7 @@ function assert_empty() {
 
   if [[ "$expected" != "" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "to be empty" "but got" "${expected}"
+    console_results::printFailedTest "${label}" "to be empty" "but got" "${expected}"
     return
   fi
 
@@ -33,7 +33,7 @@ function assert_not_empty() {
 
   if [[ "$expected" == "" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "to not be empty" "but got" "${expected}"
+    console_results::printFailedTest "${label}" "to not be empty" "but got" "${expected}"
     return
   fi
 
@@ -47,7 +47,7 @@ function assert_not_equals() {
 
   if [[ "$expected" == "$actual" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "but got" "${actual}"
+    console_results::printFailedTest "${label}" "${expected}" "but got" "${actual}"
     return
   fi
 
@@ -61,7 +61,7 @@ function assert_contains() {
 
   if ! [[ $actual == *"$expected"* ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual}" "to contain" "${expected}"
+    console_results::printFailedTest "${label}" "${actual}" "to contain" "${expected}"
     return
   fi
 
@@ -75,7 +75,7 @@ function assert_not_contains() {
 
   if [[ $actual == *"$expected"* ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual}" "to not contain" "${expected}"
+    console_results::printFailedTest "${label}" "${actual}" "to not contain" "${expected}"
     return
   fi
 
@@ -89,7 +89,7 @@ function assert_matches() {
 
   if ! [[ $actual =~ $expected ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual}" "to match" "${expected}"
+    console_results::printFailedTest "${label}" "${actual}" "to match" "${expected}"
     return
   fi
 
@@ -103,7 +103,7 @@ function assert_not_matches() {
 
   if [[ $actual =~ $expected ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual}" "to not match" "${expected}"
+    console_results::printFailedTest "${label}" "${actual}" "to not match" "${expected}"
     return
   fi
 
@@ -117,7 +117,7 @@ function assert_exit_code() {
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
+    console_results::printFailedTest "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
 
@@ -131,7 +131,7 @@ function assert_successful_code() {
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    console_results::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -145,7 +145,7 @@ function assert_general_error() {
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    console_results::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -159,7 +159,7 @@ function assert_command_not_found() {
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    console_results::printFailedTest "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -176,7 +176,7 @@ function assert_array_contains() {
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual[*]}" "to contain" "${expected}"
+    console_results::printFailedTest "${label}" "${actual[*]}" "to contain" "${expected}"
     return
   fi
 
@@ -191,7 +191,7 @@ function assert_array_not_contains() {
 
   if [[ "${actual[*]}" == *"$expected"* ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${actual[*]}" "to not contain" "${expected}"
+    console_results::printFailedTest "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
   fi
 
@@ -204,7 +204,7 @@ function assert_file_exists() {
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
+    console_results::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
@@ -217,7 +217,7 @@ function assert_file_not_exists() {
 
   if [[ -f "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to not exist but" "the file exists"
+    console_results::printFailedTest "${label}" "${expected}" "to not exist but" "the file exists"
     return
   fi
 
@@ -230,7 +230,7 @@ function assert_is_file() {
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be a file" "but is not a file"
+    console_results::printFailedTest "${label}" "${expected}" "to be a file" "but is not a file"
     return
   fi
 
@@ -243,7 +243,7 @@ function assert_is_file_empty() {
 
   if [[ -s "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
+    console_results::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
@@ -256,7 +256,7 @@ function assert_directory_exists() {
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
+    console_results::printFailedTest "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
@@ -269,7 +269,7 @@ function assert_directory_not_exists() {
 
   if [[ -d "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to not exist but" "the directory exists"
+    console_results::printFailedTest "${label}" "${expected}" "to not exist but" "the directory exists"
     return
   fi
 
@@ -282,7 +282,7 @@ function assert_is_directory() {
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be a directory" "but is not a directory"
+    console_results::printFailedTest "${label}" "${expected}" "to be a directory" "but is not a directory"
     return
   fi
 
@@ -295,7 +295,7 @@ function assert_is_directory_empty() {
 
   if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
+    console_results::printFailedTest "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
@@ -308,7 +308,7 @@ function assert_is_directory_not_empty() {
 
   if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to not be empty" "but is empty"
+    console_results::printFailedTest "${label}" "${expected}" "to not be empty" "but is empty"
     return
   fi
 
@@ -321,7 +321,7 @@ function assert_is_directory_readable() {
 
   if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be readable" "but is not readable"
+    console_results::printFailedTest "${label}" "${expected}" "to be readable" "but is not readable"
     return
   fi
 
@@ -334,7 +334,7 @@ function assert_is_directory_not_readable() {
 
   if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be not readable" "but is readable"
+    console_results::printFailedTest "${label}" "${expected}" "to be not readable" "but is readable"
     return
   fi
 
@@ -347,7 +347,7 @@ function assert_is_directory_writable() {
 
   if [[ ! -d "$expected" || ! -w "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be writable" "but is not writable"
+    console_results::printFailedTest "${label}" "${expected}" "to be writable" "but is not writable"
     return
   fi
 
@@ -360,7 +360,7 @@ function assert_is_directory_not_writable() {
 
   if [[ ! -d "$expected" || -w "$expected" ]]; then
     state::add_assertions_failed
-    console::printFailedTest "${label}" "${expected}" "to be not writable" "but is writable"
+    console_results::printFailedTest "${label}" "${expected}" "to be not writable" "but is writable"
     return
   fi
 
