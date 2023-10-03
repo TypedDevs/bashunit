@@ -16,6 +16,26 @@ function test_example() {
 }
 ```
 
+> `mock "function" "output"`
+
+Allows you to override the output of a callable.
+
+*Example:*
+```bash
+function test_example() {
+  function code() {
+      ps a | grep bash
+  }
+
+  mock ps<<EOF
+PID TTY          TIME CMD
+13525 pts/7    00:00:01 bash
+24162 pts/7    00:00:00 ps
+EOF
+
+  assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
+}
+```
 ## spy
 > `spy "function"`
 
