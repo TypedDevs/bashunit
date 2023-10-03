@@ -149,5 +149,12 @@ function runner::clean_set_up_and_tear_down_after_script() {
 }
 
 function runner::print_version() {
-  echo '0.7.0'
+  cat <<EOF
+ _               _                   _
+| |__   __ _ ___| |__ ________ __ (_) |_
+| '_ \ / _' / __| '_ \| | | | '_ \| | __|
+| |_) | (_| \__ \ | | | |_| | | | | | |_
+|_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
+EOF
+  echo "0.7.0"
 }

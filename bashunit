@@ -52,6 +52,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+runner::print_version
 runner::load_test_files "$_FILTER" "${_FILES[@]}"
 
 exit 0
