@@ -83,7 +83,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 }
 
-function console_results::printErrorTest() {
+function console_results::print_error_test() {
   local test_name="${3:-$(helper::normalize_test_function_name "$1")}"
   local error_code=$2
 
