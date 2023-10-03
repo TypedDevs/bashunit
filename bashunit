@@ -40,6 +40,11 @@ while [[ $# -gt 0 ]]; do
       _SIMPLE_OUTPUT=true
       shift
       ;;
+    --version)
+      runner::print_version
+      trap '' EXIT
+      exit
+      ;;
     *)
       _FILES+=("$argument")
       shift

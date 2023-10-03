@@ -147,3 +147,7 @@ function runner::clean_set_up_and_tear_down_after_script() {
   Helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
   Helper::unsetIfExists 'tear_down_after_script'
 }
+
+function runner::print_version() {
+  echo '0.7.0'
+}
