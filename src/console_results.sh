@@ -70,7 +70,7 @@ function console_results::print_successful_test() {
   fi
 }
 
-function console_results::printFailedTest() {
+function console_results::print_failed_test() {
   local test_name=$1
   local expected=$2
   local failure_condition_message=$3
