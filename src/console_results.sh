@@ -5,7 +5,7 @@ _SUCCESSFUL_TEST_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
-    printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    printf "%sDuplicate test functions found%s\n" "${_COLOR_DUPLICATED}" "${_COLOR_DEFAULT}"
     return
   fi
 
