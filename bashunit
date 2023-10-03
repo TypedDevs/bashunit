@@ -50,7 +50,7 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
-      _FILES+=("$argument")
+      _FILES+=($(helpers::find_files_recursive "$argument"))
       shift
       ;;
   esac
