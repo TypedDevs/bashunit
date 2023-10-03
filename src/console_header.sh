@@ -14,3 +14,12 @@ EOF
     printf "bashunit - %s\n" "$BASH_UNIT_VERSION"
   fi
 }
+
+
+function console_header::print_version_with_env() {
+    local should_print_ascii="true"
+    if [[ "$SHOW_HEADER" != "$should_print_ascii" ]]; then
+      return
+    fi
+    console_header::print_version
+}

@@ -56,7 +56,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-console_header::print_version
+console_header::print_version_with_env
 runner::load_test_files "$_FILTER" "${_FILES[@]}"
 
 exit 0
