@@ -42,8 +42,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     --version)
       runner::print_version
-      trap '' EXIT
-      exit
+      trap '' EXIT && exit
       ;;
     *)
       _FILES+=("$argument")
