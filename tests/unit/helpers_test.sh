@@ -57,13 +57,13 @@ function test_getFunctionsToRun_fail_when_duplicates() {
 function test_dummyFunction_is_executed_with_execute_function_if_exists() {
   local function_name='dummyFunction'
 
-  assert_equals "dummyFunction executed" "$(helper::executeFunctionIfExists "$function_name")"
+  assert_equals "dummyFunction executed" "$(helper::execute_function_if_exists "$function_name")"
 }
 
 function test_no_function_is_executed_with_execute_function_if_exists() {
   local function_name='notExistingFunction'
 
-  assert_empty "$(helper::executeFunctionIfExists "$function_name")"
+  assert_empty "$(helper::execute_function_if_exists "$function_name")"
 }
 
 function test_successful_unsetIfExists_non_existent_function() {

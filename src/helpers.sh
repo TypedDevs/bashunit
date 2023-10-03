@@ -82,7 +82,7 @@ function helper::get_functions_to_run() {
 #
 # @param $1 string Eg: "do_something"
 #
-function helper::executeFunctionIfExists() {
+function helper::execute_function_if_exists() {
   local function_name=$1
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
