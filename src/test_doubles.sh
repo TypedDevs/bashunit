@@ -27,7 +27,7 @@ function assert_have_been_called() {
   local command=$1
   local actual
   actual="${command}_times"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ${!actual} -eq 0 ]]; then
     state::add_assertions_failed
@@ -43,7 +43,7 @@ function assert_have_been_called_with() {
   local command=$2
   local actual
   actual="${command}_params"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "${!actual}" ]]; then
     state::add_assertions_failed
@@ -59,7 +59,7 @@ function assert_have_been_called_times() {
   local command=$2
   local actual
   actual="${command}_times"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ${!actual} -ne $expected ]]; then
     state::add_assertions_failed

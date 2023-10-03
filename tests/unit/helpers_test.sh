@@ -13,19 +13,19 @@ function dummyFunction() {
 }
 
 function test_normalizeTestFunctionName_empty() {
-  assert_equals "" "$(helper::normalizeTestFunctionName)"
+  assert_equals "" "$(helper::normalize_test_function_name)"
 }
 
 function test_normalizeTestFunctionName_one_word() {
-  assert_equals "Word" "$(helper::normalizeTestFunctionName "word")"
+  assert_equals "Word" "$(helper::normalize_test_function_name "word")"
 }
 
 function test_normalizeTestFunctionName_snake_case() {
-  assert_equals "Some logic" "$(helper::normalizeTestFunctionName "test_some_logic")"
+  assert_equals "Some logic" "$(helper::normalize_test_function_name "test_some_logic")"
 }
 
 function test_normalizeTestFunctionName_camel_case() {
-  assert_equals "SomeLogic" "$(helper::normalizeTestFunctionName "testSomeLogic")"
+  assert_equals "SomeLogic" "$(helper::normalize_test_function_name "testSomeLogic")"
 }
 
 function test_getFunctionsToRun_no_filter_should_return_all_functions() {

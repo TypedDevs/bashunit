@@ -3,7 +3,7 @@
 function assert_equals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
     state::add_assertions_failed
@@ -16,7 +16,7 @@ function assert_equals() {
 
 function assert_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "" ]]; then
     state::add_assertions_failed
@@ -29,7 +29,7 @@ function assert_empty() {
 
 function assert_not_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "" ]]; then
     state::add_assertions_failed
@@ -43,7 +43,7 @@ function assert_not_empty() {
 function assert_not_equals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "$actual" ]]; then
     state::add_assertions_failed
@@ -57,7 +57,7 @@ function assert_not_equals() {
 function assert_contains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ $actual == *"$expected"* ]]; then
     state::add_assertions_failed
@@ -71,7 +71,7 @@ function assert_contains() {
 function assert_not_contains() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual == *"$expected"* ]]; then
     state::add_assertions_failed
@@ -85,7 +85,7 @@ function assert_not_contains() {
 function assert_matches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ $actual =~ $expected ]]; then
     state::add_assertions_failed
@@ -99,7 +99,7 @@ function assert_matches() {
 function assert_not_matches() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ $expected ]]; then
     state::add_assertions_failed
@@ -113,7 +113,7 @@ function assert_not_matches() {
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
@@ -127,7 +127,7 @@ function assert_exit_code() {
 function assert_successful_code() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=0
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
@@ -141,7 +141,7 @@ function assert_successful_code() {
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=1
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
@@ -155,7 +155,7 @@ function assert_general_error() {
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=127
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     state::add_assertions_failed
@@ -169,7 +169,7 @@ function assert_command_not_found() {
 function assert_array_contains() {
   local expected="$1"
   local label
-  label="$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
+  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
   shift
 
   local actual=("${@}")
@@ -185,7 +185,7 @@ function assert_array_contains() {
 
 function assert_array_not_contains() {
   local expected="$1"
-  label="$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")"
+  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
   shift
   local actual=("$@")
 
@@ -200,7 +200,7 @@ function assert_array_not_contains() {
 
 function assert_file_exists() {
   local expected="$1"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
@@ -213,7 +213,7 @@ function assert_file_exists() {
 
 function assert_file_not_exists() {
   local expected="$1"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ -f "$expected" ]]; then
     state::add_assertions_failed
@@ -226,7 +226,7 @@ function assert_file_not_exists() {
 
 function assert_is_file() {
   local expected="$1"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
@@ -239,7 +239,7 @@ function assert_is_file() {
 
 function assert_is_file_empty() {
   local expected="$1"
-  local label="${3:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ -s "$expected" ]]; then
     state::add_assertions_failed
@@ -252,7 +252,7 @@ function assert_is_file_empty() {
 
 function assert_directory_exists() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
@@ -265,7 +265,7 @@ function assert_directory_exists() {
 
 function assert_directory_not_exists() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ -d "$expected" ]]; then
     state::add_assertions_failed
@@ -278,7 +278,7 @@ function assert_directory_not_exists() {
 
 function assert_is_directory() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
@@ -291,7 +291,7 @@ function assert_is_directory() {
 
 function assert_is_directory_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
@@ -304,7 +304,7 @@ function assert_is_directory_empty() {
 
 function assert_is_directory_not_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
@@ -317,7 +317,7 @@ function assert_is_directory_not_empty() {
 
 function assert_is_directory_readable() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
     state::add_assertions_failed
@@ -330,7 +330,7 @@ function assert_is_directory_readable() {
 
 function assert_is_directory_not_readable() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
     state::add_assertions_failed
@@ -343,7 +343,7 @@ function assert_is_directory_not_readable() {
 
 function assert_is_directory_writable() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || ! -w "$expected" ]]; then
     state::add_assertions_failed
@@ -356,7 +356,7 @@ function assert_is_directory_writable() {
 
 function assert_is_directory_not_writable() {
   local expected="$1"
-  local label="${2:-$(helper::normalizeTestFunctionName "${FUNCNAME[1]}")}"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ ! -d "$expected" || -w "$expected" ]]; then
     state::add_assertions_failed

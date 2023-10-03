@@ -5,7 +5,7 @@
 #
 # @return string Eg: "Some logic camelCase"
 #
-function helper::normalizeTestFunctionName() {
+function helper::normalize_test_function_name() {
   local original_function_name="$1"
   local result
 
