@@ -1,11 +1,11 @@
 #!/bin/bash
 
 function tearDown() {
-  helper::unsetIfExists fake_function
+  helper::unset_if_exists fake_function
 }
 
 function tearDownAfterScript() {
-  helper::unsetIfExists dummyFunction
+  helper::unset_if_exists dummyFunction
 }
 
 function dummyFunction() {
@@ -67,7 +67,7 @@ function test_no_function_is_executed_with_execute_function_if_exists() {
 }
 
 function test_successful_unsetIfExists_non_existent_function() {
-  assert_successful_code "$(helper::unsetIfExists "fake_function")"
+  assert_successful_code "$(helper::unset_if_exists "fake_function")"
 }
 
 function test_successful_unsetIfExists() {
@@ -76,7 +76,7 @@ function test_successful_unsetIfExists() {
     return 0
   }
 
-  assert_successful_code "$(helper::unsetIfExists "fake_function")"
+  assert_successful_code "$(helper::unset_if_exists "fake_function")"
 }
 
 function test_checkDuplicateFunctions_with_duplicates() {
