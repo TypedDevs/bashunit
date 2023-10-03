@@ -48,7 +48,7 @@ function helper::check_duplicate_functions() {
 #
 # @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
-function helper::getFunctionsToRun() {
+function helper::get_functions_to_run() {
   local prefix=$1
   local filter=$2
   local function_names=$3

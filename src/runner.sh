@@ -37,7 +37,7 @@ function runner::call_test_functions() {
   function_names=$(declare -F | awk '{print $3}')
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
+  functions_to_run=($(helper::get_functions_to_run "$prefix" "$filter" "$function_names"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     if [[ "$_SIMPLE_OUTPUT" == false ]]; then

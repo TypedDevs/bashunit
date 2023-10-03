@@ -33,25 +33,25 @@ function test_getFunctionsToRun_no_filter_should_return_all_functions() {
 
   assert_equals\
     "prefix_function1 prefix_function2 prefix_function3"\
-    "$(helper::getFunctionsToRun "prefix" "" "${functions[*]}")"
+    "$(helper::get_functions_to_run "prefix" "" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_with_filter_should_return_matching_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assert_equals "prefix_function1" "$(helper::getFunctionsToRun "prefix" "function1" "${functions[*]}")"
+  assert_equals "prefix_function1" "$(helper::get_functions_to_run "prefix" "function1" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_filter_no_matching_functions_should_return_empty() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assert_equals "" "$(helper::getFunctionsToRun "prefix" "nonexistent" "${functions[*]}")"
+  assert_equals "" "$(helper::get_functions_to_run "prefix" "nonexistent" "${functions[*]}")"
 }
 
 function test_getFunctionsToRun_fail_when_duplicates() {
   local functions=("prefix_function1" "prefix_function1")
 
-  assert_general_error "$(helper::getFunctionsToRun "prefix" "" "${functions[*]}")"
+  assert_general_error "$(helper::get_functions_to_run "prefix" "" "${functions[*]}")"
 }
 
 function test_dummyFunction_is_executed_with_execute_function_if_exists() {
