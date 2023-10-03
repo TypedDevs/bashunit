@@ -36,18 +36,18 @@ _FILES=()
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
-    --filter)
+    -f|--filter)
       _FILTER="$2"
       shift
       shift
       ;;
-    --simple)
+    -s|--simple)
       _SIMPLE_OUTPUT=true
       shift
       ;;
-    --version)
+    -v|--version)
       console_header::print_version
-      trap '' EXIT && exit
+      trap '' EXIT && exit 0
       ;;
     *)
       _FILES+=("$argument")
