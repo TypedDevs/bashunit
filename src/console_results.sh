@@ -84,7 +84,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 }
 
 function console_results::printErrorTest() {
-  local test_name=$1
+  local test_name="${3:-$(helper::normalize_test_function_name "$1")}"
   local error_code=$2
 
   printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s with error code %s\n" "${test_name}" "${error_code}"
