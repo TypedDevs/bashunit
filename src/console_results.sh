@@ -1,6 +1,7 @@
 #!/bin/bash
 
 _START_TIME=$(date +%s%N);
+_SUCCESSFUL_TEST_COUNT=0
 
 function console::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -54,7 +55,6 @@ function console::print_execution_time() {
   fi
 }
 
-_SUCCESSFUL_TEST_COUNT=0
 function console::print_successful_test() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
