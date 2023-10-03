@@ -55,7 +55,7 @@ function console::print_execution_time() {
 }
 
 _SUCCESSFUL_TEST_COUNT=0
-function console::printSuccessfulTest() {
+function console::print_successful_test() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
   if [[ "$_SIMPLE_OUTPUT" == true ]]; then
