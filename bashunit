@@ -50,7 +50,9 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
-      _FILES+=("$argument")
+      while IFS='' read -r line; do
+        _FILES+=("$line");
+      done < <(helpers::find_files_recursive "$argument")
       shift
       ;;
   esac

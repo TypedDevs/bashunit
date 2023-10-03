@@ -100,3 +100,13 @@ function helper::unset_if_exists() {
     unset "$function_name"
   fi
 }
+
+helpers::find_files_recursive() {
+  local path="$1"
+
+  if [[ -d "$path" ]]; then
+    find "$path" -type f -name '*[tT]est.sh' | sort | uniq
+  else
+    echo "$path"
+  fi
+}
