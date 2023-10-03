@@ -102,11 +102,11 @@ function helper::unsetIfExists() {
 }
 
 helpers::find_files_recursive() {
-    local path="$1"
+  local path="$1"
 
-    if [[ -d "$path" ]]; then
-        find "$path" -type f -name '*test.sh' | sort | uniq
-    else
-        echo "$path"
-    fi
+  if [[ -d "$path" ]]; then
+    find "$path" -type f -name '*test.sh' | sort | uniq
+  else
+    echo "$path"
+  fi
 }
