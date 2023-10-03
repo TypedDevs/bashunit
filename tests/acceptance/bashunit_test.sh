@@ -94,3 +94,15 @@ function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   rm $test_file
 }
+
+
+function test_bash_unit_should_display_version() {
+  local fixture
+  fixture=$(printf "%s" "$BASH_UNIT_VERSION")
+
+
+  assert_contains\
+   "$fixture"\
+    "$(./bashunit --version)"
+
+}

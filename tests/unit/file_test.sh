@@ -11,7 +11,7 @@ function test_unsuccessful_assert_file_exists() {
   local a_file="a_random_file_that_will_not_exist"
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")"\
+    "$(console::printFailedTest "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")"\
     "$(assert_file_exists "$a_file")"
 }
 
@@ -20,7 +20,7 @@ function test_assert_file_exists_should_not_work_with_folders() {
   a_dir="$(dirname "${BASH_SOURCE[0]}")"
 
   assert_equals\
-    "$(Console::printFailedTest \
+    "$(console::printFailedTest \
       "Assert file exists should not work with folders" "$a_dir" "to exist but" "do not exist")"\
     "$(assert_file_exists "$a_dir")"
 }
@@ -36,7 +36,7 @@ function test_unsuccessful_assert_file_not_exists() {
   a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")"\
+    "$(console::printFailedTest "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")"\
     "$(assert_file_not_exists "$a_file")"
 }
 
@@ -51,7 +51,7 @@ function test_unsuccessful_assert_is_file() {
   local a_file="a_random_file_that_will_not_exist"
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")"\
+    "$(console::printFailedTest "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")"\
     "$(assert_is_file "$a_file")"
 }
 
@@ -60,7 +60,7 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
   a_folder="$(dirname "${BASH_SOURCE[0]}")"
 
   assert_equals\
-    "$(Console::printFailedTest\
+    "$(console::printFailedTest\
       "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")"\
     "$(assert_is_file "$a_folder")"
 }
@@ -79,6 +79,6 @@ function test_unsuccessful_assert_is_file_empty() {
   a_file="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
+    "$(console::printFailedTest "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
     "$(assert_is_file_empty "$a_file")"
 }

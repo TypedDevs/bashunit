@@ -1,8 +1,12 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
+declare -r BASH_UNIT_VERSION="0.7.0"
+
+
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-trap 'Console::renderResult '\
+trap 'console::renderResult '\
 '"$(state::get_tests_passed)" '\
 '"$(state::get_tests_failed)" '\
 '"$(state::get_assertions_passed)" '\
@@ -13,6 +17,7 @@ source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASH_UNIT_ROOT_DIR/src/check_os.sh"
 source "$BASH_UNIT_ROOT_DIR/src/state.sh"
 source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
+source "$BASH_UNIT_ROOT_DIR/src/console_header.sh"
 source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 source "$BASH_UNIT_ROOT_DIR/src/helpers.sh"
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
@@ -31,14 +36,18 @@ _FILES=()
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
-    --filter)
+    -f|--filter)
       _FILTER="$2"
       shift
       shift
       ;;
-    --simple)
+    -s|--simple)
       _SIMPLE_OUTPUT=true
       shift
+      ;;
+    -v|--version)
+      console_header::print_version
+      trap '' EXIT && exit 0
       ;;
     *)
       _FILES+=("$argument")
@@ -47,6 +56,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+console_header::print_version_with_env
 runner::load_test_files "$_FILTER" "${_FILES[@]}"
 
 exit 0

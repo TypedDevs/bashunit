@@ -41,7 +41,7 @@ function test_unsuccessful_spy_called() {
   spy ps
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful spy called" "ps" "to has been called" "once")"\
+    "$(console::printFailedTest "Unsuccessful spy called" "ps" "to has been called" "once")"\
     "$(assert_have_been_called ps)"
 }
 
@@ -62,6 +62,6 @@ function test_unsuccessful_spy_called_times() {
   ps
 
   assert_equals\
-    "$(Console::printFailedTest "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
+    "$(console::printFailedTest "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
     "$(assert_have_been_called_times 1 ps)"
 }
