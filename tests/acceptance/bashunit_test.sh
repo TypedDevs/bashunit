@@ -94,3 +94,22 @@ function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
   rm $test_file
 }
+
+
+function test_bash_unit_should_display_version() {
+  local test_file=./tests/acceptance/fake_dots_test.sh
+  local fixture
+  fixture=$(printf "%s" "$BASH_UNIT_VERSION")
+
+  echo "
+#!/bin/bash
+function test_a() { assert_equals \"1\" \"1\" ; }" > $test_file
+
+  assert_contains\
+   "$fixture"\
+    "$(./bashunit "$test_file")"
+
+  assert_successful_code "$(./bashunit "$test_file")"
+
+  rm $test_file
+}

@@ -2,7 +2,7 @@
 
 _START_TIME=$(date +%s%N);
 
-function Console::renderResult() {
+function console::renderResult() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
     printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
     return
@@ -38,16 +38,16 @@ function Console::renderResult() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$tests_failed" -gt 0 ]]; then
-    Console::printExecutionTime
+    console::printExecutionTime
     exit 1
   fi
 
   printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
-  Console::printExecutionTime
+  console::printExecutionTime
   exit 0
 }
 
-function Console::printExecutionTime() {
+function console::printExecutionTime() {
   if [[ "$_OS" != "OSX" ]]; then
     _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
@@ -55,7 +55,7 @@ function Console::printExecutionTime() {
 }
 
 _SUCCESSFUL_TEST_COUNT=0
-function Console::printSuccessfulTest() {
+function console::printSuccessfulTest() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
   if [[ "$_SIMPLE_OUTPUT" == true ]]; then
@@ -70,7 +70,7 @@ function Console::printSuccessfulTest() {
   fi
 }
 
-function Console::printFailedTest() {
+function console::printFailedTest() {
   local test_name=$1
   local expected=$2
   local failure_condition_message=$3
@@ -83,7 +83,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 }
 
-function Console::printErrorTest() {
+function console::printErrorTest() {
   local test_name=$1
   local error_code=$2
 

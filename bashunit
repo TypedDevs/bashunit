@@ -1,8 +1,10 @@
 #!/bin/bash
 
+export readonly BASH_UNIT_VERSION="0.7.0"
+
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-trap 'Console::renderResult '\
+trap 'console::renderResult '\
 '"$(state::get_tests_passed)" '\
 '"$(state::get_tests_failed)" '\
 '"$(state::get_assertions_passed)" '\
@@ -13,6 +15,7 @@ source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASH_UNIT_ROOT_DIR/src/check_os.sh"
 source "$BASH_UNIT_ROOT_DIR/src/state.sh"
 source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
+source "$BASH_UNIT_ROOT_DIR/src/console_header.sh"
 source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
 source "$BASH_UNIT_ROOT_DIR/src/helpers.sh"
 source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
@@ -41,7 +44,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --version)
-      runner::print_version
+      console_header::print_version
       trap '' EXIT && exit
       ;;
     *)
@@ -51,7 +54,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-runner::print_version
+console_header::print_version
 runner::load_test_files "$_FILTER" "${_FILES[@]}"
 
 exit 0

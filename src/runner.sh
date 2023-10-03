@@ -37,14 +37,14 @@ function runner::call_test_functions() {
   function_names=$(declare -F | awk '{print $3}')
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(Helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
+  functions_to_run=($(helper::getFunctionsToRun "$prefix" "$filter" "$function_names"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     if [[ "$_SIMPLE_OUTPUT" == false ]]; then
       echo "Running $script"
     fi
 
-    Helper::checkDuplicateFunctions "$script"
+    helper::checkDuplicateFunctions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
       runner::run_test "$function_name"
@@ -108,53 +108,42 @@ function runner::run_test() {
 
   if [[ $test_result_code -ne 0 ]]; then
     state::add_tests_failed
-    Console::printErrorTest "$function_name" "$test_result_code"
+    console::printErrorTest "$function_name" "$test_result_code"
     return
   fi
 
-  local label="${3:-$(Helper::normalizeTestFunctionName "$function_name")}"
-  Console::printSuccessfulTest "${label}"
+  local label="${3:-$(helper::normalizeTestFunctionName "$function_name")}"
+  console::printSuccessfulTest "${label}"
   state::add_tests_passed
 }
 
 function runner::run_set_up() {
-  Helper::executeFunctionIfExists 'setUp' # Deprecated: please use set_up instead.
-  Helper::executeFunctionIfExists 'set_up'
+  helper::executeFunctionIfExists 'setUp' # Deprecated: please use set_up instead.
+  helper::executeFunctionIfExists 'set_up'
 }
 
 function runner::run_set_up_before_script() {
-  Helper::executeFunctionIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
-  Helper::executeFunctionIfExists 'set_up_before_script'
+  helper::executeFunctionIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
+  helper::executeFunctionIfExists 'set_up_before_script'
 }
 
 function runner::run_tear_down() {
-  Helper::executeFunctionIfExists 'tearDown' # Deprecated: please use tear_down instead.
-  Helper::executeFunctionIfExists 'tear_down'
+  helper::executeFunctionIfExists 'tearDown' # Deprecated: please use tear_down instead.
+  helper::executeFunctionIfExists 'tear_down'
 }
 
 function runner::run_tear_down_after_script() {
-  Helper::executeFunctionIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
-  Helper::executeFunctionIfExists 'tear_down_after_script'
+  helper::executeFunctionIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
+  helper::executeFunctionIfExists 'tear_down_after_script'
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
-  Helper::unsetIfExists 'setUp' # Deprecated: please use set_up instead.
-  Helper::unsetIfExists 'set_up'
-  Helper::unsetIfExists 'tearDown' # Deprecated: please use tear_down instead.
-  Helper::unsetIfExists 'tear_down'
-  Helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
-  Helper::unsetIfExists 'set_up_before_script'
-  Helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
-  Helper::unsetIfExists 'tear_down_after_script'
-}
-
-function runner::print_version() {
-  cat <<EOF
- _               _                   _
-| |__   __ _ ___| |__ ________ __ (_) |_
-| '_ \ / _' / __| '_ \| | | | '_ \| | __|
-| |_) | (_| \__ \ | | | |_| | | | | | |_
-|_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
-EOF
-  echo "0.7.0"
+  helper::unsetIfExists 'setUp' # Deprecated: please use set_up instead.
+  helper::unsetIfExists 'set_up'
+  helper::unsetIfExists 'tearDown' # Deprecated: please use tear_down instead.
+  helper::unsetIfExists 'tear_down'
+  helper::unsetIfExists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
+  helper::unsetIfExists 'set_up_before_script'
+  helper::unsetIfExists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
+  helper::unsetIfExists 'tear_down_after_script'
 }

@@ -5,7 +5,7 @@
 #
 # @return string Eg: "Some logic camelCase"
 #
-function Helper::normalizeTestFunctionName() {
+function helper::normalizeTestFunctionName() {
   local original_function_name="$1"
   local result
 
@@ -21,7 +21,7 @@ function Helper::normalizeTestFunctionName() {
   echo "$result"
 }
 
-function Helper::checkDuplicateFunctions() {
+function helper::checkDuplicateFunctions() {
   local script="$1"
 
   local filtered_lines
@@ -48,7 +48,7 @@ function Helper::checkDuplicateFunctions() {
 #
 # @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
-function Helper::getFunctionsToRun() {
+function helper::getFunctionsToRun() {
   local prefix=$1
   local filter=$2
   local function_names=$3
@@ -82,7 +82,7 @@ function Helper::getFunctionsToRun() {
 #
 # @param $1 string Eg: "do_something"
 #
-function Helper::executeFunctionIfExists() {
+function helper::executeFunctionIfExists() {
   local function_name=$1
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
@@ -93,7 +93,7 @@ function Helper::executeFunctionIfExists() {
 #
 # @param $1 string Eg: "do_something"
 #
-function Helper::unsetIfExists() {
+function helper::unsetIfExists() {
   local function_name=$1
 
   if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
