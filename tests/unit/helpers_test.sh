@@ -83,12 +83,12 @@ function test_checkDuplicateFunctions_with_duplicates() {
   local file
   file="$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh"
 
-  assert_general_error "$(helper::checkDuplicateFunctions "$file")"
+  assert_general_error "$(helper::check_duplicate_functions "$file")"
 }
 
 function test_checkDuplicateFunctions_without_duplicates() {
   local file
   file="$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh"
 
-  assert_successful_code "$(helper::checkDuplicateFunctions "$file")"
+  assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }

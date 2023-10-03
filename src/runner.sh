@@ -44,7 +44,7 @@ function runner::call_test_functions() {
       echo "Running $script"
     fi
 
-    helper::checkDuplicateFunctions "$script"
+    helper::check_duplicate_functions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
       runner::run_test "$function_name"

@@ -21,7 +21,7 @@ function helper::normalize_test_function_name() {
   echo "$result"
 }
 
-function helper::checkDuplicateFunctions() {
+function helper::check_duplicate_functions() {
   local script="$1"
 
   local filtered_lines
