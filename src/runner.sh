@@ -108,7 +108,7 @@ function runner::run_test() {
 
   if [[ $test_result_code -ne 0 ]]; then
     state::add_tests_failed
-    console_results::printErrorTest "$function_name" "$test_result_code"
+    console_results::print_error_test "$function_name" "$test_result_code"
     return
   fi
 

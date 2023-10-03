@@ -11,7 +11,7 @@ function console_header::print_version() {
 EOF
     printf "%s\n\n" "$BASH_UNIT_VERSION"
   else
-    printf "bashunit - %s\n" "$BASH_UNIT_VERSION"
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASH_UNIT_VERSION"
   fi
 }
 

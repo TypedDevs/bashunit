@@ -5,7 +5,7 @@ _SUCCESSFUL_TEST_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
-    printf "%s> Duplicate test functions found%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    printf "%sDuplicate test functions found%s\n" "${_COLOR_DUPLICATED}" "${_COLOR_DEFAULT}"
     return
   fi
 
@@ -70,7 +70,7 @@ function console_results::print_successful_test() {
   fi
 }
 
-function console_results::printFailedTest() {
+function console_results::print_failed_test() {
   local test_name=$1
   local expected=$2
   local failure_condition_message=$3
@@ -83,8 +83,8 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 }
 
-function console_results::printErrorTest() {
-  local test_name=$1
+function console_results::print_error_test() {
+  local test_name="${3:-$(helper::normalize_test_function_name "$1")}"
   local error_code=$2
 
   printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s with error code %s\n" "${test_name}" "${error_code}"
