@@ -38,16 +38,16 @@ function console::render_result() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$tests_failed" -gt 0 ]]; then
-    console::printExecutionTime
+    console::print_execution_time
     exit 1
   fi
 
   printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
-  console::printExecutionTime
+  console::print_execution_time
   exit 0
 }
 
-function console::printExecutionTime() {
+function console::print_execution_time() {
   if [[ "$_OS" != "OSX" ]]; then
     _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
