@@ -1,11 +1,11 @@
 #!/bin/bash
 
-function tearDown() {
+function tear_down() {
   unset code
   unset ps
 }
 
-function setUp() {
+function set_up() {
   function code() {
     # shellcheck disable=SC2009
     # shellcheck disable=SC2317
