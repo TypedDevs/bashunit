@@ -100,7 +100,11 @@ Once **bashunit** is installed, you're ready to get started.
 
     You can copy and execute the following command from the root of your project if you installed **bashunit** as a Git submodule:
     ```bash
-    bashunit/bashunit tests/example_test.sh
+    # all tests inside the tests directory
+    ./bashunit tests
+
+    # or a concrete test by full path
+    ./bashunit tests/example_test.sh
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
