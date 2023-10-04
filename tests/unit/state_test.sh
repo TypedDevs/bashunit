@@ -1,7 +1,10 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
+
 function test_add_and_get_tests_passed() {
-    local tests_passed=$(
+    local tests_passed
+    tests_passed=$(
         _TESTS_PASSED=0
 
         state::add_tests_passed
@@ -12,7 +15,8 @@ function test_add_and_get_tests_passed() {
 }
 
 function test_add_and_get_tests_failed() {
-    local tests_failed=$(
+    local tests_failed
+    tests_failed=$(
         _TESTS_FAILED=0
 
         state::add_tests_failed
@@ -35,7 +39,8 @@ function test_add_and_get_tests_skipped() {
 }
 
 function test_add_and_get_assertions_passed() {
-    local assertions_passed=$(
+    local assertions_passed
+    assertions_passed=$(
         _ASSERTIONS_PASSED=0
 
         state::add_assertions_passed
@@ -46,7 +51,8 @@ function test_add_and_get_assertions_passed() {
 }
 
 function test_add_and_get_assertions_failed() {
-    local assertions_failed=$(
+    local assertions_failed
+    assertions_failed=$(
         _ASSERTIONS_FAILED=0
 
         state::add_assertions_failed
@@ -69,7 +75,8 @@ function test_add_and_get_assertions_skipped() {
 }
 
 function test_set_and_is_duplicated_test_functions_found() {
-    local duplicated_test_functions_found=$(
+    local duplicated_test_functions_found
+    duplicated_test_functions_found=$(
         _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
         state::set_duplicated_test_functions_found
@@ -80,7 +87,8 @@ function test_set_and_is_duplicated_test_functions_found() {
 }
 
 function test_initialize_assertions_count() {
-    local export_assertions_count=$(
+    local export_assertions_count
+    export_assertions_count=$(
         _ASSERTIONS_PASSED=10
         _ASSERTIONS_FAILED=5
 
@@ -92,7 +100,8 @@ function test_initialize_assertions_count() {
 }
 
 function test_export_assertions_count() {
-    local export_assertions_count=$(
+    local export_assertions_count
+    export_assertions_count=$(
         _ASSERTIONS_PASSED=10
         _ASSERTIONS_FAILED=5
 
