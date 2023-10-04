@@ -18,7 +18,7 @@ Here, we provide different options that you can use to install **bashunit** in y
 There is a tool that will generate an executable with the whole library in a single file:
 
 ```bash
-curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh | bash
+curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
@@ -28,13 +28,10 @@ This will create a file inside a lib folder, such as `lib/bashunit`.
 The installation script can receive two optional arguments:
 
 ```bash
-curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh\
-  | bash -s bin 0.7.0
+curl -s https://bashunit.typeddevs.com/install.sh | bash -s [directory] [version]
 ```
-- `$1`: the destiny folder to save the executable bashunit, or `lib` by default
-- `$2`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, or `main` by default
-
-In this example, it will download the `0.7.0` inside `bin/bashunit`
+- `[directory]`: the destiny folder to save the executable bashunit, for instance `deps`, or `lib` by default
+- `[version]`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, for instance `0.7.0`, `main` by default
 
 > Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 >
@@ -108,7 +105,7 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
-    ```bash
+    ```text
     Running tests/example_test.sh
     ✓ Passed: Bashunit is working
 
