@@ -22,6 +22,18 @@ function test_add_and_get_tests_failed() {
     assertEquals "1" "$tests_failed"
 }
 
+function test_add_and_get_tests_skipped() {
+    local tests_skipped
+    tests_skipped=$(
+        _TESTS_SKIPPED=0
+
+        state::add_tests_skipped
+        state::get_tests_skipped
+    )
+
+    assertEquals "1" "$tests_skipped"
+}
+
 function test_add_and_get_assertions_passed() {
     local assertions_passed=$(
         _ASSERTIONS_PASSED=0
@@ -42,6 +54,18 @@ function test_add_and_get_assertions_failed() {
     )
 
     assertEquals "1" "$assertions_failed"
+}
+
+function test_add_and_get_assertions_skipped() {
+    local assertions_skipped
+    assertions_skipped=$(
+        _ASSERTIONS_FAILED=0
+
+        state::add_assertions_skipped
+        state::get_assertions_skipped
+    )
+
+    assertEquals "1" "$assertions_skipped"
 }
 
 function test_set_and_is_duplicated_test_functions_found() {
