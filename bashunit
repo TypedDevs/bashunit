@@ -3,7 +3,6 @@
 # shellcheck disable=SC2034
 declare -r BASH_UNIT_VERSION="0.7.0"
 
-
 readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 trap 'console_results::render_result '\
