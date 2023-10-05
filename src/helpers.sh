@@ -101,7 +101,7 @@ function helper::unset_if_exists() {
   fi
 }
 
-helpers::find_files_recursive() {
+function helper::find_files_recursive() {
   local path="$1"
 
   if [[ -d "$path" ]]; then

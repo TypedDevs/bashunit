@@ -51,7 +51,7 @@ while [[ $# -gt 0 ]]; do
     *)
       while IFS='' read -r line; do
         _FILES+=("$line");
-      done < <(helpers::find_files_recursive "$argument")
+      done < <(helper::find_files_recursive "$argument")
       shift
       ;;
   esac
