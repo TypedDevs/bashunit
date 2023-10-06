@@ -5,8 +5,6 @@ declare -r BASHUNIT_VERSION="0.7.0"
 
 readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-trap 'console_results::render_result' EXIT
-
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
@@ -56,5 +54,6 @@ done
 
 console_header::print_version_with_env
 runner::load_test_files "$_FILTER" "${_FILES[@]}"
+console_results::render_result
 
 exit 0
