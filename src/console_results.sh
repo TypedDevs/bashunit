@@ -12,16 +12,14 @@ function console_results::render_result() {
 
   echo ""
 
-  local total_tests=$((\
-    "$(state::get_tests_passed)" +\
-    "$(state::get_tests_skipped)" +\
-    "$(state::get_tests_failed)"\
-  ))
-  local total_assertions=$((\
-    "$(state::get_assertions_passed)" +\
-    "$(state::get_assertions_skipped)" +\
-    "$(state::get_assertions_failed)"\
-  ))
+  local total_tests=0
+  ((total_tests+=$(state::get_tests_passed)))
+  ((total_tests+=$(state::get_tests_skipped)))
+  ((total_tests+=$(state::get_tests_failed)))
+  local total_assertions=0
+  ((total_assertions+=$(state::get_assertions_passed)))
+  ((total_assertions+=$(state::get_assertions_skipped)))
+  ((total_assertions+=$(state::get_assertions_failed)))
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
   if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
