@@ -71,8 +71,16 @@ function runner::parse_execution_result() {
     sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
   )
 
+  local assertions_skipped
+  assertions_skipped=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
+  )
+
   _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
   _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
+  _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
 
   local print_execution_result
   print_execution_result="$(echo "$execution_result" | sed '$ d')"
@@ -85,9 +93,10 @@ function runner::parse_execution_result() {
 function runner::run_test() {
   local function_name="$1"
   local current_assertions_failed
-  local test_execution_result
   current_assertions_failed="$(state::get_assertions_failed)"
-
+  local current_assertions_skipped
+  current_assertions_skipped="$(state::get_assertions_skipped)"
+  local test_execution_result
   test_execution_result=$(
     state::initialize_assertions_count
 
@@ -101,14 +110,19 @@ function runner::run_test() {
   local test_result_code=$?
   runner::parse_execution_result "$test_execution_result"
 
+  if [[ $test_result_code -ne 0 ]]; then
+    state::add_tests_failed
+    console_results::print_error_test "$function_name" "$test_result_code"
+    return
+  fi
+
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
     return
   fi
 
-  if [[ $test_result_code -ne 0 ]]; then
-    state::add_tests_failed
-    console_results::print_error_test "$function_name" "$test_result_code"
+  if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
+    state::add_tests_skipped
     return
   fi
 

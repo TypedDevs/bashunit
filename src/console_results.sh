@@ -6,39 +6,47 @@ _SUCCESSFUL_TEST_COUNT=0
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
     printf "%sDuplicate test functions found%s\n" "${_COLOR_DUPLICATED}" "${_COLOR_DEFAULT}"
-    return
+    exit 1
   fi
-
-  local tests_passed=$1
-  local tests_failed=$2
-  local assertions_passed=$3
-  local assertions_failed=$4
 
   echo ""
 
-  local total_tests=$((tests_passed + tests_failed))
-  local total_assertions=$((assertions_passed + assertions_failed))
+  local total_tests=$((\
+    "$(state::get_tests_passed)" +\
+    "$(state::get_tests_skipped)" +\
+    "$(state::get_tests_failed)"\
+  ))
+  local total_assertions=$((\
+    "$(state::get_assertions_passed)" +\
+    "$(state::get_assertions_skipped)" +\
+    "$(state::get_assertions_failed)"\
+  ))
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
-  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
-    printf " %s%s passed%s," "$_COLOR_PASSED" "$tests_passed" "$_COLOR_DEFAULT"
+  if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
+    printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_tests_passed)" "$_COLOR_DEFAULT"
   fi
-  if [[ $tests_failed -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$tests_failed" "$_COLOR_DEFAULT"
+  if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
+    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_tests_skipped)" "$_COLOR_DEFAULT"
+  fi
+  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_tests_failed)" "$_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
-
   printf "%sAssertions:%s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
-  if [[ $tests_passed -gt 0 ]] || [[ $assertions_passed -gt 0 ]]; then
-      printf " %s%s passed%s," "$_COLOR_PASSED" "$assertions_passed" "$_COLOR_DEFAULT"
+  if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
+      printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_assertions_passed)" "$_COLOR_DEFAULT"
   fi
-  if [[ $tests_failed -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$assertions_failed" "$_COLOR_DEFAULT"
+  if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
+    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_assertions_skipped)" "$_COLOR_DEFAULT"
+  fi
+  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_assertions_failed)" "$_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_assertions"
 
-  if [[ "$tests_failed" -gt 0 ]]; then
+  if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
     console_results::print_execution_time
     exit 1
   fi
