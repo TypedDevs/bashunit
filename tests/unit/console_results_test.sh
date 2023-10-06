@@ -20,12 +20,8 @@ function test_not_render_passed_when_no_passed_tests_nor_assertions() {
     console_results::render_result
   )
 
-  assert_not_matches\
-    "Tests:[^\n]*passed[^\n]*total"\
-    "$render_result"
-  assert_not_matches\
-    "Assertions:[^\n]*passed[^\n]*total"\
-    "$render_result"
+  assert_not_matches "Tests:[^\n]*passed[^\n]*total" "$render_result"
+  assert_not_matches "Assertions:[^\n]*passed[^\n]*total" "$render_result"
 }
 
 function test_render_passed_when_passed_tests() {
@@ -38,12 +34,8 @@ function test_render_passed_when_passed_tests() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*32 passed[^\n]*32 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*0 passed[^\n]*0 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*32 passed[^\n]*32 total" "$render_result"
+  assert_matches "Assertions:[^\n]*0 passed[^\n]*0 total" "$render_result"
 }
 
 function test_render_passed_when_passed_assertions() {
@@ -56,12 +48,8 @@ function test_render_passed_when_passed_assertions() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*0 passed[^\n]*0 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*24 passed[^\n]*24 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*0 passed[^\n]*0 total" "$render_result"
+  assert_matches "Assertions:[^\n]*24 passed[^\n]*24 total" "$render_result"
 }
 
 function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
@@ -74,12 +62,8 @@ function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
     console_results::render_result
   )
 
-  assert_not_matches\
-    "Tests:[^\n]*skipped[^\n]*total"\
-    "$render_result"
-  assert_not_matches\
-    "Assertions:[^\n]*skipped[^\n]*total"\
-    "$render_result"
+  assert_not_matches "Tests:[^\n]*skipped[^\n]*total" "$render_result"
+  assert_not_matches "Assertions:[^\n]*skipped[^\n]*total" "$render_result"
 }
 
 function test_render_skipped_when_skipped_tests() {
@@ -92,12 +76,8 @@ function test_render_skipped_when_skipped_tests() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*11 skipped[^\n]*11 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*0 skipped[^\n]*0 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*11 skipped[^\n]*11 total" "$render_result"
+  assert_matches "Assertions:[^\n]*0 skipped[^\n]*0 total" "$render_result"
 }
 
 function test_render_skipped_when_skipped_assertions() {
@@ -110,12 +90,8 @@ function test_render_skipped_when_skipped_assertions() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*0 skipped[^\n]*0 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*12 skipped[^\n]*12 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*0 skipped[^\n]*0 total" "$render_result"
+  assert_matches "Assertions:[^\n]*12 skipped[^\n]*12 total" "$render_result"
 }
 
 function test_not_render_failed_when_not_failed_tests_nor_assertions() {
@@ -128,12 +104,8 @@ function test_not_render_failed_when_not_failed_tests_nor_assertions() {
     console_results::render_result
   )
 
-  assert_not_matches\
-    "Tests:[^\n]*failed[^\n]*total"\
-    "$render_result"
-  assert_not_matches\
-    "Assertions:[^\n]*failed[^\n]*total"\
-    "$render_result"
+  assert_not_matches "Tests:[^\n]*failed[^\n]*total" "$render_result"
+  assert_not_matches "Assertions:[^\n]*failed[^\n]*total" "$render_result"
 }
 
 function test_render_failed_when_failed_tests() {
@@ -147,12 +119,8 @@ function test_render_failed_when_failed_tests() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*42 failed[^\n]*42 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*0 failed[^\n]*0 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*42 failed[^\n]*42 total" "$render_result"
+  assert_matches "Assertions:[^\n]*0 failed[^\n]*0 total" "$render_result"
 }
 
 function test_render_failed_when_failed_assertions() {
@@ -167,46 +135,40 @@ function test_render_failed_when_failed_assertions() {
     console_results::render_result
   )
 
-  assert_matches\
-    $'Tests:[^\n]*0 failed[^\n]*0 total'\
-    "$render_result"
-  assert_matches\
-    $'Assertions:[^\n]*666 failed[^\n]*666 total'\
-    "$render_result"
+  assert_matches "Tests:[^\n]*0 failed[^\n]*0 total" "$render_result"
+  assert_matches "Assertions:[^\n]*666 failed[^\n]*666 total" "$render_result"
 }
 
-function test_total_tests_is_the_sum_of_passed_and_failed_tests() {
+function test_total_tests_is_the_sum_of_passed_skipped_and_failed_tests() {
   set +e
 
   local render_result
   render_result=$(
     mock_all_state_getters
     mock state::get_tests_passed echo 4
+    mock state::get_tests_skipped echo 4
     mock state::get_tests_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches\
-    "Tests:[^\n]*6 total"\
-    "$render_result"
+  assert_matches "Tests:[^\n]*10 total" "$render_result"
 }
 
-function test_total_asserts_is_the_sum_of_passed_and_failed_asserts() {
+function test_total_asserts_is_the_sum_of_passed_skipped_and_failed_asserts() {
   set +e
 
   local render_result
   render_result=$(
     mock_all_state_getters
     mock state::get_assertions_passed echo 4
+    mock state::get_assertions_skipped echo 4
     mock state::get_assertions_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches\
-    "Assertions:[^\n]*6 total"\
-    "$render_result"
+  assert_matches "Assertions:[^\n]*10 total" "$render_result"
 }
 
 function test_render_execution_time() {
@@ -215,9 +177,7 @@ function test_render_execution_time() {
     return
   fi
 
-  assert_matches\
-    "Time taken: [[:digit:]]+ ms"\
-    "$(console_results::render_result)"
+  assert_matches "Time taken: [[:digit:]]+ ms" "$(console_results::render_result)"
 }
 
 function test_not_render_execution_time_on_osx() {
@@ -228,9 +188,7 @@ function test_not_render_execution_time_on_osx() {
     console_results::render_result
   )
 
-  assert_not_matches\
-    "Time taken: [[:digit:]]+ ms"\
-    "$render_result"
+  assert_not_matches "Time taken: [[:digit:]]+ ms" "$render_result"
 }
 
 function test_only_render_error_result_when_some_duplicated_fails() {
