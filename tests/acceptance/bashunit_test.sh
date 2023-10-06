@@ -13,10 +13,7 @@ function test_bashunit_when_a_test_passes() {
 #!/bin/bash
 function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains\
-   "$fixture"\
-    "$(./bashunit "$test_file")"
-
+  assert_contains "$fixture" "$(./bashunit "$test_file")"
   assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
@@ -36,10 +33,7 @@ function test_bashunit_when_a_test_fail() {
 #!/bin/bash
 function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
-  assert_contains\
-   "$fixture"\
-    "$(./bashunit "$test_file")"
-
+  assert_contains "$fixture" "$(./bashunit "$test_file")"
   assert_general_error "$(./bashunit "$test_file")"
 
   rm $test_file
@@ -62,10 +56,7 @@ function test_error() {
 
   set +e
 
-  assertContains\
-   "$fixture"\
-    "$(./bashunit "$test_file")"
-
+  assertContains "$fixture" "$(./bashunit "$test_file")"
   assertGeneralError "$(./bashunit "$test_file")"
 
   rm $test_file
@@ -86,23 +77,17 @@ function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
 function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
 function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains\
-   "$fixture"\
-    "$(./bashunit "$test_file" --simple)"
-
+  assert_contains "$fixture" "$(./bashunit "$test_file" --simple)"
   assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
 }
-
 
 function test_bashunit_should_display_version() {
   local fixture
   fixture=$(printf "%s" "$BASHUNIT_VERSION")
 
 
-  assert_contains\
-   "$fixture"\
-    "$(./bashunit --version)"
+  assert_contains "$fixture" "$(./bashunit --version)"
 
 }
