@@ -10,6 +10,7 @@
 - Add -v|--version option
 - Add ASCII art logo
 - Find all test on a directory
+- Add skip function
 
 ## [0.7.0](https://github.com/TypedDevs/bashunit/compare/0.6.0...0.7.0) - 2023-10-02
 
