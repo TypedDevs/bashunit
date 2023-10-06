@@ -101,8 +101,13 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 
 function console_results::print_skipped_test() {
   local test_name=$1
+  local reason=$2
 
   printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${test_name}"
+
+  if [[ -n "$reason" ]]; then
+    printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}"
+  fi
 }
 
 function console_results::print_error_test() {
