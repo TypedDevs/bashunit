@@ -109,7 +109,7 @@
 
 - Fix keeping in memory test func after running them
 - Create a `./bashunit` entry point
-- Change ROOT_DIR to BASH_UNIT_ROOT_DIR
+- Change ROOT_DIR to BASHUNIT_ROOT_DIR
 - Allow writing test with camelCase as well
 - Allow running example log_test from anywhere
 

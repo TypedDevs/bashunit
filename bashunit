@@ -1,25 +1,25 @@
 #!/bin/bash
 
 # shellcheck disable=SC2034
-declare -r BASH_UNIT_VERSION="0.7.0"
+declare -r BASHUNIT_VERSION="0.7.0"
 
-readonly BASH_UNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 trap 'console_results::render_result' EXIT
 
-source "$BASH_UNIT_ROOT_DIR/src/default_env_config.sh"
-source "$BASH_UNIT_ROOT_DIR/src/env_configuration.sh"
-source "$BASH_UNIT_ROOT_DIR/src/check_os.sh"
-source "$BASH_UNIT_ROOT_DIR/src/state.sh"
-source "$BASH_UNIT_ROOT_DIR/src/colors.sh"
-source "$BASH_UNIT_ROOT_DIR/src/console_header.sh"
-source "$BASH_UNIT_ROOT_DIR/src/console_results.sh"
-source "$BASH_UNIT_ROOT_DIR/src/helpers.sh"
-source "$BASH_UNIT_ROOT_DIR/src/assert.sh"
-source "$BASH_UNIT_ROOT_DIR/src/skip.sh"
-source "$BASH_UNIT_ROOT_DIR/src/deprecated_assert.sh"
-source "$BASH_UNIT_ROOT_DIR/src/test_doubles.sh"
-source "$BASH_UNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
+source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
+source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
+source "$BASHUNIT_ROOT_DIR/src/state.sh"
+source "$BASHUNIT_ROOT_DIR/src/colors.sh"
+source "$BASHUNIT_ROOT_DIR/src/console_header.sh"
+source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
+source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
+source "$BASHUNIT_ROOT_DIR/src/assert.sh"
+source "$BASHUNIT_ROOT_DIR/src/skip.sh"
+source "$BASHUNIT_ROOT_DIR/src/deprecated_assert.sh"
+source "$BASHUNIT_ROOT_DIR/src/test_doubles.sh"
+source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 
 ###############
 #### MAIN #####

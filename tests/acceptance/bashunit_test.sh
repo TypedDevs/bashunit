@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function test_bash_unit_when_a_test_passes() {
+function test_bashunit_when_a_test_passes() {
   local test_file=./tests/acceptance/fake_success_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_success_test.sh
 \e[32m✓ Passed\e[0m: Succeed
@@ -22,7 +22,7 @@ function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
   rm $test_file
 }
 
-function test_bash_unit_when_a_test_fail() {
+function test_bashunit_when_a_test_fail() {
   local test_file=./tests/acceptance/fake_fail_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_fail_test.sh
 \e[31m✗ Failed\e[0m: Fail
@@ -45,7 +45,7 @@ function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
   rm $test_file
 }
 
-function test_bash_unit_when_a_test_execution_error() {
+function test_bashunit_when_a_test_execution_error() {
   local test_file=./tests/acceptance/fake_error_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_error_test.sh
 \e[31m✗ Failed\e[0m: Error with error code 127
@@ -71,7 +71,7 @@ function test_error() {
   rm $test_file
 }
 
-function test_bash_unit_simple_output() {
+function test_bashunit_simple_output() {
   local test_file=./tests/acceptance/fake_dots_test.sh
   local fixture
   fixture=$(printf "....
@@ -96,9 +96,9 @@ function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 }
 
 
-function test_bash_unit_should_display_version() {
+function test_bashunit_should_display_version() {
   local fixture
-  fixture=$(printf "%s" "$BASH_UNIT_VERSION")
+  fixture=$(printf "%s" "$BASHUNIT_VERSION")
 
 
   assert_contains\
