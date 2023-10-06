@@ -31,6 +31,7 @@ source "$BASH_UNIT_ROOT_DIR/src/runner.sh"
 
 _FILTER=""
 _SIMPLE_OUTPUT=false
+_STOP_ON_FAILURE=false
 _FILES=()
 
 while [[ $# -gt 0 ]]; do
@@ -48,6 +49,10 @@ while [[ $# -gt 0 ]]; do
     -v|--version)
       console_header::print_version
       trap '' EXIT && exit 0
+      ;;
+    --stop-on-failure)
+      _STOP_ON_FAILURE=true
+      shift
       ;;
     *)
       while IFS='' read -r line; do

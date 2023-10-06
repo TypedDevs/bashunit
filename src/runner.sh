@@ -109,6 +109,12 @@ function runner::run_test() {
   if [[ $test_result_code -ne 0 ]]; then
     state::add_tests_failed
     console_results::print_error_test "$function_name" "$test_result_code"
+
+    if [ "$_STOP_ON_FAILURE" = true ]; then
+      console_results::print_failed_test "$function_name" "$test_result_code"
+      exit 1
+    fi
+
     return
   fi
 
