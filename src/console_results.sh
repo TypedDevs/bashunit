@@ -5,7 +5,8 @@ _SUCCESSFUL_TEST_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
-    printf "%sDuplicate test functions found%s\n" "${_COLOR_DUPLICATED}" "${_COLOR_DEFAULT}"
+    console_results::print_execution_time
+    printf "%s%s%s\n" "${_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_COLOR_DEFAULT}"
     exit 1
   fi
 
@@ -47,11 +48,18 @@ function console_results::render_result() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
+    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" "Some tests failed" "$_COLOR_DEFAULT"
     console_results::print_execution_time
     exit 1
   fi
 
-  printf "%s%s%s\n" "$_COLOR_ALL_PASSED" "All tests passed" "$_COLOR_DEFAULT"
+  if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
+    printf "%s%s%s\n" "$_COLOR_RETURN_SKIPPED" "Some tests skipped" "$_COLOR_DEFAULT"
+    console_results::print_execution_time
+    exit 0
+  fi
+
+  printf "%s%s%s\n" "$_COLOR_RETURN_SUCCESS" "All tests passed" "$_COLOR_DEFAULT"
   console_results::print_execution_time
   exit 0
 }

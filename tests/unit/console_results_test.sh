@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function mock_all_state_getters() {
+  mock state::is_duplicated_test_functions_found echo false
   mock state::get_tests_passed echo 0
   mock state::get_tests_failed echo 0
   mock state::get_tests_skipped echo 0
@@ -230,4 +231,81 @@ function test_not_render_execution_time_on_osx() {
   assert_not_matches\
     "Time taken: [[:digit:]]+ ms"\
     "$render_result"
+}
+
+function test_only_render_error_result_when_some_duplicated_fails() {
+  set +e
+
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo true
+    mock state::get_tests_failed echo 1
+    mock state::get_tests_skipped echo 2
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+}
+
+function test_only_render_error_result_when_some_test_fails() {
+  set +e
+
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_tests_failed echo 1
+    mock state::get_tests_skipped echo 2
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+}
+
+function test_only_render_skipped_result_when_no_test_fails_and_some_skipped() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_tests_failed echo 0
+    mock state::get_tests_skipped echo 2
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+}
+
+
+function test_only_render_success_result_when_all_tests_passes() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_tests_failed echo 0
+    mock state::get_tests_skipped echo 0
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
+  assert_contains "All tests passed" "$render_result"
 }
