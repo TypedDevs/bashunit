@@ -15,10 +15,12 @@ function console_results::render_result() {
   local total_tests=0
   ((total_tests+=$(state::get_tests_passed)))
   ((total_tests+=$(state::get_tests_skipped)))
+  ((total_tests+=$(state::get_tests_incomplete)))
   ((total_tests+=$(state::get_tests_failed)))
   local total_assertions=0
   ((total_assertions+=$(state::get_assertions_passed)))
   ((total_assertions+=$(state::get_assertions_skipped)))
+  ((total_assertions+=$(state::get_assertions_incomplete)))
   ((total_assertions+=$(state::get_assertions_failed)))
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
@@ -27,6 +29,9 @@ function console_results::render_result() {
   fi
   if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
     printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_tests_skipped)" "$_COLOR_DEFAULT"
+  fi
+  if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
+    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_tests_incomplete)" "$_COLOR_DEFAULT"
   fi
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
     printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_tests_failed)" "$_COLOR_DEFAULT"
@@ -40,6 +45,9 @@ function console_results::render_result() {
   if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
     printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_assertions_skipped)" "$_COLOR_DEFAULT"
   fi
+  if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
+    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_assertions_incomplete)" "$_COLOR_DEFAULT"
+  fi
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
     printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_assertions_failed)" "$_COLOR_DEFAULT"
   fi
@@ -49,6 +57,12 @@ function console_results::render_result() {
     printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" "Some tests failed" "$_COLOR_DEFAULT"
     console_results::print_execution_time
     exit 1
+  fi
+
+  if [[ "$(state::get_tests_incomplete)" -gt 0 ]]; then
+    printf "%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" "Some tests incomplete" "$_COLOR_DEFAULT"
+    console_results::print_execution_time
+    exit 0
   fi
 
   if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
