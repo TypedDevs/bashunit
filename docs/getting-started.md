@@ -30,8 +30,8 @@ The installation script can receive two optional arguments:
 ```bash
 curl -s https://bashunit.typeddevs.com/install.sh | bash -s [directory] [version]
 ```
-- `[directory]`: the destiny folder to save the executable bashunit, for instance `deps`, or `lib` by default
-- `[version]`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, for instance `0.7.0`, `main` by default
+- `[directory]`: the destiny folder to save the executable bashunit, for instance `deps`, `lib` by default
+- `[version]`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`, `latest` by default
 
 > Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 >
@@ -57,7 +57,7 @@ git submodule update --remote
 
 ### Using a specific version
 
-To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `0.6.0`.
+To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `{{ pkg.version }}`.
 ```bash
 cd bashunit
 git checkout [version]
@@ -138,3 +138,7 @@ How to Get Support:
 
 We value our community's feedback and aim to address all concerns in a timely and effective manner.
 Your active participation and constructive feedback play a pivotal role in the continuous improvement of **bashunit**.
+
+<script setup>
+import pkg from '../package.json'
+</script>

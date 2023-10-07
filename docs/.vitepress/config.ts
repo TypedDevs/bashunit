@@ -40,6 +40,9 @@ export default defineConfig({
           link: '/getting-started#usage',
         }]
       }, {
+        text: 'Command line arguments',
+        link: '/command-line-arguments'
+      }, {
         text: 'Test files',
         link: '/test-files',
         items: [{
