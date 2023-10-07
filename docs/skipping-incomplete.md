@@ -27,8 +27,8 @@ function test_incomplete_with_pending_details() {
 
 *Output:*
 ```text
-↷ Incomplete: Incomplete
-↷ Incomplete: Incomplete with pending details
+✒ Incomplete: Incomplete
+✒ Incomplete: Incomplete with pending details
     Detailed description of what needs to be done
 
 Tests:      2 incomplete, 2 total

@@ -108,6 +108,17 @@ function console_results::print_skipped_test() {
   fi
 }
 
+function console_results::print_incomplete_test() {
+  local test_name=$1
+  local pending=$2
+
+  printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${test_name}"
+
+  if [[ -n "$pending" ]]; then
+    printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}"
+  fi
+}
+
 function console_results::print_error_test() {
   local test_name="${3:-$(helper::normalize_test_function_name "$1")}"
   local error_code=$2
