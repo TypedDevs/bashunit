@@ -184,9 +184,6 @@ function test_render_failed_when_failed_assertions() {
 }
 
 function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tests() {
-  todo "find the bug"
-  return
-
   set +e
 
   local render_result
@@ -204,9 +201,6 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tes
 }
 
 function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_asserts() {
-  todo "find the bug"
-  return
-
   set +e
 
   local render_result
