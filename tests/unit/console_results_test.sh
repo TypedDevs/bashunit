@@ -321,7 +321,6 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
   assert_not_contains "All tests passed" "$render_result"
 }
 
-
 function test_only_render_success_result_when_all_tests_passes() {
   local render_result
   render_result=$(
