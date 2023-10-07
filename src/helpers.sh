@@ -101,7 +101,7 @@ function helper::unset_if_exists() {
   fi
 }
 
-helpers::find_files_recursive() {
+function helper::find_files_recursive() {
   local path="$1"
 
   if [[ -d "$path" ]]; then
@@ -110,3 +110,17 @@ helpers::find_files_recursive() {
     echo "$path"
   fi
 }
+
+helper::normalize_variable_name() {
+  local input_string="$1"
+  local normalized_string
+
+  normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
+
+  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+    normalized_string="_$normalized_string"
+  fi
+
+  echo "$normalized_string"
+}
+

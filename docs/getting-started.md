@@ -18,7 +18,7 @@ Here, we provide different options that you can use to install **bashunit** in y
 There is a tool that will generate an executable with the whole library in a single file:
 
 ```bash
-curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh | bash
+curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
@@ -28,13 +28,10 @@ This will create a file inside a lib folder, such as `lib/bashunit`.
 The installation script can receive two optional arguments:
 
 ```bash
-curl -s https://raw.githubusercontent.com/TypedDevs/bashunit/main/install.sh\
-  | bash -s bin 0.7.0
+curl -s https://bashunit.typeddevs.com/install.sh | bash -s [directory] [version]
 ```
-- `$1`: the destiny folder to save the executable bashunit, or `lib` by default
-- `$2`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, or `main` by default
-
-In this example, it will download the `0.7.0` inside `bin/bashunit`
+- `[directory]`: the destiny folder to save the executable bashunit, for instance `deps`, `lib` by default
+- `[version]`: the [released TAG](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`, `latest` by default
 
 > Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 >
@@ -60,7 +57,7 @@ git submodule update --remote
 
 ### Using a specific version
 
-To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `0.6.0`.
+To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `{{ pkg.version }}`.
 ```bash
 cd bashunit
 git checkout [version]
@@ -108,7 +105,7 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
-    ```bash
+    ```text
     Running tests/example_test.sh
     ✓ Passed: Bashunit is working
 
@@ -141,3 +138,7 @@ How to Get Support:
 
 We value our community's feedback and aim to address all concerns in a timely and effective manner.
 Your active participation and constructive feedback play a pivotal role in the continuous improvement of **bashunit**.
+
+<script setup>
+import pkg from '../package.json'
+</script>

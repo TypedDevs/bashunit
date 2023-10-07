@@ -92,3 +92,16 @@ function test_check_duplicate_functions_without_duplicates() {
 
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }
+
+function test_normalize_variable_name() {
+  assert_equals "valid_name123" "$(helper::normalize_variable_name "valid_name123")"
+  assert_equals "non_valid_symbols__________" "$(helper::normalize_variable_name "non_valid_symbols!@#$%^&*()")"
+  assert_equals "_123_starting_with_numbers" "$(helper::normalize_variable_name "123_starting_with_numbers")"
+  assert_equals "variable_name_with_spaces" "$(helper::normalize_variable_name "variable name with spaces")"
+  assert_equals "variable_name_with_hyphens" "$(helper::normalize_variable_name "variable-name-with-hyphens")"
+  assert_equals "_123_variable_name_" "$(helper::normalize_variable_name "123 variable-name!")"
+  assert_equals "_" "$(helper::normalize_variable_name "")"
+  assert_equals "variable_name_with_underscores" "$(helper::normalize_variable_name "variable_name_with_underscores")"
+  assert_equals "_variable" "$(helper::normalize_variable_name "_variable")"
+  assert_equals "__________" "$(helper::normalize_variable_name "!@#$%^&*()")"
+}
