@@ -7,10 +7,12 @@
     - `tearDown` -> `tear_down`
     - `setUpBeforeScript` -> `set_up_before_script`
     - `tearDownAfterScript` -> `tear_down_after_script`
-- Add -v|--version option
+- Add --version option
+- Add -v|--verbose option
 - Add ASCII art logo
 - Find all test on a directory
 - Add skip and todo functions
+- Add SIMPLE_OUTPUT to `.env`
 
 ## [0.7.0](https://github.com/TypedDevs/bashunit/compare/0.6.0...0.7.0) - 2023-10-02
 
