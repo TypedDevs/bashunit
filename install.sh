@@ -11,9 +11,9 @@ rm -f "$DIR"/bashunit
 [ -d "$DIR" ] || mkdir "$DIR"
 cd "$DIR"
 
-if [[ $TAG == latest ]]; then
-  echo "> Using latest version"
-  git clone -b latest https://github.com/TypedDevs/bashunit temp_bashunit
+if [[ "$TAG" == "latest" || "$TAG" == "main" ]]; then
+  echo "> Using $TAG version"
+  git clone -b "$TAG" https://github.com/TypedDevs/bashunit temp_bashunit
   cd temp_bashunit
   ./build.sh
   cd ..
