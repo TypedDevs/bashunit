@@ -53,7 +53,7 @@ function test_example() {
 }
 ```
 
-### assert_have_been_called
+## assert_have_been_called
 > `assert_have_been_called "spy"`
 
 Reports an error if `spy` is not called.
@@ -75,7 +75,7 @@ function test_failure() {
 }
 ```
 
-### assert_have_been_called_with
+## assert_have_been_called_with
 > `assert_have_been_called_with "expected" "spy"`
 
 Reports an error if `callable` is not called with `expected`.
@@ -99,7 +99,7 @@ function test_failure() {
 }
 ```
 
-### assert_have_been_called_times
+## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"
 
 Reports an error if `spy` is not called exactly `expected` times.
