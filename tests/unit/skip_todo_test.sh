@@ -8,6 +8,18 @@ function test_skip_output() {
 
 function test_skip_output_with_reason() {
   assert_equals\
-    "$(console_results::print_skipped_test "Skip output with reason" "Skipped because is skippable.")"\
-    "$(skip "Skipped because is skippable.")"
+    "$(console_results::print_skipped_test "Skip output with reason" "Skipped because is skippable")"\
+    "$(skip "Skipped because is skippable")"
+}
+
+function test_todo_output() {
+  assert_equals\
+    "$(console_results::print_incomplete_test "Todo output")"\
+    "$(todo)"
+}
+
+function test_todo_output_with_pending_details() {
+  assert_equals\
+    "$(console_results::print_incomplete_test "Todo output with pending details" "Incomplete because pending details")"\
+    "$(todo "Incomplete because pending details")"
 }
