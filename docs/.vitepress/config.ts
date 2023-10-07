@@ -56,6 +56,9 @@ export default defineConfig({
         text: 'Assertions',
         link: '/assertions'
       }, {
+        text: 'Skipping tests',
+        link: '/skipping-tests'
+      }, {
         text: 'Examples',
         link: '/examples'
       }]

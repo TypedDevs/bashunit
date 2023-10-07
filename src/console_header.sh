@@ -9,9 +9,9 @@ function console_header::print_version() {
 | |_) | (_| \__ \ | | | |_| | | | | | |_
 |_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
 EOF
-    printf "%s\n\n" "$BASH_UNIT_VERSION"
+    printf "%s\n\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASH_UNIT_VERSION"
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
   fi
 }
 
