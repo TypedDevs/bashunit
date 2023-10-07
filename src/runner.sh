@@ -78,9 +78,17 @@ function runner::parse_execution_result() {
     sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
   )
 
+  local assertions_incomplete
+  assertions_incomplete=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
+  )
+
   _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
   _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
   _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
+  _ASSERTIONS_INCOMPLETE=$((_ASSERTIONS_INCOMPLETE + assertions_incomplete))
 
   local print_execution_result
   print_execution_result="$(echo "$execution_result" | sed '$ d')"
@@ -94,6 +102,8 @@ function runner::run_test() {
   local function_name="$1"
   local current_assertions_failed
   current_assertions_failed="$(state::get_assertions_failed)"
+  local current_assertions_incomplete
+  current_assertions_incomplete="$(state::get_assertions_incomplete)"
   local current_assertions_skipped
   current_assertions_skipped="$(state::get_assertions_skipped)"
   local test_execution_result
@@ -121,12 +131,19 @@ function runner::run_test() {
     return
   fi
 
+  if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
+    state::add_tests_incomplete
+    return
+  fi
+
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
     return
   fi
 
-  local label="${3:-$(helper::normalize_test_function_name "$function_name")}"
+  local label
+  label="$(helper::normalize_test_function_name "$function_name")"
+
   console_results::print_successful_test "${label}"
   state::add_tests_passed
 }

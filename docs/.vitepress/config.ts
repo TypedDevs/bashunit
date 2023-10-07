@@ -56,8 +56,8 @@ export default defineConfig({
         text: 'Assertions',
         link: '/assertions'
       }, {
-        text: 'Skipping tests',
-        link: '/skipping-tests'
+        text: 'Skipping/incomplete',
+        link: '/skipping-incomplete'
       }, {
         text: 'Examples',
         link: '/examples'
