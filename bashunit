@@ -24,7 +24,6 @@ source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 ###############
 
 _FILTER=""
-_SIMPLE_OUTPUT=false
 _FILES=()
 
 while [[ $# -gt 0 ]]; do
@@ -36,10 +35,14 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -s|--simple)
-      _SIMPLE_OUTPUT=true
+      SIMPLE_OUTPUT=true
       shift
       ;;
-    -v|--version)
+    -v|--verbose)
+      SIMPLE_OUTPUT=false
+      shift
+      ;;
+    --version)
       console_header::print_version
       trap '' EXIT && exit 0
       ;;

@@ -86,7 +86,7 @@ function console_results::print_execution_time() {
 function console_results::print_successful_test() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
-  if [[ "$_SIMPLE_OUTPUT" == true ]]; then
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
     if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
       printf "."
     else
