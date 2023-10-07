@@ -38,7 +38,7 @@ Once **bashunit** is installed, you're ready to get started.
 
 3.  Finally, run the **bashunit** executable:
     ```bash
-    ./bashunit tests
+    ./bashunit ./tests
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
@@ -54,27 +54,7 @@ Once **bashunit** is installed, you're ready to get started.
 
 5.  Now you can start testing the functionalities of your own Bash scripts.
 
-See more about [usage](/usage).
-
-## Command line
-
-**bashunit** command accepts options to control its behavior.
-```bash
-./bashunit tests --simple --filter something
-```
-
-See more about [command line arguments](/command-line).
-
-## Support
-
-If you encounter any issues, require clarification, or wish to suggest improvements, the primary avenue for support is through [our GitHub repository's issue tracking system](https://github.com/TypedDevs/bashunit/issues).
-
-See more about [support](/support).
-
 ## Next steps
 
-Dive deeper into the documentation to discover all [assertions](/assertions) and functionalities available.
-
-<script setup>
-import pkg from '../package.json'
-</script>
+Dive deeper into the documentation to discover the options provided by [command-line arguments](/command-line),
+[test doubles](test-doubles), and [assertions](assertions), among many other features.
