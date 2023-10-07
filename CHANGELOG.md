@@ -13,6 +13,7 @@
 - Find all test on a directory
 - Add skip and todo functions
 - Add SIMPLE_OUTPUT to `.env`
+- Allow using `main` or `latest` when using install.sh
 
 ## [0.7.0](https://github.com/TypedDevs/bashunit/compare/0.6.0...0.7.0) - 2023-10-02
 
