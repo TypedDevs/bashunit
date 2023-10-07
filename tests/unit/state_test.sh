@@ -38,6 +38,18 @@ function test_add_and_get_tests_skipped() {
   assertEquals "1" "$tests_skipped"
 }
 
+function test_add_and_get_tests_incomplete() {
+  local tests_incomplete
+  tests_incomplete=$(
+    _TESTS_INCOMPLETE=0
+
+    state::add_tests_incomplete
+    state::get_tests_incomplete
+  )
+
+  assertEquals "1" "$tests_incomplete"
+}
+
 function test_add_and_get_assertions_passed() {
   local assertions_passed
   assertions_passed=$(
@@ -74,6 +86,18 @@ function test_add_and_get_assertions_skipped() {
   assertEquals "1" "$assertions_skipped"
 }
 
+function test_add_and_get_assertions_incomplete() {
+  local assertions_incomplete
+  assertions_incomplete=$(
+    _ASSERTIONS_INCOMPLETE=0
+
+    state::add_assertions_incomplete
+    state::get_assertions_incomplete
+  )
+
+  assertEquals "1" "$assertions_incomplete"
+}
+
 function test_set_and_is_duplicated_test_functions_found() {
   local duplicated_test_functions_found
   duplicated_test_functions_found=$(
@@ -91,12 +115,16 @@ function test_initialize_assertions_count() {
   export_assertions_count=$(
     _ASSERTIONS_PASSED=10
     _ASSERTIONS_FAILED=5
+    _ASSERTIONS_SKIPPED=42
+    _ASSERTIONS_INCOMPLETE=12
 
     state::initialize_assertions_count
     state::export_assertions_count
   )
 
-  assertEquals "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0##" "$export_assertions_count"
+  assertEquals\
+    "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0##ASSERTIONS_INCOMPLETE=0##"\
+    "$export_assertions_count"
 }
 
 function test_export_assertions_count() {
@@ -105,9 +133,12 @@ function test_export_assertions_count() {
     _ASSERTIONS_PASSED=10
     _ASSERTIONS_FAILED=5
     _ASSERTIONS_SKIPPED=42
+    _ASSERTIONS_INCOMPLETE=12
 
     state::export_assertions_count
   )
 
-  assertEquals "##ASSERTIONS_FAILED=5##ASSERTIONS_PASSED=10##ASSERTIONS_SKIPPED=42##" "$export_assertions_count"
+  assertEquals\
+    "##ASSERTIONS_FAILED=5##ASSERTIONS_PASSED=10##ASSERTIONS_SKIPPED=42##ASSERTIONS_INCOMPLETE=12##"\
+    "$export_assertions_count"
 }
