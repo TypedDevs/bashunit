@@ -197,7 +197,7 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tes
     console_results::render_result
   )
 
-  assert_matches "Tests:[^\n]*18 total" "$render_result"
+  assert_matches "Tests:.*18 total.*Assertions:.*0 total" "$render_result"
 }
 
 function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_asserts() {
@@ -214,7 +214,7 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_a
     console_results::render_result
   )
 
-  assert_matches "Assertions:[^\n]*18 total" "$render_result"
+  assert_matches "Tests:.*0 total.*Assertions:.*18 total" "$render_result"
 }
 
 function test_render_execution_time() {
