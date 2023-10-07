@@ -15,7 +15,3 @@ How to Get Support:
 
 We value our community's feedback and aim to address all concerns in a timely and effective manner.
 Your active participation and constructive feedback play a pivotal role in the continuous improvement of **bashunit**.
-
-<script setup>
-import pkg from '../package.json'
-</script>
