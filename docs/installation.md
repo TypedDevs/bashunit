@@ -5,7 +5,7 @@ you can add **bashunit** as a dependency in your repository according to your pr
 
 Here, we provide different options that you can use to install **bashunit** in your application.
 
-### Using install.sh
+## Using install.sh
 
 There is a tool that will generate an executable with the whole library in a single file:
 
@@ -26,8 +26,8 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default
 
 > Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
->
-### On a Git project using Git submodules
+
+## Git submodules
 
 You can use Git submodules to include external Git repositories, like **bashunit**, within your Git project.
 This approach works well for including Bash scripts or other resources from remote repositories.

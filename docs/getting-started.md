@@ -4,7 +4,7 @@
 
 With an intuitive API and documentation, it streamlines the process for developers to implement and manage tests. This is beneficial regardless of the project's size or intricacy in Bash.
 
-Thanks to **bashunit**, verifying and validating your Bash code has never been so easy and efficient.
+Thanks to **bashunit**, verifying and validating your Bash code has never been so easy.
 
 ## Installation
 
@@ -63,7 +63,7 @@ See more about [usage](/usage).
 ./bashunit tests --simple --filter something
 ```
 
-See more about [command line arguments](/command-line-arguments).
+See more about [command line arguments](/command-line).
 
 ## Support
 
