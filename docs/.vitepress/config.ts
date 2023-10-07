@@ -34,14 +34,17 @@ export default defineConfig({
         link: '/getting-started',
         items: [{
           text: 'Installation',
-          link: '/getting-started#installation',
+          link: '/installation',
         }, {
           text: 'Usage',
-          link: '/getting-started#usage',
+          link: '/usage',
+        }, {
+          text: 'Command line',
+          link: '/command-line'
+        }, {
+          text: 'Support',
+          link: '/support',
         }]
-      }, {
-        text: 'Command line arguments',
-        link: '/command-line-arguments'
       }, {
         text: 'Test files',
         link: '/test-files',
