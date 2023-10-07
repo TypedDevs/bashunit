@@ -32,29 +32,15 @@ export default defineConfig({
       items: [{
         text: 'Getting Started',
         link: '/getting-started',
-        items: [{
-          text: 'Installation',
-          link: '/installation',
-        }, {
-          text: 'Usage',
-          link: '/usage',
-        }, {
-          text: 'Command line',
-          link: '/command-line'
-        }, {
-          text: 'Support',
-          link: '/support',
-        }]
+      }, {
+        text: 'Installation',
+        link: '/installation',
+      }, {
+        text: 'Command line',
+        link: '/command-line'
       }, {
         text: 'Test files',
         link: '/test-files',
-        items: [{
-          text: 'Test file names',
-          link: '/test-files#test-file-names',
-        }, {
-          text: 'Test function names',
-          link: '/test-files#test-function-names',
-        }]
       }, {
         text: 'Test doubles',
         link: '/test-doubles'
@@ -67,6 +53,9 @@ export default defineConfig({
       }, {
         text: 'Examples',
         link: '/examples'
+      }, {
+        text: 'Support',
+        link: '/support',
       }]
     }],
 
