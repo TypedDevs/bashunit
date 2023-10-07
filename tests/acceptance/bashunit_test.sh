@@ -1,6 +1,6 @@
 #!/bin/bash
 
-function test_bashunit_when_a_test_passes() {
+function test_bashunit_when_a_test_passes_verbose_output() {
   local test_file=./tests/acceptance/fake_success_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_success_test.sh
 \e[32m✓ Passed\e[0m: Succeed
@@ -13,7 +13,28 @@ function test_bashunit_when_a_test_passes() {
 #!/bin/bash
 function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains "$fixture" "$(./bashunit "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assert_successful_code "$(./bashunit --verbose "$test_file")"
+
+  rm $test_file
+}
+
+function test_bashunit_when_a_test_passes_simple_output() {
+  local test_file=./tests/acceptance/fake_dots_test.sh
+  local fixture
+  fixture=$(printf "....
+\e[2mTests:     \e[0m \e[32m4 passed\e[0m, 4 total
+\e[2mAssertions:\e[0m \e[32m6 passed\e[0m, 6 total
+\e[42mAll tests passed\e[0m")
+
+  echo "
+#!/bin/bash
+function test_1() { assert_equals \"1\" \"1\" ; }
+function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
+function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
+function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
+
+  assert_contains "$fixture" "$(./bashunit "$test_file" --simple)"
   assert_successful_code "$(./bashunit "$test_file")"
 
   rm $test_file
@@ -33,8 +54,8 @@ function test_bashunit_when_a_test_fail() {
 #!/bin/bash
 function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
-  assert_contains "$fixture" "$(./bashunit "$test_file")"
-  assert_general_error "$(./bashunit "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assert_general_error "$(./bashunit --verbose "$test_file")"
 
   rm $test_file
 }
@@ -56,29 +77,8 @@ function test_error() {
 
   set +e
 
-  assertContains "$fixture" "$(./bashunit "$test_file")"
-  assertGeneralError "$(./bashunit "$test_file")"
-
-  rm $test_file
-}
-
-function test_bashunit_simple_output() {
-  local test_file=./tests/acceptance/fake_dots_test.sh
-  local fixture
-  fixture=$(printf "....
-\e[2mTests:     \e[0m \e[32m4 passed\e[0m, 4 total
-\e[2mAssertions:\e[0m \e[32m6 passed\e[0m, 6 total
-\e[42mAll tests passed\e[0m")
-
-  echo "
-#!/bin/bash
-function test_1() { assert_equals \"1\" \"1\" ; }
-function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
-function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
-function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
-
-  assert_contains "$fixture" "$(./bashunit "$test_file" --simple)"
-  assert_successful_code "$(./bashunit "$test_file")"
+  assertContains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assertGeneralError "$(./bashunit --verbose "$test_file")"
 
   rm $test_file
 }
@@ -87,7 +87,5 @@ function test_bashunit_should_display_version() {
   local fixture
   fixture=$(printf "%s" "$BASHUNIT_VERSION")
 
-
   assert_contains "$fixture" "$(./bashunit --version)"
-
 }

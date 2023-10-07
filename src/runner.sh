@@ -40,7 +40,7 @@ function runner::call_test_functions() {
   functions_to_run=($(helper::get_functions_to_run "$prefix" "$filter" "$function_names"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if [[ "$_SIMPLE_OUTPUT" == false ]]; then
+    if [[ "$SIMPLE_OUTPUT" == false ]]; then
       echo "Running $script"
     fi
 
