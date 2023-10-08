@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.8.0...main)
 
+- Optimised docs Fonts (Serving directly from origin instead of Google Fonts _proxy_)
 - ...
 
 ## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
