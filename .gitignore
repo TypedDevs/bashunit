@@ -2,6 +2,10 @@
 .idea/
 .env
 
+# package manager
+package-lock.json
+yarn.lock
+
 # docs
 node_modules
 yarn-error.log
