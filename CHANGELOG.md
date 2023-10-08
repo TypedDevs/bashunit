@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.7.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.8.0...main)
+
+- ...
+
+## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 
 - Rename these functions from camelCase to snake_case:
     - `setUp` -> `set_up`
