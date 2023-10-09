@@ -29,7 +29,7 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 
 ## Brew
 
-You can install `bashunit` globally in your macOS (or Linux) using brew.
+You can install **bashunit** globally in your macOS (or Linux) using brew.
 
 ```bash
 brew install bashunit
