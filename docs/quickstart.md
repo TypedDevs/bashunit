@@ -1,4 +1,4 @@
-# Getting Started
+# Quickstart
 
 **bashunit** is a dedicated testing tool crafted specifically for Bash scripts. It empowers you with tests on your Bash codebase, ensuring that your scripts operate reliably and as intended.
 

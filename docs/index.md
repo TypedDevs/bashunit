@@ -11,8 +11,8 @@ hero:
     alt: bashunit
   actions:
     - theme: brand
-      text: Getting Started
-      link: /getting-started
+      text: Quickstart
+      link: /quickstart
     - theme: alt
       text: Assertions
       link: /assertions
