@@ -1,6 +1,6 @@
 # Installation
 
-Although there's no Bash script dependency manager like npm for JavaScript, Maven for Java, pip for Python, or composer for PHP;
+Although there's no Bash script dependency manager[<sup style="font-size:x-small">ⓘ</sup>](## "Like npm for JavaScript, Maven for Java, pip for Python, or composer for PHP");
 you can add **bashunit** as a dependency in your repository according to your preferences.
 
 Here, we provide different options that you can use to install **bashunit** in your application.
