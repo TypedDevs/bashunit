@@ -1,6 +1,11 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.7.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.8.0...main)
+
+- Optimised docs Fonts (Serving directly from origin instead of Google Fonts _proxy_)
+- Add Brew installation to docs
+
+## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 
 - Rename these functions from camelCase to snake_case:
     - `setUp` -> `set_up`

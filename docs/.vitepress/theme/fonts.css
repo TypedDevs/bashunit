@@ -1,0 +1,32 @@
+@font-face {
+    font-family: 'Heebo';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(/fonts/Heebo-Regular.ttf) format('woff2');
+}
+
+
+@font-face {
+    font-family: 'Heebo';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url(/fonts/Heebo-SemiBold.ttf) format('woff2');
+}
+
+
+@font-face {
+    font-family: 'Cousine';
+    font-style: normal;
+    font-weight: 400;
+    src: url(/fonts/Cousine-Regular.ttf) format('woff2');
+}
+
+
+@font-face {
+    font-family: 'Rubik';
+    font-style: normal;
+    font-weight: 600;
+    src: url(/fonts/Rubik-SemiBold.ttf) format('woff2');
+}

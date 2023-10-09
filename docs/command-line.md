@@ -1,4 +1,4 @@
-# Command line arguments
+# Command line
 
 **bashunit** command accepts options to control its behavior.
 

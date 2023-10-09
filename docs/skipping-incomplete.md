@@ -3,39 +3,6 @@
 There may be various scenarios where the "passed" and "failed" outcomes for a test are not sufficient.
 To address these situations, the following functions are available for your use.
 
-## todo
-> `todo "[pending]"`
-
-You may come up with a test that you'd like to implement later.
-Instead of leaving the test implementation empty —which would mark the test as complete— you can flag it as incomplete.
-
-Reports that the test is incomplete as it is under development, including any `[pending]` to do details if specified.
-
-Incomplete tests will not cause **bashunit** to exit with an error code;
-however, it will indicate that some tests were incomplete in the final output.
-
-*Example:*
-```bash
-function test_incomplete() {
-  todo
-}
-
-function test_incomplete_with_pending_details() {
-  todo "Detailed description of what needs to be done"
-}
-```
-
-*Output:*
-```text
-✒ Incomplete: Incomplete
-✒ Incomplete: Incomplete with pending details
-    Detailed description of what needs to be done
-
-Tests:      2 incomplete, 2 total
-Assertions: 2 incomplete, 2 total
-Some tests incomplete
-```
-
 ## skip
 > `skip "[reason]"`
 
@@ -76,4 +43,37 @@ function test_skipped_with_reason() {
 Tests:      2 skipped, 2 total
 Assertions: 2 skipped, 2 total
 Some tests skipped
+```
+
+## todo
+> `todo "[pending]"`
+
+You may come up with a test that you'd like to implement later.
+Instead of leaving the test implementation empty —which would mark the test as complete— you can flag it as incomplete.
+
+Reports that the test is incomplete as it is under development, including any `[pending]` to do details if specified.
+
+Incomplete tests will not cause **bashunit** to exit with an error code;
+however, it will indicate that some tests were incomplete in the final output.
+
+*Example:*
+```bash
+function test_incomplete() {
+  todo
+}
+
+function test_incomplete_with_pending_details() {
+  todo "Detailed description of what needs to be done"
+}
+```
+
+*Output:*
+```text
+✒ Incomplete: Incomplete
+✒ Incomplete: Incomplete with pending details
+    Detailed description of what needs to be done
+
+Tests:      2 incomplete, 2 total
+Assertions: 2 incomplete, 2 total
+Some tests incomplete
 ```
