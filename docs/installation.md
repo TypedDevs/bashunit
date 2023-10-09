@@ -5,7 +5,7 @@ you can add **bashunit** as a dependency in your repository according to your pr
 
 Here, we provide different options that you can use to install **bashunit** in your application.
 
-## Using install.sh
+## install.sh
 
 There is a tool that will generate an executable with the whole library in a single file:
 
@@ -27,12 +27,20 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 
 > Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 
-## Git submodules
+## Brew
+
+You can install `bashunit` globally in your macOS (or Linux) using brew.
+
+```bash
+brew install bashunit
+```
+
+## Git submodule
 
 You can use Git submodules to include external Git repositories, like **bashunit**, within your Git project.
 This approach works well for including Bash scripts or other resources from remote repositories.
 
-For this, you'll simply need to run the following script at the root of your Git project.
+For this, you will need to run the following script at the root of your Git project.
 The final `bashunit` is the folder where you want to install **bashunit**.
 For instance, if you prefer to have your dependencies inside the `deps` folder, just replace it with `deps/bashunit`.
 ```bash
@@ -47,7 +55,7 @@ cd bashunit
 git submodule update --remote
 ```
 
-### Using a specific version
+### Specific version
 
 To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `{{ pkg.version }}`.
 ```bash
