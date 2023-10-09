@@ -30,8 +30,8 @@ export default defineConfig({
 
     sidebar: [{
       items: [{
-        text: 'Getting Started',
-        link: '/getting-started',
+        text: 'Quickstart',
+        link: '/quickstart',
       }, {
         text: 'Installation',
         link: '/installation',
