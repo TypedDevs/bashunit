@@ -6,7 +6,7 @@ function runner::load_test_files() {
 
   if [[ ${#files[@]} == 0 ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
-    printf "%sUsage: %s <test_file.sh>%s\n" "${_COLOR_DEFAULT}" "$0" "${_COLOR_DEFAULT}"
+    console_header::print_help
     exit 1
   fi
 
