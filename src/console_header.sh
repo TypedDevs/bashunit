@@ -44,6 +44,6 @@ ${_COLOR_BOLD}-s|simple || -v|verbose${_COLOR_DEFAULT} Enables simplified or ver
 ${_COLOR_BOLD}--version${_COLOR_DEFAULT} Displays the current version of bashunit.
   ${_COLOR_FAINT}bashunit --version${_COLOR_DEFAULT}
 
-${_COLOR_BOLD}--help${_COLOR_DEFAULT} This message
+${_COLOR_BOLD}--help${_COLOR_DEFAULT} This message.
 EOF
 }
