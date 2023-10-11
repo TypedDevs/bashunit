@@ -92,6 +92,33 @@ Displays the current version of **bashunit**.
 bashunit - {{ pkg.version }}
 ```
 
+
+## Help
+
+> `bashunit --help`
+
+Displays a help message with all allowed arguments and options.
+
+*Example:*
+```bash
+./bashunit --help
+```
+
+*Output:*
+```text-vue
+bashunit [arguments] [options]
+
+Arguments:
+  Specifies the directory or file containing [...]
+
+Options:
+    -f|--filer
+    Filters the tests to run based on the test name.
+
+  -s|simple || -v|verbose
+    [...]
+```
+
 <script setup>
 import pkg from '../package.json'
 </script>
