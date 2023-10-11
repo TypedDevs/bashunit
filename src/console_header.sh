@@ -11,7 +11,7 @@ function console_header::print_version() {
 EOF
     printf "%s\n\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
+    printf "${_COLOR_PASSED}bashunit - %s\n" "$BASHUNIT_VERSION"
   fi
 }
 
@@ -27,23 +27,24 @@ function console_header::print_help() {
     cat <<EOF
 bashunit [arguments] [options]
 
-${_COLOR_BOLD}Arguments:${_COLOR_DEFAULT}
-  ${_COLOR_FAINT}bashunit "directory|file"${_COLOR_DEFAULT}
+Arguments:
+  Specifies the directory or file containing the tests to run.
+  If a directory is specified, it will execute the tests within files ending with test.sh.
+  If you use wildcards, bashunit will run any tests it finds.
 
-Specifies the directory or file containing the tests to be run.
-If a directory is specified, it will execute tests within files ending in test.sh.
-If you use wildcards, bashunit will run any tests it finds.
+Options:
+  -f|--filer
+    Filters the tests to run based on the test name.
 
-${_COLOR_BOLD}Options:${_COLOR_DEFAULT}
-${_COLOR_BOLD}-f|--filer${_COLOR_DEFAULT} Filters the tests to be run based on the test name.
-  ${_COLOR_FAINT}bashunit -f|--filter "test name"${_COLOR_DEFAULT}
+  -s|simple || -v|verbose
+    Enables simplified or verbose output to the console.
 
-${_COLOR_BOLD}-s|simple || -v|verbose${_COLOR_DEFAULT} Enables simplified or verbose output to the console.
-  ${_COLOR_FAINT}bashunit -s "test name"${_COLOR_DEFAULT}
+  --version
+    Displays the current version of bashunit.
 
-${_COLOR_BOLD}--version${_COLOR_DEFAULT} Displays the current version of bashunit.
-  ${_COLOR_FAINT}bashunit --version${_COLOR_DEFAULT}
+  --help
+    This message.
 
-${_COLOR_BOLD}--help${_COLOR_DEFAULT} This message.
+See more: https://bashunit.typeddevs.com/command-line
 EOF
 }
