@@ -112,11 +112,10 @@ Arguments:
   Specifies the directory or file containing [...]
 
 Options:
-    -f|--filer
+  -f|--filer
     Filters the tests to run based on the test name.
 
-  -s|simple || -v|verbose
-    [...]
+  [...]
 ```
 
 <script setup>
