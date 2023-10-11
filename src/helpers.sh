@@ -124,3 +124,22 @@ helper::normalize_variable_name() {
   echo "$normalized_string"
 }
 
+function helper::get_provider_data() {
+  local function_name="$1"
+  local script="$2"
+  local data_provider_function
+
+  if [[ ! -f "$script" ]]; then
+    return
+  fi
+
+  data_provider_function=$(\
+    grep -B 1 "function $function_name()" "$script" |\
+    grep "# data_provider " |\
+    sed -E -e 's/\ *# data_provider (.*)$/\1/g'\
+  )
+
+  if [[ -n "$data_provider_function" ]]; then
+    helper::execute_function_if_exists "$data_provider_function"
+  fi
+}

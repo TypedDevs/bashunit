@@ -47,7 +47,16 @@ function runner::call_test_functions() {
     helper::check_duplicate_functions "$script"
 
     for function_name in "${functions_to_run[@]}"; do
-      runner::run_test "$function_name"
+      local provider_data=()
+      IFS=" " read -r -a provider_data <<< "$(helper::get_provider_data "$function_name" "$script")"
+
+      if [[ "${#provider_data[@]}" -gt 0 ]]; then
+        for data in "${provider_data[@]}"; do
+          runner::run_test "$function_name" "$data"
+        done
+      else
+        runner::run_test "$function_name"
+      fi
 
       unset "$function_name"
     done
@@ -100,6 +109,7 @@ function runner::parse_execution_result() {
 
 function runner::run_test() {
   local function_name="$1"
+  local data="$2"
   local current_assertions_failed
   current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_incomplete
@@ -112,7 +122,7 @@ function runner::run_test() {
 
     set -e
     runner::run_set_up
-    "$function_name"
+    "$function_name" "$data"
     runner::run_tear_down
 
     state::export_assertions_count

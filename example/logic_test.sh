@@ -103,3 +103,15 @@ function test_should_assert_that_an_array_not_contains_1234() {
 
   assert_array_not_contains "a_non_existing_element" "${distros[@]}"
 }
+
+function provider_existing_directories() {
+  local directories=(/*)
+  echo "${directories[@]}"
+}
+
+# data_provider provider_existing_directories
+function test_should_directory_exists_from_data_provider() {
+  local directory=$1
+
+  assert_directory_exists "$directory"
+}
