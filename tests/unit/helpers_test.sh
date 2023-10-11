@@ -105,3 +105,44 @@ function test_normalize_variable_name() {
   assert_equals "_variable" "$(helper::normalize_variable_name "_variable")"
   assert_equals "__________" "$(helper::normalize_variable_name "!@#$%^&*()")"
 }
+
+function fake_provider_data_string() {
+  echo "data_provided"
+}
+
+function test_get_provider_data() {
+  # shellcheck disable=SC2317
+  # data_provider fake_provider_data_string
+  function fake_function_get_provider_data() {
+    return 0
+  }
+
+  assert_equals "data_provided" "$(helper::get_provider_data "fake_function_get_provider_data" "${BASH_SOURCE[0]}")"
+}
+
+function fake_provider_data_array() {
+  local data=("one" "two" "three")
+  echo "${data[@]}"
+}
+
+function test_get_provider_data_array() {
+  # shellcheck disable=SC2317
+  # data_provider fake_provider_data_array
+  function fake_function_get_provider_data_array() {
+    return 0
+  }
+
+  assert_equals \
+    "one two three" \
+    "$(helper::get_provider_data "fake_function_get_provider_data_array" "${BASH_SOURCE[0]}")"
+}
+
+function test_get_provider_data_should_returns_empty_when_not_exists_provider_function() {
+  # shellcheck disable=SC2317
+  # data_provider not_existing_provider
+  function fake_function_get_not_existing_provider_data() {
+    return 0
+  }
+
+  assert_equals "" "$(helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
+}

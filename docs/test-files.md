@@ -79,3 +79,40 @@ function tear_down_after_script() {
   close_database_connection
 }
 ```
+
+## Data providers
+
+The test function can accept data from a data provider function. The data provider function is specified using a comment before the function declaration.
+The format of this comment will be the following:
+
+```
+# data_provider provider_function_name
+function test_my_test_case() {
+...
+}
+```
+
+If **bashunit** find before the test function declaration a comment with the key `data_provider` followed by a provider function name, this provider function
+will be executed before running the test function and the data provided by this provider function will be passed as the first argument to the test function.
+
+The provider function can return a list of values like `one two three` or a single value `one`. In case of a list of values, in each iteration of this list,
+the provided data will be the current list value.
+
+Example:
+
+```
+function provider_directories() {
+  local directories=("/usr" "/etc" "/var")
+  echo "${directories[@]}"
+}
+
+# data_provider provider_directories
+function test_should_directory_exists_from_data_provider() {
+  local directory=$1
+
+  assert_directory_exists "$directory"
+}
+```
+
+In this example, the `provider_directories` function will be executed before running the test. **bashunit** will iterate the list of the data provided by this function
+and the test function will be executed passing each time the current iteration value as the first argument.
