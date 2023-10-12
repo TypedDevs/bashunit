@@ -1,5 +1,7 @@
 ---
 aside: false
+editLink: false
+lastUpdated: false
 ---
 
 # Blog posts
