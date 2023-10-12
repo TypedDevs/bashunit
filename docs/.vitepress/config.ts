@@ -23,6 +23,10 @@ export default defineConfig({
     externalLinkIcon: true,
     siteTitle: false,
 
+    editLink: {
+      pattern: 'https://github.com/TypedDevs/bashunit/edit/main/docs/:path'
+    },
+
     logo: {
       light: '/logo_navbar.svg',
       dark: '/logo_navbar_dark.svg',
