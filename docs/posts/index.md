@@ -1,4 +1,8 @@
-# Posts
+---
+aside: false
+---
+
+# Blog posts
 
 <PostCard
   v-for="post of posts"
