@@ -95,5 +95,9 @@ export default defineConfig({
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2023-present TypedDevs'
     }
-  }
+  },
+
+  srcExclude: [
+    'posts/0000-00-00-template.md'
+  ]
 })
