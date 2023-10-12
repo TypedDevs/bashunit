@@ -4,7 +4,8 @@
     "target": "es5",
     "sourceMap": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "lib": ["ES2020", "DOM"]
   },
   "exclude": [
     "node_modules"

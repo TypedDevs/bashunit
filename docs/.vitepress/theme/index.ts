@@ -12,7 +12,6 @@ export default {
   },
   enhanceApp({ app, router, siteData }) {
     app.config.globalProperties.$formatDate = (date: string) => {
-      // @ts-ignore
       return new Intl.DateTimeFormat('en-US', { dateStyle: 'full' }).format(new Date(date))
     }
   }
