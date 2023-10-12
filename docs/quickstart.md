@@ -1,4 +1,4 @@
-# Getting Started
+# Quickstart
 
 **bashunit** is a dedicated testing tool crafted specifically for Bash scripts. It empowers you with tests on your Bash codebase, ensuring that your scripts operate reliably and as intended.
 
@@ -28,13 +28,15 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 2.  Next, create your first test file named `example_test.sh` within this folder:
-    ```bash
+    ::: code-group
+    ```bash [tests/example_test.sh]
     #!/bin/bash
 
     function test_bashunit_is_working() {
       assert_equals "bashunit is working" "bashunit is working"
     }
     ```
+    :::
 
 3.  Finally, run the **bashunit** executable:
     ```bash
@@ -42,7 +44,7 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
-    ```text
+    ```
     Running tests/example_test.sh
     ✓ Passed: Bashunit is working
 

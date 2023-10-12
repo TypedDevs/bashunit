@@ -8,6 +8,7 @@ export default defineConfig({
   description: 'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.',
   lang: 'en-US',
   cleanUrls: true,
+  lastUpdated: true,
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
@@ -22,6 +23,10 @@ export default defineConfig({
     externalLinkIcon: true,
     siteTitle: false,
 
+    editLink: {
+      pattern: 'https://github.com/TypedDevs/bashunit/edit/main/docs/:path'
+    },
+
     logo: {
       light: '/logo_navbar.svg',
       dark: '/logo_navbar_dark.svg',
@@ -30,8 +35,8 @@ export default defineConfig({
 
     sidebar: [{
       items: [{
-        text: 'Getting Started',
-        link: '/getting-started',
+        text: 'Quickstart',
+        link: '/quickstart',
       }, {
         text: 'Installation',
         link: '/installation',

@@ -4,6 +4,8 @@
 
 - Optimised docs Fonts (Serving directly from origin instead of Google Fonts _proxy_)
 - Add Brew installation to docs
+- Add `--help` option
+- Add data_provider
 
 ## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 

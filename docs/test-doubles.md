@@ -7,21 +7,22 @@ When creating tests, you might need to override existing function to be able to 
 
 Allows you to override the behavior of a callable.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_example() {
   mock ps echo hello world
 
   assert_equals "hello world" "$(ps)"
 }
 ```
+:::
 
 > `mock "function" "output"`
 
 Allows you to override the output of a callable.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_example() {
   function code() {
       ps a | grep bash
@@ -36,13 +37,15 @@ EOF
   assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
 }
 ```
+:::
+
 ## spy
 > `spy "function"`
 
 Overrides the original behavior of a callable to allow you to make various assertions about its calls.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_example() {
   spy ps
 
@@ -52,14 +55,15 @@ function test_example() {
   assert_have_been_called ps
 }
 ```
+:::
 
 ## assert_have_been_called
 > `assert_have_been_called "spy"`
 
 Reports an error if `spy` is not called.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_success() {
   spy ps
 
@@ -74,14 +78,15 @@ function test_failure() {
   assert_have_been_called ps
 }
 ```
+:::
 
 ## assert_have_been_called_with
 > `assert_have_been_called_with "expected" "spy"`
 
 Reports an error if `callable` is not called with `expected`.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_success() {
   spy ps
 
@@ -98,14 +103,15 @@ function test_failure() {
   assert_have_been_called_with "foo bar" ps
 }
 ```
+:::
 
 ## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"
 
 Reports an error if `spy` is not called exactly `expected` times.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_success() {
   spy ps
 
@@ -124,3 +130,4 @@ function test_failure() {
   assert_have_been_called_times 1 ps
 }
 ```
+:::

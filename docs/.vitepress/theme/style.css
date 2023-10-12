@@ -178,10 +178,3 @@ h6 {
   object-fit: contain;
   object-position: center;
 }
-
-/**
- * Component: Doc
- * -------------------------------------------------------------------------- */
-.VPDocFooter {
-  display: none;
-}
