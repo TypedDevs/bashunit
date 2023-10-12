@@ -6,6 +6,7 @@
 - Add Brew installation to docs
 - Add `--help` option
 - Add data_provider
+- Add blog posts to the website
 
 ## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 
