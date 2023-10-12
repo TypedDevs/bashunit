@@ -7,7 +7,7 @@
       {{ post.frontmatter.title }}
     </h2>
     <time class="post-card__date">
-      {{ post.frontmatter.date }}
+      {{ $formatDate(post.frontmatter.date) }}
     </time>
     <img
       class="post-card__image"

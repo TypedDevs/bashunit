@@ -2,6 +2,7 @@
 import { h } from 'vue'
 import Theme from 'vitepress/theme-without-fonts'
 import './style.css'
+import { DateTime } from 'luxon'
 
 export default {
   extends: Theme,
@@ -11,6 +12,9 @@ export default {
     })
   },
   enhanceApp({ app, router, siteData }) {
-    // ...
+    app.config.globalProperties.$formatDate = (date: string) => {
+      return DateTime.fromISO(date)
+        .toLocaleString(DateTime.DATE_HUGE, { locale: 'en-US' })
+    }
   }
 }

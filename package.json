@@ -14,9 +14,11 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "luxon": "^3.4.3",
     "vanilla-tilt": "^1.8.1"
   },
   "devDependencies": {
+    "@types/luxon": "^3.3.2",
     "vitepress": "^1.0.0-rc.20",
     "vue": "^3.3.4"
   }
