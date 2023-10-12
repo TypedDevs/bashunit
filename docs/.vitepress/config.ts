@@ -66,6 +66,14 @@ export default defineConfig({
     ],
 
     nav: [{
+      text: '<strong>Docs</strong>',
+      link: '/quickstart',
+      activeMatch: '^/(?!posts)[^/]'
+    }, {
+      text: '<strong>Blog</strong>',
+      link: '/posts',
+      activeMatch: '^/posts'
+    }, {
       text: pkg.version,
       items: [
         {
