@@ -71,8 +71,8 @@ export default defineConfig({
       activeMatch: '^/(?!posts)[^/]'
     }, {
       text: '<strong>Blog</strong>',
-      link: '/posts',
-      activeMatch: '^/posts'
+      link: '/posts/',
+      activeMatch: '^/posts/'
     }, {
       text: pkg.version,
       items: [
