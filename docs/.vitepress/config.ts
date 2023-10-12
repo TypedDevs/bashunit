@@ -28,8 +28,8 @@ export default defineConfig({
       alt: 'bashunit'
     },
 
-    sidebar: [{
-      items: [{
+    sidebar: {
+      '/': [{
         text: 'Quickstart',
         link: '/quickstart',
       }, {
@@ -56,8 +56,9 @@ export default defineConfig({
       }, {
         text: 'Support',
         link: '/support',
-      }]
-    }],
+      }],
+      '/posts/': []
+    },
 
     socialLinks: [
       { icon: 'x', link: 'https://x.com/bashunit' },
