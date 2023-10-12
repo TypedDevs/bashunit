@@ -8,6 +8,7 @@ export default defineConfig({
   description: 'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.',
   lang: 'en-US',
   cleanUrls: true,
+  lastUpdated: true,
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
