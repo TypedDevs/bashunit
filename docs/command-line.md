@@ -12,8 +12,8 @@ If a directory is specified, it will execute tests within files ending in `test.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 # all tests inside the tests directory
 ./bashunit ./tests
 
@@ -23,6 +23,7 @@ If you use wildcards, **bashunit** will run any tests it finds.
 # all test matching given wildcard
 ./bashunit ./tests/**/*_test.sh
 ```
+:::
 
 ## Filter
 
@@ -30,11 +31,12 @@ If you use wildcards, **bashunit** will run any tests it finds.
 
 Filters the tests to be run based on the `test name`.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 # run all test functions including "something" in it's name
 ./bashunit ./tests --filter "something"
 ```
+:::
 
 ## Output
 
@@ -48,23 +50,20 @@ Verbose is the default output, but it can be overridden by the environment confi
 
 This command flag will always take precedence over the environment configuration.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 ./bashunit ./tests --simple
 ```
-
-*Output:*
-```text
+```[Output]
 ........
 ```
+:::
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 ./bashunit ./tests --verbose
 ```
-
-*Output:*
-```text
+```[Output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
 ✓ Passed: Should validate a non ok exit code
@@ -75,6 +74,7 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Text should not contain
 ✓ Passed: Text should not match a regular expression
 ```
+:::
 
 ## Version
 
@@ -82,16 +82,14 @@ Running tests/functional/logic_test.sh
 
 Displays the current version of **bashunit**.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 ./bashunit --version
 ```
-
-*Output:*
-```text-vue
+```-vue [Output]
 bashunit - {{ pkg.version }}
 ```
-
+:::
 
 ## Help
 
@@ -99,13 +97,11 @@ bashunit - {{ pkg.version }}
 
 Displays a help message with all allowed arguments and options.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 ./bashunit --help
 ```
-
-*Output:*
-```text-vue
+```-vue [Output]
 bashunit [arguments] [options]
 
 Arguments:
@@ -117,6 +113,7 @@ Options:
 
   [...]
 ```
+:::
 
 <script setup>
 import pkg from '../package.json'
