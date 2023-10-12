@@ -18,7 +18,7 @@ hero:
       link: /assertions
     - theme: alt
       text: Blog
-      link: /posts/
+      link: /blog/
 
 features:
   - icon:

@@ -57,7 +57,7 @@ export default defineConfig({
         text: 'Support',
         link: '/support',
       }],
-      '/posts/': []
+      '/blog/': []
     },
 
     socialLinks: [
@@ -68,11 +68,11 @@ export default defineConfig({
     nav: [{
       text: '<strong>Docs</strong>',
       link: '/quickstart',
-      activeMatch: '^/(?!posts)[^/]'
+      activeMatch: '^/(?!blog)[^/]'
     }, {
       text: '<strong>Blog</strong>',
-      link: '/posts/',
-      activeMatch: '^/posts/'
+      link: '/blog/',
+      activeMatch: '^/blog/'
     }, {
       text: pkg.version,
       items: [
@@ -98,6 +98,6 @@ export default defineConfig({
   },
 
   srcExclude: [
-    'posts/0000-00-00-template.md'
+    'blog/0000-00-00-template.md'
   ]
 })
