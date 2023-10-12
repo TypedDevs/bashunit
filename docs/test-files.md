@@ -23,11 +23,13 @@ To distinguish test functions from auxiliary functions, the names must be prefix
 The function names are case-insensitive.
 Below are some example test function names that would work seamlessly:
 
-```bash
+::: code-group
+```bash [Example]
 function test_should_validate_an_ok_exit_code() { ... }
 function testRenderAllTestsPassedWhenNotFailedTests { ... }
 test_getFunctionsToRun_with_filter_should_return_matching_functions() { ... }
 ```
+:::
 
 ::: tip
 You're free to use any of Bash's syntax options to define these functions.
@@ -39,11 +41,13 @@ The `set_up` auxiliary function is called, if it is present in the test file, be
 This provides a hook to prepare the environment or set initial variables specific to each test case.
 For example, you might want to create temporary directories or files that your test will manipulate.
 
-```bash
+::: code-group
+```bash [Example]
 function set_up() {
   touch temp_file.txt
 }
 ```
+:::
 
 ## `tear_down` function
 
@@ -51,22 +55,26 @@ The `tear_down` auxiliary function is called, if it is present in the test file,
 This auxiliary function offers you a place to clean up any resources allocated or changes made during the `set_up` or test function itself.
 This helps to ensure that each test starts with a fresh state.
 
-```bash
+::: code-group
+```bash [Example]
 function tear_down() {
   rm temp_file.txt
 }
 ```
+:::
 
 ## `set_up_before_script` function
 
 The `set_up_before_script` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
 This is useful for global setup that applies to all test functions in the script, such as loading shared resources.
 
-```bash
+::: code-group
+```bash [Example]
 function set_up_before_script() {
   open_database_connection
 }
 ```
+:::
 
 ## `tear_down_after_script` function
 
@@ -74,23 +82,27 @@ The `tear_down_after_script` auxiliary function is called, if it is present in t
 This auxiliary function is similar to how `set_up_before_script` works but at the end of the tests.
 It provides a hook for any cleanup that should occur after all tests have run, such as deleting temporary files or releasing resources.
 
-```bash
+::: code-group
+```bash [Example]
 function tear_down_after_script() {
   close_database_connection
 }
 ```
+:::
 
 ## Data providers
 
 The test function can accept data from a data provider function. The data provider function is specified using a comment before the function declaration.
 The format of this comment will be the following:
 
-```
+::: code-group
+```bash [Example]
 # data_provider provider_function_name
 function test_my_test_case() {
-...
+  ...
 }
 ```
+:::
 
 If **bashunit** find before the test function declaration a comment with the key `data_provider` followed by a provider function name, this provider function
 will be executed before running the test function and the data provided by this provider function will be passed as the first argument to the test function.
@@ -98,9 +110,8 @@ will be executed before running the test function and the data provided by this 
 The provider function can return a list of values like `one two three` or a single value `one`. In case of a list of values, in each iteration of this list,
 the provided data will be the current list value.
 
-Example:
-
-```
+::: code-group
+```bash [Example]
 function provider_directories() {
   local directories=("/usr" "/etc" "/var")
   echo "${directories[@]}"
@@ -113,6 +124,7 @@ function test_should_directory_exists_from_data_provider() {
   assert_directory_exists "$directory"
 }
 ```
+:::
 
 In this example, the `provider_directories` function will be executed before running the test. **bashunit** will iterate the list of the data provided by this function
 and the test function will be executed passing each time the current iteration value as the first argument.
