@@ -25,7 +25,9 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 - `[dir]`: the destiny directory to save the executable bashunit; `lib` by default
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default
 
-> Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+::: tip
+Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+:::
 
 ## Brew
 
