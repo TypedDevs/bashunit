@@ -13,8 +13,8 @@ It reports that the test has been skipped, including the `[reason]` if one was s
 Skipping tests will not cause **bashunit** to exit with an error code;
 however, it will indicate that some tests were skipped in the final output.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_skipped() {
   if [[ $OS != "GEOS" ]]; then
     skip
@@ -33,9 +33,7 @@ function test_skipped_with_reason() {
   assert_empty "not reached"
 }
 ```
-
-*Output:*
-```text
+```[Output]
 ↷ Skipped: Skipped
 ↷ Skipped: Skipped with reason
     Not running under Commodore
@@ -44,6 +42,7 @@ Tests:      2 skipped, 2 total
 Assertions: 2 skipped, 2 total
 Some tests skipped
 ```
+:::
 
 ## todo
 > `todo "[pending]"`
@@ -56,8 +55,8 @@ Reports that the test is incomplete as it is under development, including any `[
 Incomplete tests will not cause **bashunit** to exit with an error code;
 however, it will indicate that some tests were incomplete in the final output.
 
-*Example:*
-```bash
+::: code-group
+```bash [Example]
 function test_incomplete() {
   todo
 }
@@ -66,9 +65,7 @@ function test_incomplete_with_pending_details() {
   todo "Detailed description of what needs to be done"
 }
 ```
-
-*Output:*
-```text
+```[Output]
 ✒ Incomplete: Incomplete
 ✒ Incomplete: Incomplete with pending details
     Detailed description of what needs to be done
@@ -77,3 +74,4 @@ Tests:      2 incomplete, 2 total
 Assertions: 2 incomplete, 2 total
 Some tests incomplete
 ```
+:::
