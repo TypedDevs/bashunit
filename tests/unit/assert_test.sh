@@ -198,3 +198,25 @@ function test_unsuccessful_assert_array_not_contains() {
       "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
+
+function test_successful_assert_string_starts_with() {
+  assert_empty "$(assert_string_starts_with "ho" "house")"
+}
+
+function test_unsuccessful_assert_string_starts_with() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert string starts with" "pause" "to start with" "hou")"\
+    "$(assert_string_starts_with "hou" "pause")"
+}
+
+function test_successful_assert_string_not_starts_with() {
+  assert_empty "$(assert_string_not_starts_with "hou" "pause")"
+}
+
+function test_unsuccessful_assert_string_not_starts_with() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert string not starts with" "house" "to not start with" "ho")"\
+    "$(assert_string_not_starts_with "ho" "house")"
+}
