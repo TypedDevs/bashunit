@@ -97,8 +97,8 @@ function test_bashunit_should_allow_test_drive_development() {
 
   set +e
 
-  assertContains "$fixture" "$(./bashunit "$test_file")"
-  assertGeneralError "$(./bashunit "$test_file")"
+  assertContains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assertGeneralError "$(./bashunit --verbose "$test_file")"
 
   rm $test_file
 }
