@@ -120,9 +120,8 @@ function runner::run_test() {
   test_execution_result=$(
     state::initialize_assertions_count
 
-    set -e
     runner::run_set_up
-    "$function_name" "$data"
+    "$function_name" "$data" 2>&1
     runner::run_tear_down
 
     state::export_assertions_count
@@ -130,7 +129,14 @@ function runner::run_test() {
   local test_result_code=$?
   runner::parse_execution_result "$test_execution_result"
 
-  if [[ $test_result_code -ne 0 ]]; then
+  local runtime_error
+  runtime_error=$(\
+    echo "$test_execution_result" |\
+    head -n 1 |\
+    sed -E -e 's/(.*)##ASSERTIONS_FAILED=.*/\1/g'\
+  )
+
+  if [[ -n $runtime_error ]]; then
     state::add_tests_failed
     console_results::print_error_test "$function_name" "$test_result_code"
     return
