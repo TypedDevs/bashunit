@@ -208,7 +208,6 @@ function assert_string_ends_with() {
   state::add_assertions_passed
 }
 
-
 function assert_string_not_ends_with() {
   local expected="$1"
   local actual="$2"
