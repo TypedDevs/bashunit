@@ -83,6 +83,26 @@ function test_error() {
   rm $test_file
 }
 
+function test_bashunit_should_allow_test_drive_development() {
+  local test_file=./tests/acceptance/fake_error_test.sh
+  fixture=$(printf "Running ./tests/acceptance/fake_error_test.sh
+\e[31m✗ Failed\e[0m: Error tdd with error code 127
+
+\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
+\e[2mAssertions:\e[0m \e[31m0 failed\e[0m, 0 total")
+
+  echo "
+  #!/bin/bash
+  function test_error_tdd() { assert_that_will_never_exist \"1\" \"1\" 2>/dev/null ; }" > $test_file
+
+  set +e
+
+  assertContains "$fixture" "$(./bashunit "$test_file")"
+  assertGeneralError "$(./bashunit "$test_file")"
+
+  rm $test_file
+}
+
 function test_bashunit_should_display_version() {
   local fixture
   fixture=$(printf "%s" "$BASHUNIT_VERSION")
