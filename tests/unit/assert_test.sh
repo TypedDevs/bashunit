@@ -231,3 +231,15 @@ function test_unsuccessful_assert_string_ends_with() {
       "Unsuccessful assert string ends with" "foobar" "to end with" "foo")"\
     "$(assert_string_ends_with "foo" "foobar")"
 }
+
+
+function test_successful_assert_string_not_ends_with() {
+  assert_empty "$(assert_string_not_ends_with "foo" "foobar")"
+}
+
+function test_unsuccessful_assert_string_not_ends_with() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert string not ends with" "foobar" "to not end with" "bar")"\
+    "$(assert_string_not_ends_with "bar" "foobar")"
+}
