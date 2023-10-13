@@ -138,5 +138,6 @@ function console_results::print_error_test() {
   test_name=$(helper::normalize_test_function_name "$1")
   local error="$2"
 
-  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s\n    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}" "${test_name}" "${error}"
+  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}"
 }
