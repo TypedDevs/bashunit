@@ -142,6 +142,12 @@ function runner::run_test() {
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
+
+    if [ "$STOP_ON_FAILURE" = true ]; then
+      console_results::print_failed_test "$function_name" "$test_result_code"
+      exit 1
+    fi
+
     return
   fi
 
