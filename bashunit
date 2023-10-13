@@ -4,6 +4,7 @@
 declare -r BASHUNIT_VERSION="0.8.0"
 
 readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
@@ -13,10 +14,7 @@ source "$BASHUNIT_ROOT_DIR/src/colors.sh"
 source "$BASHUNIT_ROOT_DIR/src/console_header.sh"
 source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
-source "$BASHUNIT_ROOT_DIR/src/assert.sh"
-source "$BASHUNIT_ROOT_DIR/src/skip_todo.sh"
-source "$BASHUNIT_ROOT_DIR/src/deprecated_assert.sh"
-source "$BASHUNIT_ROOT_DIR/src/test_doubles.sh"
+source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 
 ###############
