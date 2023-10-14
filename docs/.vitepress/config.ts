@@ -33,8 +33,8 @@ export default defineConfig({
       alt: 'bashunit'
     },
 
-    sidebar: [{
-      items: [{
+    sidebar: {
+      '/': [{
         text: 'Quickstart',
         link: '/quickstart',
       }, {
@@ -61,8 +61,9 @@ export default defineConfig({
       }, {
         text: 'Support',
         link: '/support',
-      }]
-    }],
+      }],
+      '/blog/': []
+    },
 
     socialLinks: [
       { icon: 'x', link: 'https://x.com/bashunit' },
@@ -70,6 +71,14 @@ export default defineConfig({
     ],
 
     nav: [{
+      text: '<strong>Docs</strong>',
+      link: '/quickstart',
+      activeMatch: '^/(?!blog)[^/]'
+    }, {
+      text: '<strong>Blog</strong>',
+      link: '/blog/',
+      activeMatch: '^/blog/'
+    }, {
       text: pkg.version,
       items: [
         {
@@ -91,5 +100,9 @@ export default defineConfig({
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2023-present TypedDevs'
     }
-  }
+  },
+
+  srcExclude: [
+    'blog/0000-00-00-template.md'
+  ]
 })

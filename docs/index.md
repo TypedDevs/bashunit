@@ -16,6 +16,9 @@ hero:
     - theme: alt
       text: Assertions
       link: /assertions
+    - theme: alt
+      text: Blog
+      link: /blog/
 
 features:
   - icon:

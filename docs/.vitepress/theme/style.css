@@ -178,3 +178,8 @@ h6 {
   object-fit: contain;
   object-position: center;
 }
+
+time {
+  opacity: 0.8;
+  font-size: 14px;
+}
