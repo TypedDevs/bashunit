@@ -48,6 +48,12 @@ while [[ $# -gt 0 ]]; do
       console_header::print_help
       trap '' EXIT && exit 0
       ;;
+    --env)
+      # shellcheck disable=SC1090
+      source "$2"
+      shift
+      shift
+      ;;
     *)
       while IFS='' read -r line; do
         _FILES+=("$line");
