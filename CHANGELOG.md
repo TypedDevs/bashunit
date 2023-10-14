@@ -13,6 +13,8 @@
 - Add `assert_string_starts_with`
 - Add `assert_string_ends_with`
 - Add `assert_string_not_ends_with`
+- Add `assert_less_or_equal_than`
+- Add `assert_less_or_equal_than`
 
 ## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 
