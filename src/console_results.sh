@@ -134,8 +134,10 @@ function console_results::print_incomplete_test() {
 }
 
 function console_results::print_error_test() {
-  local test_name="${3:-$(helper::normalize_test_function_name "$1")}"
-  local error_code=$2
+  local test_name
+  test_name=$(helper::normalize_test_function_name "$1")
+  local error="$2"
 
-  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s with error code %s\n" "${test_name}" "${error_code}"
+  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}"
 }
