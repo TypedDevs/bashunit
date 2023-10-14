@@ -269,3 +269,14 @@ function test_unsuccessful_assert_less_or_equal_than() {
       "Unsuccessful assert less or equal than" "3" "to be less or equal to than" "1")"\
     "$(assert_less_or_equal_than "1" "3")"
 }
+
+function test_successful_assert_greater_than() {
+  assert_empty "$(assert_greater_than "1" "3")"
+}
+
+function test_unsuccessful_assert_greater_than() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert greater than" "1" "to be greater than" "3")"\
+    "$(assert_greater_than "3" "1")"
+}
