@@ -144,7 +144,6 @@ function runner::run_test() {
     state::add_tests_failed
 
     if [ "$STOP_ON_FAILURE" = true ]; then
-#      console_results::print_error_test "$function_name" "$runtime_error"
       exit 1
     fi
 
