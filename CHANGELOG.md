@@ -6,13 +6,13 @@
 - Add Brew installation to docs
 - Add `--help` option
 - Add `-e|--env` option
+- Add `-S|--stop-on-failure` option
 - Add data_provider
 - Add blog posts to the website
 - Add `assert_string_not_starts_with`
 - Add `assert_string_starts_with`
 - Add `assert_string_ends_with`
 - Add `assert_string_not_ends_with`
-- Add option `-S|--stop-on-failure`
 
 ## [0.8.0](https://github.com/TypedDevs/bashunit/compare/0.7.0...0.8.0) - 2023-10-08
 
