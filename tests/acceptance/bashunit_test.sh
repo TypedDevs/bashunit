@@ -124,35 +124,13 @@ function test_bashunit_should_display_version() {
 }
 
 function test_bashunit_when_stop_on_failure() {
-  local test_file=./tests/acceptance/fake_error_test.sh
+  local test_file=./tests/acceptance/fixtures/stop_on_failure.sh
   local expected_output
-  expected_output=$(printf ".\e[31m✗ Failed\e[0m: B error
+  expected_output=$(printf "Running $test_file
+\e[32m✓ Passed\e[0m: A success
+\e[31m✗ Failed\e[0m: B error
     \e[2mExpected\e[0m \e[1m\'1\'\e[0m
-    \e[2mbut got\e[0m \e[1m\'2\'\e[0m
-\e[31m✗ Failed\e[0m: test_b_error
-    \e[2mExpected\e[0m \e[1m\'0\'\e[0m
-    \e[2\e[0m\e[1m\'\'\e[0m
+    \e[2mbut got\e[0m \e[1m\'2\'\e[0m")
 
-")
-
-  echo "
-#!/bin/bash
-function test_a_success() {
-  assert_equals 1 1
-}
-function test_b_error() {
-  assert_equals 1 1
-  assert_equals 1 2 # error
-  assert_equals 2 2
-}
-function test_c_success() {
-  assert_equals 2 2
-}
-" > $test_file
-
-  set +e
-
-  assert_contains "$expected_output" "$(./bashunit --simple --stop-on-failure "$test_file")"
-
-  rm $test_file
+  assert_contains "$expected_output" "$(./bashunit --verbose --stop-on-failure "$test_file")"
 }
