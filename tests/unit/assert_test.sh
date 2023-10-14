@@ -266,7 +266,7 @@ function test_successful_assert_less_or_equal_than_with_an_equal_number() {
 function test_unsuccessful_assert_less_or_equal_than() {
   assert_equals\
     "$(console_results::print_failed_test\
-      "Unsuccessful assert less or equal than" "3" "to be less or equal to than" "1")"\
+      "Unsuccessful assert less or equal than" "3" "to be less or equal than" "1")"\
     "$(assert_less_or_equal_than "1" "3")"
 }
 
@@ -279,4 +279,19 @@ function test_unsuccessful_assert_greater_than() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert greater than" "1" "to be greater than" "3")"\
     "$(assert_greater_than "3" "1")"
+}
+
+function test_successful_assert_greater_or_equal_than_with_a_smaller_number() {
+  assert_empty "$(assert_greater_or_equal_than "1" "3")"
+}
+
+function test_successful_assert_greater_or_equal_than_with_an_equal_number() {
+  assert_empty "$(assert_greater_or_equal_than "3" "3")"
+}
+
+function test_unsuccessful_assert_greater_or_equal_than() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert greater or equal than" "1" "to be greater or equal than" "3")"\
+    "$(assert_greater_or_equal_than "3" "1")"
 }
