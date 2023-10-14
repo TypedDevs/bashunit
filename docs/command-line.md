@@ -76,6 +76,18 @@ Running tests/functional/logic_test.sh
 ```
 :::
 
+## Env
+
+> `bashunit --env "file-path"`
+
+Load a custom env file overriding the `.env` environment variables.
+
+::: code-group
+```bash [Example]
+./bashunit tests --env .env.verbose
+```
+:::
+
 ## Version
 
 > `bashunit --version`
