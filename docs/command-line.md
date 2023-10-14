@@ -84,7 +84,7 @@ Load a custom env file overriding the `.env` environment variables.
 
 ::: code-group
 ```bash [Example]
-./bashunit tests --env .env.test
+./bashunit tests --env .env.verbose
 ```
 :::
 
