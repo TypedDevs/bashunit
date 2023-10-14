@@ -39,7 +39,7 @@ Options:
   -s|simple || -v|verbose
     Enables simplified or verbose output to the console.
 
-  --env <file-path>
+  -e|--env <file-path>
     Load a custom env file overriding the .env environment variables.
 
   --version

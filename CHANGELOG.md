@@ -5,7 +5,7 @@
 - Optimised docs Fonts (Serving directly from origin instead of Google Fonts _proxy_)
 - Add Brew installation to docs
 - Add `--help` option
-- Add `--env` option
+- Add `-e|--env` option
 - Add data_provider
 - Add blog posts to the website
 - Add `assert_string_not_starts_with`
