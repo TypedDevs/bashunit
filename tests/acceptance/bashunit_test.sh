@@ -136,5 +136,5 @@ function test_bashunit_when_stop_on_failure() {
     \e[2mExpected\e[0m \e[1m\'1\'\e[0m
     \e[2mbut got\e[0m \e[1m\'2\'\e[0m" "$test_file")
 
-  assert_contains "$expected_output" "$(./bashunit --verbose --stop-on-failure "$test_file")"
+  assert_contains "$expected_output" "$(./bashunit --env "$TEST_ENV_FILE" --stop-on-failure "$test_file")"
 }
