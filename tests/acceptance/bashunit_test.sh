@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function set_up_before_script() {
+  TEST_ENV_FILE="tests/acceptance/.env.verbose"
+}
+
 function test_bashunit_when_a_test_passes_verbose_output() {
   local test_file=./tests/acceptance/fake_success_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_success_test.sh
@@ -13,8 +17,8 @@ function test_bashunit_when_a_test_passes_verbose_output() {
 #!/bin/bash
 function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains "$fixture" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_successful_code "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 
   rm $test_file
 }
@@ -34,8 +38,8 @@ function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
 function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
 function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
 
-  assert_contains "$fixture" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file" --simple)"
-  assert_successful_code "$(./bashunit --env tests/acceptance/.env.verbose "$test_file" --simple)"
+  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
 
   rm $test_file
 }
@@ -54,8 +58,8 @@ function test_bashunit_when_a_test_fail() {
 #!/bin/bash
 function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 
-  assert_contains "$fixture" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_general_error "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 
   rm $test_file
 }
@@ -84,9 +88,9 @@ function test_error() {
 
   set +e
 
-  assert_contains "$fixture_start" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_contains "$fixture_end" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_general_error "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
+  assert_contains "$fixture_start" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_contains "$fixture_end" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 
   rm $test_file
 }
@@ -109,9 +113,9 @@ function test_bashunit_should_allow_test_drive_development() {
 
   set +e
 
-  assert_contains "$fixture_start" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_contains "$fixture_end" "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
-  assert_general_error "$(./bashunit --env tests/acceptance/.env.verbose "$test_file")"
+  assert_contains "$fixture_start" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_contains "$fixture_end" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 
   rm $test_file
 }
