@@ -221,3 +221,18 @@ function assert_string_not_ends_with() {
 
   state::add_assertions_passed
 }
+
+
+function assert_less_than() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  if ! [[ "$actual" -lt "$expected" ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
+    return
+  fi
+
+  state::add_assertions_passed
+}
