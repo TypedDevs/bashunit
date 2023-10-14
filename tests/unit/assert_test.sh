@@ -244,7 +244,6 @@ function test_unsuccessful_assert_string_not_ends_with() {
     "$(assert_string_not_ends_with "bar" "foobar")"
 }
 
-
 function test_successful_assert_less_than() {
   assert_empty "$(assert_less_than "3" "1")"
 }
@@ -254,4 +253,19 @@ function test_unsuccessful_assert_less_than() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert less than" "3" "to be less than" "1")"\
     "$(assert_less_than "1" "3")"
+}
+
+function test_successful_assert_less_or_equal_than_with_a_smaller_number() {
+  assert_empty "$(assert_less_or_equal_than "3" "1")"
+}
+
+function test_successful_assert_less_or_equal_than_with_an_equal_number() {
+  assert_empty "$(assert_less_or_equal_than "3" "3")"
+}
+
+function test_unsuccessful_assert_less_or_equal_than() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert less or equal than" "3" "to be less or equal to than" "1")"\
+    "$(assert_less_or_equal_than "1" "3")"
 }
