@@ -78,7 +78,7 @@ Running tests/functional/logic_test.sh
 
 ## Stop on failure
 
-> `bashunit --stop-on-failure`
+> `bashunit -S|--stop-on-failure`
 
 Force to stop the runner right after encountering one failing test.
 
