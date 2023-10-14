@@ -6,6 +6,7 @@
 - Add Brew installation to docs
 - Add `--help` option
 - Add data_provider
+- Add blog posts to the website
 - Add `assert_string_not_starts_with`
 - Add `assert_string_starts_with`
 - Add `assert_string_ends_with`
