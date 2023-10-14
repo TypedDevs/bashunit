@@ -63,22 +63,26 @@ function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
 function test_bashunit_when_a_test_execution_error() {
   local test_file=./tests/acceptance/fake_error_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_error_test.sh
-\e[31m✗ Failed\e[0m: Error with error code 127
+\e[31m✗ Failed\e[0m: Error
+    \e[2mExpected\e[0m \e[1m\'127\'\e[0m
+    \e[2mto be exactly\e[0m \e[1m\'1\'\e[0m
+\e[31m✗ Failed\e[0m: Error
+    \e[2m./tests/acceptance/fake_error_test.sh: línea 4: invalid_function_name: orden no encontrada\e[0m
 
 \e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[31m0 failed\e[0m, 0 total")
+\e[2mAssertions:\e[0m \e[31m1 failed\e[0m, 1 total")
 
   echo "
 #!/bin/bash
 function test_error() {
-  invalidFunctionName 2>/dev/null
-  assertGeneralError
+  invalid_function_name
+  assert_general_error
 }" > $test_file
 
   set +e
 
-  assertContains "$fixture" "$(./bashunit --verbose "$test_file")"
-  assertGeneralError "$(./bashunit --verbose "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assert_general_error "$(./bashunit --verbose "$test_file")"
 
   rm $test_file
 }
@@ -86,19 +90,20 @@ function test_error() {
 function test_bashunit_should_allow_test_drive_development() {
   local test_file=./tests/acceptance/fake_error_test.sh
   fixture=$(printf "Running ./tests/acceptance/fake_error_test.sh
-\e[31m✗ Failed\e[0m: Error tdd with error code 127
+\e[31m✗ Failed\e[0m: Error tdd
+    \e[2m./tests/acceptance/fake_error_test.sh: línea 3: assert_that_will_never_exist: orden no encontrada\e[0m
 
 \e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
 \e[2mAssertions:\e[0m \e[31m0 failed\e[0m, 0 total")
 
   echo "
   #!/bin/bash
-  function test_error_tdd() { assert_that_will_never_exist \"1\" \"1\" 2>/dev/null ; }" > $test_file
+  function test_error_tdd() { assert_that_will_never_exist \"1\" \"1\" ; }" > $test_file
 
   set +e
 
-  assertContains "$fixture" "$(./bashunit --verbose "$test_file")"
-  assertGeneralError "$(./bashunit --verbose "$test_file")"
+  assert_contains "$fixture" "$(./bashunit --verbose "$test_file")"
+  assert_general_error "$(./bashunit --verbose "$test_file")"
 
   rm $test_file
 }
