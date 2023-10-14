@@ -20,3 +20,7 @@ fi
 if [[ -z "$SIMPLE_OUTPUT" ]]; then
   SIMPLE_OUTPUT=$_DEFAULT_SIMPLE_OUTPUT
 fi
+
+if [[ -z "$STOP_ON_FAILURE" ]]; then
+  STOP_ON_FAILURE=$_DEFAULT_STOP_ON_FAILURE
+fi

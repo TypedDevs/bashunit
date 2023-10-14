@@ -39,6 +39,9 @@ Options:
   -s|simple || -v|verbose
     Enables simplified or verbose output to the console.
 
+  -S|--stop-on-failure
+    Force to stop the runner right after encountering one failing test.
+
   -e|--env <file-path>
     Load a custom env file overriding the .env environment variables.
 
