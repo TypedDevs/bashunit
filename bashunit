@@ -44,6 +44,12 @@ while [[ $# -gt 0 ]]; do
       STOP_ON_FAILURE=true
       shift
       ;;
+    -e|--env)
+      # shellcheck disable=SC1090
+      source "$2"
+      shift
+      shift
+      ;;
     --version)
       console_header::print_version
       trap '' EXIT && exit 0

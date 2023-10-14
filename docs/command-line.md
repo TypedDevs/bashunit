@@ -87,6 +87,19 @@ Force to stop the runner right after encountering one failing test.
 ./bashunit --stop-on-failure
 ```
 :::
+
+## Env
+
+> `bashunit --env "file-path"`
+
+Load a custom env file overriding the `.env` environment variables.
+
+::: code-group
+```bash [Example]
+./bashunit tests --env .env.verbose
+```
+:::
+
 ## Version
 
 > `bashunit --version`
