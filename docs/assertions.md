@@ -119,9 +119,9 @@ function test_failure() {
 :::
 
 ## assert_less_than
-> `assert_less_than "higher_number" "lower_number"`
+> `assert_less_than "expected" "actual"`
 
-Reports an error if `lower_number` is higher or equal than `higher_number`.
+Reports an error if `actual` is higher or equal than `expected`.
 
 [assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
 
@@ -138,9 +138,9 @@ function test_failure() {
 :::
 
 ## assert_less_or_equal_than
-> `assert_less_or_equal_than "higher_number" "lower_number"`
+> `assert_less_or_equal_than "expected" "actual"`
 
-Reports an error if `lower_number` is higher than `higher_number`.
+Reports an error if `actual` is higher than `expected`.
 
 [assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
 
@@ -161,9 +161,9 @@ function test_failure() {
 :::
 
 ## assert_greater_than
-> `assert_greater_than "higher_number" "lower_number"`
+> `assert_greater_than "expected" "actual"`
 
-Reports an error if `lower_number` is higher or equal than `higher_number`.
+Reports an error if `actual` is higher or equal than `expected`.
 
 [assert_less_than](#assert-less-than) is the inverse of this assertion and takes the same arguments.
 
@@ -180,9 +180,9 @@ function test_failure() {
 :::
 
 ## assert_greater_or_equal_than
-> `assert_greater_or_equal_than "lower_number" "higher_number"`
+> `assert_greater_or_equal_than "expected" "actual"`
 
-Reports an error if `lower_number` is higher than `higher_number`.
+Reports an error if `expected` is higher than `actual`.
 
 [assert_less_or_equal_than](#assert-less-or-equal-than) is the inverse of this assertion and takes the same arguments.
 
