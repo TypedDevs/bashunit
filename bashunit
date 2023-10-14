@@ -40,6 +40,12 @@ while [[ $# -gt 0 ]]; do
       SIMPLE_OUTPUT=false
       shift
       ;;
+    --env)
+      # shellcheck disable=SC1090
+      source "$2"
+      shift
+      shift
+      ;;
     --version)
       console_header::print_version
       trap '' EXIT && exit 0
@@ -47,12 +53,6 @@ while [[ $# -gt 0 ]]; do
     --help)
       console_header::print_help
       trap '' EXIT && exit 0
-      ;;
-    --env)
-      # shellcheck disable=SC1090
-      source "$2"
-      shift
-      shift
       ;;
     *)
       while IFS='' read -r line; do
