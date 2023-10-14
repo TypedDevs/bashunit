@@ -98,13 +98,6 @@ function runner::parse_execution_result() {
   _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
   _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
   _ASSERTIONS_INCOMPLETE=$((_ASSERTIONS_INCOMPLETE + assertions_incomplete))
-
-  local print_execution_result
-  print_execution_result="$(echo "$execution_result" | sed '$ d')"
-
-  if [ -n "$print_execution_result" ]; then
-    echo "$print_execution_result"
-  fi
 }
 
 function runner::run_test() {
@@ -116,23 +109,34 @@ function runner::run_test() {
   current_assertions_incomplete="$(state::get_assertions_incomplete)"
   local current_assertions_skipped
   current_assertions_skipped="$(state::get_assertions_skipped)"
+
+  exec 3>&1
+
   local test_execution_result
   test_execution_result=$(
     state::initialize_assertions_count
-
-    set -e
     runner::run_set_up
-    "$function_name" "$data"
-    runner::run_tear_down
 
+    "$function_name" "$data" 2>&1 1>&3
+
+    runner::run_tear_down
     state::export_assertions_count
   )
-  local test_result_code=$?
+
+  exec 3>&-
+
   runner::parse_execution_result "$test_execution_result"
 
-  if [[ $test_result_code -ne 0 ]]; then
+  local runtime_error
+  runtime_error=$(\
+    echo "$test_execution_result" |\
+    head -n 1 |\
+    sed -E -e 's/(.*)##ASSERTIONS_FAILED=.*/\1/g'\
+  )
+
+  if [[ -n $runtime_error ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$function_name" "$test_result_code"
+    console_results::print_error_test "$function_name" "$runtime_error"
     return
   fi
 

@@ -166,201 +166,56 @@ function assert_command_not_found() {
   state::add_assertions_passed
 }
 
-function assert_array_contains() {
+function assert_string_starts_with() {
   local expected="$1"
-  local label
-  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-  shift
-
-  local actual=("${@}")
-
-  if ! [[ "${actual[*]}" == *"$expected"* ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_array_not_contains() {
-  local expected="$1"
-  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-  shift
-  local actual=("$@")
-
-  if [[ "${actual[*]}" == *"$expected"* ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_file_exists() {
-  local expected="$1"
+  local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ ! -f "$expected" ]]; then
+  if ! [[ $actual =~ ^"$expected"* ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
+    console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
     return
   fi
 
   state::add_assertions_passed
 }
 
-function assert_file_not_exists() {
+function assert_string_not_starts_with() {
   local expected="$1"
+  local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ -f "$expected" ]]; then
+  if [[ $actual =~ ^"$expected"* ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
+    console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
     return
   fi
 
   state::add_assertions_passed
 }
 
-function assert_is_file() {
+function assert_string_ends_with() {
   local expected="$1"
+  local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ ! -f "$expected" ]]; then
+  if ! [[ $actual =~ .*"$expected"$ ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
+    console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
     return
   fi
 
   state::add_assertions_passed
 }
 
-function assert_is_file_empty() {
+function assert_string_not_ends_with() {
   local expected="$1"
+  local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ -s "$expected" ]]; then
+  if [[ $actual =~ .*"$expected"$ ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_directory_exists() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_directory_not_exists() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ -d "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the directory exists"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be a directory" "but is not a directory"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_empty() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_not_empty() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not be empty" "but is empty"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_readable() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be readable" "but is not readable"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_not_readable() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be not readable" "but is readable"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_writable() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" || ! -w "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be writable" "but is not writable"
-    return
-  fi
-
-  state::add_assertions_passed
-}
-
-function assert_is_directory_not_writable() {
-  local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
-  if [[ ! -d "$expected" || -w "$expected" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be not writable" "but is writable"
+    console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
     return
   fi
 

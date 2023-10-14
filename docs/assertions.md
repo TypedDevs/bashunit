@@ -80,6 +80,44 @@ function test_failure() {
 ```
 :::
 
+## assert_string_starts_with
+> `assert_string_starts_with "needle" "haystack"`
+
+Reports an error if `haystack` does not starts with `needle`.
+
+[assert_string_not_starts_with](#assert-string-not-starts-with) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_starts_with "foo" "foobar"
+}
+
+function test_failure() {
+  assert_string_starts_with "baz" "foobar"
+}
+```
+:::
+
+## assert_string_ends_with
+> `assert_string_ends_with "needle" "haystack"`
+
+Reports an error if `haystack` does not ends with `needle`.
+
+[assert_string_not_ends_with](#assert-string-not-ends-with) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_ends_with "bar" "foobar"
+}
+
+function test_failure() {
+  assert_string_ends_with "foo" "foobar"
+}
+```
+:::
+
 ## assert_exit_code
 > `assert_exit_code "expected" ["callable"]`
 
@@ -475,6 +513,44 @@ function test_success() {
 
 function test_failure() {
   assert_not_contains "foo" "foobar"
+}
+```
+:::
+
+## assert_string_not_starts_with
+> `assert_string_not_starts_with "needle" "haystack"`
+
+Reports an error if `haystack` does starts with `needle`.
+
+[assert_string_starts_with](#assert-string-starts-with) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_not_starts_with "bar" "foobar"
+}
+
+function test_failure() {
+  assert_string_not_starts_with "foo" "foobar"
+}
+```
+:::
+
+## assert_string_not_ends_with
+> `assert_string_not_ends_with "needle" "haystack"`
+
+Reports an error if `haystack` does ends with `needle`.
+
+[assert_string_ends_with](#assert-string-ends-with) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_not_ends_with "foo" "foobar"
+}
+
+function test_failure() {
+  assert_string_not_ends_with "bar" "foobar"
 }
 ```
 :::
