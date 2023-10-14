@@ -118,6 +118,90 @@ function test_failure() {
 ```
 :::
 
+## assert_less_than
+> `assert_less_than "higher_number" "lower_number"`
+
+Reports an error if `lower_number` is higher or equal than `higher_number`.
+
+[assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_less_than "999" "1"
+}
+
+function test_failure() {
+  assert_less_than "1" "999"
+}
+```
+:::
+
+## assert_less_or_equal_than
+> `assert_less_or_equal_than "higher_number" "lower_number"`
+
+Reports an error if `lower_number` is higher than `higher_number`.
+
+[assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_less_or_equal_than "999" "1"
+}
+
+function test_success_with_two_equal_numbers() {
+  assert_less_or_equal_than "999" "999"
+}
+
+function test_failure() {
+  assert_less_or_equal_than "1" "999"
+}
+```
+:::
+
+## assert_greater_than
+> `assert_greater_than "higher_number" "lower_number"`
+
+Reports an error if `lower_number` is higher or equal than `higher_number`.
+
+[assert_less_than](#assert-less-than) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_greater_than "1" "999"
+}
+
+function test_failure() {
+  assert_greater_than "999" "1"
+}
+```
+:::
+
+## assert_greater_or_equal_than
+> `assert_greater_or_equal_than "lower_number" "higher_number"`
+
+Reports an error if `lower_number` is higher than `higher_number`.
+
+[assert_less_or_equal_than](#assert-less-or-equal-than) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_greater_or_equal_than "1" "999"
+}
+
+function test_success_with_two_equal_numbers() {
+  assert_greater_or_equal_than "999" "999"
+}
+
+function test_failure() {
+  assert_greater_or_equal_than "999" "1"
+}
+```
+:::
+
 ## assert_exit_code
 > `assert_exit_code "expected" ["callable"]`
 
