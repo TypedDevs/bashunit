@@ -22,5 +22,5 @@ if [[ "$TAG" == "latest" || "$TAG" == "main" ]]; then
 else
   echo "> Using a concrete version: '$TAG'"
   curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit"
-  chmod +x "bashunit"
+  chmod u+x "bashunit"
 fi
