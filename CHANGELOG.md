@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.8.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.9.0...main)
+
+- ...
+
+## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
 
 - Optimised docs Fonts (Serving directly from origin instead of Google Fonts _proxy_)
 - Add Brew installation to docs

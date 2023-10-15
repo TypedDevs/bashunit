@@ -1,6 +1,6 @@
 {
   "name": "bashunit-docs",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "Docs for bashunit a simple testing library for bash scripts",
   "main": "index.js",
   "repository": "git@github.com:TypedDevs/bashunit.git",
