@@ -14,9 +14,7 @@ function test_install_downloads_the_latest_version() {
   assert_file_exists "$install_dir"
   assert_string_starts_with "$(printf "\e[1m\e[32mbashunit\e[0m - ")" "$("$install_dir" --version)"
   todo "the output message folder is wrong"
-  assert_equals\
-    "$(printf "> Using latest version\nBuild complete. bashunit has been generated in the bin folder.")"\
-    "$output"
+  assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
 }
 
 function test_install_downloads_in_given_folder() {
@@ -28,9 +26,7 @@ function test_install_downloads_in_given_folder() {
   assert_file_exists "$install_dir"
   assert_string_starts_with "$(printf "\e[1m\e[32mbashunit\e[0m - ")" "$("$install_dir" --version)"
   todo "the output message folder is wrong"
-  assert_equals\
-    "$(printf "> Using latest version\nBuild complete. bashunit has been generated in the bin folder.")"\
-    "$output"
+  assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
 }
 
 function test_install_downloads_the_given_version() {
@@ -42,6 +38,6 @@ function test_install_downloads_the_given_version() {
   assert_file_exists "$install_dir"
   assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - 0.8.0")" "$("$install_dir" --version)"
   assert_equals\
-    "$(printf "> Using a concrete version: '0.8.0'")"\
+    "$(printf "> Downloading a concrete version: '0.8.0'")"\
     "$output"
 }
