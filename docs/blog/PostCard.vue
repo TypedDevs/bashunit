@@ -48,7 +48,7 @@ export default defineComponent({
 })
 </script>
 
-<style lang="css">
+<style scoped lang="css">
 .post-card__card {
   display: grid;
   grid-template-areas:
