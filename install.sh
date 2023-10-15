@@ -21,5 +21,7 @@ if [[ $VERSION != 'latest' ]]; then
 else
   echo "> Downloading the latest version: '$TAG'"
 fi
-curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit"
+
+curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
 chmod u+x "bashunit"
+echo "> bashunit has been installed in the '$DIR' folder"
