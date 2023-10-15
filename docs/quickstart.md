@@ -40,7 +40,7 @@ Once **bashunit** is installed, you're ready to get started.
 
 3.  Finally, run the **bashunit** executable:
     ```bash
-    ./bashunit ./tests
+    ./lib/bashunit ./tests
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
