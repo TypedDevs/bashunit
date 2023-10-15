@@ -4,7 +4,7 @@ title: 'Unveiling the bashunit Blog: Your Hub for Bash Testing Insights'
 description: 'Welcome to the inaugural post of the bashunit blog!
 This space is carved out to delve deeper into the world of testing in bash.
 Our mission is to provide a platform for learning, discussion, and real-world application of bash testing principles, with a special spotlight on utilizing bashunit to its fullest potential.'
-coverUrl: '/covers/2023-10-15-unveiling-the-bashunit-blog.png'
+coverUrl: '/covers/2023-10-15-unveiling-the-bashunit-blog.jpg'
 coverAlt: 'Illustration of a quiet morning landscape with subtle pastel colors in the sky.
 A computer rests on a wooden table in the foreground, displaying the brightly illuminated bashunit logo on its screen.'
 
