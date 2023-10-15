@@ -183,3 +183,8 @@ time {
   opacity: 0.8;
   font-size: 14px;
 }
+
+.VPNavBarMenu .VPNavBarMenuLink,
+.VPNavScreenMenu .VPNavScreenMenuLink {
+  font-weight: 600;
+}

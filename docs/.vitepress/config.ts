@@ -71,11 +71,11 @@ export default defineConfig({
     ],
 
     nav: [{
-      text: '<strong>Docs</strong>',
+      text: 'Docs',
       link: '/quickstart',
       activeMatch: '^/(?!blog)[^/]'
     }, {
-      text: '<strong>Blog</strong>',
+      text: 'Blog',
       link: '/blog/',
       activeMatch: '^/blog/'
     }, {
