@@ -88,15 +88,15 @@ Force to stop the runner right after encountering one failing test.
 ```
 :::
 
-## Env
+## Environment
 
-> `bashunit --env "file-path"`
+> `bashunit --env "file path"`
 
 Load a custom env file overriding the `.env` environment variables.
 
 ::: code-group
 ```bash [Example]
-./bashunit tests --env .env.verbose
+./bashunit tests --env .env.production
 ```
 :::
 
