@@ -73,12 +73,17 @@ function assert_contains_ignore_case() {
   local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if ! [[ ${actual,,} =~ ${expected,,} ]]; then
+  shopt -s nocasematch
+
+  if ! [[ $actual =~ $expected ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
+
+    shopt -u nocasematch
     return
   fi
 
+  shopt -u nocasematch
   state::add_assertions_passed
 }
 
