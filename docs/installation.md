@@ -37,6 +37,14 @@ You can install **bashunit** globally in your macOS (or Linux) using brew.
 brew install bashunit
 ```
 
+## MacPorts
+
+On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.org):
+
+```bash
+sudo port install bashunit
+```
+
 ## Git submodule
 
 You can use Git submodules to include external Git repositories, like **bashunit**, within your Git project.
