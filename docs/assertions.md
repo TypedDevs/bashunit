@@ -40,6 +40,15 @@ function test_failure() {
   assert_contains "baz" "foobar"
 }
 ```
+
+:::
+
+## assert_contains_ignore_case
+> `assert_contains_ignore_case "needle" "haystack"`
+
+Reports an error if `needle` is not a substring of `haystack`. Differences in casing are ignored when needle is searched
+for in haystack.
+
 :::
 
 ## assert_empty
