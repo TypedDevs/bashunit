@@ -40,6 +40,16 @@ function test_unsuccessful_assert_not_equals() {
     "$(assert_not_equals "1" "1")"
 }
 
+function test_successful_assert_contains_ignore_case() {
+  assert_empty "$(assert_contains_ignore_case "Linux" "GNU/LINUX")"
+}
+
+function test_unsuccessful_assert_contains_ignore_case() {
+  assert_equals\
+    "$(console_results::print_failed_test "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"\
+    "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
+}
+
 function test_successful_assert_contains() {
   assert_empty "$(assert_contains "Linux" "GNU/Linux")"
 }
