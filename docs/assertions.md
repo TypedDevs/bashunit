@@ -46,9 +46,18 @@ function test_failure() {
 ## assert_contains_ignore_case
 > `assert_contains_ignore_case "needle" "haystack"`
 
-Reports an error if `needle` is not a substring of `haystack`. Differences in casing are ignored when needle is searched
-for in haystack.
+Reports an error if `needle` is not a substring of `haystack`.
+Differences in casing are ignored when needle is searched for in haystack.
 
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_contains_ignore_case "foo" "FooBar"
+}
+function test_failure() {
+  assert_contains_ignore_case "baz" "FooBar"
+}
+```
 :::
 
 ## assert_empty
