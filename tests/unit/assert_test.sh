@@ -305,3 +305,9 @@ function test_unsuccessful_assert_greater_or_equal_than() {
       "Unsuccessful assert greater or equal than" "1" "to be greater or equal than" "3")"\
     "$(assert_greater_or_equal_than "3" "1")"
 }
+
+function test_successful_assert_equals_without_colors() {
+  assert_equals_without_colors\
+    "✗ Failed foo"\
+    "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+}
