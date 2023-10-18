@@ -14,7 +14,7 @@ function assert_equals() {
   state::add_assertions_passed
 }
 
-function assert_equals_without_colors() {
+function assert_equals_ignore_colors() {
   local expected="$1"
   local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"

@@ -23,19 +23,19 @@ function test_failure() {
 ```
 :::
 
-## assert_equals_without_colors
-> `assert_equals_without_colors "expected" "actual"`
+## assert_equals_ignore_colors
+> `assert_equals_ignore_colors "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal ignoring the colors ONLY from `actual`.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals_without_colors "foo" "\e[31mfoo"
+  assert_equals_ignore_colors "foo" "\e[31mfoo"
 }
 
 function test_failure() {
-  assert_equals_without_colors "\e[31mfoo" "\e[31mfoo"
+  assert_equals_ignore_colors "\e[31mfoo" "\e[31mfoo"
 }
 ```
 :::
