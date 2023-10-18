@@ -311,3 +311,15 @@ function test_successful_assert_equals_without_colors() {
     "✗ Failed foo"\
     "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
 }
+
+function test_unsuccessful_assert_equals_without_colors() {
+  local string="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert equals without colors"\
+      "$string"\
+      "but got"\
+      "✗ Failed foo")"\
+    "$(assert_equals_without_colors "$string" "$string")"
+}

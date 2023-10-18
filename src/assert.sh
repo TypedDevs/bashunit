@@ -19,13 +19,10 @@ function assert_equals_without_colors() {
   local actual="$2"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  local expected_without_colors
-  expected_without_colors=$(echo -e "$expected" | sed "s/\x1B\[[0-9;]*[JKmsu]//g")
-
   local actual_without_colors
   actual_without_colors=$(echo -e "$actual" | sed "s/\x1B\[[0-9;]*[JKmsu]//g")
 
-  assert_equals "$expected_without_colors" "$actual_without_colors" "$label"
+  assert_equals "$expected" "$actual_without_colors" "$label"
 }
 
 function assert_empty() {
