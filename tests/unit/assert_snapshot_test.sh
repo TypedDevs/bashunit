@@ -8,6 +8,7 @@ function test_successful_assert_match_snapshot() {
 
   assert_empty "$(assert_match_snapshot "Hello World!")"
   assert_file_exists $snapshot_file_path
+
   rm $snapshot_file_path
 }
 
