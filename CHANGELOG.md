@@ -4,6 +4,7 @@
 
 - Installer no longer needs git
 - Add `assert_contains_ignore_case`
+- Add `assert_equals_ignore_colors`
 
 ## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
 

@@ -305,3 +305,21 @@ function test_unsuccessful_assert_greater_or_equal_than() {
       "Unsuccessful assert greater or equal than" "1" "to be greater or equal than" "3")"\
     "$(assert_greater_or_equal_than "3" "1")"
 }
+
+function test_successful_assert_equals_ignore_colors() {
+  assert_equals_ignore_colors\
+    "✗ Failed foo"\
+    "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+}
+
+function test_unsuccessful_assert_equals_ignore_colors() {
+  local string="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert equals ignore colors"\
+      "$string"\
+      "but got"\
+      "✗ Failed foo")"\
+    "$(assert_equals_ignore_colors "$string" "$string")"
+}
