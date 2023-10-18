@@ -15,7 +15,7 @@ function assert_match_snapshot() {
     mkdir -p "$directory"
     echo "$actual" > "$snapshot_file"
 
-    state::add_assertions_snapshot
+    state::add_assertions_passed # TODO: state::add_assertions_snapshot
     return
   fi
 
