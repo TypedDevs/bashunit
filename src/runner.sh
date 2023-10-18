@@ -80,6 +80,13 @@ function runner::parse_execution_result() {
     sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
   )
 
+  local assertions_snapshot
+  assertions_snapshot=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
+  )
+
   local assertions_skipped
   assertions_skipped=$(\
     echo "$execution_result" |\
@@ -95,6 +102,7 @@ function runner::parse_execution_result() {
   )
 
   _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
+  _ASSERTIONS_SNAPSHOT=$((_ASSERTIONS_SNAPSHOT + assertions_snapshot))
   _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
   _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
   _ASSERTIONS_INCOMPLETE=$((_ASSERTIONS_INCOMPLETE + assertions_incomplete))

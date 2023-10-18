@@ -19,6 +19,7 @@ function console_results::render_result() {
   ((total_tests+=$(state::get_tests_failed)))
   local total_assertions=0
   ((total_assertions+=$(state::get_assertions_passed)))
+  ((total_assertions+=$(state::get_assertions_snapshot)))
   ((total_assertions+=$(state::get_assertions_skipped)))
   ((total_assertions+=$(state::get_assertions_incomplete)))
   ((total_assertions+=$(state::get_assertions_failed)))

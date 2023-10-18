@@ -123,7 +123,12 @@ function test_initialize_assertions_count() {
   )
 
   assertEquals\
-    "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0##ASSERTIONS_INCOMPLETE=0##"\
+    "##ASSERTIONS_FAILED=0\
+##ASSERTIONS_PASSED=0\
+##ASSERTIONS_SNAPSHOT=0\
+##ASSERTIONS_SKIPPED=0\
+##ASSERTIONS_INCOMPLETE=0\
+##"\
     "$export_assertions_count"
 }
 
@@ -131,6 +136,7 @@ function test_export_assertions_count() {
   local export_assertions_count
   export_assertions_count=$(
     _ASSERTIONS_PASSED=10
+    _ASSERTIONS_SNAPSHOT=2
     _ASSERTIONS_FAILED=5
     _ASSERTIONS_SKIPPED=42
     _ASSERTIONS_INCOMPLETE=12
@@ -139,6 +145,11 @@ function test_export_assertions_count() {
   )
 
   assertEquals\
-    "##ASSERTIONS_FAILED=5##ASSERTIONS_PASSED=10##ASSERTIONS_SKIPPED=42##ASSERTIONS_INCOMPLETE=12##"\
+    "##ASSERTIONS_FAILED=5\
+##ASSERTIONS_PASSED=10\
+##ASSERTIONS_SNAPSHOT=2\
+##ASSERTIONS_SKIPPED=42\
+##ASSERTIONS_INCOMPLETE=12\
+##"\
     "$export_assertions_count"
 }

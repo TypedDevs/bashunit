@@ -5,6 +5,7 @@ _TESTS_FAILED=0
 _TESTS_SKIPPED=0
 _TESTS_INCOMPLETE=0
 _ASSERTIONS_PASSED=0
+_ASSERTIONS_SNAPSHOT=0
 _ASSERTIONS_FAILED=0
 _ASSERTIONS_SKIPPED=0
 _ASSERTIONS_INCOMPLETE=0
@@ -50,6 +51,14 @@ function state::add_assertions_passed() {
   ((_ASSERTIONS_PASSED++)) || true
 }
 
+function state::get_assertions_snapshot() {
+  echo "$_ASSERTIONS_SNAPSHOT"
+}
+
+function state::add_assertions_snapshot() {
+  ((_ASSERTIONS_SNAPSHOT++)) || true
+}
+
 function state::get_assertions_failed() {
   echo "$_ASSERTIONS_FAILED"
 }
@@ -84,6 +93,7 @@ function state::set_duplicated_test_functions_found() {
 
 function state::initialize_assertions_count() {
     _ASSERTIONS_PASSED=0
+    _ASSERTIONS_SNAPSHOT=0
     _ASSERTIONS_FAILED=0
     _ASSERTIONS_SKIPPED=0
     _ASSERTIONS_INCOMPLETE=0
@@ -92,6 +102,7 @@ function state::initialize_assertions_count() {
 function state::export_assertions_count() {
   echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
+##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##"
