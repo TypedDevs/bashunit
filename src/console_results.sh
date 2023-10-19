@@ -126,7 +126,8 @@ function console_results::print_failed_snapshot_test() {
     local actual_file
     actual_file="${snapshot_file}.tmp"
     echo "$actual" > "$actual_file"
-    git diff --no-index --word-diff --color=always "$snapshot_file" "$actual_file" | tail -n +6 | sed "s/^/    /"
+    git diff --no-index --word-diff --color=always "$snapshot_file" "$actual_file" 2>/dev/null\
+      | tail -n +6 | sed "s/^/    /"
     rm "$actual_file"
   fi
 }
