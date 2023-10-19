@@ -223,7 +223,30 @@ function test_render_execution_time() {
     return
   fi
 
-  assert_matches "Time taken: [[:digit:]]+ ms" "$(console_results::render_result)"
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    SHOW_EXECUTION_TIME=true
+
+    console_results::render_result
+  )
+  assert_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+}
+
+function test_not_render_execution_time() {
+  if [[ $_OS == "OSX" ]]; then
+    skip "Skipping in OSX"
+    return
+  fi
+
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    SHOW_EXECUTION_TIME=false
+
+    console_results::render_result
+  )
+  assert_not_matches "Time taken" "$render_result"
 }
 
 function test_not_render_execution_time_on_osx() {
