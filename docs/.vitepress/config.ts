@@ -53,6 +53,9 @@ export default defineConfig({
         text: 'Assertions',
         link: '/assertions'
       }, {
+        text: 'Snapshots',
+        link: '/snapshots'
+      }, {
         text: 'Skipping/incomplete',
         link: '/skipping-incomplete'
       }, {
