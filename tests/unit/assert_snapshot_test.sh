@@ -25,7 +25,6 @@ function test_unsuccessful_assert_match_snapshot() {
 
   local actual
   actual="$(assert_match_snapshot "Expected snapshot")"
-  actual_without_colors=$(echo -e "$actual" | sed "s/\x1B\[[0-9;]*[JKmsu]//g")
 
-  assert_equals "$expected" "$actual_without_colors"
+  assert_equals_ignore_colors "$expected" "$actual"
 }
