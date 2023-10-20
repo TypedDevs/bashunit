@@ -115,6 +115,23 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 }
 
+function console_results::print_failed_snapshot_test() {
+  local test_name=$1
+  local snapshot_file=$2
+
+  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$test_name"
+
+  if command -v git > /dev//null; then
+    local actual_file
+    actual_file="${snapshot_file}.tmp"
+    echo "$actual" > "$actual_file"
+    git diff --no-index --word-diff --color=always "$snapshot_file" "$actual_file" 2>/dev/null\
+      | tail -n +6 | sed "s/^/    /"
+    rm "$actual_file"
+  fi
+}
+
 function console_results::print_skipped_test() {
   local test_name=$1
   local reason=$2
