@@ -77,6 +77,10 @@ function console_results::render_result() {
 }
 
 function console_results::print_execution_time() {
+  if [[ $SHOW_EXECUTION_TIME == false ]]; then
+    return
+  fi
+
   if [[ "$_OS" != "OSX" ]]; then
     _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"

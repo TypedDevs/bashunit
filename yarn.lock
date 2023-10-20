@@ -488,7 +488,7 @@ estree-walker@^2.0.2:
   resolved "https://registry.yarnpkg.com/estree-walker/-/estree-walker-2.0.2.tgz#52f010178c2a4c117a7757cfe942adb7d2da4cac"
   integrity sha512-Rfkk/Mp/DL7JVje3u18FxFujQlTNR2q6QfMSMB7AvCBx91NGj/ba3kCfza0f6dVDbw7YlRf/nDrn7pQrCCyQ/w==
 
-focus-trap@^7.5.3:
+focus-trap@^7.5.4:
   version "7.5.4"
   resolved "https://registry.yarnpkg.com/focus-trap/-/focus-trap-7.5.4.tgz#6c4e342fe1dae6add9c2aa332a6e7a0bbd495ba2"
   integrity sha512-N7kHdlgsO/v+iD/dMoJKtsSqs5Dz/dXZVebRgJw23LDk+jMi/974zyiOYDziY2JPp8xivq9BmUGwIJMiuSBi7w==
@@ -589,10 +589,10 @@ vite@^4.4.11:
   optionalDependencies:
     fsevents "~2.3.2"
 
-vitepress@^1.0.0-rc.21:
-  version "1.0.0-rc.21"
-  resolved "https://registry.yarnpkg.com/vitepress/-/vitepress-1.0.0-rc.21.tgz#fbe1a63db86a37729c554048e4df3c606ba0d803"
-  integrity sha512-eHX057NgAqmrj6FIqh7Sqsbk/kftrFMBUpCKjuQIZ+c+bYTbmzXsXrHSbT5b4WWy4vLx1993a+H3wIRy2dHi8g==
+vitepress@^1.0.0-rc.22:
+  version "1.0.0-rc.22"
+  resolved "https://registry.yarnpkg.com/vitepress/-/vitepress-1.0.0-rc.22.tgz#9855edc0991a57cf88561e790b0b35ddc447fbf0"
+  integrity sha512-n7le5iikCFgWMuX7sKfzDGJGlrsYQ5trG3S97BghNz2alOTr4Xp+GrB6ShwogUTX9gNgeNmrACjokhW55LNeBA==
   dependencies:
     "@docsearch/css" "^3.5.2"
     "@docsearch/js" "^3.5.2"
@@ -600,7 +600,7 @@ vitepress@^1.0.0-rc.21:
     "@vue/devtools-api" "^6.5.1"
     "@vueuse/core" "^10.5.0"
     "@vueuse/integrations" "^10.5.0"
-    focus-trap "^7.5.3"
+    focus-trap "^7.5.4"
     mark.js "8.11.1"
     minisearch "^6.1.0"
     shiki "^0.14.5"
