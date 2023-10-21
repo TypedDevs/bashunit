@@ -370,10 +370,7 @@ function test_print_successful_test_output_no_args() {
   local actual
   actual=$(console_results::print_successful_test "$test_name")
 
-  local expected
-  expected=$(printf "✓ Passed: %s" "${test_name}")
-
-  assert_equals_ignore_colors "$expected" "$actual"
+  assert_equals_ignore_colors "✓ Passed: $test_name" "$actual"
 }
 
 function test_print_successful_test_output_with_args() {
@@ -383,8 +380,5 @@ function test_print_successful_test_output_with_args() {
   local actual
   actual=$(console_results::print_successful_test "$test_name" "$data")
 
-  local expected
-  expected=$(printf "✓ Passed: %s (%s)" "${test_name}" "${data}")
-
-  assert_equals_ignore_colors "$expected" "$actual"
+  assert_equals_ignore_colors "✓ Passed: $test_name ($data)" "$actual"
 }
