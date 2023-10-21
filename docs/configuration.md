@@ -39,9 +39,6 @@ Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in 
 ```env [.env]
 SHOW_HEADER=false
 ```
-```bash [Example]
-./bashunit ./tests
-```
 ```[Output without header]
 ✓ Passed: foo bar
 ```
@@ -51,10 +48,7 @@ SHOW_HEADER=false
 ```env [.env]
 SHOW_HEADER=true
 ```
-```bash [Example]
-./bashunit ./tests
-```
-```[Output with simple header]
+```[Output with plain header]
 bashunit - 0.9.0
 
 ✓ Passed: foo bar
@@ -66,10 +60,7 @@ bashunit - 0.9.0
 SHOW_HEADER=true
 HEADER_ASCII_ART=true
 ```
-```bash [Example]
-./bashunit ./tests
-```
-```[Output with header ASCII]
+```[Output with ASCII header]
 __               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
 | '_ \ / _' / __| '_ \| | | | '_ \| | __|
@@ -93,9 +84,6 @@ Specifies if you want to display the execution time after running **bashunit**.
 ```env [.env]
 SHOW_EXECUTION_TIMEER=true
 ```
-```bash [Example]
-./bashunit ./tests
-```
 ```[Output with execution time]
 ✓ Passed: foo bar
 
@@ -109,9 +97,6 @@ Time taken: 14 ms
 ::: code-group
 ```env [.env]
 SHOW_EXECUTION_TIMEER=false
-```
-```bash [Example]
-./bashunit ./tests
 ```
 ```[Output without execution time]
 ✓ Passed: foo bar
