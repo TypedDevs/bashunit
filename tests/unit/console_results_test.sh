@@ -363,3 +363,28 @@ function test_only_render_success_result_when_all_tests_passes() {
   assert_not_contains "Some tests skipped" "$render_result"
   assert_contains "All tests passed" "$render_result"
 }
+
+function test_print_successful_test_output_no_args() {
+  local test_name="a custom test"
+
+  local actual
+  actual=$(console_results::print_successful_test "$test_name")
+
+  local expected
+  expected=$(printf "✓ Passed: %s" "${test_name}")
+
+  assert_equals_ignore_colors "$expected" "$actual"
+}
+
+function test_print_successful_test_output_with_args() {
+  local test_name="a custom test"
+  local data="foo"
+
+  local actual
+  actual=$(console_results::print_successful_test "$test_name" "$data")
+
+  local expected
+  expected=$(printf "✓ Passed: %s (%s)" "${test_name}" "${data}")
+
+  assert_equals_ignore_colors "$expected" "$actual"
+}
