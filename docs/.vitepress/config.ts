@@ -44,6 +44,9 @@ export default defineConfig({
         text: 'Command line',
         link: '/command-line'
       }, {
+        text: 'Configuration',
+        link: '/configuration'
+      }, {
         text: 'Test files',
         link: '/test-files',
       }, {

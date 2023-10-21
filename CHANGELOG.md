@@ -7,6 +7,7 @@
 - Add `assert_equals_ignore_colors`
 - Add `assert_match_snapshot`
 - Add `SHOW_EXECUTION_TIME` to environment config
+- Add docs for environment variables
 
 ## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
 
