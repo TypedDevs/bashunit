@@ -163,7 +163,7 @@ function runner::run_test() {
   local label
   label="$(helper::normalize_test_function_name "$function_name")"
 
-  console_results::print_successful_test "${label}"
+  console_results::print_successful_test "${label}" "${data}"
   state::add_tests_passed
 }
 

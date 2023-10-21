@@ -98,7 +98,13 @@ function console_results::print_successful_test() {
     fi
   else
     local test_name=$1
-    printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+    local data=$2
+
+    if [[ -z "$data" ]]; then
+      printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+    else
+      printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "${data}"
+    fi
   fi
 }
 
