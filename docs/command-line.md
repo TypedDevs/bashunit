@@ -1,6 +1,6 @@
 # Command line
 
-**bashunit** command accepts options to control its behavior.
+**bashunit** command accepts options to control its behavior. These options will override the environment [configuration](/configuration), which you can use to make the change permanent.
 
 ## Directory or file
 
