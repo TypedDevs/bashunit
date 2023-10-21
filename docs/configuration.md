@@ -1,9 +1,12 @@
 # Configuration
 
-Environment configuration control **bashunit** behavior.
+Environment configuration to control **bashunit** behavior.
 
-```env
-# default values
+It serves to configure the behavior of bashunit in your project. You need to create a `.env` file in the root directory, but you can give it another name if you pass it as an argument to the command with [`--env` option](/command-line#environment).
+
+Full example with the default values:
+
+```.env
 SIMPLE_OUTPUT=false
 STOP_ON_FAILURE=false
 SHOW_HEADER=true
