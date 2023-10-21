@@ -3,11 +3,12 @@
 Environment configuration control **bashunit** behavior.
 
 ```env
-SIMPLE_OUTPUT=
-STOP_ON_FAILURE=
-SHOW_HEADER=
-HEADER_ASCII_ART=
-SHOW_EXECUTION_TIME=
+# default values
+SIMPLE_OUTPUT=false
+STOP_ON_FAILURE=false
+SHOW_HEADER=true
+HEADER_ASCII_ART=false
+SHOW_EXECUTION_TIME=true
 ```
 
 ## Simple output
