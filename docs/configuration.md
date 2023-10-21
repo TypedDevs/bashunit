@@ -1,4 +1,4 @@
-# Env config
+# Configuration
 
 Environment configuration control **bashunit** behavior.
 
