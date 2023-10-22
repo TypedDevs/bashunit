@@ -59,7 +59,9 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
+      # shellcheck disable=SC2178
       _FILES=$(helper::read_and_store_files_recursive "$argument")
+      # shellcheck disable=SC2128
       IFS=' ' read -r -a _FILES <<< "$_FILES"
       shift
       ;;

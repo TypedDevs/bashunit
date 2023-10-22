@@ -2,6 +2,15 @@
 
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/.env.verbose"
+  TEST_ENV_FILE_WITH_PATH="tests/acceptance/.env.test.verbose"
+}
+
+function test_bashunit_without_input_and_without_default_path() {
+  assert_exit_code "1" "$(./bashunit --env "$TEST_ENV_FILE")"
+}
+
+function test_bashunit_without_input_and_with_default_path() {
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE_WITH_PATH")"
 }
 
 function test_bashunit_when_a_test_passes_verbose_output() {
