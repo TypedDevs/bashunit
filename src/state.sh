@@ -9,6 +9,7 @@ _ASSERTIONS_FAILED=0
 _ASSERTIONS_SKIPPED=0
 _ASSERTIONS_INCOMPLETE=0
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
+_DUPLICATED_FUNCTION_NAMES=""
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -80,6 +81,14 @@ function state::is_duplicated_test_functions_found() {
 
 function state::set_duplicated_test_functions_found() {
   _DUPLICATED_TEST_FUNCTIONS_FOUND=true
+}
+
+function state::get_duplicated_function_names() {
+  echo "$_DUPLICATED_FUNCTION_NAMES"
+}
+
+function state::set_duplicated_function_names() {
+  _DUPLICATED_FUNCTION_NAMES="$1"
 }
 
 function state::initialize_assertions_count() {

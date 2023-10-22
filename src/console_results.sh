@@ -7,6 +7,10 @@ function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
     console_results::print_execution_time
     printf "%s%s%s\n" "${_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_COLOR_DEFAULT}"
+
+    # Print the list of duplicated function's name
+    duplicated_functions=$(state::get_duplicated_function_names)
+    printf "Duplicate functions: %s\n" "$duplicated_functions"
     exit 1
   fi
 
