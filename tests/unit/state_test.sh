@@ -110,7 +110,19 @@ function test_set_and_is_duplicated_test_functions_found() {
   assertEquals "true" "$duplicated_test_functions_found"
 }
 
-function test_set_and_get_duplicated_function_names() {
+function test_set_and_get_file_with_duplicated_function_names() {
+  local file_with_duplicated_function_names
+  file_with_duplicated_function_names=$(
+    _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_file_with_duplicated_function_names "test_path/file_name_test.sh"
+    state::get_file_with_duplicated_function_names
+  )
+
+  assertEquals "test_path/file_name_test.sh" "$file_with_duplicated_function_names"
+}
+
+function test_set_and_get_duplicated_function_names_one_name() {
   local duplicated_function_names
   duplicated_function_names=$(
     _DUPLICATED_FUNCTION_NAMES=""
@@ -120,6 +132,22 @@ function test_set_and_get_duplicated_function_names() {
   )
 
   assertEquals "duplicated_test_name" "$duplicated_function_names"
+}
+
+function test_set_and_get_duplicated_function_names_multiply_names() {
+  local test_names="duplicated_test_function1
+duplicated_test_function2
+duplicated_test_function3"
+
+  local duplicated_function_names
+  duplicated_function_names=$(
+    _DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_duplicated_function_names "$test_names"
+    state::get_duplicated_function_names
+  )
+
+  assertEquals "$test_names" "$duplicated_function_names"
 }
 
 function test_initialize_assertions_count() {

@@ -38,6 +38,7 @@ function helper::check_duplicate_functions() {
   if [ -n "$duplicates" ]; then
     state::set_duplicated_test_functions_found
     state::set_duplicated_function_names "$duplicates"
+    state::set_file_with_duplicated_function_names "$script"
     return 1
   fi
 }
