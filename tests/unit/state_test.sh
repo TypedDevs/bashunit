@@ -157,7 +157,7 @@ function test_set_duplicated_functions_merged() {
   duplicated_test_functions_found=$(
     _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-    state::set_duplicated_functions_merged "$test_function_name" "$test_file_name"
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
     state::is_duplicated_test_functions_found
   )
 
@@ -167,7 +167,7 @@ function test_set_duplicated_functions_merged() {
   duplicated_function_names=$(
     _DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_duplicated_functions_merged "$test_function_name" "$test_file_name"
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
     state::get_duplicated_function_names
   )
   assertEquals "$test_function_name" "$duplicated_function_names"
@@ -176,7 +176,7 @@ function test_set_duplicated_functions_merged() {
   file_with_duplicated_function_names=$(
     _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_file_with_duplicated_function_names "$test_file_name"
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
     state::get_file_with_duplicated_function_names
   )
 
