@@ -5,9 +5,14 @@ function runner::load_test_files() {
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
   if [[ ${#files[@]} == 0 ]]; then
-    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
-    console_header::print_help
-    exit 1
+    if [[ ! -z "${DEFAULT_PATH}" ]]; then
+        files=$(helper::read_and_store_files_recursive "$DEFAULT_PATH")
+        IFS=' ' read -r -a files <<< "$files"
+    else
+      printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+      console_header::print_help
+      exit 1
+    fi
   fi
 
   for test_file in "${files[@]}"; do
