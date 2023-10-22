@@ -100,6 +100,12 @@ function state::set_file_with_duplicated_function_names() {
   _FILE_WITH_DUPLICATED_FUNCTION_NAMES="$1"
 }
 
+function state::set_duplicated_functions_merged() {
+  state::set_duplicated_test_functions_found
+  state::set_duplicated_function_names "$1"
+  state::set_file_with_duplicated_function_names "$2"
+}
+
 function state::initialize_assertions_count() {
     _ASSERTIONS_PASSED=0
     _ASSERTIONS_FAILED=0

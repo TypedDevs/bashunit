@@ -36,9 +36,7 @@ function helper::check_duplicate_functions() {
   local duplicates
   duplicates=$(echo "$sorted_names" | uniq -d)
   if [ -n "$duplicates" ]; then
-    state::set_duplicated_test_functions_found
-    state::set_duplicated_function_names "$duplicates"
-    state::set_file_with_duplicated_function_names "$script"
+    state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
   fi
 }
