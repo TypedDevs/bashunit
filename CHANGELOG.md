@@ -9,6 +9,8 @@
 - Add `SHOW_EXECUTION_TIME` to environment config
 - Add docs for environment variables
 - Improve data provider output
+- Print the name of duplicate function names if one
+- Print the name of the file which contains duplicate function names if one
 
 ## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
 
