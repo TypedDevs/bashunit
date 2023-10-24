@@ -23,11 +23,16 @@
     </picture>
 </p>
 
-<h1 align="center">A simple testing library for bash scripts</h1>
+<h1 align="center">A simple testing framework for bash scripts</h1>
 
 <p align="center">
-    Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
+    Test your bash scripts in the fastest and simplest way, discover the most modern bash testing framework.
 </p>
+
+## Description
+
+**bashunit** is a comprehensive and lightweight testing framework for Bash, focused on the development experience.
+It boasts hundreds of assertions and functionalities like spies, mocks, providers and more, offers concise and clear documentation, and has a very active community.
 
 ## Documentation
 
@@ -38,7 +43,7 @@ You can find the complete documentation for **bashunit** online, including insta
 You are welcome to contribute reporting issues, sharing ideas,
 or with your pull requests.
 
-Make sure to read our [contribution guide](.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this library.
+Make sure to read our [contribution guide](.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this framework.
 
 ## Contributors
 
