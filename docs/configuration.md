@@ -7,12 +7,19 @@ It serves to configure the behavior of bashunit in your project. You need to cre
 Full example with the default values:
 
 ```.env
+DEFAULT_PATH=tests
 SIMPLE_OUTPUT=false
 STOP_ON_FAILURE=false
 SHOW_HEADER=true
 HEADER_ASCII_ART=false
 SHOW_EXECUTION_TIME=true
 ```
+
+## Default path
+
+> `DEFAULT_PATH=tests`
+
+If no specific directory or file is defined, then it will use the `DEFAULT_PATH` variable.
 
 ## Simple output
 
