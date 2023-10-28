@@ -157,3 +157,13 @@ function helper::get_provider_data() {
     helper::execute_function_if_exists "$data_provider_function"
   fi
 }
+
+function helper::trim() {
+    local input_string="$1"
+    local trimmed_string
+
+    trimmed_string="${input_string#"${input_string%%[![:space:]]*}"}"
+    trimmed_string="${trimmed_string%"${trimmed_string##*[![:space:]]}"}"
+
+    echo "$trimmed_string"
+}

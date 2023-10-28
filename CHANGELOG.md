@@ -9,8 +9,7 @@
 - Add `SHOW_EXECUTION_TIME` to environment config
 - Add docs for environment variables
 - Improve data provider output
-- Add .env variable `DEFAULT_PATH`.
-- If no specific directory or file is defined when running the script, then it will use the stored value in the DEFAULT_PATH variable when it`s defined.
+- Add .env variable `DEFAULT_PATH`
 - Improve duplicated function names output
 
 ## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
