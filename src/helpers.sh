@@ -101,25 +101,11 @@ function helper::unset_if_exists() {
   fi
 }
 
-function helper::read_and_store_files_recursive()
-{
-    local files=()
-    while IFS='' read -r line; do
-      files+=("$line");
-    done < <(helper::find_files_recursive "$1")
-
-    if [ ${#files[@]} -eq 0 ]; then
-        files+=("$1")
-    fi
-
-    echo "${files[@]}"
-}
-
 function helper::find_files_recursive() {
   local path="$1"
 
   if [[ -d "$path" ]]; then
-    find "$path" -type f -name '*[tT]est.sh' | sort | uniq
+    find "$path" -type f -name '*[tT]est.sh' | sort | uniq | tr '\n' ' '
   else
     echo "$path"
   fi
