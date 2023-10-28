@@ -158,3 +158,15 @@ function test_get_provider_data_should_returns_empty_when_not_exists_provider_fu
 
   assert_equals "" "$(helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
 }
+
+function test_left_trim() {
+  assert_equals "foo" "$(helper::trim "       foo")"
+}
+
+function test_right_trim() {
+  assert_equals "foo" "$(helper::trim "foo       ")"
+}
+
+function test_trim() {
+  assert_equals "foo" "$(helper::trim "    foo   ")"
+}
