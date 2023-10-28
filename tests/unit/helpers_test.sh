@@ -102,7 +102,7 @@ function test_read_and_store_files_recursive() {
   result=$(helper::read_and_store_files_recursive "$path")
   IFS=' ' read -r -a result <<< "$result"
 
-  assert_equals "$expected_files_count" ${#result[@]}
+  assert_equals "$(helper::trim "$expected_files_count")" ${#result[@]}
 }
 
 function test_normalize_variable_name() {
