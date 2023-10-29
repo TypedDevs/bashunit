@@ -93,18 +93,6 @@ function test_check_duplicate_functions_without_duplicates() {
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }
 
-function test_read_and_store_files_recursive() {
-  local path="tests"
-  local expected_files_count
-  local result
-
-  expected_files_count="$(find "$path" -type f -name '*[tT]est.sh' -type f | wc -l)"
-  result=$(helper::read_and_store_files_recursive "$path")
-  IFS=' ' read -r -a result <<< "$result"
-
-  assert_equals "$(helper::trim "$expected_files_count")" "${#result[@]}"
-}
-
 function test_normalize_variable_name() {
   assert_equals "valid_name123" "$(helper::normalize_variable_name "valid_name123")"
   assert_equals "non_valid_symbols__________" "$(helper::normalize_variable_name "non_valid_symbols!@#$%^&*()")"

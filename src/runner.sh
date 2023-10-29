@@ -7,7 +7,7 @@ function runner::load_test_files() {
   if [[ ${#files[@]} == 0 ]]; then
     if [[ -n "${DEFAULT_PATH}" ]]; then
         # shellcheck disable=SC2178
-        files=$(helper::read_and_store_files_recursive "$DEFAULT_PATH")
+        files=$(helper::find_files_recursive "$DEFAULT_PATH")
         # shellcheck disable=SC2128
         IFS=' ' read -r -a files <<< "$files"
     else
