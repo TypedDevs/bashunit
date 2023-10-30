@@ -1,8 +1,59 @@
 #!/bin/bash
 
+declare -a MOCKED_FUNCTIONS=()
+
+function is_mock() {
+  local is_mock=false
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$expected" ]]; then
+      echo true
+    fi
+  done
+  echo false
+}
+
+function assert_is_mock() {
+  local expected="$1"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  local is_mock
+  is_mock="$(is_mock "$expected")"
+
+  if [[ $is_mock == false ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected}" "to be a mock" "but is not a mock"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
+function assert_is_not_mock() {
+  local expected="$1"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  local is_mock
+  is_mock="$(is_mock "$expected")"
+
+  if [[ $is_mock == true ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected}" "to be a mock" "but is not a mock"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
 function unmock() {
   local command=$1
   unset -f "$command"
+
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+      unset "MOCKED_FUNCTIONS[$i]"
+      break
+    fi
+  done
 }
 
 function mock() {
@@ -16,6 +67,8 @@ function mock() {
   fi
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function spy() {
