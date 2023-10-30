@@ -52,4 +52,5 @@ function test_install_downloads_the_main_version() {
   assert_contains "Downloading non-stable main" "$output"
   assert_contains "bashunit has been installed in the 'lib' folder" "$output"
   assert_file_exists "$install_dir"
+  assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) main")" "$("$install_dir" --version)"
 }
