@@ -25,10 +25,6 @@ EOF
 }
 
 function test_successful_unmock() {
-  function code() {
-    ps | wc -l
-  }
-
   mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
