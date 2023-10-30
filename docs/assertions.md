@@ -598,6 +598,31 @@ function test_failure() {
 ```
 :::
 
+## assert_is_mock
+> `assert_is_mock "expected"`
+
+Reports an error if expected is not a mock.
+
+[assert_is_not_mock](#assert-is-not-mock) is the inverse of this assertion.
+
+::: code-group
+```bash [Example]
+function test_success_mock() {
+  mock ls
+  assert_is_mock ls
+}
+
+function test_success_spy() {
+  spy ls
+  assert_is_mock ls
+}
+
+function test_failure() {
+  assert_is_mock ls
+}
+```
+:::
+
 ## assert_not_equals
 > `assert_not_equals "expected" "actual"`
 
@@ -874,6 +899,31 @@ function test_failure() {
   if [ "$(date +%-H)" -lt 25 ]; then
     fail "This test will always fail"
   fi
+}
+```
+:::
+
+## assert_is_not_mock
+> `assert_is_not_mock "expected"`
+
+Reports an error if expected is a mock.
+
+[assert_is_mock](#assert-is-mock) is the inverse of this assertion.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_is_not_mock ls
+}
+
+function test_failure_mock() {
+  mock ls
+  assert_is_not_mock ls
+}
+
+function test_failure_spy() {
+  spy ls
+  assert_is_not_mock ls
 }
 ```
 :::

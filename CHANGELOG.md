@@ -24,9 +24,9 @@
 - Add `assert_contains_ignore_case`
 - Add `assert_equals_ignore_colors`
 - Add `assert_match_snapshot`
+- Add `assert_is_mock`
+- Add `assert_is_not_mock`
 - Add `unmock`
-    - Add `assert_is_mock`
-    - Add `assert_is_not_mock`
 - Add `SHOW_EXECUTION_TIME` to environment config
 - Add docs for environment variables
 - Improve data provider output
