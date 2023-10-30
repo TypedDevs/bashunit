@@ -24,6 +24,18 @@ EOF
   assert_empty "$(assert_successful_code "$(code)")"
 }
 
+function test_successful_unmock() {
+  mock ps<<EOF
+PID TTY          TIME CMD
+13525 pts/7    00:00:01 bash
+24162 pts/7    00:00:00 ps
+EOF
+
+  assert_equals "3" "$(helper::trim "$(ps | wc -l)")"
+  unmock ps
+  assert_greater_than "3" "$(helper::trim "$(ps | wc -l)")"
+}
+
 function test_successful_override_ps_with_echo_with_mock() {
   mock ps echo hello world
   assert_equals "hello world" "$(ps)"

@@ -1,5 +1,10 @@
 #!/bin/bash
 
+function unmock() {
+  local command=$1
+  unset -f "$command"
+}
+
 function mock() {
   local command=$1
   shift
