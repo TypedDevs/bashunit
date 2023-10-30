@@ -9,19 +9,32 @@ DIR=${1-lib}
 VERSION=${2-latest}
 TAG="$LATEST_BASHUNIT_VERSION"
 
+function install_main() {
+  echo "> Downloading non-stable main"
+  echo "> bashunit has been installed in the 'lib' folder"
+}
+
+function install_concrete_version() {
+  if [[ $VERSION != 'latest' ]]; then
+    TAG="$VERSION"
+    echo "> Downloading a concrete version: '$TAG'"
+  else
+    echo "> Downloading the latest version: '$TAG'"
+  fi
+
+  curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+  chmod u+x "bashunit"
+  echo "> bashunit has been installed in the '$DIR' folder"
+}
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
 [ -d "$DIR" ] || mkdir "$DIR"
 cd "$DIR"
 
-if [[ $VERSION != 'latest' ]]; then
-  TAG="$VERSION"
-  echo "> Downloading a concrete version: '$TAG'"
+if [[ $VERSION == 'main' ]]; then
+  install_main
 else
-  echo "> Downloading the latest version: '$TAG'"
+  install_concrete_version
 fi
 
-curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
-chmod u+x "bashunit"
-echo "> bashunit has been installed in the '$DIR' folder"
