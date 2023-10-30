@@ -11,6 +11,13 @@ TAG="$LATEST_BASHUNIT_VERSION"
 
 function install_main() {
   echo "> Downloading non-stable main"
+  git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp
+  cd temp
+  ./build.sh
+  cd ..
+  cp temp/bin/bashunit bashunit
+  chmod u+x bashunit
+  rm -rf temp
   echo "> bashunit has been installed in the 'lib' folder"
 }
 
