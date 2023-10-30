@@ -26,6 +26,10 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default
 
 ::: tip
+You can use `main` as `[version]` to get the latest **main branch**. We try to keep it stable, but there is no promise. Useful to have access to the latest features/bug fixes, even consider yourself as a beta tester.
+:::
+
+::: tip
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 :::
 
