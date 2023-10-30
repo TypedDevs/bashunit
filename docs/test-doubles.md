@@ -27,7 +27,7 @@ Allows you to override the output of a callable.
 ```bash [Example]
 function test_example() {
   function code() {
-      ps a | grep bash
+    ps a | grep bash
   }
 
   mock ps<<EOF
@@ -50,6 +50,10 @@ Undo the previous overridden behavior of a callable using mock.
 ::: code-group
 ```bash [Example]
 function test_example() {
+  function code() {
+    ps a | grep bash
+  }
+
   mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
@@ -57,7 +61,7 @@ PID TTY          TIME CMD
 EOF
 
   # At this point, ps will return the mocked value above
-  assert_equals "13525 pts/7 00:00:01 bash" "$(ps a | grep bash)"
+  assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
 
   # From now on, ps will have the original behaviour again
   unmock ps

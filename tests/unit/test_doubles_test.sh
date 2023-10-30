@@ -25,15 +25,19 @@ EOF
 }
 
 function test_successful_unmock() {
+  function code() {
+    ps | wc -l
+  }
+
   mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
 EOF
 
-  assert_equals "3" "$(helper::trim "$(ps | wc -l)")"
+  assert_equals "3" "$(helper::trim "$(code)")"
   unmock ps
-  assert_greater_than "3" "$(helper::trim "$(ps | wc -l)")"
+  assert_greater_than "3" "$(helper::trim "$(code)")"
 }
 
 function test_successful_override_ps_with_echo_with_mock() {
