@@ -17,7 +17,7 @@ function install_main() {
   cd ..
   cp temp/bin/bashunit bashunit
   chmod u+x bashunit
-  sed -i -e 's/BASHUNIT_VERSION="0.9.0"/BASHUNIT_VERSION="(non-stable) main"/g' bashunit
+  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) main"/g' bashunit
   rm -rf temp
   echo "> bashunit has been installed in the 'lib' folder"
 }
