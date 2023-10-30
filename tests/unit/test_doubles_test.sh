@@ -35,9 +35,9 @@ PID TTY          TIME CMD
 24162 pts/7    00:00:00 ps
 EOF
 
-  assert_equals "3" "$(helper::trim "$(code)")"
+  assert_not_contains "/bin/ps" "$(type ps)"
   unmock ps
-  assert_not_equals "3" "$(helper::trim "$(code)")"
+  assert_contains "/bin/ps" "$(type ps)"
 }
 
 function test_successful_override_ps_with_echo_with_mock() {
