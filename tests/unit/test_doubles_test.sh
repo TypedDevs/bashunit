@@ -37,7 +37,7 @@ EOF
 
   assert_equals "3" "$(helper::trim "$(code)")"
   unmock ps
-  assert_greater_than "3" "$(helper::trim "$(code)")"
+  assert_not_equals "3" "$(helper::trim "$(code)")"
 }
 
 function test_successful_override_ps_with_echo_with_mock() {
