@@ -77,6 +77,8 @@ function spy() {
   eval "function $command() { ${variable}_params=(\"\$*\"); ((${variable}_times++)) || true; }"
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function assert_have_been_called() {
