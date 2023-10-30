@@ -110,6 +110,79 @@ function test_set_and_is_duplicated_test_functions_found() {
   assertEquals "true" "$duplicated_test_functions_found"
 }
 
+function test_set_and_get_file_with_duplicated_function_names() {
+  local file_with_duplicated_function_names
+  file_with_duplicated_function_names=$(
+    _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_file_with_duplicated_function_names "test_path/file_name_test.sh"
+    state::get_file_with_duplicated_function_names
+  )
+
+  assertEquals "test_path/file_name_test.sh" "$file_with_duplicated_function_names"
+}
+
+function test_set_and_get_duplicated_function_names_one_name() {
+  local duplicated_function_names
+  duplicated_function_names=$(
+    _DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_duplicated_function_names "duplicated_test_name"
+    state::get_duplicated_function_names
+  )
+
+  assertEquals "duplicated_test_name" "$duplicated_function_names"
+}
+
+function test_set_and_get_duplicated_function_names_multiply_names() {
+  local test_names="duplicated_test_function1
+duplicated_test_function2
+duplicated_test_function3"
+
+  local duplicated_function_names
+  duplicated_function_names=$(
+    _DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_duplicated_function_names "$test_names"
+    state::get_duplicated_function_names
+  )
+
+  assertEquals "$test_names" "$duplicated_function_names"
+}
+
+function test_set_duplicated_functions_merged() {
+  local test_function_name="test_function_name"
+  local test_file_name="test_file_name.sh"
+
+  duplicated_test_functions_found=$(
+    _DUPLICATED_TEST_FUNCTIONS_FOUND=false
+
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    state::is_duplicated_test_functions_found
+  )
+
+  assertEquals "true" "$duplicated_test_functions_found"
+
+  local duplicated_function_names
+  duplicated_function_names=$(
+    _DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    state::get_duplicated_function_names
+  )
+  assertEquals "$test_function_name" "$duplicated_function_names"
+
+  local file_with_duplicated_function_names
+  file_with_duplicated_function_names=$(
+    _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
+
+    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    state::get_file_with_duplicated_function_names
+  )
+
+  assertEquals "$test_file_name" "$file_with_duplicated_function_names"
+}
+
 function test_initialize_assertions_count() {
   local export_assertions_count
   export_assertions_count=$(

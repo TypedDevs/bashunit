@@ -2,6 +2,8 @@
 
 function mock_all_state_getters() {
   mock state::is_duplicated_test_functions_found echo false
+  mock state::get_duplicated_function_names echo ""
+  mock state::get_file_with_duplicated_function_names echo ""
   mock state::get_tests_passed echo 0
   mock state::get_tests_failed echo 0
   mock state::get_tests_skipped echo 0
@@ -258,6 +260,42 @@ function test_not_render_execution_time_on_osx() {
   )
 
   assert_not_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+}
+
+function test_render_file_with_duplicated_functions_if_found_true() {
+  set +e
+
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo true
+    mock state::get_duplicated_function_names echo "duplicate_function_name"
+    mock state::get_file_with_duplicated_function_names echo "duplicate_file_name.sh"
+
+    console_results::render_result
+  )
+
+  assert_contains "Duplicate test functions found" "$render_result"
+  assert_contains "File with duplicate functions: duplicate_file_name.sh" "$render_result"
+  assert_contains "Duplicate functions: duplicate_function_name" "$render_result"
+}
+
+function test_not_render_file_with_duplicated_functions_if_found_false() {
+  set +e
+
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_duplicated_function_names echo "duplicate_function_name"
+    mock state::get_file_with_duplicated_function_names echo "duplicate_file_name.sh"
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "File with duplicate functions: duplicate_file_name.sh" "$render_result"
+  assert_not_contains "Duplicate functions: duplicate_function_name" "$render_result"
 }
 
 function test_only_render_error_result_when_some_duplicated_fails() {
