@@ -41,3 +41,15 @@ function test_install_downloads_the_given_version() {
   assert_file_exists "$install_dir"
   assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - 0.8.0")" "$("$install_dir" --version)"
 }
+
+function test_install_downloads_the_main_version() {
+  local install_dir="./lib/bashunit"
+  local output
+
+  output="$(./install.sh lib main)"
+
+  assert_equals\
+    "$(printf "> Downloading non-stable main\n> bashunit has been installed in the 'lib' folder")"\
+    "$output"
+#  assert_file_exists "$install_dir"
+}
