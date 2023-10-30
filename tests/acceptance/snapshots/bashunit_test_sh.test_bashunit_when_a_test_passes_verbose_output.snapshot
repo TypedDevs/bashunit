@@ -1,0 +1,6 @@
+Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_passes_verbose_output.sh
+[32m✓ Passed[0m: Succeed
+
+[2mTests:     [0m [32m1 passed[0m, 1 total
+[2mAssertions:[0m [32m1 passed[0m, 1 total
+[42mAll tests passed[0m

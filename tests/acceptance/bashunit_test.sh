@@ -1,8 +1,9 @@
 #!/bin/bash
 
 function set_up_before_script() {
-  TEST_ENV_FILE="tests/acceptance/.env.verbose"
-  TEST_ENV_FILE_WITH_PATH="tests/acceptance/.env.test.verbose"
+  TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
+  TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
+  TEST_ENV_FILE_WITH_PATH="tests/acceptance/fixtures/.env.with_path"
 }
 
 function test_bashunit_without_input_and_without_default_path() {
@@ -14,43 +15,36 @@ function test_bashunit_without_input_and_with_default_path() {
 }
 
 function test_bashunit_when_a_test_passes_verbose_output() {
-  local test_file=./tests/acceptance/fake_success_test.sh
-  fixture=$(printf "Running ./tests/acceptance/fake_success_test.sh
-\e[32m✓ Passed\e[0m: Succeed
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes_verbose_output.sh
 
-\e[2mTests:     \e[0m \e[32m1 passed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[32m1 passed\e[0m, 1 total
-\e[42mAll tests passed\e[0m")
+  local snapshot
+  snapshot="$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  local code=$?
 
-  echo "
-#!/bin/bash
-function test_succeed() { assert_equals \"1\" \"1\" ; }" > $test_file
-
-  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-
-  rm $test_file
+  assert_match_snapshot "$snapshot"
+  assert_successful_code "$code"
 }
 
-function test_bashunit_when_a_test_passes_simple_output() {
-  local test_file=./tests/acceptance/fake_dots_test.sh
-  local fixture
-  fixture=$(printf "....
-\e[2mTests:     \e[0m \e[32m4 passed\e[0m, 4 total
-\e[2mAssertions:\e[0m \e[32m6 passed\e[0m, 6 total
-\e[42mAll tests passed\e[0m")
+function test_bashunit_when_a_test_passes_simple_output_env() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes_simple_output.sh
 
-  echo "
-#!/bin/bash
-function test_1() { assert_equals \"1\" \"1\" ; }
-function test_2() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ;}
-function test_3() { assert_equals \"1\" \"1\" ; assert_equals \"1\" \"1\" ; }
-function test_4() { assert_equals \"1\" \"1\" ; }" > $test_file
+  local snapshot
+  snapshot="$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  local code=$?
 
-  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
-  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_match_snapshot "$snapshot"
+  assert_successful_code "$code"
+}
 
-  rm $test_file
+function test_bashunit_when_a_test_passes_simple_output_option() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes_simple_output.sh
+
+  local snapshot
+  snapshot="$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  local code=$?
+
+  assert_match_snapshot "$snapshot"
+  assert_successful_code "$code"
 }
 
 function test_bashunit_when_a_test_fail() {
