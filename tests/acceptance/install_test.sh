@@ -43,7 +43,7 @@ function test_install_downloads_the_given_version() {
 }
 
 function test_install_downloads_the_main_version() {
-  mock git "cp -r .. temp"
+  mock git "cp -r .. temp_bashunit"
   local install_dir="./lib/bashunit"
   local output
 
