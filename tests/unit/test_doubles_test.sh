@@ -43,6 +43,12 @@ function test_successful_unmock_spy() {
   assert_is_not_mock ps
 }
 
+function test_unsuccessful_unmock() {
+  assert_equals\
+    "$(console_results::print_failed_test "Unsuccessful unmock" "ps" "to be a mock" "but is not a mock")"\
+    "$(assert_is_mock ps)"
+}
+
 function test_successful_override_ps_with_echo_with_mock() {
   mock ps echo hello world
   assert_equals "hello world" "$(ps)"
