@@ -163,7 +163,7 @@ function runner::run_test() {
     "$function_name" "$@" 2>&1 1>&3
 
     runner::run_tear_down
-    runner::clean_mocks
+    runner::clear_mocks
     state::export_assertions_count
   )
 
@@ -229,7 +229,7 @@ function runner::run_tear_down() {
   helper::execute_function_if_exists 'tear_down'
 }
 
-function runner::clean_mocks() {
+function runner::clear_mocks() {
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
     unmock "${MOCKED_FUNCTIONS[$i]}"
   done
