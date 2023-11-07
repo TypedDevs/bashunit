@@ -71,7 +71,7 @@ SHOW_HEADER=false
 
 ::: code-group
 ```-vue [Plain header]
-bashunit - 0.9.0
+bashunit - {{ pkg.version }}
 
 ✓ Passed: foo bar
 ```
@@ -87,7 +87,7 @@ __               _                   _
 | '_ \ / _' / __| '_ \| | | | '_ \| | __|
 | |_) | (_| \__ \ | | | |_| | | | | | |_
 |_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
-0.9.0
+{{ pkg.version }}
 
 ✓ Passed: foo bar
 ```
@@ -131,3 +131,7 @@ All tests passed
 SHOW_EXECUTION_TIMEER=false
 ```
 :::
+
+<script setup>
+import pkg from '../package.json'
+</script>
