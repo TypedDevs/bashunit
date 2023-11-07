@@ -14,7 +14,9 @@ function test_bashunit_with_argument_path() {
   todo "Here it is supposed to search for files ending in test, this functionality has recently stopped working"
   return
 
+  # shellcheck disable=SC2317
   assert_match_snapshot "$(./bashunit tests/acceptance/fixtures/tests_path --env "$TEST_ENV_FILE")"
+  # shellcheck disable=SC2317
   assert_general_error "$(./bashunit tests/acceptance/fixtures/tests_path --env "$TEST_ENV_FILE")"
 }
 
