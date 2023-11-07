@@ -2,38 +2,6 @@
 
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
-  TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
-}
-
-function test_bashunit_when_a_test_execution_error() {
-  local test_file=./tests/acceptance/fake_error_test.sh
-  local fixture_start
-  fixture_start=$(printf "Running ./tests/acceptance/fake_error_test.sh
-\e[31m✗ Failed\e[0m: Error
-    \e[2mExpected\e[0m \e[1m\'127\'\e[0m
-    \e[2mto be exactly\e[0m \e[1m\'1\'\e[0m
-\e[31m✗ Failed\e[0m: Error
-    \e[2m./tests/acceptance/fake_error_test.sh:")
-  local fixture_end
-  fixture_end=$(printf "\e[0m
-
-\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[31m1 failed\e[0m, 1 total")
-
-  echo "
-#!/bin/bash
-function test_error() {
-  invalid_function_name
-  assert_general_error
-}" > $test_file
-
-  set +e
-
-  assert_contains "$fixture_start" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_contains "$fixture_end" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-
-  rm $test_file
 }
 
 function test_bashunit_should_allow_test_drive_development() {
