@@ -17,11 +17,11 @@ If no specific directory or file is defined, then it will use the `DEFAULT_PATH`
 
 > `SIMPLE_OUTPUT=false`
 
-Similar as using `-s|--simple` option on the [command line](/command-line#output).
-
 Enables simplified output to the console.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
+
+Similar as using `-s|--simple|-v|--verbose` option on the [command line](/command-line#output).
 
 ::: code-group
 ```[Simple output]
@@ -48,9 +48,9 @@ SIMPLE_OUTPUT=false
 
 > `STOP_ON_FAILURE=false`
 
-Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#stop-on-failure).
-
 Force to stop the runner right after encountering one failing test.
+
+Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#stop-on-failure).
 
 ## Show header
 
