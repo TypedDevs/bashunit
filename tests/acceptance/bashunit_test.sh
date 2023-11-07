@@ -27,54 +27,29 @@ function test_bashunit_with_env_default_path() {
 function test_bashunit_when_a_test_passes_verbose_output() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 
-  local snapshot
-  snapshot="$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  local code=$?
-
-  assert_match_snapshot "$snapshot"
-  assert_successful_code "$code"
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 }
 
 function test_bashunit_when_a_test_passes_simple_output_env() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 
-  local snapshot
-  snapshot="$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
-  local code=$?
-
-  assert_match_snapshot "$snapshot"
-  assert_successful_code "$code"
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
 }
 
 function test_bashunit_when_a_test_passes_simple_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 
-  local snapshot
-  snapshot="$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
-  local code=$?
-
-  assert_match_snapshot "$snapshot"
-  assert_successful_code "$code"
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }
 
 function test_bashunit_when_a_test_fail() {
-  local test_file=./tests/acceptance/fake_fail_test.sh
-  fixture=$(printf "Running ./tests/acceptance/fake_fail_test.sh
-\e[31m✗ Failed\e[0m: Fail
-    \e[2mExpected\e[0m \e[1m\'1\'\e[0m
-    \e[2mbut got\e[0m \e[1m\'0\'\e[0m
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[31m1 failed\e[0m, 1 total")
-
-  echo "
-#!/bin/bash
-function test_fail() { assert_equals \"1\" \"0\" ; }" > $test_file
-
-  assert_contains "$fixture" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
   assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-
-  rm $test_file
 }
 
 function test_bashunit_when_a_test_execution_error() {
