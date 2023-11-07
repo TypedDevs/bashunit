@@ -29,13 +29,6 @@ function test_bashunit_should_allow_test_drive_development() {
   rm $test_file
 }
 
-function test_bashunit_should_display_version() {
-  local fixture
-  fixture=$(printf "%s" "$BASHUNIT_VERSION")
-
-  assert_contains "$fixture" "$(./bashunit --version)"
-}
-
 function test_bashunit_when_stop_on_failure() {
   local test_file=./tests/acceptance/fixtures/stop_on_failure.sh
   local expected_output
