@@ -29,14 +29,3 @@ function test_bashunit_should_allow_test_drive_development() {
   rm $test_file
 }
 
-function test_bashunit_when_stop_on_failure() {
-  local test_file=./tests/acceptance/fixtures/stop_on_failure.sh
-  local expected_output
-  expected_output=$(printf "Running %s
-\e[32m✓ Passed\e[0m: A success
-\e[31m✗ Failed\e[0m: B error
-    \e[2mExpected\e[0m \e[1m\'1\'\e[0m
-    \e[2mbut got\e[0m \e[1m\'2\'\e[0m" "$test_file")
-
-  assert_contains "$expected_output" "$(./bashunit --env "$TEST_ENV_FILE" --stop-on-failure "$test_file")"
-}

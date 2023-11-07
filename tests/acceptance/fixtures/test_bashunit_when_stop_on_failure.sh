@@ -9,6 +9,6 @@ function test_b_error() {
   assert_equals 2 2
 }
 
-function test_c_success() {
+function test_c_not_executed() {
   assert_equals 2 2
 }
