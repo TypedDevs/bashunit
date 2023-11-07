@@ -13,7 +13,7 @@ but you can give it another name if you pass it as an argument to the command wi
 
 If no specific directory or file is defined, then it will use the `DEFAULT_PATH` variable.
 
-## Simple output
+## Output
 
 > `SIMPLE_OUTPUT=false`
 
