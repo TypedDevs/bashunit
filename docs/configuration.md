@@ -24,23 +24,23 @@ Enables simplified output to the console.
 Verbose is the default output, but it can be overridden by the environment configuration.
 
 ::: code-group
-```[Output]
+```[Simple output]
 ....
 ```
-```env [Example]
+```[.env]
 SIMPLE_OUTPUT=true
 ```
 :::
 
 ::: code-group
-```[Output]
+```[Verbose output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
 ✓ Passed: Should validate a non ok exit code
 ✓ Passed: Should validate an ok exit code
 ✓ Passed: Text should be equal
 ```
-```env [Example]
+```[.env]
 SIMPLE_OUTPUT=false
 ```
 :::
@@ -61,27 +61,27 @@ Specifies if you want to show the bashunit header.
 Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII.
 
 ::: code-group
-```[Output without header]
+```[Without header]
 ✓ Passed: foo bar
 ```
-```env [.env]
+```[.env]
 SHOW_HEADER=false
 ```
 :::
 
 ::: code-group
-```[Output with plain header]
+```-vue [Plain header]
 bashunit - 0.9.0
 
 ✓ Passed: foo bar
 ```
-```env [.env]
+```[.env]
 SHOW_HEADER=true
 ```
 :::
 
 ::: code-group
-```[Output with ASCII header]
+```-vue [ASCII header]
 __               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
 | '_ \ / _' / __| '_ \| | | | '_ \| | __|
@@ -91,7 +91,7 @@ __               _                   _
 
 ✓ Passed: foo bar
 ```
-```env [.env]
+```[.env]
 SHOW_HEADER=true
 HEADER_ASCII_ART=true
 ```
@@ -106,7 +106,7 @@ Specifies if you want to display the execution time after running **bashunit**.
 > This feature is available only for Linux and Windows.
 
 ::: code-group
-```[Output with execution time]
+```[With execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
@@ -114,20 +114,20 @@ Assertions: 3 passed, 3 total
 All tests passed
 Time taken: 14 ms
 ```
-```env [.env]
+```[.env]
 SHOW_EXECUTION_TIMEER=true
 ```
 :::
 
 ::: code-group
-```[Output without execution time]
+```[Without execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
 ```
-```env [.env]
+```[.env]
 SHOW_EXECUTION_TIMEER=false
 ```
 :::
