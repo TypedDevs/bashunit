@@ -18,7 +18,6 @@ function install_main() {
   cp temp_bashunit/bin/bashunit bashunit
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) main"/g' bashunit
   rm -rf temp_bashunit
-  echo "> bashunit has been installed in the '$DIR' folder"
 }
 
 function install_concrete_version() {
@@ -31,7 +30,6 @@ function install_concrete_version() {
 
   curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
   chmod u+x "bashunit"
-  echo "> bashunit has been installed in the '$DIR' folder"
 }
 
 cd "$(dirname "$0")"
@@ -45,3 +43,4 @@ else
   install_concrete_version
 fi
 
+echo "> bashunit has been installed in the '$DIR' folder"

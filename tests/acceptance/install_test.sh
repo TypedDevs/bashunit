@@ -43,7 +43,6 @@ function test_install_downloads_the_given_version() {
 }
 
 function test_install_downloads_the_main_version() {
-  mock git "cp -r .. temp_bashunit"
   local install_dir="./lib/bashunit"
   local output
 
@@ -53,7 +52,4 @@ function test_install_downloads_the_main_version() {
   assert_contains "bashunit has been installed in the 'lib' folder" "$output"
   assert_file_exists "$install_dir"
   assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) main")" "$("$install_dir" --version)"
-
-  # TODO: Remove this after merging https://github.com/TypedDevs/bashunit/pull/212
-  unset -f git
 }
