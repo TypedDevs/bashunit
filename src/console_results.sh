@@ -180,7 +180,7 @@ function console_results::print_snapshot_test() {
   local test_name
   test_name=$(helper::normalize_test_function_name "$1")
 
-  printf "${_COLOR_SNAPSHOT}✒ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}"
+  printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}"
 }
 
 function console_results::print_error_test() {

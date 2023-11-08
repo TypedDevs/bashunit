@@ -28,8 +28,8 @@ function test_failure() {
 ```
 ```[First run]
 Running snapshot_test.sh
-✒ Snapshot: Success
-✒ Snapshot: Failure
+✎ Snapshot: Success
+✎ Snapshot: Failure
 
 Tests:      2 snapshot, 2 total
 Assertions: 2 snapshot, 2 total
