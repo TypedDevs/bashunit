@@ -157,35 +157,31 @@ function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
 }
 
 function test_render_snapshot_when_snapshot_tests() {
-  todo
-  return
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_incomplete echo 15
-    mock state::get_assertions_incomplete echo 0
+    mock state::get_tests_snapshot echo 16
+    mock state::get_assertions_snapshot echo 0
 
     console_results::render_result
   )
 
-  assert_matches "Tests:[^\n]*15 incomplete[^\n]*15 total" "$render_result"
-  assert_matches "Assertions:[^\n]*0 incomplete[^\n]*0 total" "$render_result"
+  assert_matches "Tests:[^\n]*16 snapshot[^\n]*16 total" "$render_result"
+  assert_matches "Assertions:[^\n]*0 snapshot[^\n]*0 total" "$render_result"
 }
 
-function test_render_incomplete_when_snapshot_assertions() {
-  todo
-  return
+function test_render_snapshot_when_snapshot_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_incomplete echo 0
-    mock state::get_assertions_incomplete echo 20
+    mock state::get_tests_snapshot echo 0
+    mock state::get_assertions_snapshot echo 17
 
     console_results::render_result
   )
 
-  assert_matches "Tests:[^\n]*0 incomplete[^\n]*0 total" "$render_result"
-  assert_matches "Assertions:[^\n]*20 incomplete[^\n]*20 total" "$render_result"
+  assert_matches "Tests:[^\n]*0 snapshot[^\n]*0 total" "$render_result"
+  assert_matches "Assertions:[^\n]*17 snapshot[^\n]*17 total" "$render_result"
 }
 
 function test_not_render_failed_when_not_failed_tests_nor_assertions() {
