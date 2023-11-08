@@ -130,6 +130,7 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_FAILED=0
     _ASSERTIONS_SKIPPED=0
     _ASSERTIONS_INCOMPLETE=0
+    _ASSERTIONS_SNAPSHOT=0
 }
 
 function state::export_assertions_count() {
@@ -137,5 +138,6 @@ function state::export_assertions_count() {
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
+##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##"
 }
