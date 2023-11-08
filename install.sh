@@ -9,18 +9,18 @@ DIR=${1-lib}
 VERSION=${2-latest}
 TAG="$LATEST_BASHUNIT_VERSION"
 
-function install_main() {
-  echo "> Downloading non-stable main"
-  git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp_bashunit
+function build_and_install_beta() {
+  echo "> Downloading non-stable version: 'beta'"
+  git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp_bashunit 2>/dev/null
   cd temp_bashunit
-  ./build.sh
+  ./build.sh >/dev/null
   cd ..
-  cp temp_bashunit/bin/bashunit bashunit
-  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) main"/g' bashunit
+  cp temp_bashunit/bin/bashunit ./
+  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) beta"/g' bashunit
   rm -rf temp_bashunit
 }
 
-function install_concrete_version() {
+function install() {
   if [[ $VERSION != 'latest' ]]; then
     TAG="$VERSION"
     echo "> Downloading a concrete version: '$TAG'"
@@ -37,10 +37,10 @@ rm -f "$DIR"/bashunit
 [ -d "$DIR" ] || mkdir "$DIR"
 cd "$DIR"
 
-if [[ $VERSION == 'main' ]]; then
-  install_main
+if [[ $VERSION == 'beta' ]]; then
+  build_and_install_beta
 else
-  install_concrete_version
+  install
 fi
 
 echo "> bashunit has been installed in the '$DIR' folder"

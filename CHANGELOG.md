@@ -11,7 +11,7 @@
 - Improve data provider output
 - Add .env variable `DEFAULT_PATH`
 - Improve duplicated function names output
-- Allow installing (non-stable) main using the installer
+- Allow installing (non-stable) beta using the installer
 
 ## [0.9.0](https://github.com/TypedDevs/bashunit/compare/0.8.0...0.9.0) - 2023-10-15
 

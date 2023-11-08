@@ -42,14 +42,15 @@ function test_install_downloads_the_given_version() {
   assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - 0.8.0")" "$("$install_dir" --version)"
 }
 
-function test_install_downloads_the_main_version() {
-  local install_dir="./lib/bashunit"
+function test_install_downloads_the_non_stable_beta_version() {
+  local install_dir="./deps/bashunit"
   local output
 
-  output="$(./install.sh lib main)"
+  output="$(./install.sh deps beta)"
 
-  assert_contains "Downloading non-stable main" "$output"
-  assert_contains "bashunit has been installed in the 'lib' folder" "$output"
+  assert_contains\
+    "$(printf "> Downloading non-stable version: 'beta'\n> bashunit has been installed in the 'deps' folder")"\
+    "$output"
   assert_file_exists "$install_dir"
-  assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) main")" "$("$install_dir" --version)"
+  assert_equals "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta")" "$("$install_dir" --version)"
 }
