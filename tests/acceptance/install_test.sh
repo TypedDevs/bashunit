@@ -41,14 +41,14 @@ function test_install_downloads_the_given_version() {
   local install_dir="./lib/bashunit"
   local output
 
-  output="$(./install.sh lib 0.8.0)"
+  output="$(./install.sh lib 0.9.0)"
 
   assert_equals\
-    "$(printf "> Downloading a concrete version: '0.8.0'\n> bashunit has been installed in the 'lib' folder")"\
+    "$(printf "> Downloading a concrete version: '0.9.0'\n> bashunit has been installed in the 'lib' folder")"\
     "$output"
   assert_file_exists "$install_dir"
-  todo "Fix next assertion fails when HEADER_ASCII_ART=true is set in your .env (overriding given --env option)"
+
   assert_equals\
-    "$(printf "\e[1m\e[32mbashunit\e[0m - 0.8.0")"\
+    "$(printf "\e[1m\e[32mbashunit\e[0m - 0.9.0")"\
     "$("$install_dir" --env "$TEST_ENV_FILE" --version)"
 }
