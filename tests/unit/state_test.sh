@@ -50,6 +50,31 @@ function test_add_and_get_tests_incomplete() {
   assertEquals "1" "$tests_incomplete"
 }
 
+function test_add_and_get_tests_snapshot() {
+  local tests_snapshot
+  tests_snapshot=$(
+    _TESTS_INCOMPLETE=0
+
+    state::add_tests_snapshot
+    state::get_tests_snapshot
+  )
+
+  assertEquals "1" "$tests_snapshot"
+}
+
+function test_add_twice_and_get_tests_snapshot() {
+  local tests_snapshot
+  tests_snapshot=$(
+    _TESTS_INCOMPLETE=0
+
+    state::add_tests_snapshot
+    state::add_tests_snapshot
+    state::get_tests_snapshot
+  )
+
+  assertEquals "2" "$tests_snapshot"
+}
+
 function test_add_and_get_assertions_passed() {
   local assertions_passed
   assertions_passed=$(

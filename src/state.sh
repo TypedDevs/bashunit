@@ -4,6 +4,7 @@ _TESTS_PASSED=0
 _TESTS_FAILED=0
 _TESTS_SKIPPED=0
 _TESTS_INCOMPLETE=0
+_TESTS_SNAPSHOT=0
 _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 _ASSERTIONS_SKIPPED=0
@@ -43,6 +44,14 @@ function state::get_tests_incomplete() {
 
 function state::add_tests_incomplete() {
   ((_TESTS_INCOMPLETE++)) || true
+}
+
+function state::get_tests_snapshot() {
+  echo "$_TESTS_SNAPSHOT"
+}
+
+function state::add_tests_snapshot() {
+  ((_TESTS_SNAPSHOT++)) || true
 }
 
 function state::get_assertions_passed() {
