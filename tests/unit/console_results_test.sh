@@ -229,7 +229,7 @@ function test_render_failed_when_failed_assertions() {
   assert_matches "Assertions:[^\n]*666 failed[^\n]*666 total" "$render_result"
 }
 
-function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tests() {
+function test_total_tests_is_the_sum_of_passed_skipped_incomplete_snapshot_and_failed_tests() {
   set +e
 
   local render_result
@@ -238,15 +238,16 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tes
     mock state::get_tests_passed echo 4
     mock state::get_tests_skipped echo 5
     mock state::get_tests_incomplete echo 7
+    mock state::get_tests_snapshot echo 11
     mock state::get_tests_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches "Tests:.*18 total.*Assertions:.*0 total" "$render_result"
+  assert_matches "Tests:.*29 total.*Assertions:.*0 total" "$render_result"
 }
 
-function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_asserts() {
+function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and_failed_asserts() {
   set +e
 
   local render_result
@@ -255,12 +256,13 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_a
     mock state::get_assertions_passed echo 4
     mock state::get_assertions_skipped echo 5
     mock state::get_assertions_incomplete echo 7
+    mock state::get_assertions_snapshot echo 11
     mock state::get_assertions_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches "Tests:.*0 total.*Assertions:.*18 total" "$render_result"
+  assert_matches "Tests:.*0 total.*Assertions:.*29 total" "$render_result"
 }
 
 function test_render_execution_time() {
