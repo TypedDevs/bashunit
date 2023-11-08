@@ -98,6 +98,31 @@ function test_add_and_get_assertions_incomplete() {
   assertEquals "1" "$assertions_incomplete"
 }
 
+function test_add_and_get_assertions_snapshot() {
+  local assertions_snapshot
+  assertions_snapshot=$(
+    _ASSERTIONS_SNAPSHOT=0
+
+    state::add_assertions_snapshot
+    state::get_assertions_snapshot
+  )
+
+  assertEquals "1" "$assertions_snapshot"
+}
+
+function test_add_twice_and_get_assertions_snapshot() {
+  local assertions_snapshot
+  assertions_snapshot=$(
+    _ASSERTIONS_SNAPSHOT=0
+
+    state::add_assertions_snapshot
+    state::add_assertions_snapshot
+    state::get_assertions_snapshot
+  )
+
+  assertEquals "2" "$assertions_snapshot"
+}
+
 function test_set_and_is_duplicated_test_functions_found() {
   local duplicated_test_functions_found
   duplicated_test_functions_found=$(

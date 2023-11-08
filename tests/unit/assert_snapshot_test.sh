@@ -5,11 +5,8 @@ function test_successful_assert_match_snapshot() {
 }
 
 function test_creates_a_snapshot() {
-  local expected=$(("$_ASSERTIONS_SNAPSHOT" + 1))
-
-  spy state::add_assertions_snapshot
-
   local snapshot_file_path=tests/unit/snapshots/assert_snapshot_test_sh.test_creates_a_snapshot.snapshot
+  local expected=$(("$_ASSERTIONS_SNAPSHOT" + 1))
 
   assert_file_not_exists $snapshot_file_path
 
