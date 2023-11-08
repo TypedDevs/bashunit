@@ -353,6 +353,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
     mock state::is_duplicated_test_functions_found echo true
     mock state::get_tests_failed echo 1
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -362,6 +363,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
   assert_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -375,6 +377,7 @@ function test_only_render_error_result_when_some_test_fails() {
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 1
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -384,6 +387,7 @@ function test_only_render_error_result_when_some_test_fails() {
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -395,6 +399,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -404,6 +409,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -415,6 +421,7 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -424,7 +431,30 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+}
+
+function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_skipped_and_some_snapshot() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_tests_failed echo 0
+    mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 7
+    mock state::get_tests_skipped echo 0
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests incomplete" "$render_result"
+  assert_contains "Some snapshots created" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
 
@@ -435,6 +465,7 @@ function test_only_render_success_result_when_all_tests_passes() {
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 0
     mock state::get_tests_skipped echo 0
     mock state::get_tests_passed echo 3
 
@@ -444,6 +475,7 @@ function test_only_render_success_result_when_all_tests_passes() {
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_contains "All tests passed" "$render_result"
 }
