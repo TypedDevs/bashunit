@@ -53,7 +53,7 @@ function test_add_and_get_tests_incomplete() {
 function test_add_and_get_tests_snapshot() {
   local tests_snapshot
   tests_snapshot=$(
-    _TESTS_INCOMPLETE=0
+    _TESTS_SNAPSHOT=0
 
     state::add_tests_snapshot
     state::get_tests_snapshot
@@ -65,7 +65,7 @@ function test_add_and_get_tests_snapshot() {
 function test_add_twice_and_get_tests_snapshot() {
   local tests_snapshot
   tests_snapshot=$(
-    _TESTS_INCOMPLETE=0
+    _TESTS_SNAPSHOT=0
 
     state::add_tests_snapshot
     state::add_tests_snapshot
