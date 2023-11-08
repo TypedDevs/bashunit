@@ -1,7 +1,8 @@
 #!/bin/bash
 
 function assert_match_snapshot() {
-  local actual=$1
+  local actual
+  actual=$(echo -n "$1" | tr -d '\r')
   local directory
     directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
   local test_file
@@ -20,7 +21,7 @@ function assert_match_snapshot() {
   fi
 
   local snapshot
-  snapshot=$(cat "$snapshot_file")
+  snapshot=$(tr -d '\r' < "$snapshot_file")
 
   if [[ "$actual" != "$snapshot" ]]; then
     local label
@@ -34,3 +35,4 @@ function assert_match_snapshot() {
 
   state::add_assertions_passed
 }
+
