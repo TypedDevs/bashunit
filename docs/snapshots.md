@@ -26,4 +26,29 @@ function test_failure() {
   assert_match_snapshot "$(date)"
 }
 ```
+```[First run]
+Running snapshot_test.sh
+✒ Snapshot: Success
+✒ Snapshot: Failure
+
+Tests:      2 snapshot, 2 total
+Assertions: 2 snapshot, 2 total
+Some snapshots created
+```
+```[Subsequent runs]
+Running snapshot_test.sh
+✓ Passed: Success
+✗ Failed: Failure
+    Expected to match the snapshot
+    Mon Jul 27 [-13:37:46-]{+13:37:49+} UTC 1987
+
+Tests:      1 passed, 1 failed, 2 total
+Assertions: 1 passed, 1 failed, 2 total
+Some tests failed
+```
+:::
+
+::: warning
+You need to run the tests for this example twice to see them work.
+The first time you run them, the snapshots will be generated and the second time they will be asserted.
 :::
