@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.9.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.0...main)
+
+- ...
+
+## [0.10.0](https://github.com/TypedDevs/bashunit/compare/0.9.0...0.10.0) - 2023-11-09
 
 - Installer no longer needs git
 - Add `assert_contains_ignore_case`
