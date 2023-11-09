@@ -15,8 +15,8 @@ function build_and_install_beta() {
   cd temp_bashunit
   ./build.sh >/dev/null
   cd ..
+  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) beta"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
-  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) beta"/g' bashunit
   rm -rf temp_bashunit
 }
 
