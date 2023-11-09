@@ -1,0 +1,28 @@
+[31mError: At least one file path is required.[0m
+bashunit [arguments] [options]
+
+Arguments:
+  Specifies the directory or file containing the tests to run.
+  If a directory is specified, it will execute the tests within files ending with test.sh.
+  If you use wildcards, bashunit will run any tests it finds.
+
+Options:
+  -f|--filer <filter>
+    Filters the tests to run based on the test name.
+
+  -s|simple || -v|verbose
+    Enables simplified or verbose output to the console.
+
+  -S|--stop-on-failure
+    Force to stop the runner right after encountering one failing test.
+
+  -e|--env <file-path>
+    Load a custom env file overriding the .env environment variables.
+
+  --version
+    Displays the current version of bashunit.
+
+  --help
+    This message.
+
+See more: https://bashunit.typeddevs.com/command-line

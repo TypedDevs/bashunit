@@ -13,7 +13,7 @@ labels: bug
 
 | Q                | A                       |
 |------------------|-------------------------|
-| OS               | MacOS / Linux / Windows |
+| OS               | macOS / Linux / Windows |
 | Shell            | sh / bash / ...         |
 | bashunit version | x.y.z                   |
 
