@@ -10,35 +10,35 @@ function tear_down() {
 }
 
 function test_install_downloads_the_latest_version() {
-  local install_dir="./lib/bashunit"
+  local installed_bashunit="./lib/bashunit"
   local output
 
   output="$(./install.sh)"
 
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
   assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'lib' folder")" "$output"
-  assert_file_exists "$install_dir"
+  assert_file_exists "$installed_bashunit"
   assert_string_starts_with\
     "$(printf "\e[1m\e[32mbashunit\e[0m - ")"\
-    "$("$install_dir" --env "$TEST_ENV_FILE" --version)"
+    "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
 }
 
 function test_install_downloads_in_given_folder() {
-  local install_dir="./deps/bashunit"
+  local installed_bashunit="./deps/bashunit"
   local output
 
   output="$(./install.sh deps)"
 
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
   assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'deps' folder")" "$output"
-  assert_file_exists "$install_dir"
+  assert_file_exists "$installed_bashunit"
   assert_string_starts_with\
     "$(printf "\e[1m\e[32mbashunit\e[0m - ")"\
-    "$("$install_dir" --env "$TEST_ENV_FILE" --version)"
+    "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
 }
 
 function test_install_downloads_the_given_version() {
-  local install_dir="./lib/bashunit"
+  local installed_bashunit="./lib/bashunit"
   local output
 
   output="$(./install.sh lib 0.9.0)"
@@ -46,9 +46,25 @@ function test_install_downloads_the_given_version() {
   assert_equals\
     "$(printf "> Downloading a concrete version: '0.9.0'\n> bashunit has been installed in the 'lib' folder")"\
     "$output"
-  assert_file_exists "$install_dir"
+  assert_file_exists "$installed_bashunit"
 
   assert_equals\
     "$(printf "\e[1m\e[32mbashunit\e[0m - 0.9.0")"\
-    "$("$install_dir" --env "$TEST_ENV_FILE" --version)"
+    "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
+}
+
+function test_install_downloads_the_non_stable_beta_version() {
+  local installed_bashunit="./deps/bashunit"
+  local output
+
+  output="$(./install.sh deps beta)"
+
+  assert_contains\
+    "$(printf "> Downloading non-stable version: 'beta'\n> bashunit has been installed in the 'deps' folder")"\
+    "$output"
+  assert_file_exists "$installed_bashunit"
+  assert_equals\
+    "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta")"\
+    "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
+  assert_directory_not_exists "./deps/temp_bashunit"
 }

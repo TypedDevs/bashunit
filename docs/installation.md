@@ -26,6 +26,11 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default
 
 ::: tip
+You can use `beta` as `[version]` to get the next non-stable preview release.
+We try to keep it stable, but there is no promise that we won't change functions or their signatures without prior notice.
+:::
+
+::: tip
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 :::
 
