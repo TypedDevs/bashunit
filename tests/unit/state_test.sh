@@ -50,6 +50,31 @@ function test_add_and_get_tests_incomplete() {
   assertEquals "1" "$tests_incomplete"
 }
 
+function test_add_and_get_tests_snapshot() {
+  local tests_snapshot
+  tests_snapshot=$(
+    _TESTS_SNAPSHOT=0
+
+    state::add_tests_snapshot
+    state::get_tests_snapshot
+  )
+
+  assertEquals "1" "$tests_snapshot"
+}
+
+function test_add_twice_and_get_tests_snapshot() {
+  local tests_snapshot
+  tests_snapshot=$(
+    _TESTS_SNAPSHOT=0
+
+    state::add_tests_snapshot
+    state::add_tests_snapshot
+    state::get_tests_snapshot
+  )
+
+  assertEquals "2" "$tests_snapshot"
+}
+
 function test_add_and_get_assertions_passed() {
   local assertions_passed
   assertions_passed=$(
@@ -96,6 +121,31 @@ function test_add_and_get_assertions_incomplete() {
   )
 
   assertEquals "1" "$assertions_incomplete"
+}
+
+function test_add_and_get_assertions_snapshot() {
+  local assertions_snapshot
+  assertions_snapshot=$(
+    _ASSERTIONS_SNAPSHOT=0
+
+    state::add_assertions_snapshot
+    state::get_assertions_snapshot
+  )
+
+  assertEquals "1" "$assertions_snapshot"
+}
+
+function test_add_twice_and_get_assertions_snapshot() {
+  local assertions_snapshot
+  assertions_snapshot=$(
+    _ASSERTIONS_SNAPSHOT=0
+
+    state::add_assertions_snapshot
+    state::add_assertions_snapshot
+    state::get_assertions_snapshot
+  )
+
+  assertEquals "2" "$assertions_snapshot"
 }
 
 function test_set_and_is_duplicated_test_functions_found() {
@@ -190,13 +240,19 @@ function test_initialize_assertions_count() {
     _ASSERTIONS_FAILED=5
     _ASSERTIONS_SKIPPED=42
     _ASSERTIONS_INCOMPLETE=12
+    _ASSERTIONS_SNAPSHOT=33
 
     state::initialize_assertions_count
     state::export_assertions_count
   )
 
   assertEquals\
-    "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0##ASSERTIONS_INCOMPLETE=0##"\
+    "##ASSERTIONS_FAILED=0\
+##ASSERTIONS_PASSED=0\
+##ASSERTIONS_SKIPPED=0\
+##ASSERTIONS_INCOMPLETE=0\
+##ASSERTIONS_SNAPSHOT=0\
+##"\
     "$export_assertions_count"
 }
 
@@ -207,11 +263,16 @@ function test_export_assertions_count() {
     _ASSERTIONS_FAILED=5
     _ASSERTIONS_SKIPPED=42
     _ASSERTIONS_INCOMPLETE=12
+    _ASSERTIONS_SNAPSHOT=33
 
     state::export_assertions_count
   )
 
   assertEquals\
-    "##ASSERTIONS_FAILED=5##ASSERTIONS_PASSED=10##ASSERTIONS_SKIPPED=42##ASSERTIONS_INCOMPLETE=12##"\
+    "##ASSERTIONS_FAILED=5##\
+ASSERTIONS_PASSED=10##\
+ASSERTIONS_SKIPPED=42##\
+ASSERTIONS_INCOMPLETE=12##\
+ASSERTIONS_SNAPSHOT=33##"\
     "$export_assertions_count"
 }

@@ -4,10 +4,12 @@ _TESTS_PASSED=0
 _TESTS_FAILED=0
 _TESTS_SKIPPED=0
 _TESTS_INCOMPLETE=0
+_TESTS_SNAPSHOT=0
 _ASSERTIONS_PASSED=0
 _ASSERTIONS_FAILED=0
 _ASSERTIONS_SKIPPED=0
 _ASSERTIONS_INCOMPLETE=0
+_ASSERTIONS_SNAPSHOT=0
 _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
@@ -44,6 +46,14 @@ function state::add_tests_incomplete() {
   ((_TESTS_INCOMPLETE++)) || true
 }
 
+function state::get_tests_snapshot() {
+  echo "$_TESTS_SNAPSHOT"
+}
+
+function state::add_tests_snapshot() {
+  ((_TESTS_SNAPSHOT++)) || true
+}
+
 function state::get_assertions_passed() {
   echo "$_ASSERTIONS_PASSED"
 }
@@ -74,6 +84,14 @@ function state::get_assertions_incomplete() {
 
 function state::add_assertions_incomplete() {
   ((_ASSERTIONS_INCOMPLETE++)) || true
+}
+
+function state::get_assertions_snapshot() {
+  echo "$_ASSERTIONS_SNAPSHOT"
+}
+
+function state::add_assertions_snapshot() {
+  ((_ASSERTIONS_SNAPSHOT++)) || true
 }
 
 function state::is_duplicated_test_functions_found() {
@@ -112,6 +130,7 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_FAILED=0
     _ASSERTIONS_SKIPPED=0
     _ASSERTIONS_INCOMPLETE=0
+    _ASSERTIONS_SNAPSHOT=0
 }
 
 function state::export_assertions_count() {
@@ -119,5 +138,6 @@ function state::export_assertions_count() {
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
+##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##"
 }

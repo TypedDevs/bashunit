@@ -101,10 +101,18 @@ function runner::parse_execution_result() {
     sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
   )
 
+  local assertions_snapshot
+  assertions_snapshot=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
+  )
+
   _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
   _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
   _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
   _ASSERTIONS_INCOMPLETE=$((_ASSERTIONS_INCOMPLETE + assertions_incomplete))
+  _ASSERTIONS_SNAPSHOT=$((_ASSERTIONS_SNAPSHOT + assertions_snapshot))
 }
 
 function runner::run_test() {
@@ -112,6 +120,8 @@ function runner::run_test() {
   local data="$2"
   local current_assertions_failed
   current_assertions_failed="$(state::get_assertions_failed)"
+  local current_assertions_snapshot
+  current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete
   current_assertions_incomplete="$(state::get_assertions_incomplete)"
   local current_assertions_skipped
@@ -154,6 +164,12 @@ function runner::run_test() {
       exit 1
     fi
 
+    return
+  fi
+
+  if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
+    state::add_tests_snapshot
+    console_results::print_snapshot_test "$function_name"
     return
   fi
 

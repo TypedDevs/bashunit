@@ -8,10 +8,12 @@ function mock_all_state_getters() {
   mock state::get_tests_failed echo 0
   mock state::get_tests_skipped echo 0
   mock state::get_tests_incomplete echo 0
+  mock state::get_tests_snapshot echo 0
   mock state::get_assertions_passed echo 0
   mock state::get_assertions_failed echo 0
   mock state::get_assertions_skipped echo 0
   mock state::get_assertions_incomplete echo 0
+  mock state::get_assertions_snapshot echo 0
 }
 
 function test_not_render_passed_when_no_passed_tests_nor_assertions() {
@@ -140,6 +142,48 @@ function test_render_incomplete_when_incomplete_assertions() {
   assert_matches "Assertions:[^\n]*20 incomplete[^\n]*20 total" "$render_result"
 }
 
+function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::get_tests_snapshot echo 0
+    mock state::get_assertions_snapshot echo 0
+
+    console_results::render_result
+  )
+
+  assert_not_matches "Tests:[^\n]*snapshot[^\n]*total" "$render_result"
+  assert_not_matches "Assertions:[^\n]*snapshot[^\n]*total" "$render_result"
+}
+
+function test_render_snapshot_when_snapshot_tests() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::get_tests_snapshot echo 16
+    mock state::get_assertions_snapshot echo 0
+
+    console_results::render_result
+  )
+
+  assert_matches "Tests:[^\n]*16 snapshot[^\n]*16 total" "$render_result"
+  assert_matches "Assertions:[^\n]*0 snapshot[^\n]*0 total" "$render_result"
+}
+
+function test_render_snapshot_when_snapshot_assertions() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::get_tests_snapshot echo 0
+    mock state::get_assertions_snapshot echo 17
+
+    console_results::render_result
+  )
+
+  assert_matches "Tests:[^\n]*0 snapshot[^\n]*0 total" "$render_result"
+  assert_matches "Assertions:[^\n]*17 snapshot[^\n]*17 total" "$render_result"
+}
+
 function test_not_render_failed_when_not_failed_tests_nor_assertions() {
   local render_result
   render_result=$(
@@ -185,7 +229,7 @@ function test_render_failed_when_failed_assertions() {
   assert_matches "Assertions:[^\n]*666 failed[^\n]*666 total" "$render_result"
 }
 
-function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tests() {
+function test_total_tests_is_the_sum_of_passed_skipped_incomplete_snapshot_and_failed_tests() {
   set +e
 
   local render_result
@@ -194,15 +238,16 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_and_failed_tes
     mock state::get_tests_passed echo 4
     mock state::get_tests_skipped echo 5
     mock state::get_tests_incomplete echo 7
+    mock state::get_tests_snapshot echo 11
     mock state::get_tests_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches "Tests:.*18 total.*Assertions:.*0 total" "$render_result"
+  assert_matches "Tests:.*29 total.*Assertions:.*0 total" "$render_result"
 }
 
-function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_asserts() {
+function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and_failed_asserts() {
   set +e
 
   local render_result
@@ -211,12 +256,13 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_and_failed_a
     mock state::get_assertions_passed echo 4
     mock state::get_assertions_skipped echo 5
     mock state::get_assertions_incomplete echo 7
+    mock state::get_assertions_snapshot echo 11
     mock state::get_assertions_failed echo 2
 
     console_results::render_result
   )
 
-  assert_matches "Tests:.*0 total.*Assertions:.*18 total" "$render_result"
+  assert_matches "Tests:.*0 total.*Assertions:.*29 total" "$render_result"
 }
 
 function test_render_execution_time() {
@@ -307,6 +353,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
     mock state::is_duplicated_test_functions_found echo true
     mock state::get_tests_failed echo 1
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -316,6 +363,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
   assert_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -329,6 +377,7 @@ function test_only_render_error_result_when_some_test_fails() {
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 1
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -338,6 +387,7 @@ function test_only_render_error_result_when_some_test_fails() {
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -349,6 +399,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 4
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -358,6 +409,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
@@ -369,6 +421,7 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 7
     mock state::get_tests_skipped echo 2
     mock state::get_tests_passed echo 3
 
@@ -378,7 +431,30 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+}
+
+function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_skipped_and_some_snapshot() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    mock state::is_duplicated_test_functions_found echo false
+    mock state::get_tests_failed echo 0
+    mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 7
+    mock state::get_tests_skipped echo 0
+    mock state::get_tests_passed echo 3
+
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests incomplete" "$render_result"
+  assert_contains "Some snapshots created" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
 }
 
@@ -389,6 +465,7 @@ function test_only_render_success_result_when_all_tests_passes() {
     mock state::is_duplicated_test_functions_found echo false
     mock state::get_tests_failed echo 0
     mock state::get_tests_incomplete echo 0
+    mock state::get_tests_snapshot echo 0
     mock state::get_tests_skipped echo 0
     mock state::get_tests_passed echo 3
 
@@ -398,6 +475,7 @@ function test_only_render_success_result_when_all_tests_passes() {
   assert_not_contains "Duplicate test functions found" "$render_result"
   assert_not_contains "Some tests failed" "$render_result"
   assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_contains "All tests passed" "$render_result"
 }

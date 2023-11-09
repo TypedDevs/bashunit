@@ -18,11 +18,13 @@ function console_results::render_result() {
   ((total_tests+=$(state::get_tests_passed)))
   ((total_tests+=$(state::get_tests_skipped)))
   ((total_tests+=$(state::get_tests_incomplete)))
+  ((total_tests+=$(state::get_tests_snapshot)))
   ((total_tests+=$(state::get_tests_failed)))
   local total_assertions=0
   ((total_assertions+=$(state::get_assertions_passed)))
   ((total_assertions+=$(state::get_assertions_skipped)))
   ((total_assertions+=$(state::get_assertions_incomplete)))
+  ((total_assertions+=$(state::get_assertions_snapshot)))
   ((total_assertions+=$(state::get_assertions_failed)))
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
@@ -34,6 +36,9 @@ function console_results::render_result() {
   fi
   if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
     printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_tests_incomplete)" "$_COLOR_DEFAULT"
+  fi
+  if [[ "$(state::get_tests_snapshot)" -gt 0 ]] || [[ "$(state::get_assertions_snapshot)" -gt 0 ]]; then
+    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$(state::get_tests_snapshot)" "$_COLOR_DEFAULT"
   fi
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
     printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_tests_failed)" "$_COLOR_DEFAULT"
@@ -49,6 +54,9 @@ function console_results::render_result() {
   fi
   if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
     printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_assertions_incomplete)" "$_COLOR_DEFAULT"
+  fi
+  if [[ "$(state::get_tests_snapshot)" -gt 0 ]] || [[ "$(state::get_assertions_snapshot)" -gt 0 ]]; then
+    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$(state::get_assertions_snapshot)" "$_COLOR_DEFAULT"
   fi
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
     printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_assertions_failed)" "$_COLOR_DEFAULT"
@@ -69,6 +77,12 @@ function console_results::render_result() {
 
   if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
     printf "%s%s%s\n" "$_COLOR_RETURN_SKIPPED" "Some tests skipped" "$_COLOR_DEFAULT"
+    console_results::print_execution_time
+    exit 0
+  fi
+
+  if [[ "$(state::get_tests_snapshot)" -gt 0 ]]; then
+    printf "%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" "Some snapshots created" "$_COLOR_DEFAULT"
     console_results::print_execution_time
     exit 0
   fi
@@ -160,6 +174,13 @@ function console_results::print_incomplete_test() {
   if [[ -n "$pending" ]]; then
     printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}"
   fi
+}
+
+function console_results::print_snapshot_test() {
+  local test_name
+  test_name=$(helper::normalize_test_function_name "$1")
+
+  printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}"
 }
 
 function console_results::print_error_test() {
