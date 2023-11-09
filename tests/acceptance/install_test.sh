@@ -67,4 +67,5 @@ function test_install_downloads_the_non_stable_beta_version() {
     "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta")"\
     "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
   assert_directory_not_exists "./deps/temp_bashunit"
+  todo "assert that bashunit is the only file that exists in the deps folder"
 }
