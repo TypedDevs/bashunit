@@ -158,3 +158,25 @@ function test_right_trim() {
 function test_trim() {
   assert_equals "foo" "$(helper::trim "    foo   ")"
 }
+
+function test_find_files_recursive_given_file() {
+  local path
+  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests/example1_test.sh"
+
+  local result
+  result=$(helper::find_files_recursive "$path")
+
+  assert_equals "tests/unit/fixtures/tests/example1_test.sh" "$result"
+}
+
+function test_find_files_recursive_given_dir() {
+  local path
+  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests"
+
+  local result
+  result=$(helper::find_files_recursive "$path")
+
+  assert_equals "tests/unit/fixtures/tests/example1_test.sh
+tests/unit/fixtures/tests/example2_test.sh"\
+  "$result"
+}
