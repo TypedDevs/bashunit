@@ -8,6 +8,12 @@ yarn-error.log
 docs/.vitepress/cache
 docs/.vitepress/dist
 .yarn/*
+!.yarn/cache
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # installation
 bin/bashunit
