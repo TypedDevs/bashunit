@@ -23,7 +23,7 @@ function test_all_tests_files_with_wildcard() {
 }
 
 function test_error_when_no_tests_found() {
-  local path="./non-existing-path"
+  local path="./non_existing_path"
 
   assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$path")"
 }
