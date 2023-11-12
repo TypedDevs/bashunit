@@ -11,10 +11,20 @@ function test_bashunit_without_path_env_nor_argument() {
 }
 
 function test_bashunit_with_argument_path() {
-  assert_match_snapshot "$(./bashunit tests/acceptance/fixtures/tests_path --env "$TEST_ENV_FILE")"
+  local path="tests/acceptance/fixtures/tests_path"
+
+  assert_match_snapshot "$(./bashunit "$path" --env "$TEST_ENV_FILE")"
+  assert_successful_code "$(./bashunit "$path" --env "$TEST_ENV_FILE")"
 }
 
 function test_bashunit_with_env_default_path() {
   assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_WITH_PATH")"
   assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE_WITH_PATH")"
+}
+
+function test_bashunit_argument_overloads_default_path() {
+  local path="tests/acceptance/fixtures/wrong_path"
+
+  assert_match_snapshot "$(./bashunit "$path" --env "$TEST_ENV_FILE_WITH_PATH")"
+  assert_general_error "$(./bashunit "$path" --env "$TEST_ENV_FILE_WITH_PATH")"
 }
