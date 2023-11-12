@@ -153,3 +153,36 @@ function helper::trim() {
 
     echo "$trimmed_string"
 }
+
+function helpers::get_latest_tag() {
+    local remote_url="https://github.com/TypedDevs/bashunit"
+    local latest_tag
+
+    latest_tag=$(git ls-remote --tags "$remote_url" | awk '{print $2}' |
+    sed 's|^refs/tags/||' | sort -V | tail -n 1
+    )
+
+    echo "$latest_tag"
+}
+
+function helpers::upgrade() {
+    local script_path
+    local latest_tag
+
+    script_path="$(realpath "$BASHUNIT_ROOT_DIR")"
+    latest_tag="$(helpers::get_latest_tag)"
+
+    if [[ $BASHUNIT_VERSION == "$latest_tag" ]]; then
+      echo "> You are already on latest release."
+      return
+    fi
+
+    echo "> Upgrading bashunit to latest release."
+    git clone --depth 1 --no-tags -b latest https://github.com/TypedDevs/bashunit /tmp/bashunit 2>/dev/null
+    cd /tmp/bashunit || exit
+    ./build.sh >/dev/null
+    mv "$script_path/bashunit" "$script_path/bashunit.old"
+    cp ./bin/bashunit "$script_path/bashunit"
+    rm -f "$script_path/bashunit.old"
+    echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION."
+}
