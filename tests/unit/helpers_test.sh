@@ -180,3 +180,13 @@ function test_find_files_recursive_given_dir() {
 tests/unit/fixtures/tests/example2_test.sh"\
   "$result"
 }
+
+function test_find_files_recursive_given_wildcard() {
+  local path
+  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests/*2_test.sh"
+
+  local result
+  result=$(helper::find_files_recursive "$path")
+
+  assert_equals "tests/unit/fixtures/tests/example2_test.sh" "$result"
+}

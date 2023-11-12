@@ -17,10 +17,7 @@ function test_all_tests_files_within_a_file() {
 }
 
 function test_all_tests_files_with_wildcard() {
-  # remove this `todo` line to reproduce it and check the snapshot that it generates
-  todo "it is not working yet, but I don't know why..."; return
-
-  local path="./tests/acceptance/fixtures/tests_path/*_test.sh"
+  local path='./tests/acceptance/fixtures/tests_path/*'
 
   assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$path")"
 }

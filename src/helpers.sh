@@ -104,7 +104,9 @@ function helper::unset_if_exists() {
 function helper::find_files_recursive() {
   local path="$1"
 
-  if [[ -d "$path" ]]; then
+  if [[ "$path" == *"*"* ]]; then
+    eval find "$path" -type f -name '*[tT]est.sh' | sort | uniq
+  elif [[ -d "$path" ]]; then
     find "$path" -type f -name '*[tT]est.sh' | sort | uniq
   else
     echo "$path"
