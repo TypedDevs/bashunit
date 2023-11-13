@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.1...main)
+
+- ...
+
+## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
 - Fix find tests inside folder
 - Add current date on beta installation version
