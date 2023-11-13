@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.1...main)
 
-- ...
+- Add `--upgrade` option to `./bashunit`
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
