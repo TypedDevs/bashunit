@@ -20,6 +20,7 @@ function console_results::render_result() {
   ((total_tests+=$(state::get_tests_incomplete)))
   ((total_tests+=$(state::get_tests_snapshot)))
   ((total_tests+=$(state::get_tests_failed)))
+
   local total_assertions=0
   ((total_assertions+=$(state::get_assertions_passed)))
   ((total_assertions+=$(state::get_assertions_skipped)))
@@ -85,6 +86,12 @@ function console_results::render_result() {
     printf "%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" "Some snapshots created" "$_COLOR_DEFAULT"
     console_results::print_execution_time
     exit 0
+  fi
+
+  if [[ $total_tests -eq 0 ]]; then
+    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" "No tests found" "$_COLOR_DEFAULT"
+    console_results::print_execution_time
+    exit 1
   fi
 
   printf "%s%s%s\n" "$_COLOR_RETURN_SUCCESS" "All tests passed" "$_COLOR_DEFAULT"
