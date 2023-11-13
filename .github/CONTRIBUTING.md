@@ -38,7 +38,7 @@ Please make sure you have [set up your username and email address](https://git-s
 Our documentation is build with [VitePress](https://vitepress.dev/), for set up a local environment to contribute follow these steps:
 1. You'll need `node` (_we recommend using [nvm](https://github.com/nvm-sh/nvm)_) and `yarn` for set up the environment.
     * Using `nvm` you can execute `nvm use`(reads _.nvmrc_ file) in the project root directory and follow the instructions to use the correct `node` version.
-    * To install `yarn` you can use `npm i -g yarn`.
+    * To use `yarn` you need to execute `corepack enable` to activate [Corepack](https://nodejs.org/api/corepack.html).
 2. Install dependencies with `yarn install`.
 3. Run local development server with `yarn docs:dev`.
 4. Implement your changes.

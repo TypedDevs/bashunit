@@ -26,12 +26,12 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
           cache: yarn
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
       - name: Build with VitePress
         run: |
           yarn docs:build
