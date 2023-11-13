@@ -160,11 +160,11 @@ function helpers::get_latest_tag() {
     local remote_url="https://github.com/TypedDevs/bashunit"
     local latest_tag
 
-    latest_tag=$(git ls-remote --tags "$remote_url" | awk '{print $2}' |
-    sed 's|^refs/tags/||' | sort -V | tail -n 1
-    )
-
-    echo "$latest_tag"
+    git ls-remote --tags "$remote_url" |
+    awk '{print $2}' |
+    sed 's|^refs/tags/||' |
+    sort -V |
+    tail -n 1
 }
 
 function helpers::upgrade() {
