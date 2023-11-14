@@ -3,7 +3,7 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
 
-declare -r LATEST_BASHUNIT_VERSION="0.10.0"
+declare -r LATEST_BASHUNIT_VERSION="0.10.1"
 
 DIR=${1-lib}
 VERSION=${2-latest}
@@ -15,7 +15,11 @@ function build_and_install_beta() {
   cd temp_bashunit
   ./build.sh >/dev/null
   cd ..
-  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="(non-stable) beta"/g' temp_bashunit/bin/bashunit
+
+  local beta_version
+  beta_version='(non-stable) beta ['"$(date +'%Y-%m-%d')"']'
+
+  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
   rm -rf temp_bashunit
 }

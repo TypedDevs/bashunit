@@ -1,0 +1,10 @@
+Running ./tests/acceptance/fixtures/tests_path/a_test.sh
+[32m✓ Passed[0m: Assert empty
+[32m✓ Passed[0m: Assert greater and less than
+Running ./tests/acceptance/fixtures/tests_path/other_test.sh
+[32m✓ Passed[0m: Assert contains
+[32m✓ Passed[0m: Assert equals
+
+[2mTests:     [0m [32m4 passed[0m, 4 total
+[2mAssertions:[0m [32m6 passed[0m, 6 total
+[42mAll tests passed[0m

@@ -54,6 +54,7 @@ function test_install_downloads_the_given_version() {
 }
 
 function test_install_downloads_the_non_stable_beta_version() {
+  mock date echo "2023-11-13"
   local installed_bashunit="./deps/bashunit"
   local output
 
@@ -64,7 +65,7 @@ function test_install_downloads_the_non_stable_beta_version() {
     "$output"
   assert_file_exists "$installed_bashunit"
   assert_equals\
-    "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta")"\
+    "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta [2023-11-13]")"\
     "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
   assert_directory_not_exists "./deps/temp_bashunit"
   todo "assert that bashunit is the only file that exists in the deps folder"

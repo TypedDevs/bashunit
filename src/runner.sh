@@ -4,12 +4,11 @@ function runner::load_test_files() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
-  if [[ ${#files[@]} == 0 ]]; then
+  if [[ "${#files[@]}" == 0 ]]; then
     if [[ -n "${DEFAULT_PATH}" ]]; then
-        # shellcheck disable=SC2178
-        files=$(helper::find_files_recursive "$DEFAULT_PATH")
-        # shellcheck disable=SC2128
-        IFS=' ' read -r -a files <<< "$files"
+      while IFS='' read -r line; do
+        files+=("$line");
+      done < <(helper::find_files_recursive "$DEFAULT_PATH")
     else
       printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
       console_header::print_help

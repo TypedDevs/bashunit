@@ -57,18 +57,15 @@ You can use `SIMPLE_OUTPUT` option in your [configuration](/configuration#output
 to choose the default output display.
 
 ::: code-group
-```bash [Example]
-./bashunit ./tests --simple
-```
 ```[Output]
 ........
+```
+```bash [Example]
+./bashunit ./tests --simple
 ```
 :::
 
 ::: code-group
-```bash [Example]
-./bashunit ./tests --verbose
-```
 ```[Output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
@@ -79,6 +76,9 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Text should match a regular expression
 ✓ Passed: Text should not contain
 ✓ Passed: Text should not match a regular expression
+```
+```bash [Example]
+./bashunit ./tests --verbose
 ```
 :::
 
@@ -116,11 +116,11 @@ Load a custom env file overriding the `.env` environment variables.
 Displays the current version of **bashunit**.
 
 ::: code-group
-```bash [Example]
-./bashunit --version
-```
 ```-vue [Output]
 bashunit - {{ pkg.version }}
+```
+```bash [Example]
+./bashunit --version
 ```
 :::
 
@@ -143,9 +143,6 @@ Upgrade **bashunit** to latest version.
 Displays a help message with all allowed arguments and options.
 
 ::: code-group
-```bash [Example]
-./bashunit --help
-```
 ```-vue [Output]
 bashunit [arguments] [options]
 
@@ -157,6 +154,9 @@ Options:
     Filters the tests to run based on the test name.
 
   [...]
+```
+```bash [Example]
+./bashunit --help
 ```
 :::
 

@@ -366,6 +366,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
   assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
 }
 
 function test_only_render_error_result_when_some_test_fails() {
@@ -390,6 +391,7 @@ function test_only_render_error_result_when_some_test_fails() {
   assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
 }
 
 function test_only_render_incomplete_result_when_no_test_fails_and_some_incomplete() {
@@ -412,6 +414,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
   assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
 }
 
 function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_some_skipped() {
@@ -434,6 +437,7 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
   assert_not_contains "Some snapshots created" "$render_result"
   assert_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
 }
 
 function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_skipped_and_some_snapshot() {
@@ -456,6 +460,7 @@ function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_
   assert_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_not_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
 }
 
 function test_only_render_success_result_when_all_tests_passes() {
@@ -478,6 +483,23 @@ function test_only_render_success_result_when_all_tests_passes() {
   assert_not_contains "Some snapshots created" "$render_result"
   assert_not_contains "Some tests skipped" "$render_result"
   assert_contains "All tests passed" "$render_result"
+  assert_not_contains "No tests found" "$render_result"
+}
+
+function test_no_tests_found() {
+  local render_result
+  render_result=$(
+    mock_all_state_getters
+    console_results::render_result
+  )
+
+  assert_not_contains "Duplicate test functions found" "$render_result"
+  assert_not_contains "Some tests failed" "$render_result"
+  assert_not_contains "Some tests incomplete" "$render_result"
+  assert_not_contains "Some snapshots created" "$render_result"
+  assert_not_contains "Some tests skipped" "$render_result"
+  assert_not_contains "All tests passed" "$render_result"
+  assert_contains "No tests found" "$render_result"
 }
 
 function test_print_successful_test_output_no_args() {

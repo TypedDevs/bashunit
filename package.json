@@ -1,12 +1,11 @@
 {
   "name": "bashunit-docs",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "Docs for bashunit a simple testing library for bash scripts",
   "main": "index.js",
   "repository": "git@github.com:TypedDevs/bashunit.git",
   "author": "Jose Maria Valera Reales <chema@typeddevs.com> Emmanuel Valverde Ramos <manu@typeddevs.com> Antonio Gonzalez Gea <antonio@typeddevs.com> Fabrizio Fasanando Sotelo <fabrizio@typeddevs.com>",
   "license": "MIT",
-  "private": false,
   "type": "module",
   "scripts": {
     "docs:dev": "vitepress dev docs",
@@ -19,5 +18,6 @@
   "devDependencies": {
     "vitepress": "^1.0.0-rc.25",
     "vue": "^3.3.4"
-  }
+  },
+  "packageManager": "yarn@4.0.1"
 }
