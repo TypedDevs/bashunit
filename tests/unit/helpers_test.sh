@@ -190,3 +190,7 @@ function test_find_files_recursive_given_wildcard() {
 
   assert_equals "tests/unit/fixtures/tests/example2_test.sh" "$result"
 }
+
+function test_get_latest_tag() {
+  assert_not_empty "$(helpers::get_latest_tag)"
+}
