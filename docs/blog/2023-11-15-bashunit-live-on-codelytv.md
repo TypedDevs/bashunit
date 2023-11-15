@@ -35,7 +35,6 @@ with plans to delve into these further in future blog posts.
 > Our next articles will focus specifically on the two live coding demos conducted during the broadcast,
 > adding many more details and clearer explanations. But let's keep this as our little secret.
 
-
 Would you be interested in a CodelyTV course about testing in bash using bashunit?
 They've opened a survey to gauge interest, so don't hesitate to
 [sign up](https://docs.google.com/forms/d/e/1FAIpQLSfWZK_7QMPZMd5KwbbfKvm6IInd48sgyCNQ5W1cSfyhPS_ahA/viewform)!
