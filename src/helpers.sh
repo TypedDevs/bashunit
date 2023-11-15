@@ -169,7 +169,7 @@ function helpers::upgrade() {
     local script_path
     local latest_tag
 
-    script_path="$(realpath "$BASHUNIT_ROOT_DIR")"
+    script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     latest_tag="$(helpers::get_latest_tag)"
 
     if [[ $BASHUNIT_VERSION == "$latest_tag" ]]; then
