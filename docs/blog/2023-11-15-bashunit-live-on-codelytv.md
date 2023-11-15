@@ -2,8 +2,8 @@
 date: '2023-11-15'
 title: 'bashunit Live on CodelyTV'
 description: 'Bashunit was live on CodelyTV, on which Rafa had a chat with three of the main contributors of the library
-in a live broadcast. They demonstrated the full potential of bashunit, showing how TDD can be used to bash scripts and
-create tests for legacy code.'
+in a live broadcast. They demonstrated the full potential of bashunit, showing how TDD can be used to test bash scripts
+and create snapshot tests for legacy code.'
 coverUrl: '/covers/2023-11-15-bashunit-live-on-codelytv.jpg'
 coverAlt: 'Promotional Poster for the Live Broadcast featuring "$ testing bash" written at the top. Below,
 from left to right, are Antonio, Manu, and Chema (contributors of bashunit), the bashunit logo,
