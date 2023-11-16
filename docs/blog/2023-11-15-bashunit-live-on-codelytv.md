@@ -26,9 +26,7 @@ aside: false
   frameborder="0"
   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
   allowfullscreen
->
-  <img :src="$frontmatter.coverUrl" :alt="$frontmatter.coverAlt">
-</iframe>
+/>
 
 This was part of a dynamic live session where many topics were briefly touched on,
 with plans to delve into these in future blog posts.

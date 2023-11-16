@@ -8,6 +8,7 @@ lastUpdated: false
 
 <PostCard
   v-for="post of posts"
+  :key="post.url"
   :post="post"
 />
 
