@@ -173,16 +173,16 @@ function helpers::upgrade() {
   latest_tag="$(helpers::get_latest_tag)"
 
   if [[ $BASHUNIT_VERSION == "$latest_tag" ]]; then
-    echo "> You are already on latest release."
+    echo "> You are already on latest release"
     return
   fi
 
-  echo "> Upgrading bashunit to latest release."
+  echo "> Upgrading bashunit to latest release"
   git clone --depth 1 --no-tags -b latest "$BASHUNIT_GIT_REPO" /tmp/bashunit 2>/dev/null
   cd /tmp/bashunit || exit
   ./build.sh >/dev/null
   mv "$script_path/bashunit" "$script_path/bashunit.old"
   cp ./bin/bashunit "$script_path/bashunit"
   rm -f "$script_path/bashunit.old"
-  echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION."
+  echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION"
 }

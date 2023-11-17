@@ -12,7 +12,7 @@ function test_bashunit_upgrade_on_latest() {
   local output
   output="$(./bin/bashunit --upgrade)"
 
-  assert_equals "$(printf "> You are already on latest release.")" "$output"
+  assert_equals "> You are already on latest release" "$output"
 }
 
 function test_fake_bashunit_upgrade() {
@@ -27,6 +27,6 @@ function test_fake_bashunit_upgrade() {
   local output
   output="$(./bin/bashunit --upgrade)"
 
-  assert_contains "$(printf "> Upgrading bashunit to latest release.")" "$output"
-  assert_contains "$(printf "> bashunit upgraded successfully to latest version ")" "$output"
+  assert_contains "> Upgrading bashunit to latest release" "$output"
+  assert_contains "> bashunit upgraded successfully to latest version" "$output"
 }
