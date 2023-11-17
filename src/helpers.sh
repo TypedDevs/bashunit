@@ -164,25 +164,3 @@ function helpers::get_latest_tag() {
     sort -V |
     tail -n 1
 }
-
-function helpers::upgrade() {
-  local script_path
-  local latest_tag
-
-  script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  latest_tag="$(helpers::get_latest_tag)"
-
-  if [[ $BASHUNIT_VERSION == "$latest_tag" ]]; then
-    echo "> You are already on latest release"
-    return
-  fi
-
-  echo "> Upgrading bashunit to latest release"
-  git clone --depth 1 --no-tags -b latest "$BASHUNIT_GIT_REPO" /tmp/bashunit 2>/dev/null
-  cd /tmp/bashunit || exit
-  ./build.sh >/dev/null
-  mv "$script_path/bashunit" "$script_path/bashunit.old"
-  cp ./bin/bashunit "$script_path/bashunit"
-  rm -f "$script_path/bashunit.old"
-  echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION"
-}
