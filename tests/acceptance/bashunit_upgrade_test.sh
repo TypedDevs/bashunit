@@ -12,13 +12,17 @@ function test_bashunit_upgrade_on_latest() {
   local output
   output="$(./bin/bashunit --upgrade)"
 
-  assert_equals\
-  "$(printf "> You are already on latest release.")" "$output"
+  assert_equals "$(printf "> You are already on latest release.")" "$output"
 }
 
 function test_fake_bashunit_upgrade() {
-  sed -i -e 's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r \
-  BASHUNIT_VERSION="0.1.0"/' ./bin/bashunit
+  sed -i -e \
+    's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
+    ./bin/bashunit
+
+  if [[ $_OS == "OSX" ]]; then
+    rm ./bin/bashunit-e
+  fi
 
   local output
   output="$(./bin/bashunit --upgrade)"
