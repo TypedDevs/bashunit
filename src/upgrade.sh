@@ -17,5 +17,5 @@ function upgrade::upgrade() {
   curl -L -J -o bashunit "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" 2>/dev/null
   chmod u+x "bashunit"
 
-  echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION"
+  echo "> bashunit upgraded successfully to latest version $latest_tag"
 }

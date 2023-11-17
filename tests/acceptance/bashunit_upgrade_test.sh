@@ -31,7 +31,7 @@ function test_upgrade_when_a_new_version_found() {
   output="$(./bin/bashunit --upgrade)"
 
   assert_contains "> Upgrading bashunit to latest release" "$output"
-  assert_contains "> bashunit upgraded successfully to latest version" "$output"
+  assert_contains "> bashunit upgraded successfully to latest version $LATEST_VERSION" "$output"
   assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
 }
 
