@@ -1,17 +1,16 @@
 #!/bin/bash
 
-function set_up_before_script() {
+function set_up() {
   ./build.sh >/dev/null
-  assert_file_exists "./bin/bashunit"
 }
 
-function tear_down_after_script() {
+function tear_down() {
   rm -f ./bin/bashunit
 }
 
 function test_bashunit_upgrade_on_latest() {
-  local output
 
+  local output
   output="$(./bin/bashunit --upgrade)"
 
   assert_equals\
@@ -22,6 +21,7 @@ function test_fake_bashunit_upgrade() {
   sed -i -e 's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r \
   BASHUNIT_VERSION="0.1.0"/' ./bin/bashunit
 
+  local output
   output="$(./bin/bashunit --upgrade)"
 
   assert_contains "$(printf "> Upgrading bashunit to latest release.")" "$output"
