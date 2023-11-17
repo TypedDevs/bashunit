@@ -14,7 +14,7 @@ function upgrade::upgrade() {
 
   echo "> Upgrading bashunit to latest release"
   cd "$script_path" || exit
-  curl  -L -J -o bashunit "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" 2>/dev/null
+  curl -L -J -o bashunit "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" 2>/dev/null
   chmod u+x "bashunit"
 
   echo "> bashunit upgraded successfully to latest version $BASHUNIT_VERSION"

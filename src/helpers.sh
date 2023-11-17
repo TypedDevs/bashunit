@@ -1,6 +1,7 @@
 #!/bin/bash
 
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
