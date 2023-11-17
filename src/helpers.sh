@@ -1,6 +1,6 @@
 #!/bin/bash
 
-declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+declare -r BASHUNIT_GIT_REPO="git@github.com:TypedDevs/bashunit.git"
 
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
@@ -162,6 +162,6 @@ function helpers::get_latest_tag() {
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
     sed 's|^refs/tags/||' |
-    sort -V |
-    tail -n 1
+    sort -Vr |
+    head -n 1
 }

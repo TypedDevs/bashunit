@@ -14,7 +14,7 @@ function test_do_not_upgrade_when_latest() {
   local output
   output="$(./bin/bashunit --upgrade)"
 
-  assert_equals "> You are already on latest release" "$output"
+  assert_equals "> You are already on latest version" "$output"
   assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
 }
 
@@ -30,7 +30,7 @@ function test_upgrade_when_a_new_version_found() {
   local output
   output="$(./bin/bashunit --upgrade)"
 
-  assert_contains "> Upgrading bashunit to latest release" "$output"
+  assert_contains "> Upgrading bashunit to latest version" "$output"
   assert_contains "> bashunit upgraded successfully to latest version $LATEST_VERSION" "$output"
   assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
 }
@@ -51,6 +51,6 @@ function test_do_not_update_on_consecutive_calls() {
 #  local output
 #  output="$(./bin/bashunit --upgrade)"
 #
-#  assert_equals "> You are already on latest release" "$output"
+#  assert_equals "> You are already on latest version" "$output"
 #  assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
 }
