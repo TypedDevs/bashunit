@@ -9,7 +9,6 @@ function tear_down() {
 }
 
 function test_bashunit_upgrade_on_latest() {
-
   local output
   output="$(./bin/bashunit --upgrade)"
 
