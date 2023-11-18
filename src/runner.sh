@@ -190,32 +190,24 @@ function runner::run_test() {
 }
 
 function runner::run_set_up() {
-  helper::execute_function_if_exists 'setUp' # Deprecated: please use set_up instead.
   helper::execute_function_if_exists 'set_up'
 }
 
 function runner::run_set_up_before_script() {
-  helper::execute_function_if_exists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   helper::execute_function_if_exists 'set_up_before_script'
 }
 
 function runner::run_tear_down() {
-  helper::execute_function_if_exists 'tearDown' # Deprecated: please use tear_down instead.
   helper::execute_function_if_exists 'tear_down'
 }
 
 function runner::run_tear_down_after_script() {
-  helper::execute_function_if_exists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
   helper::execute_function_if_exists 'tear_down_after_script'
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
-  helper::unset_if_exists 'setUp' # Deprecated: please use set_up instead.
   helper::unset_if_exists 'set_up'
-  helper::unset_if_exists 'tearDown' # Deprecated: please use tear_down instead.
   helper::unset_if_exists 'tear_down'
-  helper::unset_if_exists 'setUpBeforeScript' # Deprecated: please use set_up_before_script instead.
   helper::unset_if_exists 'set_up_before_script'
-  helper::unset_if_exists 'tearDownAfterScript' # Deprecated: please use tear_down_after_script instead.
   helper::unset_if_exists 'tear_down_after_script'
 }
