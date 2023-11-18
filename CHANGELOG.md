@@ -3,6 +3,8 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.1...main)
 
 - Add `--upgrade` option to `./bashunit`
+- Remove support to deprecated `setUp`, `tearDown`, `setUpBeforeScript` and `tearDownAfterScript` functions
+- Optimize test execution time
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
