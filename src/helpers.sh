@@ -85,22 +85,14 @@ function helper::get_functions_to_run() {
 # @param $1 string Eg: "do_something"
 #
 function helper::execute_function_if_exists() {
-  local function_name=$1
-
-  if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
-    "$function_name"
-  fi
+  "$1" 2>/dev/null
 }
 
 #
 # @param $1 string Eg: "do_something"
 #
 function helper::unset_if_exists() {
-  local function_name=$1
-
-  if declare -F | awk '{print $3}' | grep -Eq "^${function_name}$"; then
-    unset "$function_name"
-  fi
+  unset "$1" 2>/dev/null
 }
 
 function helper::find_files_recursive() {
