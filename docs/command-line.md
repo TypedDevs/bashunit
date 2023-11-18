@@ -124,6 +124,18 @@ bashunit - {{ pkg.version }}
 ```
 :::
 
+## Upgrade
+
+> `bashunit --upgrade`
+
+Upgrade **bashunit** to latest version.
+
+::: code-group
+```bash [Example]
+./bashunit --upgrade
+```
+:::
+
 ## Help
 
 > `bashunit --help`

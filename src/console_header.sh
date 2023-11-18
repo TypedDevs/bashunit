@@ -48,6 +48,9 @@ Options:
   --version
     Displays the current version of bashunit.
 
+  --upgrade
+    Upgrade to latest version of bashunit.
+
   --help
     This message.
 

@@ -190,3 +190,15 @@ function test_find_files_recursive_given_wildcard() {
 
   assert_equals "tests/unit/fixtures/tests/example2_test.sh" "$result"
 }
+
+function test_get_latest_tag() {
+  mock git<<EOF
+fc9aac40eb8e5ad4483f08d79eb678a3650dcf78        refs/tags/0.1.0
+a17e6816669ec8d0f18ed8c6d5564df9fc699bf9        refs/tags/0.10.0
+3977be123b0b73cfdf4b4eff46b909f37aa83b3c        refs/tags/0.10.1
+b546c693198870dd75d1a102b94f4ddad6f4f3ea        refs/tags/0.2.0
+732ea5e8b16c3c05f0a6977b794ed7098e1839e2        refs/tags/0.3.0
+EOF
+  assert_equals "0.10.1" "$(helpers::get_latest_tag)"
+  unset -f git # remove the mock
+}

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+
 #
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
@@ -147,11 +149,19 @@ function helper::get_provider_data() {
 }
 
 function helper::trim() {
-    local input_string="$1"
-    local trimmed_string
+  local input_string="$1"
+  local trimmed_string
 
-    trimmed_string="${input_string#"${input_string%%[![:space:]]*}"}"
-    trimmed_string="${trimmed_string%"${trimmed_string##*[![:space:]]}"}"
+  trimmed_string="${input_string#"${input_string%%[![:space:]]*}"}"
+  trimmed_string="${trimmed_string%"${trimmed_string##*[![:space:]]}"}"
 
-    echo "$trimmed_string"
+  echo "$trimmed_string"
+}
+
+function helpers::get_latest_tag() {
+  git ls-remote --tags "$BASHUNIT_GIT_REPO" |
+    awk '{print $2}' |
+    sed 's|^refs/tags/||' |
+    sort -Vr |
+    head -n 1
 }
