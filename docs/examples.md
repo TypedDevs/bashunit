@@ -20,3 +20,6 @@ If your project utilizes **bashunit**, you can add it to this list by submitting
 
 ### [Chemaclass/conventional-commits](https://github.com/Chemaclass/conventional-commits)
 A specification for adding human and machine-readable meaning to commit messages.
+
+### [Tito-Kati/fizzbuzz-bashunit](https://github.com/Tito-Kati/fizzbuzz-bashunit)
+Popular introductory FizzBuzz kata solved in Bash with **bashunit** as the testing framework.
