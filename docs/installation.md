@@ -50,41 +50,6 @@ On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.
 sudo port install bashunit
 ```
 
-## Git submodule
-
-You can use Git submodules to include external Git repositories, like **bashunit**, within your Git project.
-This approach works well for including Bash scripts or other resources from remote repositories.
-
-For this, you will need to run the following script at the root of your Git project.
-The final `bashunit` is the folder where you want to install **bashunit**.
-For instance, if you prefer to have your dependencies inside the `deps` folder, just replace it with `deps/bashunit`.
-```bash
-git submodule add -b latest git@github.com:TypedDevs/bashunit.git bashunit
-```
-
-### Updating
-
-After adding **bashunit** as a submodule, you can update it by simply running the following command from the submodule root folder.
-```bash
-cd bashunit
-git submodule update --remote
-```
-
-### Specific version
-
-To use a specific version of **bashunit**, simply run the following command from the submodule root folder, replacing `[version]` with the desired version, for example `{{ pkg.version }}`.
-```bash
-cd bashunit
-git checkout [version]
-```
-
-If you want to revert to the latest version, just run the following commands from the submodule root folder.
-```bash
-cd bashunit
-git checkout latest
-git submodule update --remote
-```
-
 <script setup>
 import pkg from '../package.json'
 </script>
