@@ -42,7 +42,6 @@ help:
 	@echo "  test                     Run the test"
 	@echo "  test/list                List all the test under the tests directory"
 	@echo "  test/watch               Automatically run the test every second"
-	@echo "  test/example             Run test from the example directory"
 	@echo "  env/example              Makes a copy of the keys on your .env file"
 	@echo "  pre_commit/install       Installs the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
@@ -90,10 +89,3 @@ ifndef LINTER_CHECKER
 else
 	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
 endif
-
-test/example:
-	@./bashunit $(EXAMPLE_TEST_SCRIPTS)
-
-test/watch/example:
-	@./bashunit $(EXAMPLE_TEST_SCRIPTS)
-	@fswatch -m poll_monitor -or $(EXAMPLE_TEST_SCRIPTS) | xargs -n1 ./bashunit $(EXAMPLE_TEST_SCRIPTS)
