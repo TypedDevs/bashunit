@@ -8,5 +8,5 @@ This demo uses **bashunit** itself. You will find various tests showcasing the f
 
 To run the tests from this example, simply execute the following command from the project root folder.
 ```bash
-./bashunit example/*_test.sh
+./bashunit example
 ```
