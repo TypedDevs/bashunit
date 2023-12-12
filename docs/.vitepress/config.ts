@@ -103,8 +103,14 @@ export default defineConfig({
     },
 
     footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2023-present TypedDevs'
+      message: 'Released with ❤️ under the MIT License.',
+      copyright: `
+  Copyright © 2023-present
+  <a class="typeddevs-link" href="https://typeddevs.com/" target="_blank">
+    <img class="typeddevs-logo" src="/typeddevs.svg">
+    TypedDevs
+  </a>
+`
     }
   },
 
