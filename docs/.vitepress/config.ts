@@ -28,8 +28,8 @@ export default defineConfig({
     },
 
     logo: {
-      light: '/logo_navbar.svg',
-      dark: '/logo_navbar_dark.svg',
+      light: '/logo-navbar.svg',
+      dark: '/logo-navbar-dark.svg',
       alt: 'bashunit'
     },
 
