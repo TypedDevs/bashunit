@@ -39,9 +39,12 @@ features:
     details: Seamlessly operates on Linux, macOS, and Windows (via WSL), facilitating a consistent testing environment across major platforms.
 ---
 
+<ProductHuntBanner />
+
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
+import ProductHuntBanner from "./ProductHuntBanner.vue";
 
 onMounted(() => {
   const heroImage = document.querySelector('.VPHero .VPImage');

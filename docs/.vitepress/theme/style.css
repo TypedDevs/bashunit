@@ -188,3 +188,13 @@ time {
 .VPNavScreenMenu .VPNavScreenMenuLink {
   font-weight: 600;
 }
+
+.typeddevs-link {
+  text-decoration: none !important;
+}
+
+.typeddevs-logo {
+  display: inline-block;
+  width: 1rem;
+  margin-left: 0.2rem;
+}

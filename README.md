@@ -18,8 +18,8 @@
 <br>
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo_name_dark.svg">
-        <img alt="bashunit" src="docs/public/logo_name.svg" width="400">
+        <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo-name-dark.svg">
+        <img alt="bashunit" src="docs/public/logo-name.svg" width="400">
     </picture>
 </p>
 
