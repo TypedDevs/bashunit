@@ -41,6 +41,20 @@ features:
 
 <ProductHuntBanner />
 
+<h2 class="home__award-title">Honors & Awards</h2>
+
+<div class="home__award-container">
+  <a
+    href="https://twitter.com/getmanfred/status/1737191954289487900"
+    target="_blank"
+  >
+    <img
+      src="/awards/manfred-2023.jpg"
+      alt="The Manfred Awards 2023 - bashunit - Side Project of the Year"
+    />
+  </a>
+</div>
+
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import VanillaTilt from 'vanilla-tilt';
@@ -56,3 +70,16 @@ onMounted(() => {
   });
 });
 </script>
+
+<style scoped>
+.home__award-title {
+  text-align: center;
+  margin: 4rem 0;
+  font-size: 2.75rem;
+}
+
+.home__award-container {
+  display: grid;
+  justify-content: center;
+}
+</style>
