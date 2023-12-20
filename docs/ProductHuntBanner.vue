@@ -9,12 +9,12 @@
       <img
         class="product-hunt-banner__logo--light"
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=417750&theme=light"
-        alt=""
+        alt="Product Hunt"
       />
       <img
         class="product-hunt-banner__logo--dark"
         src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=417750&theme=dark"
-        alt=""
+        alt="Product Hunt"
       />
     </a>
   </div>
