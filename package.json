@@ -16,7 +16,7 @@
     "vanilla-tilt": "^1.8.1"
   },
   "devDependencies": {
-    "vitepress": "^1.0.0-rc.31",
-    "vue": "^3.3.11"
+    "vitepress": "^1.0.0-rc.32",
+    "vue": "^3.3.13"
   }
 }
