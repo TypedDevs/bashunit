@@ -11,8 +11,19 @@ export default defineConfig({
   lastUpdated: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:image', content: '/og-image.png' }]
   ],
+  transformHead(context) {
+    const canonical = context.page.replace(/(index)?\.md$/, '')
+
+    return [
+      ['meta', { property: 'og:title', content: context.title }],
+      ['meta', { property: 'og:url', content: `https://bashunit.typeddevs.com/${canonical}` }],
+      ['link', { rel: 'canonical', href: `https://bashunit.typeddevs.com/${canonical}` }],
+    ]
+  },
 
   sitemap: {
     hostname: 'https://bashunit.typeddevs.com'
