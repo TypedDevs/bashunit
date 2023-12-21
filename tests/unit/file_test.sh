@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function test_successful_assert_file_exists() {
   local a_file
