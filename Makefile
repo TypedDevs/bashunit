@@ -4,6 +4,7 @@ SHELL=/bin/bash
 
 STATIC_ANALYSIS_CHECKER := $(shell which shellcheck 2> /dev/null)
 LINTER_CHECKER := $(shell which ec 2> /dev/null)
+GIT_DIR = $(shell git rev-parse --git-dir 2> /dev/null)
 
 OS:=
 ifeq ($(OS),Windows_NT)
@@ -72,7 +73,7 @@ env/example:
 
 pre_commit/install:
 	@echo "Installing pre-commit hooks"
-	cp $(PRE_COMMIT_SCRIPTS_FILE) ./.git/hooks/
+	cp $(PRE_COMMIT_SCRIPTS_FILE) $(GIT_DIR)/hooks/
 
 pre_commit/run: test sa lint env/example
 
