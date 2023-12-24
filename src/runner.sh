@@ -50,7 +50,7 @@ function runner::call_test_functions() {
       echo "Running $script"
     fi
 
-    helper::check_duplicate_functions "$script"
+    helper::check_duplicate_functions "$script" || true
 
     for function_name in "${functions_to_run[@]}"; do
       local provider_data=()
@@ -107,16 +107,16 @@ function runner::parse_execution_result() {
     sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
   )
 
-  _ASSERTIONS_PASSED=$((_ASSERTIONS_PASSED + assertions_passed))
-  _ASSERTIONS_FAILED=$((_ASSERTIONS_FAILED + assertions_failed))
-  _ASSERTIONS_SKIPPED=$((_ASSERTIONS_SKIPPED + assertions_skipped))
-  _ASSERTIONS_INCOMPLETE=$((_ASSERTIONS_INCOMPLETE + assertions_incomplete))
-  _ASSERTIONS_SNAPSHOT=$((_ASSERTIONS_SNAPSHOT + assertions_snapshot))
+  ((_ASSERTIONS_PASSED += assertions_passed)) || true
+  ((_ASSERTIONS_FAILED += assertions_failed)) || true
+  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
+  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
+  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
 }
 
 function runner::run_test() {
   local function_name="$1"
-  local data="$2"
+  local data="${2-}"
   local current_assertions_failed
   current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot

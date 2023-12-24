@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function test_successful_assert_equals() {
   assert_empty "$(assert_equals "1" "1")"

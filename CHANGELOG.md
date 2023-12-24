@@ -5,6 +5,7 @@
 - Add `--upgrade` option to `./bashunit`
 - Remove support to deprecated `setUp`, `tearDown`, `setUpBeforeScript` and `tearDownAfterScript` functions
 - Optimize test execution time
+- Support tests written using Bash's errexit (-e), nounset (-u), and pipefail options ("unofficial strict mode").
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
