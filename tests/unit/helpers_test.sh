@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function tear_down() {
   helper::unset_if_exists fake_function

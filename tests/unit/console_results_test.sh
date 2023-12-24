@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function mock_all_state_getters() {
   mock state::is_duplicated_test_functions_found echo false
