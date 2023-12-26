@@ -1,5 +1,56 @@
 #!/bin/bash
 
+declare -a MOCKED_FUNCTIONS=()
+
+function is_mock() {
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$expected" ]]; then
+      echo true
+      return
+    fi
+  done
+
+  echo false
+}
+
+function assert_is_mock() {
+  local expected="$1"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  if [[ $(is_mock "$expected") == false ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected}" "to be a mock" "but is not a mock"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
+function assert_is_not_mock() {
+  local expected="$1"
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  if [[ $(is_mock "$expected") == true ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected}" "to not be a mock" "but is a mock"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
+function unmock() {
+  local command=$1
+  unset -f "$command"
+
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+      unset "MOCKED_FUNCTIONS[$i]"
+      break
+    fi
+  done
+}
+
 function mock() {
   local command=$1
   shift
@@ -11,6 +62,8 @@ function mock() {
   fi
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function spy() {
@@ -24,6 +77,8 @@ function spy() {
   eval "function $command() { ${variable}_params=(\"\$*\"); ((${variable}_times++)) || true; }"
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function assert_have_been_called() {
