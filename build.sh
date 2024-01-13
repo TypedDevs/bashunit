@@ -2,7 +2,9 @@
 
 mkdir -p bin
 
-cat src/*.sh > bin/temp.sh
+echo '#!/usr/bin/env bash' > bin/temp.sh
+
+cat src/*.sh >> bin/temp.sh
 cat bashunit >> bin/temp.sh
 grep -v '^source' bin/temp.sh > bin/bashunit
 rm bin/temp.sh
