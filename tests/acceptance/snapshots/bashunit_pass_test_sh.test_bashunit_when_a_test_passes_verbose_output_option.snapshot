@@ -1,8 +1,8 @@
 Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
-[32m✓ Passed[0m: Assert contains
-[32m✓ Passed[0m: Assert empty
 [32m✓ Passed[0m: Assert equals
+[32m✓ Passed[0m: Assert contains
 [32m✓ Passed[0m: Assert greater and less than
+[32m✓ Passed[0m: Assert empty
 
 [2mTests:     [0m [32m4 passed[0m, 4 total
 [2mAssertions:[0m [32m6 passed[0m, 6 total

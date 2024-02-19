@@ -34,16 +34,33 @@ function runner::load_test_files() {
   done
 }
 
+function runner::functions_for_script() {
+  local script="$1"
+  local all_function_names="$2"
+
+  # Filter the names down to the ones defined in the script, sort them by line
+  # number
+  shopt -s extdebug
+  for f in $all_function_names; do
+    declare -F "$f" | grep "$script"
+  done | sort -k2 -n | awk '{print $1}'
+  shopt -u extdebug
+}
+
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
   # Use declare -F to list all function names
-  local function_names
-  function_names=$(declare -F | awk '{print $3}')
+  local all_function_names
+  all_function_names=$(declare -F | awk '{print $3}')
+  local filtered_functions
+  # shellcheck disable=SC2207
+  filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
+
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(helper::get_functions_to_run "$prefix" "$filter" "$function_names"))
+  functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     if [[ "$SIMPLE_OUTPUT" == false ]]; then
