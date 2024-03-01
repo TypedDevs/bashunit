@@ -1,16 +1,32 @@
 #!/bin/bash
 
-# shellcheck disable=SC2034
-_COLOR_DEFAULT=$'\e[0m'
-_COLOR_BOLD=$'\e[1m'
-_COLOR_FAINT=$'\e[2m'
-_COLOR_FAILED=$'\e[31m'
-_COLOR_PASSED=$'\e[32m'
-_COLOR_SKIPPED=$'\e[33m'
-_COLOR_INCOMPLETE=$'\e[36m'
-_COLOR_SNAPSHOT=$'\e[34m'
-_COLOR_RETURN_ERROR=$'\e[41m'
-_COLOR_RETURN_SUCCESS=$'\e[42m'
-_COLOR_RETURN_SKIPPED=$'\e[43m'
-_COLOR_RETURN_INCOMPLETE=$'\e[46m'
-_COLOR_RETURN_SNAPSHOT=$'\e[44m'
+# Pass in any number of ANSI SGR codes.
+#
+# Code reference:
+#   https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
+# Credit:
+#   https://superuser.com/a/1119396
+sgr() {
+  local codes=${1:-0}
+  shift
+
+  for c in "$@"; do
+    codes="$codes;$c"
+  done
+
+  echo $'\e'"[${codes}m"
+}
+
+_COLOR_DEFAULT="$(sgr 0)"
+_COLOR_BOLD="$(sgr 1)"
+_COLOR_FAINT="$(sgr 2)"
+_COLOR_FAILED="$(sgr 31)"
+_COLOR_PASSED="$(sgr 32)"
+_COLOR_SKIPPED="$(sgr 33)"
+_COLOR_INCOMPLETE="$(sgr 36)"
+_COLOR_SNAPSHOT="$(sgr 34)"
+_COLOR_RETURN_ERROR="$(sgr 41)"
+_COLOR_RETURN_SUCCESS="$(sgr 42)"
+_COLOR_RETURN_SKIPPED="$(sgr 43)"
+_COLOR_RETURN_INCOMPLETE="$(sgr 46)"
+_COLOR_RETURN_SNAPSHOT="$(sgr 44)"
