@@ -4,4 +4,5 @@ Running ./tests/acceptance/fixtures/tests_path/a_test.sh
 
 [2mTests:     [0m [32m2 passed[0m, 2 total
 [2mAssertions:[0m [32m3 passed[0m, 3 total
-[42mAll tests passed[0m
+
+[42m[30m[1m All tests passed [0m
