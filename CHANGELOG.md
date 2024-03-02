@@ -6,6 +6,7 @@
 - Remove support to deprecated `setUp`, `tearDown`, `setUpBeforeScript` and `tearDownAfterScript` functions
 - Optimize test execution time
 - Test functions are now run in the order they're defined in a test file
+- Increase contrast of test results
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
