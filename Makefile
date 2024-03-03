@@ -37,15 +37,15 @@ endif
 
 help:
 	@echo ""
-	@echo "usage: make COMMAND"
+	@echo "Usage: make [command]"
 	@echo ""
 	@echo "Commands:"
-	@echo "  test                     Run the test"
-	@echo "  test/list                List all the test under the tests directory"
-	@echo "  test/watch               Automatically run the test every second"
-	@echo "  env/example              Makes a copy of the keys on your .env file"
-	@echo "  pre_commit/install       Installs the pre-commit hook"
-	@echo "  pre_commit/run           Function that will be called when the pre-commit runs"
+	@echo "  test                     Run the tests"
+	@echo "  test/list                List all tests under the tests directory"
+	@echo "  test/watch               Automatically run tests every second"
+	@echo "  env/example              Copy variables without the values from .env into .env.example"
+	@echo "  pre_commit/install       Install the pre-commit hook"
+	@echo "  pre_commit/run           Function that will be called when the pre-commit hook runs"
 	@echo "  sa                       Run shellcheck static analysis tool"
 	@echo "  lint                     Run editorconfig linter tool"
 
@@ -68,25 +68,25 @@ test/watch: $(TEST_SCRIPTS)
 	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
 
 env/example:
-	@echo "Copy the .env into the .env.example file without the values"
+	@echo "Copying variables without the values from .env into .env.example"
 	@sed 's/=.*/=/' .env > .env.example
 
 pre_commit/install:
-	@echo "Installing pre-commit hooks"
+	@echo "Installing pre-commit hook"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) $(GIT_DIR)/hooks/
 
 pre_commit/run: test sa lint env/example
 
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
-	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analisys not preformed!" && exit 1
+	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
 	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
 
 lint:
 ifndef LINTER_CHECKER
-	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig not installed: Lint not preformed!" && exit 1
+	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig not installed: Lint not performed!" && exit 1
 else
 	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
 endif

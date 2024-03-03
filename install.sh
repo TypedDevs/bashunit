@@ -3,7 +3,7 @@
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
 
-declare -r LATEST_BASHUNIT_VERSION="0.10.1"
+declare -r LATEST_BASHUNIT_VERSION="0.11.0"
 
 DIR=${1-lib}
 VERSION=${2-latest}

@@ -150,7 +150,7 @@ Arguments:
   Specifies the directory or file containing [...]
 
 Options:
-  -f|--filer
+  -f|--filter
     Filters the tests to run based on the test name.
 
   [...]

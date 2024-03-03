@@ -5,34 +5,25 @@ end_of_line = lf
 insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
-
-[**.sh]
 indent_style = space
 indent_size = 2
+
+[**.sh]
 max_line_length = 120
 
 [**.md]
-indent_style = space
 indent_size = 4
 
 [**.ts]
-indent_style = space
-indent_size = 2
 max_line_length = 120
 
 [**.css]
-indent_style = space
-indent_size = 2
 max_line_length = 120
-
-[**.json]
-indent_style = space
-indent_size = 2
 
 [docs/**.md] # YAML support
 indent_size = 2
 
-[{Makefile,**.mk}]
+[{Makefile,**.mk,.git*}]
 indent_style = tab
 
 [{tests/acceptance/**.sh,src/console_header.sh}]
