@@ -11,8 +11,19 @@ export default defineConfig({
   lastUpdated: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/favicon.ico' }]
+    ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { property: 'og:type', content: 'website' }],
+    ['meta', { property: 'og:image', content: '/og-image.png' }]
   ],
+  transformHead(context) {
+    const canonical = context.page.replace(/(index)?\.md$/, '')
+
+    return [
+      ['meta', { property: 'og:title', content: context.title }],
+      ['meta', { property: 'og:url', content: `https://bashunit.typeddevs.com/${canonical}` }],
+      ['link', { rel: 'canonical', href: `https://bashunit.typeddevs.com/${canonical}` }],
+    ]
+  },
 
   sitemap: {
     hostname: 'https://bashunit.typeddevs.com'
@@ -28,8 +39,8 @@ export default defineConfig({
     },
 
     logo: {
-      light: '/logo_navbar.svg',
-      dark: '/logo_navbar_dark.svg',
+      light: '/logo-navbar.svg',
+      dark: '/logo-navbar-dark.svg',
       alt: 'bashunit'
     },
 
@@ -103,8 +114,14 @@ export default defineConfig({
     },
 
     footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2023-present TypedDevs'
+      message: 'Released with ❤️ under the MIT License.',
+      copyright: `
+  Copyright © 2023-present
+  <a class="typeddevs-link" href="https://typeddevs.com/" target="_blank">
+    <img class="typeddevs-logo" src="/typeddevs.svg">
+    TypedDevs
+  </a>
+`
     }
   },
 

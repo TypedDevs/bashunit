@@ -6,18 +6,48 @@ function set_up_before_script() {
 
 function test_bashunit_when_a_execution_error() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh
-  local fixture_start
-  fixture_start=$(printf "Running ./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh
-\e[31m✗ Failed\e[0m: Error
-    \e[2mExpected\e[0m \e[1m\'127\'\e[0m
-    \e[2mto be exactly\e[0m \e[1m\'1\'\e[0m
-\e[31m✗ Failed\e[0m: Error
-    \e[2m./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh:")
-  local fixture_end
-  fixture_end=$(printf "\e[0m
+  local fixture_start fixture_end
+  local color_default color_red color_dim color_bold
 
-\e[2mTests:     \e[0m \e[31m1 failed\e[0m, 1 total
-\e[2mAssertions:\e[0m \e[31m1 failed\e[0m, 1 total")
+  color_default="$(sgr 0)"
+  color_bold="$(sgr 1)"
+  color_dim="$(sgr 2)"
+  color_red="$(sgr 31)"
+
+  function format_fail_title() {
+    printf "\n%s%s%s%s" "${color_red}" "$1" "${color_default}" "$2"
+  }
+
+  function format_expect_title() {
+    printf "\n    %s%s%s" "${color_dim}" "$1" "${color_default}"
+  }
+
+  function format_expect_value() {
+    printf " %s%s%s" "${color_bold}" "$1" "${color_default}"
+  }
+
+  function format_summary_title() {
+    printf "\n%s%s%s" "${color_dim}" "$1" "${color_default}"
+  }
+
+  function format_summary_value() {
+    printf " %s%s%s%s" "${color_red}" "$1" "${color_default}" "$2"
+  }
+
+  fixture_start=$(
+    printf "Running ./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh"
+    format_fail_title "✗ Failed" ": Error"
+    format_expect_title "Expected"
+    format_expect_value "'127'"
+    format_expect_title "to be exactly"
+    format_expect_value "'1'"
+  )
+  fixture_end=$(
+    format_summary_title "Tests:     "
+    format_summary_value "1 failed" ", 1 total"
+    format_summary_title "Assertions:"
+    format_summary_value "1 failed" ", 1 total"
+  )
 
   todo "Add snapshots with regex to assert this test (part of the error message is localized)"
   todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"

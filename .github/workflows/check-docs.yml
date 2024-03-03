@@ -26,12 +26,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-          cache: yarn
+          cache: npm
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Install dependencies
-        run: yarn install --immutable
+        run: npm ci
       - name: Build with VitePress
         run: |
-          yarn docs:build
+          npm run docs:build
           touch docs/.vitepress/dist/.nojekyll

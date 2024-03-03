@@ -1,10 +1,14 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.1...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
+
+## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
 
 - Add `--upgrade` option to `./bashunit`
 - Remove support to deprecated `setUp`, `tearDown`, `setUpBeforeScript` and `tearDownAfterScript` functions
 - Optimize test execution time
+- Test functions are now run in the order they're defined in a test file
+- Increase contrast of test results
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 
