@@ -2,7 +2,8 @@ name: Publish Docs
 
 on:
   push:
-    branches: [latest]
+    branches:
+      - latest
 
   workflow_dispatch:
 
