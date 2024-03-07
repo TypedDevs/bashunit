@@ -1,10 +1,8 @@
-name: Check Docs
+name: Publish Docs
 
 on:
-  pull_request:
   push:
-    branches:
-      - main
+    branches: [latest]
 
   workflow_dispatch:
 
@@ -18,8 +16,11 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,3 +38,12 @@ jobs:
 
       - name: Build with VitePress
         run: npm run docs:build
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ secrets.CLOUDFLARE_PROJECT_NAME }}
+          directory: .vitepress/dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
