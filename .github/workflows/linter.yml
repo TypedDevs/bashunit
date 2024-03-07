@@ -16,7 +16,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run Linter
+      - name: Editorconfig Linter
         uses: editorconfig-checker/action-editorconfig-checker@main
+
+      - name: Run Linter
         run: editorconfig-checker
 
