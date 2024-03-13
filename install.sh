@@ -2,12 +2,22 @@
 
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
+declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
-declare -r LATEST_BASHUNIT_VERSION="0.11.0"
+function get_latest_tag() {
+  git ls-remote --tags "$BASHUNIT_GIT_REPO" |
+    awk '{print $2}' |
+    sed 's|^refs/tags/||' |
+    sort -Vr |
+    head -n 1
+}
+
+declare -r LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
 
 DIR=${1-lib}
 VERSION=${2-latest}
 TAG="$LATEST_BASHUNIT_VERSION"
+
 
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
