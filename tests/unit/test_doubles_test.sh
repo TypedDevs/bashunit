@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 function tear_down() {
   unset code
