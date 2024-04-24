@@ -856,3 +856,20 @@ function test_failure() {
 }
 ```
 :::
+
+## fail
+> `fail "failure message"`
+
+Unambiguously reports an error message. Useful for reporting specific message
+when testing situations not covered by any `assert_*` functions.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  true || fail "This will never fail"
+}
+function test_failure() {
+  [ $(date +%-H) -lt 6 ] || fail "It's late, go to bed"
+}
+```
+:::

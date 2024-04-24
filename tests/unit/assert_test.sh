@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function test_successful_fail() {
+  true || fail "This cannot fail"
+}
+
 function test_unsuccessful_fail() {
   assert_equals\
     "$(console_results::print_failure_message "Unsuccessful fail" "Failure message")"\
