@@ -131,6 +131,16 @@ function console_results::print_successful_test() {
   fi
 }
 
+function console_results::print_failure_message() {
+  local test_name=$1
+  local failure_message=$2
+
+  printf "\
+${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${test_name}" "${failure_message}"
+}
+
 function console_results::print_failed_test() {
   local test_name=$1
   local expected=$2

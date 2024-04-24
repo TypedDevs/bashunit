@@ -1,5 +1,13 @@
 #!/bin/bash
 
+function fail() {
+  local message=$1
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  state::add_assertions_failed
+  console_results::print_failure_message "${label}" "$message"
+}
+
 function assert_equals() {
   local expected="$1"
   local actual="$2"
