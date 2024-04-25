@@ -866,10 +866,14 @@ when testing situations not covered by any `assert_*` functions.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  true || fail "This will never fail"
+  if [ "$(date +%-H)" -gt 25 ]; then
+    fail "Something is very wrong with your clock"
+  fi
 }
 function test_failure() {
-  [ $(date +%-H) -lt 6 ] || fail "It's late, go to bed"
+  if [ "$(date +%-H)" -lt 25 ]; then
+    fail "This test will always fail"
+  fi
 }
 ```
 :::
