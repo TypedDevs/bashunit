@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function test_successful_fail() {
+  true || fail "This cannot fail"
+}
+
+function test_unsuccessful_fail() {
+  assert_equals\
+    "$(console_results::print_failure_message "Unsuccessful fail" "Failure message")"\
+    "$(fail "Failure message")"
+}
+
 function test_successful_assert_equals() {
   assert_empty "$(assert_equals "1" "1")"
 }
