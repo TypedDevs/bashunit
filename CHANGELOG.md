@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
 
+- Add multi-invokers; consolidate parameterized-testing documentation
 - Add `fail()` function
 
 ## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
