@@ -37,7 +37,7 @@ function test_multi_invoker_simple() {
       assert_equals "more" "$third_arg"
       ;;
     *)
-      exit 1
+      fail
       ;;
   esac
   assert_equals "mississippi" "$second_arg"

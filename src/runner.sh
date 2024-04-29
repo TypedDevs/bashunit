@@ -91,7 +91,7 @@ function runner::call_test_functions() {
         fi
       fi
 
-      unset "$function_name"
+      unset function_name
     done
   fi
 }
