@@ -31,7 +31,7 @@ function test_get_data_from_provider_as_array() {
       assert_equals "three" "$current_data"
       ;;
     *)
-      exit 1
+      fail
       ;;
   esac
 }

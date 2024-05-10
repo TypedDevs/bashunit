@@ -47,6 +47,11 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
+# Helper function for test authors to invoke a named test case
+function run_test() {
+  runner::run_test "$function_name" "$@"
+}
+
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
@@ -78,10 +83,15 @@ function runner::call_test_functions() {
           runner::run_test "$function_name" "$data"
         done
       else
-        runner::run_test "$function_name"
+        local multi_invoker=$(helper::get_multi_invoker_function "$function_name" "$script")
+        if [[ -n "${multi_invoker}" ]]; then
+          helper::execute_function_if_exists "${multi_invoker}"
+        else
+          runner::run_test "$function_name"
+        fi
       fi
 
-      unset "$function_name"
+      unset function_name
     done
   fi
 }
@@ -133,7 +143,7 @@ function runner::parse_execution_result() {
 
 function runner::run_test() {
   local function_name="$1"
-  local data="$2"
+  shift
   local current_assertions_failed
   current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot
@@ -150,7 +160,7 @@ function runner::run_test() {
     state::initialize_assertions_count
     runner::run_set_up
 
-    "$function_name" "$data" 2>&1 1>&3
+    "$function_name" "$@" 2>&1 1>&3
 
     runner::run_tear_down
     state::export_assertions_count
@@ -202,7 +212,7 @@ function runner::run_test() {
   local label
   label="$(helper::normalize_test_function_name "$function_name")"
 
-  console_results::print_successful_test "${label}" "${data}"
+  console_results::print_successful_test "${label}" "$@"
   state::add_tests_passed
 }
 

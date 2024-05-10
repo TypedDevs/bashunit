@@ -140,6 +140,26 @@ function helper::get_provider_data() {
   fi
 }
 
+function helper::get_multi_invoker_function() {
+  local function_name="$1"
+  local script="$2"
+  local multi_invoker_function
+
+  if [[ ! -f "$script" ]]; then
+    return
+  fi
+
+  multi_invoker_function=$(\
+    grep -B 1 "function $function_name()" "$script" |\
+    grep "# multi_invoker " |\
+    sed -E -e 's/\ *# multi_invoker (.*)$/\1/g'\
+  )
+  func_exists=$(declare -f "$multi_invoker_function")
+  if [[ -n "$func_exists" ]]; then
+    echo "$multi_invoker_function"
+  fi
+}
+
 function helper::trim() {
   local input_string="$1"
   local trimmed_string
