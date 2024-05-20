@@ -4,6 +4,7 @@
 
 - Add multi-invokers; consolidate parameterized-testing documentation
 - Add `fail()` function
+- Add `unmock`
 
 ## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
 
@@ -24,9 +25,6 @@
 - Add `assert_contains_ignore_case`
 - Add `assert_equals_ignore_colors`
 - Add `assert_match_snapshot`
-- Add `assert_is_mock`
-- Add `assert_is_not_mock`
-- Add `unmock`
 - Add `SHOW_EXECUTION_TIME` to environment config
 - Add docs for environment variables
 - Improve data provider output
