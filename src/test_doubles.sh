@@ -42,11 +42,11 @@ function assert_is_not_mock() {
 
 function unmock() {
   local command=$1
-  unset -f "$command"
 
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
     if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
       unset "MOCKED_FUNCTIONS[$i]"
+      unset -f "$command"
       break
     fi
   done
