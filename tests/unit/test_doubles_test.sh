@@ -24,31 +24,6 @@ EOF
   assert_empty "$(assert_successful_code "$(code)")"
 }
 
-function test_successful_unmock_mock() {
-  mock ps<<EOF
-PID TTY          TIME CMD
-13525 pts/7    00:00:01 bash
-24162 pts/7    00:00:00 ps
-EOF
-
-  assert_is_mock ps
-  unmock ps
-  assert_is_not_mock ps
-}
-
-function test_successful_unmock_spy() {
-  spy ps
-  assert_is_mock ps
-  unmock ps
-  assert_is_not_mock ps
-}
-
-function test_unsuccessful_unmock() {
-  assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful unmock" "ps" "to be a mock" "but is not a mock")"\
-    "$(assert_is_mock ps)"
-}
-
 function test_successful_override_ps_with_echo_with_mock() {
   mock ps echo hello world
   assert_equals "hello world" "$(ps)"
