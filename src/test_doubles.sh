@@ -3,6 +3,7 @@
 declare -a MOCKED_FUNCTIONS=()
 
 function is_mock() {
+  local expected="$1"
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
     if [[ "${MOCKED_FUNCTIONS[$i]}" == "$expected" ]]; then
       echo true
