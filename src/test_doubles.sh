@@ -1,5 +1,19 @@
 #!/bin/bash
 
+declare -a MOCKED_FUNCTIONS=()
+
+function unmock() {
+  local command=$1
+
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+      unset "MOCKED_FUNCTIONS[$i]"
+      unset -f "$command"
+      break
+    fi
+  done
+}
+
 function mock() {
   local command=$1
   shift
@@ -11,6 +25,8 @@ function mock() {
   fi
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function spy() {
@@ -24,6 +40,8 @@ function spy() {
   eval "function $command() { ${variable}_params=(\"\$*\"); ((${variable}_times++)) || true; }"
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function assert_have_been_called() {
