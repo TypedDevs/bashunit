@@ -7,8 +7,6 @@ When creating tests, you might need to override existing function to be able to 
 
 Allows you to override the behavior of a callable.
 
-> You can undo a mock function, to revert it to its previous original behaviour, with `unmock`.
-
 ::: code-group
 ```bash [Example]
 function test_example() {
@@ -37,34 +35,6 @@ PID TTY          TIME CMD
 EOF
 
   assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
-}
-```
-:::
-
-## unmock
-
-> `unmock "function"`
-
-Undo the previous overridden behavior of a callable using mock.
-
-::: code-group
-```bash [Example]
-function test_example() {
-  function code() {
-    ps a | grep bash
-  }
-
-  mock ps<<EOF
-PID TTY          TIME CMD
-13525 pts/7    00:00:01 bash
-24162 pts/7    00:00:00 ps
-EOF
-
-  # At this point, ps will return the mocked value above
-  assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
-
-  # From now on, ps will have the original behaviour again
-  unmock ps
 }
 ```
 :::
