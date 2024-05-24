@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
 
+- Fix test with `rm` command in macOS
 - Add multi-invokers; consolidate parameterized-testing documentation
 - Add `fail()` function
 - Remove all test mocks after each test case
