@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
 
+- Add missing assertion in non-stable versions
 - Fix test with `rm` command in macOS
 - Add multi-invokers; consolidate parameterized-testing documentation
 - Add `fail()` function

@@ -68,5 +68,7 @@ function test_install_downloads_the_non_stable_beta_version() {
     "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta [2023-11-13]")"\
     "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
   assert_directory_not_exists "./deps/temp_bashunit"
-  todo "assert that bashunit is the only file that exists in the deps folder"
+  file_count_of_deps_directory=$(find ./deps -mindepth 1 -maxdepth 1 -print | wc -l | tr -d ' ')
+  assert_equals "$file_count_of_deps_directory" "1"
+  assert_equals "$(find ./deps -name 'bashunit')" "./deps/bashunit"
 }
