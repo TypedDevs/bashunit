@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.12.0...main)
+
+- ...
+
+## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0)
 
 - Add missing assertion in non-stable versions
 - Fix test with `rm` command in macOS
