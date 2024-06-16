@@ -22,12 +22,18 @@ source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 #### MAIN #####
 ###############
 
+_ASSERT_FN=""
 _FILTER=""
 _FILES=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
+    -a|--assert)
+      _ASSERT_FN="$2"
+      shift
+      shift
+      ;;
     -f|--filter)
       _FILTER="$2"
       shift
@@ -72,8 +78,16 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-console_header::print_version_with_env
-runner::load_test_files "$_FILTER" "${_FILES[@]}"
-console_results::render_result
+if [[ -n $_ASSERT_FN ]]; then
+  "$_ASSERT_FN" "${_FILES[@]}"
+  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+      exit 1
+  fi
 
-exit 0
+else
+  console_header::print_version_with_env
+  runner::load_test_files "$_FILTER" "${_FILES[@]}"
+  console_results::render_result
+  exit 0
+fi
+
