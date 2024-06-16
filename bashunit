@@ -17,6 +17,7 @@ source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 ###############
 #### MAIN #####
@@ -83,11 +84,6 @@ if [[ -n $_ASSERT_FN ]]; then
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
       exit 1
   fi
-
 else
-  console_header::print_version_with_env
-  runner::load_test_files "$_FILTER" "${_FILES[@]}"
-  console_results::render_result
-  exit 0
+  main::exec_tests "$_FILTER" "${_FILES[@]}"
 fi
-
