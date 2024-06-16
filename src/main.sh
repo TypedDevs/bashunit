@@ -11,12 +11,17 @@ function main::exec_tests() {
 }
 
 function main::exec_assert() {
-  local assert_fn=$1
+  local original_assert_fn=$1
+  local assert_fn=$original_assert_fn
   local args=("${@:2}")
 
   if ! type "$assert_fn" > /dev/null 2>&1; then
-    echo "Function $assert_fn does not exist."
-    exit 1
+    # try again using prefix `assert_`
+    assert_fn="assert_$assert_fn"
+    if ! type "$assert_fn" > /dev/null 2>&1; then
+      echo "Function $original_assert_fn does not exist."
+      exit 1
+    fi
   fi
 
   "$assert_fn" "${args[@]}"

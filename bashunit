@@ -75,7 +75,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if [[ -n $_ASSERT_FN ]]; then
+if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_FILES[@]}"
 else
   main::exec_tests "$_FILTER" "${_FILES[@]}"
