@@ -14,9 +14,14 @@ function main::exec_assert() {
   local assert_fn=$1
   local args=("${@:2}")
 
-  "$assert_fn" "${args[@]}"
-
-  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+  # Check if the function exists
+  if type "$assert_fn" > /dev/null 2>&1; then
+    "$assert_fn" "${args[@]}"
+    if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+        exit 1
+    fi
+  else
+      echo "Function $assert_fn does not exist."
       exit 1
   fi
 }
