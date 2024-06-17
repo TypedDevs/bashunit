@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2034
+
 function mock_all_state_getters() {
   mock state::is_duplicated_test_functions_found echo false
   mock state::get_duplicated_function_names echo ""
@@ -503,6 +505,7 @@ function test_no_tests_found() {
 }
 
 function test_print_successful_test_output_no_args() {
+  SIMPLE_OUTPUT=false
   local test_name="a custom test"
 
   local actual
@@ -512,6 +515,7 @@ function test_print_successful_test_output_no_args() {
 }
 
 function test_print_successful_test_output_with_args() {
+  SIMPLE_OUTPUT=false
   local test_name="a custom test"
   local data="foo"
 
