@@ -1,6 +1,6 @@
 # Standalone
 
-You can use all bashunit assertions outside any tests if you would like to use them in your already integration or e2e tests, for entire applications or executables.
+You can use all bashunit assertions outside any tests if you would like to use them in integration or end-to-end tests, for entire applications or executables.
 
 ## Executing an assertion
 
