@@ -156,7 +156,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
   if [ -n "$extra_key" ]; then
-     printf "\
+    printf "\
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${extra_key}" "${extra_value}"
   fi
