@@ -2,10 +2,10 @@
 
 function main::exec_tests() {
   local filter=$1
-  local args=("${@:2}")
+  local files=("${@:2}")
 
   console_header::print_version_with_env
-  runner::load_test_files "$filter" "${args[@]}"
+  runner::load_test_files "$filter" "${files[@]}"
   console_results::render_result
   exit 0
 }

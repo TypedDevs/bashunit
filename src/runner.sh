@@ -38,8 +38,7 @@ function runner::functions_for_script() {
   local script="$1"
   local all_function_names="$2"
 
-  # Filter the names down to the ones defined in the script, sort them by line
-  # number
+  # Filter the names down to the ones defined in the script, sort them by line number
   shopt -s extdebug
   for f in $all_function_names; do
     declare -F "$f" | grep "$script"

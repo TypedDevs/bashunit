@@ -21,7 +21,7 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
 _FILTER=""
-_FILES=()
+_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
@@ -68,7 +68,7 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       while IFS='' read -r line; do
-        _FILES+=("$line");
+        _ARGS+=("$line");
       done < <(helper::find_files_recursive "$argument")
       shift
       ;;
@@ -76,7 +76,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -n "$_ASSERT_FN" ]]; then
-  main::exec_assert "$_ASSERT_FN" "${_FILES[@]}"
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 else
-  main::exec_tests "$_FILTER" "${_FILES[@]}"
+  main::exec_tests "$_FILTER" "${_ARGS[@]}"
 fi
