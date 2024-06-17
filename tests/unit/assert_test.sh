@@ -333,3 +333,21 @@ function test_unsuccessful_assert_equals_ignore_colors() {
       "✗ Failed foo")"\
     "$(assert_equals_ignore_colors "$string" "$string")"
 }
+
+function test_successful_assert_line_count() {
+  local one_line_string="one line"
+  local multi_line_string="this is line one
+  this is line two
+  this is line three"
+
+  assert_empty "$(assert_line_count 0 "")"
+  assert_empty "$(assert_line_count 1 "$one_line_string")"
+  assert_empty "$(assert_line_count 3 "$multi_line_string")"
+}
+
+function test_unsuccessful_assert_line_count() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert line count" "one_line_string" "to contain number of lines equal to" "10")"\
+    "$(assert_line_count 10 "one_line_string")"
+}

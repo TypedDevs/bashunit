@@ -315,3 +315,23 @@ function assert_greater_or_equal_than() {
 
   state::add_assertions_passed
 }
+
+function assert_line_count() {
+  local expected="$1"
+  local actual="$2"
+  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  if [ -z "$actual" ]; then
+    local actual_line_count=0
+  else
+    local actual_line_count=$(echo "$actual" | wc -l | tr -d '[:blank:]')
+  fi
+
+  if [[ "$expected" != "$actual_line_count" ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${actual}" "to contain number of lines equal to" "${expected}"
+    return
+  fi
+
+  state::add_assertions_passed
+}

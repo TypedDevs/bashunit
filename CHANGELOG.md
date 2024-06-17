@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.12.0...main)
 
 - Allow calling assertions standalone outside tests
+- Add `assert_line_count`
 
 ## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0) - 2024-06-11
 
