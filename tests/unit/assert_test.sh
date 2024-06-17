@@ -345,6 +345,10 @@ function test_successful_assert_line_count() {
   assert_empty "$(assert_line_count 3 "$multi_line_string")"
 }
 
+function test_successful_assert_line_count_multiline_string_in_one_line() {
+  assert_empty "$(assert_line_count 4 "one\ntwo\nthree\nfour")"
+}
+
 function test_unsuccessful_assert_line_count() {
   assert_equals\
     "$(console_results::print_failed_test\
