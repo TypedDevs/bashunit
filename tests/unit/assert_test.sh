@@ -341,7 +341,7 @@ function test_successful_assert_line_count() {
   this is line three"
 
   assert_empty "$(assert_line_count 0 "")"
-  assert_empty "$(assert_line_count 1" "$one_line_string")"
+  assert_empty "$(assert_line_count 1 "$one_line_string")"
   assert_empty "$(assert_line_count 3 "$multi_line_string")"
 }
 
