@@ -28,9 +28,26 @@ to choose where the tests are located by default.
 ```
 :::
 
+## Assert
+
+> `bashunit -a|--assert function "arg1" "arg2"`
+
+Run a core assert function standalone without a test context. Read more: [Standalone](/standalone)
+
+::: code-group
+```bash [Example]
+./bashunit --assert equals "foo" "bar"
+```
+```bash [Output]
+✗ Failed: Main::exec assert
+    Expected 'foo'
+    but got 'bar'
+```
+:::
+
 ## Environment
 
-> `bashunit --env "file path"`
+> `bashunit -e|--env "file path"`
 
 Load a custom env file overriding the `.env` environment variables.
 
