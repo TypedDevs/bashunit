@@ -19,7 +19,7 @@ source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-_ASSERT_FN=$_DEFAULT_ASSERT_FN
+_ASSERT_FN=""
 _FILTER=""
 _FILES=()
 
