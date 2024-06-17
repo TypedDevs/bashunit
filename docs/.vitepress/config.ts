@@ -73,6 +73,9 @@ export default defineConfig({
         text: 'Skipping/incomplete',
         link: '/skipping-incomplete'
       }, {
+        text: 'Standalone',
+        link: '/standalone'
+      }, {
         text: 'Examples',
         link: '/examples'
       }, {

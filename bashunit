@@ -17,17 +17,20 @@ source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-###############
-#### MAIN #####
-###############
-
+_ASSERT_FN=""
 _FILTER=""
-_FILES=()
+_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
+    -a|--assert)
+      _ASSERT_FN="$2"
+      shift
+      shift
+      ;;
     -f|--filter)
       _FILTER="$2"
       shift
@@ -65,15 +68,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       while IFS='' read -r line; do
-        _FILES+=("$line");
+        _ARGS+=("$line");
       done < <(helper::find_files_recursive "$argument")
       shift
       ;;
   esac
 done
 
-console_header::print_version_with_env
-runner::load_test_files "$_FILTER" "${_FILES[@]}"
-console_results::render_result
-
-exit 0
+if [[ -n "$_ASSERT_FN" ]]; then
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+else
+  main::exec_tests "$_FILTER" "${_ARGS[@]}"
+fi

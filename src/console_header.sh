@@ -33,6 +33,12 @@ Arguments:
   If you use wildcards, bashunit will run any tests it finds.
 
 Options:
+  -a|--assert <function ...args>
+    Run a core assert function standalone without a test context.
+
+  -e|--env <file-path>
+    Load a custom env file overriding the .env environment variables.
+
   -f|--filter <filter>
     Filters the tests to run based on the test name.
 
@@ -41,9 +47,6 @@ Options:
 
   -S|--stop-on-failure
     Force to stop the runner right after encountering one failing test.
-
-  -e|--env <file-path>
-    Load a custom env file overriding the .env environment variables.
 
   --version
     Displays the current version of bashunit.

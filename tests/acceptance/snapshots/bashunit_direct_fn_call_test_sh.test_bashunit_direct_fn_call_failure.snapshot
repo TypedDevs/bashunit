@@ -1,0 +1,3 @@
+[31m✗ Failed[0m: Main::exec assert
+    [2mExpected[0m [1m'foo'[0m
+    [2mbut got[0m [1m'bar'[0m
