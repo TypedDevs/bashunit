@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.12.0...main)
 
+- Add the latest version when installing beta
 - Allow calling assertions standalone outside tests
 - Add `assert_line_count`
 
