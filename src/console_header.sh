@@ -33,6 +33,9 @@ Arguments:
   If you use wildcards, bashunit will run any tests it finds.
 
 Options:
+  -a|--assert <function ...args>
+    Run a core assert function standalone without a test context.
+
   -f|--filter <filter>
     Filters the tests to run based on the test name.
 
