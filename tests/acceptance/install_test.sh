@@ -64,8 +64,8 @@ function test_install_downloads_the_non_stable_beta_version() {
     "$(printf "> Downloading non-stable version: 'beta'\n> bashunit has been installed in the 'deps' folder")"\
     "$output"
   assert_file_exists "$installed_bashunit"
-  assert_equals\
-    "$(printf "\e[1m\e[32mbashunit\e[0m - (non-stable) beta [2023-11-13]")"\
+  assert_matches\
+    "$(printf "\(non-stable\) beta after ([0-9]+\.[0-9]+\.[0-9]+) \[2023-11-13\]")"\
     "$("$installed_bashunit" --env "$TEST_ENV_FILE" --version)"
   assert_directory_not_exists "./deps/temp_bashunit"
   file_count_of_deps_directory=$(find ./deps -mindepth 1 -maxdepth 1 -print | wc -l | tr -d ' ')
