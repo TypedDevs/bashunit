@@ -146,12 +146,20 @@ function console_results::print_failed_test() {
   local expected=$2
   local failure_condition_message=$3
   local actual=$4
+  local extra_key=$5
+  local extra_value=$6
 
   printf "\
 ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+
+  if [ -n "$extra_key" ]; then
+    printf "\
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${extra_key}" "${extra_value}"
+  fi
 }
 
 function console_results::print_failed_snapshot_test() {
