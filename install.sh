@@ -27,7 +27,7 @@ function build_and_install_beta() {
   cd ..
 
   local beta_version
-  beta_version='(non-stable) beta ['"$(date +'%Y-%m-%d')"']'
+  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"']'
 
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
