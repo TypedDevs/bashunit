@@ -28,6 +28,18 @@ to choose where the tests are located by default.
 ```
 :::
 
+## Environment
+
+> `bashunit --env "file path"`
+
+Load a custom env file overriding the `.env` environment variables.
+
+::: code-group
+```bash [Example]
+./bashunit tests --env .env.production
+```
+:::
+
 ## Filter
 
 > `bashunit -f|--filter "test name"`
@@ -94,18 +106,6 @@ to make this behavior permanent.
 ::: code-group
 ```bash [Example]
 ./bashunit --stop-on-failure
-```
-:::
-
-## Environment
-
-> `bashunit --env "file path"`
-
-Load a custom env file overriding the `.env` environment variables.
-
-::: code-group
-```bash [Example]
-./bashunit tests --env .env.production
 ```
 :::
 
