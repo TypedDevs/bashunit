@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.12.0...main)
 
 - Allow calling assertions standalone outside tests
+- Add `assert_line_count`
 
 ## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0) - 2024-06-11
 
@@ -11,7 +12,6 @@
 - Add multi-invokers; consolidate parameterized-testing documentation
 - Add `fail()` function
 - Remove all test mocks after each test case
-- Add `assert_line_count`
 
 ## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
 

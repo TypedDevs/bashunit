@@ -165,11 +165,11 @@ function test_success() {
 this is line two
 this is line three"
 
-  assert_line_count "3" "$string"
+  assert_line_count 3 "$string"
 }
 
 function test_failure() {
-  assert_line_count "2" "foobar"
+  assert_line_count 2 "foobar"
 }
 ```
 :::
