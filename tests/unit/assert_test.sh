@@ -349,6 +349,14 @@ function test_successful_assert_line_count_multiline_string_in_one_line() {
   assert_empty "$(assert_line_count 4 "one\ntwo\nthree\nfour")"
 }
 
+function test_successful_assert_line_count_multiline_with_new_lines() {
+  local multiline_str="this\nis\nline\none
+  this is line 5
+  this is line 6"
+
+  assert_empty "$(assert_line_count 6 "$multiline_str")"
+}
+
 function test_unsuccessful_assert_line_count() {
   assert_equals\
     "$(console_results::print_failed_test\
