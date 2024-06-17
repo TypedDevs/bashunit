@@ -355,11 +355,11 @@ function test_successful_assert_line_count_multiline_string_in_one_line() {
 }
 
 function test_successful_assert_line_count_multiline_with_new_lines() {
-  local multiline_str="this\nis\nline\none
+  local multiline_str="this \n is \n a multiline \n in one
   this is line 5
-  this is line 6"
+  this is \n line seven"
 
-  assert_empty "$(assert_line_count 6 "$multiline_str")"
+  assert_empty "$(assert_line_count 7 "$multiline_str")"
 }
 
 function test_unsuccessful_assert_line_count() {
