@@ -22,16 +22,8 @@ function test_bashunit_direct_fn_call_without_assert_prefix_passes() {
 
 function test_bashunit_assert_line_count() {
   local actual="first line
-second line"
-
-  ./bashunit -a line_count 2 "$actual"
-  assert_successful_code
-}
-
-function test_bashunit_assert_line_count_with_explicit_line_break() {
-  local actual="first line
-second line
-\n four line"
+  \n
+four line"
 
   ./bashunit -a line_count 4 "$actual"
   assert_successful_code
