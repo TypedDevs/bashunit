@@ -504,19 +504,23 @@ function test_no_tests_found() {
 
 function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
-
+  original_simple_output=$SIMPLE_OUTPUT
+  export SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name")
 
   assert_equals_ignore_colors "✓ Passed: $test_name" "$actual"
+  export SIMPLE_OUTPUT=$original_simple_output
 }
 
 function test_print_successful_test_output_with_args() {
   local test_name="a custom test"
   local data="foo"
-
+  original_simple_output=$SIMPLE_OUTPUT
+  export SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name" "$data")
 
   assert_equals_ignore_colors "✓ Passed: $test_name ($data)" "$actual"
+  export SIMPLE_OUTPUT=$original_simple_output
 }
