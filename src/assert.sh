@@ -333,7 +333,7 @@ function assert_line_count() {
 
   if [[ "$expected" != "$actual" ]]; then
     local label
-    label="$(helper::normalize_test_function_name "${FUNCNAME[0]}")"
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${input_str}"\
