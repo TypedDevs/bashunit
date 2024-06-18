@@ -30,7 +30,7 @@ function build_and_install_beta() {
   latest_commit=$(git rev-parse --short=8 HEAD);
 
   local beta_version
-  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍'"$latest_commit"
+  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍 #'"$latest_commit"
 
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
