@@ -2,8 +2,9 @@
 
 function fail() {
   local message=$1
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
+  local label
+  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
   state::add_assertions_failed
   console_results::print_failure_message "${label}" "$message"
 }
@@ -11,9 +12,10 @@ function fail() {
 function assert_equals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "$actual" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${expected}" "but got" "${actual}"
     return
@@ -25,12 +27,19 @@ function assert_equals() {
 function assert_equals_ignore_colors() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   local actual_without_colors
   actual_without_colors=$(echo -e "$actual" | sed "s/\x1B\[[0-9;]*[JKmsu]//g")
 
-  assert_equals "$expected" "$actual_without_colors" "$label"
+  if [[ "$expected" != "$actual_without_colors" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected}" "but got" "${actual_without_colors}"
+    return
+  fi
+
+  state::add_assertions_passed
 }
 
 function assert_empty() {
@@ -75,10 +84,13 @@ function assert_not_equals() {
 
 function assert_contains() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if ! [[ $actual == *"$expected"* ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     return
@@ -108,10 +120,13 @@ function assert_contains_ignore_case() {
 
 function assert_not_contains() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if [[ $actual == *"$expected"* ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
     return
@@ -122,10 +137,13 @@ function assert_not_contains() {
 
 function assert_matches() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if ! [[ $actual =~ $expected ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
     return
@@ -136,10 +154,13 @@ function assert_matches() {
 
 function assert_not_matches() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if [[ $actual =~ $expected ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to not match" "${expected}"
     return
@@ -168,6 +189,8 @@ function assert_successful_code() {
   local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -182,6 +205,8 @@ function assert_general_error() {
   local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -193,9 +218,10 @@ function assert_general_error() {
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=127
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -206,10 +232,13 @@ function assert_command_not_found() {
 
 function assert_string_starts_with() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if ! [[ $actual =~ ^"$expected"* ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
     return
@@ -221,9 +250,10 @@ function assert_string_starts_with() {
 function assert_string_not_starts_with() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual =~ ^"$expected"* ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
     return
@@ -234,10 +264,13 @@ function assert_string_not_starts_with() {
 
 function assert_string_ends_with() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if ! [[ $actual =~ .*"$expected"$ ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
     return
@@ -248,10 +281,13 @@ function assert_string_ends_with() {
 
 function assert_string_not_ends_with() {
   local expected="$1"
-  local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local actual_arr=("${@:2}")
+  local actual
+  actual=$(printf '%s\n' "${actual_arr[@]}")
 
   if [[ $actual =~ .*"$expected"$ ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
     return
@@ -263,9 +299,10 @@ function assert_string_not_ends_with() {
 function assert_less_than() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ "$actual" -lt "$expected" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
     return
@@ -277,9 +314,10 @@ function assert_less_than() {
 function assert_less_or_equal_than() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ "$actual" -le "$expected" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to be less or equal than" "${expected}"
     return
@@ -291,9 +329,10 @@ function assert_less_or_equal_than() {
 function assert_greater_than() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ "$actual" -gt "$expected" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to be greater than" "${expected}"
     return
@@ -305,9 +344,10 @@ function assert_greater_than() {
 function assert_greater_or_equal_than() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if ! [[ "$actual" -ge "$expected" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to be greater or equal than" "${expected}"
     return
