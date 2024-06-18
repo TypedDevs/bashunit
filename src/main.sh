@@ -24,7 +24,7 @@ function main::exec_assert() {
     fi
   fi
 
-  "$assert_fn" "${args[@]}" "$assert_fn"
+  "$assert_fn" "${args[@]}"
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
       exit 1

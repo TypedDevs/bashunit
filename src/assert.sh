@@ -318,8 +318,9 @@ function assert_greater_or_equal_than() {
 
 function assert_line_count() {
   local expected="$1"
-  local input_str="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local input_arr=("${@:2}")
+  local input_str
+  input_str=$(printf '%s\n' "${input_arr[@]}")
 
   if [ -z "$input_str" ]; then
     local actual=0
@@ -331,6 +332,9 @@ function assert_line_count() {
   fi
 
   if [[ "$expected" != "$actual" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[0]}")"
+
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${input_str}"\
       "to contain number of lines equal to" "${expected}"\
