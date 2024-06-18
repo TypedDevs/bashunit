@@ -44,9 +44,10 @@ function assert_equals_ignore_colors() {
 
 function assert_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" != "" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "to be empty" "but got" "${expected}"
     return
@@ -57,9 +58,10 @@ function assert_empty() {
 
 function assert_not_empty() {
   local expected="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "to not be empty" "but got" "${expected}"
     return
@@ -71,9 +73,10 @@ function assert_not_empty() {
 function assert_not_equals() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$expected" == "$actual" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${expected}" "but got" "${actual}"
     return
@@ -102,14 +105,14 @@ function assert_contains() {
 function assert_contains_ignore_case() {
   local expected="$1"
   local actual="$2"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   shopt -s nocasematch
 
   if ! [[ $actual =~ $expected ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
-
     shopt -u nocasematch
     return
   fi
@@ -172,9 +175,10 @@ function assert_not_matches() {
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code="$1"
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
@@ -186,7 +190,6 @@ function assert_exit_code() {
 function assert_successful_code() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=0
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     local label
@@ -202,7 +205,6 @@ function assert_successful_code() {
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=1
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     local label
