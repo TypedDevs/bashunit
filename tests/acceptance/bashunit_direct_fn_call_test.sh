@@ -20,6 +20,15 @@ function test_bashunit_direct_fn_call_without_assert_prefix_passes() {
   assert_successful_code
 }
 
+function test_bashunit_assert_line_count() {
+  local actual="first line
+  \n
+four line"
+
+  ./bashunit -a line_count 4 "$actual"
+  assert_successful_code
+}
+
 function test_bashunit_direct_fn_call_failure() {
   local expected="foo"
   local actual="bar"
