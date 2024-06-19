@@ -44,7 +44,7 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
-    ```
+    ```bash
     Running tests/example_test.sh
     ✓ Passed: Bashunit is working
 
