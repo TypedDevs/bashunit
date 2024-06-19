@@ -6,6 +6,7 @@
 - Add the latest version when installing beta
 - Add `assert_line_count`
 - Add hash to the installation script when installing a beta version
+- Add GitHub Actions to installation doc
 
 ## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0) - 2024-06-11
 
