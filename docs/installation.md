@@ -55,10 +55,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s lib latest"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh"
 
       - name: "Test"
-        run: "lib/bashunit tests/**/*_test.sh"
+        run: "./bashunit tests/**/*_test.sh"
 ```
 
 ::: tip
