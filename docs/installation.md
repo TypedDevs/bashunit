@@ -34,6 +34,37 @@ We try to keep it stable, but there is no promise that we won't change functions
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 :::
 
+## GitHub Actions
+
+```yaml
+# example: .github/workflows/bashunit-tests.yml
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: "Run tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Install bashunit"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh | bash -s lib latest"
+
+      - name: "Test"
+        run: "lib/bashunit tests/**/*_test.sh"
+```
+
+::: tip
+Check the pipelines running on bashunit itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
+:::
+
 ## Brew
 
 You can install **bashunit** globally in your macOS (or Linux) using brew.
