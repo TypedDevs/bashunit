@@ -79,5 +79,5 @@ function test_bashunit_direct_fn_call_failure() {
 
 function test_bashunit_direct_fn_call_non_existing_fn() {
   assert_match_snapshot "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
-  assert_general_error "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
+  assert_command_not_found "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
 }

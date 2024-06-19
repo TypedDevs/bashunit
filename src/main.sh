@@ -20,7 +20,7 @@ function main::exec_assert() {
     assert_fn="assert_$assert_fn"
     if ! type "$assert_fn" > /dev/null 2>&1; then
       echo "Function $original_assert_fn does not exist."
-      exit 1
+      exit 127
     fi
   fi
 
