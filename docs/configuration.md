@@ -50,7 +50,7 @@ SIMPLE_OUTPUT=true
 :::
 
 ::: code-group
-```bash [Verbose output]
+```[Verbose output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
 ✓ Passed: Should validate a non ok exit code
@@ -80,7 +80,7 @@ Specifies if you want to show the bashunit header. `true` by default.
 Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
 ::: code-group
-```bash [Without header]
+``` [Without header]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
@@ -127,29 +127,29 @@ This feature is not available on macOS.
 :::
 
 ::: code-group
-```bash [With execution time]
+```[With execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
-Time taken: 14 ms // [!code hl]
+Time taken: 14 ms
 ```
 ```bash [.env]
-SHOW_EXECUTION_TIMEER=true
+SHOW_EXECUTION_TIMER=true
 ```
 :::
 
 ::: code-group
-```bash [Without execution time]
+```[Without execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
 ```
-```[.env]
-SHOW_EXECUTION_TIMEER=false
+```bash [.env]
+SHOW_EXECUTION_TIMER=false
 ```
 :::
 
