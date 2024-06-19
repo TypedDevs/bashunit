@@ -95,7 +95,7 @@ to choose the default output display.
 :::
 
 ::: code-group
-```[Output]
+```bash [Output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
 ✓ Passed: Should validate a non ok exit code
@@ -160,7 +160,7 @@ Upgrade **bashunit** to latest version.
 Displays a help message with all allowed arguments and options.
 
 ::: code-group
-```-vue [Output]
+```bash [Output]
 bashunit [arguments] [options]
 
 Arguments:
