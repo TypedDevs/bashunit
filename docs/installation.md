@@ -62,7 +62,7 @@ jobs:
 ```
 
 ::: tip
-Check the pipelines running on bashunit itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
+Get inspiration from the pipelines running on the bashunit-project itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
 
 ## Brew
