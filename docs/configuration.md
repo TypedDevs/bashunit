@@ -127,13 +127,13 @@ This feature is not available on macOS.
 :::
 
 ::: code-group
-```[With execution time]
+```-vue [With execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
-Time taken: 14 ms
+Time taken: 14 ms  // [!code hl]
 ```
 ```bash [.env]
 SHOW_EXECUTION_TIMER=true

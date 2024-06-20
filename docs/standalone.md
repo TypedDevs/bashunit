@@ -7,9 +7,9 @@ You can use all bashunit assertions outside any tests if you would like to use t
 If you want to use the nice assertions syntax of bashunit - without the tests context/functions, but to end-to-end tests executables, you can use the `-a|--assert` option when running `./bashunit` and call the assertion directly from there.
 
 The return exit code will be:
-- `0` for success assertion
-- `1` for failed assertion
-- `127` non existing function
+- `0` success assertion
+- `1` failed assertion
+- `127` non-existing function
 
 ::: info
 The prefix `assert_` is optional.
