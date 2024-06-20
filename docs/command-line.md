@@ -38,7 +38,7 @@ Run a core assert function standalone without a test context. Read more: [Standa
 ```bash [Example]
 ./bashunit --assert equals "foo" "bar"
 ```
-```bash [Output]
+```[Output]
 ✗ Failed: Main::exec assert
     Expected 'foo'
     but got 'bar'
@@ -160,7 +160,7 @@ Upgrade **bashunit** to latest version.
 Displays a help message with all allowed arguments and options.
 
 ::: code-group
-```-vue [Output]
+```[Output]
 bashunit [arguments] [options]
 
 Arguments:

@@ -6,7 +6,10 @@ You can use all bashunit assertions outside any tests if you would like to use t
 
 If you want to use the nice assertions syntax of bashunit - without the tests context/functions, but to end-to-end tests executables, you can use the `-a|--assert` option when running `./bashunit` and call the assertion directly from there.
 
-The return exit code will be `0` for success assertions and `1` for failures.
+The return exit code will be:
+- `0` success assertion
+- `1` failed assertion
+- `127` non-existing function
 
 ::: info
 The prefix `assert_` is optional.
@@ -16,6 +19,7 @@ The prefix `assert_` is optional.
 ```bash [Example]
 # with `assert_` prefix
 ./bashunit -a assert_equals "foo" "foo"
+
 # or without prefix
 ./bashunit -a equals "foo" "foo"
 ```
@@ -28,6 +32,7 @@ The prefix `assert_` is optional.
 ```bash [Example]
 # with `assert_` prefix
 ./bashunit -a assert_not_equals "foo" "foo"
+
 # or without prefix
 ./bashunit -a not_equals "foo" "foo"
 ```
