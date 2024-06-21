@@ -1,7 +1,7 @@
 ---
 date: '2024-06-21'
 title: 'PHPStan integration'
-description: 'What a milestone! We finally made it into helping our friends from PHPStan. They started integrating bashunit in their e2e tests, which ended up creating a new feature, adding new assertions and improving multiline string comparisons.'
+description: 'What a milestone! We finally made it into helping our friends from PHPStan. They started integrating bashunit in their end-to-end tests, which ended up creating a new feature, adding new assertions and improving multiline string comparisons.'
 coverUrl: '/covers/2024-06-21-phpstan-integration.jpg'
 coverAlt: 'bashunit integrated into PHPStan'
 
@@ -26,4 +26,4 @@ This wasn't something that bashunit supported (yet), so `@staabm` created a [cus
 
 Additionally, we discovered that multiline string comparison didn't work as expected, so we fixed that. And `@staabm` helped us adding a new assert function to check the number of lines within a string.
 
-**TL;DR**: From now on, you can run bashunit assertions standalone (without a test context) (see [docs](/standalone)), a new assert function ([docs](/assertions#assert-line-count)), and improved multiline-string comparison.
+**TL;DR**: From now on, you can run bashunit assertions standalone (without a test context) (see [docs](/standalone)), a new `assert-line-count` function ([docs](/assertions#assert-line-count)), and improved multiline-string comparison.
