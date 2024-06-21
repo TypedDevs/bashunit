@@ -16,7 +16,11 @@ aside: false
 
 <img :src="$frontmatter.coverUrl" :alt="$frontmatter.coverAlt" width="100%">
 
-Earlier this week, [PHPStan](https://phpstan.org/) started integrating `bashunit` in their **e2e tests** written in bash ([PR](https://github.com/phpstan/phpstan-src/pull/3160)).
+**TL;DR**: From now on, you can run bashunit assertions [standalone](/standalone) (without a test context), a new [assert_line_count](/assertions#assert-line-count) function, and improved multiline-string comparison.
+
+---
+
+Earlier this week, [PHPStan](https://phpstan.org/) started integrating `bashunit` in their **e2e tests** ([PR](https://github.com/phpstan/phpstan-src/pull/3160)).
 
 However, they didn't want to use bashunit test runner, instead they were interested only in the **assert functions** standalone of the core library ([Issue](https://github.com/TypedDevs/bashunit/issues/257)).
 
@@ -24,6 +28,13 @@ However, they didn't want to use bashunit test runner, instead they were interes
 
 This wasn't something that bashunit supported (yet), so `@staabm` created a [custom script](https://github.com/phpstan/phpstan-src/pull/3160#discussion_r1641646749) to allow this. That was the beginning of an intense couple of days discovering together how to implement bashunit in such a big existing system, and a motivation for us to support this feature natively from `bashunit` - which means, an optimized script and feature from within the library.
 
-Additionally, we discovered that multiline string comparison didn't work as expected, so we fixed that. And `@staabm` helped us adding a new assert function to check the number of lines within a string.
+Here is an example of the result [source](https://github.com/phpstan/phpstan-src/pull/3160/files#diff-194218c48b9a0cdd03974145733804c2d992ca818529fe2fa69a501d8b5b1cc3L197):
 
-**TL;DR**: From now on, you can run bashunit assertions standalone (without a test context) (see [docs](/standalone)), a new `assert-line-count` function ([docs](/assertions#assert-line-count)), and improved multiline-string comparison.
+```diff
+- [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
+- grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
++ ../bashunit --assert line_count 1 "$OUTPUT"
++ ../bashunit --assert contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
+```
+
+Additionally, we discovered that multiline string comparison didn't work as expected, so we fixed that. And `@staabm` helped us adding a new assert function to check the number of lines within a string.
