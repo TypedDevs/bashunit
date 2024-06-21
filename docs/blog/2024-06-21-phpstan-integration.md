@@ -3,7 +3,7 @@ date: '2024-06-21'
 title: 'PHPStan integration'
 description: 'What a milestone! We finally made it into helping our friends from PHPStan. They started integrating bashunit in their e2e tests, which ended up creating a new feature, adding new assertions and improving multiline string comparisons.'
 coverUrl: '/covers/2024-06-21-phpstan-integration.jpg'
-coverAlt: 'bar coverAlt'
+coverAlt: 'bashunit integrated into PHPStan'
 
 aside: false
 ---
@@ -14,7 +14,7 @@ aside: false
 
 {{ $frontmatter.description }}
 
-<img src="/covers/2024-06-21-phpstan-integration.jpg" alt="" width="100%">
+<img :src="$frontmatter.coverUrl" :alt="$frontmatter.coverAlt" width="100%">
 
 Earlier this week, [PHPStan](https://phpstan.org/) started integrating `bashunit` in their **e2e tests** written in bash ([PR](https://github.com/phpstan/phpstan-src/pull/3160)).
 
