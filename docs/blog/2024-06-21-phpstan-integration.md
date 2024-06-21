@@ -28,13 +28,15 @@ However, they didn't want to use bashunit test runner, instead they were interes
 
 This wasn't something that bashunit supported (yet), so `@staabm` created a [custom script](https://github.com/phpstan/phpstan-src/pull/3160#discussion_r1641646749) to allow this. That was the beginning of an intense couple of days discovering together how to implement bashunit in such a big existing system, and a motivation for us to support this feature natively from `bashunit` - which means, an optimized script and feature from within the library.
 
-Here is an example of the result [source](https://github.com/phpstan/phpstan-src/pull/3160/files#diff-194218c48b9a0cdd03974145733804c2d992ca818529fe2fa69a501d8b5b1cc3L197):
+Here is an example of the [result](https://github.com/phpstan/phpstan-src/pull/3160/files#diff-194218c48b9a0cdd03974145733804c2d992ca818529fe2fa69a501d8b5b1cc3L197) of how they finally implemented bashunit:
 
 ```diff
 - [ $(echo "$OUTPUT" | wc -l) -eq 1 ]
 - grep 'Method TraitsCachingIssue\\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' <<< "$OUTPUT"
-+ ../bashunit --assert line_count 1 "$OUTPUT"
-+ ../bashunit --assert contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
++ ../bashunit -a line_count 1 "$OUTPUT"
++ ../bashunit -a contains 'Method TraitsCachingIssue\TestClassUsingTrait::doBar() should return stdClass but returns Exception.' "$OUTPUT"
 ```
+
+`./bashunit -a|--assert [...args]` allows you to call any [assertion](/assertions) outside the test runner, which means you can run them [standalone](/standalone).
 
 Additionally, we discovered that multiline string comparison didn't work as expected, so we fixed that. And `@staabm` helped us adding a new assert function to check the number of lines within a string.
