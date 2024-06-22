@@ -1,17 +1,25 @@
 #!/bin/bash
 
+_ERROR_LOG=temp_error.log
+
+function tear_down() {
+  rm $_ERROR_LOG
+}
+
 function test_redirect_error() {
+
+  function render_into_error_fd_and_exit() {
+    echo "$*" >&2
+    exit 1
+  }
+
+  exec 2>&3 2>$_ERROR_LOG
+
   local result
-  result="$(my_help)"
-  assert_equals "BASH_SOURCE: redirect_error_test.sh" "$result"
-  assert_successful_code
-}
+  result="$(render_into_error_fd_and_exit "arg1" "arg2")"
+  assert_general_error
 
-function my_help() {
-  smth "BASH_SOURCE: ${BASH_SOURCE[0]}"
-  exit 1
-}
-
-function smth(){
-  echo "$*" >&2
+  local error_output
+  error_output=$(<$_ERROR_LOG)
+  assert_equals "arg1 arg2" "$error_output"
 }
