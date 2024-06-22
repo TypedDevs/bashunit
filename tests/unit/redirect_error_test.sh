@@ -15,8 +15,7 @@ function test_redirect_error() {
 
   exec 2>&3 2>$_ERROR_LOG
 
-  local result
-  result="$(render_into_error_fd_and_exit "arg1" "arg2")"
+  _="$(render_into_error_fd_and_exit "arg1" "arg2")"
   assert_general_error
 
   local error_output
