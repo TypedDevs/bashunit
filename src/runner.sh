@@ -153,6 +153,9 @@ function runner::run_test() {
   local current_assertions_skipped
   current_assertions_skipped="$(state::get_assertions_skipped)"
 
+  # (FD = File Descriptor)
+  # Duplicate the current std-output (FD 1) and assigns it to FD 3.
+  # This means that FD 3 now points to wherever the std-output was pointing.
   exec 3>&1
 
   local test_execution_result
@@ -160,6 +163,9 @@ function runner::run_test() {
     state::initialize_assertions_count
     runner::run_set_up
 
+    # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
+    # 1>&3: Redirects the std-output (FD 1) to FD 3, which, as set up earlier,
+    # points to the original std-output.
     "$function_name" "$@" 2>&1 1>&3
 
     runner::run_tear_down
@@ -167,6 +173,7 @@ function runner::run_test() {
     state::export_assertions_count
   )
 
+  # Closes FD 3, which was used temporarily to hold the original std-output.
   exec 3>&-
 
   runner::parse_execution_result "$test_execution_result"
