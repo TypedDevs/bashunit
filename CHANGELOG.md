@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.12.0...main)
+## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
 - Allow calling assertions standalone outside tests
 - Add the latest version when installing beta
