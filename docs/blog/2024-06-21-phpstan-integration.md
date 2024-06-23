@@ -1,7 +1,7 @@
 ---
 date: '2024-06-21'
 title: 'PHPStan integration'
-description: 'What a milestone! We finally made it into helping our friends from PHPStan. They started integrating bashunit in their end-to-end tests, which ended up creating a new feature, adding new assertions and improving multiline string comparisons.'
+description: 'What a milestone! We were finally able to help out our friends from PHPStan. They started integrating bashunit in their end-to-end tests, which ended up creating a new feature, adding new assertions and improving multiline string comparisons.'
 coverUrl: '/covers/2024-06-21-phpstan-integration.jpg'
 coverAlt: 'bashunit integrated into PHPStan'
 
@@ -40,3 +40,5 @@ Here is an example of the [result](https://github.com/phpstan/phpstan-src/pull/3
 `./bashunit -a|--assert [...args]` allows you to call any [assertion](/assertions) outside the test runner, which means you can run them [standalone](/standalone).
 
 Additionally, we discovered that multiline string comparison didn't work as expected, so we fixed that. And `@staabm` helped us adding a new assert function to check the number of lines within a string.
+
+And now, all of these have been released from [0.13](https://github.com/TypedDevs/bashunit/releases) onwards! Enjoy!
