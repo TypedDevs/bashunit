@@ -1,30 +1,18 @@
-## Parameterized tests
+# Parameterized tests
 
 **bashunit** offers two ways to parameterize your test functions:
-Multi-invokers and Data providers. Both of these are specified using a
-special comment before the test function declaration. The comment
-specifies the name of a separate auxiliary bash function which
-**bashunit** will invoke prior to the test. This auxiliary function will
-determine how many times the test function will be invoked, and what
-arguments will be passed to the test function each time.
+- **Multi-invokers**: are the most flexible option, as they allow passing multiple arguments to the test function and permit arguments containing whitespace.
+- **Data providers**: offer a simple alternative for cases when the test function needs to accept only a single word as an argument.
 
-The benefit of this is that each of these invocations is a full test
-itself, and can succeed or fail independently from the other tests.
-Also, `set_up` and `tear_down` are called before and after each
-invocation of the test function. Using these tools can often result in
-less code repetition in your test files, and a more clear way to develop
-a suite of closely-related tests quickly.
+---
 
-The same multi-invoker or data provider function can be specified for
-multiple tests. This allows developing tests for related tools quickly.
-For example, if you had a tool that creates directories and another
-which removes directories, you could write one test for each tool and
-parameterize them to operate on the same set of directories.
+Both of these are specified using a special comment before the test function declaration. The comment specifies the name of a separate auxiliary bash function which **bashunit** will invoke prior to the test. This auxiliary function will determine how many times the test function will be invoked, and what arguments will be passed to the test function each time.
 
-Multi-invokers are the most flexible option, as they allow passing
-multiple arguments to the test function and permit arguments containing
-whitespace. Data providers offer a simple alternative for cases when the
-test function needs to accept only a single word as an argument.
+The benefit of this is that each of these invocations is a full test itself, and can succeed or fail independently of the other tests. Also, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each invocation of the test function. Using these tools can often result in less code repetition in your test files, and a clearer way to develop a suite of closely related tests quickly.
+
+:::tip
+The same multi-invoker or data provider function can be specified for multiple tests. This allows developing tests for related tools quickly. For example, if you had a tool that creates directories and another which removes directories, you could write one test for each tool and parameterize them to operate on the same set of directories.
+:::
 
 ### Multi-invokers
 
@@ -39,10 +27,7 @@ function test_my_test_case() {
 ```
 :::
 
-The invoker function should call the special function `run_test`,
-passing any arbitrary arguments to that function. **bashunit** will
-invoke the original test function each time `run_test` is called,
-passing the corresponding arguments.
+The invoker function should call the special function `run_test`, passing any arbitrary arguments to that function. **bashunit** will invoke the original test function each time `run_test` is called, passing the corresponding arguments.
 
 ::: code-group
 ```bash [Example]
@@ -60,15 +45,7 @@ function test_command_with_args() {
 ```
 :::
 
-In this example, the `invoker_with_args` will be executed instead of
-invoking `test_command_with_args` directly. Each time
-`invoker_with_args` calls `run_test` with some arguments, **bashunit**
-will call the original test function with those arguments. In this case
-the test simply verifies that `command_we_want_to_test` can accept these
-arguments without raising an error, but it could also verify other
-behaviors of the command. In this next example, we test that a
-`mkdir_command` we are developing can create a new directory with
-specified octal permissions.
+In this example, the `invoker_with_args` will be executed instead of invoking `test_command_with_args` directly. Each time `invoker_with_args` calls `run_test` with some arguments, **bashunit** will call the original test function with those arguments. In this case the test simply verifies that `command_we_want_to_test` can accept these arguments without raising an error, but it could also verify other behaviors of the command. In this next example, we test that a `mkdir_command` we are developing can create a new directory with specified octal permissions.
 
 ::: code-group
 ```bash [Example]
@@ -103,10 +80,7 @@ function test_my_test_case() {
 ```
 :::
 
-The provider function can return a space-separated list of values like
-`one two three` or a single value `one`. In case of a list of values,
-the test function will be invoked multiple times, each time being passed
-a different value from the list.
+The provider function can return a space-separated list of values like `one two three` or a single value `one`. In case of a list of values, the test function will be invoked multiple times, each time being passed a different value from the list.
 
 ::: code-group
 ```bash [Example]
@@ -124,7 +98,4 @@ function test_directory_exists_from_data_provider() {
 ```
 :::
 
-In this example, the `provider_directories` function will be executed
-before running the test. **bashunit** will iterate the list of simple
-strings provided by this function and the test function will be executed
-passing each time the current iteration value as the first argument.
+In this example, the `provider_directories` function will be executed before running the test. **bashunit** will iterate the list of simple strings provided by this function, and the test function will be executed passing each time the current iteration value as the first argument.
