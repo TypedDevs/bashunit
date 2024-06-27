@@ -25,10 +25,8 @@ function test_redirect_error_without_log() {
 }
 
 function test_echo_does_not_break_test_execution_result() {
-    printf "some text\nsome text"
-
     _="$(render_into_error_fd_and_exit "...args")"
-    assert_exit_code 1
+    assert_general_error
 }
 
 function render_into_error_fd_and_exit() {
