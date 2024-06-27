@@ -1,5 +1,9 @@
 # Changelog
 
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.13.0...main)
+
+- Fix echo does not break test execution results
+
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
 - Allow calling assertions standalone outside tests
