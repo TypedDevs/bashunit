@@ -181,7 +181,7 @@ function runner::run_test() {
   local runtime_error
   runtime_error=$(\
     echo "$test_execution_result" |\
-    head -n 1 |\
+    tail -n 1 |\
     sed -E -e 's/(.*)##ASSERTIONS_FAILED=.*/\1/g'\
   )
 
