@@ -15,3 +15,7 @@ function bashunit::assertion_failed() {
   console_results::print_failed_test "${label}" "${expected}" \
     "$failure_condition_message" "${actual}"
 }
+
+function bashunit::assertion_passed() {
+  state::add_assertions_passed
+}
