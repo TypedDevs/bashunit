@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.13.0...main)
 
 - Fix echo does not break test execution results
+- Add bashunit facade to enable custom assertions
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
