@@ -9,4 +9,5 @@ docs/.vitepress/dist
 
 # installation
 bin/bashunit
+bin/checksum
 lib/bashunit
