@@ -5,6 +5,7 @@ This is a guide to know the steps to create a new release.
 1. Update the version in [BASHUNIT_VERSION](../bashunit)
 1. Update the version in [CHANGELOG.md](../CHANGELOG.md)
 1. Update the version in [package.json](../package.json)
+1. Update the checksum(sha256) in [package.json](../package.json)
 1. Create a [new release](https://github.com/TypedDevs/bashunit/releases/new) from GitHub
 1. Attach the latest executable to the release
     1. Generate a new bashunit with `build.sh`
