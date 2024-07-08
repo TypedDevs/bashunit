@@ -15,11 +15,11 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
-### Verify
+#### Verify
 
 ```bash-vue
-# Verify the sha256sum for latest: {{ pkg.version }}
-DIR="lib"; KNOWN_HASH="{{pkg.checksum}}";FILE="$DIR/bashunit"; HASH=$(shasum -a 256 "$FILE" | awk '{ print $1 }'); [ "$HASH" = "$KNOWN_HASH" ] && echo "Installer verified" || { echo "Installer corrupt"; rm "$FILE"; }
+# Verify the sha256sum for latest stable: {{ pkg.version }}
+DIR="lib"; KNOWN_HASH="{{pkg.checksum}}"; FILE="$DIR/bashunit"; [ "$(shasum -a 256 "$FILE" | awk '{ print $1 }')" = "$KNOWN_HASH" ] && echo -e "✓ \033[1mbashunit\033[0m verified." || { echo -e "✗ \033[1mbashunit\033[0m corrupt"; rm "$FILE"; }
 ```
 
 :::tip
