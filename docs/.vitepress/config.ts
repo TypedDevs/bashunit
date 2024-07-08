@@ -79,6 +79,9 @@ export default defineConfig({
         text: 'Standalone',
         link: '/standalone'
       }, {
+        text: 'Custom asserts',
+        link: '/custom-asserts'
+      }, {
         text: 'Examples',
         link: '/examples'
       }, {
