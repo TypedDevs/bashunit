@@ -9,3 +9,4 @@ docs/.vitepress/dist
 
 # installation
 bin/bashunit
+lib/bashunit

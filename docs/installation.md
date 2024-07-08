@@ -15,6 +15,20 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
+### Verify
+
+```bash-vue
+# Verify the sha256sum for latest: {{ pkg.version }}
+DIR="lib"; KNOWN_HASH="{{pkg.checksum}}";FILE="$DIR/bashunit"; HASH=$(shasum -a 256 "$FILE" | awk '{ print $1 }'); [ "$HASH" = "$KNOWN_HASH" ] && echo "Installer verified" || { echo "Installer corrupt"; rm "$FILE"; }
+```
+
+:::tip
+You can find the checksum for each version inside [GitHub's releases](https://github.com/TypedDevs/bashunit/releases). E.g.:
+```-vue
+https://github.com/TypedDevs/bashunit/releases/download/{{ pkg.version }}/checksum
+```
+:::
+
 #### Define custom tag and folder
 
 The installation script can receive two optional arguments:
