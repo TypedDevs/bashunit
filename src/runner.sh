@@ -143,7 +143,7 @@ function runner::parse_execution_result() {
 
 function runner::run_test() {
   local start_time
-  start_time=$(date +%s)
+  start_time=$(clock::now)
 
   local function_name="$1"
   shift
