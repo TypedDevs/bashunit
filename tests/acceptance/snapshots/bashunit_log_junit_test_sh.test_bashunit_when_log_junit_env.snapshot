@@ -1,0 +1,8 @@
+Running ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
+[32m✓ Passed[0m: A
+[32m✓ Passed[0m: B
+
+[2mTests:     [0m [32m2 passed[0m, 2 total
+[2mAssertions:[0m [32m2 passed[0m, 2 total
+
+[42m[30m[1m All tests passed [0m
