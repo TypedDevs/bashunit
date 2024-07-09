@@ -55,6 +55,10 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --log-junit)
+      LOG_JUNIT="$2";
+      shift
+      ;;
     --version)
       console_header::print_version
       trap '' EXIT && exit 0
