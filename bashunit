@@ -57,7 +57,7 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
-    --log-junit)
+    -l|--log-junit)
       LOG_JUNIT="$2";
       shift
       shift
