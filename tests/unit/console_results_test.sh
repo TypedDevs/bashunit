@@ -297,7 +297,7 @@ function test_not_render_execution_time() {
   assert_not_matches "Time taken" "$render_result"
 }
 
-function test_not_render_execution_time_on_osx() {
+function test_render_execution_time_on_osx() {
   local render_result
   render_result=$(
     _OS='OSX'
@@ -305,7 +305,7 @@ function test_not_render_execution_time_on_osx() {
     console_results::render_result
   )
 
-  assert_not_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+ ms" "$render_result"
 }
 
 function test_render_file_with_duplicated_functions_if_found_true() {
