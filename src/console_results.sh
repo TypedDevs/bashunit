@@ -9,7 +9,7 @@ function console_results::render_result() {
     printf "%s%s%s\n" "${_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_COLOR_DEFAULT}"
     printf "File with duplicate functions: %s\n" "$(state::get_file_with_duplicated_function_names)"
     printf "Duplicate functions: %s\n" "$(state::get_duplicated_function_names)"
-    exit 1
+    return 1
   fi
 
   echo ""
@@ -67,35 +67,36 @@ function console_results::render_result() {
   if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 1
+    return 1
   fi
 
   if [[ "$(state::get_tests_incomplete)" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ "$(state::get_tests_snapshot)" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ $total_tests -eq 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " No tests found " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 1
+    return 1
   fi
 
   printf "\n%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
   console_results::print_execution_time
+  return 0
 }
 
 function console_results::print_execution_time() {
