@@ -1,6 +1,5 @@
 #!/bin/bash
 
-_START_TIME=$(date +%s%N);
 _SUCCESSFUL_TEST_COUNT=0
 
 function console_results::render_result() {
@@ -104,10 +103,8 @@ function console_results::print_execution_time() {
     return
   fi
 
-  if [[ "$_OS" != "OSX" ]]; then
-    _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
-    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
-  fi
+  _EXECUTION_TIME=$(clock::execution_time)
+  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
 }
 
 function console_results::print_successful_test() {
