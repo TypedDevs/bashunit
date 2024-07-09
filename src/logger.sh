@@ -25,3 +25,35 @@ function logger::log() {
   TEST_DURATIONS+=("$duration")
   TEST_ERRORS+=("$message")
 }
+
+function logger::generate_junit_xml() {
+  local junit_file="$1"
+
+  local timestamp
+  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  local hostname
+  hostname=$(hostname)
+
+  {
+    echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+    echo "<testsuites>"
+    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\" timestamp=\"$timestamp\" hostname=\"$hostname\">"
+
+    for i in "${!TEST_NAMES[@]}"; do
+      local test_name="${TEST_NAMES[$i]}"
+      local status="${TEST_STATUSES[$i]}"
+      local duration="${TEST_DURATIONS[$i]}"
+      local error_msg="${TEST_ERRORS[$i]}"
+
+      echo "    <testcase name=\"$test_name\" time=\"$duration\">"
+      if [[ "$status" == "failed" ]]; then
+        echo "      <failure message=\"$error_msg\"/>"
+      fi
+      echo "    </testcase>"
+    done
+
+    echo "  </testsuite>"
+    echo "</testsuites>"
+  } > "$junit_file"
+}
