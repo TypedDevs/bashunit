@@ -6,13 +6,14 @@ function main::exec_tests() {
 
   console_header::print_version_with_env
   runner::load_test_files "$filter" "${files[@]}"
-  exit_code=$(console_results::render_result)
+  console_results::render_result
+  exit_code=$?
 
   if [[ -n "$LOG_JUNIT" ]]; then
     logger::generate_junit_xml "$LOG_JUNIT"
   fi
 
-  exit "$exit_code"
+  exit $exit_code
 }
 
 function main::exec_assert() {
