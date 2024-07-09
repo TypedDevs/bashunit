@@ -59,7 +59,8 @@ function logger::generate_junit_xml() {
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     echo "<testsuites>"
-    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\" passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\" skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\" time=\"$time\">"
+    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\" time=\"$time\""
+    echo "             passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\" skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\">"
 
     for i in "${!TEST_NAMES[@]}"; do
       local name="${TEST_NAMES[$i]}"
