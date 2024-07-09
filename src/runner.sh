@@ -191,13 +191,13 @@ function runner::run_test() {
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
     console_results::print_error_test "$function_name" "$runtime_error"
-    logger::test_failed "$function_name" "$start_time" "errors: $runtime_error"
+    logger::test_failed "$function_name" "$start_time"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
-    logger::test_failed "$function_name" "$start_time" "assertions failed: $current_assertions_failed"
+    logger::test_failed "$function_name" "$start_time"
 
     if [ "$STOP_ON_FAILURE" = true ]; then
       exit 1
@@ -209,19 +209,19 @@ function runner::run_test() {
   if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
     state::add_tests_snapshot
     console_results::print_snapshot_test "$function_name"
-    logger::test_passed "$function_name" "$start_time" "snapshot created"
+    logger::test_snapshot "$function_name" "$start_time"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
-    logger::test_passed "$function_name" "$start_time" "incomplete"
+    logger::test_incomplete "$function_name" "$start_time"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
-    logger::test_passed "$function_name" "$start_time" "skipped"
+    logger::test_skipped "$function_name" "$start_time"
     return
   fi
 

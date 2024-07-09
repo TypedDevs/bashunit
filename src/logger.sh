@@ -5,6 +5,18 @@ TEST_STATUSES=()
 TEST_DURATIONS=()
 TEST_ERRORS=()
 
+function logger::test_snapshot() {
+  logger::log "$1" "$2" "snapshot" "$3"
+}
+
+function logger::test_incomplete() {
+  logger::log "$1" "$2" "incomplete" "$3"
+}
+
+function logger::test_skipped() {
+  logger::log "$1" "$2" "skipped" "$3"
+}
+
 function logger::test_passed() {
   logger::log "$1" "$2" "passed" "$3"
 }
@@ -30,33 +42,37 @@ function logger::log() {
 }
 
 function logger::generate_junit_xml() {
-  local junit_file="$1"
-
-  local timestamp
-  timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-
-  local hostname
-  hostname=$(hostname)
+  local output_file="$1"
+  local test_passed
+  test_passed=$(state::get_tests_passed)
+  local tests_skipped
+  tests_skipped=$(state::get_tests_skipped)
+  local tests_incomplete
+  tests_incomplete=$(state::get_tests_incomplete)
+  local tests_snapshot
+  tests_snapshot=$(state::get_tests_snapshot)
+  local tests_failed
+  tests_failed=$(state::get_tests_failed)
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     echo "<testsuites>"
-    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\" timestamp=\"$timestamp\" hostname=\"$hostname\">"
+    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\" passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\" skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\">"
 
     for i in "${!TEST_NAMES[@]}"; do
-      local test_name="${TEST_NAMES[$i]}"
+      local name="${TEST_NAMES[$i]}"
       local status="${TEST_STATUSES[$i]}"
-      local duration="${TEST_DURATIONS[$i]}"
-      local error_msg="${TEST_ERRORS[$i]}"
+      local time="${TEST_DURATIONS[$i]}"
+      local msg="${TEST_ERRORS[$i]}"
 
-      echo "    <testcase name=\"$test_name\" time=\"$duration\" status=\"$status\">"
-      if [[ "$status" == "failed" ]]; then
-        echo "      <failure message=\"$error_msg\"/>"
+      echo "    <testcase name=\"$name\" time=\"$time\" status=\"$status\">"
+      if [[ -n $msg ]]; then
+        echo "      <message>$msg<message/>"
       fi
       echo "    </testcase>"
     done
 
     echo "  </testsuite>"
     echo "</testsuites>"
-  } > "$junit_file"
+  } > "$output_file"
 }
