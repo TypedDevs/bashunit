@@ -8,6 +8,7 @@ export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
+source "$BASHUNIT_ROOT_DIR/src/clock.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/state.sh"
 source "$BASHUNIT_ROOT_DIR/src/colors.sh"
@@ -16,6 +17,7 @@ source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
+source "$BASHUNIT_ROOT_DIR/src/logger.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
@@ -52,6 +54,11 @@ while [[ $# -gt 0 ]]; do
     -e|--env)
       # shellcheck disable=SC1090
       source "$2"
+      shift
+      shift
+      ;;
+    -l|--log-junit)
+      LOG_JUNIT="$2";
       shift
       shift
       ;;

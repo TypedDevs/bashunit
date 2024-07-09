@@ -32,3 +32,7 @@ fi
 if [[ -z "$DEFAULT_PATH" ]]; then
   DEFAULT_PATH=$_DEFAULT_DEFAULT_PATH
 fi
+
+if [[ -z "$LOG_JUNIT" ]]; then
+  LOG_JUNIT=$_DEFAULT_LOG_JUNIT
+fi
