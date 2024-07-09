@@ -71,14 +71,14 @@ Filters the tests to be run based on the `test name`.
 :::
 
 ## Logging
-
-> `bashunit -l|--log-junit out.xml`
+s
+> `bashunit -l|--log-junit log-junit.xml`
 
 Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
 
 ::: code-group
 ```bash [Example]
-./bashunit ./tests --log-junit out.xml
+./bashunit ./tests --log-junit log-junit.xml
 ```
 :::
 
