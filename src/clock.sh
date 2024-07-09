@@ -6,6 +6,6 @@ function clock::now() {
 
 _START_TIME=$(clock::now)
 
-function clock::execution_time() {
+function clock::runtime_in_milliseconds() {
   echo $((($(clock::now) - _START_TIME) / 1000))
 }
