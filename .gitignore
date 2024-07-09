@@ -11,3 +11,6 @@ docs/.vitepress/dist
 bin/bashunit
 bin/checksum
 lib/bashunit
+
+# logger
+log-junit.xml

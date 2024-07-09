@@ -96,7 +96,6 @@ function console_results::render_result() {
 
   printf "\n%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
   console_results::print_execution_time
-  exit 0
 }
 
 function console_results::print_execution_time() {
