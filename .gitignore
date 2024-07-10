@@ -14,3 +14,4 @@ lib/bashunit
 
 # logger
 log-junit.xml
+export.html
