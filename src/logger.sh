@@ -3,33 +3,31 @@
 TEST_NAMES=()
 TEST_STATUSES=()
 TEST_DURATIONS=()
-TEST_ERRORS=()
 
 function logger::test_snapshot() {
-  logger::log "$1" "$2" "snapshot" "$3"
+  logger::log "$1" "$2" "snapshot"
 }
 
 function logger::test_incomplete() {
-  logger::log "$1" "$2" "incomplete" "$3"
+  logger::log "$1" "$2" "incomplete"
 }
 
 function logger::test_skipped() {
-  logger::log "$1" "$2" "skipped" "$3"
+  logger::log "$1" "$2" "skipped"
 }
 
 function logger::test_passed() {
-  logger::log "$1" "$2" "passed" "$3"
+  logger::log "$1" "$2" "passed"
 }
 
 function logger::test_failed() {
-  logger::log "$1" "$2" "failed" "$3"
+  logger::log "$1" "$2" "failed"
 }
 
 function logger::log() {
   local test_name="$1"
   local start_time="$2"
   local status="$3"
-  local error_msg="${4:-}"
 
   local end_time
   end_time=$(clock::now)
@@ -38,7 +36,6 @@ function logger::log() {
   TEST_NAMES+=("$test_name")
   TEST_STATUSES+=("$status")
   TEST_DURATIONS+=("$duration")
-  TEST_ERRORS+=("$error_msg")
 }
 
 function logger::generate_junit_xml() {
@@ -67,12 +64,8 @@ function logger::generate_junit_xml() {
       local name="${TEST_NAMES[$i]}"
       local status="${TEST_STATUSES[$i]}"
       local test_time="${TEST_DURATIONS[$i]}"
-      local msg="${TEST_ERRORS[$i]}"
 
       echo "    <testcase name=\"$name\" time=\"$test_time\" status=\"$status\">"
-      if [[ -n $msg ]]; then
-        echo "      <message>$msg<message/>"
-      fi
       echo "    </testcase>"
     done
 
@@ -157,13 +150,11 @@ function logger::generate_report_html() {
       local name="${TEST_NAMES[$i]}"
       local status="${TEST_STATUSES[$i]}"
       local test_time="${TEST_DURATIONS[$i]}"
-      local msg="${TEST_ERRORS[$i]}"
 
       echo "      <tr class=\"$status\">"
       echo "        <td>$name</td>"
       echo "        <td>$status</td>"
       echo "        <td>$test_time</td>"
-      echo "        <td>$msg</td>"
       echo "      </tr>"
     done
 
