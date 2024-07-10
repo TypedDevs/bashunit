@@ -1,9 +1,9 @@
 #!/bin/bash
 
-function test_a() {
+function test_success() {
   assert_equals 1 1
 }
 
-function test_b() {
-  assert_equals 2 2
+function test_failure() {
+  assert_equals 2 3
 }

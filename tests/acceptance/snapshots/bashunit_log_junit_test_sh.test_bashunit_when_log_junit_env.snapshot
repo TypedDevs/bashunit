@@ -1,8 +1,10 @@
 Running ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
-[32m✓ Passed[0m: A
-[32m✓ Passed[0m: B
+[32m✓ Passed[0m: Success
+[31m✗ Failed[0m: Failure
+    [2mExpected[0m [1m'2'[0m
+    [2mbut got[0m [1m'3'[0m
 
-[2mTests:     [0m [32m2 passed[0m, 2 total
-[2mAssertions:[0m [32m2 passed[0m, 2 total
+[2mTests:     [0m [32m1 passed[0m, [31m1 failed[0m, 2 total
+[2mAssertions:[0m [32m1 passed[0m, [31m1 failed[0m, 2 total
 
-[42m[30m[1m All tests passed [0m
+[41m[30m[1m Some tests failed [0m
