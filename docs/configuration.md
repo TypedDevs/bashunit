@@ -61,6 +61,7 @@ Running tests/functional/logic_test.sh
 SIMPLE_OUTPUT=false
 ```
 :::
+
 ## Stop on failure
 
 > `STOP_ON_FAILURE=true|false`
@@ -75,7 +76,7 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 >
 > `HEADER_ASCII_ART=true|false`
 
-Specifies if you want to show the bashunit header. `true` by default.
+Specify if you want to show the bashunit header. `true` by default.
 
 Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
@@ -152,6 +153,18 @@ All tests passed
 SHOW_EXECUTION_TIMER=false
 ```
 :::
+
+## Log JUnit
+
+> `LOG_JUNIT=log-junit.xml`
+
+Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
+
+## Report HTML
+
+> `REPORT_HTML=report.html`
+
+Create a report HTML file that contains information about the test results of your bashunit tests.
 
 <script setup>
 import pkg from '../package.json'
