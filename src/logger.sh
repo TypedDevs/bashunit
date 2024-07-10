@@ -5,34 +5,36 @@ TEST_STATUSES=()
 TEST_DURATIONS=()
 
 function logger::test_snapshot() {
-  logger::log "$1" "$2" "snapshot"
+  logger::log "$1" "$2" "$3" "snapshot"
 }
 
 function logger::test_incomplete() {
-  logger::log "$1" "$2" "incomplete"
+  logger::log "$1" "$2" "$3" "incomplete"
 }
 
 function logger::test_skipped() {
-  logger::log "$1" "$2" "skipped"
+  logger::log "$1" "$2" "$3" "skipped"
 }
 
 function logger::test_passed() {
-  logger::log "$1" "$2" "passed"
+  logger::log "$1" "$2" "$3" "passed"
 }
 
 function logger::test_failed() {
-  logger::log "$1" "$2" "failed"
+  logger::log "$1" "$2" "$3" "failed"
 }
 
 function logger::log() {
-  local test_name="$1"
-  local start_time="$2"
-  local status="$3"
+  local file="$1"
+  local test_name="$2"
+  local start_time="$3"
+  local status="$4"
 
   local end_time
   end_time=$(clock::now)
   local duration=$((end_time - start_time))
 
+  TEST_FILES+=("$file")
   TEST_NAMES+=("$test_name")
   TEST_STATUSES+=("$status")
   TEST_DURATIONS+=("$duration")
@@ -61,11 +63,14 @@ function logger::generate_junit_xml() {
     echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\">"
 
     for i in "${!TEST_NAMES[@]}"; do
+      local file="${TEST_FILES[$i]}"
       local name="${TEST_NAMES[$i]}"
       local status="${TEST_STATUSES[$i]}"
       local test_time="${TEST_DURATIONS[$i]}"
 
-      echo "    <testcase name=\"$name\" time=\"$test_time\" status=\"$status\">"
+      echo "    <testcase file=\"$file\""
+      echo "        name=\"$name\""
+      echo "        status=\"$status\" time=\"$test_time\">"
       echo "    </testcase>"
     done
 
@@ -138,20 +143,22 @@ function logger::generate_report_html() {
     echo "  <table>"
     echo "    <thead>"
     echo "      <tr>"
+    echo "        <th>Test file</th>"
     echo "        <th>Test Name</th>"
     echo "        <th>Status</th>"
     echo "        <th>Time (ms)</th>"
-    echo "        <th>Message</th>"
     echo "      </tr>"
     echo "    </thead>"
     echo "    <tbody>"
 
     for i in "${!TEST_NAMES[@]}"; do
+      local file="${TEST_FILES[$i]}"
       local name="${TEST_NAMES[$i]}"
       local status="${TEST_STATUSES[$i]}"
       local test_time="${TEST_DURATIONS[$i]}"
 
       echo "      <tr class=\"$status\">"
+      echo "        <td>$file</td>"
       echo "        <td>$name</td>"
       echo "        <td>$status</td>"
       echo "        <td>$test_time</td>"
