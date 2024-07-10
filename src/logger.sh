@@ -94,6 +94,21 @@ function logger::generate_report_html() {
   local time
   time=$(clock::runtime_in_milliseconds)
 
+  # Temporary file to store test cases by file
+  local temp_file="temp_test_cases.txt"
+
+  # Collect test cases by file
+  : > "$temp_file"  # Clear temp file if it exists
+  for i in "${!TEST_NAMES[@]}"; do
+    local file="${TEST_FILES[$i]}"
+    local name="${TEST_NAMES[$i]}"
+    local status="${TEST_STATUSES[$i]}"
+    local test_time="${TEST_DURATIONS[$i]}"
+    local test_case="$file|$name|$status|$test_time"
+
+    echo "$test_case" >> "$temp_file"
+  done
+
   {
     echo "<!DOCTYPE html>"
     echo "<html lang=\"en\">"
@@ -140,34 +155,44 @@ function logger::generate_report_html() {
     echo "    </tbody>"
     echo "  </table>"
     echo "  <p>Time: $time ms</p>"
-    echo "  <table>"
-    echo "    <thead>"
-    echo "      <tr>"
-    echo "        <th>Test file</th>"
-    echo "        <th>Test Name</th>"
-    echo "        <th>Status</th>"
-    echo "        <th>Time (ms)</th>"
-    echo "      </tr>"
-    echo "    </thead>"
-    echo "    <tbody>"
 
-    for i in "${!TEST_NAMES[@]}"; do
-      local file="${TEST_FILES[$i]}"
-      local name="${TEST_NAMES[$i]}"
-      local status="${TEST_STATUSES[$i]}"
-      local test_time="${TEST_DURATIONS[$i]}"
-
+    # Read the temporary file and group by file
+    local current_file=""
+    while IFS='|' read -r file name status test_time; do
+      if [ "$file" != "$current_file" ]; then
+        if [ -n "$current_file" ]; then
+          echo "    </tbody>"
+          echo "  </table>"
+        fi
+        echo "  <h2>File: $file</h2>"
+        echo "  <table>"
+        echo "    <thead>"
+        echo "      <tr>"
+        echo "        <th>Test Name</th>"
+        echo "        <th>Status</th>"
+        echo "        <th>Time (ms)</th>"
+        echo "      </tr>"
+        echo "    </thead>"
+        echo "    <tbody>"
+        current_file="$file"
+      fi
       echo "      <tr class=\"$status\">"
-      echo "        <td>$file</td>"
       echo "        <td>$name</td>"
       echo "        <td>$status</td>"
       echo "        <td>$test_time</td>"
       echo "      </tr>"
-    done
+    done < "$temp_file"
 
-    echo "    </tbody>"
-    echo "  </table>"
+    # Close the last table
+    if [ -n "$current_file" ]; then
+      echo "    </tbody>"
+      echo "  </table>"
+    fi
+
     echo "</body>"
     echo "</html>"
   } > "$output_file"
+
+  # Clean up temporary file
+  rm -f "$temp_file"
 }
