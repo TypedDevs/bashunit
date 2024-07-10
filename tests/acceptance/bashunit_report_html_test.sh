@@ -2,21 +2,21 @@
 
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
-  TEST_ENV_FILE_LOG_JUNIT="tests/acceptance/fixtures/.env.log_junit"
+  TEST_ENV_FILE_REPORT_HTML="tests/acceptance/fixtures/.env.report_html"
 }
 
-function test_bashunit_when_log_junit_option() {
-  local test_file=./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
+function test_bashunit_when_report_html_option() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_report_html.sh
 
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" --log-junit custom.xml "$test_file")"
-  assert_file_exists custom.xml
-  rm custom.xml
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" --report-html custom.html "$test_file")"
+  assert_file_exists custom.html
+  rm custom.html
 }
 
-function test_bashunit_when_log_junit_env() {
-  local test_file=./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
+function test_bashunit_when_report_html_env() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_report_html.sh
 
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_LOG_JUNIT" "$test_file")"
-  assert_file_exists log-junit.xml
-  rm log-junit.xml
+  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_REPORT_HTML" "$test_file")"
+  assert_file_exists report.html
+  rm report.html
 }

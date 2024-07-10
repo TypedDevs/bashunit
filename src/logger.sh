@@ -117,7 +117,7 @@ function logger::generate_report_html() {
     echo "</head>"
     echo "<body>"
     echo "  <h1>Test Report</h1>"
-     echo "  <table>"
+    echo "  <table>"
     echo "    <thead>"
     echo "      <tr>"
     echo "        <th>Total Tests</th>"
