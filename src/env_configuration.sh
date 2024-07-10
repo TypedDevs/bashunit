@@ -36,3 +36,7 @@ fi
 if [[ -z "$LOG_JUNIT" ]]; then
   LOG_JUNIT=$_DEFAULT_LOG_JUNIT
 fi
+
+if [[ -z "$REPORT_HTML" ]]; then
+  REPORT_HTML=$_DEFAULT_REPORT_HTML
+fi

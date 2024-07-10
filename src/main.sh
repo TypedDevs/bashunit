@@ -13,6 +13,10 @@ function main::exec_tests() {
     logger::generate_junit_xml "$LOG_JUNIT"
   fi
 
+  if [[ -n "$REPORT_HTML" ]]; then
+    logger::generate_report_html "$REPORT_HTML"
+  fi
+
   exit $exit_code
 }
 
