@@ -71,7 +71,7 @@ Filters the tests to be run based on the `test name`.
 :::
 
 ## Logging
-s
+
 > `bashunit -l|--log-junit log-junit.xml`
 
 Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
@@ -81,7 +81,6 @@ Create a report XML file that follows the JUnit XML format and contains informat
 ./bashunit ./tests --log-junit log-junit.xml
 ```
 :::
-
 
 ## Output
 
@@ -121,6 +120,18 @@ Running tests/functional/logic_test.sh
 ```
 ```bash [Example]
 ./bashunit ./tests --verbose
+```
+:::
+
+## Report
+
+> `bashunit -r|--report-html report.html`
+
+Create a report HTML file that contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --report-html report.html
 ```
 :::
 
