@@ -5,7 +5,8 @@
 - Fix echo does not break test execution results
 - Add bashunit facade to enable custom assertions
 - Document how to verify the `sha256sum` of the final executable
-- Enable display execution time on MacOS with `SHOW_EXECUTION_TIME`
+- Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
+- Support for displaying the clock without `perl` (for non-macOS)
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 

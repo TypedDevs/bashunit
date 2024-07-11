@@ -266,11 +266,6 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
 }
 
 function test_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
@@ -282,11 +277,6 @@ function test_render_execution_time() {
 }
 
 function test_not_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
