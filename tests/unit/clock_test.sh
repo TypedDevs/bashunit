@@ -1,5 +1,15 @@
 #!/bin/bash
 
+__ORIGINAL_OS=""
+
+function set_up_before_script() {
+  __ORIGINAL_OS=$_OS
+}
+
+function tear_down_after_script() {
+  export _OS=$__ORIGINAL_OS
+}
+
 function test_now_with_perl() {
   mock perl echo "1720705883457"
 
