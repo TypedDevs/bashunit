@@ -1,7 +1,16 @@
 #!/bin/bash
 
-_SUCCESSFUL_TEST_COUNT=0
-_LINE_LENGTH=50
+_LINE_LENGTH=10
+_TOTAL_TESTS_FILE="/tmp/total_tests"
+echo 0 > "$_TOTAL_TESTS_FILE"
+
+function increment_total_tests() {
+    local current_total
+    current_total=$(cat "$_TOTAL_TESTS_FILE")
+    local new_total=$((current_total + 1))
+    echo "$new_total" > "$_TOTAL_TESTS_FILE"
+    echo $((new_total))
+}
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -109,10 +118,10 @@ function console_results::print_execution_time() {
 }
 
 function console_results::print_successful_test() {
-  ((_SUCCESSFUL_TEST_COUNT++))
+  total_tests=$(increment_total_tests)
 
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % _LINE_LENGTH != 0 )); then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
       printf "."
     else
       printf ".\n"
@@ -141,8 +150,10 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 }
 
 function console_results::print_failed_test() {
+  total_tests=$(increment_total_tests)
+
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % _LINE_LENGTH != 0 )); then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
       printf "F"
     else
       printf "F\n"
@@ -171,6 +182,17 @@ function console_results::print_failed_test() {
 }
 
 function console_results::print_failed_snapshot_test() {
+  total_tests=$(increment_total_tests)
+
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
+      printf "F"
+    else
+      printf "F\n"
+    fi
+    return
+  fi
+
   local test_name=$1
   local snapshot_file=$2
 
@@ -188,6 +210,17 @@ function console_results::print_failed_snapshot_test() {
 }
 
 function console_results::print_skipped_test() {
+  total_tests=$(increment_total_tests)
+
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
+      printf "S"
+    else
+      printf "S\n"
+    fi
+    return
+  fi
+
   local test_name=$1
   local reason=$2
 
@@ -199,6 +232,17 @@ function console_results::print_skipped_test() {
 }
 
 function console_results::print_incomplete_test() {
+  total_tests=$(increment_total_tests)
+
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
+      printf "I"
+    else
+      printf "I\n"
+    fi
+    return
+  fi
+
   local test_name=$1
   local pending=$2
 
@@ -210,6 +254,17 @@ function console_results::print_incomplete_test() {
 }
 
 function console_results::print_snapshot_test() {
+  total_tests=$(increment_total_tests)
+
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
+      printf "S"
+    else
+      printf "S\n"
+    fi
+    return
+  fi
+
   local test_name
   test_name=$(helper::normalize_test_function_name "$1")
 
@@ -217,6 +272,17 @@ function console_results::print_snapshot_test() {
 }
 
 function console_results::print_error_test() {
+  total_tests=$(increment_total_tests)
+
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( total_tests % _LINE_LENGTH != 0 )); then
+      printf "E"
+    else
+      printf "E\n"
+    fi
+    return
+  fi
+
   local test_name
   test_name=$(helper::normalize_test_function_name "$1")
   local error="$2"
