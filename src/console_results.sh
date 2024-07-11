@@ -1,6 +1,7 @@
 #!/bin/bash
 
 _SUCCESSFUL_TEST_COUNT=0
+_LINE_LENGTH=50
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -111,7 +112,7 @@ function console_results::print_successful_test() {
   ((_SUCCESSFUL_TEST_COUNT++))
 
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
+    if (( _SUCCESSFUL_TEST_COUNT % _LINE_LENGTH != 0 )); then
       printf "."
     else
       printf ".\n"
@@ -141,7 +142,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 
 function console_results::print_failed_test() {
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
+    if (( _SUCCESSFUL_TEST_COUNT % _LINE_LENGTH != 0 )); then
       printf "F"
     else
       printf "F\n"
