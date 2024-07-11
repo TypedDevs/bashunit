@@ -139,24 +139,33 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 }
 
 function console_results::print_failed_test() {
-  local test_name=$1
-  local expected=$2
-  local failure_condition_message=$3
-  local actual=$4
-  local extra_key=$5
-  local extra_value=$6
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+      if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
+        printf "F"
+      else
+        printf "F\n"
+      fi
+      return
+    fi
 
-  printf "\
-${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+    local test_name=$1
+    local expected=$2
+    local failure_condition_message=$3
+    local actual=$4
+    local extra_key=$5
+    local extra_value=$6
 
-  if [ -n "$extra_key" ]; then
     printf "\
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-    "${extra_key}" "${extra_value}"
-  fi
+  ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+      ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
+      ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+      "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+
+    if [ -n "$extra_key" ]; then
+      printf "\
+      ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+      "${extra_key}" "${extra_value}"
+    fi
 }
 
 function console_results::print_failed_snapshot_test() {
