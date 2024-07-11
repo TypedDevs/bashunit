@@ -16,17 +16,24 @@ function test_now_with_perl() {
   assert_equals "1720705883457" "$(clock::now)"
 }
 
-function test_now_without_perl_no_osx() {
+function test_now_on_linux_without_perl() {
   export _OS="Linux"
   mock perl /dev/null
   mock date echo "1720705883457"
 
   assert_equals "1720705883457" "$(clock::now)"
 }
+function test_now_on_windows_without_perl() {
+  export _OS="Windows"
+  mock perl /dev/null
+  mock date echo "1720705883457"
 
-function test_now_without_perl_and_osx() {
+  assert_equals "1720705883457" "$(clock::now)"
+}
+
+function test_now_on_osx_without_perl() {
   export _OS="OSX"
-  mock perl echo ""
+  mock perl /dev/null
 
   assert_equals "" "$(clock::now)"
 }
@@ -39,7 +46,7 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
 
 function test_runtime_in_milliseconds_when_empty_time() {
   export _OS="OSX"
-  mock perl echo ""
+  mock perl /dev/null
 
-  assert_empty "$(clock::now)"
+  assert_empty "$(clock::runtime_in_milliseconds)"
 }

@@ -6,6 +6,7 @@
 - Add bashunit facade to enable custom assertions
 - Document how to verify the `sha256sum` of the final executable
 - Enable display execution time on MacOS with `SHOW_EXECUTION_TIME`
+  - Use `perl` for this. In case it is not installed, then rollback to `date`
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 

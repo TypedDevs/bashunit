@@ -13,8 +13,9 @@ function clock::now() {
 _START_TIME=$(clock::now)
 
 function clock::runtime_in_milliseconds() {
-  if [[ -n $_START_TIME ]]; then
-    echo $(( $(clock::now) - _START_TIME ))
+  end_time=$(clock::now)
+  if [[ -n $end_time ]]; then
+    echo $(( end_time - _START_TIME ))
   else
     echo ""
   fi
