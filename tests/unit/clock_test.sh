@@ -50,7 +50,7 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
 
 function test_runtime_in_milliseconds_when_empty_time() {
   export _OS="OSX"
-  mock perl /dev/null
+  mock perl mock_non_existing_fn
 
   assert_empty "$(clock::runtime_in_milliseconds)"
 }
