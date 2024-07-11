@@ -6,7 +6,7 @@
 - Add bashunit facade to enable custom assertions
 - Document how to verify the `sha256sum` of the final executable
 - Enable display execution time on MacOS with `SHOW_EXECUTION_TIME`
-- Add `-l|--log-junit <output.xml>` option
+- Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23

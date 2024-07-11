@@ -42,6 +42,12 @@ Options:
   -f|--filter <filter>
     Filters the tests to run based on the test name.
 
+  -l|--log-junit <out.xml>
+    Create a report JUnit XML file that contains information about the test results.
+
+  -r|--report-html <out.html>
+    Create a report HTML file that contains information about the test results.
+
   -s|simple || -v|verbose
     Enables simplified or verbose output to the console.
 
