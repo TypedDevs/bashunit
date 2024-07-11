@@ -114,17 +114,18 @@ function console_results::print_successful_test() {
     if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
       printf "."
     else
-      echo "."
+      printf ".\n"
     fi
-  else
-    local test_name=$1
-    shift
+    return
+  fi
 
-    if [[ -z "$*" ]]; then
-      printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
-    else
-      printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "$*"
-    fi
+  local test_name=$1
+  shift
+
+  if [[ -z "$*" ]]; then
+    printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+  else
+    printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "$*"
   fi
 }
 
@@ -140,32 +141,32 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 
 function console_results::print_failed_test() {
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-      if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
-        printf "F"
-      else
-        printf "F\n"
-      fi
-      return
+    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
+      printf "F"
+    else
+      printf "F\n"
     fi
+    return
+  fi
 
-    local test_name=$1
-    local expected=$2
-    local failure_condition_message=$3
-    local actual=$4
-    local extra_key=$5
-    local extra_value=$6
+  local test_name=$1
+  local expected=$2
+  local failure_condition_message=$3
+  local actual=$4
+  local extra_key=$5
+  local extra_value=$6
 
+  printf "\
+    ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+
+  if [ -n "$extra_key" ]; then
     printf "\
-  ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-      ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
-      ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-      "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
-
-    if [ -n "$extra_key" ]; then
-      printf "\
-      ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-      "${extra_key}" "${extra_value}"
-    fi
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${extra_key}" "${extra_value}"
+  fi
 }
 
 function console_results::print_failed_snapshot_test() {
