@@ -21,6 +21,7 @@ source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/logger.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
