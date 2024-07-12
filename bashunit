@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 # shellcheck disable=SC2034
 declare -r BASHUNIT_VERSION="0.13.0"

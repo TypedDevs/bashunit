@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 function set_up() {
   ./build.sh >/dev/null

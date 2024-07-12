@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 

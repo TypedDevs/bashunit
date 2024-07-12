@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 function test_successful_assert_directory_exists() {
   local a_directory

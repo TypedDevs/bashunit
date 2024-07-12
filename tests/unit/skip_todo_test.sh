@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 function test_skip_output() {
   assert_equals\

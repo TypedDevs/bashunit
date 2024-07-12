@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 function set_up_before_script() {
   TEST_ENV_FILE="./tests/acceptance/fixtures/.env.default"

@@ -1,5 +1,4 @@
 #!/bin/bash
-set -euo pipefail
 
 _TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE=""
 
