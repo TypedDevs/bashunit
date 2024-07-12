@@ -143,8 +143,8 @@ function console_results::print_failed_test() {
   local expected=$2
   local failure_condition_message=$3
   local actual=$4
-  local extra_key=$5
-  local extra_value=$6
+  local extra_key=${5-}
+  local extra_value=${6-}
 
   printf "\
 ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s

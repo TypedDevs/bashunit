@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 #
 # Make sure that the `runner::clear_mocks()` is being called,

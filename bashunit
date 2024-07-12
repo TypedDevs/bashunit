@@ -1,9 +1,11 @@
 #!/bin/bash
+set -euo pipefail
 
 # shellcheck disable=SC2034
 declare -r BASHUNIT_VERSION="0.13.0"
 
-readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck disable=SC2155
+declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
@@ -40,15 +42,15 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -s|--simple)
-      SIMPLE_OUTPUT=true
+      export SIMPLE_OUTPUT=true
       shift
       ;;
     -v|--verbose)
-      SIMPLE_OUTPUT=false
+      export SIMPLE_OUTPUT=false
       shift
       ;;
     -S|--stop-on-failure)
-      STOP_ON_FAILURE=true
+      export STOP_ON_FAILURE=true
       shift
       ;;
     -e|--env)
@@ -58,12 +60,12 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -l|--log-junit)
-      LOG_JUNIT="$2";
+      export LOG_JUNIT="$2";
       shift
       shift
       ;;
     -r|--report-html)
-      REPORT_HTML="$2";
+      export REPORT_HTML="$2";
       shift
       shift
       ;;
@@ -87,6 +89,8 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+set +eu
 
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
