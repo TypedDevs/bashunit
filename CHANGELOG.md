@@ -9,6 +9,7 @@
 - Support for displaying the clock without `perl` (for non-macOS)
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
+- Foundation to enable strictmode
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 

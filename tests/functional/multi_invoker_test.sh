@@ -15,7 +15,7 @@ function tear_down_after_script() {
 function test_multi_invoker_simple() {
   local current_number="$1"
   local second_arg="$2"
-  local third_arg="$3"
+  local third_arg="${3-}"
 
   local current_iteration=0
 

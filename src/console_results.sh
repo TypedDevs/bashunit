@@ -14,18 +14,18 @@ function console_results::render_result() {
   echo ""
 
   local total_tests=0
-  ((total_tests+=$(state::get_tests_passed)))
-  ((total_tests+=$(state::get_tests_skipped)))
-  ((total_tests+=$(state::get_tests_incomplete)))
-  ((total_tests+=$(state::get_tests_snapshot)))
-  ((total_tests+=$(state::get_tests_failed)))
+  ((total_tests += $(state::get_tests_passed))) || true
+  ((total_tests += $(state::get_tests_skipped))) || true
+  ((total_tests += $(state::get_tests_incomplete))) || true
+  ((total_tests += $(state::get_tests_snapshot))) || true
+  ((total_tests += $(state::get_tests_failed))) || true
 
   local total_assertions=0
-  ((total_assertions+=$(state::get_assertions_passed)))
-  ((total_assertions+=$(state::get_assertions_skipped)))
-  ((total_assertions+=$(state::get_assertions_incomplete)))
-  ((total_assertions+=$(state::get_assertions_snapshot)))
-  ((total_assertions+=$(state::get_assertions_failed)))
+  ((total_assertions += $(state::get_assertions_passed))) || true
+  ((total_assertions += $(state::get_assertions_skipped))) || true
+  ((total_assertions += $(state::get_assertions_incomplete))) || true
+  ((total_assertions += $(state::get_assertions_snapshot))) || true
+  ((total_assertions += $(state::get_assertions_failed))) || true
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
   if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
@@ -108,7 +108,7 @@ function console_results::print_execution_time() {
 }
 
 function console_results::print_successful_test() {
-  ((_SUCCESSFUL_TEST_COUNT++))
+  ((_SUCCESSFUL_TEST_COUNT++)) || true
 
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
     if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
@@ -178,7 +178,7 @@ function console_results::print_failed_snapshot_test() {
 
 function console_results::print_skipped_test() {
   local test_name=$1
-  local reason=$2
+  local reason=${2-}
 
   printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${test_name}"
 
@@ -189,7 +189,7 @@ function console_results::print_skipped_test() {
 
 function console_results::print_incomplete_test() {
   local test_name=$1
-  local pending=$2
+  local pending=${2-}
 
   printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${test_name}"
 

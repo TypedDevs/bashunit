@@ -260,8 +260,8 @@ function test_unsuccessful_assert_is_directory_not_writable() {
   assert_equals\
     "$(console_results::print_failed_test\
       "Unsuccessful assert is directory not writable" \
-      "$a_file" "to be not writable" "but is writable")"\
-    "$(assert_is_directory_not_writable "$a_file")"
+      "$a_directory" "to be not writable" "but is writable")"\
+    "$(assert_is_directory_not_writable "$a_directory")"
 
   rmdir "$a_directory"
 }

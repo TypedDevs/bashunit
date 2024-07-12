@@ -8,7 +8,7 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 # @return string Eg: "Some logic camelCase"
 #
 function helper::normalize_test_function_name() {
-  local original_function_name="$1"
+  local original_function_name="${1-}"
   local result
 
   # Remove "test_" prefix
@@ -55,37 +55,27 @@ function helper::get_functions_to_run() {
   local filter=$2
   local function_names=$3
 
-  local functions_to_run=()
+  local filtered_functions=""
 
-  for function_name in $function_names; do
-    if [[ $function_name != ${prefix}* ]]; then
-      continue
+  for fn in $function_names; do
+    if [[ $fn == ${prefix}_${filter}* ]]; then
+      if [[ $filtered_functions == *" $fn"* ]]; then
+        return 1
+      fi
+      filtered_functions+=" $fn"
     fi
-
-    local lower_case_function_name
-    lower_case_function_name=$(echo "$function_name" | tr '[:upper:]' '[:lower:]')
-    local lower_case_filter
-    lower_case_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
-
-    if [[ -n $filter && $lower_case_function_name != *"$lower_case_filter"* ]]; then
-      continue
-    fi
-
-    if [[ "${functions_to_run[*]}" =~ ${function_name} ]]; then
-      return 1
-    fi
-
-    functions_to_run+=("$function_name")
   done
 
-  echo "${functions_to_run[@]}"
+  echo "${filtered_functions# }"
 }
 
 #
 # @param $1 string Eg: "do_something"
 #
 function helper::execute_function_if_exists() {
-  "$1" 2>/dev/null
+  if [[ "$(type -t "$1")" == "function" ]]; then
+    "$1" 2>/dev/null
+  fi
 }
 
 #
@@ -133,6 +123,7 @@ function helper::get_provider_data() {
     grep -B 1 "function $function_name()" "$script" |\
     grep "# data_provider " |\
     sed -E -e 's/\ *# data_provider (.*)$/\1/g'\
+    || true
   )
 
   if [[ -n "$data_provider_function" ]]; then
