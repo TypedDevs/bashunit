@@ -10,6 +10,7 @@
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 - Enable strictmode
+- Added dump/dd functions for local debugging
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
