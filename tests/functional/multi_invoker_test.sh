@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 _TEST_MULTI_INVOKER_ITERATION_FILE=""
 

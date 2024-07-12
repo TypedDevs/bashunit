@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 _ERROR_LOG=temp_error.log
 
