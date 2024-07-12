@@ -2,7 +2,6 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.13.0...main)
 
-- Support tests written using Bash's errexit (-e), nounset (-u), and pipefail options ("unofficial strict mode").
 - Fix echo does not break test execution results
 - Add bashunit facade to enable custom assertions
 - Document how to verify the `sha256sum` of the final executable
@@ -10,6 +9,7 @@
 - Support for displaying the clock without `perl` (for non-macOS)
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
+- Foundation to enable strictmode
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
