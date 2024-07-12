@@ -8,6 +8,7 @@ declare -r BASHUNIT_VERSION="0.13.0"
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
+source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASHUNIT_ROOT_DIR/src/clock.sh"
@@ -21,7 +22,6 @@ source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/logger.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
-source "$BASHUNIT_ROOT_DIR/src/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
