@@ -25,7 +25,7 @@ Allows you to override the output of a callable.
 ```bash [Example]
 function test_example() {
   function code() {
-      ps a | grep bash
+    ps a | grep bash
   }
 
   mock ps<<EOF

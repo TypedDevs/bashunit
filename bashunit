@@ -2,13 +2,14 @@
 set -euo pipefail
 
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.10.1"
+declare -r BASHUNIT_VERSION="0.13.0"
 
 readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
+source "$BASHUNIT_ROOT_DIR/src/clock.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/state.sh"
 source "$BASHUNIT_ROOT_DIR/src/colors.sh"
@@ -17,18 +18,23 @@ source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
+source "$BASHUNIT_ROOT_DIR/src/logger.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
+source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-###############
-#### MAIN #####
-###############
-
+_ASSERT_FN=""
 _FILTER=""
-_FILES=()
+_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
+    -a|--assert)
+      _ASSERT_FN="$2"
+      shift
+      shift
+      ;;
     -f|--filter)
       _FILTER="$2"
       shift
@@ -52,6 +58,16 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    -l|--log-junit)
+      LOG_JUNIT="$2";
+      shift
+      shift
+      ;;
+    -r|--report-html)
+      REPORT_HTML="$2";
+      shift
+      shift
+      ;;
     --version)
       console_header::print_version
       trap '' EXIT && exit 0
@@ -66,15 +82,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       while IFS='' read -r line; do
-        _FILES+=("$line");
+        _ARGS+=("$line");
       done < <(helper::find_files_recursive "$argument")
       shift
       ;;
   esac
 done
 
-console_header::print_version_with_env
-runner::load_test_files "$_FILTER" "${_FILES[@]}"
-console_results::render_result
-
-exit 0
+if [[ -n "$_ASSERT_FN" ]]; then
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+else
+  main::exec_tests "$_FILTER" "${_ARGS[@]}"
+fi

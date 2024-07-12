@@ -18,7 +18,7 @@ If a directory is specified, it will execute tests within files ending in `test.
 If you use wildcards, **bashunit** will run any tests it finds.
 
 ::: code-group
-```[Example]
+```bash [Example]
 # all tests inside the tests directory
 DEFAULT_PATH=tests
 
@@ -41,10 +41,10 @@ Verbose is the default output, but it can be overridden by the environment confi
 Similar as using `-s|--simple|-v|--verbose` option on the [command line](/command-line#output).
 
 ::: code-group
-```[Simple output]
+```bash [Simple output]
 ....
 ```
-```[.env]
+```bash [.env]
 SIMPLE_OUTPUT=true
 ```
 :::
@@ -57,10 +57,11 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Should validate an ok exit code
 ✓ Passed: Text should be equal
 ```
-```[.env]
+```bash [.env]
 SIMPLE_OUTPUT=false
 ```
 :::
+
 ## Stop on failure
 
 > `STOP_ON_FAILURE=true|false`
@@ -75,15 +76,15 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 >
 > `HEADER_ASCII_ART=true|false`
 
-Specifies if you want to show the bashunit header. `true` by default.
+Specify if you want to show the bashunit header. `true` by default.
 
 Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
 ::: code-group
-```[Without header]
+``` [Without header]
 ✓ Passed: foo bar
 ```
-```[.env]
+```bash [.env]
 SHOW_HEADER=false
 ```
 :::
@@ -94,7 +95,7 @@ bashunit - {{ pkg.version }} // [!code hl]
 
 ✓ Passed: foo bar
 ```
-```[.env]
+```bash [.env]
 SHOW_HEADER=true
 ```
 :::
@@ -110,7 +111,7 @@ __               _                   _    // [!code hl]
 
 ✓ Passed: foo bar
 ```
-```[.env]
+```bash [.env]
 SHOW_HEADER=true
 HEADER_ASCII_ART=true
 ```
@@ -120,23 +121,23 @@ HEADER_ASCII_ART=true
 
 > `SHOW_EXECUTION_TIME=true|false`
 
-Specifies if you want to display the execution time after running **bashunit**. `true` by default.
+Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
 ::: warning
 This feature is not available on macOS.
 :::
 
 ::: code-group
-```[With execution time]
+```-vue [With execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
-Time taken: 14 ms // [!code hl]
+Time taken: 14 ms  // [!code hl]
 ```
-```[.env]
-SHOW_EXECUTION_TIMEER=true
+```bash [.env]
+SHOW_EXECUTION_TIMER=true
 ```
 :::
 
@@ -148,10 +149,22 @@ Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
 ```
-```[.env]
-SHOW_EXECUTION_TIMEER=false
+```bash [.env]
+SHOW_EXECUTION_TIMER=false
 ```
 :::
+
+## Log JUnit
+
+> `LOG_JUNIT=log-junit.xml`
+
+Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
+
+## Report HTML
+
+> `REPORT_HTML=report.html`
+
+Create a report HTML file that contains information about the test results of your bashunit tests.
 
 <script setup>
 import pkg from '../package.json'

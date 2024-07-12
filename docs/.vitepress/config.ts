@@ -61,6 +61,9 @@ export default defineConfig({
         text: 'Test files',
         link: '/test-files',
       }, {
+        text: 'Parameterized tests',
+        link: '/parameterized-tests',
+      }, {
         text: 'Test doubles',
         link: '/test-doubles'
       }, {
@@ -72,6 +75,12 @@ export default defineConfig({
       }, {
         text: 'Skipping/incomplete',
         link: '/skipping-incomplete'
+      }, {
+        text: 'Standalone',
+        link: '/standalone'
+      }, {
+        text: 'Custom asserts',
+        link: '/custom-asserts'
       }, {
         text: 'Examples',
         link: '/examples'

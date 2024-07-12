@@ -1,11 +1,39 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.10.1...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.13.0...main)
+
+- Support tests written using Bash's errexit (-e), nounset (-u), and pipefail options ("unofficial strict mode").
+- Fix echo does not break test execution results
+- Add bashunit facade to enable custom assertions
+- Document how to verify the `sha256sum` of the final executable
+- Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
+- Support for displaying the clock without `perl` (for non-macOS)
+- Add `-l|--log-junit <log.xml>` option
+- Add `-r|--report-html <report.html>` option
+
+## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
+
+- Allow calling assertions standalone outside tests
+- Add the latest version when installing beta
+- Add `assert_line_count`
+- Add hash to the installation script when installing a beta version
+- Add GitHub Actions to installation doc
+
+## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0) - 2024-06-11
+
+- Add missing assertion in non-stable versions
+- Fix test with `rm` command in macOS
+- Add multi-invokers; consolidate parameterized-testing documentation
+- Add `fail()` function
+- Remove all test mocks after each test case
+
+## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
 
 - Add `--upgrade` option to `./bashunit`
 - Remove support to deprecated `setUp`, `tearDown`, `setUpBeforeScript` and `tearDownAfterScript` functions
 - Optimize test execution time
-- Support tests written using Bash's errexit (-e), nounset (-u), and pipefail options ("unofficial strict mode").
+- Test functions are now run in the order they're defined in a test file
+- Increase contrast of test results
 
 ## [0.10.1](https://github.com/TypedDevs/bashunit/compare/0.10.0...0.10.1) - 2023-11-13
 

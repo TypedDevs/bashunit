@@ -1,6 +1,5 @@
 #!/bin/bash
 
-_START_TIME=$(date +%s%N);
 _SUCCESSFUL_TEST_COUNT=0
 
 function console_results::render_result() {
@@ -9,7 +8,7 @@ function console_results::render_result() {
     printf "%s%s%s\n" "${_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_COLOR_DEFAULT}"
     printf "File with duplicate functions: %s\n" "$(state::get_file_with_duplicated_function_names)"
     printf "Duplicate functions: %s\n" "$(state::get_duplicated_function_names)"
-    exit 1
+    return 1
   fi
 
   echo ""
@@ -65,38 +64,38 @@ function console_results::render_result() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
-    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" "Some tests failed" "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 1
+    return 1
   fi
 
   if [[ "$(state::get_tests_incomplete)" -gt 0 ]]; then
-    printf "%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" "Some tests incomplete" "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
-    printf "%s%s%s\n" "$_COLOR_RETURN_SKIPPED" "Some tests skipped" "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ "$(state::get_tests_snapshot)" -gt 0 ]]; then
-    printf "%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" "Some snapshots created" "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 0
+    return 0
   fi
 
   if [[ $total_tests -eq 0 ]]; then
-    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" "No tests found" "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " No tests found " "$_COLOR_DEFAULT"
     console_results::print_execution_time
-    exit 1
+    return 1
   fi
 
-  printf "%s%s%s\n" "$_COLOR_RETURN_SUCCESS" "All tests passed" "$_COLOR_DEFAULT"
+  printf "\n%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
   console_results::print_execution_time
-  exit 0
+  return 0
 }
 
 function console_results::print_execution_time() {
@@ -104,10 +103,8 @@ function console_results::print_execution_time() {
     return
   fi
 
-  if [[ "$_OS" != "OSX" ]]; then
-    _EXECUTION_TIME=$((($(date +%s%N) - "$_START_TIME") / 1000000))
-    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
-  fi
+  _EXECUTION_TIME=$(clock::runtime_in_milliseconds)
+  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
 }
 
 function console_results::print_successful_test() {
@@ -121,14 +118,24 @@ function console_results::print_successful_test() {
     fi
   else
     local test_name=$1
-    local data=${2-}
+    shift
 
-    if [[ -z "$data" ]]; then
+    if [[ -z "$*" ]]; then
       printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
     else
-      printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "${data}"
+      printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "$*"
     fi
   fi
+}
+
+function console_results::print_failure_message() {
+  local test_name=$1
+  local failure_message=$2
+
+  printf "\
+${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+    ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${test_name}" "${failure_message}"
 }
 
 function console_results::print_failed_test() {
@@ -136,12 +143,20 @@ function console_results::print_failed_test() {
   local expected=$2
   local failure_condition_message=$3
   local actual=$4
+  local extra_key=$5
+  local extra_value=$6
 
   printf "\
 ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+
+  if [ -n "$extra_key" ]; then
+    printf "\
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+    "${extra_key}" "${extra_value}"
+  fi
 }
 
 function console_results::print_failed_snapshot_test() {

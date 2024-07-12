@@ -33,17 +33,26 @@ Arguments:
   If you use wildcards, bashunit will run any tests it finds.
 
 Options:
-  -f|--filer <filter>
+  -a|--assert <function ...args>
+    Run a core assert function standalone without a test context.
+
+  -e|--env <file-path>
+    Load a custom env file overriding the .env environment variables.
+
+  -f|--filter <filter>
     Filters the tests to run based on the test name.
+
+  -l|--log-junit <out.xml>
+    Create a report JUnit XML file that contains information about the test results.
+
+  -r|--report-html <out.html>
+    Create a report HTML file that contains information about the test results.
 
   -s|simple || -v|verbose
     Enables simplified or verbose output to the console.
 
   -S|--stop-on-failure
     Force to stop the runner right after encountering one failing test.
-
-  -e|--env <file-path>
-    Load a custom env file overriding the .env environment variables.
 
   --version
     Displays the current version of bashunit.

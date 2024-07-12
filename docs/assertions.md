@@ -153,6 +153,27 @@ function test_failure() {
 ```
 :::
 
+## assert_line_count
+> `assert_line_count "count" "haystack"`
+
+Reports an error if `haystack` does not contain `count` lines.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local string="this is line one
+this is line two
+this is line three"
+
+  assert_line_count 3 "$string"
+}
+
+function test_failure() {
+  assert_line_count 2 "foobar"
+}
+```
+:::
+
 ## assert_less_than
 > `assert_less_than "expected" "actual"`
 
@@ -853,6 +874,27 @@ function test_failure() {
   local directory="/tmp"
 
   assert_is_directory_not_writable "$directory"
+}
+```
+:::
+
+## fail
+> `fail "failure message"`
+
+Unambiguously reports an error message. Useful for reporting specific message
+when testing situations not covered by any `assert_*` functions.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  if [ "$(date +%-H)" -gt 25 ]; then
+    fail "Something is very wrong with your clock"
+  fi
+}
+function test_failure() {
+  if [ "$(date +%-H)" -lt 25 ]; then
+    fail "This test will always fail"
+  fi
 }
 ```
 :::

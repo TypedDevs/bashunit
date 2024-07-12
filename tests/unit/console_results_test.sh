@@ -267,11 +267,6 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
 }
 
 function test_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
@@ -283,11 +278,6 @@ function test_render_execution_time() {
 }
 
 function test_not_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
@@ -298,7 +288,7 @@ function test_not_render_execution_time() {
   assert_not_matches "Time taken" "$render_result"
 }
 
-function test_not_render_execution_time_on_osx() {
+function test_render_execution_time_on_osx() {
   local render_result
   render_result=$(
     _OS='OSX'
@@ -306,7 +296,7 @@ function test_not_render_execution_time_on_osx() {
     console_results::render_result
   )
 
-  assert_not_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+ ms" "$render_result"
 }
 
 function test_render_file_with_duplicated_functions_if_found_true() {
@@ -505,19 +495,23 @@ function test_no_tests_found() {
 
 function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
-
+  original_simple_output=$SIMPLE_OUTPUT
+  export SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name")
 
   assert_equals_ignore_colors "✓ Passed: $test_name" "$actual"
+  export SIMPLE_OUTPUT=$original_simple_output
 }
 
 function test_print_successful_test_output_with_args() {
   local test_name="a custom test"
   local data="foo"
-
+  original_simple_output=$SIMPLE_OUTPUT
+  export SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name" "$data")
 
   assert_equals_ignore_colors "✓ Passed: $test_name ($data)" "$actual"
+  export SIMPLE_OUTPUT=$original_simple_output
 }

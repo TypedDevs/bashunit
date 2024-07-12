@@ -2,11 +2,15 @@
 
 mkdir -p bin
 
-cat src/*.sh > bin/temp.sh
+output_file="bin/bashunit"
+
+echo '#!/usr/bin/env bash' > bin/temp.sh
+
+echo "Generating bashunit in the 'bin' folder..."
+cat src/*.sh >> bin/temp.sh
 cat bashunit >> bin/temp.sh
-grep -v '^source' bin/temp.sh > bin/bashunit
+grep -v '^source' bin/temp.sh > "$output_file"
 rm bin/temp.sh
+chmod u+x "$output_file"
 
-chmod u+x bin/bashunit
-
-echo "Build complete. bashunit has been generated in the bin folder."
+echo "⚡️Build completed⚡️"

@@ -25,7 +25,7 @@ function test_upgrade_when_a_new_version_found() {
     ./bin/bashunit
 
   if [[ $_OS == "OSX" ]]; then
-    rm ./bin/bashunit-e
+    rm -f ./bin/bashunit-e
   fi
 
   local output

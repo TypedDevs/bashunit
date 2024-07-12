@@ -2,12 +2,22 @@
 
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
+declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
-declare -r LATEST_BASHUNIT_VERSION="0.10.1"
+function get_latest_tag() {
+  git ls-remote --tags "$BASHUNIT_GIT_REPO" |
+    awk '{print $2}' |
+    sed 's|^refs/tags/||' |
+    sort -Vr |
+    head -n 1
+}
+
+declare -r LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
 
 DIR=${1-lib}
 VERSION=${2-latest}
 TAG="$LATEST_BASHUNIT_VERSION"
+
 
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
@@ -16,8 +26,11 @@ function build_and_install_beta() {
   ./build.sh >/dev/null
   cd ..
 
+  local latest_commit
+  latest_commit=$(git rev-parse --short=8 HEAD);
+
   local beta_version
-  beta_version='(non-stable) beta ['"$(date +'%Y-%m-%d')"']'
+  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍 #'"$latest_commit"
 
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./

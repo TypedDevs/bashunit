@@ -28,6 +28,35 @@ to choose where the tests are located by default.
 ```
 :::
 
+## Assert
+
+> `bashunit -a|--assert function "arg1" "arg2"`
+
+Run a core assert function standalone without a test context. Read more: [Standalone](/standalone)
+
+::: code-group
+```bash [Example]
+./bashunit --assert equals "foo" "bar"
+```
+```[Output]
+✗ Failed: Main::exec assert
+    Expected 'foo'
+    but got 'bar'
+```
+:::
+
+## Environment
+
+> `bashunit -e|--env "file path"`
+
+Load a custom env file overriding the `.env` environment variables.
+
+::: code-group
+```bash [Example]
+./bashunit tests --env .env.production
+```
+:::
+
 ## Filter
 
 > `bashunit -f|--filter "test name"`
@@ -38,6 +67,30 @@ Filters the tests to be run based on the `test name`.
 ```bash [Example]
 # run all test functions including "something" in it's name
 ./bashunit ./tests --filter "something"
+```
+:::
+
+## Logging
+
+> `bashunit -l|--log-junit <out.xml>`
+
+Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --log-junit log-junit.xml
+```
+:::
+
+## Report
+
+> `bashunit -r|--report-html <out.html>`
+
+Create a report HTML file that contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --report-html report.html
 ```
 :::
 
@@ -97,18 +150,6 @@ to make this behavior permanent.
 ```
 :::
 
-## Environment
-
-> `bashunit --env "file path"`
-
-Load a custom env file overriding the `.env` environment variables.
-
-::: code-group
-```bash [Example]
-./bashunit tests --env .env.production
-```
-:::
-
 ## Version
 
 > `bashunit --version`
@@ -143,14 +184,14 @@ Upgrade **bashunit** to latest version.
 Displays a help message with all allowed arguments and options.
 
 ::: code-group
-```-vue [Output]
+```[Output]
 bashunit [arguments] [options]
 
 Arguments:
   Specifies the directory or file containing [...]
 
 Options:
-  -f|--filer
+  -f|--filter
     Filters the tests to run based on the test name.
 
   [...]

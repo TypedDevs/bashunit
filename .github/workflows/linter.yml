@@ -1,21 +1,24 @@
+name: Editorconfig Linter
+
 on:
   pull_request:
   push:
     branches:
       - main
 
-name: Editorconfig Linter
-
 jobs:
-
-  tests:
+  linter:
     name: "Run Lint on ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ 'ubuntu-latest' ]
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: editorconfig-checker/action-editorconfig-checker@main
-      - run: editorconfig-checker
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Editorconfig Linter
+        uses: editorconfig-checker/action-editorconfig-checker@main
+
+      - name: Run Linter
+        run: editorconfig-checker
 

@@ -15,6 +15,20 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
+#### Verify
+
+```bash-vue
+# Verify the sha256sum for latest stable: {{ pkg.version }}
+DIR="lib"; KNOWN_HASH="{{pkg.checksum}}"; FILE="$DIR/bashunit"; [ "$(shasum -a 256 "$FILE" | awk '{ print $1 }')" = "$KNOWN_HASH" ] && echo -e "✓ \033[1mbashunit\033[0m verified." || { echo -e "✗ \033[1mbashunit\033[0m corrupt"; rm "$FILE"; }
+```
+
+:::tip
+You can find the checksum for each version inside [GitHub's releases](https://github.com/TypedDevs/bashunit/releases). E.g.:
+```-vue
+https://github.com/TypedDevs/bashunit/releases/download/{{ pkg.version }}/checksum
+```
+:::
+
 #### Define custom tag and folder
 
 The installation script can receive two optional arguments:
@@ -32,6 +46,37 @@ We try to keep it stable, but there is no promise that we won't change functions
 
 ::: tip
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+:::
+
+## GitHub Actions
+
+```yaml
+# example: .github/workflows/bashunit-tests.yml
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  tests:
+    name: "Run tests"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: "Install bashunit"
+        run: "curl -s https://bashunit.typeddevs.com/install.sh"
+
+      - name: "Test"
+        run: "./bashunit tests/**/*_test.sh"
+```
+
+::: tip
+Get inspiration from the pipelines running on the bashunit-project itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
 
 ## Brew

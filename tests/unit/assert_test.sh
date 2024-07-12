@@ -1,6 +1,16 @@
 #!/bin/bash
 set -euo pipefail
 
+function test_successful_fail() {
+  true || fail "This cannot fail"
+}
+
+function test_unsuccessful_fail() {
+  assert_equals\
+    "$(console_results::print_failure_message "Unsuccessful fail" "Failure message")"\
+    "$(fail "Failure message")"
+}
+
 function test_successful_assert_equals() {
   assert_empty "$(assert_equals "1" "1")"
 }
@@ -323,4 +333,41 @@ function test_unsuccessful_assert_equals_ignore_colors() {
       "but got"\
       "✗ Failed foo")"\
     "$(assert_equals_ignore_colors "$string" "$string")"
+}
+
+function test_successful_assert_line_count_empty_str() {
+  assert_empty "$(assert_line_count 0 "")"
+}
+
+function test_successful_assert_line_count_one_line() {
+  assert_empty "$(assert_line_count 1 "one line")"
+}
+
+function test_successful_assert_count_multiline() {
+  local multiline_string="this is line one
+  this is line two
+  this is line three"
+
+  assert_empty "$(assert_line_count 3 "$multiline_string")"
+}
+
+function test_successful_assert_line_count_multiline_string_in_one_line() {
+  assert_empty "$(assert_line_count 4 "one\ntwo\nthree\nfour")"
+}
+
+function test_successful_assert_line_count_multiline_with_new_lines() {
+  local multiline_str="this \n is \n a multiline \n in one
+  \n
+  this is line 7
+  this is \n line nine
+  "
+
+  assert_empty "$(assert_line_count 10 "$multiline_str")"
+}
+
+function test_unsuccessful_assert_line_count() {
+  assert_equals\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert line count" "one_line_string" "to contain number of lines equal to" "10" "but found" "1")"\
+    "$(assert_line_count 10 "one_line_string")"
 }
