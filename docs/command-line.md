@@ -45,11 +45,23 @@ Run a core assert function standalone without a test context. Read more: [Standa
 ```
 :::
 
+## Debug
+
+> `bashunit --debug`
+
+Enables a shell mode in which all executed commands are printed to the terminal. Printing every command as executed may help you visualize the script's control flow if it is not working as expected.
+
+::: code-group
+```bash [Example]
+./bashunit --debug
+```
+:::
+
 ## Environment
 
 > `bashunit -e|--env "file path"`
 
-Load a custom env file overriding the `.env` environment variables.
+Loads a custom env file overriding the `.env` environment variables.
 
 ::: code-group
 ```bash [Example]
@@ -74,7 +86,7 @@ Filters the tests to be run based on the `test name`.
 
 > `bashunit -l|--log-junit <out.xml>`
 
-Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
+Creates a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
 
 ::: code-group
 ```bash [Example]
@@ -86,7 +98,7 @@ Create a report XML file that follows the JUnit XML format and contains informat
 
 > `bashunit -r|--report-html <out.html>`
 
-Create a report HTML file that contains information about the test results of your bashunit tests.
+Creates a report HTML file that contains information about the test results of your bashunit tests.
 
 ::: code-group
 ```bash [Example]

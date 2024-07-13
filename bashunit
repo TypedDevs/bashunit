@@ -50,6 +50,10 @@ while [[ $# -gt 0 ]]; do
       export SIMPLE_OUTPUT=false
       shift
       ;;
+    --debug)
+      set -x
+      shift
+      ;;
     -S|--stop-on-failure)
       export STOP_ON_FAILURE=true
       shift
