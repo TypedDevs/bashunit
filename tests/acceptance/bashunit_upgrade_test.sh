@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-TMP_DIR="bin"
+TMP_DIR="tmp"
 TMP_BIN="$TMP_DIR/bashunit"
 
 function set_up() {
@@ -11,7 +11,7 @@ function set_up() {
 }
 
 function tear_down() {
-  rm -f "$TMP_BIN"
+  rm -rf "$TMP_DIR"
 }
 
 function test_do_not_upgrade_when_latest() {
