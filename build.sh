@@ -25,7 +25,7 @@ function verify_build() {
   pid=$!
 
   function cleanup() {
-    kill $pid 2>/dev/null
+    kill "$pid" 2>/dev/null
     tput cnorm # Show the cursor
     exit 1
   }
@@ -77,11 +77,10 @@ function generate_checksum() {
 function spinner() {
     local pid=$1
     local delay=0.1
-    local spinstr='|/-\'
+    local spinstr="|/-\\"
     tput civis  # Hide the cursor
     printf "\r[%c] " " "
-    # shellcheck disable=SC2143
-    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+    while kill -0 "$pid" 2>/dev/null; do
         local temp=${spinstr#?}
         printf "\r [%c]  " "$spinstr"
         local spinstr=$temp${spinstr%"$temp"}
