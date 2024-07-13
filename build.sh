@@ -18,8 +18,8 @@ function verify_build() {
 
   "$out" tests \
     --simple \
-    --log-junit="build.xml" \
-    --export-html=build.html \
+    --log-junit "bin/log-junit.xml" \
+    --report-html "bin/report.html" \
     --stop-on-failure &
 
   pid=$!
@@ -33,7 +33,7 @@ function verify_build() {
   trap cleanup SIGINT
   spinner $pid
   wait $pid
-  echo "✅ Build verified ✅"
+  echo "✅ Build verified ✅ "
 }
 
 function generate_bin() {
