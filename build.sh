@@ -4,10 +4,17 @@ source src/check_os.sh
 
 function generate_bin() {
   local output_file=$1
-  echo '#!/usr/bin/env bash' > bin/temp.sh
+  echo '#!/bin/bash' > bin/temp.sh
 
   echo "Generating bashunit in the 'bin' folder..."
-  cat src/*.sh >> bin/temp.sh
+  for file in src/*.sh; do
+    {
+      echo "# $file"
+      tail -n +2 "$file" >> bin/temp.sh
+      echo ""
+    } >> bin/temp.sh
+  done
+
   cat bashunit >> bin/temp.sh
   grep -v '^source' bin/temp.sh > "$output_file"
   rm bin/temp.sh
