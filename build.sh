@@ -4,20 +4,21 @@ source src/check_os.sh
 
 function generate_bin() {
   local output_file=$1
-  echo '#!/bin/bash' > bin/temp.sh
+  local temp=bin/temp.sh
+  echo '#!/bin/bash' > "$temp"
 
-  echo "Generating bashunit in the 'bin' folder..."
+  echo "Generating bashunit in the '$(dirname "$output_file")' folder..."
   for file in src/*.sh; do
     {
       echo "# $file"
-      tail -n +2 "$file" >> bin/temp.sh
+      tail -n +2 "$file" >> "$temp"
       echo ""
-    } >> bin/temp.sh
+    } >> "$temp"
   done
 
-  cat bashunit >> bin/temp.sh
-  grep -v '^source' bin/temp.sh > "$output_file"
-  rm bin/temp.sh
+  cat bashunit >> "$temp"
+  grep -v '^source' "$temp" > "$output_file"
+  rm "$temp"
   chmod u+x "$output_file"
 }
 
@@ -37,14 +38,18 @@ function generate_checksum() {
   echo "$checksum"
 }
 
+function build() {
+  generate_bin "$1"
+  generate_checksum "$1"
+  echo "⚡️Build completed⚡️"
+}
+
 ########################
 ######### MAIN #########
 ########################
 
-mkdir -p bin
-output_file="bin/bashunit"
+DIR=${1:-bin}
+mkdir -p "$DIR"
+output_file="$DIR/bashunit"
 
-generate_bin "$output_file"
-generate_checksum "$output_file"
-
-echo "⚡️Build completed⚡️"
+build "$output_file"
