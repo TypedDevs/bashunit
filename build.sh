@@ -2,42 +2,117 @@
 
 source src/check_os.sh
 
-function generate_bin() {
-  local output_file=$1
-  echo '#!/usr/bin/env bash' > bin/temp.sh
+function build() {
+  local out=$1
 
-  echo "Generating bashunit in the 'bin' folder..."
-  cat src/*.sh >> bin/temp.sh
-  cat bashunit >> bin/temp.sh
-  grep -v '^source' bin/temp.sh > "$output_file"
-  rm bin/temp.sh
-  chmod u+x "$output_file"
+  generate_bin "$out"
+  generate_checksum "$out"
+
+  echo "⚡️Build completed⚡️"
+}
+
+function verify_build() {
+  local out=$1
+
+  echo "Verifying build ⏱️"
+
+  "$out" tests \
+    --simple \
+    --log-junit "bin/log-junit.xml" \
+    --report-html "bin/report.html" \
+    --stop-on-failure &
+
+  pid=$!
+
+  function cleanup() {
+    kill "$pid" 2>/dev/null
+    tput cnorm # Show the cursor
+    exit 1
+  }
+
+  trap cleanup SIGINT
+  spinner $pid
+  wait $pid
+  echo "✅ Build verified ✅ "
+}
+
+function generate_bin() {
+  local out=$1
+  local temp
+  temp="$(dirname "$out")/temp.sh"
+
+  echo '#!/bin/bash' > "$temp"
+  echo "Generating bashunit in the '$(dirname "$out")' folder..."
+  for file in src/*.sh; do
+    {
+      echo "# $file"
+      tail -n +2 "$file" >> "$temp"
+      echo ""
+    } >> "$temp"
+  done
+
+  cat bashunit >> "$temp"
+  grep -v '^source' "$temp" > "$out"
+  rm "$temp"
+  chmod u+x "$out"
 }
 
 function generate_checksum() {
+  local out=$1
+
   if [[ "$_OS" == "Windows" ]]; then
     return
   fi
 
-  local file=$1
   if [[ "$_OS" == "OSX" ]]; then
-    checksum=$(shasum -a 256 "$file")
+    checksum=$(shasum -a 256 "$out")
   elif [[ "$_OS" == "Linux" ]]; then
-    checksum=$(sha256sum "$file")
+    checksum=$(sha256sum "$out")
   fi
 
-  echo "$checksum" > bin/checksum
+  echo "$checksum" > "$(dirname "$out")/checksum"
   echo "$checksum"
+}
+
+function spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr="|/-\\"
+    tput civis  # Hide the cursor
+    printf "\r[%c] " " "
+    while kill -0 "$pid" 2>/dev/null; do
+        local temp=${spinstr#?}
+        printf "\r [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+    done
+    printf "\r    \r"  # Clear spinner
+    tput cnorm  # Show the cursor
 }
 
 ########################
 ######### MAIN #########
 ########################
 
-mkdir -p bin
-output_file="bin/bashunit"
+DIR="bin"
+SHOULD_VERIFY_BUILD=true
 
-generate_bin "$output_file"
-generate_checksum "$output_file"
+for arg in "$@"; do
+  case $arg in
+    --ignore-verify)
+      SHOULD_VERIFY_BUILD=false
+      ;;
+    *)
+      DIR=$arg
+      ;;
+  esac
+done
 
-echo "⚡️Build completed⚡️"
+mkdir -p "$DIR"
+OUT="$DIR/bashunit"
+
+build "$OUT"
+
+if [[ $SHOULD_VERIFY_BUILD == true ]]; then
+  verify_build "$OUT"
+fi
