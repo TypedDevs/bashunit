@@ -40,21 +40,20 @@ function test_upgrade_when_a_new_version_found() {
 }
 
 function test_do_not_update_on_consecutive_calls() {
-  todo "enable this test when --upgrade is released"
-#  sed -i -e \
-#    's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
-#    $TMP_BIN
-#
-#  if [[ $_OS == "OSX" ]]; then
-#    rm $TMP_BIN-e
-#  fi
-#
-#  $TMP_BIN --upgrade
-#  $TMP_BIN --version
-#
-#  local output
-#  output="$($TMP_BIN --upgrade)"
-#
-#  assert_equals "> You are already on latest version" "$output"
-#  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
+  sed -i -e \
+    's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
+    $TMP_BIN
+
+  if [[ $_OS == "OSX" ]]; then
+    rm $TMP_BIN-e
+  fi
+
+  $TMP_BIN --upgrade
+  $TMP_BIN --version
+
+  local output
+  output="$($TMP_BIN --upgrade)"
+
+  assert_equals "> You are already on latest version" "$output"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
 }
