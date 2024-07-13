@@ -36,6 +36,9 @@ Options:
   -a|--assert <function ...args>
     Run a core assert function standalone without a test context.
 
+  --debug
+    Print all executed shell commands to the terminal.
+
   -e|--env <file-path>
     Load a custom env file overriding the .env environment variables.
 

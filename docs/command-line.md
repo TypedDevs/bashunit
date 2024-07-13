@@ -45,6 +45,18 @@ Run a core assert function standalone without a test context. Read more: [Standa
 ```
 :::
 
+## Debug
+
+> `bashunit --debug`
+
+Print all executed shell commands to the terminal.
+
+::: code-group
+```bash [Example]
+./bashunit --debug
+```
+:::
+
 ## Environment
 
 > `bashunit -e|--env "file path"`

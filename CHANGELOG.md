@@ -8,10 +8,11 @@
 - Generate checksum on build
 - Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
 - Support for displaying the clock without `perl` (for non-macOS)
+- Enable strictmode
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
-- Enable strictmode
-- Added dump/dd functions for local debugging
+- Add `--debug` option
+- Add `dump` and `dd` functions for local debugging
 
 ## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
 
