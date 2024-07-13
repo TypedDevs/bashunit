@@ -5,7 +5,7 @@ TMP_DIR="tmp"
 TMP_BIN="$TMP_DIR/bashunit"
 
 function set_up() {
-  ./build.sh "$TMP_DIR" --ignore-verify >/dev/null
+  ./build.sh "$TMP_DIR" >/dev/null
   LATEST_VERSION="$(helpers::get_latest_tag)"
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }

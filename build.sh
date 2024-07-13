@@ -95,12 +95,12 @@ function spinner() {
 ########################
 
 DIR="bin"
-SHOULD_VERIFY_BUILD=true
+SHOULD_VERIFY_BUILD=false
 
 for arg in "$@"; do
   case $arg in
-    --ignore-verify)
-      SHOULD_VERIFY_BUILD=false
+    -v|--verify)
+      SHOULD_VERIFY_BUILD=true
       ;;
     *)
       DIR=$arg
