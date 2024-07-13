@@ -16,11 +16,23 @@ function verify_build() {
 
   echo "Verifying build ⏱️"
 
-  "$out" tests --simple \
+  "$out" tests \
+    --simple \
     --log-junit="build.xml" \
     --export-html=build.html \
-    --stop-on-failure
+    --stop-on-failure &
 
+  pid=$!
+
+  function cleanup() {
+    kill $pid 2>/dev/null
+    tput cnorm # Show the cursor
+    exit 1
+  }
+
+  trap cleanup SIGINT
+  spinner $pid
+  wait $pid
   echo "✅ Build verified ✅"
 }
 
@@ -62,6 +74,22 @@ function generate_checksum() {
   echo "$checksum"
 }
 
+function spinner() {
+    local pid=$1
+    local delay=0.1
+    local spinstr='|/-\'
+    tput civis  # Hide the cursor
+    printf "\r[%c] " " "
+    # shellcheck disable=SC2143
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r [%c]  " "$spinstr"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+    done
+    printf "\r    \r"  # Clear spinner
+    tput cnorm  # Show the cursor
+}
 
 ########################
 ######### MAIN #########
