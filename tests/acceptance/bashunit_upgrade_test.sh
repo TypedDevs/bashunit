@@ -1,57 +1,60 @@
 #!/bin/bash
 set -euo pipefail
 
+TMP_DIR="bin"
+TMP_BIN="$TMP_DIR/bashunit"
+
 function set_up() {
-  ./build.sh >/dev/null
+  ./build.sh "$TMP_DIR" --ignore-verify >/dev/null
   LATEST_VERSION="$(helpers::get_latest_tag)"
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
 function tear_down() {
-  rm -f ./bin/bashunit
+  rm -f "$TMP_BIN"
 }
 
 function test_do_not_upgrade_when_latest() {
   local output
-  output="$(./bin/bashunit --upgrade)"
+  output="$($TMP_BIN --upgrade)"
 
   assert_equals "> You are already on latest version" "$output"
-  assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
 }
 
 function test_upgrade_when_a_new_version_found() {
   sed -i -e \
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
-    ./bin/bashunit
+    "$TMP_BIN"
 
   if [[ $_OS == "OSX" ]]; then
-    rm -f ./bin/bashunit-e
+    rm -f "${TMP_BIN}-e"
   fi
 
   local output
-  output="$(./bin/bashunit --upgrade)"
+  output="$($TMP_BIN --upgrade)"
 
   assert_contains "> Upgrading bashunit to latest version" "$output"
   assert_contains "> bashunit upgraded successfully to latest version $LATEST_VERSION" "$output"
-  assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
 }
 
 function test_do_not_update_on_consecutive_calls() {
   todo "enable this test when --upgrade is released"
 #  sed -i -e \
 #    's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
-#    ./bin/bashunit
+#    $TMP_BIN
 #
 #  if [[ $_OS == "OSX" ]]; then
-#    rm ./bin/bashunit-e
+#    rm $TMP_BIN-e
 #  fi
 #
-#  ./bin/bashunit --upgrade
-#  ./bin/bashunit --version
+#  $TMP_BIN --upgrade
+#  $TMP_BIN --version
 #
 #  local output
-#  output="$(./bin/bashunit --upgrade)"
+#  output="$($TMP_BIN --upgrade)"
 #
 #  assert_equals "> You are already on latest version" "$output"
-#  assert_string_ends_with "$LATEST_VERSION" "$(./bin/bashunit --version --env "$TEST_ENV_FILE")"
+#  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
 }
