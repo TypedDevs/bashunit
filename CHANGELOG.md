@@ -1,6 +1,10 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.13.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.14.0...main)
+
+- Nothing yet...
+
+## [0.14.0](https://github.com/TypedDevs/bashunit/compare/0.13.0...0.14.0) - 2024-07-14
 
 - Fix echo does not break test execution results
 - Add bashunit facade to enable custom assertions
@@ -8,7 +12,7 @@
 - Generate checksum on build
 - Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
 - Support for displaying the clock without `perl` (for non-macOS)
-- Enable strictmode
+- Enable strict mode
 - Add `-l|--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 - Add `--debug` option
