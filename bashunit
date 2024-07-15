@@ -35,43 +35,34 @@ while [[ $# -gt 0 ]]; do
     -a|--assert)
       _ASSERT_FN="$2"
       shift
-      shift
       ;;
     -f|--filter)
       _FILTER="$2"
       shift
-      shift
       ;;
     -s|--simple)
       export SIMPLE_OUTPUT=true
-      shift
       ;;
     -v|--verbose)
       export SIMPLE_OUTPUT=false
-      shift
       ;;
     --debug)
       set -x
-      shift
       ;;
     -S|--stop-on-failure)
       export STOP_ON_FAILURE=true
-      shift
       ;;
     -e|--env)
       # shellcheck disable=SC1090
       source "$2"
       shift
-      shift
       ;;
     -l|--log-junit)
       export LOG_JUNIT="$2";
       shift
-      shift
       ;;
     -r|--report-html)
       export REPORT_HTML="$2";
-      shift
       shift
       ;;
     --version)
@@ -90,9 +81,9 @@ while [[ $# -gt 0 ]]; do
       while IFS='' read -r line; do
         _ARGS+=("$line");
       done < <(helper::find_files_recursive "$argument")
-      shift
       ;;
   esac
+  shift
 done
 
 set +eu
