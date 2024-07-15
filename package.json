@@ -14,7 +14,9 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
-    "vanilla-tilt": "^1.8.1"
+    "@types/node": "^20.14.10",
+    "vanilla-tilt": "^1.8.1",
+    "vitepress-versioning-plugin": "^1.1.0"
   },
   "devDependencies": {
     "vitepress": "^1.0.0-rc.44",
