@@ -1,14 +1,26 @@
-import { defineConfig } from 'vitepress'
+import { DefaultTheme } from "vitepress";
+import defineVersionedConfig from 'vitepress-versioning-plugin';
 import pkg from '../../package.json'
 
 // https://vitepress.dev/reference/site-config
-export default defineConfig({
+export default defineVersionedConfig({
   title: 'bashunit - A simple testing library for bash scripts',
   titleTemplate: 'bashunit',
   description: 'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.',
   lang: 'en-US',
   cleanUrls: true,
   lastUpdated: true,
+
+  versioning: {
+    latestVersion: '0.14.0',
+    sidebars: {
+      sidebarContentProcessor(sidebar: DefaultTheme.SidebarMulti) {
+        console.log(sidebar);
+        return sidebar
+      },
+    },
+  },
+
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
@@ -30,6 +42,12 @@ export default defineConfig({
   },
 
   themeConfig: {
+
+    versionSwitcher: {
+      // text: pkg.version + ' (latest)',
+      // includeLatestVersion: false,
+    },
+
     // https://vitepress.dev/reference/default-theme-config
     externalLinkIcon: true,
     siteTitle: false,
@@ -44,52 +62,52 @@ export default defineConfig({
       alt: 'bashunit'
     },
 
-    sidebar: {
-      '/': [{
-        text: 'Quickstart',
-        link: '/quickstart',
-      }, {
-        text: 'Installation',
-        link: '/installation',
-      }, {
-        text: 'Command line',
-        link: '/command-line'
-      }, {
-        text: 'Configuration',
-        link: '/configuration'
-      }, {
-        text: 'Test files',
-        link: '/test-files',
-      }, {
-        text: 'Parameterized tests',
-        link: '/parameterized-tests',
-      }, {
-        text: 'Test doubles',
-        link: '/test-doubles'
-      }, {
-        text: 'Assertions',
-        link: '/assertions'
-      }, {
-        text: 'Snapshots',
-        link: '/snapshots'
-      }, {
-        text: 'Skipping/incomplete',
-        link: '/skipping-incomplete'
-      }, {
-        text: 'Standalone',
-        link: '/standalone'
-      }, {
-        text: 'Custom asserts',
-        link: '/custom-asserts'
-      }, {
-        text: 'Examples',
-        link: '/examples'
-      }, {
-        text: 'Support',
-        link: '/support',
-      }],
-      '/blog/': []
-    },
+    // sidebar: {
+    //   '/': [{
+    //     text: 'Quickstart',
+    //     link: '/quickstart',
+    //   }, {
+    //     text: 'Installation',
+    //     link: '/installation',
+    //   }, {
+    //     text: 'Command line',
+    //     link: '/command-line'
+    //   }, {
+    //     text: 'Configuration',
+    //     link: '/configuration'
+    //   }, {
+    //     text: 'Test files',
+    //     link: '/test-files',
+    //   }, {
+    //     text: 'Parameterized tests',
+    //     link: '/parameterized-tests',
+    //   }, {
+    //     text: 'Test doubles',
+    //     link: '/test-doubles'
+    //   }, {
+    //     text: 'Assertions',
+    //     link: '/assertions'
+    //   }, {
+    //     text: 'Snapshots',
+    //     link: '/snapshots'
+    //   }, {
+    //     text: 'Skipping/incomplete',
+    //     link: '/skipping-incomplete'
+    //   }, {
+    //     text: 'Standalone',
+    //     link: '/standalone'
+    //   }, {
+    //     text: 'Custom asserts',
+    //     link: '/custom-asserts'
+    //   }, {
+    //     text: 'Examples',
+    //     link: '/examples'
+    //   }, {
+    //     text: 'Support',
+    //     link: '/support',
+    //   }],
+    //   '/blog/': []
+    // },
 
     socialLinks: [
       { icon: 'x', link: 'https://x.com/bashunit' },
@@ -137,4 +155,4 @@ export default defineConfig({
   srcExclude: [
     'blog/0000-00-00-template.md'
   ]
-})
+}, __dirname)
