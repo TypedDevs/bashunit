@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_SUCCESSFUL_TEST_COUNT=0
+_TOTAL_TEST_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -47,7 +47,7 @@ function console_results::render_result() {
 
   printf "%sAssertions:%s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
   if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
-      printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_assertions_passed)" "$_COLOR_DEFAULT"
+    printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_assertions_passed)" "$_COLOR_DEFAULT"
   fi
   if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
     printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_assertions_skipped)" "$_COLOR_DEFAULT"
@@ -108,13 +108,13 @@ function console_results::print_execution_time() {
 }
 
 function console_results::print_successful_test() {
-  ((_SUCCESSFUL_TEST_COUNT++)) || true
+  ((_TOTAL_TEST_COUNT++)) || true
 
   if [[ "$SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
-      printf "."
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%s.%s" "$_COLOR_PASSED" "${_COLOR_DEFAULT}"
     else
-      echo "."
+      printf "%s.%s\n" "$_COLOR_PASSED" "${_COLOR_DEFAULT}"
     fi
   else
     local test_name=$1
@@ -129,87 +129,157 @@ function console_results::print_successful_test() {
 }
 
 function console_results::print_failure_message() {
-  local test_name=$1
-  local failure_message=$2
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "\
-${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-    "${test_name}" "${failure_message}"
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sF%s" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    else
+      printf "%sF%s\n" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name=$1
+    local failure_message=$2
+
+    printf "\
+  ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+      ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
+      "${test_name}" "${failure_message}"
+  fi
 }
 
 function console_results::print_failed_test() {
-  local test_name=$1
-  local expected=$2
-  local failure_condition_message=$3
-  local actual=$4
-  local extra_key=${5-}
-  local extra_value=${6-}
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "\
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sF%s" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    else
+      printf "%sF%s\n" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name=$1
+    local expected=$2
+    local failure_condition_message=$3
+    local actual=$4
+    local extra_key=${5-}
+    local extra_value=${6-}
+
+    printf "\
 ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
+      "${test_name}" "${expected}" "${failure_condition_message}" "${actual}"
 
-  if [ -n "$extra_key" ]; then
-    printf "\
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
-    "${extra_key}" "${extra_value}"
+    if [ -n "$extra_key" ]; then
+      printf "\
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
+        "${extra_key}" "${extra_value}"
+    fi
   fi
 }
 
 function console_results::print_failed_snapshot_test() {
-  local test_name=$1
-  local snapshot_file=$2
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sF%s" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    else
+      printf "%sF%s\n" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name=$1
+    local snapshot_file=$2
+
+    printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$test_name"
 
-  if command -v git > /dev//null; then
-    local actual_file
-    actual_file="${snapshot_file}.tmp"
-    echo "$actual" > "$actual_file"
-    git diff --no-index --word-diff --color=always "$snapshot_file" "$actual_file" 2>/dev/null\
-      | tail -n +6 | sed "s/^/    /"
-    rm "$actual_file"
+    if command -v git > /dev//null; then
+      local actual_file
+      actual_file="${snapshot_file}.tmp"
+      echo "$actual" >"$actual_file"
+      git diff --no-index --word-diff --color=always "$snapshot_file" "$actual_file" 2>/dev/null\
+       | tail -n +6 | sed "s/^/    /"
+      rm "$actual_file"
+    fi
   fi
 }
 
 function console_results::print_skipped_test() {
-  local test_name=$1
-  local reason=${2-}
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${test_name}"
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sS%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+    else
+      printf "%sS%s\n" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name=$1
+    local reason=${2-}
 
-  if [[ -n "$reason" ]]; then
-    printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}"
+    printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${test_name}"
+
+    if [[ -n "$reason" ]]; then
+      printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}"
+    fi
   fi
 }
 
 function console_results::print_incomplete_test() {
-  local test_name=$1
-  local pending=${2-}
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${test_name}"
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sI%s" "$_COLOR_INCOMPLETE" "$_COLOR_DEFAULT"
+    else
+      printf "%sI%s\n" "$_COLOR_INCOMPLETE" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name=$1
+    local pending=${2-}
 
-  if [[ -n "$pending" ]]; then
-    printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}"
+    printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${test_name}"
+
+    if [[ -n "$pending" ]]; then
+      printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}"
+    fi
   fi
 }
 
 function console_results::print_snapshot_test() {
-  local test_name
-  test_name=$(helper::normalize_test_function_name "$1")
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}"
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if ((_TOTAL_TEST_COUNT % 50 != 0)); then
+      printf "%sS%s" "$_COLOR_SNAPSHOT" "$_COLOR_DEFAULT"
+    else
+      printf "%sS%s\n" "$_COLOR_SNAPSHOT" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name
+    test_name=$(helper::normalize_test_function_name "$1")
+
+    printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}"
+  fi
 }
 
 function console_results::print_error_test() {
-  local test_name
-  test_name=$(helper::normalize_test_function_name "$1")
-  local error="$2"
+  ((_TOTAL_TEST_COUNT++)) || true
 
-  printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+    if (( _TOTAL_TEST_COUNT % 50 != 0 )); then
+      printf "%sF%s" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    else
+      printf "%sF%s\n" "$_COLOR_FAILED" "$_COLOR_DEFAULT"
+    fi
+  else
+    local test_name
+    test_name=$(helper::normalize_test_function_name "$1")
+    local error="$2"
+
+    printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}"
+  fi
 }
