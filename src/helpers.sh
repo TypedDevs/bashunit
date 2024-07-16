@@ -86,7 +86,8 @@ function helper::unset_if_exists() {
 }
 
 function helper::find_files_recursive() {
-  local path="$1"
+  ## Remove trailing slash using parameter expansion
+  local path="${1%%/}"
 
   if [[ "$path" == *"*"* ]]; then
     eval find "$path" -type f -name '*[tT]est.sh' | sort | uniq
