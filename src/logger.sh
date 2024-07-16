@@ -39,7 +39,7 @@ function logger::log() {
   TEST_FILES+=("$file")
   TEST_NAMES+=("$test_name")
   TEST_STATUSES+=("$status")
-  TEST_ASSERTIONS+=("assertions")
+  TEST_ASSERTIONS+=("$assertions")
   TEST_DURATIONS+=("$duration")
 }
 

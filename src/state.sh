@@ -141,3 +141,16 @@ function state::export_assertions_count() {
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##"
 }
+
+function state::calculate_total_assertions() {
+  local input="$1"
+  local total=0
+
+  numbers=$(echo "$input" | grep -oE '[^=]+=([0-9]+)' | awk -F= '{print $2}')
+
+  for number in $numbers; do
+    total=$((total + number))
+  done
+
+  echo $total
+}
