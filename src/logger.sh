@@ -4,6 +4,7 @@ TEST_FILES=()
 TEST_NAMES=()
 TEST_STATUSES=()
 TEST_DURATIONS=()
+TEST_ASSERTIONS=()
 
 function logger::test_snapshot() {
   logger::log "$1" "$2" "$3" "$4" "snapshot"
