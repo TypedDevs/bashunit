@@ -2,7 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.14.0...main)
 
-- Nothing yet...
+- Add assertions to log file
 
 ## [0.14.0](https://github.com/TypedDevs/bashunit/compare/0.13.0...0.14.0) - 2024-07-14
 
