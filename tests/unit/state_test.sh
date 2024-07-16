@@ -276,3 +276,13 @@ ASSERTIONS_INCOMPLETE=12##\
 ASSERTIONS_SNAPSHOT=33##"\
     "$export_assertions_count"
 }
+
+function test_calculate_total_assertions() {
+  local input="##ASSERTIONS_FAILED=1\
+  ##ASSERTIONS_PASSED=2\
+  ##ASSERTIONS_SKIPPED=3\
+  ##ASSERTIONS_INCOMPLETE=4\
+  ##ASSERTIONS_SNAPSHOT=5##"
+
+  assert_equals 15 "$(state::calculate_total_assertions "$input")"
+}

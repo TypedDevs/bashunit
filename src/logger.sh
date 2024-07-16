@@ -1,34 +1,37 @@
 #!/bin/bash
 
+TEST_FILES=()
 TEST_NAMES=()
 TEST_STATUSES=()
 TEST_DURATIONS=()
+TEST_ASSERTIONS=()
 
 function logger::test_snapshot() {
-  logger::log "$1" "$2" "$3" "snapshot"
+  logger::log "$1" "$2" "$3" "$4" "snapshot"
 }
 
 function logger::test_incomplete() {
-  logger::log "$1" "$2" "$3" "incomplete"
+  logger::log "$1" "$2" "$3" "$4" "incomplete"
 }
 
 function logger::test_skipped() {
-  logger::log "$1" "$2" "$3" "skipped"
+  logger::log "$1" "$2" "$3" "$4" "skipped"
 }
 
 function logger::test_passed() {
-  logger::log "$1" "$2" "$3" "passed"
+  logger::log "$1" "$2" "$3" "$4" "passed"
 }
 
 function logger::test_failed() {
-  logger::log "$1" "$2" "$3" "failed"
+  logger::log "$1" "$2" "$3" "$4" "failed"
 }
 
 function logger::log() {
   local file="$1"
   local test_name="$2"
   local start_time="$3"
-  local status="$4"
+  local assertions="$4"
+  local status="$5"
 
   local end_time
   end_time=$(clock::now)
@@ -37,6 +40,7 @@ function logger::log() {
   TEST_FILES+=("$file")
   TEST_NAMES+=("$test_name")
   TEST_STATUSES+=("$status")
+  TEST_ASSERTIONS+=("$assertions")
   TEST_DURATIONS+=("$duration")
 }
 
@@ -66,12 +70,14 @@ function logger::generate_junit_xml() {
     for i in "${!TEST_NAMES[@]}"; do
       local file="${TEST_FILES[$i]}"
       local name="${TEST_NAMES[$i]}"
+      local assertions="${TEST_ASSERTIONS[$i]}"
       local status="${TEST_STATUSES[$i]}"
       local test_time="${TEST_DURATIONS[$i]}"
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
       echo "        status=\"$status\""
+      echo "        assertions=\"$assertions\""
       echo "        time=\"$test_time\">"
       echo "    </testcase>"
     done
