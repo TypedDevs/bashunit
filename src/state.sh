@@ -146,10 +146,11 @@ function state::calculate_total_assertions() {
   local input="$1"
   local total=0
 
-  numbers=$(echo "$input" | grep -oE '[^=]+=([0-9]+)' | awk -F= '{print $2}')
+  local numbers
+  numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
 
   for number in $numbers; do
-    total=$((total + number))
+    ((total += number))
   done
 
   echo $total
