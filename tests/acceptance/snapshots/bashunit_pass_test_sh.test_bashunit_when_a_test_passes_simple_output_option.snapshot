@@ -1,5 +1,5 @@
 ....
-[2mTests:     [0m [32m4 passed[0m, 4 total
-[2mAssertions:[0m [32m6 passed[0m, 6 total
+Tests:      4 passed, 4 total
+Assertions: 6 passed, 6 total
 
-[42m[30m[1m All tests passed [0m
+All tests passed

@@ -1,10 +1,10 @@
 Running ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
-[32m✓ Passed[0m: Success
-[31m✗ Failed[0m: Failure
-    [2mExpected[0m [1m'2'[0m
-    [2mbut got[0m [1m'3'[0m
+✓ Passed: Success
+✗ Failed: Failure
+    Expected '2'
+    but got '3'
 
-[2mTests:     [0m [32m1 passed[0m, [31m1 failed[0m, 2 total
-[2mAssertions:[0m [32m1 passed[0m, [31m1 failed[0m, 2 total
+Tests:      1 passed, 1 failed, 2 total
+Assertions: 1 passed, 1 failed, 2 total
 
-[41m[30m[1m Some tests failed [0m
+Some tests failed

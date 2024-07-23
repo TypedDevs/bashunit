@@ -1,8 +1,8 @@
 Running ./tests/acceptance/fixtures/tests_path/a_test.sh
-[32m✓ Passed[0m: Assert greater and less than
-[32m✓ Passed[0m: Assert empty
+✓ Passed: Assert greater and less than
+✓ Passed: Assert empty
 
-[2mTests:     [0m [32m2 passed[0m, 2 total
-[2mAssertions:[0m [32m3 passed[0m, 3 total
+Tests:      2 passed, 2 total
+Assertions: 3 passed, 3 total
 
-[42m[30m[1m All tests passed [0m
+All tests passed

@@ -2,11 +2,20 @@
 set -euo pipefail
 
 function set_up_before_script() {
+  ORIGINAL_TERM=$TERM
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_MULTILINE_STR="first line
   \n
 four line
 find me with \n a regular expression"
+}
+
+function set_up() {
+  TERM=dumb
+}
+
+function tear_down() {
+  TERM=$ORIGINAL_TERM
 }
 
 function test_bashunit_direct_fn_call_passes() {

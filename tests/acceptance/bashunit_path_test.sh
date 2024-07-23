@@ -2,8 +2,17 @@
 set -euo pipefail
 
 function set_up_before_script() {
+  ORIGINAL_TERM=$TERM
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_ENV_FILE_WITH_PATH="tests/acceptance/fixtures/.env.with_path"
+}
+
+function set_up() {
+  TERM=dumb
+}
+
+function tear_down() {
+  TERM=$ORIGINAL_TERM
 }
 
 function test_bashunit_without_path_env_nor_argument() {

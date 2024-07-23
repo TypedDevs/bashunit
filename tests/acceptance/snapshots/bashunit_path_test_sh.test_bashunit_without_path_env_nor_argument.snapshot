@@ -1,4 +1,4 @@
-[31mError: At least one file path is required.[0m
+Error: At least one file path is required.
 bashunit [arguments] [options]
 
 Arguments:

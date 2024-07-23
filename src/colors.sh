@@ -6,15 +6,22 @@
 #   https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # Credit:
 #   https://superuser.com/a/1119396
-sgr() {
-  local codes=${1:-0}
+function sgr() {
+  local codes return
+  codes=${1:-0}
   shift
 
   for c in "$@"; do
     codes="$codes;$c"
   done
 
-  echo $'\e'"[${codes}m"
+  return=$'\e'"[${codes}m"
+
+  if [[ $TERM == 'dumb' ]]; then
+    return=""
+  fi
+
+  echo "$return"
 }
 
 _COLOR_BOLD="$(sgr 1)"
