@@ -7,4 +7,4 @@ Running ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
 Tests:      1 passed, 1 failed, 2 total
 Assertions: 1 passed, 1 failed, 2 total
 
- Some tests failed 
+Some tests failed

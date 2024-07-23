@@ -5,4 +5,4 @@ Running ./tests/acceptance/fixtures/tests_path/a_test.sh
 Tests:      2 passed, 2 total
 Assertions: 3 passed, 3 total
 
- All tests passed 
+All tests passed

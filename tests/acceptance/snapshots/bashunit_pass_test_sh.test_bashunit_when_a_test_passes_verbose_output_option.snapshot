@@ -7,4 +7,4 @@ Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 Tests:      4 passed, 4 total
 Assertions: 6 passed, 6 total
 
- All tests passed 
+All tests passed
