@@ -1,8 +1,57 @@
 #!/bin/bash
 
+# function _find_total_tests() {
+#    local dir=$1
+#    grep -r -E '^\s*function\s+test' "$dir" --include=\*test.sh 2>/dev/null \
+#      | wc -l \
+#      | xargs
+#  }
+
+#function helpers::find_total_tests() {
+#  function _find_total_tests() {
+#    local dir=$1
+#    grep -r -E '^\s*function\s+test' "$dir" --include=\*test.sh 2>/dev/null
+#  }
+#
+#  local files=("${@}")
+#  local total_tests=0
+#
+#  if [ ${#files[@]} -eq 0 ]; then
+#      total_tests=$(_find_total_tests "tests")
+#  else
+#    for file in "${files[@]}"; do
+#      total_tests=$((total_tests + $(_find_total_tests "$file")))
+#    done
+#  fi
+#
+#  echo "$total_tests"
+#}
+
 function main::exec_tests() {
   local filter=$1
   local files=("${@:2}")
+
+#  total_tests=$(helpers::find_total_tests "${files[@]}")
+#  dd helpers::find_total_tests "${files[@]}"
+  function _find_total_tests() {
+    local dir=$1
+    grep -r -E '^\s*function\s+test' "$dir" --include=\*test.sh 2>/dev/null \
+      | wc -l \
+      | xargs
+  }
+
+  local total_tests=0
+
+  if [ ${#files[@]} -eq 0 ]; then
+      total_tests=$(_find_total_tests "tests")
+  else
+    for file in "${files[@]}"; do
+      total_tests=$((total_tests + $(_find_total_tests "$file")))
+    done
+  fi
+
+#  echo "$total_tests"
+dd "$total_tests"
 
   console_header::print_version_with_env
   runner::load_test_files "$filter" "${files[@]}"

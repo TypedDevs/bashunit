@@ -25,6 +25,14 @@ source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
+
+function helpers::find_total_tests() {
+    local dir=${1:-"tests"}
+    grep -r -E '^\s*function\s+test' "$dir" --include=\*test.sh 2>/dev/null \
+      | wc -l \
+      | xargs
+}
+
 _ASSERT_FN=""
 _FILTER=""
 _ARGS=()
