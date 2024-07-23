@@ -2,6 +2,7 @@
 set -euo pipefail
 
 function set_up_before_script() {
+  TERM=dumb
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_ENV_FILE_WITH_PATH="tests/acceptance/fixtures/.env.with_path"
 }

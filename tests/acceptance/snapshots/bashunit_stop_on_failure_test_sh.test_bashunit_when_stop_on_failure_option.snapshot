@@ -1,5 +1,5 @@
 Running ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh
-[32m✓ Passed[0m: A success
-[31m✗ Failed[0m: B error
-    [2mExpected[0m [1m'1'[0m
-    [2mbut got[0m [1m'2'[0m
+✓ Passed: A success
+✗ Failed: B error
+    Expected '1'
+    but got '2'

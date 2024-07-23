@@ -2,6 +2,7 @@
 set -euo pipefail
 
 function set_up_before_script() {
+  TERM=dumb
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_ENV_FILE_STOP_ON_FAILURE="tests/acceptance/fixtures/.env.stop_on_failure"
 }

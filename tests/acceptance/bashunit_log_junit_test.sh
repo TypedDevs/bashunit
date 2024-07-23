@@ -1,6 +1,7 @@
 #!/bin/bash
 
 function set_up_before_script() {
+  TERM=dumb
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_ENV_FILE_LOG_JUNIT="tests/acceptance/fixtures/.env.log_junit"
 }
