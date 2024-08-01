@@ -231,6 +231,10 @@ EOF
 function test_to_run_with_filter_matching_string_in_function_name() {
   local functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
 
-  assert_equals "test_your_awesome_function" "$(helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"
-  assert_equals "test_my_awesome_function test_your_awesome_function" "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
+  assert_equals\
+    "test_your_awesome_function" "$(helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"
+
+  assert_equals\
+    "test_my_awesome_function test_your_awesome_function"\
+    "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
