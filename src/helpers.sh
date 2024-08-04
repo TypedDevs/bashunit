@@ -52,7 +52,7 @@ function helper::check_duplicate_functions() {
 #
 function helper::get_functions_to_run() {
   local prefix=$1
-  local filter=$2
+  local filter="${2:-"test"}"
   local function_names=$3
 
   local filtered_functions=""
