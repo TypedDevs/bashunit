@@ -74,7 +74,7 @@ function helper::get_functions_to_run() {
 #
 function helper::execute_function_if_exists() {
   if [[ "$(type -t "$1")" == "function" ]]; then
-    "$1"
+    "$1" 2>/dev/null
   fi
 }
 
