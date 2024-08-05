@@ -2,6 +2,8 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.14.0...main)
 
+- Fixed `--filter|-f` to work with `test_*` matching function name input.
+- Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
 - Add assertions to log file
 - Improve UX by Removing trailing slashes `/` from the test directories naming output.
 

@@ -56,6 +56,7 @@ function test_multi_invoker_whitespace() {
 
   assert_equals "this arg" "$first_arg"
 
+  ## Iteration (1,2,3) are from invoker_test_numbers & (4,5) are from invoker_test_whitespace
   case $current_iteration in
     4)
       assert_equals "has spaces" "$second_arg"
@@ -64,7 +65,7 @@ function test_multi_invoker_whitespace() {
       assert_equals "$(printf "has\na newline")" "$second_arg"
       ;;
     *)
-      fail
+      fail "Unexpected results with inputs: $current_iteration"
       ;;
   esac
 }

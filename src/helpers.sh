@@ -52,13 +52,13 @@ function helper::check_duplicate_functions() {
 #
 function helper::get_functions_to_run() {
   local prefix=$1
-  local filter=$2
+  local filter=${2/test_/}
   local function_names=$3
 
   local filtered_functions=""
 
   for fn in $function_names; do
-    if [[ $fn == ${prefix}_${filter}* ]]; then
+    if [[ $fn == ${prefix}_*${filter}* ]]; then
       if [[ $filtered_functions == *" $fn"* ]]; then
         return 1
       fi
