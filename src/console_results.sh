@@ -99,7 +99,7 @@ function console_results::render_result() {
 }
 
 function console_results::print_execution_time() {
-  if [[ $SHOW_EXECUTION_TIME == false ]]; then
+  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == false ]]; then
     return
   fi
 

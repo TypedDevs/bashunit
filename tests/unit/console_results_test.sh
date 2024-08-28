@@ -269,7 +269,7 @@ function test_render_execution_time() {
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=true
+    BASHUNIT_SHOW_EXECUTION_TIME=true
 
     console_results::render_result
   )
@@ -280,7 +280,7 @@ function test_not_render_execution_time() {
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=false
+    BASHUNIT_SHOW_EXECUTION_TIME=false
 
     console_results::render_result
   )

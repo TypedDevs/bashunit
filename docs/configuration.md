@@ -119,7 +119,7 @@ BASHUNIT_HEADER_ASCII_ART=true
 
 ## Show execution time
 
-> `SHOW_EXECUTION_TIME=true|false`
+> `BASHUNIT_SHOW_EXECUTION_TIME=true|false`
 
 Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
@@ -133,7 +133,7 @@ All tests passed
 Time taken: 14 ms  // [!code hl]
 ```
 ```bash [.env]
-SHOW_EXECUTION_TIMER=true
+BASHUNIT_SHOW_EXECUTION_TIME=true
 ```
 :::
 
@@ -146,7 +146,7 @@ Assertions: 3 passed, 3 total
 All tests passed
 ```
 ```bash [.env]
-SHOW_EXECUTION_TIMER=false
+BASHUNIT_SHOW_EXECUTION_TIME=false
 ```
 :::
 
