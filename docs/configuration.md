@@ -74,11 +74,11 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 
 > `BASHUNIT_SHOW_HEADER=true|false`
 >
-> `HEADER_ASCII_ART=true|false`
+> `BASHUNIT_HEADER_ASCII_ART=true|false`
 
 Specify if you want to show the bashunit header. `true` by default.
 
-Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
+Additionally, you can use the env-var `BASHUNIT_HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
 ::: code-group
 ``` [Without header]
@@ -113,7 +113,7 @@ __               _                   _    // [!code hl]
 ```
 ```bash [.env]
 BASHUNIT_SHOW_HEADER=true
-HEADER_ASCII_ART=true
+BASHUNIT_HEADER_ASCII_ART=true
 ```
 :::
 
