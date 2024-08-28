@@ -203,7 +203,7 @@ function runner::run_test() {
     state::add_tests_failed
     logger::test_failed "$test_file" "$function_name" "$start_time" "$total_assertions"
 
-    if [ "$STOP_ON_FAILURE" = true ]; then
+    if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
       exit 1
     fi
 

@@ -153,7 +153,7 @@ Running tests/functional/logic_test.sh
 
 Force to stop the runner right after encountering one failing test.
 
-You can use `STOP_ON_FAILURE` option in your [configuration](/configuration#stop-on-failure)
+You can use `BASHUNIT_STOP_ON_FAILURE` option in your [configuration](/configuration#stop-on-failure)
 to make this behavior permanent.
 
 ::: code-group

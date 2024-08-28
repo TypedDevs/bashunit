@@ -64,7 +64,7 @@ BASHUNIT_SIMPLE_OUTPUT=false
 
 ## Stop on failure
 
-> `STOP_ON_FAILURE=true|false`
+> `BASHUNIT_STOP_ON_FAILURE=true|false`
 
 Force to stop the runner right after encountering one failing test. `false` by default.
 
