@@ -123,10 +123,6 @@ HEADER_ASCII_ART=true
 
 Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
-::: warning
-This feature is not available on macOS.
-:::
-
 ::: code-group
 ```-vue [With execution time]
 ✓ Passed: foo bar
