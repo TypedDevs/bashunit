@@ -6,6 +6,15 @@
 - Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
 - Add assertions to log file
 - Improve UX by Removing trailing slashes `/` from the test directories naming output.
+- Add `BASHUNIT_` suffix to all .env config keys
+    - BASHUNIT_SHOW_HEADER
+    - BASHUNIT_HEADER_ASCII_ART
+    - BASHUNIT_SIMPLE_OUTPUT
+    - BASHUNIT_STOP_ON_FAILURE
+    - BASHUNIT_SHOW_EXECUTION_TIME
+    - BASHUNIT_DEFAULT_PATH
+    - BASHUNIT_LOG_JUNIT
+    - BASHUNIT_REPORT_HTML
 
 ## [0.14.0](https://github.com/TypedDevs/bashunit/compare/0.13.0...0.14.0) - 2024-07-14
 
