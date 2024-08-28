@@ -62,7 +62,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -r|--report-html)
-      export REPORT_HTML="$2";
+      export BASHUNIT_REPORT_HTML="$2";
       shift
       ;;
     --version)

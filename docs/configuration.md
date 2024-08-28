@@ -158,7 +158,7 @@ Create a report XML file that follows the JUnit XML format and contains informat
 
 ## Report HTML
 
-> `REPORT_HTML=report.html`
+> `BASHUNIT_REPORT_HTML=report.html`
 
 Create a report HTML file that contains information about the test results of your bashunit tests.
 
