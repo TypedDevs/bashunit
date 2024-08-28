@@ -72,7 +72,7 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 
 ## Show header
 
-> `SHOW_HEADER=true|false`
+> `BASHUNIT_SHOW_HEADER=true|false`
 >
 > `HEADER_ASCII_ART=true|false`
 
@@ -85,7 +85,7 @@ Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in 
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=false
+BASHUNIT_SHOW_HEADER=false
 ```
 :::
 
@@ -96,7 +96,7 @@ bashunit - {{ pkg.version }} // [!code hl]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=true
+BASHUNIT_SHOW_HEADER=true
 ```
 :::
 
@@ -112,7 +112,7 @@ __               _                   _    // [!code hl]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=true
+BASHUNIT_SHOW_HEADER=true
 HEADER_ASCII_ART=true
 ```
 :::

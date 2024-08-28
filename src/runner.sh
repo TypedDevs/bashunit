@@ -26,7 +26,7 @@ function runner::load_test_files() {
 
     runner::run_set_up_before_script
     runner::call_test_functions "$test_file" "$filter"
-    if [ "$PARALLEL_RUN" = true ] ; then
+    if [ "$BASHUNIT_PARALLEL_RUN" = true ] ; then
       wait
     fi
     runner::run_tear_down_after_script
