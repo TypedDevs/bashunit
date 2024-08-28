@@ -118,7 +118,7 @@ Verbose is the default output, but it can be overridden by the environment confi
 
 This command flag will always take precedence over the environment configuration.
 
-You can use `SIMPLE_OUTPUT` option in your [configuration](/configuration#output)
+You can use `BASHUNIT_SIMPLE_OUTPUT` option in your [configuration](/configuration#output)
 to choose the default output display.
 
 ::: code-group

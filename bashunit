@@ -41,10 +41,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -s|--simple)
-      export SIMPLE_OUTPUT=true
+      export BASHUNIT_SIMPLE_OUTPUT=true
       ;;
     -v|--verbose)
-      export SIMPLE_OUTPUT=false
+      export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
     --debug)
       set -x

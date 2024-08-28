@@ -32,7 +32,7 @@ DEFAULT_PATH=tests/**/*_test.sh
 
 ## Output
 
-> `SIMPLE_OUTPUT=true|false`
+> `BASHUNIT_SIMPLE_OUTPUT=true|false`
 
 Enables simplified output to the console. `false` by default.
 
@@ -45,7 +45,7 @@ Similar as using `-s|--simple|-v|--verbose` option on the [command line](/comman
 ....
 ```
 ```bash [.env]
-SIMPLE_OUTPUT=true
+BASHUNIT_SIMPLE_OUTPUT=true
 ```
 :::
 
@@ -58,7 +58,7 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Text should be equal
 ```
 ```bash [.env]
-SIMPLE_OUTPUT=false
+BASHUNIT_SIMPLE_OUTPUT=false
 ```
 :::
 

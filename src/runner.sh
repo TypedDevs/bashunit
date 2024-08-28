@@ -67,7 +67,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if [[ "$SIMPLE_OUTPUT" == false ]]; then
+    if [[ "$BASHUNIT_SIMPLE_OUTPUT" == false ]]; then
       echo "Running $script"
     fi
 
