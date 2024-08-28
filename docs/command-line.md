@@ -12,7 +12,7 @@ If a directory is specified, it will execute tests within files ending in `test.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
-You can use `DEFAULT_PATH` option in your [configuration](/configuration#default-path)
+You can use `BASHUNIT_DEFAULT_PATH` option in your [configuration](/configuration#default-path)
 to choose where the tests are located by default.
 
 ::: code-group

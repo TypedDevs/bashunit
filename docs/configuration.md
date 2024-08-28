@@ -9,7 +9,7 @@ but you can give it another name if you pass it as an argument to the command wi
 
 ## Default path
 
-> `DEFAULT_PATH=directory|file`
+> `BASHUNIT_DEFAULT_PATH=directory|file`
 
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
@@ -20,13 +20,13 @@ If you use wildcards, **bashunit** will run any tests it finds.
 ::: code-group
 ```bash [Example]
 # all tests inside the tests directory
-DEFAULT_PATH=tests
+BASHUNIT_DEFAULT_PATH=tests
 
 # concrete test by full path
-DEFAULT_PATH=tests/example_test.sh
+BASHUNIT_DEFAULT_PATH=tests/example_test.sh
 
 # all test matching given wildcard
-DEFAULT_PATH=tests/**/*_test.sh
+BASHUNIT_DEFAULT_PATH=tests/**/*_test.sh
 ```
 :::
 
@@ -152,7 +152,7 @@ BASHUNIT_SHOW_EXECUTION_TIME=false
 
 ## Log JUnit
 
-> `LOG_JUNIT=log-junit.xml`
+> `BASHUNIT_LOG_JUNIT=log-junit.xml`
 
 Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
 

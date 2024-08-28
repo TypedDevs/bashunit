@@ -5,10 +5,10 @@ function runner::load_test_files() {
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
   if [[ "${#files[@]}" == 0 ]]; then
-    if [[ -n "${DEFAULT_PATH}" ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
         files+=("$line");
-      done < <(helper::find_files_recursive "$DEFAULT_PATH")
+      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
     else
       printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
       console_header::print_help

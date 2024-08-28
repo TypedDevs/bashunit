@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -l|--log-junit)
-      export LOG_JUNIT="$2";
+      export BASHUNIT_LOG_JUNIT="$2";
       shift
       ;;
     -r|--report-html)
