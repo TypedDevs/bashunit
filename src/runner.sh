@@ -5,10 +5,10 @@ function runner::load_test_files() {
   local files=("${@:2}") # Store all arguments starting from the second as an array
 
   if [[ "${#files[@]}" == 0 ]]; then
-    if [[ -n "${DEFAULT_PATH}" ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
         files+=("$line");
-      done < <(helper::find_files_recursive "$DEFAULT_PATH")
+      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
     else
       printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
       console_header::print_help
@@ -26,7 +26,7 @@ function runner::load_test_files() {
 
     runner::run_set_up_before_script
     runner::call_test_functions "$test_file" "$filter"
-    if [ "$PARALLEL_RUN" = true ] ; then
+    if [ "$BASHUNIT_PARALLEL_RUN" = true ] ; then
       wait
     fi
     runner::run_tear_down_after_script
@@ -67,7 +67,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if [[ "$SIMPLE_OUTPUT" == false ]]; then
+    if [[ "$BASHUNIT_SIMPLE_OUTPUT" == false ]]; then
       echo "Running $script"
     fi
 
@@ -203,7 +203,7 @@ function runner::run_test() {
     state::add_tests_failed
     logger::test_failed "$test_file" "$function_name" "$start_time" "$total_assertions"
 
-    if [ "$STOP_ON_FAILURE" = true ]; then
+    if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
       exit 1
     fi
 

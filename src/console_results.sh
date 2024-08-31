@@ -99,7 +99,7 @@ function console_results::render_result() {
 }
 
 function console_results::print_execution_time() {
-  if [[ $SHOW_EXECUTION_TIME == false ]]; then
+  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == false ]]; then
     return
   fi
 
@@ -110,7 +110,7 @@ function console_results::print_execution_time() {
 function console_results::print_successful_test() {
   ((_SUCCESSFUL_TEST_COUNT++)) || true
 
-  if [[ "$SIMPLE_OUTPUT" == true ]]; then
+  if [[ "$BASHUNIT_SIMPLE_OUTPUT" == true ]]; then
     if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
       printf "."
     else
