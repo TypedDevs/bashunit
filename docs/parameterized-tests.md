@@ -6,13 +6,9 @@
 
 ---
 
-Both of these are specified using a special comment before the test function declaration. The comment specifies the name of a separate auxiliary bash function which **bashunit** will invoke prior to the test. This auxiliary function will determine how many times the test function will be invoked, and what arguments will be passed to the test function each time.
+You can add a special comment before a test function to specify an auxiliary function. This function controls how many times the test will run and what arguments it will receive.
 
-The benefit of this is that each of these invocations is a full test itself, and can succeed or fail independently of the other tests. Also, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each invocation of the test function. Using these tools can often result in less code repetition in your test files, and a clearer way to develop a suite of closely related tests quickly.
-
-:::tip
-The same multi-invoker or data provider function can be specified for multiple tests. This allows developing tests for related tools quickly. For example, if you had a tool that creates directories and another which removes directories, you could write one test for each tool and parameterize them to operate on the same set of directories.
-:::
+Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
 
 ## Data providers
 
