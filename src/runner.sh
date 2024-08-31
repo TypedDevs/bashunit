@@ -184,11 +184,7 @@ function runner::run_test() {
   )
 
   # Closes FD 3, which was used temporarily to hold the original std-output.
-#  exec 3>&-
-if ! { exec 3>&-; } 2>/dev/null; then
-    echo "Error: FD 3 not opened correctly" >&2
-    return 1
-fi
+  exec 3>&-
 
   runner::parse_execution_result "$test_execution_result"
 
