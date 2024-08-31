@@ -269,7 +269,7 @@ function test_render_execution_time() {
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=true
+    BASHUNIT_SHOW_EXECUTION_TIME=true
 
     console_results::render_result
   )
@@ -280,7 +280,7 @@ function test_not_render_execution_time() {
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=false
+    BASHUNIT_SHOW_EXECUTION_TIME=false
 
     console_results::render_result
   )
@@ -494,23 +494,23 @@ function test_no_tests_found() {
 
 function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
-  original_simple_output=$SIMPLE_OUTPUT
-  export SIMPLE_OUTPUT=false
+  original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name")
 
   assert_equals_ignore_colors "✓ Passed: $test_name" "$actual"
-  export SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
 
 function test_print_successful_test_output_with_args() {
   local test_name="a custom test"
   local data="foo"
-  original_simple_output=$SIMPLE_OUTPUT
-  export SIMPLE_OUTPUT=false
+  original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
   local actual
   actual=$(console_results::print_successful_test "$test_name" "$data")
 
   assert_equals_ignore_colors "✓ Passed: $test_name ($data)" "$actual"
-  export SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }

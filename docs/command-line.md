@@ -12,7 +12,7 @@ If a directory is specified, it will execute tests within files ending in `test.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
-You can use `DEFAULT_PATH` option in your [configuration](/configuration#default-path)
+You can use `BASHUNIT_DEFAULT_PATH` option in your [configuration](/configuration#default-path)
 to choose where the tests are located by default.
 
 ::: code-group
@@ -118,7 +118,7 @@ Verbose is the default output, but it can be overridden by the environment confi
 
 This command flag will always take precedence over the environment configuration.
 
-You can use `SIMPLE_OUTPUT` option in your [configuration](/configuration#output)
+You can use `BASHUNIT_SIMPLE_OUTPUT` option in your [configuration](/configuration#output)
 to choose the default output display.
 
 ::: code-group
@@ -153,7 +153,7 @@ Running tests/functional/logic_test.sh
 
 Force to stop the runner right after encountering one failing test.
 
-You can use `STOP_ON_FAILURE` option in your [configuration](/configuration#stop-on-failure)
+You can use `BASHUNIT_STOP_ON_FAILURE` option in your [configuration](/configuration#stop-on-failure)
 to make this behavior permanent.
 
 ::: code-group

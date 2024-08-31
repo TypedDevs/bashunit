@@ -9,7 +9,7 @@ but you can give it another name if you pass it as an argument to the command wi
 
 ## Default path
 
-> `DEFAULT_PATH=directory|file`
+> `BASHUNIT_DEFAULT_PATH=directory|file`
 
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
@@ -20,19 +20,19 @@ If you use wildcards, **bashunit** will run any tests it finds.
 ::: code-group
 ```bash [Example]
 # all tests inside the tests directory
-DEFAULT_PATH=tests
+BASHUNIT_DEFAULT_PATH=tests
 
 # concrete test by full path
-DEFAULT_PATH=tests/example_test.sh
+BASHUNIT_DEFAULT_PATH=tests/example_test.sh
 
 # all test matching given wildcard
-DEFAULT_PATH=tests/**/*_test.sh
+BASHUNIT_DEFAULT_PATH=tests/**/*_test.sh
 ```
 :::
 
 ## Output
 
-> `SIMPLE_OUTPUT=true|false`
+> `BASHUNIT_SIMPLE_OUTPUT=true|false`
 
 Enables simplified output to the console. `false` by default.
 
@@ -45,7 +45,7 @@ Similar as using `-s|--simple|-v|--verbose` option on the [command line](/comman
 ....
 ```
 ```bash [.env]
-SIMPLE_OUTPUT=true
+BASHUNIT_SIMPLE_OUTPUT=true
 ```
 :::
 
@@ -58,13 +58,13 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Text should be equal
 ```
 ```bash [.env]
-SIMPLE_OUTPUT=false
+BASHUNIT_SIMPLE_OUTPUT=false
 ```
 :::
 
 ## Stop on failure
 
-> `STOP_ON_FAILURE=true|false`
+> `BASHUNIT_STOP_ON_FAILURE=true|false`
 
 Force to stop the runner right after encountering one failing test. `false` by default.
 
@@ -72,20 +72,20 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 
 ## Show header
 
-> `SHOW_HEADER=true|false`
+> `BASHUNIT_SHOW_HEADER=true|false`
 >
-> `HEADER_ASCII_ART=true|false`
+> `BASHUNIT_HEADER_ASCII_ART=true|false`
 
 Specify if you want to show the bashunit header. `true` by default.
 
-Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
+Additionally, you can use the env-var `BASHUNIT_HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
 ::: code-group
 ``` [Without header]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=false
+BASHUNIT_SHOW_HEADER=false
 ```
 :::
 
@@ -96,7 +96,7 @@ bashunit - {{ pkg.version }} // [!code hl]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=true
+BASHUNIT_SHOW_HEADER=true
 ```
 :::
 
@@ -112,14 +112,14 @@ __               _                   _    // [!code hl]
 ✓ Passed: foo bar
 ```
 ```bash [.env]
-SHOW_HEADER=true
-HEADER_ASCII_ART=true
+BASHUNIT_SHOW_HEADER=true
+BASHUNIT_HEADER_ASCII_ART=true
 ```
 :::
 
 ## Show execution time
 
-> `SHOW_EXECUTION_TIME=true|false`
+> `BASHUNIT_SHOW_EXECUTION_TIME=true|false`
 
 Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
@@ -133,7 +133,7 @@ All tests passed
 Time taken: 14 ms  // [!code hl]
 ```
 ```bash [.env]
-SHOW_EXECUTION_TIMER=true
+BASHUNIT_SHOW_EXECUTION_TIME=true
 ```
 :::
 
@@ -146,19 +146,19 @@ Assertions: 3 passed, 3 total
 All tests passed
 ```
 ```bash [.env]
-SHOW_EXECUTION_TIMER=false
+BASHUNIT_SHOW_EXECUTION_TIME=false
 ```
 :::
 
 ## Log JUnit
 
-> `LOG_JUNIT=log-junit.xml`
+> `BASHUNIT_LOG_JUNIT=log-junit.xml`
 
 Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
 
 ## Report HTML
 
-> `REPORT_HTML=report.html`
+> `BASHUNIT_REPORT_HTML=report.html`
 
 Create a report HTML file that contains information about the test results of your bashunit tests.
 

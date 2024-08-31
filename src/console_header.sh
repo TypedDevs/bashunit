@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function console_header::print_version() {
-  if [[ $HEADER_ASCII_ART == true ]]; then
+  if [[ $BASHUNIT_HEADER_ASCII_ART == true ]]; then
     cat <<EOF
  _               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
@@ -17,7 +17,7 @@ EOF
 
 function console_header::print_version_with_env() {
     local should_print_ascii="true"
-    if [[ "$SHOW_HEADER" != "$should_print_ascii" ]]; then
+    if [[ "$BASHUNIT_SHOW_HEADER" != "$should_print_ascii" ]]; then
       return
     fi
     console_header::print_version
