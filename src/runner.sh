@@ -75,11 +75,20 @@ function runner::call_test_functions() {
 
     for function_name in "${functions_to_run[@]}"; do
       local provider_data=()
-      IFS=" " read -r -a provider_data <<< "$(helper::get_provider_data "$function_name" "$script")"
+      while IFS=" " read -r line; do
+        provider_data+=("$line")
+      done <<< "$(helper::get_provider_data "$function_name" "$script")"
 
       if [[ "${#provider_data[@]}" -gt 0 ]]; then
+        # Execute the test function for each line of data
         for data in "${provider_data[@]}"; do
-          runner::run_test "$script" "$function_name" "$data"
+          # Split the line into individual arguments
+          IFS=" " read -r -a args <<< "$data"
+          if [ "${#args[@]}" -gt 1 ]; then
+            runner::run_test "$script" "$function_name" "${args[@]}"
+          else
+            runner::run_test "$script" "$function_name" "$data"
+          fi
         done
       else
         local multi_invoker
@@ -179,7 +188,11 @@ function runner::run_test() {
   )
 
   # Closes FD 3, which was used temporarily to hold the original std-output.
-  exec 3>&-
+#  exec 3>&-
+if ! { exec 3>&-; } 2>/dev/null; then
+    echo "Error: FD 3 not opened correctly" >&2
+    return 1
+fi
 
   runner::parse_execution_result "$test_execution_result"
 
