@@ -79,21 +79,23 @@ function runner::call_test_functions() {
         provider_data+=("$line")
       done <<< "$(helper::get_provider_data "$function_name" "$script")"
 
-      if [[ "${#provider_data[@]}" -gt 0 ]]; then
-        # Execute the test function for each line of data
-        for data in "${provider_data[@]}"; do
-          # Split the line into individual arguments
-          IFS=" " read -r -a args <<< "$data"
-          if [ "${#args[@]}" -gt 1 ]; then
-            runner::run_test "$script" "$function_name" "${args[@]}"
-          else
-            runner::run_test "$script" "$function_name" "$data"
-          fi
-        done
-      else
-          runner::run_test "$script" "$function_name"
+      # No data provider found
+      if [[ "${#provider_data[@]}" -eq 0 ]]; then
+        runner::run_test "$script" "$function_name"
+        unset function_name
+        continue
       fi
 
+      # Execute the test function for each line of data
+      for data in "${provider_data[@]}"; do
+        # Split the line into individual arguments
+        IFS=" " read -r -a args <<< "$data"
+        if [ "${#args[@]}" -gt 1 ]; then
+          runner::run_test "$script" "$function_name" "${args[@]}"
+        else
+          runner::run_test "$script" "$function_name" "$data"
+        fi
+      done
       unset function_name
     done
   fi
