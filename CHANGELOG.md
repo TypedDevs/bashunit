@@ -7,7 +7,7 @@
 - Add assertions to log file
 - Improve UX by Removing trailing slashes `/` from the test directories naming output.
 - Remove `multi-invokers` in favor of `data providers`
-  - Data providers support multiple arguments
+    - Data providers support multiple arguments
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART

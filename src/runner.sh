@@ -91,13 +91,7 @@ function runner::call_test_functions() {
           fi
         done
       else
-        local multi_invoker
-        multi_invoker=$(helper::get_multi_invoker_function "$function_name" "$script")
-        if [[ -n "${multi_invoker}" ]]; then
-          helper::execute_function_if_exists "${multi_invoker}"
-        else
           runner::run_test "$script" "$function_name"
-        fi
       fi
 
       unset function_name
