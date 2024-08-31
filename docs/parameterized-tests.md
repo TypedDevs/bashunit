@@ -1,8 +1,8 @@
 # Parameterized tests
 
 **bashunit** offers two ways to parameterize your test functions:
-- **Multi-invokers**: are the most flexible option, as they allow passing multiple arguments to the test function and permit arguments containing whitespace.
 - **Data providers**: offer a simple alternative for cases when the test function needs to accept only a single word as an argument.
+- **Multi-invokers**: are a flexible option, as they allow passing multiple arguments to the test function and permit arguments containing whitespace.
 
 ---
 
@@ -14,7 +14,40 @@ The benefit of this is that each of these invocations is a full test itself, and
 The same multi-invoker or data provider function can be specified for multiple tests. This allows developing tests for related tools quickly. For example, if you had a tool that creates directories and another which removes directories, you could write one test for each tool and parameterize them to operate on the same set of directories.
 :::
 
-### Multi-invokers
+## Data providers
+
+A data provider function is specified as follows:
+
+::: code-group
+```bash [Example]
+# data_provider provider_function_name
+function test_my_test_case() {
+  ...
+}
+```
+:::
+
+The provider function can return a space-separated list of values like `one two three` or a single value `one`. In case of a list of values, the test function will be invoked multiple times, each time being passed a different value from the list.
+
+::: code-group
+```bash [Example]
+function provider_directories() {
+  local directories=("/usr" "/etc" "/var")
+  echo "${directories[@]}"
+}
+
+# data_provider provider_directories
+function test_directory_exists_from_data_provider() {
+  local directory=$1
+
+  assert_directory_exists "$directory"
+}
+```
+:::
+
+In this example, the `provider_directories` function will be executed before running the test. **bashunit** will iterate the list of simple strings provided by this function, and the test function will be executed passing each time the current iteration value as the first argument.
+
+## Multi-invokers
 
 A multi-invoker function is specified as follows:
 
@@ -66,36 +99,3 @@ function test_command_with_args() {
 }
 ```
 :::
-
-### Data providers
-
-A data provider function is specified as follows:
-
-::: code-group
-```bash [Example]
-# data_provider provider_function_name
-function test_my_test_case() {
-  ...
-}
-```
-:::
-
-The provider function can return a space-separated list of values like `one two three` or a single value `one`. In case of a list of values, the test function will be invoked multiple times, each time being passed a different value from the list.
-
-::: code-group
-```bash [Example]
-function provider_directories() {
-  local directories=("/usr" "/etc" "/var")
-  echo "${directories[@]}"
-}
-
-# data_provider provider_directories
-function test_directory_exists_from_data_provider() {
-  local directory=$1
-
-  assert_directory_exists "$directory"
-}
-```
-:::
-
-In this example, the `provider_directories` function will be executed before running the test. **bashunit** will iterate the list of simple strings provided by this function, and the test function will be executed passing each time the current iteration value as the first argument.
