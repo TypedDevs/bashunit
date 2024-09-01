@@ -13,6 +13,7 @@
 - Change `-v` as shortcut for `--version`
 - Add `-vvv` as shortcut for `--verbose`
 - Fix wrong commit id when installing beta
+- Add display total tests upfront when running bashunit
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART
