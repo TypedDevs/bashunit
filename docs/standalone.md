@@ -18,7 +18,7 @@ The prefix `assert_` is optional.
 ::: code-group
 ```bash [Example]
 # with `assert_` prefix
-./bashunit -a assert_equals "foo" "foo"
+./bashunit -a assert_same "foo" "foo"
 
 # or without prefix
 ./bashunit -a equals "foo" "foo"

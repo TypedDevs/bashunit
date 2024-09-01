@@ -11,7 +11,7 @@ function test_add_and_get_tests_passed() {
     state::get_tests_passed
   )
 
-  assert_equals "1" "$tests_passed"
+  assert_same "1" "$tests_passed"
 }
 
 function test_add_and_get_tests_failed() {
@@ -23,7 +23,7 @@ function test_add_and_get_tests_failed() {
     state::get_tests_failed
   )
 
-  assert_equals "1" "$tests_failed"
+  assert_same "1" "$tests_failed"
 }
 
 function test_add_and_get_tests_skipped() {
@@ -35,7 +35,7 @@ function test_add_and_get_tests_skipped() {
     state::get_tests_skipped
   )
 
-  assert_equals "1" "$tests_skipped"
+  assert_same "1" "$tests_skipped"
 }
 
 function test_add_and_get_tests_incomplete() {
@@ -47,7 +47,7 @@ function test_add_and_get_tests_incomplete() {
     state::get_tests_incomplete
   )
 
-  assert_equals "1" "$tests_incomplete"
+  assert_same "1" "$tests_incomplete"
 }
 
 function test_add_and_get_tests_snapshot() {
@@ -59,7 +59,7 @@ function test_add_and_get_tests_snapshot() {
     state::get_tests_snapshot
   )
 
-  assert_equals "1" "$tests_snapshot"
+  assert_same "1" "$tests_snapshot"
 }
 
 function test_add_twice_and_get_tests_snapshot() {
@@ -72,7 +72,7 @@ function test_add_twice_and_get_tests_snapshot() {
     state::get_tests_snapshot
   )
 
-  assert_equals "2" "$tests_snapshot"
+  assert_same "2" "$tests_snapshot"
 }
 
 function test_add_and_get_assertions_passed() {
@@ -84,7 +84,7 @@ function test_add_and_get_assertions_passed() {
     state::get_assertions_passed
   )
 
-  assert_equals "1" "$assertions_passed"
+  assert_same "1" "$assertions_passed"
 }
 
 function test_add_and_get_assertions_failed() {
@@ -96,7 +96,7 @@ function test_add_and_get_assertions_failed() {
     state::get_assertions_failed
   )
 
-  assert_equals "1" "$assertions_failed"
+  assert_same "1" "$assertions_failed"
 }
 
 function test_add_and_get_assertions_skipped() {
@@ -108,7 +108,7 @@ function test_add_and_get_assertions_skipped() {
     state::get_assertions_skipped
   )
 
-  assert_equals "1" "$assertions_skipped"
+  assert_same "1" "$assertions_skipped"
 }
 
 function test_add_and_get_assertions_incomplete() {
@@ -120,7 +120,7 @@ function test_add_and_get_assertions_incomplete() {
     state::get_assertions_incomplete
   )
 
-  assert_equals "1" "$assertions_incomplete"
+  assert_same "1" "$assertions_incomplete"
 }
 
 function test_add_and_get_assertions_snapshot() {
@@ -132,7 +132,7 @@ function test_add_and_get_assertions_snapshot() {
     state::get_assertions_snapshot
   )
 
-  assert_equals "1" "$assertions_snapshot"
+  assert_same "1" "$assertions_snapshot"
 }
 
 function test_add_twice_and_get_assertions_snapshot() {
@@ -145,7 +145,7 @@ function test_add_twice_and_get_assertions_snapshot() {
     state::get_assertions_snapshot
   )
 
-  assert_equals "2" "$assertions_snapshot"
+  assert_same "2" "$assertions_snapshot"
 }
 
 function test_set_and_is_duplicated_test_functions_found() {
@@ -157,7 +157,7 @@ function test_set_and_is_duplicated_test_functions_found() {
     state::is_duplicated_test_functions_found
   )
 
-  assert_equals "true" "$duplicated_test_functions_found"
+  assert_same "true" "$duplicated_test_functions_found"
 }
 
 function test_set_and_get_file_with_duplicated_function_names() {
@@ -169,7 +169,7 @@ function test_set_and_get_file_with_duplicated_function_names() {
     state::get_file_with_duplicated_function_names
   )
 
-  assert_equals "test_path/file_name_test.sh" "$file_with_duplicated_function_names"
+  assert_same "test_path/file_name_test.sh" "$file_with_duplicated_function_names"
 }
 
 function test_set_and_get_duplicated_function_names_one_name() {
@@ -181,7 +181,7 @@ function test_set_and_get_duplicated_function_names_one_name() {
     state::get_duplicated_function_names
   )
 
-  assert_equals "duplicated_test_name" "$duplicated_function_names"
+  assert_same "duplicated_test_name" "$duplicated_function_names"
 }
 
 function test_set_and_get_duplicated_function_names_multiply_names() {
@@ -197,7 +197,7 @@ duplicated_test_function3"
     state::get_duplicated_function_names
   )
 
-  assert_equals "$test_names" "$duplicated_function_names"
+  assert_same "$test_names" "$duplicated_function_names"
 }
 
 function test_set_duplicated_functions_merged() {
@@ -211,7 +211,7 @@ function test_set_duplicated_functions_merged() {
     state::is_duplicated_test_functions_found
   )
 
-  assert_equals "true" "$duplicated_test_functions_found"
+  assert_same "true" "$duplicated_test_functions_found"
 
   local duplicated_function_names
   duplicated_function_names=$(
@@ -220,7 +220,7 @@ function test_set_duplicated_functions_merged() {
     state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
     state::get_duplicated_function_names
   )
-  assert_equals "$test_function_name" "$duplicated_function_names"
+  assert_same "$test_function_name" "$duplicated_function_names"
 
   local file_with_duplicated_function_names
   file_with_duplicated_function_names=$(
@@ -230,7 +230,7 @@ function test_set_duplicated_functions_merged() {
     state::get_file_with_duplicated_function_names
   )
 
-  assert_equals "$test_file_name" "$file_with_duplicated_function_names"
+  assert_same "$test_file_name" "$file_with_duplicated_function_names"
 }
 
 function test_initialize_assertions_count() {
@@ -246,7 +246,7 @@ function test_initialize_assertions_count() {
     state::export_assertions_count
   )
 
-  assert_equals\
+  assert_same\
     "##ASSERTIONS_FAILED=0\
 ##ASSERTIONS_PASSED=0\
 ##ASSERTIONS_SKIPPED=0\
@@ -268,7 +268,7 @@ function test_export_assertions_count() {
     state::export_assertions_count
   )
 
-  assert_equals\
+  assert_same\
     "##ASSERTIONS_FAILED=5##\
 ASSERTIONS_PASSED=10##\
 ASSERTIONS_SKIPPED=42##\
@@ -284,5 +284,5 @@ function test_calculate_total_assertions() {
   ##ASSERTIONS_INCOMPLETE=4\
   ##ASSERTIONS_SNAPSHOT=5##"
 
-  assert_equals 15 "$(state::calculate_total_assertions "$input")"
+  assert_same 15 "$(state::calculate_total_assertions "$input")"
 }

@@ -9,7 +9,7 @@ function fail() {
   console_results::print_failure_message "${label}" "$message"
 }
 
-function assert_equals() {
+function assert_same() {
   local expected="$1"
   local actual="$2"
 
@@ -24,7 +24,7 @@ function assert_equals() {
   state::add_assertions_passed
 }
 
-function assert_equals_ignore_colors() {
+function assert_equals() {
   local expected="$1"
   local actual="$2"
 

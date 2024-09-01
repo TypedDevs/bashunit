@@ -15,7 +15,7 @@ function test_redirect_error_with_log() {
 
   local error_output
   error_output=$(<$_ERROR_LOG)
-  assert_equals "arg1 arg2" "$error_output"
+  assert_same "arg1 arg2" "$error_output"
 }
 
 function test_redirect_error_without_log() {

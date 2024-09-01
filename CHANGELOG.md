@@ -4,8 +4,11 @@
 
 - Fixed `--filter|-f` to work with `test_*` matching function name input.
 - Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
-- Add assertions to log file
-- Improve UX by
+- Added assertions to log file
+- Added `assert_same`, it checks special chars
+    - Changed `assert_equals` to ignore special chars
+    - Removed `assert_equals_ignore_colors`
+- Improved UX by
     - Removing trailing slashes `/` from the test directories naming output.
     - Align "Expected" and "but got" on `assert_*` fails message.
 - Data providers support multiple arguments

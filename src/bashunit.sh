@@ -7,7 +7,7 @@
 function bashunit::assertion_failed() {
   local expected=$1
   local actual=$2
-  local failure_condition_message=${3:-"but got"}
+  local failure_condition_message=${3:-"but got "}
 
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"

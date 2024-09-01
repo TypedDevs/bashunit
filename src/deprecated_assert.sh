@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Deprecated: Please use assert_equals instead.
+# Deprecated: Please use assert_same instead.
 function assertEquals() {
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  assert_equals "$1" "$2" "$label"
+  assert_same "$1" "$2" "$label"
 }
 
 # Deprecated: Please use assert_empty instead.

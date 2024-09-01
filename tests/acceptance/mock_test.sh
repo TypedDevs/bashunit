@@ -7,7 +7,7 @@ set -euo pipefail
 #
 function test_runner_clear_mocks_first() {
   mock ls echo foo
-  assert_equals "foo" "$(ls)"
+  assert_same "foo" "$(ls)"
 
   spy ps
   ps foo bar
