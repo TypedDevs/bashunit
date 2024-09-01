@@ -17,7 +17,7 @@ function assert_equals() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got" "${actual}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
 
@@ -35,7 +35,7 @@ function assert_equals_ignore_colors() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got" "${actual_without_colors}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual_without_colors}"
     return
   fi
 
@@ -49,7 +49,7 @@ function assert_empty() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "to be empty" "but got" "${expected}"
+    console_results::print_failed_test "${label}" "to be empty" "but got " "${expected}"
     return
   fi
 
@@ -63,7 +63,7 @@ function assert_not_empty() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "to not be empty" "but got" "${expected}"
+    console_results::print_failed_test "${label}" "to not be empty" "but got " "${expected}"
     return
   fi
 
@@ -78,7 +78,7 @@ function assert_not_equals() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got" "${actual}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
 
