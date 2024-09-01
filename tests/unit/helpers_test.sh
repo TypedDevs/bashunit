@@ -106,31 +106,6 @@ function test_normalize_variable_name() {
   assert_equals "__________" "$(helper::normalize_variable_name "!@#$%^&*()")"
 }
 
-function fake_multi_invoker_function() {
-  return 0
-}
-
-function test_get_multi_invoker_function() {
-  # shellcheck disable=SC2317
-  # multi_invoker fake_multi_invoker_function
-  function fake_use_multi_invoker() {
-    return 0
-  }
-
-  assert_equals "fake_multi_invoker_function" \
-    "$(helper::get_multi_invoker_function "fake_use_multi_invoker" "${BASH_SOURCE[0]}")"
-}
-
-function test_get_multi_invoker_function_should_return_empty_when_not_exists_invoker_function() {
-  # shellcheck disable=SC2317
-  # multi_invoker not_existing_invoker_function
-  function fake_use_non_existing_multi_invoker() {
-    return 0
-  }
-
-  assert_empty "$(helper::get_multi_invoker_function "fake_use_non_existing_multi_invoker" "${BASH_SOURCE[0]}")"
-}
-
 function fake_provider_data_string() {
   echo "data_provided"
 }

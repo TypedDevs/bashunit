@@ -61,8 +61,8 @@ export default defineConfig({
         text: 'Test files',
         link: '/test-files',
       }, {
-        text: 'Parameterized tests',
-        link: '/parameterized-tests',
+        text: 'Data providers',
+        link: '/data-providers',
       }, {
         text: 'Test doubles',
         link: '/test-doubles'

@@ -75,22 +75,27 @@ function runner::call_test_functions() {
 
     for function_name in "${functions_to_run[@]}"; do
       local provider_data=()
-      IFS=" " read -r -a provider_data <<< "$(helper::get_provider_data "$function_name" "$script")"
+      while IFS=" " read -r line; do
+        provider_data+=("$line")
+      done <<< "$(helper::get_provider_data "$function_name" "$script")"
 
-      if [[ "${#provider_data[@]}" -gt 0 ]]; then
-        for data in "${provider_data[@]}"; do
-          runner::run_test "$script" "$function_name" "$data"
-        done
-      else
-        local multi_invoker
-        multi_invoker=$(helper::get_multi_invoker_function "$function_name" "$script")
-        if [[ -n "${multi_invoker}" ]]; then
-          helper::execute_function_if_exists "${multi_invoker}"
-        else
-          runner::run_test "$script" "$function_name"
-        fi
+      # No data provider found
+      if [[ "${#provider_data[@]}" -eq 0 ]]; then
+        runner::run_test "$script" "$function_name"
+        unset function_name
+        continue
       fi
 
+      # Execute the test function for each line of data
+      for data in "${provider_data[@]}"; do
+        # Split the line into individual arguments
+        IFS=" " read -r -a args <<< "$data"
+        if [ "${#args[@]}" -gt 1 ]; then
+          runner::run_test "$script" "$function_name" "${args[@]}"
+        else
+          runner::run_test "$script" "$function_name" "$data"
+        fi
+      done
       unset function_name
     done
   fi

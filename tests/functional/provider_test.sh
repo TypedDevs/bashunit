@@ -12,8 +12,25 @@ function tear_down_after_script() {
   rm "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE"
 }
 
-# data_provider provider_test_data_array
-function test_get_data_from_provider_as_array() {
+function set_up() {
+  _GLOBAL="aa-bb"
+}
+
+# data_provider provide_multiples_values
+function test_multiple_values_from_data_provider() {
+  local first=$1
+  local second=$2
+
+  assert_equals "${_GLOBAL}" "$first-$second"
+}
+
+function provide_multiples_values() {
+  echo "aa" "bb"
+  echo "aa" "bb"
+}
+
+# data_provider provide_single_values
+function test_single_values_from_data_provider() {
   local current_data="$1"
   local current_iteration=0
 
@@ -37,18 +54,19 @@ function test_get_data_from_provider_as_array() {
   esac
 }
 
-# data_provider provider_test_data_single_value
-function test_get_data_from_provider_as_single_value() {
+function provide_single_values() {
+  echo "one"
+  echo "two"
+  echo "three"
+}
+
+# data_provider provide_single_value
+function test_single_value_from_data_provider() {
   local current_data="$1"
 
   assert_equals "one" "$current_data"
 }
 
-function provider_test_data_array() {
-  local data=("one" "two" "three")
-  echo "${data[@]}"
-}
-
-function provider_test_data_single_value() {
+function provide_single_value() {
   echo "one"
 }
