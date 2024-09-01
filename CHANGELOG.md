@@ -3,7 +3,6 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.14.0...main)
 
 - Fixed `--filter|-f` to work with `test_*` matching function name input.
-- Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
 - Added assertions to log file
 - Rename the current `assert_equals` to `assert_same`
 - Rename `assert_equals_ignore_colors` to `assert_equals` and ignore all special chars
