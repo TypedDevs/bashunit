@@ -1,4 +1,3 @@
-Total tests: 4
 Running tests/acceptance/fixtures/tests_path/a_test.sh
 [32m✓ Passed[0m: Assert greater and less than
 [32m✓ Passed[0m: Assert empty

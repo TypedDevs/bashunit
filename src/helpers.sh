@@ -162,3 +162,22 @@ function helpers::find_total_tests() {
 
     echo "$total_count"
 }
+
+function helper::load_test_files() {
+  local filter=$1
+  local files=("${@:2}")
+
+  local test_files=()
+
+  if [[ "${#files[@]}" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
+      while IFS='' read -r line; do
+        test_files+=("$line")
+      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+    fi
+  else
+    test_files=("${files[@]}")
+  fi
+
+  printf "%s\n" "${test_files[@]}"
+}

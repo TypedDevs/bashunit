@@ -1,4 +1,3 @@
-Total tests: 2
 Running ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
 [32m✓ Passed[0m: Success
 [31m✗ Failed[0m: Failure

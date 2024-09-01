@@ -1,4 +1,3 @@
-Total tests: 4
 Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 [32m✓ Passed[0m: Assert same
 [32m✓ Passed[0m: Assert contains
