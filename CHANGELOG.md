@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.14.0...main)
+## [0.15.0](https://github.com/TypedDevs/bashunit/compare/0.14.0...0.15.0) - 2024-09-01
 
 - Fixed `--filter|-f` to work with `test_*` matching function name input.
 - Added assertions to log file
