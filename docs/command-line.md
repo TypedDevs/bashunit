@@ -110,7 +110,7 @@ Creates a report HTML file that contains information about the test results of y
 
 > `bashunit -s|--simple`
 >
-> `bashunit -v|--verbose`
+> `bashunit -vvv|--verbose`
 
 Enables simplified or verbose output to the console.
 
