@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
     -s|--simple)
       export BASHUNIT_SIMPLE_OUTPUT=true
       ;;
-    -v|--verbose)
+    -vvv|--verbose)
       export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
     --debug)
@@ -65,7 +65,7 @@ while [[ $# -gt 0 ]]; do
       export BASHUNIT_REPORT_HTML="$2";
       shift
       ;;
-    --version)
+    -v|--version)
       console_header::print_version
       trap '' EXIT && exit 0
       ;;

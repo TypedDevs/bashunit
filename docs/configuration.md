@@ -38,7 +38,7 @@ Enables simplified output to the console. `false` by default.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple|-v|--verbose` option on the [command line](/command-line#output).
+Similar as using `-s|--simple | -vvv|--verbose` option on the [command line](/command-line#output).
 
 ::: code-group
 ```bash [Simple output]
