@@ -26,7 +26,7 @@ EOF
 
 function test_successful_override_ps_with_echo_with_mock() {
   mock ps echo hello world
-  assert_equals "hello world" "$(ps)"
+  assert_same "hello world" "$(ps)"
 }
 
 function test_successful_spy() {
@@ -40,7 +40,7 @@ function test_successful_spy() {
 function test_unsuccessful_spy_called() {
   spy ps
 
-  assert_equals\
+  assert_same\
     "$(console_results::print_failed_test "Unsuccessful spy called" "ps" "to has been called" "once")"\
     "$(assert_have_been_called ps)"
 }
@@ -61,7 +61,7 @@ function test_unsuccessful_spy_called_times() {
   ps
   ps
 
-  assert_equals\
+  assert_same\
     "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
     "$(assert_have_been_called_times 1 ps)"
 }

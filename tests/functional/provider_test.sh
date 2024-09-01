@@ -40,13 +40,13 @@ function test_single_values_from_data_provider() {
 
   case $current_iteration in
     1)
-      assert_equals "one" "$current_data"
+      assert_same "one" "$current_data"
       ;;
     2)
-      assert_equals "two" "$current_data"
+      assert_same "two" "$current_data"
       ;;
     3)
-      assert_equals "three" "$current_data"
+      assert_same "three" "$current_data"
       ;;
     *)
       fail
@@ -64,7 +64,7 @@ function provide_single_values() {
 function test_single_value_from_data_provider() {
   local current_data="$1"
 
-  assert_equals "one" "$current_data"
+  assert_same "one" "$current_data"
 }
 
 function provide_single_value() {

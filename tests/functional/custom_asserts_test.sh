@@ -11,8 +11,8 @@ function test_assert_foo_passed() {
 }
 
 function test_assert_foo_failed() {
-  assert_equals\
-    "$(console_results::print_failed_test "Assert foo" "foo" "but got" "bar")"\
+  assert_same\
+    "$(console_results::print_failed_test "Assert foo" "foo" "but got " "bar")"\
     "$(assert_foo "bar")"
 }
 
@@ -21,7 +21,7 @@ function test_assert_positive_number_passed() {
 }
 
 function test_assert_positive_number_failed() {
-  assert_equals\
+  assert_same\
     "$(console_results::print_failed_test "Assert positive number" "positive number" "got" "0")"\
     "$(assert_positive_number "0")"
 }

@@ -4,38 +4,41 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
-## assert_equals
-> `assert_equals "expected" "actual"`
+## assert_same
+> `assert_same "expected" "actual"`
 
-Reports an error if the two variables `expected` and `actual` are not equal.
+Reports an error if the `expected` and `actual` are not the same - including special chars.
 
-[assert_not_equals](#assert-not-equals) is the inverse of this assertion and takes the same arguments.
+- [assert_not_same](#assert-not-same) is the inverse of this assertion and takes the same arguments.
+- [assert_equals](#assert-equals) is similar but ignoring the special chars.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals "foo" "foo"
+  assert_same "foo" "foo"
 }
 
 function test_failure() {
-  assert_equals "foo" "bar"
+  assert_same "foo" "bar"
 }
 ```
 :::
 
-## assert_equals_ignore_colors
-> `assert_equals_ignore_colors "expected" "actual"`
+## assert_equals
+> `assert_equals "expected" "actual"`
 
-Reports an error if the two variables `expected` and `actual` are not equal ignoring the colors ONLY from `actual`.
+Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
+
+- [assert_same](#assert-same) is similar but including special chars.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals_ignore_colors "foo" "\e[31mfoo"
+  assert_equals "foo" "\e[31mfoo"
 }
 
 function test_failure() {
-  assert_equals_ignore_colors "\e[31mfoo" "\e[31mfoo"
+  assert_equals "\e[31mfoo" "\e[31mfoo"
 }
 ```
 :::
@@ -619,21 +622,21 @@ function test_failure() {
 ```
 :::
 
-## assert_not_equals
-> `assert_not_equals "expected" "actual"`
+## assert_not_same
+> `assert_not_same "expected" "actual"`
 
-Reports an error if the two variables `expected` and `actual` are equal.
+Reports an error if the two variables `expected` and `actual` are the same value.
 
-[assert_equals](#assert-equals) is the inverse of this assertion and takes the same arguments.
+[assert_same](#assert-same) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_not_equals "foo" "bar"
+  assert_not_same "foo" "bar"
 }
 
 function test_failure() {
-  assert_not_equals "foo" "foo"
+  assert_not_same "foo" "foo"
 }
 ```
 :::

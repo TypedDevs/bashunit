@@ -2,7 +2,7 @@ Running tests/acceptance/fixtures/tests_path/a_test.sh
 [32m✓ Passed[0m: Assert greater and less than
 [32m✓ Passed[0m: Assert empty
 Running tests/acceptance/fixtures/tests_path/other_test.sh
-[32m✓ Passed[0m: Assert equals
+[32m✓ Passed[0m: Assert same
 [32m✓ Passed[0m: Assert contains
 
 [2mTests:     [0m [32m4 passed[0m, 4 total

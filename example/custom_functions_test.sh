@@ -6,9 +6,9 @@ function set_up() {
 }
 
 function test_say_hi_Alice() {
-  assert_equals "Hi, Alice!" "$(say_hi "Alice")"
+  assert_same "Hi, Alice!" "$(say_hi "Alice")"
 }
 
 function test_say_hi_Bob() {
-  assert_equals "Hi, Bob!" "$(say_hi "Bob")"
+  assert_same "Hi, Bob!" "$(say_hi "Bob")"
 }

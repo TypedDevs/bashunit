@@ -72,7 +72,7 @@ function assert_have_been_called_with() {
 
   if [[ "$expected" != "${!actual}" ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got" "${!actual}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "${!actual}"
     return
   fi
 

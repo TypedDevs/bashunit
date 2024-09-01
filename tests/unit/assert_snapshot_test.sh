@@ -12,9 +12,9 @@ function test_creates_a_snapshot() {
 
   assert_match_snapshot "Expected snapshot"
 
-  assert_equals "$expected" "$_ASSERTIONS_SNAPSHOT"
+  assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
   assert_file_exists $snapshot_file_path
-  assert_equals "Expected snapshot" "$(cat $snapshot_file_path)"
+  assert_same "Expected snapshot" "$(cat $snapshot_file_path)"
 
   rm $snapshot_file_path
 }
@@ -28,5 +28,5 @@ function test_unsuccessful_assert_match_snapshot() {
   local actual
   actual="$(assert_match_snapshot "Expected snapshot")"
 
-  assert_equals_ignore_colors "$expected" "$actual"
+  assert_equals "$expected" "$actual"
 }
