@@ -5,14 +5,12 @@
 - Fixed `--filter|-f` to work with `test_*` matching function name input.
 - Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
 - Added assertions to log file
-- Added `assert_same`, it checks special chars
-    - Changed `assert_equals` to ignore special chars
-    - Removed `assert_equals_ignore_colors`
-- Improved UX by
-    - Removing trailing slashes `/` from the test directories naming output.
-    - Align "Expected" and "but got" on `assert_*` fails message.
+- Rename the current `assert_equals` to `assert_same`
+- Rename `assert_equals_ignore_colors` to `assert_equals` and ignore all special chars
 - Data providers support multiple arguments
-    - Remove `multi-invokers` in favor of `data providers`
+- Remove `multi-invokers` in favor of `data providers`
+- Removing trailing slashes `/` from the test directories naming output.
+- Align "Expected" and "but got" on `assert_*` fails message.
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART
