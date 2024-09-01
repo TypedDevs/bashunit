@@ -322,16 +322,23 @@ function test_successful_assert_equals() {
     "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
 }
 
-function test_unsuccessful_assert_equals() {
+function test_successful_assert_equals_with_special_chars() {
   local string="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
 
+  assert_equals "$string" "$string"
+}
+
+function test_unsuccessful_assert_equals() {
+  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str1"
+  local str2="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str2"
+
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(console_results::print_failed_test \
       "Unsuccessful assert equals"\
-      "$string"\
+      "✗ Failed str1"\
       "but got "\
-      "✗ Failed foo")"\
-    "$(assert_equals "$string" "$string")"
+      "✗ Failed str2")"\
+    "$(assert_equals "$str1" "$str2")"
 }
 
 function test_successful_assert_line_count_empty_str() {
