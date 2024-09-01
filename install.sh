@@ -24,10 +24,9 @@ function build_and_install_beta() {
   git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp_bashunit 2>/dev/null
   cd temp_bashunit
   ./build.sh >/dev/null
-  cd ..
-
   local latest_commit
-  latest_commit=$(git rev-parse --short=8 HEAD);
+  latest_commit=$(git rev-parse --short=8 HEAD)
+  cd ..
 
   local beta_version
   beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍 #'"$latest_commit"
