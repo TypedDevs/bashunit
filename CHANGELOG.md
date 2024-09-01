@@ -5,7 +5,9 @@
 - Fixed `--filter|-f` to work with `test_*` matching function name input.
 - Improved `--filter|-f` to match function name with input string irrespective with location to `test` prefix.
 - Add assertions to log file
-- Improve UX by Removing trailing slashes `/` from the test directories naming output.
+- Improve UX by
+    - Removing trailing slashes `/` from the test directories naming output.
+    - Align "Expected" and "but got" on `assert_*` fails message.
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART

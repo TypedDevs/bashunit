@@ -41,7 +41,7 @@ Run a core assert function standalone without a test context. Read more: [Standa
 ```[Output]
 ✗ Failed: Main::exec assert
     Expected 'foo'
-    but got 'bar'
+    but got  'bar'
 ```
 :::
 
