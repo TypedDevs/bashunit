@@ -149,3 +149,16 @@ function helpers::get_latest_tag() {
     sort -Vr |
     head -n 1
 }
+
+function helpers::find_total_tests() {
+    local files=("$@")
+    local total_count=0
+
+    for file in "${files[@]}"; do
+        local count
+        count=$(grep -r -E '^\s*function\s+test' "$file" --include=\*.sh 2>/dev/null | wc -l)
+        total_count=$((total_count + count))
+    done
+
+    echo "$total_count"
+}

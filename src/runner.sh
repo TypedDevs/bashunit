@@ -16,6 +16,8 @@ function runner::load_test_files() {
     fi
   fi
 
+  console_header::print_total_tests "${files[@]}"
+
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue

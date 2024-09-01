@@ -69,3 +69,11 @@ Options:
 See more: https://bashunit.typeddevs.com/command-line
 EOF
 }
+
+function console_header::print_total_tests() {
+  local files=("${@}")
+
+  local total_tests
+  total_tests=$(helpers::find_total_tests "${files[@]}")
+  printf "Total tests: %s\n" "$total_tests"
+}
