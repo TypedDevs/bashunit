@@ -4,8 +4,19 @@ function main::exec_tests() {
   local filter=$1
   local files=("${@:2}")
 
-  console_header::print_version_with_env
-  runner::load_test_files "$filter" "${files[@]}"
+  local test_files=()
+  while IFS= read -r line; do
+    test_files+=("$line")
+  done < <(helper::load_test_files "$filter" "${files[@]}")
+
+  if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
+    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    console_header::print_help
+    exit 1
+  fi
+
+  console_header::print_version_with_env "${test_files[@]}"
+  runner::load_test_files "$filter" "${test_files[@]}"
   console_results::render_result
   exit_code=$?
 

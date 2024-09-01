@@ -45,11 +45,13 @@ Once **bashunit** is installed, you're ready to get started.
 
 4.  If everything works correctly, you should see an output similar to the following:
     ```
-    Running tests/example_test.sh
+    bashunit - 0.14.0 | Total tests: 1
+    Running local/example_test.sh
     ✓ Passed: Bashunit is working
 
     Tests:      1 passed, 1 total
     Assertions: 1 passed, 1 total
+
     All tests passed
     Time taken: 100 ms
     ```

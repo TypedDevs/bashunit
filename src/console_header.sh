@@ -1,6 +1,21 @@
 #!/bin/bash
 
+function console_header::print_version_with_env() {
+  local files=("${@:-}")
+  local should_print_ascii="true"
+
+  if [[ "$BASHUNIT_SHOW_HEADER" != "$should_print_ascii" ]]; then
+    return
+  fi
+
+  console_header::print_version "${files[@]}"
+}
+
 function console_header::print_version() {
+  local files=("${@:-}")
+  local total_tests
+  total_tests=$(helpers::find_total_tests "${files[@]}")
+
   if [[ $BASHUNIT_HEADER_ASCII_ART == true ]]; then
     cat <<EOF
  _               _                   _
@@ -9,18 +24,21 @@ function console_header::print_version() {
 | |_) | (_| \__ \ | | | |_| | | | | | |_
 |_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
 EOF
-    printf "%s\n\n" "$BASHUNIT_VERSION"
-  else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
-  fi
-}
-
-function console_header::print_version_with_env() {
-    local should_print_ascii="true"
-    if [[ "$BASHUNIT_SHOW_HEADER" != "$should_print_ascii" ]]; then
-      return
+    if [ "$total_tests" -eq 0 ]; then
+      printf "%s\n" "$BASHUNIT_VERSION"
+    else
+      printf "%s | Total tests: %s\n" "$BASHUNIT_VERSION" "$total_tests"
     fi
-    console_header::print_version
+    return
+  fi
+
+  if [ "$total_tests" -eq 0 ]; then
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
+  else
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Total tests: %s\n"\
+      "$BASHUNIT_VERSION"\
+      "$total_tests"
+  fi
 }
 
 function console_header::print_help() {
@@ -68,4 +86,12 @@ Options:
 
 See more: https://bashunit.typeddevs.com/command-line
 EOF
+}
+
+function console_header::print_total_tests() {
+  local files=("${@}")
+
+  local total_tests
+  total_tests=$(helpers::find_total_tests "${files[@]}")
+  printf "\rTotal tests: %s\n" "$total_tests"
 }
