@@ -12,6 +12,7 @@
 - Align "Expected" and "but got" on `assert_*` fails message.
 - Change `-v` as shortcut for `--version`
 - Add `-vvv` as shortcut for `--verbose`
+- Fix wrong commit id when installing beta
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART
