@@ -44,8 +44,8 @@ Once **bashunit** is installed, you're ready to get started.
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
-    ```
-    bashunit - 0.15.0 | Total tests: 1
+    ```-vue
+    bashunit - {{ pkg.version }} | Total tests: 1
     Running local/example_test.sh
     ✓ Passed: Bashunit is working
 
@@ -61,5 +61,9 @@ Once **bashunit** is installed, you're ready to get started.
 ## Next steps
 
 Dive deeper into the documentation to discover the options provided by [test files](/test-files),
-[parameterized tests](/data-providers), [test doubles](test-doubles) and [assertions](assertions),
+[data providers](/data-providers), [test doubles](test-doubles) and [assertions](assertions),
 among many other features.
+
+<script setup>
+import pkg from '../package.json'
+</script>

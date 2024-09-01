@@ -72,7 +72,7 @@ jobs:
         run: "curl -s https://bashunit.typeddevs.com/install.sh"
 
       - name: "Test"
-        run: "./bashunit tests/**/*_test.sh"
+        run: "./bashunit tests"
 ```
 
 ::: tip
