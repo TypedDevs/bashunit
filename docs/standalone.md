@@ -39,7 +39,7 @@ The prefix `assert_` is optional.
 ```[Output]
 ✗ Failed: Main::exec not_equals
     Expected 'foo'
-    but got 'foo'
+    but got  'foo'
 ```
 :::
 

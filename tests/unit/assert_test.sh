@@ -16,7 +16,7 @@ function test_successful_assert_equals() {
 
 function test_unsuccessful_assert_equals() {
   assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful assert equals" "1" "but got" "2")"\
+    "$(console_results::print_failed_test "Unsuccessful assert equals" "1" "but got " "2")"\
     "$(assert_equals "1" "2")"
 }
 
@@ -26,7 +26,7 @@ function test_successful_assert_empty() {
 
 function test_unsuccessful_assert_empty() {
   assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful assert empty" "to be empty" "but got" "1")"\
+    "$(console_results::print_failed_test "Unsuccessful assert empty" "to be empty" "but got " "1")"\
     "$(assert_empty "1")"
 }
 
@@ -36,7 +36,7 @@ function test_successful_assert_not_empty() {
 
 function test_unsuccessful_assert_not_empty() {
   assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful assert not empty" "to not be empty" "but got" "")"\
+    "$(console_results::print_failed_test "Unsuccessful assert not empty" "to not be empty" "but got " "")"\
     "$(assert_not_empty "")"
 }
 
@@ -46,7 +46,7 @@ function test_successful_assert_not_equals() {
 
 function test_unsuccessful_assert_not_equals() {
   assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got" "1")"\
+    "$(console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")"\
     "$(assert_not_equals "1" "1")"
 }
 
@@ -329,7 +329,7 @@ function test_unsuccessful_assert_equals_ignore_colors() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert equals ignore colors"\
       "$string"\
-      "but got"\
+      "but got "\
       "✗ Failed foo")"\
     "$(assert_equals_ignore_colors "$string" "$string")"
 }

@@ -3,7 +3,7 @@ Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 [32m✓ Passed[0m: Assert contains
 [31m✗ Failed[0m: Assert failing
     [2mExpected[0m [1m'1'[0m
-    [2mbut got[0m [1m'0'[0m
+    [2mbut got [0m [1m'0'[0m
 [32m✓ Passed[0m: Assert greater and less than
 [32m✓ Passed[0m: Assert empty
 
