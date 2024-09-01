@@ -59,5 +59,5 @@ Once **bashunit** is installed, you're ready to get started.
 ## Next steps
 
 Dive deeper into the documentation to discover the options provided by [test files](/test-files),
-[parameterized tests](/parameterized-tests), [test doubles](test-doubles) and [assertions](assertions),
+[parameterized tests](/data-providers), [test doubles](test-doubles) and [assertions](assertions),
 among many other features.

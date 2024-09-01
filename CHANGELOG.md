@@ -8,6 +8,8 @@
 - Improve UX by
     - Removing trailing slashes `/` from the test directories naming output.
     - Align "Expected" and "but got" on `assert_*` fails message.
+- Data providers support multiple arguments
+    - Remove `multi-invokers` in favor of `data providers`
 - Add `BASHUNIT_` suffix to all .env config keys
     - BASHUNIT_SHOW_HEADER
     - BASHUNIT_HEADER_ASCII_ART
