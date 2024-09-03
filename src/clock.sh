@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function clock::now() {
-  if perl --version > /dev/null 2>&1; then
+  if perl -MTime::HiRes -e "" > /dev/null 2>&1; then
     perl -MTime::HiRes -e 'printf("%.0f\n",Time::HiRes::time()*1000)'
   elif [[ "$_OS" != "OSX" ]]; then
     date +%s%N
