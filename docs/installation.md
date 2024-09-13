@@ -69,10 +69,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: "Install bashunit"
-        run: "curl -s https://bashunit.typeddevs.com/install.sh"
+        run: |
+          curl -s https://bashunit.typeddevs.com/install.sh > install.sh
+          chmod +x install.sh
+          ./install.sh
 
       - name: "Test"
-        run: "./bashunit tests"
+        run: "./lib/bashunit tests"
 ```
 
 ::: tip
