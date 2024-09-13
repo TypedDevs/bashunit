@@ -188,6 +188,9 @@ function runner::run_test() {
   if [[ "$error_msg" == *"command not found"* ]]; then
     runtime_error=$(echo "${error_msg#*: }" | tr -d '\n')
   fi
+  if [[ "$error_msg" == *"unbound variable"* ]]; then
+    runtime_error=$(echo "${error_msg#*: }" | tr -d '\n')
+  fi
 
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
