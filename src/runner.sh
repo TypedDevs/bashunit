@@ -171,7 +171,7 @@ function runner::run_test() {
     state::export_assertions_count
   )
 
-  # Closes FD 3, which was used temporarily to hold the original std-output.
+  # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
   runner::parse_execution_result "$test_execution_result"
@@ -182,6 +182,13 @@ function runner::run_test() {
     tail -n 1 |\
     sed -E -e 's/(.*)##ASSERTIONS_FAILED=.*/\1/g'\
   )
+
+  local error_msg
+  error_msg="${test_execution_result%%##ASSERTIONS*}"
+  if [[ "$error_msg" == *"command not found"* ]]; then
+    runtime_error=$(echo "${error_msg#*: }" | tr -d '\n')
+  fi
+
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
