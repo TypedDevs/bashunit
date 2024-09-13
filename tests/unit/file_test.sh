@@ -103,3 +103,18 @@ function test_successful_assert_files_equals() {
   rm "$file1"
   rm "$file2"
 }
+
+# shellcheck disable=SC2155
+function test_fails_assert_files_equals() {
+  datetime=$(date +%s)
+  local file1="/tmp/a_random_file_${datetime}_1"
+  local file2="/tmp/a_random_file_${datetime}_2"
+
+  echo "one content" > "$file1"
+  echo "another content" > "$file2"
+  actual="$(assert_files_equals "$file1" "$file2")"
+  assert_contains "Fails assert files equals" "$actual"
+
+  rm "$file1"
+  rm "$file2"
+}

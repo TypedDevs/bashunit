@@ -60,7 +60,7 @@ function assert_files_equals() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}" \
+    console_results::print_failed_test "${label}" "${expected}" "compared" "${actual}" \
         "Diff" "$(diff -u "$expected" "$actual" || true)"
     return
   fi
