@@ -84,3 +84,22 @@ function test_unsuccessful_assert_is_file_empty() {
       "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
     "$(assert_is_file_empty "$a_file")"
 }
+
+# shellcheck disable=SC2155
+function test_successful_assert_files_equals() {
+  local file1="/tmp/a_random_file_$(date +%s)1"
+  local file2="/tmp/a_random_file_$(date +%s)2"
+
+  file_content="My multiline file
+  Special char: \$, \*, and \\
+
+  another extra line"
+
+  echo "$file_content" > "$file1"
+  echo "$file_content" > "$file2"
+
+  assert_empty "$(assert_files_equals "$file1" "$file2")"
+
+  rm "$file1"
+  rm "$file2"
+}
