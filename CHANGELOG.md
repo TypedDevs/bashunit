@@ -3,7 +3,8 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.15.0...main)
 
 - Fix clock::now can't locate Time when is not available.
-- Docs: updated github actions installation steps
+- Docs: updated GitHub actions installation steps
+- Fixed failing tests with command not found
 
 ## [0.15.0](https://github.com/TypedDevs/bashunit/compare/0.14.0...0.15.0) - 2024-09-01
 
