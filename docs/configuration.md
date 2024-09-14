@@ -152,15 +152,42 @@ BASHUNIT_SHOW_EXECUTION_TIME=false
 
 ## Log JUnit
 
-> `BASHUNIT_LOG_JUNIT=log-junit.xml`
+> `BASHUNIT_LOG_JUNIT=file`
 
 Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
 
+::: code-group
+```bash [Example]
+BASHUNIT_LOG_JUNIT=log-junit.xml
+```
+:::
+
 ## Report HTML
 
-> `BASHUNIT_REPORT_HTML=report.html`
+> `BASHUNIT_REPORT_HTML=file`
 
 Create a report HTML file that contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+BASHUNIT_REPORT_HTML=report.html
+```
+:::
+
+## Tests env
+
+> `BASHUNIT_TESTS_ENV=file`
+
+Specifies an additional `.env` file to be loaded for all tests cases.
+Useful to set up global variables accessible in all your tests.
+
+Similarly, you can use load an additional `.env` via the [command line](/command-line#environment).
+
+::: code-group
+```bash [Example]
+BASHUNIT_TESTS_ENV=.env.tests
+```
+:::
 
 <script setup>
 import pkg from '../package.json'

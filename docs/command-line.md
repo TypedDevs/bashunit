@@ -63,9 +63,11 @@ Enables a shell mode in which all executed commands are printed to the terminal.
 
 Loads a custom env file overriding the `.env` environment variables.
 
+You can use `BASHUNIT_TESTS_ENV` option in your [configuration](/configuration#tests-env).
+
 ::: code-group
 ```bash [Example]
-./bashunit tests --env .env.production
+./bashunit tests --env .env.tests
 ```
 :::
 
