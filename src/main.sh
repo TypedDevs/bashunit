@@ -15,7 +15,7 @@ function main::exec_tests() {
     exit 1
   fi
 
-  console_header::print_version_with_env "${test_files[@]}"
+  console_header::print_version_with_env "$filter" "${test_files[@]}"
   runner::load_test_files "$filter" "${test_files[@]}"
   console_results::render_result
   exit_code=$?
