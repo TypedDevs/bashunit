@@ -622,6 +622,46 @@ function test_failure() {
 ```
 :::
 
+## assert_files_equals
+> `assert_files_equals "expected" "actual"`
+
+Reports an error if `expected` and `actual` are not equals.
+
+[assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "file content" > "$actual"
+
+  assert_files_equals "$expected" "$actual"
+}
+
+function test_failure() {
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "different content" > "$actual"
+
+  assert_files_equals "$expected" "$actual"
+}
+```
+```[Output]
+✓ Passed: Success
+✗ Failed: Failure
+    Expected '/tmp/file1.txt'
+    Compared '/tmp/file2.txt'
+    Diff '@@ -1 +1 @@
+-file content
++different content'
+```
+:::
+
 ## assert_not_same
 > `assert_not_same "expected" "actual"`
 
@@ -878,6 +918,46 @@ function test_failure() {
 
   assert_is_directory_not_writable "$directory"
 }
+```
+:::
+
+
+## assert_files_not_equals
+> `assert_files_not_equals "expected" "actual"`
+
+Reports an error if `expected` and `actual` are not equals.
+
+[assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "different content" > "$actual"
+
+  assert_files_not_equals "$expected" "$actual"
+}
+
+function test_failure() {
+
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "file content" > "$actual"
+
+  assert_files_not_equals "$expected" "$actual"
+}
+```
+```[Output]
+✓ Passed: Success
+✗ Failed: Failure
+    Expected '/tmp/file1.txt'
+    Compared '/tmp/file2.txt'
+    Diff 'Files are equals'
 ```
 :::
 
