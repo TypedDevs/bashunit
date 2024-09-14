@@ -67,7 +67,7 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
 }
 
 function test_successful_assert_is_file_empty() {
-  readonly path="/tmp/a_random_file_$(date +%s)"
+  local path="/tmp/a_random_file_$(date +%s)"
   touch "$path"
 
   assert_empty "$(assert_is_file_empty "$path")"
@@ -87,21 +87,22 @@ function test_unsuccessful_assert_is_file_empty() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_files_equals() {
-  local file1="/tmp/a_random_file_$(date +%s)1"
-  local file2="/tmp/a_random_file_$(date +%s)2"
+  datetime=$(date +%s)
+  local expected="/tmp/a_random_file_${datetime}_1"
+  local actual="/tmp/a_random_file_${datetime}_2"
 
-  file_content="My multiline file
+  local file_content="My multiline file
   Special char: \$, \*, and \\
 
   another extra line"
 
-  echo "$file_content" > "$file1"
-  echo "$file_content" > "$file2"
+  echo "$file_content" > "$expected"
+  echo "$file_content" > "$actual"
 
-  assert_empty "$(assert_files_equals "$file1" "$file2")"
+  assert_empty "$(assert_files_equals "$expected" "$actual")"
 
-  rm "$file1"
-  rm "$file2"
+  rm "$expected"
+  rm "$actual"
 }
 
 # shellcheck disable=SC2155

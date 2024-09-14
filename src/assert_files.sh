@@ -56,14 +56,13 @@ function assert_files_equals() {
   local expected="$1"
   local actual="$2"
 
-  if ! diff -u "$expected" "$actual"; then
+  if [[ "$(diff -u "$expected" "$actual")" != '' ]] ; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
 
-    actual_diff="$(echo -e "$(diff -u "$expected" "$actual" | sed '1,2d')")"
     console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
-        "Diff" "$actual_diff"
+        "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
     return
   fi
 
