@@ -67,7 +67,7 @@ function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
 }
 
 function test_successful_assert_is_file_empty() {
-  local path="/tmp/a_random_file_$(date +%s)"
+  readonly path="/tmp/a_random_file_$(date +%s)"
   touch "$path"
 
   assert_empty "$(assert_is_file_empty "$path")"
@@ -83,40 +83,4 @@ function test_unsuccessful_assert_is_file_empty() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")"\
     "$(assert_is_file_empty "$a_file")"
-}
-
-# shellcheck disable=SC2155
-function test_successful_assert_files_equals() {
-  datetime=$(date +%s)
-  local expected="/tmp/a_random_file_${datetime}_1"
-  local actual="/tmp/a_random_file_${datetime}_2"
-
-  local file_content="My multiline file
-  Special char: \$, \*, and \\
-
-  another extra line"
-
-  echo "$file_content" > "$expected"
-  echo "$file_content" > "$actual"
-
-  assert_empty "$(assert_files_equals "$expected" "$actual")"
-
-  rm "$expected"
-  rm "$actual"
-}
-
-# shellcheck disable=SC2155
-function test_fails_assert_files_equals() {
-  datetime=$(date +%s)
-  local expected="/tmp/a_random_file_${datetime}_1"
-  local actual="/tmp/a_random_file_${datetime}_2"
-
-  echo -e "same\noriginal content" > "$expected"
-  echo -e "same\ndifferent content" > "$actual"
-
-  actual="$(assert_files_equals "$expected" "$actual")"
-  assert_contains "Fails assert files equals" "$actual"
-
-  rm "$expected"
-  rm "$actual"
 }
