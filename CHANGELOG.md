@@ -2,9 +2,12 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.15.0...main)
 
-- Fix clock::now can't locate Time when is not available.
-- Docs: updated GitHub actions installation steps
-- Fixed failing tests with command not found
+- Fixed clock::now can't locate Time when is not available.
+- Docs updated GitHub actions installation steps
+- Fixed failing tests when
+    - command not found
+    - unbound variable
+- Added `assert_files_equals`, `assert_files_not_equals`
 
 ## [0.15.0](https://github.com/TypedDevs/bashunit/compare/0.14.0...0.15.0) - 2024-09-01
 

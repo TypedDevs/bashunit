@@ -51,3 +51,37 @@ function assert_is_file_empty() {
 
   state::add_assertions_passed
 }
+
+function assert_files_equals() {
+  local expected="$1"
+  local actual="$2"
+
+  if [[ "$(diff -u "$expected" "$actual")" != '' ]] ; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+
+    console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+        "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
+function assert_files_not_equals() {
+  local expected="$1"
+  local actual="$2"
+
+  if [[ "$(diff -u "$expected" "$actual")" == '' ]] ; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+
+    console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+        "Diff" "Files are equals"
+    return
+  fi
+
+  state::add_assertions_passed
+}
