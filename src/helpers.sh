@@ -151,17 +151,23 @@ function helpers::get_latest_tag() {
 }
 
 function helpers::find_total_tests() {
-    local files=("$@")
+    local filter=${1:-}
+    local files=("${@:2}")
     local total_count=0
 
     for file in "${files[@]}"; do
         local count
-        count=$(grep -r -E '^\s*function\s+test' "$file" --include=\*.sh 2>/dev/null | wc -l)
+        if [[ -n "$filter" ]]; then
+            count=$(grep -r -E "^\s*function\s+test.*$filter" "$file" --include=\*.sh 2>/dev/null | wc -l)
+        else
+            count=$(grep -r -E '^\s*function\s+test' "$file" --include=\*.sh 2>/dev/null | wc -l)
+        fi
         total_count=$((total_count + count))
     done
 
     echo "$total_count"
 }
+
 
 function helper::load_test_files() {
   local filter=$1

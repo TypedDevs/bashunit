@@ -1,20 +1,30 @@
 #!/bin/bash
 
 function console_header::print_version_with_env() {
-  local files=("${@:-}")
+  local filter=${1:-}
+  local files=("${@:2}")
   local should_print_ascii="true"
 
   if [[ "$BASHUNIT_SHOW_HEADER" != "$should_print_ascii" ]]; then
     return
   fi
 
-  console_header::print_version "${files[@]}"
+  console_header::print_version "$filter" "${files[@]}"
 }
 
 function console_header::print_version() {
-  local files=("${@:-}")
+  local filter=${1:-}
+  if [[ -n "$filter" ]]; then
+   shift
+  fi
+
+  local files=("$@")
   local total_tests
-  total_tests=$(helpers::find_total_tests "${files[@]}")
+  if [[ ${#files[@]} -eq 0 ]]; then
+    total_tests=0
+  else
+    total_tests=$(helpers::find_total_tests "$filter" "${files[@]}")
+  fi
 
   if [[ $BASHUNIT_HEADER_ASCII_ART == true ]]; then
     cat <<EOF
