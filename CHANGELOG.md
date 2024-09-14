@@ -9,6 +9,7 @@
     - unbound variable
 - Added `assert_files_equals`, `assert_files_not_equals`
 - Fixed total tests wrong number
+- Added `BASHUNIT_TESTS_ENV`
 
 ## [0.15.0](https://github.com/TypedDevs/bashunit/compare/0.14.0...0.15.0) - 2024-09-01
 

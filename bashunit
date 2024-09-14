@@ -86,6 +86,9 @@ while [[ $# -gt 0 ]]; do
   shift
 done
 
+# shellcheck disable=SC1090
+[[ -f "$BASHUNIT_TESTS_ENV" ]] && source "$BASHUNIT_TESTS_ENV"
+
 set +eu
 
 if [[ -n "$_ASSERT_FN" ]]; then
