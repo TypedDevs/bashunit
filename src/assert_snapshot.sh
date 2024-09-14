@@ -4,11 +4,11 @@ function assert_match_snapshot() {
   local actual
   actual=$(echo -n "$1" | tr -d '\r')
   local directory
-    directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
   local test_file
-    test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
+  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
   local snapshot_name
-    snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
+  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
   local snapshot_file
   snapshot_file="${directory}/${test_file}.${snapshot_name}"
 
@@ -35,4 +35,3 @@ function assert_match_snapshot() {
 
   state::add_assertions_passed
 }
-
