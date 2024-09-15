@@ -174,22 +174,18 @@ BASHUNIT_REPORT_HTML=report.html
 ```
 :::
 
-## Load file
+## Tests env
 
-> `BASHUNIT_LOAD_FILE=file`
+> `BASHUNIT_TESTS_ENV=file`
 
-Specifies an additional file to be loaded for all tests cases.
-Useful to set up global variables or functions accessible in all your tests.
+Specifies an additional `.env` file to be loaded for all tests cases.
+Useful to set up global variables accessible in all your tests.
 
 Similarly, you can use load an additional `.env` via the [command line](/command-line#environment).
 
 ::: code-group
 ```bash [Example]
-# a simple .env file
-BASHUNIT_LOAD_FILE=".env.tests"
-
-# or a fully qualified script
-BASHUNIT_LOAD_FILE="tests/helpers.sh"
+BASHUNIT_TESTS_ENV=.env.tests
 ```
 :::
 

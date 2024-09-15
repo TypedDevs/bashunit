@@ -87,7 +87,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # shellcheck disable=SC1090
-[[ -f "$BASHUNIT_LOAD_FILE" ]] && source "$BASHUNIT_LOAD_FILE"
+[[ -f "$BASHUNIT_TESTS_ENV" ]] && source "$BASHUNIT_TESTS_ENV"
 
 set +eu
 
