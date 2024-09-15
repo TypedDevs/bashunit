@@ -81,14 +81,14 @@ function test_successful_unset_if_exists() {
 
 function test_check_duplicate_functions_with_duplicates() {
   local file
-  file="$(dirname "${BASH_SOURCE[0]}")/fixtures/duplicate_functions.sh"
+  file="$(current_dir)/fixtures/duplicate_functions.sh"
 
   assert_general_error "$(helper::check_duplicate_functions "$file")"
 }
 
 function test_check_duplicate_functions_without_duplicates() {
   local file
-  file="$(dirname "${BASH_SOURCE[0]}")/fixtures/no_duplicate_functions.sh"
+  file="$(current_dir)/fixtures/no_duplicate_functions.sh"
 
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }
@@ -161,7 +161,7 @@ function test_trim() {
 
 function test_find_files_recursive_given_file() {
   local path
-  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests/example1_test.sh"
+  path="$(current_dir)/fixtures/tests/example1_test.sh"
 
   local result
   result=$(helper::find_files_recursive "$path")
@@ -171,7 +171,7 @@ function test_find_files_recursive_given_file() {
 
 function test_find_files_recursive_given_dir() {
   local path
-  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests"
+  path="$(current_dir)/fixtures/tests"
 
   local result
   result=$(helper::find_files_recursive "$path")
@@ -183,7 +183,7 @@ tests/unit/fixtures/tests/example2_test.sh"\
 
 function test_find_files_recursive_given_wildcard() {
   local path
-  path="$(dirname "${BASH_SOURCE[0]}")/fixtures/tests/*2_test.sh"
+  path="$(current_dir)/fixtures/tests/*2_test.sh"
 
   local result
   result=$(helper::find_files_recursive "$path")
