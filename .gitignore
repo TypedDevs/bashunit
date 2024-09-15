@@ -8,9 +8,9 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 
 # installation
+lib/
 bin/bashunit
 bin/checksum
-lib/bashunit
 
 # logger
 log-junit.xml
