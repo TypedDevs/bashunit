@@ -18,7 +18,7 @@ function test_unsuccessful_assert_directory_exists() {
 
 function test_assert_directory_exists_should_not_work_with_files() {
   local a_file
-  a_file="$(cd "$(current_dir)" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  a_file="$(cd "$(current_dir)" && pwd)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -60,7 +60,7 @@ function test_unsuccessful_assert_is_directory() {
 
 function test_unsuccessful_assert_is_directory_when_a_file_is_given() {
   local a_file
-  a_file="$(cd "$(current_dir)" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  a_file="$(cd "$(current_dir)" && pwd)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -117,7 +117,7 @@ function test_successful_assert_is_directory_readable() {
 
 function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
   local a_file
-  a_file="$(cd "$(current_dir)" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  a_file="$(cd "$(current_dir)" && pwd)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -230,7 +230,7 @@ function test_unsuccessful_assert_is_directory_writable() {
 
 function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
   local a_file
-  a_file="$(cd "$(current_dir)" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+  a_file="$(cd "$(current_dir)" && pwd)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
