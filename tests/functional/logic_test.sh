@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+ROOT_DIR="$(current_dir)"
 
 SCRIPT="$ROOT_DIR/logic.sh"
 
