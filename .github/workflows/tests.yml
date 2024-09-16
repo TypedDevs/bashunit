@@ -32,3 +32,22 @@ jobs:
       - name: Run Tests
         run: ${{ matrix.script_name }}
 
+  alpine:
+    name: "Run tests on alpine"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+        include:
+          - os: ubuntu-latest
+            script_name: 'make test-alpine'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Tests
+        run: ${{ matrix.script_name }}
+

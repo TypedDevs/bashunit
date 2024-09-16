@@ -1,8 +1,9 @@
 # Changelog
 
-## Unreleased
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.16.0...main)
 
 - Rename `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
+- Added support for running tests in Alpine
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 

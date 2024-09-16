@@ -5,6 +5,7 @@ SHELL=/bin/bash
 STATIC_ANALYSIS_CHECKER := $(shell which shellcheck 2> /dev/null)
 LINTER_CHECKER := $(shell which ec 2> /dev/null)
 GIT_DIR = $(shell git rev-parse --git-dir 2> /dev/null)
+BASHUNIT_ALPINE_TEST_VERSION_DEFAULT:=3.20
 
 OS:=
 ifeq ($(OS),Windows_NT)
@@ -33,6 +34,10 @@ else
 	ifneq ($(filter arm%,$(UNAME_P)),)
 		OS+=_ARM
 	endif
+endif
+
+ifeq ($(BASHUNIT_ALPINE_TEST_VERSION),)
+	BASHUNIT_ALPINE_TEST_VERSION:=$(BASHUNIT_ALPINE_TEST_VERSION_DEFAULT)
 endif
 
 help:
@@ -66,6 +71,16 @@ test: $(TEST_SCRIPTS)
 test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)
 	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
+
+test-alpine:
+	@# Run tests for Alpine in a container with only the very basic dependencies. Bashunit should work for the base
+	@# Alpine installation.
+	docker run -v $$(pwd):/working --rm alpine:${BASHUNIT_ALPINE_TEST_VERSION} /bin/sh -c " \
+		apk update &&\
+		apk add bash make &&\
+		adduser -D builder &&\
+		chown -R builder /working && \
+		su - builder -c 'cd /working; make test';"
 
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"
