@@ -59,7 +59,7 @@ Enables a shell mode in which all executed commands are printed to the terminal.
 
 ## Environment
 
-> `bashunit -e|--env "file path"`
+> `bashunit -e|--env|--load "file path"`
 
 Loads a custom env file overriding the `.env` environment variables.
 

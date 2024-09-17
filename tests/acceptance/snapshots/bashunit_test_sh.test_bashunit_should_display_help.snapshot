@@ -12,8 +12,8 @@ Options:
   --debug
     Print all executed shell commands to the terminal.
 
-  -e|--env <file-path>
-    Load a custom env file overriding the .env environment variables.
+  -e|--env|--load <file-path>
+    Load a custom file, overriding the existing .env variables or loading a file with global functions.
 
   -f|--filter <filter>
     Filters the tests to run based on the test name.
