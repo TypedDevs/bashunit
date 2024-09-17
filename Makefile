@@ -61,7 +61,7 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS)
+	@./bashunit $(TEST_SCRIPTS) -e tests/globals.sh
 
 test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)

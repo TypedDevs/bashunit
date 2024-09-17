@@ -18,7 +18,7 @@ jobs:
           - windows-latest
         include:
           - os: windows-latest
-            script_name: 'bash -c "./bashunit tests/**/*_test.sh"'
+            script_name: 'bash -c "./bashunit -e tests/globals.sh tests/**/*_test.sh"'
           - os: ubuntu-latest
             script_name: 'make test'
           - os: macos-latest

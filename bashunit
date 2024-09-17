@@ -52,7 +52,7 @@ while [[ $# -gt 0 ]]; do
     -S|--stop-on-failure)
       export BASHUNIT_STOP_ON_FAILURE=true
       ;;
-    -e|--env)
+    -e|--env|--load)
       # shellcheck disable=SC1090
       source "$2"
       shift
@@ -87,7 +87,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # shellcheck disable=SC1090
-[[ -f "$BASHUNIT_TESTS_ENV" ]] && source "$BASHUNIT_TESTS_ENV"
+[[ -f "$BASHUNIT_LOAD_FILE" ]] && source "$BASHUNIT_LOAD_FILE"
 
 set +eu
 

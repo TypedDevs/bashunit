@@ -2,7 +2,7 @@
 set -euo pipefail
 
 function set_up() {
-  _ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+  _ROOT_DIR="$(current_dir)"
   source "$_ROOT_DIR/custom_asserts.sh"
 }
 
