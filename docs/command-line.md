@@ -61,7 +61,7 @@ Enables a shell mode in which all executed commands are printed to the terminal.
 
 > `bashunit -e|--env|--load "file path"`
 
-Loads a custom env file overriding the `.env` environment variables.
+Load a custom file, overriding the existing `.env` variables or loading a file with global functions.
 
 You can use `BASHUNIT_LOAD_FILE` option in your [configuration](/configuration#tests-env).
 

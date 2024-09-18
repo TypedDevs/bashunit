@@ -181,7 +181,7 @@ BASHUNIT_REPORT_HTML=report.html
 Specifies an additional file to be loaded for all tests cases.
 Useful to set up global variables or functions accessible in all your tests.
 
-Similarly, you can use load an additional `.env` via the [command line](/command-line#environment).
+Similarly, you can use load an additional file via the [command line](/command-line#environment).
 
 ::: code-group
 ```bash [Example]
