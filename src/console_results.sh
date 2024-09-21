@@ -103,7 +103,7 @@ function console_results::print_execution_time() {
     return
   fi
 
-  _EXECUTION_TIME=$(clock::runtime_in_milliseconds)
+  _EXECUTION_TIME=$(clock::total_runtime_in_milliseconds)
   printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
 }
 
