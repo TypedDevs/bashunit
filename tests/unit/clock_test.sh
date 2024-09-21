@@ -32,9 +32,7 @@ function test_now_on_linux_unknown() {
 function test_now_on_linux_alpine() {
   export _OS="Linux"
   export _DISTRO="Alpine"
-  mock perl mock_non_existing_fn
-  mock awk echo "1720705883457"
-  mock adjtimex echo ""
+  mock perl echo "1720705883457"
 
   assert_same "1720705883457" "$(clock::now)"
 }
