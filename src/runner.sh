@@ -200,7 +200,7 @@ function runner::run_test() {
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$function_name" "$runtime_error"
+    console_results::print_error_test "$function_name" "$runtime_error" "$duration"
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     return
   fi
@@ -238,7 +238,7 @@ function runner::run_test() {
   local label
   label="$(helper::normalize_test_function_name "$function_name")"
 
-  console_results::print_successful_test "${label}" "$@"
+  console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
   logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
 }

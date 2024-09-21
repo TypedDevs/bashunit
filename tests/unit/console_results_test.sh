@@ -496,20 +496,25 @@ function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
   original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_SHOW_EXECUTION_TIME=false
+
   local actual
-  actual=$(console_results::print_successful_test "$test_name")
+  actual=$(console_results::print_successful_test "$test_name" "")
 
   assert_equals "✓ Passed: $test_name" "$actual"
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
 
 function test_print_successful_test_output_with_args() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_SHOW_EXECUTION_TIME=false
+
   local test_name="a custom test"
   local data="foo"
-  original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
-  export BASHUNIT_SIMPLE_OUTPUT=false
+
   local actual
-  actual=$(console_results::print_successful_test "$test_name" "$data")
+  actual=$(console_results::print_successful_test "$test_name" "" "$data")
 
   assert_equals "✓ Passed: $test_name ($data)" "$actual"
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
