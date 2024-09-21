@@ -14,4 +14,13 @@ _DEFAULT_BASHUNIT_LOAD_FILE=
 _DEFAULT_TERMINAL_WIDTH=150
 
 CAT="$(which cat)"
-TERMINAL_WIDTH=${TERM:+$(tput cols)} || TERMINAL_WIDTH=$_DEFAULT_TERMINAL_WIDTH
+
+if [[ -n "$TERM" && $(command -v tput) ]]; then
+    _cols=$(tput cols)
+elif command -v stty > /dev/null; then
+    _cols=$(stty size | cut -d' ' -f2)
+else
+    _cols=$_DEFAULT_TERMINAL_WIDTH
+fi
+
+TERMINAL_WIDTH=$_cols
