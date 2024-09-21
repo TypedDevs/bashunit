@@ -10,8 +10,9 @@ Options:
   -a|--assert <function ...args>
     Run a core assert function standalone without a test context.
 
-  --debug
+  --debug <?file-path>
     Print all executed shell commands to the terminal.
+    If a file-path is passed, it will redirect the output to that file.
 
   -e|--env|--load <file-path>
     Load a custom file, overriding the existing .env variables or loading a file with global functions.

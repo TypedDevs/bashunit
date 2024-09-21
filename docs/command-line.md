@@ -47,13 +47,16 @@ Run a core assert function standalone without a test context. Read more: [Standa
 
 ## Debug
 
-> `bashunit --debug`
+> `bashunit --debug <?file-path>`
 
-Enables a shell mode in which all executed commands are printed to the terminal. Printing every command as executed may help you visualize the script's control flow if it is not working as expected.
+Enables a shell mode in which all executed commands are printed to the terminal,
+or printed into a file if this is specified.
+
+Printing every command as executed may help you visualize the script's control flow if it is not working as expected.
 
 ::: code-group
 ```bash [Example]
-./bashunit --debug
+./bashunit --debug local/debug.sh
 ```
 :::
 
