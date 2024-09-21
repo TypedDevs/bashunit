@@ -288,6 +288,11 @@ function test_not_render_execution_time() {
 }
 
 function test_render_execution_time_on_osx() {
+  if [[ $_DISTRO == "Alpine" ]]; then
+    skip
+    return
+  fi
+
   local render_result
   render_result=$(
     _OS='OSX'

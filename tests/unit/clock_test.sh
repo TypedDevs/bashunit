@@ -20,13 +20,24 @@ function test_now_with_perl() {
   assert_same "1720705883457" "$(clock::now)"
 }
 
-function test_now_on_linux_without_perl() {
+function test_now_on_linux_unknown() {
   export _OS="Linux"
+  export _DISTRO="Unknown"
   mock perl mock_non_existing_fn
   mock date echo "1720705883457"
 
   assert_same "1720705883457" "$(clock::now)"
 }
+
+function test_now_on_linux_alpine() {
+  export _OS="Linux"
+  export _DISTRO="Alpine"
+  mock perl mock_non_existing_fn
+  mock awk echo "1720705883457"
+
+  assert_same "1720705883457" "$(clock::now)"
+}
+
 function test_now_on_windows_without_perl() {
   export _OS="Windows"
   mock perl mock_non_existing_fn
