@@ -55,7 +55,7 @@ Run tests from the library:
 ```bash
 # using make
 make test
-make alpine-test
+make test-alpine
 
 # using bashunit itself
 ./bashunit tests/**/*_test.sh
