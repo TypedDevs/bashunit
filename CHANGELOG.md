@@ -3,6 +3,8 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.16.0...main)
 
 - Add optional file-path as 2nd arg to `--debug` option
+- Add runtime per test
+- Simplify total tests display on header
 - Rename `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 - Added support for running tests in Alpine
 
