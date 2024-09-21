@@ -2,8 +2,8 @@
 set -euo pipefail
 
 function set_up() {
-  _ROOT_DIR="$(current_dir)"
-  source "$_ROOT_DIR/custom_asserts.sh"
+  # shellcheck disable=SC1091
+  source "$(current_dir)/custom_asserts.sh"
 }
 
 function test_assert_foo_passed() {
