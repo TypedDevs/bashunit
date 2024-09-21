@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add optional file-path as 2nd arg to `--debug` option
 - Rename `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
