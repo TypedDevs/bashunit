@@ -168,7 +168,6 @@ function helpers::find_total_tests() {
     echo "$total_count"
 }
 
-
 function helper::load_test_files() {
   local filter=$1
   local files=("${@:2}")

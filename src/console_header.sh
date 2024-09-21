@@ -37,7 +37,7 @@ EOF
     if [ "$total_tests" -eq 0 ]; then
       printf "%s\n" "$BASHUNIT_VERSION"
     else
-      printf "%s | Total tests: %s\n" "$BASHUNIT_VERSION" "$total_tests"
+      printf "%s | Tests: ~%s\n" "$BASHUNIT_VERSION" "$total_tests"
     fi
     return
   fi
@@ -45,7 +45,7 @@ EOF
   if [ "$total_tests" -eq 0 ]; then
     printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Total tests: %s\n"\
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: ~%s\n"\
       "$BASHUNIT_VERSION"\
       "$total_tests"
   fi
@@ -97,12 +97,4 @@ Options:
 
 See more: https://bashunit.typeddevs.com/command-line
 EOF
-}
-
-function console_header::print_total_tests() {
-  local files=("${@}")
-
-  local total_tests
-  total_tests=$(helpers::find_total_tests "${files[@]}")
-  printf "\rTotal tests: %s\n" "$total_tests"
 }
