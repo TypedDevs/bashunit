@@ -4,7 +4,10 @@ function clock::now() {
   if perl -MTime::HiRes -e "" > /dev/null 2>&1; then
     perl -MTime::HiRes -e 'printf("%.0f\n",Time::HiRes::time()*1000)'
   elif [[ "${_OS:-}" == "Linux" && "${_DISTRO:-}" == "Alpine" ]]; then
-    awk 'BEGIN { printf "%.0f\n", systime() }'
+    adjtimex | awk '
+        /time.tv_sec:/ { sec = $2 }
+        /time.tv_usec:/ { usec = $2 }
+        END { printf "%d\n", (sec + usec/1000) }'
   elif [[ "${_OS:-}" != "OSX" ]]; then
     date +%s%N
   else

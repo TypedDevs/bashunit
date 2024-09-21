@@ -34,6 +34,7 @@ function test_now_on_linux_alpine() {
   export _DISTRO="Alpine"
   mock perl mock_non_existing_fn
   mock awk echo "1720705883457"
+  mock adjtimex echo ""
 
   assert_same "1720705883457" "$(clock::now)"
 }
