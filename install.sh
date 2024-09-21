@@ -12,6 +12,7 @@ function get_latest_tag() {
     head -n 1
 }
 
+# shellcheck disable=SC2155
 declare -r LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
 
 DIR=${1-lib}

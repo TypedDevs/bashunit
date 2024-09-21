@@ -76,7 +76,6 @@ function runner::call_test_functions() {
 
       # Execute the test function for each line of data
       for data in "${provider_data[@]}"; do
-        # Split the line into individual arguments
         IFS=" " read -r -a args <<< "$data"
         if [ "${#args[@]}" -gt 1 ]; then
           runner::run_test "$script" "$function_name" "${args[@]}"
@@ -195,16 +194,20 @@ function runner::run_test() {
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
+  local end_time
+  end_time=$(clock::now)
+  local duration=$((end_time - start_time))
+
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$function_name" "$runtime_error"
-    logger::test_failed "$test_file" "$function_name" "$start_time" "$total_assertions"
+    console_results::print_error_test "$function_name" "$runtime_error" "$duration"
+    logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
-    logger::test_failed "$test_file" "$function_name" "$start_time" "$total_assertions"
+    logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
 
     if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
       exit 1
@@ -216,28 +219,28 @@ function runner::run_test() {
   if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
     state::add_tests_snapshot
     console_results::print_snapshot_test "$function_name"
-    logger::test_snapshot "$test_file" "$function_name" "$start_time" "$total_assertions"
+    logger::test_snapshot "$test_file" "$function_name" "$duration" "$total_assertions"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
-    logger::test_incomplete "$test_file" "$function_name" "$start_time" "$total_assertions"
+    logger::test_incomplete "$test_file" "$function_name" "$duration" "$total_assertions"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
-    logger::test_skipped "$test_file" "$function_name" "$start_time" "$total_assertions"
+    logger::test_skipped "$test_file" "$function_name" "$duration" "$total_assertions"
     return
   fi
 
   local label
   label="$(helper::normalize_test_function_name "$function_name")"
 
-  console_results::print_successful_test "${label}" "$@"
+  console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
-  logger::test_passed "$test_file" "$function_name" "$start_time" "$total_assertions"
+  logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
 }
 
 function runner::run_set_up() {

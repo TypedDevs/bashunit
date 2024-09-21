@@ -29,13 +29,9 @@ function logger::test_failed() {
 function logger::log() {
   local file="$1"
   local test_name="$2"
-  local start_time="$3"
+  local duration="$3"
   local assertions="$4"
   local status="$5"
-
-  local end_time
-  end_time=$(clock::now)
-  local duration=$((end_time - start_time))
 
   TEST_FILES+=("$file")
   TEST_NAMES+=("$test_name")

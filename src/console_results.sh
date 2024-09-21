@@ -119,12 +119,21 @@ function console_results::print_successful_test() {
   else
     local test_name=$1
     shift
+    local duration=${1:-"0"}
+    shift
 
+    local line
     if [[ -z "$*" ]]; then
-      printf "%s✓ Passed%s: %s\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}"
+      line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
     else
-      printf "%s✓ Passed%s: %s (%s)\n" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "${test_name}" "$*"
+      line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
     fi
+
+    local full_line=$line
+    if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
+      full_line="$(printf "%s\n" "$(str::rpad "$line" "($duration ms)")")"
+    fi
+    printf "%s\n" "$full_line"
   fi
 }
 
@@ -209,7 +218,8 @@ function console_results::print_error_test() {
   local test_name
   test_name=$(helper::normalize_test_function_name "$1")
   local error="$2"
+  local duration="$3"
 
   printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}"
+    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}(%s)\n" "${test_name}" "${error}" "$duration"
 }
