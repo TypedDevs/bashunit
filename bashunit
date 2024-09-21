@@ -47,6 +47,10 @@ while [[ $# -gt 0 ]]; do
       export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
     --debug)
+      OUTPUT_FILE="${2:-}"
+      if [[ -n $OUTPUT_FILE ]]; then
+        exec > "$OUTPUT_FILE" 2>&1
+      fi
       set -x
       ;;
     -S|--stop-on-failure)
