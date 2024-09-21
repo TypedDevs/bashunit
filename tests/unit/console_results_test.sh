@@ -496,7 +496,9 @@ function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
   original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
-  export BASHUNIT_SHOW_EXECUTION_TIME=false
+
+  BASHUNIT_SHOW_EXECUTION_TIME=false
+  export BASHUNIT_SHOW_EXECUTION_TIME
 
   local actual
   actual=$(console_results::print_successful_test "$test_name" "")
@@ -508,7 +510,9 @@ function test_print_successful_test_output_no_args() {
 function test_print_successful_test_output_with_args() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
-  export BASHUNIT_SHOW_EXECUTION_TIME=false
+
+  BASHUNIT_SHOW_EXECUTION_TIME=false
+  export BASHUNIT_SHOW_EXECUTION_TIME
 
   local test_name="a custom test"
   local data="foo"
