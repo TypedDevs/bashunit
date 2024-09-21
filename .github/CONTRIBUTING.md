@@ -116,7 +116,8 @@ make pre_commit/install
 [Shell Guide](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names) by Google Conventions.
 
 ### Documentation
-For us the documentation its really important, we are a small group and we want to mantain this project for long, to do that we will need your help
+
+For us the documentation it's really important, we are a small group, and we want to maintain this project for long, to do that we will need your help.
 
 ## ADR
 If you want to change something related to the architecture or apply a change that it's a decision on how the library works please use [ADR](https://adr.github.io/) otherwise we will request you to do so on the PR.
