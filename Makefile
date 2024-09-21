@@ -77,7 +77,7 @@ test-alpine:
 	@# Alpine installation.
 	docker run -v $$(pwd):/working --rm alpine:${BASHUNIT_ALPINE_TEST_VERSION} /bin/sh -c " \
 		apk update &&\
-		apk add bash make &&\
+		apk add bash make shellcheck git curl &&\
 		adduser -D builder &&\
 		chown -R builder /working && \
 		su - builder -c 'cd /working; make test';"
