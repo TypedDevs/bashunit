@@ -45,12 +45,12 @@ function test_now_on_osx_without_perl() {
 function test_runtime_in_milliseconds_when_not_empty_time() {
   mock perl echo "1720705883457"
 
-  assert_not_empty "$(clock::runtime_in_milliseconds)"
+  assert_not_empty "$(clock::total_runtime_in_milliseconds)"
 }
 
 function test_runtime_in_milliseconds_when_empty_time() {
   export _OS="OSX"
   mock perl mock_non_existing_fn
 
-  assert_empty "$(clock::runtime_in_milliseconds)"
+  assert_empty "$(clock::total_runtime_in_milliseconds)"
 }

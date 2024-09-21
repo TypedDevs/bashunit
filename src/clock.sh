@@ -12,7 +12,7 @@ function clock::now() {
 
 _START_TIME=$(clock::now)
 
-function clock::runtime_in_milliseconds() {
+function clock::total_runtime_in_milliseconds() {
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
     echo $(( end_time - _START_TIME ))

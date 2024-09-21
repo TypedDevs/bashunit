@@ -57,7 +57,7 @@ function logger::generate_junit_xml() {
   local tests_failed
   tests_failed=$(state::get_tests_failed)
   local time
-  time=$(clock::runtime_in_milliseconds)
+  time=$(clock::total_runtime_in_milliseconds)
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -100,7 +100,7 @@ function logger::generate_report_html() {
   local tests_failed
   tests_failed=$(state::get_tests_failed)
   local time
-  time=$(clock::runtime_in_milliseconds)
+  time=$(clock::total_runtime_in_milliseconds)
 
   # Temporary file to store test cases by file
   local temp_file="temp_test_cases.txt"
