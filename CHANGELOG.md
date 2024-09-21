@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.16.0...main)
 
+- Add optional file-path as 2nd arg to `--debug` option
 - Rename `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 - Added support for running tests in Alpine
 
