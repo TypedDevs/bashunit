@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Add optional file-path as 2nd arg to `--debug` option
+- Add runtime per test
+- Simplify total tests display on header
 - Rename `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15

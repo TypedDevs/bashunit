@@ -28,5 +28,3 @@ indent_style = tab
 
 [{tests/acceptance/**.sh,src/console_header.sh}]
 indent_size = unset
-
-[local/**]
