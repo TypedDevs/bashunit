@@ -493,17 +493,15 @@ function test_no_tests_found() {
 }
 
 function test_print_successful_test_output_no_args() {
-  local test_name="a custom test"
   original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
 
-  BASHUNIT_SHOW_EXECUTION_TIME=false
-  export BASHUNIT_SHOW_EXECUTION_TIME
+  local test_name="a custom test"
 
-  local actual
-  actual=$(console_results::print_successful_test "$test_name" "")
+  assert_matches \
+    "✓ Passed.*$test_name.*(12 ms)" \
+    "$(console_results::print_successful_test "$test_name" "12")"
 
-  assert_equals "✓ Passed: $test_name" "$actual"
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
 
@@ -511,15 +509,12 @@ function test_print_successful_test_output_with_args() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
 
-  BASHUNIT_SHOW_EXECUTION_TIME=false
-  export BASHUNIT_SHOW_EXECUTION_TIME
-
   local test_name="a custom test"
   local data="foo"
 
-  local actual
-  actual=$(console_results::print_successful_test "$test_name" "" "$data")
+  assert_matches \
+    "✓ Passed.*$test_name \($data\).*(12 ms)" \
+    "$(console_results::print_successful_test "$test_name" "12" "$data")"
 
-  assert_equals "✓ Passed: $test_name ($data)" "$actual"
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
