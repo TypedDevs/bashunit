@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function fail() {
-  local message=$1
+  local message="${1:-${FUNCNAME[1]}}"
 
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
