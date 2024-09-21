@@ -27,7 +27,7 @@ function helper::check_duplicate_functions() {
   local script="$1"
 
   local filtered_lines
-  filtered_lines=$(grep -E '^\s*(function)?\s*test[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
+  filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*$' "$script")
 
   local function_names
   function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
