@@ -16,25 +16,18 @@ _DEFAULT_TERMINAL_WIDTH=150
 CAT="$(which cat)"
 
 function find_terminal_width() {
-  if [[ -n "$TERM" && $(command -v tput) ]]; then
-      _cols=$(tput cols 2>/dev/null) || _cols=""
+  local _cols=""
 
-      # If tput fails, fallback to stty if available
-      if [[ -z "$_cols" ]] && command -v stty > /dev/null; then
-          _cols=$(stty size | cut -d' ' -f2)
-      fi
-  else
-      # Fallback to stty if TERM is not set and stty is available
-      if command -v stty > /dev/null; then
-          _cols=$(stty size | cut -d' ' -f2)
-      fi
+  if [[ -n "$TERM" ]] && command -v tput > /dev/null; then
+    _cols=$(tput cols 2>/dev/null)
   fi
 
-  if [[ -z "$_cols" ]]; then
-      _cols=$_DEFAULT_TERMINAL_WIDTH
+  if [[ -z "$_cols" ]] && command -v stty > /dev/null; then
+    _cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
-  echo "$_cols"
+  # Directly echo the value with fallback
+  echo "${_cols:-$_DEFAULT_TERMINAL_WIDTH}"
 }
 
 TERMINAL_WIDTH="$(find_terminal_width)"
