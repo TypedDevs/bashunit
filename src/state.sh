@@ -122,7 +122,6 @@ function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
   state::set_duplicated_function_names "$2"
-
 }
 
 function state::initialize_assertions_count() {
@@ -154,4 +153,11 @@ function state::calculate_total_assertions() {
   done
 
   echo $total
+}
+
+function state::print_line() {
+  # shellcheck disable=SC2034
+  local type=$1
+  local line=$2
+  printf "%s\n" "$line"
 }

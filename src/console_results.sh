@@ -134,7 +134,7 @@ function console_results::print_successful_test() {
       full_line="$(printf "%s\n" "$(str::rpad "$line" "($duration ms)")")"
     fi
 
-    console_results::print_line "successful" "$full_line"
+    state::print_line "successful" "$full_line"
   fi
 }
 
@@ -148,11 +148,11 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${failure_message}")"
 
-    console_results::print_line "failure" "$line"
+    state::print_line "failure" "$line"
 }
 
 function console_results::print_failed_test() {
-  local test_name=$1
+  local function_name=$1
   local expected=$2
   local failure_condition_message=$3
   local actual=$4
@@ -164,7 +164,7 @@ function console_results::print_failed_test() {
 ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
-    "${test_name}" "${expected}" "${failure_condition_message}" "${actual}")"
+    "${function_name}" "${expected}" "${failure_condition_message}" "${actual}")"
 
   if [ -n "$extra_key" ]; then
     line+="$(printf "\
@@ -172,17 +172,17 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${extra_key}" "${extra_value}")"
   fi
 
-  console_results::print_line "failed" "$line"
+  state::print_line "failed" "$line"
 }
 
 
 function console_results::print_failed_snapshot_test() {
-  local test_name=$1
+  local function_name=$1
   local snapshot_file=$2
 
   local line
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$test_name")"
+    ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$function_name")"
 
   if command -v git > /dev/null; then
     local actual_file="${snapshot_file}.tmp"
@@ -197,62 +197,66 @@ function console_results::print_failed_snapshot_test() {
     rm "$actual_file"
   fi
 
-  console_results::print_line "" "$line"
+  state::print_line "failed_snapshot" "$line"
 }
 
 function console_results::print_skipped_test() {
-  local test_name=$1
+  local function_name=$1
   local reason=${2-}
 
   local line
-  line="$(printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${test_name}")"
+  line="$(printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$reason" ]]; then
     line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
-  console_results::print_line "skipped" "$line"
+  state::print_line "skipped" "$line"
 }
 
 function console_results::print_incomplete_test() {
-  local test_name=$1
+  local function_name=$1
   local pending=${2-}
 
   local line
-  line="$(printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${test_name}")"
+  line="$(printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$pending" ]]; then
     line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
-  console_results::print_line "incomplete" "$line"
+  state::print_line "incomplete" "$line"
 }
 
 function console_results::print_snapshot_test() {
+  local function_name=$1
   local test_name
-  test_name=$(helper::normalize_test_function_name "$1")
+  test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
   line="$(printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}")"
 
-  console_results::print_line "snapshot" "$line"
+  state::print_line "snapshot" "$line"
 }
 
 function console_results::print_error_test() {
-  local test_name
-  test_name=$(helper::normalize_test_function_name "$1")
+  local function_name=$1
   local error="$2"
+
+  local test_name
+  test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
-  console_results::print_line "error" "$line"
+  state::print_line "error" "$line"
 }
 
-function console_results::print_line() {
-  # shellcheck disable=SC2034
-  local type=$1
-  local line=$2
-  printf "%s\n" "$line"
+function console_results::print_failing_tests_and_reset() {
+  if [[ -s "$NON_SUCCESSFUL_RESULT_OUTPUT" ]]; then
+    echo -e "${_COLOR_BOLD}There were $(state::get_tests_failed) failures:${_COLOR_DEFAULT}\n"
+    sed '${/^$/d;}' "$NON_SUCCESSFUL_RESULT_OUTPUT" | sed 's/^/|/'
+    rm "$NON_SUCCESSFUL_RESULT_OUTPUT"
+  fi
 }

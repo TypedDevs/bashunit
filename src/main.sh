@@ -17,6 +17,10 @@ function main::exec_tests() {
 
   console_header::print_version_with_env "$filter" "${test_files[@]}"
   runner::load_test_files "$filter" "${test_files[@]}"
+
+  echo ""
+  console_results::print_failing_tests_and_reset
+
   console_results::render_result
   exit_code=$?
 
