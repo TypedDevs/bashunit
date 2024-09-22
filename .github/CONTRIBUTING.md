@@ -67,6 +67,33 @@ this will require to have installed [fswatcher](https://github.com/emcrisostomo/
 make test/watch
 ```
 
+### Testing different OS
+
+- Linux
+    - Ubuntu latest
+    - Alpine latest
+- Windows latest
+- MacOS latest
+
+#### Docker
+
+##### Ubuntu latest
+
+```bash
+docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
+    sh -c  "apt-get update && \
+            apt-get install -y bash make shellcheck git curl perl && make test"
+```
+
+##### Alpine latest
+
+```bash
+make test/alpine
+# or
+docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
+    sh -c  "apk add bash make shellcheck git curl perl && make test"
+```
+
 ## Coding Guidelines
 
 ### ShellCheck

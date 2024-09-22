@@ -56,6 +56,7 @@ function test_install_downloads_the_given_version() {
 
 function test_install_downloads_the_non_stable_beta_version() {
   mock date echo "2023-11-13"
+  mock tput echo ""
   local installed_bashunit="./deps/bashunit"
   local output
 

@@ -23,20 +23,18 @@ function helper::normalize_test_function_name() {
   echo "$result"
 }
 
+
 function helper::check_duplicate_functions() {
   local script="$1"
 
   local filtered_lines
-  filtered_lines=$(grep -E '^\s*(function)?\s*test[a-zA-Z_][a-zA-Z_0-9]*\s*\(\)?\s*{' "$script")
+  filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
 
   local function_names
   function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
 
-  local sorted_names
-  sorted_names=$(echo "$function_names" | sort)
-
   local duplicates
-  duplicates=$(echo "$sorted_names" | uniq -d)
+  duplicates=$(echo "$function_names" | sort | uniq -d)
   if [ -n "$duplicates" ]; then
     state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1

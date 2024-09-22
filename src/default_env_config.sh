@@ -14,4 +14,27 @@ _DEFAULT_BASHUNIT_LOAD_FILE=
 _DEFAULT_TERMINAL_WIDTH=150
 
 CAT="$(which cat)"
-TERMINAL_WIDTH=${TERM:+$(tput cols)} || TERMINAL_WIDTH=$_DEFAULT_TERMINAL_WIDTH
+
+function find_terminal_width() {
+  if [[ -n "$TERM" && $(command -v tput) ]]; then
+      _cols=$(tput cols 2>/dev/null) || _cols=""
+
+      # If tput fails, fallback to stty if available
+      if [[ -z "$_cols" ]] && command -v stty > /dev/null; then
+          _cols=$(stty size | cut -d' ' -f2)
+      fi
+  else
+      # Fallback to stty if TERM is not set and stty is available
+      if command -v stty > /dev/null; then
+          _cols=$(stty size | cut -d' ' -f2)
+      fi
+  fi
+
+  if [[ -z "$_cols" ]]; then
+      _cols=$_DEFAULT_TERMINAL_WIDTH
+  fi
+
+  echo "$_cols"
+}
+
+TERMINAL_WIDTH="$(find_terminal_width)"

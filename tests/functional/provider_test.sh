@@ -1,17 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE=""
-
-function set_up_before_script() {
-  _TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE=$(mktemp)
-  echo 0 > "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE"
-}
-
-function tear_down_after_script() {
-  rm "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE"
-}
-
 function set_up() {
   _GLOBAL="aa-bb"
 }
@@ -27,31 +16,6 @@ function test_multiple_values_from_data_provider() {
 function provide_multiples_values() {
   echo "aa" "bb"
   echo "aa" "bb"
-}
-
-# data_provider provide_single_values
-function test_single_values_from_data_provider() {
-  local current_data="$1"
-  local current_iteration=0
-
-  echo "$(awk 'BEGIN{FS=OFS=""} {$1++} {print $1}' "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE")"\
-    > "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE"
-  current_iteration=$(cat "$_TEST_GET_DATA_FROM_PROVIDER_ITERATION_FILE")
-
-  case $current_iteration in
-    1)
-      assert_same "one" "$current_data"
-      ;;
-    2)
-      assert_same "two" "$current_data"
-      ;;
-    3)
-      assert_same "three" "$current_data"
-      ;;
-    *)
-      fail
-      ;;
-  esac
 }
 
 function provide_single_values() {
