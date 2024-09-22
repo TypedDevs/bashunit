@@ -254,7 +254,7 @@ function console_results::print_error_test() {
 }
 
 function console_results::print_failing_tests_and_reset() {
-  if [[ -s "$NON_SUCCESSFUL_RESULT_OUTPUT" ]]; then
+  if [[ -s "$FAILURES_OUTPUT_PATH" ]]; then
     local total_failed
     total_failed=$(state::get_tests_failed)
 
@@ -265,7 +265,7 @@ function console_results::print_failing_tests_and_reset() {
       echo -e "${_COLOR_BOLD}There were $total_failed failures:${_COLOR_DEFAULT}\n"
     fi
 
-    sed '${/^$/d;}' "$NON_SUCCESSFUL_RESULT_OUTPUT" | sed 's/^/|/'
-    rm "$NON_SUCCESSFUL_RESULT_OUTPUT"
+    sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
+    rm "$FAILURES_OUTPUT_PATH"
   fi
 }

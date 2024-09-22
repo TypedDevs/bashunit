@@ -31,5 +31,4 @@ function find_terminal_width() {
 }
 
 TERMINAL_WIDTH="$(find_terminal_width)"
-
-NON_SUCCESSFUL_RESULT_OUTPUT=$(mktemp)
+FAILURES_OUTPUT_PATH=$(mktemp)

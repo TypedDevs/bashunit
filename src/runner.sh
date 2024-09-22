@@ -257,7 +257,7 @@ function runner::write_failure_result_output() {
   local test_file=$1
   local error_msg=$2
 
-  echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$NON_SUCCESSFUL_RESULT_OUTPUT"
+  echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
 function runner::run_set_up() {
