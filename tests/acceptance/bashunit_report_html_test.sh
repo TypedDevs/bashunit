@@ -11,7 +11,10 @@ function test_bashunit_when_report_html_option() {
 
   assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" --report-html custom.html "$test_file")"
   assert_file_exists custom.html
-  rm custom.html
+
+  if [[ -f custom.html ]]; then
+    rm custom.html
+  fi
 }
 
 function test_bashunit_when_report_html_env() {
@@ -19,5 +22,8 @@ function test_bashunit_when_report_html_env() {
 
   assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_REPORT_HTML" "$test_file")"
   assert_file_exists report.html
-  rm report.html
+
+  if [[ -f custom.html ]]; then
+    rm custom.html
+  fi
 }

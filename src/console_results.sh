@@ -148,7 +148,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${failure_message}")"
 
-    state::print_line "failure" "$line"
+  state::print_line "failure" "$line"
 }
 
 function console_results::print_failed_test() {
@@ -247,7 +247,7 @@ function console_results::print_error_test() {
   test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
-  line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
+  line="$(printf "${_COLOR_FAILED}✗ Error${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
   state::print_line "error" "$line"

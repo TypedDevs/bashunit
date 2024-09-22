@@ -150,12 +150,18 @@ function runner::run_test() {
   local current_assertions_skipped
   current_assertions_skipped="$(state::get_assertions_skipped)"
 
+  # (FD = File Descriptor)
+  # Duplicate the current std-output (FD 1) and assigns it to FD 3.
+  # This means that FD 3 now points to wherever the std-output was pointing.
+  exec 3>&1
+
   local test_execution_result
   test_execution_result=$(
     state::initialize_assertions_count
     runner::run_set_up
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
+    # points to the original std-output.
     "$function_name" "$@" 2>&1
 
     runner::run_tear_down
@@ -163,13 +169,26 @@ function runner::run_test() {
     state::export_assertions_count
   )
 
+  # Closes FD 3, which was used temporarily to hold the original stdout.
+  exec 3>&-
+
   runner::parse_execution_result "$test_execution_result"
+
+  local subshell_output
+  subshell_output=$(\
+    echo "$test_execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
+    base64 --decode
+  )
+  if [[ -n "$subshell_output" ]]; then
+    printf "%s\n" "$subshell_output"
+  fi
 
   local runtime_output
   runtime_output="${test_execution_result%%##ASSERTIONS*}"
-  printf "%s" "$runtime_output"
 
-  local runtime_error
+  local runtime_error=""
   if [[ "$runtime_output" == *"command not found"* ]]; then
     runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
   fi
@@ -188,22 +207,17 @@ function runner::run_test() {
     state::add_tests_failed
     console_results::print_error_test "$function_name" "$runtime_error"
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
-
-    echo -e "$(state::get_tests_failed)) $test_file\n$runtime_error\n" >> "$NON_SUCCESSFUL_RESULT_OUTPUT"
-
+    runner::write_failure_result_output "$test_file" "$runtime_error"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
-
-    echo -e "$(state::get_tests_failed)) $test_file\n$runtime_output" >> "$NON_SUCCESSFUL_RESULT_OUTPUT"
-
+    runner::write_failure_result_output "$test_file" "$subshell_output"
     if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
       exit 1
     fi
-
     return
   fi
 
@@ -232,6 +246,13 @@ function runner::run_test() {
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
   logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
+}
+
+function runner::write_failure_result_output() {
+  local test_file=$1
+  local error_msg=$2
+
+  echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$NON_SUCCESSFUL_RESULT_OUTPUT"
 }
 
 function runner::run_set_up() {

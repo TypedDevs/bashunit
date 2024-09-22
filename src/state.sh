@@ -13,6 +13,7 @@ _ASSERTIONS_SNAPSHOT=0
 _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
+_TEST_OUTPUT=""
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -118,6 +119,10 @@ function state::set_file_with_duplicated_function_names() {
   _FILE_WITH_DUPLICATED_FUNCTION_NAMES="$1"
 }
 
+function state::add_test_output() {
+  _TEST_OUTPUT+="$(printf "%s\n" "$1")"
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
@@ -130,14 +135,19 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_SKIPPED=0
     _ASSERTIONS_INCOMPLETE=0
     _ASSERTIONS_SNAPSHOT=0
+    _TEST_OUTPUT=""
 }
 
 function state::export_assertions_count() {
+  local encoded_test_output
+  encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
+
   echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
+##TEST_OUTPUT=$encoded_test_output\
 ##"
 }
 
@@ -160,4 +170,5 @@ function state::print_line() {
   local type=$1
   local line=$2
   printf "%s\n" "$line"
+  state::add_test_output "$(printf "%s\n" "$line")"
 }
