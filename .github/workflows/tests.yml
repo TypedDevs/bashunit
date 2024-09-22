@@ -28,6 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Run Tests
         run: ${{ matrix.script_name }}
 
@@ -39,5 +40,12 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Run Tests
-        run: make test/alpine
+        run: |
+          docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
+            apk update && \
+            apk add --no-cache bash make git curl perl && \
+            adduser -D builder && \
+            chown -R builder /project && \
+            su - builder -c 'cd /project; make test';"

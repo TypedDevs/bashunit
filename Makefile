@@ -69,13 +69,8 @@ test/watch: $(TEST_SCRIPTS)
 	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
 
 test/alpine:
-	@# Run tests for Alpine in a container with only the very basic dependencies
-	@docker run -v "$(shell pwd)":/project --rm alpine:latest /bin/sh -c " \
-		apk update &&\
-		apk add bash make git curl perl &&\
-		adduser -D builder &&\
-		chown -R builder /project && \
-		su - builder -c 'cd /project; make test';"
+	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
+		sh -c  "apk add bash make shellcheck git curl perl && make test"
 
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"

@@ -82,19 +82,16 @@ make test/watch
 ```bash
 docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
     sh -c  "apt-get update && \
-            apt-get install -y bash make shellcheck git curl perl && bash"
+            apt-get install -y bash make shellcheck git curl perl && make test"
 ```
 
 ##### Alpine latest
 
 ```bash
+make test/alpine
+# or
 docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
-    sh -c  "apk add bash make shellcheck git curl perl && bash"
-```
-
-Run the tests with:
-```bash
-make test # or `./bashunit tests`
+    sh -c  "apk add bash make shellcheck git curl perl && make test"
 ```
 
 ## Coding Guidelines
