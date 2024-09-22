@@ -190,11 +190,11 @@ function runner::run_test() {
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \
-               "no such file or directory" "syntax error" "bad substitution" \
-               "division by 0" "cannot allocate memory" "bad file descriptor" \
-               "segmentation fault" "illegal option" "argument list too long" \
-               "readonly variable" "missing keyword" "killed" \
-               "cannot execute binary file"; do
+      "no such file or directory" "syntax error" "bad substitution" \
+      "division by 0" "cannot allocate memory" "bad file descriptor" \
+      "segmentation fault" "illegal option" "argument list too long" \
+      "readonly variable" "missing keyword" "killed" \
+      "cannot execute binary file"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
       runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
       break

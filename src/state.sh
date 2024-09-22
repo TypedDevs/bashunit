@@ -140,7 +140,13 @@ function state::initialize_assertions_count() {
 
 function state::export_assertions_count() {
   local encoded_test_output
-  encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
+  if base64 --help 2>&1 | grep -q -- "-w"; then
+    # Alpine needs -w 0 to avoid line wrapping
+    encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
+  else
+    # macOS and others don't need -w 0
+    encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
+  fi
 
   echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
