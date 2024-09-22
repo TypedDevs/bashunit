@@ -138,7 +138,7 @@ function state::initialize_assertions_count() {
     _TEST_OUTPUT=""
 }
 
-function state::export_assertions_count() {
+function state::export_subshell_context() {
   local encoded_test_output
   if base64 --help 2>&1 | grep -q -- "-w"; then
     # Alpine needs -w 0 to avoid line wrapping

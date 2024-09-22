@@ -243,7 +243,7 @@ function test_initialize_assertions_count() {
     _ASSERTIONS_SNAPSHOT=33
 
     state::initialize_assertions_count
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   assert_same\
@@ -268,7 +268,7 @@ function test_export_assertions_count() {
     _ASSERTIONS_SNAPSHOT=33
     _TEST_OUTPUT="something"
 
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   assert_same\

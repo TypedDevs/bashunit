@@ -166,12 +166,12 @@ function runner::run_test() {
 
     runner::run_tear_down
     runner::clear_mocks
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
-#dump $test_execution_result
+
   runner::parse_execution_result "$test_execution_result"
 
   local subshell_output
