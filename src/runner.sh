@@ -171,7 +171,7 @@ function runner::run_test() {
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
-
+#dump $test_execution_result
   runner::parse_execution_result "$test_execution_result"
 
   local subshell_output
@@ -189,12 +189,17 @@ function runner::run_test() {
   runtime_output="${test_execution_result%%##ASSERTIONS*}"
 
   local runtime_error=""
-  if [[ "$runtime_output" == *"command not found"* ]]; then
-    runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
-  fi
-  if [[ "$runtime_output" == *"unbound variable"* ]]; then
-    runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
-  fi
+  for error in "command not found" "unbound variable" "permission denied" \
+               "no such file or directory" "syntax error" "bad substitution" \
+               "division by 0" "cannot allocate memory" "bad file descriptor" \
+               "segmentation fault" "illegal option" "argument list too long" \
+               "readonly variable" "missing keyword" "killed" \
+               "cannot execute binary file"; do
+    if [[ "$runtime_output" == *"$error"* ]]; then
+      runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
+      break
+    fi
+  done
 
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
