@@ -55,7 +55,6 @@ Run tests from the library:
 ```bash
 # using make
 make test
-make test-alpine
 
 # using bashunit itself
 ./bashunit tests/**/*_test.sh
@@ -66,6 +65,36 @@ this will require to have installed [fswatcher](https://github.com/emcrisostomo/
 ```bash
 # you have to install `watch` for your OS
 make test/watch
+```
+
+### Testing different OS
+
+- Linux
+  - Ubuntu latest
+  - Alpine latest
+- Windows latest
+- MacOS latest
+
+#### Docker
+
+##### Ubuntu latest
+
+```bash
+docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
+  sh -c "apt-get update && \
+         apt-get install -y bash make shellcheck git curl perl && bash"
+```
+
+##### Alpine latest
+
+```bash
+docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
+  sh -c "apk add bash make shellcheck git curl perl && bash"
+```
+
+Run the tests with:
+```bash
+make test # or `./bashunit tests`
 ```
 
 ## Coding Guidelines
