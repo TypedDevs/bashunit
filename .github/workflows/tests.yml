@@ -14,39 +14,28 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - alpine-latest
           - macos-latest
           - windows-latest
         include:
           - os: windows-latest
             script_name: 'bash -c "./bashunit -e tests/globals.sh tests/**/*_test.sh"'
-          - os: ubuntu-latest
-            script_name: 'make test'
           - os: macos-latest
             script_name: 'make test'
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Tests
-        run: ${{ matrix.script_name }}
-
-  alpine:
-    name: "Run tests on alpine"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-        include:
           - os: ubuntu-latest
-            script_name: 'make test-alpine'
+            script_name: 'make test'
+          - os: alpine-latest
+            script_name: 'make test'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Install dependencies on Alpine
+        if: matrix.os == 'alpine-latest'
+        run: |
+          apk add bash make shellcheck git curl perl
 
       - name: Run Tests
         run: ${{ matrix.script_name }}

@@ -70,8 +70,8 @@ make test/watch
 ### Testing different OS
 
 - Linux
-  - Ubuntu latest
-  - Alpine latest
+    - Ubuntu latest
+    - Alpine latest
 - Windows latest
 - MacOS latest
 
@@ -81,15 +81,15 @@ make test/watch
 
 ```bash
 docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
-  sh -c "apt-get update && \
-         apt-get install -y bash make shellcheck git curl perl && bash"
+    sh -c  "apt-get update && \
+            apt-get install -y bash make shellcheck git curl perl && bash"
 ```
 
 ##### Alpine latest
 
 ```bash
 docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
-  sh -c "apk add bash make shellcheck git curl perl && bash"
+    sh -c  "apk add bash make shellcheck git curl perl && bash"
 ```
 
 Run the tests with:
