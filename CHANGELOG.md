@@ -5,8 +5,10 @@
 - Added support for Alpine (Linux Distro)
 - Added optional file-path as 2nd arg to `--debug` option
 - Added runtime per test
-- Simplified total tests display on header
+- Simplified total tests display on the header
 - Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
+- Better handler runtime errors
+- Display failing tests after running the entire suite
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 

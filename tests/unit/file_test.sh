@@ -83,9 +83,8 @@ function test_unsuccessful_assert_is_file_empty() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_files_equals() {
-  datetime=$(date +%s)
-  local expected="/tmp/a_random_file_${datetime}_1"
-  local actual="/tmp/a_random_file_${datetime}_2"
+  local expected="/tmp/test_successful_assert_files_equals_1"
+  local actual="/tmp/test_successful_assert_files_equals_2"
 
   local file_content="My multiline file
   Special char: \$, \*, and \\
@@ -109,8 +108,8 @@ function test_fails_assert_files_equals() {
   echo -e "same\noriginal content" > "$expected"
   echo -e "same\ndifferent content" > "$actual"
 
-  actual="$(assert_files_equals "$expected" "$actual")"
-  assert_contains "Fails assert files equals" "$actual"
+  assert_contains "Fails assert files equals" \
+    "$(assert_files_equals "$expected" "$actual")"
 
   rm "$expected"
   rm "$actual"
@@ -132,14 +131,14 @@ function test_successful_assert_files_not_equals() {
 
 # shellcheck disable=SC2155
 function test_fails_assert_files_not_equals() {
-  local expected="/tmp/test_fails_assert_files_not_equals"
-  local actual="/tmp/test_fails_assert_files_not_equals"
+  local expected="/tmp/test_fails_assert_files_not_equals_1"
+  local actual="/tmp/test_fails_assert_files_not_equals_2"
 
-  echo -e "same content" > "$expected"
-  echo -e "same content" > "$actual"
+  echo "same content" > "$expected"
+  echo "same content" > "$actual"
 
-  actual="$(assert_files_not_equals "$expected" "$actual")"
-  assert_contains "Files are equals" "$actual"
+  assert_contains "Files are equals" \
+    "$(assert_files_not_equals "$expected" "$actual")"
 
   rm "$expected"
   rm "$actual"

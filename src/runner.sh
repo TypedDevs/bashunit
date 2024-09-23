@@ -161,13 +161,12 @@ function runner::run_test() {
     runner::run_set_up
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
-    # 1>&3: Redirects the std-output (FD 1) to FD 3, which, as set up earlier,
     # points to the original std-output.
-    "$function_name" "$@" 2>&1 1>&3
+    "$function_name" "$@" 2>&1
 
     runner::run_tear_down
     runner::clear_mocks
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
@@ -175,21 +174,32 @@ function runner::run_test() {
 
   runner::parse_execution_result "$test_execution_result"
 
-  local runtime_error
-  runtime_error=$(\
+  local subshell_output
+  subshell_output=$(\
     echo "$test_execution_result" |\
     tail -n 1 |\
-    sed -E -e 's/(.*)##ASSERTIONS_FAILED=.*/\1/g'\
+    sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
+    base64 --decode
   )
+  if [[ -n "$subshell_output" ]]; then
+    printf "%s\n" "$subshell_output"
+  fi
 
-  local error_msg
-  error_msg="${test_execution_result%%##ASSERTIONS*}"
-  if [[ "$error_msg" == *"command not found"* ]]; then
-    runtime_error=$(echo "${error_msg#*: }" | tr -d '\n')
-  fi
-  if [[ "$error_msg" == *"unbound variable"* ]]; then
-    runtime_error=$(echo "${error_msg#*: }" | tr -d '\n')
-  fi
+  local runtime_output
+  runtime_output="${test_execution_result%%##ASSERTIONS*}"
+
+  local runtime_error=""
+  for error in "command not found" "unbound variable" "permission denied" \
+      "no such file or directory" "syntax error" "bad substitution" \
+      "division by 0" "cannot allocate memory" "bad file descriptor" \
+      "segmentation fault" "illegal option" "argument list too long" \
+      "readonly variable" "missing keyword" "killed" \
+      "cannot execute binary file"; do
+    if [[ "$runtime_output" == *"$error"* ]]; then
+      runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
+      break
+    fi
+  done
 
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
@@ -200,19 +210,19 @@ function runner::run_test() {
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$function_name" "$runtime_error" "$duration"
+    console_results::print_error_test "$function_name" "$runtime_error"
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
+    runner::write_failure_result_output "$test_file" "$runtime_error"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
-
+    runner::write_failure_result_output "$test_file" "$subshell_output"
     if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
       exit 1
     fi
-
     return
   fi
 
@@ -241,6 +251,13 @@ function runner::run_test() {
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
   logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
+}
+
+function runner::write_failure_result_output() {
+  local test_file=$1
+  local error_msg=$2
+
+  echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
 function runner::run_set_up() {

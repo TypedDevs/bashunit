@@ -243,7 +243,7 @@ function test_initialize_assertions_count() {
     _ASSERTIONS_SNAPSHOT=33
 
     state::initialize_assertions_count
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   assert_same\
@@ -252,6 +252,7 @@ function test_initialize_assertions_count() {
 ##ASSERTIONS_SKIPPED=0\
 ##ASSERTIONS_INCOMPLETE=0\
 ##ASSERTIONS_SNAPSHOT=0\
+##TEST_OUTPUT=\
 ##"\
     "$export_assertions_count"
 }
@@ -264,16 +265,19 @@ function test_export_assertions_count() {
     _ASSERTIONS_SKIPPED=42
     _ASSERTIONS_INCOMPLETE=12
     _ASSERTIONS_SNAPSHOT=33
+    _ASSERTIONS_SNAPSHOT=33
+    _TEST_OUTPUT="something"
 
-    state::export_assertions_count
+    state::export_subshell_context
   )
 
   assert_same\
-    "##ASSERTIONS_FAILED=5##\
-ASSERTIONS_PASSED=10##\
-ASSERTIONS_SKIPPED=42##\
-ASSERTIONS_INCOMPLETE=12##\
-ASSERTIONS_SNAPSHOT=33##"\
+    "##ASSERTIONS_FAILED=5\
+##ASSERTIONS_PASSED=10\
+##ASSERTIONS_SKIPPED=42\
+##ASSERTIONS_INCOMPLETE=12\
+##ASSERTIONS_SNAPSHOT=33\
+##TEST_OUTPUT=$(echo -n "something" | base64)##"\
     "$export_assertions_count"
 }
 
@@ -282,7 +286,8 @@ function test_calculate_total_assertions() {
   ##ASSERTIONS_PASSED=2\
   ##ASSERTIONS_SKIPPED=3\
   ##ASSERTIONS_INCOMPLETE=4\
-  ##ASSERTIONS_SNAPSHOT=5##"
+  ##ASSERTIONS_SNAPSHOT=5\
+  ##TEST_OUTPUT=##"
 
   assert_same 15 "$(state::calculate_total_assertions "$input")"
 }
