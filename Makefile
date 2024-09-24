@@ -43,7 +43,7 @@ help:
 	@echo "  test                     Run the tests"
 	@echo "  test/list                List all tests under the tests directory"
 	@echo "  test/watch               Automatically run tests every second"
-	@echo "  test/alpine              Run the tests in a Linux/Alpine:latest image"
+	@echo "  docker/alpine            Run into a Docker Linux/Alpine:latest image"
 	@echo "  env/example              Copy variables without the values from .env into .env.example"
 	@echo "  pre_commit/install       Install the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit hook runs"
@@ -68,9 +68,9 @@ test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)
 	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
 
-test/alpine:
+docker/alpine:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
-		sh -c  "apk add bash make shellcheck git curl perl coreutils && make test"
+		sh -c  "apk add bash make shellcheck git curl perl coreutils && bash"
 
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"
