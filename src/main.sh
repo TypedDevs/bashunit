@@ -34,21 +34,54 @@ function main::exec_tests() {
 
 function main::exec_assert() {
   local original_assert_fn=$1
-  local assert_fn=$original_assert_fn
-  local args=("${@:2}")
+  local forward_stdout=$2
+  local args=("${@:3}")
 
+  local assert_fn=$original_assert_fn
+
+  # Check if the function exists
   if ! type "$assert_fn" > /dev/null 2>&1; then
-    # try again using prefix `assert_`
     assert_fn="assert_$assert_fn"
     if ! type "$assert_fn" > /dev/null 2>&1; then
-      echo "Function $original_assert_fn does not exist."
       exit 127
     fi
   fi
 
+  if [[ "$assert_fn" == "assert_exit_code" ]]; then
+    # Get the last argument safely by calculating the array length
+    local last_index=$((${#args[@]} - 1))
+    local last_arg="${args[$last_index]}"
+
+    if [[ "$last_arg" == callable:* ]]; then
+      local callable_command="${last_arg#callable:(}"
+      callable_command="${callable_command%)}"  # Remove both 'callable:(' and ')'
+
+      # Capture the output directly into a variable
+      local output
+      output=$(eval "$callable_command" 2>&1 || echo "exit_code:$?")
+
+      local last_line
+      last_line=$(echo "$output" | tail -n 1)
+      local exit_code
+      exit_code=$(echo "$last_line" | grep -o 'exit_code:[0-9]*' | cut -d':' -f2)
+      output=$(echo "$output" | sed '$d')
+
+      # Remove the last argument and append the output
+      args=("${args[@]:0:last_index}")
+      args+=("$exit_code")
+    fi
+
+    if [[ "$forward_stdout" == "true" ]]; then
+      echo "$output"
+    fi
+
+    assert_fn=assert_same
+  fi
+
+  # Run the assertion function
   "$assert_fn" "${args[@]}"
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
-      exit 1
+    exit 1
   fi
 }
