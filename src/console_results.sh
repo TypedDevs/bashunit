@@ -168,6 +168,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 
   if [ -n "$extra_key" ]; then
     line+="$(printf "\
+
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
     "${extra_key}" "${extra_value}")"
   fi
