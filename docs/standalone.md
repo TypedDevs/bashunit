@@ -43,3 +43,24 @@ The prefix `assert_` is optional.
 ```
 :::
 
+
+## Lazy evaluations
+
+You can evaluate the `exit_code` for your scripts using `eval...` instead of executing them with `$(...)` to avoid
+interrupting the CI when encountering a potential error (anything different from `0`). For example:
+
+::: code-group
+```bash [Example]
+../bashunit -a exit_code "0" "eval $PHPSTAN_PATH analyze \
+  --no-progress --level 8 \
+  --error-format raw ./" 1>&1 2> /tmp/error.log
+```
+```[Output]
+Testing.php:3:Method Testing::bar() has no return type specified.
+```
+```[/tmp/error.log]
+✗ Failed: Main::exec assert
+    Expected '0'
+    but got  '1'
+```
+:::
