@@ -74,11 +74,11 @@ function test_bashunit_direct_fn_call_failure() {
   local expected="foo"
   local actual="bar"
 
-  assert_match_snapshot "$(./bashunit -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
+  assert_match_snapshot "$(./bashunit -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual 2>&1)"
   assert_general_error "$(./bashunit -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
 }
 
 function test_bashunit_direct_fn_call_non_existing_fn() {
-  assert_match_snapshot "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
+  assert_match_snapshot "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE" 2>&1)"
   assert_command_not_found "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
 }
