@@ -34,8 +34,7 @@ function main::exec_tests() {
 
 function main::exec_assert() {
   local original_assert_fn=$1
-  local forward_stdout=$2
-  local args=("${@:3}")
+  local args=("${@:2}")
 
   local assert_fn=$original_assert_fn
 
@@ -56,7 +55,7 @@ function main::exec_assert() {
   local bashunit_exit_code=0
   local output
 
-  if [[ "$last_arg" == eval* ]]; then
+  if [[ "$assert_fn" == "assert_exit_code" && "$last_arg" == eval* ]]; then
     local callable_command="${last_arg#eval }"
     output=$(eval "$callable_command" 2>&1 || echo "inner_exit_code:$?")
 
@@ -74,8 +73,8 @@ function main::exec_assert() {
   fi
 
   if [[ -n "$output" ]]; then
-    [[ "$forward_stdout" == "true" ]] && echo "$output" 1>&1
-    [[ "$assert_fn" == "assert_exit_code" ]] && assert_fn="assert_same"
+    echo "$output" 1>&1
+    assert_fn="assert_same"
   fi
 
   # Run the assertion function and write into stderr

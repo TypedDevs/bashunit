@@ -28,7 +28,6 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
 _FILTER=""
-_FORWARD_STDOUT=false
 _ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -41,9 +40,6 @@ while [[ $# -gt 0 ]]; do
     -f|--filter)
       _FILTER="$2"
       shift
-      ;;
-    --forward-stdout)
-      _FORWARD_STDOUT=true
       ;;
     -s|--simple)
       export BASHUNIT_SIMPLE_OUTPUT=true
@@ -101,7 +97,7 @@ done
 set +eu
 
 if [[ -n "$_ASSERT_FN" ]]; then
-  main::exec_assert "$_ASSERT_FN" "$_FORWARD_STDOUT" "${_ARGS[@]}"
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 else
   main::exec_tests "$_FILTER" "${_ARGS[@]}"
 fi
