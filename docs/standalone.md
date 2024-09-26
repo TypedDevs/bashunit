@@ -43,17 +43,46 @@ The prefix `assert_` is optional.
 ```
 :::
 
-
 ## Lazy evaluations
 
 You can evaluate the `exit_code` for your scripts using `eval...` instead of executing them with `$(...)` to avoid
-interrupting the CI when encountering a potential error (anything different from `0`). For example:
+interrupting the CI when encountering a potential error (anything but `0`).
 
 ::: code-group
 ```bash [Example]
-../bashunit -a exit_code "0" "eval $PHPSTAN_PATH analyze \
+./bashunit -a exit_code "1" "eval $PHPSTAN_PATH analyze \
   --no-progress --level 8 \
-  --error-format raw ./" 1>&1 2> /tmp/error.log
+  --error-format raw ./"
+```
+```[Output]
+Testing.php:3:Method Testing::bar() has no return type specified.
+```
+:::
+
+This is useful to get control over the output of your `eval...`:
+
+::: code-group
+```bash [Example]
+OUTPUT=$(./bashunit -a exit_code "1" "eval $PHPSTAN_PATH analyze \
+  --no-progress --level 8 \
+  --error-format raw ./")
+./bashunit -a line_count 1 "$OUTPUT"
+```
+```[Output]
+# No output
+```
+:::
+
+### Full control over the stdout and stderr
+
+The stdout will be used for the eval result, while bashunit output will be on stderr.
+This way you can control the FD and redirect the output as you need.
+
+::: code-group
+```bash [Example]
+./bashunit -a exit_code "0" "eval $PHPSTAN_PATH analyze \
+  --no-progress --level 8 \
+  --error-format raw ./" 2> /tmp/error.log
 ```
 ```[Output]
 Testing.php:3:Method Testing::bar() has no return type specified.
