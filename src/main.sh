@@ -56,7 +56,9 @@ function main::exec_assert() {
   local output
 
   if [[ "$assert_fn" == "assert_exit_code" && "$last_arg" == eval* ]]; then
+    # remove the "eval" word from the last argument
     local callable_command="${last_arg#eval }"
+    # use real bash "eval" to evaluate your command
     output=$(eval "$callable_command" 2>&1 || echo "inner_exit_code:$?")
 
     local last_line
