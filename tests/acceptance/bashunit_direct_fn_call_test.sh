@@ -82,3 +82,42 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
   assert_match_snapshot "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE" 2>&1)"
   assert_command_not_found "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
 }
+
+function test_bashunit_assert_exit_code_successful_code() {
+  ./bashunit -a exit_code "0" "eval ./bashunit -a same 1 1"
+  assert_successful_code
+}
+
+function test_bashunit_assert_exit_code_general_error() {
+  ./bashunit -a exit_code "1" "eval ./bashunit -a same 0 1"
+  assert_successful_code
+}
+
+function test_bashunit_assert_exit_code_eval_successful_but_exit_code_error() {
+  local temp
+  temp=$(mktemp)
+
+  local output
+  output="$(./bashunit -a exit_code "1" "eval echo something to stdout" 2> "$temp")"
+
+  assert_same "something to stdout" "$output"
+
+  assert_contains\
+    "$(console_results::print_failed_test "Main::exec assert" "1" "but got " "0")"\
+    "$(cat "$temp")"
+
+  rm "$temp"
+}
+
+function test_bashunit_assert_exit_code_eval_successful_and_exit_code_ok() {
+  local temp
+  temp=$(mktemp)
+
+  local output
+  output="$(./bashunit -a exit_code "0" "eval echo something to stdout" 2> "$temp")"
+
+  assert_same "something to stdout" "$output"
+  assert_empty "$(cat "$temp")"
+
+  rm "$temp"
+}

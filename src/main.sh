@@ -58,16 +58,19 @@ function main::exec_assert() {
   if [[ "$assert_fn" == "assert_exit_code" && "$last_arg" == eval* ]]; then
     # remove the "eval" word from the last argument
     local callable_command="${last_arg#eval }"
-    # use real bash "eval" to evaluate your command
+    # use real bash "eval" to evaluate the command
     output=$(eval "$callable_command" 2>&1 || echo "inner_exit_code:$?")
 
     local last_line
     last_line=$(echo "$output" | tail -n 1)
-    inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
-    if ! [[ $inner_exit_code =~ ^[0-9]+$ ]]; then
-      inner_exit_code=1
+    # extract inner_exit_code if the command failed
+    if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
+      inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
+      if ! [[ $inner_exit_code =~ ^[0-9]+$ ]]; then
+        inner_exit_code=1
+      fi
+      output=$(echo "$output" | sed '$d')
     fi
-    output=$(echo "$output" | sed '$d')
 
     # Remove the last argument and append the output
     args=("${args[@]:0:last_index}")
