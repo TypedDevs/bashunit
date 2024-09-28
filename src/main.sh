@@ -55,12 +55,9 @@ function main::exec_assert() {
   local bashunit_exit_code=0
   local output
 
-  if [[ "$assert_fn" == "assert_exit_code" && "$last_arg" == eval* ]]; then
-    # remove the "eval" word from the last argument
-    local callable_command="${last_arg#eval }"
-    # use real bash "eval" to evaluate the command
-    output=$(eval "$callable_command" 2>&1 || echo "inner_exit_code:$?")
-
+  # The first word in last_arg is a valid shell command or function
+  if [[ "$assert_fn" == "assert_exit_code" && $(command -v "${last_arg%% *}") ]]; then
+    output=$(eval "$last_arg" 2>&1 || echo "inner_exit_code:$?")
     local last_line
     last_line=$(echo "$output" | tail -n 1)
     # extract inner_exit_code if the command failed
@@ -87,7 +84,7 @@ function main::exec_assert() {
   bashunit_exit_code=$?
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
-    exit 1
+    return 1
   fi
 
   return "$bashunit_exit_code"

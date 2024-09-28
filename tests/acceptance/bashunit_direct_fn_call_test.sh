@@ -83,13 +83,11 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
   assert_command_not_found "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
 }
 
+# shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
-  local temp
-  temp=$(mktemp)
-
-  local output
+  local temp=$(mktemp)
   # shellcheck disable=SC2116
-  output="$(./bashunit -a exit_code "0" "$(echo "this wont go to stdout")" 2> "$temp")"
+  local output="$(./bashunit -a exit_code "0" "$(echo "this wont go to stdout")" 2> "$temp")"
 
   assert_empty "$output"
   assert_empty "$(cat "$temp")"
@@ -97,13 +95,11 @@ function test_bashunit_assert_exit_code_successful_with_inner_func() {
   rm "$temp"
 }
 
+# shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_error_with_inner_func() {
-  local temp
-  temp=$(mktemp)
-
-  local output
+  local temp=$(mktemp)
   # shellcheck disable=SC2116
-  output="$(./bashunit -a exit_code "1" "$(echo "this wont go to stdout")" 2> "$temp")"
+  local output="$(./bashunit -a exit_code "1" "$(echo "this wont go to stdout")" 2> "$temp")"
 
   assert_empty "$output"
 
@@ -114,22 +110,20 @@ function test_bashunit_assert_exit_code_error_with_inner_func() {
   rm "$temp"
 }
 
-function test_bashunit_assert_exit_code_eval_successful_code() {
-  ./bashunit -a exit_code "0" "eval ./bashunit -a same 1 1"
+function test_bashunit_assert_exit_code_str_successful_code() {
+  ./bashunit -a exit_code "0" "./bashunit -a same 1 1"
   assert_successful_code
 }
 
-function test_bashunit_assert_exit_code_eval_general_error() {
-  ./bashunit -a exit_code "1" "eval ./bashunit -a same 0 1"
+function test_bashunit_assert_exit_code_str_general_error() {
+  ./bashunit -a exit_code "1" "./bashunit -a same 1 2"
   assert_successful_code
 }
 
-function test_bashunit_assert_exit_code_eval_successful_but_exit_code_error() {
-  local temp
-  temp=$(mktemp)
-
-  local output
-  output="$(./bashunit -a exit_code "1" "eval echo something to stdout" 2> "$temp")"
+# shellcheck disable=SC2155
+function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
+  local temp=$(mktemp)
+  local output="$(./bashunit -a exit_code "1" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
 
@@ -140,12 +134,10 @@ function test_bashunit_assert_exit_code_eval_successful_but_exit_code_error() {
   rm "$temp"
 }
 
-function test_bashunit_assert_exit_code_eval_successful_and_exit_code_ok() {
-  local temp
-  temp=$(mktemp)
-
-  local output
-  output="$(./bashunit -a exit_code "0" "eval echo something to stdout" 2> "$temp")"
+# shellcheck disable=SC2155
+function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
+  local temp=$(mktemp)
+  local output="$(./bashunit -a exit_code "0" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
   assert_empty "$(cat "$temp")"
