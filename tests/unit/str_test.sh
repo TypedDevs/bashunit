@@ -39,5 +39,14 @@ function test_rpad_custom_width_padding_3_digit() {
 function test_rpad_custom_width_padding_text_too_long() {
   local actual=$(str::rpad "very long text too large" "100" 20)
 
-  assert_same "very long text...100" "$actual"
+  assert_same "very long tex... 100" "$actual"
+}
+
+function test_rpad_custom_width_padding_text_too_long_and_special_chars() {
+  local txt=$(printf "%s%s%s%s" "$_COLOR_PASSED" "ok: " "$_COLOR_DEFAULT" "very long text as well")
+  local actual=$(str::rpad "$txt" "100" 20)
+
+  assert_same \
+    "$(printf "%sok: %svery long... 100" "$_COLOR_PASSED" "$_COLOR_DEFAULT")" \
+    "$actual"
 }
