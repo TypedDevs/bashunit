@@ -29,8 +29,15 @@ function test_rpad_custom_width_padding_2_digit() {
 
   assert_same "input             10" "$actual"
 }
+
 function test_rpad_custom_width_padding_3_digit() {
   local actual=$(str::rpad "input" "100" 20)
 
   assert_same "input            100" "$actual"
+}
+
+function test_rpad_custom_width_padding_text_too_long() {
+  local actual=$(str::rpad "very long text too large" "100" 20)
+
+  assert_same "very long text...100" "$actual"
 }
