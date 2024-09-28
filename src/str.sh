@@ -4,7 +4,8 @@ function str::rpad() {
   local left_text="$1"
   local right_word="$2"
   local width_padding="${3:-$TERMINAL_WIDTH}"
-  local padding=$((width_padding - ${#right_word} - 1))  # Subtract 1 more to account for the extra space
+  # Subtract 1 more to account for the extra space
+  local padding=$((width_padding - ${#right_word} - 1))
 
   # Remove ANSI escape sequences (non-visible characters) for length calculation
   # shellcheck disable=SC2155
@@ -44,12 +45,23 @@ function str::rpad() {
     fi
   done
 
-  if $truncated; then
+  local remaining_space
+  if [[ "$truncated" == true ]]; then
     result_left_text+="..."
+    # 1: due to a blank space
+    # 3: due to the appended ...
+    remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1 - 3))
   else
     # Copy any remaining characters after the truncation point
     result_left_text+="${left_text:$j}"
+    remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1))
   fi
 
-  printf "%-${padding}s %s" "$result_left_text" "$right_word"
+  # Ensure the right word is placed exactly at the far right of the screen
+  # filling the remaining space with padding
+  if [[ $remaining_space -lt 0 ]]; then
+    remaining_space=0
+  fi
+
+  printf "%s%${remaining_space}s %s\n" "$result_left_text" "" "$right_word"
 }
