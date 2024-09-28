@@ -87,10 +87,10 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
   local temp=$(mktemp)
   # shellcheck disable=SC2116
-  local output="$(./bashunit -a exit_code "0" "$(echo "this wont go to stdout")" 2> "$temp")"
+  local output="$(./bashunit -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
-  assert_empty "$(cat "$temp")"
+  assert_same "Command not found: unknown command" "$(cat "$temp")"
 
   rm "$temp"
 }
@@ -99,7 +99,7 @@ function test_bashunit_assert_exit_code_successful_with_inner_func() {
 function test_bashunit_assert_exit_code_error_with_inner_func() {
   local temp=$(mktemp)
   # shellcheck disable=SC2116
-  local output="$(./bashunit -a exit_code "1" "$(echo "this wont go to stdout")" 2> "$temp")"
+  local output="$(./bashunit -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
 
@@ -144,3 +144,8 @@ function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
 
   rm "$temp"
 }
+
+#function test_bashunit_assert_() {
+#  ./bashunit -a exit_code "1" -a contains "some error" -e "the_command"
+#  assert_successful_code
+#}
