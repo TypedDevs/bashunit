@@ -213,7 +213,7 @@ function assert_general_error() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=1
 
-  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+  if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed

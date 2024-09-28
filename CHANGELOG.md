@@ -9,6 +9,7 @@
 - Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 - Better handler runtime errors
 - Display failing tests after running the entire suite
+- Added defer expressions with `eval` when using standalone assertions
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 

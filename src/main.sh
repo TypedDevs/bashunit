@@ -34,21 +34,76 @@ function main::exec_tests() {
 
 function main::exec_assert() {
   local original_assert_fn=$1
-  local assert_fn=$original_assert_fn
   local args=("${@:2}")
 
+  local assert_fn=$original_assert_fn
+
+  # Check if the function exists
   if ! type "$assert_fn" > /dev/null 2>&1; then
-    # try again using prefix `assert_`
     assert_fn="assert_$assert_fn"
     if ! type "$assert_fn" > /dev/null 2>&1; then
-      echo "Function $original_assert_fn does not exist."
+      echo "Function $original_assert_fn does not exist." 1>&2
       exit 127
     fi
   fi
 
-  "$assert_fn" "${args[@]}"
+  # Get the last argument safely by calculating the array length
+  local last_index=$((${#args[@]} - 1))
+  local last_arg="${args[$last_index]}"
+  local output=""
+  local inner_exit_code=0
+  local bashunit_exit_code=0
+
+  # Handle different assert_* functions
+  case "$assert_fn" in
+    assert_exit_code)
+      output=$(main::handle_assert_exit_code "$last_arg")
+      inner_exit_code=$?
+      # Remove the last argument and append the exit code
+      args=("${args[@]:0:last_index}")
+      args+=("$inner_exit_code")
+      ;;
+    *)
+      # Add more cases here for other assert_* handlers if needed
+      ;;
+  esac
+
+  if [[ -n "$output" ]]; then
+    echo "$output" 1>&1
+    assert_fn="assert_same"
+  fi
+
+  # Run the assertion function and write into stderr
+  "$assert_fn" "${args[@]}" 1>&2
+  bashunit_exit_code=$?
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
-      exit 1
+    return 1
+  fi
+
+  return "$bashunit_exit_code"
+}
+
+function main::handle_assert_exit_code() {
+  local cmd="$1"
+  local output
+  local inner_exit_code=0
+
+  if [[ $(command -v "${cmd%% *}") ]]; then
+    output=$(eval "$cmd" 2>&1 || echo "inner_exit_code:$?")
+    local last_line
+    last_line=$(echo "$output" | tail -n 1)
+    if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
+      inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
+      if ! [[ $inner_exit_code =~ ^[0-9]+$ ]]; then
+        inner_exit_code=1
+      fi
+      output=$(echo "$output" | sed '$d')
+    fi
+    echo "$output"
+    return "$inner_exit_code"
+  else
+    echo "Command not found: $cmd" 1>&2
+    return 127
   fi
 }
