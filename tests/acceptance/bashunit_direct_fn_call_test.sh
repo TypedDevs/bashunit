@@ -144,8 +144,3 @@ function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
 
   rm "$temp"
 }
-
-#function test_bashunit_assert_() {
-#  ./bashunit -a exit_code "1" -a contains "some error" -e "the_command"
-#  assert_successful_code
-#}
