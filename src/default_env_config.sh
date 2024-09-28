@@ -11,24 +11,23 @@ _DEFAULT_DEFAULT_PATH=
 _DEFAULT_LOG_JUNIT=
 _DEFAULT_REPORT_HTML=
 _DEFAULT_BASHUNIT_LOAD_FILE=
-_DEFAULT_TERMINAL_WIDTH=150
-
-CAT="$(which cat)"
+_DEFAULT_TERMINAL_WIDTH=250
 
 function find_terminal_width() {
-  local _cols=""
+  local cols=""
 
   if [[ -n "$TERM" ]] && command -v tput > /dev/null; then
-    _cols=$(tput cols 2>/dev/null)
+    cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
-  if [[ -z "$_cols" ]] && command -v stty > /dev/null; then
-    _cols=$(stty size 2>/dev/null | cut -d' ' -f2)
+  if [[ -z "$cols" ]] && command -v stty > /dev/null; then
+    cols=$(tput cols 2>/dev/null)
   fi
 
   # Directly echo the value with fallback
-  echo "${_cols:-$_DEFAULT_TERMINAL_WIDTH}"
+  echo "${cols:-$_DEFAULT_TERMINAL_WIDTH}"
 }
 
 TERMINAL_WIDTH="$(find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
+CAT="$(which cat)"
