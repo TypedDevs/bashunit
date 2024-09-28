@@ -131,7 +131,7 @@ function console_results::print_successful_test() {
 
     local full_line=$line
     if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
-      full_line="$(printf "%s\n" "$(str::rpad "$line" "($duration ms)")")"
+      full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
     fi
 
     state::print_line "successful" "$full_line"
