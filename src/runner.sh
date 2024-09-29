@@ -181,8 +181,15 @@ function runner::run_test() {
     sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
     base64 --decode
   )
+
   if [[ -n "$subshell_output" ]]; then
-    printf "%s\n" "$subshell_output"
+    # Formatted as "[type]line" @see `state::print_line()`
+    local type="${subshell_output%%]*}" # Remove everything after "]"
+    type="${type#[}"                    # Remove the leading "["
+    local line="${subshell_output#*]}"  # Remove everything before and including "]"
+    state::print_line "$type" "$line"
+
+    subshell_output=$line
   fi
 
   local runtime_output

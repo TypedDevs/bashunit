@@ -120,7 +120,7 @@ function state::set_file_with_duplicated_function_names() {
 }
 
 function state::add_test_output() {
-  _TEST_OUTPUT+="$(printf "%s\n" "$1")"
+  _TEST_OUTPUT+="$1"
 }
 
 function state::set_duplicated_functions_merged() {
@@ -175,6 +175,32 @@ function state::print_line() {
   # shellcheck disable=SC2034
   local type=$1
   local line=$2
-  printf "%s\n" "$line"
-  state::add_test_output "$(printf "%s\n" "$line")"
+
+  ((_TOTAL_TESTS_COUNT++)) || true
+
+  state::add_test_output "[$type]$line"
+
+  if [[ "$BASHUNIT_SIMPLE_OUTPUT" == false ]]; then
+    printf "%s\n" "$line"
+    return
+  fi
+
+  local char
+  case "$type" in
+    successful)       char="." ;;
+    failure)          char="F" ;;
+    failed)           char="F" ;;
+    failed_snapshot)  char="F" ;;
+    skipped)          char="S" ;;
+    incomplete)       char="I" ;;
+    snapshot)         char="S" ;;
+    error)            char="E" ;;
+    *)                char="?" ;;
+  esac
+
+  if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
+    printf "%s\n" "$char"
+  else
+    printf "%s" "$char"
+  fi
 }
