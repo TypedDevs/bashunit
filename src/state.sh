@@ -191,9 +191,9 @@ function state::print_line() {
     failure)          char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
     failed)           char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
     failed_snapshot)  char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
-    skipped)          char="${_COLOR_SKIPPED}s${_COLOR_DEFAULT}" ;;
-    incomplete)       char="${_COLOR_INCOMPLETE}i${_COLOR_DEFAULT}" ;;
-    snapshot)         char="${_COLOR_SNAPSHOT}n${_COLOR_DEFAULT}" ;;
+    skipped)          char="${_COLOR_SKIPPED}S${_COLOR_DEFAULT}" ;;
+    incomplete)       char="${_COLOR_INCOMPLETE}I${_COLOR_DEFAULT}" ;;
+    snapshot)         char="${_COLOR_SNAPSHOT}N${_COLOR_DEFAULT}" ;;
     error)            char="${_COLOR_FAILED}E${_COLOR_DEFAULT}" ;;
     *)                char="?" ;;
   esac
