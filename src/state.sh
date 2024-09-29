@@ -188,13 +188,13 @@ function state::print_line() {
   local char
   case "$type" in
     successful)       char="." ;;
-    failure)          char="F" ;;
-    failed)           char="F" ;;
-    failed_snapshot)  char="F" ;;
-    skipped)          char="S" ;;
-    incomplete)       char="I" ;;
-    snapshot)         char="S" ;;
-    error)            char="E" ;;
+    failure)          char="${_COLOR_FAILED}f${_COLOR_DEFAULT}" ;;
+    failed)           char="${_COLOR_FAILED}f${_COLOR_DEFAULT}" ;;
+    failed_snapshot)  char="${_COLOR_FAILED}f${_COLOR_DEFAULT}" ;;
+    skipped)          char="${_COLOR_SKIPPED}s${_COLOR_DEFAULT}" ;;
+    incomplete)       char="${_COLOR_INCOMPLETE}i${_COLOR_DEFAULT}" ;;
+    snapshot)         char="${_COLOR_SNAPSHOT}s${_COLOR_DEFAULT}" ;;
+    error)            char="${_COLOR_FAILED}e${_COLOR_DEFAULT}" ;;
     *)                char="?" ;;
   esac
 
