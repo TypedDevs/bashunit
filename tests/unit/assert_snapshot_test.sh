@@ -1,5 +1,9 @@
 #!/bin/bash
 
+function set_up() {
+  export BASHUNIT_SIMPLE_OUTPUT=false
+}
+
 function test_successful_assert_match_snapshot() {
   assert_empty "$(assert_match_snapshot "Hello World!")"
 }
