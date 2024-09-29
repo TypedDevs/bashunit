@@ -23,8 +23,11 @@ function find_terminal_width() {
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
-  # Directly echo the value with fallback
-  echo "${cols:-$_DEFAULT_TERMINAL_WIDTH}"
+  if [ -z "$cols" ] || [ "$cols" -eq 0 ]; then
+      cols="$_DEFAULT_TERMINAL_WIDTH"
+  fi
+
+  echo "$cols"
 }
 
 TERMINAL_WIDTH="$(find_terminal_width)"

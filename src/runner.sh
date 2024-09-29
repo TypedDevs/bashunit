@@ -1,8 +1,15 @@
 #!/bin/bash
 
+CURRENT_TEST_NUMBER=0
+
 function runner::load_test_files() {
   local filter=$1
   local files=("${@:2}") # Store all arguments starting from the second as an array
+
+  local total_tests
+  total_tests="$(helpers::find_total_tests "$filter" "${files[@]}")"
+
+  shload_setup "$total_tests" "-"
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
@@ -20,6 +27,8 @@ function runner::load_test_files() {
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
   done
+
+  shload_update "$total_tests"
 }
 
 function runner::functions_for_script() {
@@ -62,6 +71,9 @@ function runner::call_test_functions() {
     helper::check_duplicate_functions "$script" || true
 
     for function_name in "${functions_to_run[@]}"; do
+      ((CURRENT_TEST_NUMBER++))
+      shload_update "$CURRENT_TEST_NUMBER"
+
       local provider_data=()
       while IFS=" " read -r line; do
         provider_data+=("$line")
