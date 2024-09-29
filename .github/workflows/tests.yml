@@ -32,6 +32,19 @@ jobs:
       - name: Run Tests
         run: ${{ matrix.script_name }}
 
+  simple-output:
+    name: "Run tests with simple output"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Tests
+        run: |
+          ./bashunit -e tests/globals.sh --simple tests/
+
   alpine:
     name: "Run tests on alpine-latest"
     runs-on: ubuntu-latest

@@ -9,6 +9,10 @@ four line
 find me with \n a regular expression"
 }
 
+function set_up() {
+  export BASHUNIT_SIMPLE_OUTPUT=false
+}
+
 function test_bashunit_direct_fn_call_passes() {
   local expected="foo"
   local actual="foo"

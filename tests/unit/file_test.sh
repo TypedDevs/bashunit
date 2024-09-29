@@ -2,6 +2,10 @@
 
 # shellcheck disable=SC2155
 
+function set_up() {
+  export BASHUNIT_SIMPLE_OUTPUT=false
+}
+
 function test_successful_assert_file_exists() {
   local a_file="$(current_dir)/$(current_filename)"
 

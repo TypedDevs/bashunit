@@ -1,6 +1,6 @@
 #!/bin/bash
 
-_SUCCESSFUL_TEST_COUNT=0
+_TOTAL_TESTS_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -108,34 +108,24 @@ function console_results::print_execution_time() {
 }
 
 function console_results::print_successful_test() {
-  ((_SUCCESSFUL_TEST_COUNT++)) || true
+  local test_name=$1
+  shift
+  local duration=${1:-"0"}
+  shift
 
-  if [[ "$BASHUNIT_SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
-      printf "."
-    else
-      echo "."
-    fi
+  local line
+  if [[ -z "$*" ]]; then
+    line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
   else
-    local test_name=$1
-    shift
-    local duration=${1:-"0"}
-    shift
-
-    local line
-    if [[ -z "$*" ]]; then
-      line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
-    else
-      line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
-    fi
-
-    local full_line=$line
-    if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
-      full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
-    fi
-
-    state::print_line "successful" "$full_line"
+    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
   fi
+
+  local full_line=$line
+  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "successful" "$full_line"
 }
 
 function console_results::print_failure_message() {
