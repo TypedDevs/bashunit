@@ -70,7 +70,7 @@ test/watch: $(TEST_SCRIPTS)
 
 docker/alpine:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
-		sh -c  "apk add bash make shellcheck git curl perl coreutils && bash"
+		sh -c  "apk add bash make shellcheck git && bash"
 
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"

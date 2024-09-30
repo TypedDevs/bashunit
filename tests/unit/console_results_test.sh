@@ -287,10 +287,27 @@ function test_not_render_execution_time() {
   assert_not_matches "Time taken" "$render_result"
 }
 
-function test_render_execution_time_on_osx() {
+function test_render_execution_time_on_osx_without_perl() {
   local render_result
+  mock_macos
+  mock dependencies::has_perl mock_false
   render_result=$(
-    _OS='OSX'
+    console_results::render_result
+  )
+
+  assert_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+}
+
+function test_render_execution_time_on_osx_with_perl() {
+  local render_result
+  mock_macos
+  mock dependencies::has_adjtimex mock_false
+  mock dependencies::has_perl mock_true
+  _START_TIME="1726393394574382186"
+  mock perl echo "1726393394574372186"
+  mock uname echo "Darwin"
+  render_result=$(
+  mock perl echo "1726393394574372186";
 
     console_results::render_result
   )

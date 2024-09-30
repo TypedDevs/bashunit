@@ -45,7 +45,13 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
-  curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+  if command -v curl > /dev/null 2>&1; then
+    curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+  elif command -v wget > /dev/null 2>&1; then
+    wget "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+  else
+    echo "Cannot download bashunit: curl or wget not found."
+  fi
   chmod u+x "bashunit"
 }
 

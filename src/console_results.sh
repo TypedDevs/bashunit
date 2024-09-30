@@ -175,7 +175,7 @@ function console_results::print_failed_snapshot_test() {
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$function_name")"
 
-  if command -v git > /dev/null; then
+  if dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
     echo "$actual" > "$actual_file"
 
