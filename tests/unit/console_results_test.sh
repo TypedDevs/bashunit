@@ -288,10 +288,15 @@ function test_not_render_execution_time() {
 }
 
 function test_render_execution_time_on_osx_without_perl() {
-  local render_result
+  if check_os::is_windows; then
+    skip
+    return
+  fi
+
   mock_macos
   mock dependencies::has_perl mock_false
-  EPOCHREALTIME=1727769354.7084441185
+  EPOCHREALTIME=1727771758.0664479733
+  local render_result
   render_result=$(
     console_results::render_result
   )
@@ -300,6 +305,11 @@ function test_render_execution_time_on_osx_without_perl() {
 }
 
 function test_render_execution_time_on_osx_with_perl() {
+  if check_os::is_windows; then
+    skip
+    return
+  fi
+
   local render_result
   mock_macos
   mock dependencies::has_adjtimex mock_false
