@@ -7,6 +7,17 @@ function clock::now() {
     fi
   fi
 
+  if check_os::is_windows && dependencies::has_powershell; then
+      powershell -Command "
+              \$unixEpoch = [DateTime]'1970-01-01 00:00:00';
+              \$now = [DateTime]::UtcNow;
+              \$ticksSinceEpoch = (\$now - \$unixEpoch).Ticks;
+              \$nanosecondsSinceEpoch = \$ticksSinceEpoch * 100;
+              Write-Output \$nanosecondsSinceEpoch
+              "
+      return 0
+  fi
+
   if  ! check_os::is_macos && ! check_os::is_alpine; then
     date +%s%N
     return 0

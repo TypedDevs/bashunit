@@ -35,12 +35,22 @@ function test_now_on_linux_alpine() {
   assert_same "1720705883457" "$(clock::now)"
 }
 
-function test_now_on_windows_without_perl() {
+function test_now_on_windows_without_with_powershell() {
   mock_windows_os
   mock dependencies::has_perl mock_false
-  mock date echo "1720705883457"
+  mock dependencies::has_powershell mock_true
+  mock powershell echo "1727768183281580800"
 
-  assert_same "1720705883457" "$(clock::now)"
+  assert_same "1727768183281580800" "$(clock::now)"
+}
+
+function test_now_on_windows_without_without_powershell() {
+  mock_windows_os
+  mock dependencies::has_perl mock_false
+  mock dependencies::has_powershell mock_false
+  mock date echo "1727768951"
+
+  assert_same "1727768951" "$(clock::now)"
 }
 
 function test_now_on_osx_without_perl() {

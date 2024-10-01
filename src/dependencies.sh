@@ -5,6 +5,10 @@ function dependencies::has_perl() {
   command -v perl >/dev/null 2>&1
 }
 
+function dependencies::has_powershell() {
+  command -v powershell > /dev/null 2>&1
+}
+
 function dependencies::has_adjtimex() {
   command -v adjtimex >/dev/null 2>&1
 }

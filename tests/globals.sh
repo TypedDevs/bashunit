@@ -70,5 +70,5 @@ function mock_windows_os() {
   mock check_os::is_alpine mock_false
   mock check_os::is_ubuntu mock_false
   mock check_os::is_busybox mock_false
-  mock check_os::is_is_macos mock_false
+  mock check_os::is_macos mock_false
 }
