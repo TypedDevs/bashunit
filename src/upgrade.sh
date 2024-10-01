@@ -13,7 +13,11 @@ function upgrade::upgrade() {
 
   echo "> Upgrading bashunit to latest version"
   cd "$script_path" || exit
-  curl -L -J -o bashunit "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" 2>/dev/null
+
+  if ! io::download_to  "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" "bashunit"; then
+    echo "Failed to download bashunit"
+  fi
+
   chmod u+x "bashunit"
 
   echo "> bashunit upgraded successfully to latest version $latest_tag"

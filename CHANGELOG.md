@@ -12,6 +12,13 @@
 - Added defer expressions with `eval` when using standalone assertions
 - Fixed simple output for non-successful states
 - Remove deprecated assertions
+- Some required dependencies now optional:
+    - perl
+    - coreutils
+- Switch to testing the environment of capabilities rather than assuming various operating systems and Linux
+    distributions have programs installed.
+- Upgrade and install script can now use `wget` if `curl` is not installed
+- Tests can be also be timed by making use of `EPOCHREALTIME` on supported system.
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 

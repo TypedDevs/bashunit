@@ -25,9 +25,15 @@ function test_creates_a_snapshot() {
 
 function test_unsuccessful_assert_match_snapshot() {
   local expected
-  expected="$(printf "✗ Failed: Unsuccessful assert match snapshot
+
+  if dependencies::has_git; then
+    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot
     Expected to match the snapshot
     [-Actual-]{+Expected+} snapshot[-text-]")"
+  else
+    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot
+    Expected to match the snapshot")"
+  fi
 
   local actual
   actual="$(assert_match_snapshot "Expected snapshot")"

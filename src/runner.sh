@@ -179,7 +179,7 @@ function runner::run_test() {
     echo "$test_execution_result" |\
     tail -n 1 |\
     sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
-    base64 --decode
+    base64 -d
   )
 
   if [[ -n "$subshell_output" ]]; then
@@ -211,9 +211,10 @@ function runner::run_test() {
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
-  local end_time
+  local end_time duration_ns duration
   end_time=$(clock::now)
-  local duration=$((end_time - start_time))
+  duration_ns=$(math::calculate "($end_time - $start_time) ")
+  duration=$(math::calculate "$duration_ns / 1000000")
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed

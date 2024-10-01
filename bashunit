@@ -10,6 +10,9 @@ export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
+source "$BASHUNIT_ROOT_DIR/src/dependencies.sh"
+source "$BASHUNIT_ROOT_DIR/src/io.sh"
+source "$BASHUNIT_ROOT_DIR/src/math.sh"
 source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
 source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
@@ -29,6 +32,9 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 _ASSERT_FN=""
 _FILTER=""
 _ARGS=()
+
+check_os::init
+clock::init
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
