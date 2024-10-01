@@ -1,10 +1,18 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.16.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
+- ...
+
+## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
+
+- Fixed simple output for non-successful states
 - Added support for Alpine (Linux Distro)
 - Added optional file-path as 2nd arg to `--debug` option
-- Added runtime per test
+- Added runtime duration per test
+- Added defer expressions with when using standalone assertions
+- Added failing tests after running the entire suite
+- Improved runtime errors handling
 - Simplified total tests display on the header
 - Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 - Better handler runtime errors
@@ -12,13 +20,11 @@
 - Added defer expressions with `eval` when using standalone assertions
 - Fixed simple output for non-successful states
 - Remove deprecated assertions
-- Some required dependencies now optional:
-    - perl
-    - coreutils
-- Switch to testing the environment of capabilities rather than assuming various operating systems and Linux
-    distributions have programs installed.
+- Some required dependencies now optional: perl, coreutils
 - Upgrade and install script can now use `wget` if `curl` is not installed
-- Tests can be also be timed by making use of `EPOCHREALTIME` on supported system.
+- Tests can be also be timed by making use of `EPOCHREALTIME` on supported system
+- Switch to testing the environment of capabilities
+    - rather than assuming various operating systems and Linux distributions have programs installed
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 
