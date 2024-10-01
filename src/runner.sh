@@ -211,13 +211,10 @@ function runner::run_test() {
   local total_assertions
   total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
-  local end_time
+  local end_time duration_ns duration
   end_time=$(clock::now)
-  local duration
-  local duration_ns
   duration_ns=$(math::calculate "($end_time - $start_time) ")
   duration=$(math::calculate "$duration_ns / 1000000")
-#
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed

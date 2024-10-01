@@ -18,9 +18,13 @@ function clock::now() {
       return 0
   fi
 
-  if  ! check_os::is_macos && ! check_os::is_alpine; then
-    date +%s%N
-    return 0
+  if ! check_os::is_macos && ! check_os::is_alpine; then
+    local result
+    result=$(date +%s%N)
+    if [[ "$result" != *N ]] && [[ "$result" -gt 0 ]]; then
+      echo "$result"
+      return 0
+    fi
   fi
 
   local shell_time has_shell_time
