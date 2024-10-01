@@ -11,6 +11,7 @@
 - Display failing tests after running the entire suite
 - Added defer expressions with `eval` when using standalone assertions
 - Fixed simple output for non-successful states
+- Remove deprecated assertions
 - Some required dependencies now optional:
     - perl
     - coreutils
