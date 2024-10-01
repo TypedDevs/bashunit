@@ -11,6 +11,7 @@
 - Display failing tests after running the entire suite
 - Added defer expressions with `eval` when using standalone assertions
 - Fixed simple output for non-successful states
+- Remove deprecated assertions
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 
