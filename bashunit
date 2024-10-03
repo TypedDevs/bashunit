@@ -102,8 +102,6 @@ done
 
 set +eu
 
-trap 'cleanup_temp_files' EXIT
-
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 else

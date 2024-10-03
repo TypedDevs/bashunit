@@ -29,6 +29,8 @@ function main::exec_tests() {
     logger::generate_report_html "$BASHUNIT_REPORT_HTML"
   fi
 
+  cleanup_temp_files
+
   exit $exit_code
 }
 

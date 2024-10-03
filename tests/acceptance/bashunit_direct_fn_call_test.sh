@@ -89,19 +89,17 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
-  local temp=$(mktemp)
+  local temp=$(temp_file)
   # shellcheck disable=SC2116
   local output="$(./bashunit -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
   assert_same "Command not found: unknown command" "$(cat "$temp")"
-
-  rm "$temp"
 }
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_error_with_inner_func() {
-  local temp=$(mktemp)
+  local temp=$(temp_file)
   # shellcheck disable=SC2116
   local output="$(./bashunit -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
 
@@ -110,8 +108,6 @@ function test_bashunit_assert_exit_code_error_with_inner_func() {
   assert_contains\
     "$(console_results::print_failed_test "Main::exec assert" "0" "to be" "1")"\
     "$(cat "$temp")"
-
-  rm "$temp"
 }
 
 function test_bashunit_assert_exit_code_str_successful_code() {
@@ -126,7 +122,7 @@ function test_bashunit_assert_exit_code_str_general_error() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
-  local temp=$(mktemp)
+  local temp=$(temp_file)
   local output="$(./bashunit -a exit_code "1" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
@@ -134,17 +130,13 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
   assert_contains\
     "$(console_results::print_failed_test "Main::exec assert" "1" "but got " "0")"\
     "$(cat "$temp")"
-
-  rm "$temp"
 }
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
-  local temp=$(mktemp)
+  local temp=$(temp_file)
   local output="$(./bashunit -a exit_code "0" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
   assert_empty "$(cat "$temp")"
-
-  rm "$temp"
 }

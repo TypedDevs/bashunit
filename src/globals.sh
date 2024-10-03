@@ -25,21 +25,17 @@ function random_str() {
 }
 
 function temp_file() {
-  # shellcheck disable=SC2155
-  local path="/tmp/bashunit_temp.$(random_str)"
-  touch "$path"
-  echo "$path"
+  mkdir -p /tmp/bashunit
+  mktemp --tmpdir="/tmp/bashunit" "XXXXXXX"
 }
 
 function temp_dir() {
-  # shellcheck disable=SC2155
-  local dir="/tmp/bashunit_tempdir.$(random_str 5)}"
-  mkdir -p "$dir"
-  echo "$dir"
+  mkdir -p /tmp/bashunit
+  mktemp -d --tmpdir="/tmp/bashunit" "XXXXXXX"
 }
 
 function cleanup_temp_files() {
-  rm -rf /tmp/bashunit_temp*
+  rm -rf /tmp/bashunit/*
 }
 
 # shellcheck disable=SC2145
