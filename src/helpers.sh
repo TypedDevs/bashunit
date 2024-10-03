@@ -23,7 +23,6 @@ function helper::normalize_test_function_name() {
   echo "$result"
 }
 
-
 function helper::check_duplicate_functions() {
   local script="$1"
 
