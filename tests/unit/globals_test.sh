@@ -56,14 +56,38 @@ function test_globals_temp_dir() {
   assert_directory_not_exists "$temp_dir"
 }
 
-function test_globals_log_info() {
-  log_info "hello," "world"
+function test_globals_log_level_error() {
+  log "error" "hello," "error"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "hello, worl"
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[ERROR]: hello, error"
 }
 
-function test_globals_log_error() {
-  log_error "hello," "luna"
+function test_globals_log_level_warning() {
+  log "warning" "hello," "warning"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "hello, luna"
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[WARNING]: hello, warning"
+}
+
+function test_globals_log_level_debug() {
+  log "debug" "hello," "debug"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[DEBUG]: hello, debug"
+}
+
+function test_globals_log_level_critical() {
+  log "critical" "hello," "critical"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[CRITICAL]: hello, critical"
+}
+
+function test_globals_log_level_info() {
+  log "info" "hello," "info"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
+}
+
+function test_globals_log_level_default() {
+  log "hello," "info"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
 }

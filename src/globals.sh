@@ -42,12 +42,19 @@ function cleanup_temp_files() {
   rm -rf /tmp/bashunit_temp*
 }
 
-function log_info() {
-  # shellcheck disable=SC2145
-  echo "$(current_timestamp) [INFO]: $@" >> "$BASHUNIT_LOG_PATH"
-}
+# shellcheck disable=SC2145
+function log() {
+  local level="$1"
+  shift
 
-function log_error() {
-  # shellcheck disable=SC2145
-  echo "$(current_timestamp) [ERROR]: $@" >> "$BASHUNIT_LOG_PATH"
+  case "$level" in
+    info|INFO)          level="INFO" ;;
+    debug|DEBUG)        level="DEBUG" ;;
+    warning|WARNING)    level="WARNING" ;;
+    critical|CRITICAL)  level="CRITICAL" ;;
+    error|ERROR)        level="ERROR" ;;
+    *) set -- "$level $@"; level="INFO" ;;
+  esac
+
+  echo "$(current_timestamp) [$level]: $@" >> "$BASHUNIT_LOG_PATH"
 }

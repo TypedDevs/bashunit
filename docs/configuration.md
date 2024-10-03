@@ -197,17 +197,21 @@ BASHUNIT_LOAD_FILE="tests/globals.sh"
 
 > `BASHUNIT_LOG_PATH=file`
 
+> See: [Globals > log](/globals#log)
+
 ::: code-group
 ```bash [Setup]
 BASHUNIT_LOG_PATH="out.log"
 ```
 ```bash [Usage]
-log_info "an info" "message"
-log_error "an" "error message"
+log "I am tracing something..."
+log "error" "an" "error" "message"
+log "warning" "different log level messages!"
 ```
 ```bash [Output: out.log]
-2024-10-03 21:27:23 [INFO]: an info message
+2024-10-03 21:27:23 [INFO]: I am tracing something...
 2024-10-03 21:27:23 [ERROR]: an error message
+2024-10-03 21:27:23 [WARNING]: different log level messages!
 ```
 :::
 

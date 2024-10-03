@@ -73,14 +73,17 @@ function test_globals_temp_dir() {
 }
 ```
 
-## log_info
+## log
+
+Write into the `BASHUNIT_LOG_PATH` a log message.
+
+> See: [Log path](/configuration#log-path)
 
 ```bash
-log_info "hello," "world"
-```
-
-## log_error
-
-```bash
-log_error "hello," "luna"
+log "hello" "world" # default level: info
+log "info" "hello" "world"
+log "debug" "hello" "world"
+log "warning" "hello" "world"
+log "critical" "hello" "world"
+log "error" "hello" "world"
 ```
