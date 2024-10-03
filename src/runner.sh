@@ -55,7 +55,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if [[ "$BASHUNIT_SIMPLE_OUTPUT" == false ]]; then
+    if ! env::is_simple_output_enabled ; then
       echo "Running $script"
     fi
 
@@ -228,7 +228,7 @@ function runner::run_test() {
     state::add_tests_failed
     logger::test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
-    if [ "$BASHUNIT_STOP_ON_FAILURE" = true ]; then
+    if env::is_stop_on_failure_enabled ; then
       exit 1
     fi
     return

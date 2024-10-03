@@ -3,9 +3,8 @@
 function console_header::print_version_with_env() {
   local filter=${1:-}
   local files=("${@:2}")
-  local should_print_ascii="true"
 
-  if [[ "$BASHUNIT_SHOW_HEADER" != "$should_print_ascii" ]]; then
+  if ! env::is_show_header_enabled ; then
     return
   fi
 
@@ -26,7 +25,7 @@ function console_header::print_version() {
     total_tests=$(helpers::find_total_tests "$filter" "${files[@]}")
   fi
 
-  if [[ $BASHUNIT_HEADER_ASCII_ART == true ]]; then
+  if env::is_header_ascii_art_enabled ; then
     cat <<EOF
  _               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
