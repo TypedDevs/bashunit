@@ -62,7 +62,7 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS) -e tests/globals.sh
+	@./bashunit $(TEST_SCRIPTS) -e tests/bootstrap.sh
 
 test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)

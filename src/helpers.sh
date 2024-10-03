@@ -23,7 +23,6 @@ function helper::normalize_test_function_name() {
   echo "$result"
 }
 
-
 function helper::check_duplicate_functions() {
   local script="$1"
 
@@ -96,7 +95,7 @@ function helper::find_files_recursive() {
   fi
 }
 
-helper::normalize_variable_name() {
+function helper::normalize_variable_name() {
   local input_string="$1"
   local normalized_string
 

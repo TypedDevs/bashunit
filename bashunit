@@ -10,6 +10,7 @@ export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
+source "$BASHUNIT_ROOT_DIR/src/globals.sh"
 source "$BASHUNIT_ROOT_DIR/src/dependencies.sh"
 source "$BASHUNIT_ROOT_DIR/src/io.sh"
 source "$BASHUNIT_ROOT_DIR/src/math.sh"
