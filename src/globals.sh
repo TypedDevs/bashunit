@@ -25,17 +25,17 @@ function random_str() {
 }
 
 function temp_file() {
-  mkdir -p /tmp/bashunit
-  mktemp --tmpdir="/tmp/bashunit" "XXXXXXX"
+  mkdir -p /tmp/bashunit-tmp && chmod -R 777 /tmp/bashunit-tmp
+  mktemp --tmpdir="/tmp/bashunit-tmp" "XXXXXXX"
 }
 
 function temp_dir() {
-  mkdir -p /tmp/bashunit
-  mktemp -d --tmpdir="/tmp/bashunit" "XXXXXXX"
+  mkdir -p /tmp/bashunit-tmp && chmod -R 777 /tmp/bashunit-tmp
+  mktemp -d --tmpdir="/tmp/bashunit-tmp" "XXXXXXX"
 }
 
 function cleanup_temp_files() {
-  rm -rf /tmp/bashunit/*
+  rm -rf /tmp/bashunit-tmp/*
 }
 
 # shellcheck disable=SC2145
