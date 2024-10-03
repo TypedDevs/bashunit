@@ -73,22 +73,17 @@ function test_globals_temp_dir() {
 }
 ```
 
-## log_info
+## log
+
+Write into the `BASHUNIT_LOG_PATH` a log message.
+
+> See: [Log path](/configuration#log-path)
 
 ```bash
-function test_globals_log_info() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[INFO\]: hello, world$" \
-    "$(log_info "hello," "world")"
-}
-```
-
-## log_error
-
-```bash
-function test_globals_log_error() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[ERROR\]: hello, luna$" \
-    "$(log_error "hello," "luna" 2>&1)"
-}
+log "hello" "world" # default level: info
+log "info" "hello" "world"
+log "debug" "hello" "world"
+log "warning" "hello" "world"
+log "critical" "hello" "world"
+log "error" "hello" "world"
 ```

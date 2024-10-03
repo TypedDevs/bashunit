@@ -1,6 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+function set_up_before_script() {
+  BASHUNIT_LOG_PATH=$(temp_file)
+  export BASHUNIT_LOG_PATH
+}
+
+function tear_down_after_script() {
+  rm "$BASHUNIT_LOG_PATH"
+}
+
 function test_globals_current_dir() {
   assert_same "tests/unit" "$(current_dir)"
 }
@@ -47,14 +56,38 @@ function test_globals_temp_dir() {
   assert_directory_not_exists "$temp_dir"
 }
 
-function test_globals_log_info() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[INFO\]: hello, world$" \
-    "$(log_info "hello," "world")"
+function test_globals_log_level_error() {
+  log "error" "hello," "error"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[ERROR]: hello, error"
 }
 
-function test_globals_log_error() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[ERROR\]: hello, luna$" \
-    "$(log_error "hello," "luna" 2>&1)"
+function test_globals_log_level_warning() {
+  log "warning" "hello," "warning"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[WARNING]: hello, warning"
+}
+
+function test_globals_log_level_debug() {
+  log "debug" "hello," "debug"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[DEBUG]: hello, debug"
+}
+
+function test_globals_log_level_critical() {
+  log "critical" "hello," "critical"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[CRITICAL]: hello, critical"
+}
+
+function test_globals_log_level_info() {
+  log "info" "hello," "info"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
+}
+
+function test_globals_log_level_default() {
+  log "hello," "info"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
 }

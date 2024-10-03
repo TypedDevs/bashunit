@@ -456,6 +456,31 @@ function test_failure() {
 ```
 :::
 
+## assert_file_contains
+> `assert_file_contains "file" "search"`
+
+Reports an error if `file` does not contains the search string.
+
+[assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_contains "$file" "content"
+}
+
+function test_failure() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_contains "$file" "non existing"
+}
+```
+:::
+
 ## assert_is_file
 > `assert_is_file "file"`
 
@@ -822,6 +847,31 @@ function test_failed() {
 
   assert_file_not_exists "$file_path"
   rm "$file_path"
+}
+```
+:::
+
+## assert_file_not_contains
+> `assert_file_not_contains "file" "search"`
+
+Reports an error if `file` contains the search string.
+
+[assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_not_contains "$file" "non existing"
+}
+
+function test_failure() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_not_contains "$file" "content"
 }
 ```
 :::
