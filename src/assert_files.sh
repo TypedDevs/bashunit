@@ -101,3 +101,19 @@ function assert_file_contains() {
 
   state::add_assertions_passed
 }
+
+function assert_file_not_contains() {
+  local file="$1"
+  local string="$2"
+
+  if grep -q "$string" "$file"; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+
+    console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
+    return
+  fi
+
+  state::add_assertions_passed
+}
