@@ -180,7 +180,7 @@ function state::print_line() {
 
   state::add_test_output "[$type]$line"
 
-  if [[ "$BASHUNIT_SIMPLE_OUTPUT" == false ]]; then
+  if ! env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return
   fi

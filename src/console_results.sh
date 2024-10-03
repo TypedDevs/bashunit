@@ -99,7 +99,7 @@ function console_results::render_result() {
 }
 
 function console_results::print_execution_time() {
-  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == false ]]; then
+  if ! env::is_show_execution_time_enabled; then
     return
   fi
 
@@ -121,7 +121,7 @@ function console_results::print_successful_test() {
   fi
 
   local full_line=$line
-  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
+  if env::is_show_execution_time_enabled; then
     full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
   fi
 
