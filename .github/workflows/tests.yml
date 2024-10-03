@@ -18,7 +18,7 @@ jobs:
           - windows-latest
         include:
           - os: windows-latest
-            script_name: 'bash -c "./bashunit -e tests/globals.sh tests/**/*_test.sh"'
+            script_name: 'bash -c "./bashunit -e tests/bootstrap.sh tests/**/*_test.sh"'
           - os: macos-latest
             script_name: 'make test'
           - os: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          ./bashunit -e tests/globals.sh --simple tests/
+          ./bashunit -e tests/bootstrap.sh --simple tests/
 
   alpine:
     name: "Run tests on alpine-latest"

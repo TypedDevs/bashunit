@@ -96,7 +96,7 @@ function helper::find_files_recursive() {
   fi
 }
 
-helper::normalize_variable_name() {
+function helper::normalize_variable_name() {
   local input_string="$1"
   local normalized_string
 
