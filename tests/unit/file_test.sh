@@ -147,3 +147,23 @@ function test_fails_assert_files_not_equals() {
   rm "$expected"
   rm "$actual"
 }
+
+function test_successful_assert_file_contains() {
+  local file="/tmp/test_successful_assert_file_contains"
+  echo -e "original content" > "$file"
+
+  assert_successful_code "$(assert_file_contains "$file" "original content")"
+
+  rm "$file"
+}
+
+function test_fails_assert_file_contains() {
+  local file="/tmp/test_fail_assert_file_contains"
+  echo -e "original content" > "$file"
+
+  assert_contains \
+    "$(console_results::print_failed_test "Fails assert file contains" "${file}" "to contain" "non-existing-str")" \
+    "$(assert_file_contains "$file" "non-existing-str")"
+
+  rm "$file"
+}

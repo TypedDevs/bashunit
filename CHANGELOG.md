@@ -2,6 +2,7 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
+- Added `assert_file_contains`
 - Added global util functions
     - current_dir
     - current_filename

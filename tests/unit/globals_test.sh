@@ -56,23 +56,14 @@ function test_globals_temp_dir() {
   assert_directory_not_exists "$temp_dir"
 }
 
-# @todo: move this to assert_files!
-function file::contains() {
-  local file=$1
-  local string=$2
-  grep -q "$string" "$file"
-}
-
 function test_globals_log_info() {
   log_info "hello," "world"
 
-  if ! file::contains "$BASHUNIT_LOG_PATH" "hello, world"; then
-    echo "The file does not contain the string."
-    exit 1
-  fi
+  assert_file_contains "$BASHUNIT_LOG_PATH" "hello, worl"
 }
 
 function test_globals_log_error() {
   log_error "hello," "luna"
-  todo "not implemented yet"
+
+  assert_file_contains "$BASHUNIT_LOG_PATH" "hello, luna"
 }
