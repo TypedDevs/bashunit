@@ -13,8 +13,7 @@
     - temp_file
     - temp_dir
     - cleanup_temp_files
-    - log_info
-    - log_error
+    - log
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
