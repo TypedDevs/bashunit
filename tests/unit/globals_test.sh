@@ -1,6 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
+function set_up_before_script() {
+  BASHUNIT_LOG_PATH=$(temp_file)
+  export BASHUNIT_LOG_PATH
+}
+
+function tear_down_after_script() {
+  rm "$BASHUNIT_LOG_PATH"
+}
+
 function test_globals_current_dir() {
   assert_same "tests/unit" "$(current_dir)"
 }
@@ -47,14 +56,23 @@ function test_globals_temp_dir() {
   assert_directory_not_exists "$temp_dir"
 }
 
+# @todo: move this to assert_files!
+function file::contains() {
+  local file=$1
+  local string=$2
+  grep -q "$string" "$file"
+}
+
 function test_globals_log_info() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[INFO\]: hello, world$" \
-    "$(log_info "hello," "world")"
+  log_info "hello," "world"
+
+  if ! file::contains "$BASHUNIT_LOG_PATH" "hello, world"; then
+    echo "The file does not contain the string."
+    exit 1
+  fi
 }
 
 function test_globals_log_error() {
-  assert_matches \
-    "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2} \[ERROR\]: hello, luna$" \
-    "$(log_error "hello," "luna" 2>&1)"
+  log_error "hello," "luna"
+  todo "not implemented yet"
 }

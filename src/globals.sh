@@ -44,10 +44,10 @@ function cleanup_temp_files() {
 
 function log_info() {
   # shellcheck disable=SC2145
-  echo "$(current_timestamp) [INFO]: $@"
+  echo "$(current_timestamp) [INFO]: $@" >> "$BASHUNIT_LOG_PATH"
 }
 
 function log_error() {
   # shellcheck disable=SC2145
-  echo "$(current_timestamp) [ERROR]: $@" >&2
+  echo "$(current_timestamp) [ERROR]: $@" >> "$BASHUNIT_LOG_PATH"
 }
