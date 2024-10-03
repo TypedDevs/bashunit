@@ -22,11 +22,22 @@ We are using booleans with different syntax in different parts of the project.
 To keep consistency in the project, we want to use the standard and best practices of booleans
 within shell scripting which is `0:true`, `1:false`
 
-Consider extract the boolean into a function to improve readability purposes.
+Consider extract the boolean into a function to improve readability purposes. For example:
+```bash
+function env::is_show_header_enabled() {
+    [[ "$BASHUNIT_SHOW_HEADER" == "true" ]]
+}
+```
+Usage
+```bash
+if env::is_show_header_enabled; then
+    # ...
+fi
+```
 
 ### Positive Consequences
 
-We keep the native shell boolean syntax.
+We keep the native shell boolean syntax in conditions.
 
 ### Negative Consequences
 
