@@ -193,6 +193,24 @@ BASHUNIT_LOAD_FILE="tests/globals.sh"
 ```
 :::
 
+## Log path
+
+> `BASHUNIT_LOG_PATH=file`
+
+::: code-group
+```bash [Setup]
+BASHUNIT_LOG_PATH="out.log"
+```
+```bash [Usage]
+log_info "an info" "message"
+log_error "an" "error message"
+```
+```bash [Output: out.log]
+2024-10-03 21:27:23 [INFO]: an info message
+2024-10-03 21:27:23 [ERROR]: an error message
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
