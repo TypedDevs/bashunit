@@ -2,7 +2,17 @@
 
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
-- ...
+- Added global util functions
+  - current_dir
+  - current_filename
+  - current_timestamp
+  - is_command_available
+  - random_str
+  - temp_file
+  - temp_dir
+  - cleanup_temp_files
+  - log_info
+  - log_error
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
