@@ -1,8 +1,8 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
 function test_successful_assert_directory_exists() {
-  local a_directory
-  a_directory="$(current_dir)"
+  local a_directory="$(current_dir)"
 
   assert_empty "$(assert_directory_exists "$a_directory")"
 }
@@ -17,8 +17,7 @@ function test_unsuccessful_assert_directory_exists() {
 }
 
 function test_assert_directory_exists_should_not_work_with_files() {
-  local a_file
-  a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(current_dir)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -33,8 +32,7 @@ function test_successful_assert_directory_not_exists() {
 }
 
 function test_unsuccessful_assert_directory_not_exists() {
-  local a_directory
-  a_directory="$(current_dir)"
+  local a_directory="$(current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -43,8 +41,7 @@ function test_unsuccessful_assert_directory_not_exists() {
 }
 
 function test_successful_assert_is_directory() {
-  local a_directory
-  a_directory="$(current_dir)"
+  local a_directory="$(current_dir)"
 
   assert_empty "$(assert_is_directory "$a_directory")"
 }
@@ -59,8 +56,7 @@ function test_unsuccessful_assert_is_directory() {
 }
 
 function test_unsuccessful_assert_is_directory_when_a_file_is_given() {
-  local a_file
-  a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(current_dir)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -69,17 +65,13 @@ function test_unsuccessful_assert_is_directory_when_a_file_is_given() {
 }
 
 function test_successful_assert_is_directory_empty() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_empty "$(assert_is_directory_empty "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_empty() {
-  local a_directory
-  a_directory="$(current_dir)"
+  local a_directory="$(current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -88,36 +80,28 @@ function test_unsuccessful_assert_is_directory_empty() {
 }
 
 function test_successful_assert_is_directory_not_empty() {
-  local a_directory
-  a_directory="$(current_dir)"
+  local a_directory="$(current_dir)"
 
   assert_empty "$(assert_is_directory_not_empty "$a_directory")"
 }
 
 function test_unsuccessful_assert_is_directory_not_empty() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_same\
     "$(console_results::print_failed_test \
       "Unsuccessful assert is directory not empty" "$a_directory" "to not be empty" "but is empty")"\
     "$(assert_is_directory_not_empty "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_successful_assert_is_directory_readable() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_empty "$(assert_is_directory_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
-  local a_file
-  a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(current_dir)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -131,8 +115,7 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
     return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-x "$a_directory"
 
   assert_same\
@@ -140,8 +123,6 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
       "Unsuccessful assert is directory readable without execution permission" \
       "$a_directory" "to be readable" "but is not readable")"\
     "$(assert_is_directory_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_readable_without_read_permission() {
@@ -149,8 +130,7 @@ function test_unsuccessful_assert_is_directory_readable_without_read_permission(
       return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-r "$a_directory"
 
   assert_same\
@@ -158,8 +138,6 @@ function test_unsuccessful_assert_is_directory_readable_without_read_permission(
       "Unsuccessful assert is directory readable without read permission" \
       "$a_directory" "to be readable" "but is not readable")"\
     "$(assert_is_directory_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_successful_assert_is_directory_not_readable_without_read_permission() {
@@ -167,13 +145,10 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
       return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-r "$a_directory"
 
   assert_empty "$(assert_is_directory_not_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_successful_assert_is_directory_not_readable_without_execution_permission() {
@@ -181,34 +156,25 @@ function test_successful_assert_is_directory_not_readable_without_execution_perm
       return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-x "$a_directory"
 
   assert_empty "$(assert_is_directory_not_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_not_readable() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_same\
     "$(console_results::print_failed_test \
       "Unsuccessful assert is directory not readable" "$a_directory" "to be not readable" "but is readable")"\
     "$(assert_is_directory_not_readable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_successful_assert_is_directory_writable() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_empty "$(assert_is_directory_writable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_writable() {
@@ -216,21 +182,17 @@ function test_unsuccessful_assert_is_directory_writable() {
       return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-w "$a_directory"
 
   assert_same\
     "$(console_results::print_failed_test \
       "Unsuccessful assert is directory writable" "$a_directory" "to be writable" "but is not writable")"\
     "$(assert_is_directory_writable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
-  local a_file
-  a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(current_dir)/$(current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -244,24 +206,18 @@ function test_successful_assert_is_directory_not_writable() {
       return
   fi
 
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
   chmod a-w "$a_directory"
 
   assert_empty "$(assert_is_directory_not_writable "$a_directory")"
-
-  rmdir "$a_directory"
 }
 
 function test_unsuccessful_assert_is_directory_not_writable() {
-  local a_directory
-  a_directory=$(mktemp -d)
+  local a_directory=$(temp_dir)
 
   assert_same\
     "$(console_results::print_failed_test\
       "Unsuccessful assert is directory not writable" \
       "$a_directory" "to be not writable" "but is writable")"\
     "$(assert_is_directory_not_writable "$a_directory")"
-
-  rmdir "$a_directory"
 }
