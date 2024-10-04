@@ -7,7 +7,7 @@ Below is their documentation.
 ## assert_true
 > `assert_true bool`
 
-Reports an error if the `bool` is truthy `/bin/true` or `0`.
+Reports an error if the `bool` is truthy `true` or `0`.
 
 - [assert_false](#assert-false) is similar but different.
 
@@ -28,7 +28,7 @@ function test_failure() {
 ## assert_false
 > `assert_false bool`
 
-Reports an error if the `bool` is falsy `/bin/false` or `1`.
+Reports an error if the `bool` is falsy `false` or `1`.
 
 - [assert_true](#assert-true) is similar but different.
 
