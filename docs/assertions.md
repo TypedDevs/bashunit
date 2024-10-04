@@ -4,6 +4,48 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
+## assert_true
+> `assert_true bool`
+
+Reports an error if the `bool` is truthy `/bin/true` or `0`.
+
+- [assert_false](#assert-false) is similar but different.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_true true
+  assert_true 0
+}
+
+function test_failure() {
+  assert_true false
+  assert_true 1
+}
+```
+:::
+
+## assert_false
+> `assert_false bool`
+
+Reports an error if the `bool` is falsy `/bin/false` or `1`.
+
+- [assert_true](#assert-true) is similar but different.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_false false
+  assert_false 1
+}
+
+function test_failure() {
+  assert_false true
+  assert_false 0
+}
+```
+:::
+
 ## assert_same
 > `assert_same "expected" "actual"`
 

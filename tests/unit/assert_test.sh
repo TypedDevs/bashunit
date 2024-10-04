@@ -15,9 +15,9 @@ function test_successful_assert_true() {
 }
 
 function test_unsuccessful_assert_true() {
-   assert_same\
-      "$(console_results::print_failed_test "Unsuccessful assert true" "true or 0" "but got " "false")"\
-      "$(assert_true false)"
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert true" "true or 0" "but got " "false")"\
+    "$(assert_true false)"
 }
 
 function test_successful_assert_false() {
@@ -25,9 +25,9 @@ function test_successful_assert_false() {
 }
 
 function test_unsuccessful_assert_false() {
-   assert_same\
-      "$(console_results::print_failed_test "Unsuccessful assert false" "false or 1" "but got " "true")"\
-      "$(assert_false true)"
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert false" "false or 1" "but got " "true")"\
+    "$(assert_false true)"
 }
 
 function test_successful_assert_same() {
