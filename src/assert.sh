@@ -32,7 +32,7 @@ function assert_false() {
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "true or 0" "but got " "${actual}"
+    console_results::print_failed_test "${label}" "false or 1" "but got " "${actual}"
     return
   fi
 
