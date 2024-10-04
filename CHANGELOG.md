@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
 - Added `assert_file_contains` and `assert_file_not_contains`
+- Added `assert_true` and `assert_false`
 - Added `BASHUNIT_LOG_PATH`
 - Added global util functions
     - current_dir
