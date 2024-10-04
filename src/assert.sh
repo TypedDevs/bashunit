@@ -24,6 +24,21 @@ function assert_true() {
   state::add_assertions_passed
 }
 
+function assert_false() {
+  local actual="$1"
+
+  if [[ "$actual" != "false" && "$actual" != "1" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "true or 0" "but got " "${actual}"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
 function assert_same() {
   local expected="$1"
   local actual="$2"
