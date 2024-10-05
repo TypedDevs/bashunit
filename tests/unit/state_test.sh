@@ -157,7 +157,7 @@ function test_set_and_is_duplicated_test_functions_found() {
     state::is_duplicated_test_functions_found
   )
 
-  assert_same "true" "$duplicated_test_functions_found"
+  assert_true "$duplicated_test_functions_found"
 }
 
 function test_set_and_get_file_with_duplicated_function_names() {
@@ -211,7 +211,7 @@ function test_set_duplicated_functions_merged() {
     state::is_duplicated_test_functions_found
   )
 
-  assert_same "true" "$duplicated_test_functions_found"
+  assert_true "$duplicated_test_functions_found"
 
   local duplicated_function_names
   duplicated_function_names=$(
