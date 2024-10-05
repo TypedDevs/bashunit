@@ -48,6 +48,22 @@ We try to keep it stable, but there is no promise that we won't change functions
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 :::
 
+## Brew
+
+You can install **bashunit** globally in your macOS (or Linux) using brew.
+
+```bash
+brew install bashunit
+```
+
+## MacPorts
+
+On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.org):
+
+```bash
+sudo port install bashunit
+```
+
 ## GitHub Actions
 
 ```yaml
@@ -81,22 +97,6 @@ jobs:
 ::: tip
 Get inspiration from the pipelines running on the bashunit-project itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
-
-## Brew
-
-You can install **bashunit** globally in your macOS (or Linux) using brew.
-
-```bash
-brew install bashunit
-```
-
-## MacPorts
-
-On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.org):
-
-```bash
-sudo port install bashunit
-```
 
 <script setup>
 import pkg from '../package.json'
