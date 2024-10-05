@@ -12,7 +12,12 @@ function fail() {
 function assert_true() {
   local actual="$1"
 
-  if [[ "$actual" != "true" && "$actual" != "0" ]]; then
+  # First check if the actual value is one of the expected literal values
+  if [[ "$actual" == "true" || "$actual" == "0" ]]; then
+    state::add_assertions_passed
+    return
+  elif [[ "$actual" == "false" || "$actual" == "1" ]]; then
+    # This is a literal false/1, so it should fail
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
@@ -21,7 +26,36 @@ function assert_true() {
     return
   fi
 
-  state::add_assertions_passed
+  if ! command -v "$actual" &> /dev/null; then
+    # If actual is not a recognized command or function, it's an unknown input
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "valid command, function, or true/0"\
+      "but got" "unknown input"
+    return
+  fi
+
+  # If it's an alias, use eval to execute it properly
+  if [[ "$(command -v "$actual")" =~ ^alias ]]; then
+    eval "$actual" &> /dev/null
+  else
+    "$actual" &> /dev/null
+  fi
+
+  local exit_code=$?
+  if [[ $exit_code -eq 0 ]]; then
+    state::add_assertions_passed
+    return
+  fi
+
+  local label
+  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  state::add_assertions_failed
+  console_results::print_failed_test "${label}" "command or function with exit code 0"\
+    "but got exit code " "$exit_code"
 }
 
 function assert_false() {

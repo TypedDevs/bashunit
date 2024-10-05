@@ -28,6 +28,18 @@ function test_unsuccessful_assert_true() {
     "$(assert_true false)"
 }
 
+function test_successful_assert_true_on_function() {
+  assert_empty "$(assert_true ls)"
+}
+
+function test_unsuccessful_assert_true_on_function() {
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert true on function"\
+      "valid command, function, or true/0"\
+      "but got" "unknown input")" \
+    "$(assert_true "$(return 1)")"
+}
+
 # data_provider provider_successful_assert_false
 function test_successful_assert_false() {
   # shellcheck disable=SC2086
