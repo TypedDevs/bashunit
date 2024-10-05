@@ -36,7 +36,7 @@ function test_unsuccessful_assert_true_on_function() {
   assert_same\
     "$(console_results::print_failed_test "Unsuccessful assert true on function"\
       "valid command, function, or true/0"\
-      "but got" "unknown input")" \
+      "but got" "unknown input:")" \
     "$(assert_true "$(return 1)")"
 }
 
@@ -66,8 +66,8 @@ function test_unsuccessful_assert_false_on_function() {
   assert_same\
     "$(console_results::print_failed_test "Unsuccessful assert false on function"\
       "command or function with non-zero exit code"\
-      "but got" "unknown input")" \
-    "$(assert_false mock_true)"
+      "but got" "exit_code:0")" \
+    "$(assert_false ls)"
 }
 
 function test_successful_assert_same() {

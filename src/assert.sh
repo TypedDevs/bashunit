@@ -33,7 +33,7 @@ function assert_true() {
 
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "valid command, function, or true/0"\
-      "but got" "unknown input"
+      "but got" "unknown input:$actual"
     return
   fi
 
@@ -82,7 +82,7 @@ function assert_false() {
 
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "valid command, function, or false/1"\
-      "but got" "unknown input"
+      "but got" "unknown input:$actual"
     return
   fi
 
@@ -104,7 +104,7 @@ function assert_false() {
 
   state::add_assertions_failed
   console_results::print_failed_test "${label}" "command or function with non-zero exit code"\
-    "but got" "unknown input"
+    "but got" "exit_code:$exit_code"
 }
 
 function assert_same() {
