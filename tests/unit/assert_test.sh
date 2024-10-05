@@ -58,6 +58,18 @@ function test_unsuccessful_assert_false() {
     "$(assert_false true)"
 }
 
+function test_successful_assert_false_on_function() {
+  assert_empty "$(assert_false mock_false)"
+}
+
+function test_unsuccessful_assert_false_on_function() {
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert false on function"\
+      "command or function with non-zero exit code"\
+      "but got" "unknown input")" \
+    "$(assert_false mock_true)"
+}
+
 function test_successful_assert_same() {
   assert_empty "$(assert_same "1" "1")"
 }
