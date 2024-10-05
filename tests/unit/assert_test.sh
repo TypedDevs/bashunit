@@ -10,8 +10,16 @@ function test_unsuccessful_fail() {
     "$(fail "Failure message")"
 }
 
+# data_provider provider_successful_assert_true
 function test_successful_assert_true() {
-  assert_empty "$(assert_true true)"
+  # shellcheck disable=SC2086
+  assert_empty "$(assert_true $1)"
+}
+
+function provider_successful_assert_true() {
+  echo true
+  echo "true"
+  echo 0
 }
 
 function test_unsuccessful_assert_true() {
@@ -20,8 +28,16 @@ function test_unsuccessful_assert_true() {
     "$(assert_true false)"
 }
 
+# data_provider provider_successful_assert_false
 function test_successful_assert_false() {
-  assert_empty "$(assert_false false)"
+  # shellcheck disable=SC2086
+  assert_empty "$(assert_false $1)"
+}
+
+function provider_successful_assert_false() {
+  echo false
+  echo "false"
+  echo 1
 }
 
 function test_unsuccessful_assert_false() {
