@@ -6,7 +6,8 @@ function test_successful_fail() {
 
 function test_unsuccessful_fail() {
   assert_same\
-    "$(console_results::print_failure_message "Unsuccessful fail" "Failure message")"\
+    "$(console_results::print_failure_message \
+      "Unsuccessful fail" "Failure message")"\
     "$(fail "Failure message")"
 }
 
@@ -24,7 +25,10 @@ function provider_successful_assert_true() {
 
 function test_unsuccessful_assert_true() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert true" "true or 0" "but got " "false")"\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert true" \
+      "true or 0" \
+      "but got " "false")"\
     "$(assert_true false)"
 }
 
@@ -34,9 +38,10 @@ function test_successful_assert_true_on_function() {
 
 function test_unsuccessful_assert_true_on_function() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert true on function"\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert true on function"\
       "valid command, function, or true/0"\
-      "but got" "unknown input:")" \
+      "but got " "unknown input: ")" \
     "$(assert_true "$(return 1)")"
 }
 
@@ -54,20 +59,24 @@ function provider_successful_assert_false() {
 
 function test_unsuccessful_assert_false() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert false" "false or 1" "but got " "true")"\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert false" \
+      "false or 1" \
+      "but got " "true")"\
     "$(assert_false true)"
 }
 
 function test_successful_assert_false_on_function() {
-  assert_empty "$(assert_false mock_false)"
+  assert_empty "$(assert_false "eval return 1")"
 }
 
 function test_unsuccessful_assert_false_on_function() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert false on function"\
+    "$(console_results::print_failed_test\
+      "Unsuccessful assert false on function"\
       "command or function with non-zero exit code"\
-      "but got" "exit_code:0")" \
-    "$(assert_false ls)"
+      "but got " "exit code: 0")" \
+    "$(assert_false "eval return 0")"
 }
 
 function test_successful_assert_same() {
