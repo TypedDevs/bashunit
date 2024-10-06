@@ -16,6 +16,7 @@
     - cleanup_temp_files
     - log
 - Improved clean up temporal files and directories
+- Improved CI test speed by running them in parallel
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
