@@ -27,6 +27,9 @@ jobs:
   windows:
     name: "Run tests on Windows"
     runs-on: windows-latest
+    strategy:
+      matrix:
+        test_chunk: [1, 2, 3]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,8 +38,12 @@ jobs:
 
       - name: Run Tests
         shell: bash
-        run: ./bashunit -e tests/bootstrap.sh tests/**/*_test.sh
-
+        run: |
+          case ${{ matrix.test_chunk }} in
+            1) ./bashunit -e tests/bootstrap.sh tests/acceptance/*_test.sh ;;
+            2) ./bashunit -e tests/bootstrap.sh tests/functional/*_test.sh ;;
+            3) ./bashunit -e tests/bootstrap.sh tests/unit/*_test.sh ;;
+          esac
   simple-output:
     name: "Run tests with simple output"
     runs-on: ubuntu-latest
