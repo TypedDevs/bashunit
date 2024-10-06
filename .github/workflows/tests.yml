@@ -8,6 +8,7 @@ on:
 
 jobs:
   tests:
+    timeout-minutes: 10
     name: "Run ${{ matrix.test_chunk }} tests on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
@@ -18,7 +19,6 @@ jobs:
           - macos-latest
           - windows-latest
       fail-fast: false
-      max-parallel: 3
 
     steps:
       - name: Checkout code
@@ -36,7 +36,7 @@ jobs:
         run: |
           set -e  # Exit on error
           if [ -d tests/${{ matrix.test_chunk }} ]; then
-            ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
+            ./bashunit tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
           else
             echo "Test directory tests/${{ matrix.test_chunk }} not found!"
             exit 1
