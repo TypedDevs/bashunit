@@ -23,7 +23,7 @@ function assert_true() {
   local exit_code=$?
 
   if [[ $exit_code -ne 0 ]]; then
-    handle_bool_assertion_failure "valid command, function, or true/0" "exit code: $exit_code"
+    handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
   else
     state::add_assertions_passed
   fi

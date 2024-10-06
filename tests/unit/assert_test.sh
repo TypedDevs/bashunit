@@ -40,9 +40,9 @@ function test_unsuccessful_assert_true_on_function() {
   assert_same\
     "$(console_results::print_failed_test\
       "Unsuccessful assert true on function"\
-      "valid command, function, or true/0"\
-      "but got " "exit code: 127")" \
-    "$(assert_true "$(return 1)")"
+      "command or function with zero exit code"\
+      "but got " "exit code: 2")" \
+    "$(assert_true "eval return 2")"
 }
 
 # data_provider provider_successful_assert_false
