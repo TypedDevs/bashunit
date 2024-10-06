@@ -34,7 +34,13 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
+          set -e  # Exit on error
+          if [ -d tests/${{ matrix.test_chunk }} ]; then
+            ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
+          else
+            echo "Test directory tests/${{ matrix.test_chunk }} not found!"
+            exit 1
+          fi
 
   simple-output:
     name: "Tests simple output"
