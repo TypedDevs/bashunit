@@ -8,7 +8,7 @@ on:
 
 jobs:
   ubuntu-macos:
-    name: "Tests on ${{ matrix.os }}"
+    name: "On ${{ matrix.os }}"
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
@@ -26,7 +26,7 @@ jobs:
         run: make test
 
   windows:
-    name: "Tests on windows (${{ matrix.test_chunk }})"
+    name: "On windows (${{ matrix.test_chunk }})"
     timeout-minutes: 10
     runs-on: windows-latest
     strategy:
@@ -45,7 +45,7 @@ jobs:
           ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
-    name: "Tests on alpine-latest"
+    name: "On alpine-latest"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -63,7 +63,7 @@ jobs:
             su - builder -c 'cd /project; make test';"
 
   simple-output:
-    name: "Tests simple output"
+    name: "Simple output"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
