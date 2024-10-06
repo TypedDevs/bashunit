@@ -41,7 +41,7 @@ function test_unsuccessful_assert_true_on_function() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert true on function"\
       "valid command, function, or true/0"\
-      "but got " "unknown input: ")" \
+      "but got " "exit code: 127")" \
     "$(assert_true "$(return 1)")"
 }
 

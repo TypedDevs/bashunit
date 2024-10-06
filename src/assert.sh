@@ -12,61 +12,54 @@ function fail() {
 function assert_true() {
   local actual="$1"
 
-  # First check for expected literal values
-  if [[ "$actual" == "true" || "$actual" == "0" ]]; then
-    state::add_assertions_passed
-    return
-  elif [[ "$actual" == "false" || "$actual" == "1" ]]; then
-    handle_bool_assertion_failure "true or 0" "$actual"
-    return
-  fi
+  # Check for expected literal values first
+  case "$actual" in
+    "true"|"0") state::add_assertions_passed; return ;;
+    "false"|"1") handle_bool_assertion_failure "true or 0" "$actual"; return ;;
+  esac
 
-  local exit_code=0
-  # Check if actual is a valid command, alias, or "eval"
-  if [[ "$actual" =~ ^eval ]]; then
-    # Eval commands are valid, no need to check with command -v
-    run_command_or_eval "$actual"
-    exit_code=$?
-  elif ! command -v "${actual#eval }" &> /dev/null; then
-    handle_bool_assertion_failure "valid command, function, or true/0" "unknown input: $actual"
-    return
-  fi
+  # Run command or eval and check the exit code
+  run_command_or_eval "$actual"
+  local exit_code=$?
 
-  if [[ $exit_code -eq 0 ]]; then
-    state::add_assertions_passed
+  if [[ $exit_code -ne 0 ]]; then
+    handle_bool_assertion_failure "valid command, function, or true/0" "exit code: $exit_code"
   else
-    handle_bool_assertion_failure "command or function with exit code 0" "exit code: $exit_code"
+    state::add_assertions_passed
   fi
 }
 
 function assert_false() {
   local actual="$1"
 
-  # First check for expected literal values
-  if [[ "$actual" == "false" || "$actual" == "1" ]]; then
-    state::add_assertions_passed
-    return
-  elif [[ "$actual" == "true" || "$actual" == "0" ]]; then
-    handle_bool_assertion_failure "false or 1" "$actual"
-    return
-  fi
+  # Check for expected literal values first
+  case "$actual" in
+    "false"|"1") state::add_assertions_passed; return ;;
+    "true"|"0") handle_bool_assertion_failure "false or 1" "$actual"; return ;;
+  esac
 
-  local exit_code=0
-  # Check if actual is a valid command, alias, or "eval"
-  if [[ "$actual" =~ ^eval ]]; then
-    # Eval commands are valid, no need to check with command -v
-    run_command_or_eval "$actual"
-    exit_code=$?
-  elif ! command -v "${actual#eval }" &> /dev/null; then
-    handle_bool_assertion_failure "valid command, function, or false/1" "unknown input: $actual"
-    return
-  fi
+  # Run command or eval and check the exit code
+  run_command_or_eval "$actual"
+  local exit_code=$?
 
-  if [[ $exit_code -ne 0 ]]; then
-    state::add_assertions_passed
-  else
+  if [[ $exit_code -eq 0 ]]; then
     handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
+  else
+    state::add_assertions_passed
   fi
+}
+
+function run_command_or_eval() {
+  local cmd="$1"
+
+  if [[ "$cmd" =~ ^eval ]]; then
+    eval "${cmd#eval }" &> /dev/null
+  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
+    eval "$cmd" &> /dev/null
+  else
+    "$cmd" &> /dev/null
+  fi
+  return $?
 }
 
 function handle_bool_assertion_failure() {
@@ -77,20 +70,6 @@ function handle_bool_assertion_failure() {
 
   state::add_assertions_failed
   console_results::print_failed_test "$label" "$expected" "but got " "$got"
-}
-
-function run_command_or_eval() {
-  local cmd="$1"
-
-  # If it starts with "eval", handle it properly
-  if [[ "$cmd" =~ ^eval ]]; then
-    eval "${cmd#eval }" &> /dev/null
-  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
-    eval "$cmd" &> /dev/null
-  else
-    "$cmd" &> /dev/null
-  fi
-  return $?
 }
 
 function assert_same() {
