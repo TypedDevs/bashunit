@@ -7,14 +7,16 @@ on:
       - main
 
 jobs:
-  ubuntu-macos:
-    name: "Run tests on ${{ matrix.os }}"
+  tests:
+    name: "Tests on ${{ matrix.os }} (${{ matrix.test_chunk }})"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        test_chunk: [acceptance, functional, unit]
         os:
           - ubuntu-latest
           - macos-latest
+          - windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,10 +24,12 @@ jobs:
           fetch-depth: 1
 
       - name: Run Tests
-        run: make test
+        shell: bash
+        run: |
+          ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
 
   simple-output:
-    name: "Run tests with simple output"
+    name: "Tests simple output"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +42,7 @@ jobs:
           ./bashunit -e tests/bootstrap.sh --simple tests/
 
   alpine:
-    name: "Run tests on alpine-latest"
+    name: "Tests on alpine-latest"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -54,24 +58,3 @@ jobs:
             adduser -D builder && \
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
-
-  windows:
-    name: "Run tests on Windows"
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        test_chunk: [1, 2, 3]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Tests
-        shell: bash
-        run: |
-          case ${{ matrix.test_chunk }} in
-            1) ./bashunit -e tests/bootstrap.sh tests/acceptance/*_test.sh ;;
-            2) ./bashunit -e tests/bootstrap.sh tests/functional/*_test.sh ;;
-            3) ./bashunit -e tests/bootstrap.sh tests/unit/*_test.sh ;;
-          esac
