@@ -25,11 +25,15 @@ function test_globals_current_timestamp() {
 }
 
 function test_globals_is_command_available() {
-  assert_successful_code "$(is_command_available ls)"
+  function existing_fn(){
+    # shellcheck disable=SC2317
+    return 0
+  }
+  assert_successful_code "$(is_command_available existing_fn)"
 }
 
 function test_globals_is_command_not_available() {
-  assert_general_error "$(is_command_available non-existing-command)"
+  assert_general_error "$(is_command_available non_existing_fn)"
 }
 
 function test_globals_random_str_default() {
