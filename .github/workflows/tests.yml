@@ -5,8 +5,9 @@ on:
   push:
     branches:
       - main
+
 jobs:
-  tests:
+  ubuntu-macos:
     name: "Run tests on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
@@ -14,21 +15,27 @@ jobs:
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Run Tests (Windows)
-        if: runner.os == 'Windows'
+      - name: Run Tests
+        run: make test
+
+  windows:
+    name: "Run tests on Windows"
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Tests
         shell: bash
         run: ./bashunit -e tests/bootstrap.sh tests/**/*_test.sh
-
-      - name: Run Tests (Linux/macOS)
-        if: runner.os != 'Windows'
-        run: make test
 
   simple-output:
     name: "Run tests with simple output"
