@@ -56,7 +56,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled; then
+    if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
       echo "Running $script"
     fi
 
