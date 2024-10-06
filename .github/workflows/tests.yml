@@ -19,10 +19,41 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Run Tests
         run: make test
+
+  simple-output:
+    name: "Run tests with simple output"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit -e tests/bootstrap.sh --simple tests/
+
+  alpine:
+    name: "Run tests on alpine-latest"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
+            apk update && \
+            apk add --no-cache bash make git && \
+            adduser -D builder && \
+            chown -R builder /project && \
+            su - builder -c 'cd /project; make test';"
 
   windows:
     name: "Run tests on Windows"
@@ -44,33 +75,3 @@ jobs:
             2) ./bashunit -e tests/bootstrap.sh tests/functional/*_test.sh ;;
             3) ./bashunit -e tests/bootstrap.sh tests/unit/*_test.sh ;;
           esac
-  simple-output:
-    name: "Run tests with simple output"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Tests
-        run: |
-          ./bashunit -e tests/bootstrap.sh --simple tests/
-
-  alpine:
-    name: "Run tests on alpine-latest"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Run Tests
-        run: |
-          docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
-            apk update && \
-            apk add --no-cache bash make git && \
-            adduser -D builder && \
-            chown -R builder /project && \
-            su - builder -c 'cd /project; make test';"
