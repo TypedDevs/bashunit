@@ -5,9 +5,9 @@ We provide assertions for these checks.
 Below is their documentation.
 
 ## assert_true
-> `assert_true bool`
+> `assert_true bool|function|command`
 
-Reports an error if the `bool` is truthy `true` or `0`.
+Reports an error if the argument result in a truthy value: `true` or `0`.
 
 - [assert_false](#assert-false) is similar but different.
 
@@ -16,19 +16,30 @@ Reports an error if the `bool` is truthy `true` or `0`.
 function test_success() {
   assert_true true
   assert_true 0
+  assert_true "eval return 0"
+  assert_true mock_true
 }
 
 function test_failure() {
   assert_true false
   assert_true 1
+  assert_true "eval return 1"
+  assert_true mock_false
 }
 ```
+```bash [globals.sh]
+function mock_true() {
+  return 0
+}
+function mock_false() {
+  return 1
+}
 :::
 
 ## assert_false
-> `assert_false bool`
+> `assert_false bool|function|command`
 
-Reports an error if the `bool` is falsy `false` or `1`.
+Reports an error if the argument result in a falsy value: `false` or `1`.
 
 - [assert_true](#assert-true) is similar but different.
 
@@ -37,11 +48,23 @@ Reports an error if the `bool` is falsy `false` or `1`.
 function test_success() {
   assert_false false
   assert_false 1
+  assert_false "eval return 1"
+  assert_false mock_false
 }
 
 function test_failure() {
   assert_false true
   assert_false 0
+  assert_false "eval return 0"
+  assert_false mock_true
+}
+```
+```bash [globals.sh]
+function mock_true() {
+  return 0
+}
+function mock_false() {
+  return 1
 }
 ```
 :::
