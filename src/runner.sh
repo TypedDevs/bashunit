@@ -13,9 +13,10 @@ function runner::load_test_files() {
     source "$test_file"
 
     runner::run_set_up_before_script
-    runner::call_test_functions "$test_file" "$filter"
-    if [ "$BASHUNIT_PARALLEL_RUN" = true ] ; then
-      wait
+    if env::is_parallel_run_enabled; then
+      runner::call_test_functions "$test_file" "$filter" &
+    else
+      runner::call_test_functions "$test_file" "$filter"
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
