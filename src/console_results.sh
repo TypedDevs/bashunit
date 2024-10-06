@@ -103,11 +103,8 @@ function console_results::print_execution_time() {
     return
   fi
 
-  # shellcheck disable=SC2155
-  local execution_time=$(clock::total_runtime_in_milliseconds)
-
   printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
-    "Time taken: ${execution_time} ms"
+    "Time taken: $(clock::total_runtime_in_milliseconds) ms"
 }
 
 function console_results::print_successful_test() {
