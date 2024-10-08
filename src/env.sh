@@ -9,8 +9,8 @@ set +o allexport
 
 _DEFAULT_DEFAULT_PATH="tests"
 _DEFAULT_LOG_PATH="out.log"
-_DEFAULT_LOG_JUNIT="log-junit.xml"
-_DEFAULT_REPORT_HTML="report.html"
+_DEFAULT_LOG_JUNIT=""
+_DEFAULT_REPORT_HTML=""
 _DEFAULT_BASHUNIT_LOAD_FILE="tests/bootstrap.sh"
 _DEFAULT_TERMINAL_WIDTH=100
 
