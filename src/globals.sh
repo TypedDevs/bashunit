@@ -26,12 +26,12 @@ function random_str() {
 
 function temp_file() {
   mkdir -p /tmp/bashunit-tmp && chmod -R 777 /tmp/bashunit-tmp
-  mktemp --tmpdir="/tmp/bashunit-tmp" "XXXXXXX"
+  mktemp /tmp/bashunit-tmp/bashunit.XXXXXXX
 }
 
 function temp_dir() {
   mkdir -p /tmp/bashunit-tmp && chmod -R 777 /tmp/bashunit-tmp
-  mktemp -d --tmpdir="/tmp/bashunit-tmp" "XXXXXXX"
+  mktemp -d /tmp/bashunit-tmp/bashunit.XXXXXXX
 }
 
 function cleanup_temp_files() {
