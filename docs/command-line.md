@@ -99,6 +99,26 @@ Creates a report XML file that follows the JUnit XML format and contains informa
 ```
 :::
 
+## Parallel
+
+> `bashunit -p|--parallel`
+
+bashunit provides an option to run each test in a separate child process, allowing you to parallelize the test execution and potentially speed up the testing process. When running in parallel mode, the execution order of tests is randomized.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --parallel
+```
+:::
+
+This runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+
+### Disabling Parallel Testing
+
+> `bashunit --no-parallel`
+
+If parallel testing is enabled by default or within a script, you can disable it using the --no-parallel option. This is useful if you need to run tests in sequence or if parallel execution is causing issues during debugging.
+
 ## Report
 
 > `bashunit -r|--report-html <out.html>`

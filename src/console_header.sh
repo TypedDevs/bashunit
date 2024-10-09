@@ -76,6 +76,12 @@ Options:
   -l|--log-junit <out.xml>
     Create a report JUnit XML file that contains information about the test results.
 
+  -p|--parallel
+    Run each test in child process, randomizing the tests execution order.
+
+  --no-parallel
+    Disable the --parallel option. Util to disable parallel tests from within another test.
+
   -r|--report-html <out.html>
     Create a report HTML file that contains information about the test results.
 
