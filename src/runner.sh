@@ -190,10 +190,10 @@ function runner::run_test() {
   exec 3>&-
 
   if env::is_parallel_run_enabled; then
-      # shellcheck disable=SC2155
-      local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
-      mkdir -p "$test_suite_dir"
-      echo "$test_execution_result" > "${test_suite_dir}/${function_name}.result"
+    # shellcheck disable=SC2155
+    local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
+    mkdir -p "$test_suite_dir"
+    echo "$test_execution_result" > "${test_suite_dir}/${function_name}.result"
   fi
 
   runner::parse_execution_result "$test_execution_result"
