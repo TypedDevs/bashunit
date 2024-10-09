@@ -42,7 +42,7 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          ./bashunit -e tests/bootstrap.sh tests/${{ matrix.test_chunk }}/*_test.sh
+          ./bashunit tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
     name: "On alpine-latest"
@@ -73,7 +73,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          ./bashunit -e tests/bootstrap.sh --simple tests/
+          ./bashunit --simple tests/
 
   simple-output-parallel:
     name: "Simple output in parallel"
@@ -86,7 +86,7 @@ jobs:
 
       - name: Run Tests
         run: |
-          ./bashunit -e tests/bootstrap.sh --parallel --simple tests/
+          ./bashunit --parallel --simple tests/
 
   extended-output-parallel:
     name: "Extended output in parallel"
@@ -99,4 +99,4 @@ jobs:
 
       - name: Run Tests
         run: |
-          ./bashunit -e tests/bootstrap.sh --parallel tests/
+          ./bashunit --parallel tests/

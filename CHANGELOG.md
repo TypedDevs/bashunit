@@ -17,6 +17,10 @@
     - log
 - Improved clean up temporal files and directories
 - Improved CI test speed by running them in parallel
+- Add default env values:
+    - `DEFAULT_PATH="tests"`
+    - `LOG_PATH="out.log"`
+    - `LOAD_FILE="tests/bootstrap.sh"`
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
