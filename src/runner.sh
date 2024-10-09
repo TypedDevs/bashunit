@@ -209,7 +209,12 @@ function runner::run_test() {
     # shellcheck disable=SC2155
     local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
     mkdir -p "$test_suite_dir"
-    echo "$test_execution_result" > "${test_suite_dir}/${function_name}.result"
+
+    local test_result_file
+    test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+    test_result_file="${function_name}-${test_result_file}.result"
+
+    echo "$test_execution_result" > "${test_suite_dir}/${test_result_file}"
   fi
 
   runner::parse_execution_result "$test_execution_result"
