@@ -20,7 +20,7 @@ function runner::load_test_files() {
 
     runner::run_set_up_before_script
     if env::is_parallel_run_enabled; then
-      parallel::call_test_functions "$test_file" "$filter" &
+      runner::call_test_functions "$test_file" "$filter" &
       pids+=($!)
     else
       runner::call_test_functions "$test_file" "$filter"
@@ -35,7 +35,7 @@ function runner::load_test_files() {
       wait "$pid" || echo "Test with PID $pid failed"
     done
 
-    parallel::aggregate_test_results
+    parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
   fi
 }
 
@@ -188,6 +188,13 @@ function runner::run_test() {
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
+
+  if env::is_parallel_run_enabled; then
+      # shellcheck disable=SC2155
+      local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
+      mkdir -p "$test_suite_dir"
+      echo "$test_execution_result" > "${test_suite_dir}/${function_name}.result"
+  fi
 
   runner::parse_execution_result "$test_execution_result"
 
