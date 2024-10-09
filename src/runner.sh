@@ -29,14 +29,30 @@ function runner::load_test_files() {
     runner::clean_set_up_and_tear_down_after_script
   done
 
-  # Wait for all background processes to finish
   if env::is_parallel_run_enabled; then
-    for pid in "${pids[@]}"; do
-      wait "$pid" || echo "Test with PID $pid failed"
-    done
+    wait
+
+    runner::spinner &
+    local spinner_pid=$!
 
     parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+
+    # Kill the spinner once the aggregation finishes
+    disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
+    printf "\r " # Clear the spinner output
   fi
+}
+
+function runner::spinner() {
+  printf "\n"
+  local delay=0.1
+  local spin_chars="|/-\\"
+  while true; do
+    for ((i=0; i<${#spin_chars}; i++)); do
+      printf "\r%s" "${spin_chars:$i:1}"
+      sleep "$delay"
+    done
+  done
 }
 
 function runner::functions_for_script() {

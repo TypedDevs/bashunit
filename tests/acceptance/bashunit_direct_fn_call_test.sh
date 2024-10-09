@@ -89,7 +89,7 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
-  local temp=$(temp_file)
+  local temp=$(mktemp)
   # shellcheck disable=SC2116
   local output="$(./bashunit --no-parallel -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
 
@@ -99,7 +99,7 @@ function test_bashunit_assert_exit_code_successful_with_inner_func() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_error_with_inner_func() {
-  local temp=$(temp_file)
+  local temp=$(mktemp)
   # shellcheck disable=SC2116
   local output="$(./bashunit --no-parallel -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
 
@@ -121,7 +121,7 @@ function test_bashunit_assert_exit_code_str_general_error() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
-  local temp=$(temp_file)
+  local temp=$(mktemp)
   local output="$(./bashunit --no-parallel -a exit_code "1" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
@@ -132,7 +132,7 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
-  local temp=$(temp_file)
+  local temp=$(mktemp)
   local output="$(./bashunit --no-parallel -a exit_code "0" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
