@@ -78,20 +78,20 @@ function test_bashunit_direct_fn_call_failure() {
   local expected="foo"
   local actual="bar"
 
-  assert_match_snapshot "$(./bashunit -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual 2>&1)"
-  assert_general_error "$(./bashunit -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
+  assert_match_snapshot "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual 2>&1)"
+  assert_general_error "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
 }
 
 function test_bashunit_direct_fn_call_non_existing_fn() {
-  assert_match_snapshot "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE" 2>&1)"
-  assert_command_not_found "$(./bashunit -a non_existing_fn --env "$TEST_ENV_FILE")"
+  assert_match_snapshot "$(./bashunit --no-parallel -a non_existing_fn --env "$TEST_ENV_FILE" 2>&1)"
+  assert_command_not_found "$(./bashunit --no-parallel -a non_existing_fn --env "$TEST_ENV_FILE")"
 }
 
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
   local temp=$(temp_file)
   # shellcheck disable=SC2116
-  local output="$(./bashunit -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
   assert_file_contains "$temp" "Command not found: unknown command"
@@ -101,7 +101,7 @@ function test_bashunit_assert_exit_code_successful_with_inner_func() {
 function test_bashunit_assert_exit_code_error_with_inner_func() {
   local temp=$(temp_file)
   # shellcheck disable=SC2116
-  local output="$(./bashunit -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
 
@@ -122,7 +122,7 @@ function test_bashunit_assert_exit_code_str_general_error() {
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
   local temp=$(temp_file)
-  local output="$(./bashunit -a exit_code "1" "echo something to stdout" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "1" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
 
@@ -133,7 +133,7 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
   local temp=$(temp_file)
-  local output="$(./bashunit -a exit_code "0" "echo something to stdout" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "0" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
   assert_empty "$(cat "$temp")"
