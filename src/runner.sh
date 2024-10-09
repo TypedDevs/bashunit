@@ -7,7 +7,7 @@ function runner::load_test_files() {
   local pids=()
 
   if env::is_parallel_run_enabled; then
-      rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
   fi
 
   for test_file in "${files[@]}"; do
@@ -214,7 +214,15 @@ function runner::run_test() {
     test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
     test_result_file="${function_name}-${test_result_file}.result"
 
-    echo "$test_execution_result" > "${test_suite_dir}/${test_result_file}"
+    local unique_test_result_file="${test_suite_dir}/${test_result_file}"
+    local count=1
+
+    while [ -e "$unique_test_result_file" ]; do
+      unique_test_result_file="${test_suite_dir}/${test_result_file%.result}-$count.result"
+      count=$((count + 1))
+    done
+
+    echo "$test_execution_result" > "$unique_test_result_file"
   fi
 
   runner::parse_execution_result "$test_execution_result"

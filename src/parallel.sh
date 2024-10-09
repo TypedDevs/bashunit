@@ -54,9 +54,7 @@ function parallel::aggregate_test_results() {
         continue
       fi
 
-      if [ "${passed:-0}" -gt 0 ]; then
-        state::add_tests_passed
-      fi
+      state::add_tests_passed
     done
   done
 
