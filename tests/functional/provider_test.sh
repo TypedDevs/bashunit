@@ -15,7 +15,13 @@ function test_multiple_values_from_data_provider() {
 
 function provide_multiples_values() {
   echo "aa" "bb"
-  echo "aa" "bb"
+}
+
+# data_provider provide_single_values
+function test_single_values_from_data_provider() {
+  local data="$1"
+
+  assert_not_equals "zero" "$data"
 }
 
 function provide_single_values() {

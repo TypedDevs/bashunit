@@ -53,7 +53,7 @@ function test_bashunit_when_a_execution_error() {
   todo "Add snapshots with regex to assert this test (part of the error message is localized)"
   todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"
 
-  assert_contains "$fixture_start" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_contains "$fixture_end" "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_contains "$fixture_start" "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_contains "$fixture_end" "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }

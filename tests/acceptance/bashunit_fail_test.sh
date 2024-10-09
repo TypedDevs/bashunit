@@ -9,15 +9,15 @@ function set_up_before_script() {
 function test_bashunit_when_a_test_fail_verbose_output_env() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }
 
 function test_bashunit_when_a_test_fail_verbose_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
 }
 
 function test_different_verbose_snapshots_matches() {
@@ -32,9 +32,9 @@ function test_bashunit_when_a_test_fail_simple_output_env() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
   # shellcheck disable=SC2317
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
   # shellcheck disable=SC2317
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
 }
 
 function test_bashunit_when_a_test_fail_simple_output_option() {
@@ -45,9 +45,9 @@ function test_bashunit_when_a_test_fail_simple_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
   # shellcheck disable=SC2317
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
   # shellcheck disable=SC2317
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }
 
 function test_different_simple_snapshots_matches() {

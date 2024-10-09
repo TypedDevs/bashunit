@@ -2,7 +2,13 @@
 
 function runner::load_test_files() {
   local filter=$1
-  local files=("${@:2}") # Store all arguments starting from the second as an array
+  shift
+  local files=("${@}")
+  local pids=()
+
+  if env::is_parallel_run_enabled; then
+    rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+  fi
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
@@ -13,12 +19,39 @@ function runner::load_test_files() {
     source "$test_file"
 
     runner::run_set_up_before_script
-    runner::call_test_functions "$test_file" "$filter"
-    if [ "$BASHUNIT_PARALLEL_RUN" = true ] ; then
-      wait
+    if env::is_parallel_run_enabled; then
+      runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
+      pids+=($!)
+    else
+      runner::call_test_functions "$test_file" "$filter"
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
+  done
+
+  if env::is_parallel_run_enabled; then
+    wait
+
+    runner::spinner &
+    local spinner_pid=$!
+
+    parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+
+    # Kill the spinner once the aggregation finishes
+    disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
+    printf "\r " # Clear the spinner output
+  fi
+}
+
+function runner::spinner() {
+  printf "\n"
+  local delay=0.1
+  local spin_chars="|/-\\"
+  while true; do
+    for ((i=0; i<${#spin_chars}; i++)); do
+      printf "\r%s" "${spin_chars:$i:1}"
+      sleep "$delay"
+    done
   done
 }
 
@@ -40,6 +73,8 @@ function run_test() {
 }
 
 function runner::call_test_functions() {
+  trap 'exit' SIGTERM
+
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -55,7 +90,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled; then
+    if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
       echo "Running $script"
     fi
 
@@ -171,6 +206,30 @@ function runner::run_test() {
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
+
+  if env::is_parallel_run_enabled; then
+    # shellcheck disable=SC2155
+    local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
+    mkdir -p "$test_suite_dir"
+
+    local test_result_file
+    test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+    if [[ -z "$test_result_file" ]]; then
+      test_result_file="${function_name}.result"
+    else
+      test_result_file="${function_name}-${test_result_file}.result"
+    fi
+
+    local unique_test_result_file="${test_suite_dir}/${test_result_file}"
+    local count=1
+
+    while [ -e "$unique_test_result_file" ]; do
+      unique_test_result_file="${test_suite_dir}/${test_result_file%.result}-$count.result"
+      count=$((count + 1))
+    done
+
+    echo "$test_execution_result" > "$unique_test_result_file"
+  fi
 
   runner::parse_execution_result "$test_execution_result"
 
