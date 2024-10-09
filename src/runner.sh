@@ -2,7 +2,9 @@
 
 function runner::load_test_files() {
   local filter=$1
-  local files=("${@:2}") # Store all arguments starting from the second as an array
+  shift
+  local files=("${@}")
+  local pids=()
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
@@ -14,13 +16,21 @@ function runner::load_test_files() {
 
     runner::run_set_up_before_script
     if env::is_parallel_run_enabled; then
-      runner::call_test_functions "$test_file" "$filter" &
+      parallel::call_test_functions "$test_file" "$filter" &
+      pids+=($!)
     else
       runner::call_test_functions "$test_file" "$filter"
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
   done
+
+  # Wait for all background processes to finish
+  if env::is_parallel_run_enabled; then
+    for pid in "${pids[@]}"; do
+      wait "$pid" || echo "Test with PID $pid failed"
+    done
+  fi
 }
 
 function runner::functions_for_script() {
@@ -56,7 +66,7 @@ function runner::call_test_functions() {
   functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
+    if ! env::is_simple_output_enabled; then
       echo "Running $script"
     fi
 
