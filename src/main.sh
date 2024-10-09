@@ -37,14 +37,14 @@ function main::exec_tests() {
   fi
 
   cleanup_temp_files
-
   exit $exit_code
 }
 
 function main::cleanup() {
-  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
+  cleanup_temp_files
   exit 1
 }
 

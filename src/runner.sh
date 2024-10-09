@@ -20,7 +20,7 @@ function runner::load_test_files() {
 
     runner::run_set_up_before_script
     if env::is_parallel_run_enabled; then
-      runner::call_test_functions "$test_file" "$filter" &
+      runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
       pids+=($!)
     else
       runner::call_test_functions "$test_file" "$filter"
@@ -73,6 +73,8 @@ function run_test() {
 }
 
 function runner::call_test_functions() {
+  trap 'exit' SIGTERM
+
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -212,7 +214,11 @@ function runner::run_test() {
 
     local test_result_file
     test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
-    test_result_file="${function_name}-${test_result_file}.result"
+    if [[ -z "$test_result_file" ]]; then
+      test_result_file="${function_name}.result"
+    else
+      test_result_file="${function_name}-${test_result_file}.result"
+    fi
 
     local unique_test_result_file="${test_suite_dir}/${test_result_file}"
     local count=1
