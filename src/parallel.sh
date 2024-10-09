@@ -36,18 +36,22 @@ function parallel::aggregate_test_results() {
 
       if [ "${failed:-0}" -gt 0 ]; then
         state::add_tests_failed
-      fi
-
-      if [ "${skipped:-0}" -gt 0 ]; then
-        state::add_tests_skipped
-      fi
-
-      if [ "${incomplete:-0}" -gt 0 ]; then
-        state::add_tests_incomplete
+        continue
       fi
 
       if [ "${snapshot:-0}" -gt 0 ]; then
         state::add_tests_snapshot
+        continue
+      fi
+
+      if [ "${incomplete:-0}" -gt 0 ]; then
+        state::add_tests_incomplete
+        continue
+      fi
+
+      if [ "${skipped:-0}" -gt 0 ]; then
+        state::add_tests_skipped
+        continue
       fi
 
       if [ "${passed:-0}" -gt 0 ]; then
