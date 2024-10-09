@@ -198,9 +198,13 @@ function state::print_line() {
     *)                char="?" ;;
   esac
 
-  if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
-    printf "%s\n" "$char"
+  if env::is_parallel_run_enabled; then
+      printf "%s" "$char"
   else
-    printf "%s" "$char"
+    if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
+      printf "%s\n" "$char"
+    else
+      printf "%s" "$char"
+    fi
   fi
 }
