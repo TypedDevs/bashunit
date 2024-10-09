@@ -73,6 +73,7 @@ function env::find_terminal_width() {
   echo "${cols:-$_DEFAULT_TERMINAL_WIDTH}"
 }
 
+TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
 CAT="$(which cat)"

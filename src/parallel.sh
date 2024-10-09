@@ -1,62 +1,7 @@
 #!/bin/bash
 
-function runner::load_test_files() {
-  local filter=$1
-  shift
-  local files=("${@}")
-  local pids=()
-
-  if env::is_parallel_run_enabled; then
-      rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
-  fi
-
-  for test_file in "${files[@]}"; do
-    if [[ ! -f $test_file ]]; then
-      continue
-    fi
-
-    # shellcheck source=/dev/null
-    source "$test_file"
-
-    runner::run_set_up_before_script
-    if env::is_parallel_run_enabled; then
-      parallel::call_test_functions "$test_file" "$filter" &
-      pids+=($!)
-    else
-      runner::call_test_functions "$test_file" "$filter"
-    fi
-    runner::run_tear_down_after_script
-    runner::clean_set_up_and_tear_down_after_script
-  done
-
-  # Wait for all background processes to finish
-  if env::is_parallel_run_enabled; then
-    for pid in "${pids[@]}"; do
-      wait "$pid" || echo "Test with PID $pid failed"
-    done
-
-    parallel::aggregate_test_results
-  fi
-}
-
-function runner::functions_for_script() {
-  local script="$1"
-  local all_function_names="$2"
-
-  # Filter the names down to the ones defined in the script, sort them by line number
-  shopt -s extdebug
-  for f in $all_function_names; do
-    declare -F "$f" | grep "$script"
-  done | sort -k2 -n | awk '{print $1}'
-  shopt -u extdebug
-}
-
-# Helper function for test authors to invoke a named test case
-function run_test() {
-  runner::run_test "testing-fn" "$function_name" "$@"
-}
-
-function runner::call_test_functions() {
+# this function will be invoke with & to force running in a subprocess
+function parallel::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -69,13 +14,9 @@ function runner::call_test_functions() {
 
   local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
+  functions_to_run=($(parallel::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled; then
-      echo "Running $script"
-    fi
-
     helper::check_duplicate_functions "$script" || true
 
     for function_name in "${functions_to_run[@]}"; do
@@ -86,7 +27,7 @@ function runner::call_test_functions() {
 
       # No data provider found
       if [[ "${#provider_data[@]}" -eq 0 ]]; then
-        runner::run_test "$script" "$function_name"
+        parallel::run_test "$script" "$function_name"
         unset function_name
         continue
       fi
@@ -95,9 +36,9 @@ function runner::call_test_functions() {
       for data in "${provider_data[@]}"; do
         IFS=" " read -r -a args <<< "$data"
         if [ "${#args[@]}" -gt 1 ]; then
-          runner::run_test "$script" "$function_name" "${args[@]}"
+          parallel::run_test "$script" "$function_name" "${args[@]}"
         else
-          runner::run_test "$script" "$function_name" "$data"
+          parallel::run_test "$script" "$function_name" "$data"
         fi
       done
       unset function_name
@@ -105,52 +46,19 @@ function runner::call_test_functions() {
   fi
 }
 
-function runner::parse_execution_result() {
-  local execution_result=$1
+function parallel::functions_for_script() {
+  local script="$1"
+  local all_function_names="$2"
 
-  local assertions_failed
-  assertions_failed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_passed
-  assertions_passed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_skipped
-  assertions_skipped=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_incomplete
-  assertions_incomplete=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_snapshot
-  assertions_snapshot=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
-  )
-
-  ((_ASSERTIONS_PASSED += assertions_passed)) || true
-  ((_ASSERTIONS_FAILED += assertions_failed)) || true
-  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
-  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
-  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
+  # Filter the names down to the ones defined in the script, sort them by line number
+  shopt -s extdebug
+  for f in $all_function_names; do
+    declare -F "$f" | grep "$script"
+  done | sort -k2 -n | awk '{print $1}'
+  shopt -u extdebug
 }
 
-function runner::run_test() {
+function parallel::run_test() {
   local start_time
   start_time=$(clock::now)
 
@@ -175,19 +83,24 @@ function runner::run_test() {
   local test_execution_result
   test_execution_result=$(
     state::initialize_assertions_count
-    runner::run_set_up
+    parallel::run_set_up
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
     "$function_name" "$@" 2>&1
 
-    runner::run_tear_down
-    runner::clear_mocks
+    parallel::run_tear_down
+    parallel::clear_mocks
     state::export_subshell_context
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
+
+  # shellcheck disable=SC2155
+  local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
+  mkdir -p "$test_suite_dir"
+  echo "$test_execution_result" > "${test_suite_dir}/${function_name}.result"
 
   runner::parse_execution_result "$test_execution_result"
 
@@ -276,38 +189,102 @@ function runner::run_test() {
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
   logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
+##
 }
 
-function runner::write_failure_result_output() {
+function parallel::aggregate_test_results() {
+  local total_failed=0
+  local total_passed=0
+  local total_skipped=0
+  local total_incomplete=0
+  local total_snapshot=0
+
+  for script_dir in "$TEMP_DIR_PARALLEL_TEST_SUITE"/*; do
+    for result_file in "$script_dir"/*.result; do
+      while IFS= read -r line; do
+        # Extract assertion counts from the result lines using sed
+        failed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_FAILED=\([0-9]*\).*/\1/p')
+        passed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_PASSED=\([0-9]*\).*/\1/p')
+        skipped=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SKIPPED=\([0-9]*\).*/\1/p')
+        incomplete=$(echo "$line" | sed -n 's/.*##ASSERTIONS_INCOMPLETE=\([0-9]*\).*/\1/p')
+        snapshot=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SNAPSHOT=\([0-9]*\).*/\1/p')
+
+        # Default to 0 if no match is found
+        failed=${failed:-0}
+        passed=${passed:-0}
+        skipped=${skipped:-0}
+        incomplete=${incomplete:-0}
+        snapshot=${snapshot:-0}
+
+        # Add to the total counts
+        total_failed=$((total_failed + failed))
+        total_passed=$((total_passed + passed))
+        total_skipped=$((total_skipped + skipped))
+        total_incomplete=$((total_incomplete + incomplete))
+        total_snapshot=$((total_snapshot + snapshot))
+      done < "$result_file"
+
+      # Check and update test state based on the parsed results
+      if [ "$passed" -gt 0 ]; then
+        state::add_tests_passed
+      fi
+
+      if [ "$failed" -gt 0 ]; then
+        state::add_tests_failed
+      fi
+
+      if [ "$skipped" -gt 0 ]; then
+        state::add_tests_skipped
+      fi
+
+      if [ "$incomplete" -gt 0 ]; then
+        state::add_tests_incomplete
+      fi
+
+      if [ "$snapshot" -gt 0 ]; then
+        state::add_tests_snapshot
+      fi
+    done
+  done
+
+  export _ASSERTIONS_FAILED=$total_failed
+  export _ASSERTIONS_PASSED=$total_passed
+  export _ASSERTIONS_SKIPPED=$total_skipped
+  export _ASSERTIONS_INCOMPLETE=$total_incomplete
+  export _ASSERTIONS_SNAPSHOT=$total_snapshot
+}
+
+
+function parallel::write_failure_result_output() {
   local test_file=$1
   local error_msg=$2
 
   echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
-function runner::run_set_up() {
+function parallel::run_set_up() {
   helper::execute_function_if_exists 'set_up'
 }
 
-function runner::run_set_up_before_script() {
+function parallel::run_set_up_before_script() {
   helper::execute_function_if_exists 'set_up_before_script'
 }
 
-function runner::run_tear_down() {
+function parallel::run_tear_down() {
   helper::execute_function_if_exists 'tear_down'
 }
 
-function runner::clear_mocks() {
+function parallel::clear_mocks() {
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
     unmock "${MOCKED_FUNCTIONS[$i]}"
   done
 }
 
-function runner::run_tear_down_after_script() {
+function parallel::run_tear_down_after_script() {
   helper::execute_function_if_exists 'tear_down_after_script'
 }
 
-function runner::clean_set_up_and_tear_down_after_script() {
+function parallel::clean_set_up_and_tear_down_after_script() {
   helper::unset_if_exists 'set_up'
   helper::unset_if_exists 'tear_down'
   helper::unset_if_exists 'set_up_before_script'
