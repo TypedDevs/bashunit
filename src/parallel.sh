@@ -34,23 +34,23 @@ function parallel::aggregate_test_results() {
         total_snapshot=$((total_snapshot + snapshot))
       done < "$result_file"
 
-      if [ "$failed" -gt 0 ]; then
+      if [ "${failed:-0}" -gt 0 ]; then
         state::add_tests_failed
       fi
 
-      if [ "$skipped" -gt 0 ]; then
+      if [ "${skipped:-0}" -gt 0 ]; then
         state::add_tests_skipped
       fi
 
-      if [ "$incomplete" -gt 0 ]; then
+      if [ "${incomplete:-0}" -gt 0 ]; then
         state::add_tests_incomplete
       fi
 
-      if [ "$snapshot" -gt 0 ]; then
+      if [ "${snapshot:-0}" -gt 0 ]; then
         state::add_tests_snapshot
       fi
 
-      if [ "$passed" -gt 0 ]; then
+      if [ "${passed:-0}" -gt 0 ]; then
         state::add_tests_passed
       fi
     done
