@@ -62,6 +62,15 @@ BASHUNIT_SIMPLE_OUTPUT=false
 ```
 :::
 
+## Parallel
+
+> `BASHUNIT_PARALLEL_RUN=true|false`
+
+Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+
+Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
+
+
 ## Stop on failure
 
 > `BASHUNIT_STOP_ON_FAILURE=true|false`

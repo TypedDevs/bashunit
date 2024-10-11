@@ -113,6 +113,8 @@ bashunit provides an option to run each test in a separate child process, allowi
 
 This runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
 
+You can use `BASHUNIT_PARALLEL_RUN` option in your [configuration](/configuration#parallel).
+
 ### Disabling Parallel Testing
 
 > `bashunit --no-parallel`
