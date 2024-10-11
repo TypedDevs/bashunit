@@ -148,7 +148,7 @@ function state::export_subshell_context() {
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  echo "##ID=$(random_str)\
+  echo "##TEST_ID=$(random_str)\
 ##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\

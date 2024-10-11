@@ -320,7 +320,14 @@ function runner::parse_result_sync() {
     sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
   )
 
-  log "$function_name" "$execution_result"
+  if env::is_dev_mode_enabled; then
+    local test_id=$(\
+      echo "$execution_result" |\
+      tail -n 1 |\
+      sed -E -e 's/.*##TEST_ID=([0-9]*)##.*/\1/g'\
+    )
+    log "$test_id" "$function_name" "$execution_result"
+  fi
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
