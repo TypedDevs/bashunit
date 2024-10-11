@@ -156,12 +156,15 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  local subshell_output=$(\
-    echo "$test_execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
-    base64 -d
-  )
+  local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
+  test_output_base64="${test_output_base64%%##*}"
+
+  local subshell_output
+  if command -v base64 >/dev/null; then
+    subshell_output=$(echo "$test_output_base64" | base64 -d)
+  else
+    subshell_output=$(echo "$test_output_base64" | openssl enc -d -base64)
+  fi
 
   if [[ -n "$subshell_output" ]]; then
     # Formatted as "[type]line" @see `state::print_line()`
@@ -173,7 +176,7 @@ function runner::run_test() {
     subshell_output=$line
   fi
 
-  local runtime_output="${test_execution_result%%##ASSERTIONS*}"
+  local runtime_output="${test_execution_result%%##TEST_ID=*}"
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \

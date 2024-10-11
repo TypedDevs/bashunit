@@ -140,22 +140,28 @@ function state::initialize_assertions_count() {
 
 function state::export_subshell_context() {
   local encoded_test_output
+
   if base64 --help 2>&1 | grep -q -- "-w"; then
-    # Alpine needs -w 0 to avoid line wrapping
+    # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
   else
-    # macOS and others don't need -w 0
+    # macOS and others: default base64 without wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  echo "##TEST_ID=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)\
+  local test_id
+  test_id=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
+
+  cat <<EOF
+##TEST_ID=$test_id\
 ##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##TEST_OUTPUT=$encoded_test_output\
-##"
+##
+EOF
 }
 
 function state::calculate_total_assertions() {
