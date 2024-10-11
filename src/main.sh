@@ -18,6 +18,12 @@ function main::exec_tests() {
   # Trap SIGINT (Ctrl-C) and call the cleanup function
   trap main::cleanup SIGINT
 
+  if env::is_parallel_run_enabled && check_os::is_alpine; then
+    printf "%sWarning: Parallel test execution on Alpine Linux is currently" "${_COLOR_INCOMPLETE}"
+    printf "in a beta stage.\nThis means there may be unresolved issues, "
+    printf "particularly involving race conditions.%s\n" "${_COLOR_DEFAULT}"
+  fi
+
   console_header::print_version_with_env "$filter" "${test_files[@]}"
   runner::load_test_files "$filter" "${test_files[@]}"
   if env::is_parallel_run_enabled; then
