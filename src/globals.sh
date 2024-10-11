@@ -15,6 +15,10 @@ function current_timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
 
+function is_number() {
+  [[ -n "$1" && "$1" =~ ^-?[0-9]+$ ]]
+}
+
 function is_command_available() {
   command -v "$1" >/dev/null 2>&1
 }

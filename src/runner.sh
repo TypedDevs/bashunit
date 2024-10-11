@@ -123,51 +123,6 @@ function runner::call_test_functions() {
   fi
 }
 
-function runner::parse_execution_result() {
-  local execution_result=$1
-
-  local assertions_failed
-  assertions_failed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_passed
-  assertions_passed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_skipped
-  assertions_skipped=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_incomplete
-  assertions_incomplete=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_snapshot
-  assertions_snapshot=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
-  )
-
-  ((_ASSERTIONS_PASSED += assertions_passed)) || true
-  ((_ASSERTIONS_FAILED += assertions_failed)) || true
-  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
-  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
-  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
-}
-
 # shellcheck disable=SC2155
 function runner::run_test() {
   local start_time
@@ -203,30 +158,7 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  if env::is_parallel_run_enabled; then
-    # shellcheck disable=SC2155
-    local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
-    mkdir -p "$test_suite_dir"
-
-    local test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
-    if [[ -z "$test_result_file" ]]; then
-      test_result_file="${function_name}.result"
-    else
-      test_result_file="${function_name}-${test_result_file}.result"
-    fi
-
-    local unique_test_result_file="${test_suite_dir}/${test_result_file}"
-    local count=1
-
-    while [ -e "$unique_test_result_file" ]; do
-      unique_test_result_file="${test_suite_dir}/${test_result_file%.result}-$count.result"
-      count=$((count + 1))
-    done
-
-    echo "$test_execution_result" > "$unique_test_result_file"
-  fi
-
-  runner::parse_execution_result "$test_execution_result"
+  runner::parse_result "$test_execution_result" "$@"
 
   local subshell_output=$(\
     echo "$test_execution_result" |\
@@ -308,6 +240,86 @@ function runner::run_test() {
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
   logger::test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
+}
+
+function runner::parse_result() {
+  local execution_result=$1
+  shift
+  local args=("$@")
+
+  if env::is_parallel_run_enabled; then
+    runner::parse_result_parallel "$execution_result" "${args[@]}"
+  else
+    runner::parse_result_sync "$execution_result"
+  fi
+}
+
+# shellcheck disable=SC2155
+function runner::parse_result_parallel() {
+  local execution_result=$1
+  shift
+  local args=("$@")
+
+  local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
+  mkdir -p "$test_suite_dir"
+
+  local test_result_file=$(echo "${args[@]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+  if [[ -z "$test_result_file" ]]; then
+    test_result_file="${function_name}.result"
+  else
+    test_result_file="${function_name}-${test_result_file}.result"
+  fi
+
+  local unique_test_result_file="${test_suite_dir}/${test_result_file}"
+  local count=1
+
+  while [ -e "$unique_test_result_file" ]; do
+    unique_test_result_file="${test_suite_dir}/${test_result_file%.result}-$count.result"
+    count=$((count + 1))
+  done
+
+  echo "$execution_result" > "$unique_test_result_file"
+}
+
+# shellcheck disable=SC2155
+function runner::parse_result_sync() {
+  local execution_result=$1
+
+  local assertions_failed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
+  )
+
+  local assertions_passed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
+  )
+
+  local assertions_skipped=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
+  )
+
+  local assertions_incomplete=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
+  )
+
+  local assertions_snapshot=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
+  )
+
+  ((_ASSERTIONS_PASSED += assertions_passed)) || true
+  ((_ASSERTIONS_FAILED += assertions_failed)) || true
+  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
+  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
+  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
 }
 
 function runner::write_failure_result_output() {
