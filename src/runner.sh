@@ -73,8 +73,6 @@ function run_test() {
 }
 
 function runner::call_test_functions() {
-  trap 'exit' SIGTERM
-
   local script="$1"
   local filter="$2"
   local prefix="test"
@@ -269,9 +267,9 @@ function runner::parse_result_parallel() {
 
   local test_result_file=$(echo "${args[@]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
   if [[ -z "$test_result_file" ]]; then
-    test_result_file="${function_name}.result"
+    test_result_file="${function_name}.$$.result"
   else
-    test_result_file="${function_name}-${test_result_file}.result"
+    test_result_file="${function_name}-${test_result_file}.$$.result"
   fi
 
   local unique_test_result_file="${test_suite_dir}/${test_result_file}"
