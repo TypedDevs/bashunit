@@ -148,7 +148,7 @@ function state::export_subshell_context() {
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  echo "##TEST_ID=$(random_str)\
+  echo "##TEST_ID=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)\
 ##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
@@ -196,7 +196,7 @@ function state::print_line() {
     incomplete)       char="${_COLOR_INCOMPLETE}I${_COLOR_DEFAULT}" ;;
     snapshot)         char="${_COLOR_SNAPSHOT}N${_COLOR_DEFAULT}" ;;
     error)            char="${_COLOR_FAILED}E${_COLOR_DEFAULT}" ;;
-    *)                char="?" ;;
+    *)                char="?" && log "warning" "unknown test type '$type'" ;;
   esac
 
   if env::is_parallel_run_enabled; then

@@ -158,8 +158,6 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  runner::parse_result "$function_name" "$test_execution_result" "$@"
-
   local subshell_output=$(\
     echo "$test_execution_result" |\
     tail -n 1 |\
@@ -185,12 +183,14 @@ function runner::run_test() {
       "division by 0" "cannot allocate memory" "bad file descriptor" \
       "segmentation fault" "illegal option" "argument list too long" \
       "readonly variable" "missing keyword" "killed" \
-      "cannot execute binary file"; do
+      "cannot execute binary file" "invalid arithmetic operator"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
       runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
       break
     fi
   done
+
+  runner::parse_result "$function_name" "$test_execution_result" "$@"
 
   local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
@@ -282,6 +282,15 @@ function runner::parse_result_parallel() {
     count=$((count + 1))
   done
 
+  if env::is_dev_mode_enabled; then
+    local test_id=$(\
+      echo "$execution_result" |\
+      tail -n 1 |\
+      sed -E -e 's/.*##TEST_ID=([a-zA-Z0-9]*)##.*/\1/g'\
+    )
+    log "debug" "[PARA] test_id:$test_id" "function_name:$function_name" "execution_result:$execution_result"
+  fi
+
   echo "$execution_result" > "$unique_test_result_file"
 }
 
@@ -324,9 +333,9 @@ function runner::parse_result_sync() {
     local test_id=$(\
       echo "$execution_result" |\
       tail -n 1 |\
-      sed -E -e 's/.*##TEST_ID=([0-9]*)##.*/\1/g'\
+      sed -E -e 's/.*##TEST_ID=([a-zA-Z0-9]*)##.*/\1/g'\
     )
-    log "$test_id" "$function_name" "$execution_result"
+    log "debug" "[SYNC] test_id:$test_id" "function_name:$function_name" "execution_result:$execution_result"
   fi
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
