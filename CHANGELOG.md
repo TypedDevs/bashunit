@@ -21,6 +21,7 @@
     - `DEFAULT_PATH="tests"`
     - `LOG_PATH="out.log"`
     - `LOAD_FILE="tests/bootstrap.sh"`
+- Add check that git is installed to `install.sh` 
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
