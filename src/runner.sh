@@ -158,7 +158,7 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  runner::parse_result "$test_execution_result" "$@"
+  runner::parse_result "$function_name" "$test_execution_result" "$@"
 
   local subshell_output=$(\
     echo "$test_execution_result" |\
@@ -243,19 +243,23 @@ function runner::run_test() {
 }
 
 function runner::parse_result() {
+  local function_name=$1
+  shift
   local execution_result=$1
   shift
   local args=("$@")
 
   if env::is_parallel_run_enabled; then
-    runner::parse_result_parallel "$execution_result" "${args[@]}"
+    runner::parse_result_parallel "$function_name" "$execution_result" "${args[@]}"
   else
-    runner::parse_result_sync "$execution_result"
+    runner::parse_result_sync "$function_name" "$execution_result"
   fi
 }
 
 # shellcheck disable=SC2155
 function runner::parse_result_parallel() {
+  local function_name=$1
+  shift
   local execution_result=$1
   shift
   local args=("$@")
@@ -283,7 +287,8 @@ function runner::parse_result_parallel() {
 
 # shellcheck disable=SC2155
 function runner::parse_result_sync() {
-  local execution_result=$1
+  local function_name=$1
+  local execution_result=$2
 
   local assertions_failed=$(\
     echo "$execution_result" |\
@@ -314,6 +319,8 @@ function runner::parse_result_sync() {
     tail -n 1 |\
     sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
   )
+
+  log "$function_name" "$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
