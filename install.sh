@@ -1,8 +1,14 @@
 #!/bin/bash
-
+# shellcheck disable=SC2155
 # shellcheck disable=SC2164
 # shellcheck disable=SC2103
-declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+
+function check_git_is_installed() {
+  if ! command -v git >/dev/null 2>&1; then
+    echo "Error: git is not installed." >&2
+    exit 1
+  fi
+}
 
 function get_latest_tag() {
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
@@ -11,14 +17,6 @@ function get_latest_tag() {
     sort -Vr |
     head -n 1
 }
-
-# shellcheck disable=SC2155
-declare -r LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
-
-DIR=${1-lib}
-VERSION=${2-latest}
-TAG="$LATEST_BASHUNIT_VERSION"
-
 
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
@@ -54,6 +52,19 @@ function install() {
   fi
   chmod u+x "bashunit"
 }
+
+#########################
+######### MAIN ##########
+#########################
+
+check_git_is_installed
+
+DIR=${1-lib}
+VERSION=${2-latest}
+
+BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
+TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
