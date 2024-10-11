@@ -13,11 +13,11 @@ function parallel::aggregate_test_results() {
     for result_file in "$script_dir"/*.result; do
       while IFS= read -r line; do
         # Extract assertion counts from the result lines using sed
-        failed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_FAILED=\([0-9]*\).*/\1/p')
-        passed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_PASSED=\([0-9]*\).*/\1/p')
-        skipped=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SKIPPED=\([0-9]*\).*/\1/p')
-        incomplete=$(echo "$line" | sed -n 's/.*##ASSERTIONS_INCOMPLETE=\([0-9]*\).*/\1/p')
-        snapshot=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SNAPSHOT=\([0-9]*\).*/\1/p')
+        failed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_FAILED=\([0-9]*\)##.*/\1/p')
+        passed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_PASSED=\([0-9]*\)##.*/\1/p')
+        skipped=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SKIPPED=\([0-9]*\)##.*/\1/p')
+        incomplete=$(echo "$line" | sed -n 's/.*##ASSERTIONS_INCOMPLETE=\([0-9]*\)##.*/\1/p')
+        snapshot=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SNAPSHOT=\([0-9]*\)##.*/\1/p')
 
         # Default to 0 if no match is found
         failed=${failed:-0}
