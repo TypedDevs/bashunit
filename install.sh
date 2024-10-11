@@ -4,6 +4,15 @@
 # shellcheck disable=SC2103
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
+function check_git_is_installed() {
+  if ! command -v git >/dev/null 2>&1; then
+    echo "Error: git is not installed." >&2
+    exit 1
+  fi
+}
+
+check_git_is_installed
+
 function get_latest_tag() {
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
