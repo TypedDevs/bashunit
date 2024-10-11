@@ -234,6 +234,8 @@ function test_set_duplicated_functions_merged() {
 }
 
 function test_initialize_assertions_count() {
+  mock tr echo "abc123"
+
   local export_assertions_count
   export_assertions_count=$(
     _ASSERTIONS_PASSED=10
@@ -247,7 +249,8 @@ function test_initialize_assertions_count() {
   )
 
   assert_same\
-    "##ASSERTIONS_FAILED=0\
+    "##TEST_ID=abc123\
+##ASSERTIONS_FAILED=0\
 ##ASSERTIONS_PASSED=0\
 ##ASSERTIONS_SKIPPED=0\
 ##ASSERTIONS_INCOMPLETE=0\
@@ -258,6 +261,8 @@ function test_initialize_assertions_count() {
 }
 
 function test_export_assertions_count() {
+  mock tr echo "abc123"
+
   local export_assertions_count
   export_assertions_count=$(
     _ASSERTIONS_PASSED=10
@@ -272,7 +277,8 @@ function test_export_assertions_count() {
   )
 
   assert_same\
-    "##ASSERTIONS_FAILED=5\
+    "##TEST_ID=abc123\
+##ASSERTIONS_FAILED=5\
 ##ASSERTIONS_PASSED=10\
 ##ASSERTIONS_SKIPPED=42\
 ##ASSERTIONS_INCOMPLETE=12\
@@ -282,12 +288,13 @@ function test_export_assertions_count() {
 }
 
 function test_calculate_total_assertions() {
-  local input="##ASSERTIONS_FAILED=1\
+  local input="##TEST_ID=abc123\
+  ##ASSERTIONS_FAILED=1\
   ##ASSERTIONS_PASSED=2\
   ##ASSERTIONS_SKIPPED=3\
   ##ASSERTIONS_INCOMPLETE=4\
   ##ASSERTIONS_SNAPSHOT=5\
-  ##TEST_OUTPUT=##"
+  ##TEST_OUTPUT=3zhbEncodedBase64##"
 
   assert_same 15 "$(state::calculate_total_assertions "$input")"
 }

@@ -9,13 +9,14 @@ declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
+source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
 source "$BASHUNIT_ROOT_DIR/src/globals.sh"
 source "$BASHUNIT_ROOT_DIR/src/dependencies.sh"
 source "$BASHUNIT_ROOT_DIR/src/io.sh"
 source "$BASHUNIT_ROOT_DIR/src/math.sh"
+source "$BASHUNIT_ROOT_DIR/src/parallel.sh"
 source "$BASHUNIT_ROOT_DIR/src/env.sh"
-source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/clock.sh"
 source "$BASHUNIT_ROOT_DIR/src/state.sh"
 source "$BASHUNIT_ROOT_DIR/src/colors.sh"
@@ -62,6 +63,12 @@ while [[ $# -gt 0 ]]; do
       ;;
     -S|--stop-on-failure)
       export BASHUNIT_STOP_ON_FAILURE=true
+      ;;
+    -p|--parallel)
+      export BASHUNIT_PARALLEL_RUN=true
+      ;;
+    --no-parallel)
+      export BASHUNIT_PARALLEL_RUN=false
       ;;
     -e|--env|--load)
       # shellcheck disable=SC1090

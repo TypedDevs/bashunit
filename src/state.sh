@@ -140,21 +140,28 @@ function state::initialize_assertions_count() {
 
 function state::export_subshell_context() {
   local encoded_test_output
+
   if base64 --help 2>&1 | grep -q -- "-w"; then
-    # Alpine needs -w 0 to avoid line wrapping
+    # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
   else
-    # macOS and others don't need -w 0
+    # macOS and others: default base64 without wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
+  local test_id
+  test_id=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
+
+  cat <<EOF
+##TEST_ID=$test_id\
+##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##TEST_OUTPUT=$encoded_test_output\
-##"
+##
+EOF
 }
 
 function state::calculate_total_assertions() {
@@ -195,12 +202,16 @@ function state::print_line() {
     incomplete)       char="${_COLOR_INCOMPLETE}I${_COLOR_DEFAULT}" ;;
     snapshot)         char="${_COLOR_SNAPSHOT}N${_COLOR_DEFAULT}" ;;
     error)            char="${_COLOR_FAILED}E${_COLOR_DEFAULT}" ;;
-    *)                char="?" ;;
+    *)                char="?" && log "warning" "unknown test type '$type'" ;;
   esac
 
-  if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
-    printf "%s\n" "$char"
+  if env::is_parallel_run_enabled; then
+      printf "%s" "$char"
   else
-    printf "%s" "$char"
+    if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
+      printf "%s\n" "$char"
+    else
+      printf "%s" "$char"
+    fi
   fi
 }
