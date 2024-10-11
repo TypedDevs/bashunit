@@ -168,6 +168,7 @@ function runner::parse_execution_result() {
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
 }
 
+# shellcheck disable=SC2155
 function runner::run_test() {
   local start_time
   start_time=$(clock::now)
@@ -176,22 +177,17 @@ function runner::run_test() {
   shift
   local function_name="$1"
   shift
-  local current_assertions_failed
-  current_assertions_failed="$(state::get_assertions_failed)"
-  local current_assertions_snapshot
-  current_assertions_snapshot="$(state::get_assertions_snapshot)"
-  local current_assertions_incomplete
-  current_assertions_incomplete="$(state::get_assertions_incomplete)"
-  local current_assertions_skipped
-  current_assertions_skipped="$(state::get_assertions_skipped)"
+  local current_assertions_failed="$(state::get_assertions_failed)"
+  local current_assertions_snapshot="$(state::get_assertions_snapshot)"
+  local current_assertions_incomplete="$(state::get_assertions_incomplete)"
+  local current_assertions_skipped="$(state::get_assertions_skipped)"
 
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
   # This means that FD 3 now points to wherever the std-output was pointing.
   exec 3>&1
 
-  local test_execution_result
-  test_execution_result=$(
+  local test_execution_result=$(
     state::initialize_assertions_count
     runner::run_set_up
 
@@ -212,8 +208,7 @@ function runner::run_test() {
     local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
     mkdir -p "$test_suite_dir"
 
-    local test_result_file
-    test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+    local test_result_file=$(echo "$@" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
     if [[ -z "$test_result_file" ]]; then
       test_result_file="${function_name}.result"
     else
@@ -233,8 +228,7 @@ function runner::run_test() {
 
   runner::parse_execution_result "$test_execution_result"
 
-  local subshell_output
-  subshell_output=$(\
+  local subshell_output=$(\
     echo "$test_execution_result" |\
     tail -n 1 |\
     sed -E -e 's/.*##TEST_OUTPUT=(.*)##.*/\1/g' |\
@@ -251,8 +245,7 @@ function runner::run_test() {
     subshell_output=$line
   fi
 
-  local runtime_output
-  runtime_output="${test_execution_result%%##ASSERTIONS*}"
+  local runtime_output="${test_execution_result%%##ASSERTIONS*}"
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \
@@ -267,13 +260,11 @@ function runner::run_test() {
     fi
   done
 
-  local total_assertions
-  total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
+  local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
 
-  local end_time duration_ns duration
-  end_time=$(clock::now)
-  duration_ns=$(math::calculate "($end_time - $start_time) ")
-  duration=$(math::calculate "$duration_ns / 1000000")
+  local end_time=$(clock::now)
+  local duration_ns=$(math::calculate "($end_time - $start_time) ")
+  local duration=$(math::calculate "$duration_ns / 1000000")
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
@@ -312,8 +303,7 @@ function runner::run_test() {
     return
   fi
 
-  local label
-  label="$(helper::normalize_test_function_name "$function_name")"
+  local label="$(helper::normalize_test_function_name "$function_name")"
 
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
