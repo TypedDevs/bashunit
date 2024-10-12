@@ -6,27 +6,27 @@ TEST_STATUSES=()
 TEST_DURATIONS=()
 TEST_ASSERTIONS=()
 
-function logger::test_snapshot() {
-  logger::log "$1" "$2" "$3" "$4" "snapshot"
+function log_junit::test_snapshot() {
+  log_junit::log "$1" "$2" "$3" "$4" "snapshot"
 }
 
-function logger::test_incomplete() {
-  logger::log "$1" "$2" "$3" "$4" "incomplete"
+function log_junit::test_incomplete() {
+  log_junit::log "$1" "$2" "$3" "$4" "incomplete"
 }
 
-function logger::test_skipped() {
-  logger::log "$1" "$2" "$3" "$4" "skipped"
+function log_junit::test_skipped() {
+  log_junit::log "$1" "$2" "$3" "$4" "skipped"
 }
 
-function logger::test_passed() {
-  logger::log "$1" "$2" "$3" "$4" "passed"
+function log_junit::test_passed() {
+  log_junit::log "$1" "$2" "$3" "$4" "passed"
 }
 
-function logger::test_failed() {
-  logger::log "$1" "$2" "$3" "$4" "failed"
+function log_junit::test_failed() {
+  log_junit::log "$1" "$2" "$3" "$4" "failed"
 }
 
-function logger::log() {
+function log_junit::log() {
   local file="$1"
   local test_name="$2"
   local duration="$3"
@@ -40,7 +40,7 @@ function logger::log() {
   TEST_DURATIONS+=("$duration")
 }
 
-function logger::generate_junit_xml() {
+function log_junit::generate_junit_xml() {
   local output_file="$1"
   local test_passed
   test_passed=$(state::get_tests_passed)
@@ -83,7 +83,7 @@ function logger::generate_junit_xml() {
   } > "$output_file"
 }
 
-function logger::generate_report_html() {
+function log_junit::generate_report_html() {
   local output_file="$1"
   local test_passed
   test_passed=$(state::get_tests_passed)
