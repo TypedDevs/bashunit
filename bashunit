@@ -91,7 +91,7 @@ while [[ $# -gt 0 ]]; do
       upgrade::upgrade
       trap '' EXIT && exit 0
       ;;
-    --help)
+    -h|--help)
       console_header::print_help
       trap '' EXIT && exit 0
       ;;
