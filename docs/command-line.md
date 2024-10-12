@@ -137,7 +137,7 @@ Creates a report HTML file that contains information about the test results of y
 
 > `bashunit -s|--simple`
 >
-> `bashunit -vvv|--verbose`
+> `bashunit -vvv|--detailed`
 
 Enables simplified or verbose output to the console.
 
@@ -170,7 +170,7 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Text should not match a regular expression
 ```
 ```bash [Example]
-./bashunit ./tests --verbose
+./bashunit ./tests --detailed
 ```
 :::
 

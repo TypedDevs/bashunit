@@ -11,6 +11,14 @@ function current_filename() {
   basename "${BASH_SOURCE[1]}"
 }
 
+function caller_filename() {
+  dirname "${BASH_SOURCE[2]}"
+}
+
+function caller_line() {
+  echo "${BASH_LINENO[1]}"
+}
+
 function current_timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
@@ -54,5 +62,5 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  echo "$(current_timestamp) [$level]: $@" >> "$BASHUNIT_LOG_PATH"
+  echo "$(current_timestamp) [$level]: $@" >> "$BASHUNIT_DEV_LOG"
 }

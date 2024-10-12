@@ -5,10 +5,12 @@
 - Added `-p|--parallel` to enable running tests in parallel
 - Added `assert_file_contains` and `assert_file_not_contains`
 - Added `assert_true` and `assert_false`
-- Added `BASHUNIT_LOG_PATH`
+- Added `BASHUNIT_DEV_LOG`
 - Added global util functions
     - current_dir
     - current_filename
+    - caller_filename
+    - caller_line
     - current_timestamp
     - is_command_available
     - random_str
@@ -17,15 +19,17 @@
     - cleanup_temp_files
     - log
 - Add default env values:
-    - `DEFAULT_PATH="tests"`
-    - `LOG_PATH="out.log"`
-    - `LOAD_FILE="tests/bootstrap.sh"`
+    - `BASHUNIT_DEFAULT_PATH="tests"`
+    - `BASHUNIT_DEV_LOG="dev.log"`
+    - `BASHUNIT_LOAD_FILE="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
 - Fixed `-S|--stop-on-failure` behaviour
 - Improved time taken display
 - Improved clean up temporal files and directories
 - Improved CI test speed by running them in parallel
 - Removed git dependency for stable installations
+- Rename option `--verbose` to `--detailed`
+    - which is the default display behaviour, the opposite as `--simple`
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 

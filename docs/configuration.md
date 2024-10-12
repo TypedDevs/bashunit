@@ -38,7 +38,7 @@ Enables simplified output to the console. `false` by default.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple | -vvv|--verbose` option on the [command line](/command-line#output).
+Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output).
 
 ::: code-group
 ```bash [Simple output]
@@ -204,13 +204,13 @@ BASHUNIT_LOAD_FILE="tests/globals.sh"
 
 ## Log path
 
-> `BASHUNIT_LOG_PATH=file`
+> `BASHUNIT_DEV_LOG=file`
 
 > See: [Globals > log](/globals#log)
 
 ::: code-group
 ```bash [Setup]
-BASHUNIT_LOG_PATH="out.log"
+BASHUNIT_DEV_LOG="out.log"
 ```
 ```bash [Usage]
 log "I am tracing something..."

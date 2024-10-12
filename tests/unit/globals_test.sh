@@ -1,13 +1,13 @@
 #!/bin/bash
 set -euo pipefail
 
-function set_up_before_script() {
-  BASHUNIT_LOG_PATH=$(temp_file)
-  export BASHUNIT_LOG_PATH
+function set_up() {
+  BASHUNIT_DEV_LOG=$(temp_file)
+  export BASHUNIT_DEV_LOG
 }
 
-function tear_down_after_script() {
-  rm "$BASHUNIT_LOG_PATH"
+function tear_down() {
+  rm "$BASHUNIT_DEV_LOG"
 }
 
 function test_globals_current_dir() {
@@ -16,6 +16,14 @@ function test_globals_current_dir() {
 
 function test_globals_current_filename() {
   assert_same "globals_test.sh" "$(current_filename)"
+}
+
+function test_globals_caller_filename() {
+  assert_same "./src" "$(caller_filename)"
+}
+
+function test_globals_caller_line() {
+  assert_matches "[0-9]*" "$(caller_line)"
 }
 
 function test_globals_current_timestamp() {
@@ -36,11 +44,11 @@ function test_globals_is_command_not_available() {
   assert_general_error "$(is_command_available non_existing_fn)"
 }
 
-function test_globals_random_str_default() {
+function test_globals_random_str_default_len() {
   assert_matches "^[A-Za-z0-9]{6}$" "$(random_str)"
 }
 
-function test_globals_random_str_custom() {
+function test_globals_random_str_custom_len() {
   assert_matches "^[A-Za-z0-9]{3}$" "$(random_str 3)"
 }
 
@@ -63,35 +71,35 @@ function test_globals_temp_dir() {
 function test_globals_log_level_error() {
   log "error" "hello," "error"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[ERROR]: hello, error"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[ERROR]: hello, error"
 }
 
 function test_globals_log_level_warning() {
   log "warning" "hello," "warning"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[WARNING]: hello, warning"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[WARNING]: hello, warning"
 }
 
 function test_globals_log_level_debug() {
   log "debug" "hello," "debug"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[DEBUG]: hello, debug"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[DEBUG]: hello, debug"
 }
 
 function test_globals_log_level_critical() {
   log "critical" "hello," "critical"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[CRITICAL]: hello, critical"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[CRITICAL]: hello, critical"
 }
 
 function test_globals_log_level_info() {
   log "info" "hello," "info"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
 
 function test_globals_log_level_default() {
   log "hello," "info"
 
-  assert_file_contains "$BASHUNIT_LOG_PATH" "[INFO]: hello, info"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }

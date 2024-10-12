@@ -16,8 +16,8 @@ function test_bashunit_when_a_test_passes_verbose_output_env() {
 function test_bashunit_when_a_test_passes_verbose_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
-  assert_successful_code "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --verbose)"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)"
+  assert_successful_code "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)"
 }
 
 function test_different_verbose_snapshots_matches() {
