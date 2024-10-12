@@ -70,7 +70,7 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
-# Helper function for test authors to invoke a named test case
+# todo: remove me; deprecated. Helper function for test authors to invoke a named test case
 function run_test() {
   runner::run_test "testing-fn" "$function_name" "$@"
 }
@@ -83,12 +83,10 @@ function runner::call_test_functions() {
   local all_function_names
   all_function_names=$(declare -F | awk '{print $3}')
   local filtered_functions
-  # shellcheck disable=SC2207
   filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
 
-  local functions_to_run
   # shellcheck disable=SC2207
-  functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
+  local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
@@ -159,15 +157,7 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
-  test_output_base64="${test_output_base64%%##*}"
-
-  local subshell_output
-  if command -v base64 >/dev/null; then
-    subshell_output=$(echo "$test_output_base64" | base64 -d)
-  else
-    subshell_output=$(echo "$test_output_base64" | openssl enc -d -base64)
-  fi
+  local subshell_output=$(runner::decode_subshell_output "$test_execution_result")
 
   if [[ -n "$subshell_output" ]]; then
     # Formatted as "[type]line" @see `state::print_line()`
@@ -246,6 +236,20 @@ function runner::run_test() {
   reports::add_test_passed "$test_file" "$function_name" "$duration" "$total_assertions"
 }
 
+function runner::decode_subshell_output() {
+  local test_execution_result="$1"
+
+  local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
+  test_output_base64="${test_output_base64%%##*}"
+
+  local subshell_output
+  if command -v base64 >/dev/null; then
+    echo "$test_output_base64" | base64 -d
+  else
+    echo "$test_output_base64" | openssl enc -d -base64
+  fi
+}
+
 function runner::parse_result() {
   local function_name=$1
   shift
@@ -294,6 +298,8 @@ function runner::parse_result_parallel() {
     )
     log "debug" "[PARA] test_id:$test_id" "function_name:$function_name" "execution_result:$execution_result"
   fi
+
+  runner::parse_result_sync "$function_name" "$execution_result"
 
   echo "$execution_result" > "$unique_test_result_file"
 }
