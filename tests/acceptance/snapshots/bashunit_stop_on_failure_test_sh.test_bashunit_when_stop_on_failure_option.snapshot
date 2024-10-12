@@ -3,6 +3,7 @@ Running ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh
 [31m✗ Failed[0m: B error
     [2mExpected[0m [1m'1'[0m
     [2mbut got [0m [1m'2'[0m
+[33mStop on failure enabled...[0m
 
 [1mThere was 1 failure:[0m
 

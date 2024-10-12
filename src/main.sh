@@ -56,6 +56,7 @@ function main::cleanup() {
 }
 
 function main::handle_stop_on_failure() {
+  printf "%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   console_results::print_failing_tests_and_reset
   console_results::render_result
   cleanup_temp_files
