@@ -16,7 +16,8 @@ function main::exec_tests() {
   fi
 
   # Trap SIGINT (Ctrl-C) and call the cleanup function
-  trap main::cleanup SIGINT
+  trap 'main::cleanup' SIGINT
+  trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure' EXIT
 
   if env::is_parallel_run_enabled && check_os::is_alpine; then
     printf "%sWarning: Parallel test execution on Alpine Linux is currently" "${_COLOR_INCOMPLETE}"
@@ -50,6 +51,13 @@ function main::cleanup() {
   printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
+  cleanup_temp_files
+  exit 1
+}
+
+function main::handle_stop_on_failure() {
+  console_results::print_failing_tests_and_reset
+  console_results::render_result
   cleanup_temp_files
   exit 1
 }

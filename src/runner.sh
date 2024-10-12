@@ -29,6 +29,7 @@ function runner::load_test_files() {
     runner::clean_set_up_and_tear_down_after_script
   done
 
+  # Tests Results
   if env::is_parallel_run_enabled; then
     wait
 
@@ -205,7 +206,7 @@ function runner::run_test() {
     reports::add_test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
     if env::is_stop_on_failure_enabled; then
-      exit 1
+      exit "$EXIT_CODE_STOP_ON_FAILURE"
     fi
     return
   fi

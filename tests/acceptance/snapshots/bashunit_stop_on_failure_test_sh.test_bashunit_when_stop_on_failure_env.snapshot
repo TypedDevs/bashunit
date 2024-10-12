@@ -3,3 +3,15 @@ Running ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh
 [31m✗ Failed[0m: B error
     [2mExpected[0m [1m'1'[0m
     [2mbut got [0m [1m'2'[0m
+
+[1mThere was 1 failure:[0m
+
+|1) ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh
+|[31m✗ Failed[0m: B error
+|    [2mExpected[0m [1m'1'[0m
+|    [2mbut got [0m [1m'2'[0m
+
+[2mTests:     [0m [32m1 passed[0m, [31m1 failed[0m, 2 total
+[2mAssertions:[0m [32m3 passed[0m, [31m1 failed[0m, 4 total
+
+[41m[30m[1m Some tests failed [0m

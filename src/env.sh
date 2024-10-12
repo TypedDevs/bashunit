@@ -12,7 +12,6 @@ _DEFAULT_LOG_PATH="out.log"
 _DEFAULT_LOAD_FILE="tests/bootstrap.sh"
 _DEFAULT_LOG_JUNIT=""
 _DEFAULT_REPORT_HTML=""
-_DEFAULT_TERMINAL_WIDTH=100
 
 : "${BASHUNIT_DEFAULT_PATH:=${DEFAULT_PATH:=$_DEFAULT_DEFAULT_PATH}}"
 : "${BASHUNIT_LOG_JUNIT:=${LOG_JUNIT:=$_DEFAULT_LOG_JUNIT}}"
@@ -76,9 +75,10 @@ function env::find_terminal_width() {
   fi
 
   # Directly echo the value with fallback
-  echo "${cols:-$_DEFAULT_TERMINAL_WIDTH}"
+  echo "${cols:-100}"
 }
 
+EXIT_CODE_STOP_ON_FAILURE=4
 TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel/${_OS:-Unknown}"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
