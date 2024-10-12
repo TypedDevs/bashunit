@@ -1,23 +1,20 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
 function runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
-  local pids=()
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
-
     # shellcheck source=/dev/null
     source "$test_file"
-
     runner::run_set_up_before_script
     if env::is_parallel_run_enabled; then
       runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
-      pids+=($!)
     else
       runner::call_test_functions "$test_file" "$filter"
     fi
@@ -25,15 +22,11 @@ function runner::load_test_files() {
     runner::clean_set_up_and_tear_down_after_script
   done
 
-  # Tests Results
   if env::is_parallel_run_enabled; then
     wait
-
     runner::spinner &
     local spinner_pid=$!
-
     parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
-
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r " # Clear the spinner output
@@ -72,11 +65,8 @@ function runner::call_test_functions() {
   local filter="$2"
   local prefix="test"
   # Use declare -F to list all function names
-  local all_function_names
-  all_function_names=$(declare -F | awk '{print $3}')
-  local filtered_functions
-  filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
-
+  local all_function_names=$(declare -F | awk '{print $3}')
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -120,7 +110,6 @@ function runner::call_test_functions() {
   done
 }
 
-# shellcheck disable=SC2155
 function runner::run_test() {
   local start_time
   start_time=$(clock::now)
@@ -202,6 +191,7 @@ function runner::run_test() {
     state::add_tests_failed
     reports::add_test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
+
     if env::is_stop_on_failure_enabled; then
       if env::is_parallel_run_enabled; then
         parallel::mark_stop_on_failure
@@ -266,7 +256,6 @@ function runner::parse_result() {
   fi
 }
 
-# shellcheck disable=SC2155
 function runner::parse_result_parallel() {
   local function_name=$1
   shift
@@ -306,7 +295,6 @@ function runner::parse_result_parallel() {
   echo "$execution_result" > "$unique_test_result_file"
 }
 
-# shellcheck disable=SC2155
 function runner::parse_result_sync() {
   local function_name=$1
   local execution_result=$2
