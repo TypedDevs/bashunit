@@ -1,36 +1,27 @@
 #!/bin/bash
-
-# shellcheck disable=SC2164
-# shellcheck disable=SC2103
-declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-
-function get_latest_tag() {
-  git ls-remote --tags "$BASHUNIT_GIT_REPO" |
-    awk '{print $2}' |
-    sed 's|^refs/tags/||' |
-    sort -Vr |
-    head -n 1
-}
-
 # shellcheck disable=SC2155
-declare -r LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
-
-DIR=${1-lib}
-VERSION=${2-latest}
-TAG="$LATEST_BASHUNIT_VERSION"
-
+# shellcheck disable=SC2164
 
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
-  git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp_bashunit 2>/dev/null
+
+  if ! command -v git >/dev/null 2>&1; then
+    echo "Error: git is not installed." >&2
+    exit 1
+  fi
+
+  git clone --depth 1 --no-tags $BASHUNIT_GIT_REPO temp_bashunit 2>/dev/null
   cd temp_bashunit
   ./build.sh >/dev/null
-  local latest_commit
-  latest_commit=$(git rev-parse --short=8 HEAD)
+  local latest_commit=$(git rev-parse --short=7 HEAD)
+  # shellcheck disable=SC2103
   cd ..
 
-  local beta_version
-  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍 #'"$latest_commit"
+  local beta_version=$(printf "(non-stable) beta after %s [%s] 🐍 #%s" \
+    "$LATEST_BASHUNIT_VERSION" \
+    "$(date +'%Y-%m-%d')" \
+    "$latest_commit"
+  )
 
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
@@ -45,9 +36,26 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
-  curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+  if command -v curl > /dev/null 2>&1; then
+    curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+  elif command -v wget > /dev/null 2>&1; then
+    wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+  else
+    echo "Cannot download bashunit: curl or wget not found."
+  fi
   chmod u+x "bashunit"
 }
+
+#########################
+######### MAIN ##########
+#########################
+
+DIR=${1-lib}
+VERSION=${2-latest}
+
+LATEST_BASHUNIT_VERSION="0.17.0"
+BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
+TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit

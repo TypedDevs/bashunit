@@ -11,12 +11,12 @@ function str::rpad() {
   # shellcheck disable=SC2155
   local clean_left_text=$(echo -e "$left_text" | sed 's/\x1b\[[0-9;]*m//g')
 
-  local truncated=false
+  local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."
   if [[ ${#clean_left_text} -gt $padding ]]; then
     local truncation_length=$((padding - 3))  # Subtract 3 for "..."
     clean_left_text="${clean_left_text:0:$truncation_length}"
-    truncated=true
+    is_truncated=true
   fi
 
   # Rebuild the text with ANSI codes intact, preserving the truncation
@@ -46,7 +46,7 @@ function str::rpad() {
   done
 
   local remaining_space
-  if [[ "$truncated" == true ]]; then
+  if $is_truncated ; then
     result_left_text+="..."
     # 1: due to a blank space
     # 3: due to the appended ...

@@ -91,7 +91,7 @@ docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
 make test/alpine
 # or
 docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
-    sh -c  "apk add bash make shellcheck git curl perl && make test"
+    sh -c  "apk add bash make shellcheck git && make test"
 ```
 
 ## Coding Guidelines

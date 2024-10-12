@@ -62,7 +62,7 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS) -e tests/globals.sh
+	@./bashunit $(TEST_SCRIPTS)
 
 test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)
@@ -70,7 +70,7 @@ test/watch: $(TEST_SCRIPTS)
 
 docker/alpine:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
-		sh -c  "apk add bash make shellcheck git curl perl coreutils && bash"
+		sh -c  "apk add bash make shellcheck git && bash"
 
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"

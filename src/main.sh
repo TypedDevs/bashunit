@@ -15,21 +15,60 @@ function main::exec_tests() {
     exit 1
   fi
 
+  # Trap SIGINT (Ctrl-C) and call the cleanup function
+  trap 'main::cleanup' SIGINT
+  trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure_sync' EXIT
+
+  if env::is_parallel_run_enabled && check_os::is_alpine; then
+    printf "%sWarning: Parallel test execution on Alpine Linux is currently" "${_COLOR_INCOMPLETE}"
+    printf "in a beta stage.\nThis means there may be unresolved issues, "
+    printf "particularly involving race conditions.%s\n" "${_COLOR_DEFAULT}"
+  fi
+
+  if env::is_parallel_run_enabled; then
+    parallel::reset
+  fi
+
   console_header::print_version_with_env "$filter" "${test_files[@]}"
   runner::load_test_files "$filter" "${test_files[@]}"
+  if env::is_parallel_run_enabled; then
+    wait
+  fi
+
+  if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+    printf "\r%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  fi
+
   console_results::print_failing_tests_and_reset
   console_results::render_result
   exit_code=$?
 
   if [[ -n "$BASHUNIT_LOG_JUNIT" ]]; then
-    logger::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
+    reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
   fi
 
   if [[ -n "$BASHUNIT_REPORT_HTML" ]]; then
-    logger::generate_report_html "$BASHUNIT_REPORT_HTML"
+    reports::generate_report_html "$BASHUNIT_REPORT_HTML"
   fi
 
+  cleanup_temp_files
   exit $exit_code
+}
+
+function main::cleanup() {
+  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  # Kill all child processes of this script
+  pkill -P $$
+  cleanup_temp_files
+  exit 1
+}
+
+function main::handle_stop_on_failure_sync() {
+  printf "\n%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  console_results::print_failing_tests_and_reset
+  console_results::render_result
+  cleanup_temp_files
+  exit 1
 }
 
 function main::exec_assert() {

@@ -1,15 +1,53 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.16.0...main)
+## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
+- Added `-p|--parallel` to enable running tests in parallel
+- Added `assert_file_contains` and `assert_file_not_contains`
+- Added `assert_true` and `assert_false`
+- Added `BASHUNIT_LOG_PATH`
+- Added global util functions
+    - current_dir
+    - current_filename
+    - current_timestamp
+    - is_command_available
+    - random_str
+    - temp_file
+    - temp_dir
+    - cleanup_temp_files
+    - log
+- Add default env values:
+    - `DEFAULT_PATH="tests"`
+    - `LOG_PATH="out.log"`
+    - `LOAD_FILE="tests/bootstrap.sh"`
+- Add check that git is installed to `install.sh`
+- Fixed `-S|--stop-on-failure` behaviour
+- Improved time taken display
+- Improved clean up temporal files and directories
+- Improved CI test speed by running them in parallel
+- Removed git dependency for stable installations
+
+## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
+
+- Fixed simple output for non-successful states
 - Added support for Alpine (Linux Distro)
 - Added optional file-path as 2nd arg to `--debug` option
-- Added runtime per test
+- Added runtime duration per test
+- Added defer expressions with when using standalone assertions
+- Added failing tests after running the entire suite
+- Improved runtime errors handling
 - Simplified total tests display on the header
 - Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
 - Better handler runtime errors
 - Display failing tests after running the entire suite
 - Added defer expressions with `eval` when using standalone assertions
+- Fixed simple output for non-successful states
+- Remove deprecated assertions
+- Some required dependencies now optional: perl, coreutils
+- Upgrade and install script can now use `wget` if `curl` is not installed
+- Tests can be also be timed by making use of `EPOCHREALTIME` on supported system
+- Switch to testing the environment of capabilities
+    - rather than assuming various operating systems and Linux distributions have programs installed
 
 ## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
 

@@ -7,45 +7,96 @@ on:
       - main
 
 jobs:
-  tests:
-    name: "Run tests on ${{ matrix.os }}"
+  ubuntu-macos:
+    name: "On ${{ matrix.os }}"
+    timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os:
           - ubuntu-latest
           - macos-latest
-          - windows-latest
-        include:
-          - os: windows-latest
-            script_name: 'bash -c "./bashunit -e tests/globals.sh tests/**/*_test.sh"'
-          - os: macos-latest
-            script_name: 'make test'
-          - os: ubuntu-latest
-            script_name: 'make test'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Run Tests
-        run: ${{ matrix.script_name }}
+        run: make test
+
+  windows:
+    name: "On windows (${{ matrix.test_chunk }})"
+    timeout-minutes: 10
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        test_chunk: [acceptance, functional, unit]
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run tests
+        shell: bash
+        run: |
+          ./bashunit tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
-    name: "Run tests on alpine-latest"
+    name: "On alpine-latest"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Run Tests
         run: |
           docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
             apk update && \
-            apk add --no-cache bash make git curl perl coreutils && \
+            apk add --no-cache bash make git && \
             adduser -D builder && \
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
+
+  simple-output:
+    name: "Simple output"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --simple tests/
+
+  simple-output-parallel:
+    name: "Simple output in parallel"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --parallel --simple tests/
+
+  extended-output-parallel:
+    name: "Extended output in parallel"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --parallel tests/

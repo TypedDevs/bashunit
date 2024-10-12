@@ -2,6 +2,10 @@
 
 # shellcheck disable=SC2155
 
+function set_up() {
+  export BASHUNIT_SIMPLE_OUTPUT=false
+}
+
 function test_successful_assert_file_exists() {
   local a_file="$(current_dir)/$(current_filename)"
 
@@ -142,4 +146,46 @@ function test_fails_assert_files_not_equals() {
 
   rm "$expected"
   rm "$actual"
+}
+
+function test_successful_assert_file_contains() {
+  local file="/tmp/test_successful_assert_file_contains"
+  echo -e "original content" > "$file"
+
+  assert_successful_code "$(assert_file_contains "$file" "original content")"
+
+  rm "$file"
+}
+
+function test_fails_assert_file_contains() {
+  local file="/tmp/test_fail_assert_file_contains"
+  echo -e "original content" > "$file"
+
+  assert_contains \
+    "$(console_results::print_failed_test\
+      "Fails assert file contains" "${file}" "to contain" "non-existing-str")" \
+    "$(assert_file_contains "$file" "non-existing-str")"
+
+  rm "$file"
+}
+
+function test_successful_assert_file_not_contains() {
+  local file="/tmp/test_successful_assert_file_not_contains"
+  echo -e "original content" > "$file"
+
+  assert_successful_code "$(assert_file_not_contains "$file" "non-existing-str")"
+
+  rm "$file"
+}
+
+function test_fails_assert_file_not_contains() {
+  local file="/tmp/test_fails_assert_file_not_contains"
+  echo -e "original content" > "$file"
+
+  assert_contains \
+    "$(console_results::print_failed_test\
+      "Fails assert file not contains" "${file}" "to not contain" "original content")" \
+    "$(assert_file_not_contains "$file" "original content")"
+
+  rm "$file"
 }

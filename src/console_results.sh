@@ -1,6 +1,7 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
-_SUCCESSFUL_TEST_COUNT=0
+_TOTAL_TESTS_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
@@ -99,43 +100,45 @@ function console_results::render_result() {
 }
 
 function console_results::print_execution_time() {
-  if [[ $BASHUNIT_SHOW_EXECUTION_TIME == false ]]; then
+  if ! env::is_show_execution_time_enabled; then
     return
   fi
 
-  _EXECUTION_TIME=$(clock::total_runtime_in_milliseconds)
-  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Time taken: ${_EXECUTION_TIME} ms"
+  local time=$(printf "%.0f" "$(clock::total_runtime_in_milliseconds)")
+
+  if [[ "$time" -lt 1000 ]]; then
+    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+      "Time taken: $time ms"
+    return
+  fi
+
+  local time_in_seconds=$(( time / 1000 ))
+  local remainder_ms=$(( time % 1000 ))
+  local formatted_seconds=$(printf "%.2f" "$time_in_seconds.$remainder_ms")
+
+  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+    "Time taken: $formatted_seconds s"
 }
 
 function console_results::print_successful_test() {
-  ((_SUCCESSFUL_TEST_COUNT++)) || true
+  local test_name=$1
+  shift
+  local duration=${1:-"0"}
+  shift
 
-  if [[ "$BASHUNIT_SIMPLE_OUTPUT" == true ]]; then
-    if (( _SUCCESSFUL_TEST_COUNT % 50 != 0 )); then
-      printf "."
-    else
-      echo "."
-    fi
+  local line
+  if [[ -z "$*" ]]; then
+    line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
   else
-    local test_name=$1
-    shift
-    local duration=${1:-"0"}
-    shift
-
-    local line
-    if [[ -z "$*" ]]; then
-      line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
-    else
-      line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
-    fi
-
-    local full_line=$line
-    if [[ $BASHUNIT_SHOW_EXECUTION_TIME == true ]]; then
-      full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
-    fi
-
-    state::print_line "successful" "$full_line"
+    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
   fi
+
+  local full_line=$line
+  if env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "successful" "$full_line"
 }
 
 function console_results::print_failure_message() {
@@ -185,7 +188,7 @@ function console_results::print_failed_snapshot_test() {
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$function_name")"
 
-  if command -v git > /dev/null; then
+  if dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
     echo "$actual" > "$actual_file"
 

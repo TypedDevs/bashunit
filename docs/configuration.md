@@ -62,6 +62,15 @@ BASHUNIT_SIMPLE_OUTPUT=false
 ```
 :::
 
+## Parallel
+
+> `BASHUNIT_PARALLEL_RUN=true|false`
+
+Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+
+Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
+
+
 ## Stop on failure
 
 > `BASHUNIT_STOP_ON_FAILURE=true|false`
@@ -190,6 +199,28 @@ BASHUNIT_LOAD_FILE=".env.tests"
 
 # or a complete script file
 BASHUNIT_LOAD_FILE="tests/globals.sh"
+```
+:::
+
+## Log path
+
+> `BASHUNIT_LOG_PATH=file`
+
+> See: [Globals > log](/globals#log)
+
+::: code-group
+```bash [Setup]
+BASHUNIT_LOG_PATH="out.log"
+```
+```bash [Usage]
+log "I am tracing something..."
+log "error" "an" "error" "message"
+log "warning" "different log level messages!"
+```
+```bash [Output: out.log]
+2024-10-03 21:27:23 [INFO]: I am tracing something...
+2024-10-03 21:27:23 [ERROR]: an error message
+2024-10-03 21:27:23 [WARNING]: different log level messages!
 ```
 :::
 

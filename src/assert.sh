@@ -9,6 +9,69 @@ function fail() {
   console_results::print_failure_message "${label}" "$message"
 }
 
+function assert_true() {
+  local actual="$1"
+
+  # Check for expected literal values first
+  case "$actual" in
+    "true"|"0") state::add_assertions_passed; return ;;
+    "false"|"1") handle_bool_assertion_failure "true or 0" "$actual"; return ;;
+  esac
+
+  # Run command or eval and check the exit code
+  run_command_or_eval "$actual"
+  local exit_code=$?
+
+  if [[ $exit_code -ne 0 ]]; then
+    handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
+  else
+    state::add_assertions_passed
+  fi
+}
+
+function assert_false() {
+  local actual="$1"
+
+  # Check for expected literal values first
+  case "$actual" in
+    "false"|"1") state::add_assertions_passed; return ;;
+    "true"|"0") handle_bool_assertion_failure "false or 1" "$actual"; return ;;
+  esac
+
+  # Run command or eval and check the exit code
+  run_command_or_eval "$actual"
+  local exit_code=$?
+
+  if [[ $exit_code -eq 0 ]]; then
+    handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
+  else
+    state::add_assertions_passed
+  fi
+}
+
+function run_command_or_eval() {
+  local cmd="$1"
+
+  if [[ "$cmd" =~ ^eval ]]; then
+    eval "${cmd#eval }" &> /dev/null
+  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
+    eval "$cmd" &> /dev/null
+  else
+    "$cmd" &> /dev/null
+  fi
+  return $?
+}
+
+function handle_bool_assertion_failure() {
+  local expected="$1"
+  local got="$2"
+  local label
+  label="$(helper::normalize_test_function_name "${FUNCNAME[2]}")"
+
+  state::add_assertions_failed
+  console_results::print_failed_test "$label" "$expected" "but got " "$got"
+}
+
 function assert_same() {
   local expected="$1"
   local actual="$2"
