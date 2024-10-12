@@ -6,10 +6,6 @@ function runner::load_test_files() {
   local files=("${@}")
   local pids=()
 
-  if env::is_parallel_run_enabled; then
-    rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
-  fi
-
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
@@ -89,6 +85,7 @@ function runner::call_test_functions() {
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
+  # todo: refactor -> invert condition and reduce indentation level
   if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
     if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
       echo "Running $script"
@@ -97,6 +94,10 @@ function runner::call_test_functions() {
     helper::check_duplicate_functions "$script" || true
 
     for function_name in "${functions_to_run[@]}"; do
+      if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+        break
+      fi
+
       local provider_data=()
       while IFS=" " read -r line; do
         provider_data+=("$line")
@@ -206,7 +207,11 @@ function runner::run_test() {
     reports::add_test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
     if env::is_stop_on_failure_enabled; then
-      exit "$EXIT_CODE_STOP_ON_FAILURE"
+      if env::is_parallel_run_enabled; then
+        parallel::mark_stop_on_failure
+      else
+        exit "$EXIT_CODE_STOP_ON_FAILURE"
+      fi
     fi
     return
   fi

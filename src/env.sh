@@ -80,6 +80,7 @@ function env::find_terminal_width() {
 
 EXIT_CODE_STOP_ON_FAILURE=4
 TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel/${_OS:-Unknown}"
+TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
 CAT="$(which cat)"

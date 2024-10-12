@@ -17,7 +17,7 @@ function main::exec_tests() {
 
   # Trap SIGINT (Ctrl-C) and call the cleanup function
   trap 'main::cleanup' SIGINT
-  trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure' EXIT
+  trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure_sync' EXIT
 
   if env::is_parallel_run_enabled && check_os::is_alpine; then
     printf "%sWarning: Parallel test execution on Alpine Linux is currently" "${_COLOR_INCOMPLETE}"
@@ -25,10 +25,18 @@ function main::exec_tests() {
     printf "particularly involving race conditions.%s\n" "${_COLOR_DEFAULT}"
   fi
 
+  if env::is_parallel_run_enabled; then
+    parallel::reset
+  fi
+
   console_header::print_version_with_env "$filter" "${test_files[@]}"
   runner::load_test_files "$filter" "${test_files[@]}"
   if env::is_parallel_run_enabled; then
     wait
+  fi
+
+  if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+    printf "\r%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   fi
 
   console_results::print_failing_tests_and_reset
@@ -55,8 +63,8 @@ function main::cleanup() {
   exit 1
 }
 
-function main::handle_stop_on_failure() {
-  printf "%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+function main::handle_stop_on_failure_sync() {
+  printf "\n%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   console_results::print_failing_tests_and_reset
   console_results::render_result
   cleanup_temp_files
