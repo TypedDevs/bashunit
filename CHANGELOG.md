@@ -28,6 +28,8 @@
 - Improved clean up temporal files and directories
 - Improved CI test speed by running them in parallel
 - Removed git dependency for stable installations
+- Rename option `--verbose` to `--detailed`
+    - which is the default display behaviour, the opposite as `--simple`
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 

@@ -51,7 +51,7 @@ while [[ $# -gt 0 ]]; do
     -s|--simple)
       export BASHUNIT_SIMPLE_OUTPUT=true
       ;;
-    -vvv|--verbose)
+    --detailed)
       export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
     --debug)
