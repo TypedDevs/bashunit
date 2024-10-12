@@ -26,6 +26,7 @@ function build::verify() {
     --report-html "bin/report.html" \
     --stop-on-failure
 
+  # shellcheck disable=SC2181
   if [[ $? -eq 0 ]]; then
     echo "✅ Build verified ✅"
   fi
