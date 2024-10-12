@@ -10,6 +10,11 @@ function parallel::aggregate_test_results() {
   local total_snapshot=0
 
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
+    if ! compgen -G "$script_dir"/*.result > /dev/null; then
+      printf "%sNo tests found%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+      continue
+    fi
+
     for result_file in "$script_dir"/*.result; do
       while IFS= read -r line; do
         # Extract assertion counts from the result lines using sed
