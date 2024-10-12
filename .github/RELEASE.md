@@ -3,6 +3,7 @@
 This is a guide to know the steps to create a new release.
 
 1. Update the version in [BASHUNIT_VERSION](../bashunit)
+1. Update the version in [LATEST_BASHUNIT_VERSION](../install.sh)
 1. Update the version in [CHANGELOG.md](../CHANGELOG.md)
 1. Update the version in [package.json](../package.json)
 1. Build the project `./build.sh bin`

@@ -10,17 +10,9 @@ function check_git_is_installed() {
   fi
 }
 
-function get_latest_tag() {
-  git ls-remote --tags "$BASHUNIT_GIT_REPO" |
-    awk '{print $2}' |
-    sed 's|^refs/tags/||' |
-    sort -Vr |
-    head -n 1
-}
-
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
-  git clone --depth 1 --no-tags https://github.com/TypedDevs/bashunit temp_bashunit 2>/dev/null
+  git clone --depth 1 --no-tags $BASHUNIT_GIT_REPO temp_bashunit 2>/dev/null
   cd temp_bashunit
   ./build.sh >/dev/null
   local latest_commit
@@ -44,9 +36,9 @@ function install() {
   fi
 
   if command -v curl > /dev/null 2>&1; then
-    curl -L -O -J "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+    curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
   elif command -v wget > /dev/null 2>&1; then
-    wget "https://github.com/TypedDevs/bashunit/releases/download/$TAG/bashunit" 2>/dev/null
+    wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
   else
     echo "Cannot download bashunit: curl or wget not found."
   fi
@@ -62,8 +54,8 @@ check_git_is_installed
 DIR=${1-lib}
 VERSION=${2-latest}
 
+LATEST_BASHUNIT_VERSION="0.17.0"
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-LATEST_BASHUNIT_VERSION="$(get_latest_tag)"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
