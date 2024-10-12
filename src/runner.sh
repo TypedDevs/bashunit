@@ -67,11 +67,6 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
-# todo: remove me; deprecated. Helper function for test authors to invoke a named test case
-function run_test() {
-  runner::run_test "testing-fn" "$function_name" "$@"
-}
-
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
