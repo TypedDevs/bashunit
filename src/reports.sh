@@ -1,46 +1,46 @@
 #!/bin/bash
 
-TEST_FILES=()
-TEST_NAMES=()
-TEST_STATUSES=()
-TEST_DURATIONS=()
-TEST_ASSERTIONS=()
+_REPORTS_TEST_FILES=()
+_REPORTS_TEST_NAMES=()
+_REPORTS_TEST_STATUSES=()
+_REPORTS_TEST_DURATIONS=()
+_REPORTS_TEST_ASSERTIONS=()
 
-function log_junit::test_snapshot() {
-  log_junit::log "$1" "$2" "$3" "$4" "snapshot"
+function reports::add_snapshot() {
+  reports::log_test "$1" "$2" "$3" "$4" "snapshot"
 }
 
-function log_junit::test_incomplete() {
-  log_junit::log "$1" "$2" "$3" "$4" "incomplete"
+function reports::add_incomplete() {
+  reports::log_test "$1" "$2" "$3" "$4" "incomplete"
 }
 
-function log_junit::test_skipped() {
-  log_junit::log "$1" "$2" "$3" "$4" "skipped"
+function reports::add_skipped() {
+  reports::log_test "$1" "$2" "$3" "$4" "skipped"
 }
 
-function log_junit::test_passed() {
-  log_junit::log "$1" "$2" "$3" "$4" "passed"
+function reports::add_passed() {
+  reports::log_test "$1" "$2" "$3" "$4" "passed"
 }
 
-function log_junit::test_failed() {
-  log_junit::log "$1" "$2" "$3" "$4" "failed"
+function reports::add_failed() {
+  reports::log_test "$1" "$2" "$3" "$4" "failed"
 }
 
-function log_junit::log() {
+function reports::log_test() {
   local file="$1"
   local test_name="$2"
   local duration="$3"
   local assertions="$4"
   local status="$5"
 
-  TEST_FILES+=("$file")
-  TEST_NAMES+=("$test_name")
-  TEST_STATUSES+=("$status")
-  TEST_ASSERTIONS+=("$assertions")
-  TEST_DURATIONS+=("$duration")
+  _REPORTS_TEST_FILES+=("$file")
+  _REPORTS_TEST_NAMES+=("$test_name")
+  _REPORTS_TEST_STATUSES+=("$status")
+  _REPORTS_TEST_ASSERTIONS+=("$assertions")
+  _REPORTS_TEST_DURATIONS+=("$duration")
 }
 
-function log_junit::generate_junit_xml() {
+function reports::generate_junit_xml() {
   local output_file="$1"
   local test_passed
   test_passed=$(state::get_tests_passed)
@@ -58,17 +58,17 @@ function log_junit::generate_junit_xml() {
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     echo "<testsuites>"
-    echo "  <testsuite name=\"bashunit\" tests=\"${#TEST_NAMES[@]}\""
+    echo "  <testsuite name=\"bashunit\" tests=\"${#_REPORTS_TEST_NAMES[@]}\""
     echo "             passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\""
     echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\""
     echo "             time=\"$time\">"
 
-    for i in "${!TEST_NAMES[@]}"; do
-      local file="${TEST_FILES[$i]}"
-      local name="${TEST_NAMES[$i]}"
-      local assertions="${TEST_ASSERTIONS[$i]}"
-      local status="${TEST_STATUSES[$i]}"
-      local test_time="${TEST_DURATIONS[$i]}"
+    for i in "${!_REPORTS_TEST_NAMES[@]}"; do
+      local file="${_REPORTS_TEST_FILES[$i]}"
+      local name="${_REPORTS_TEST_NAMES[$i]}"
+      local assertions="${_REPORTS_TEST_ASSERTIONS[$i]}"
+      local status="${_REPORTS_TEST_STATUSES[$i]}"
+      local test_time="${_REPORTS_TEST_DURATIONS[$i]}"
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
@@ -83,7 +83,7 @@ function log_junit::generate_junit_xml() {
   } > "$output_file"
 }
 
-function log_junit::generate_report_html() {
+function reports::generate_report_html() {
   local output_file="$1"
   local test_passed
   test_passed=$(state::get_tests_passed)
@@ -103,11 +103,11 @@ function log_junit::generate_report_html() {
 
   # Collect test cases by file
   : > "$temp_file"  # Clear temp file if it exists
-  for i in "${!TEST_NAMES[@]}"; do
-    local file="${TEST_FILES[$i]}"
-    local name="${TEST_NAMES[$i]}"
-    local status="${TEST_STATUSES[$i]}"
-    local test_time="${TEST_DURATIONS[$i]}"
+  for i in "${!_REPORTS_TEST_NAMES[@]}"; do
+    local file="${_REPORTS_TEST_FILES[$i]}"
+    local name="${_REPORTS_TEST_NAMES[$i]}"
+    local status="${_REPORTS_TEST_STATUSES[$i]}"
+    local test_time="${_REPORTS_TEST_DURATIONS[$i]}"
     local test_case="$file|$name|$status|$test_time"
 
     echo "$test_case" >> "$temp_file"
@@ -148,13 +148,13 @@ function log_junit::generate_report_html() {
     echo "    </thead>"
     echo "    <tbody>"
     echo "      <tr>"
-    echo "        <td>${#TEST_NAMES[@]}</td>"
+    echo "        <td>${#_REPORTS_TEST_NAMES[@]}</td>"
     echo "        <td>$test_passed</td>"
     echo "        <td>$tests_failed</td>"
     echo "        <td>$tests_incomplete</td>"
     echo "        <td>$tests_skipped</td>"
     echo "        <td>$tests_snapshot</td>"
-    echo "        <td>${time}</td>"
+    echo "        <td>$time</td>"
     echo "      </tr>"
     echo "    </tbody>"
     echo "  </table>"
