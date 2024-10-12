@@ -16,14 +16,15 @@
     - temp_dir
     - cleanup_temp_files
     - log
-- Improved clean up temporal files and directories
-- Improved CI test speed by running them in parallel
 - Add default env values:
     - `DEFAULT_PATH="tests"`
     - `LOG_PATH="out.log"`
     - `LOAD_FILE="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
-- Display seconds on total time taken
+- Improved time taken display
+- Improved clean up temporal files and directories
+- Improved CI test speed by running them in parallel
+- Removed git dependency for stable installations
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
