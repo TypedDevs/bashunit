@@ -273,7 +273,7 @@ function test_render_execution_time() {
 
     console_results::render_result
   )
-  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
 }
 
 function test_not_render_execution_time() {
@@ -304,7 +304,7 @@ function test_render_execution_time_on_osx_without_perl() {
     console_results::render_result
   )
 
-  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
 }
 
 function test_render_execution_time_on_osx_with_perl() {

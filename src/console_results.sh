@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
 _TOTAL_TESTS_COUNT=0
 
@@ -103,8 +104,17 @@ function console_results::print_execution_time() {
     return
   fi
 
-  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
-    "Time taken: $(clock::total_runtime_in_milliseconds) ms"
+  local time=$(clock::total_runtime_in_milliseconds)
+
+  # Convert time to seconds if greater than or equal to 1000 ms
+  if [[ "$time" -ge 1000 ]]; then
+    local time_in_seconds=$(echo "scale=2; $time / 1000" | bc)
+    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+      "Time taken: $time_in_seconds s"
+  else
+    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+      "Time taken: $time ms"
+  fi
 }
 
 function console_results::print_successful_test() {
