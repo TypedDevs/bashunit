@@ -85,43 +85,44 @@ function runner::call_test_functions() {
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
-  # todo: refactor -> invert condition and reduce indentation level
-  if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
-      echo "Running $script"
+  if [[ "${#functions_to_run[@]}" -le 0 ]]; then
+    return
+  fi
+
+  if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
+    echo "Running $script"
+  fi
+
+  helper::check_duplicate_functions "$script" || true
+
+  for function_name in "${functions_to_run[@]}"; do
+    if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+      break
     fi
 
-    helper::check_duplicate_functions "$script" || true
+    local provider_data=()
+    while IFS=" " read -r line; do
+      provider_data+=("$line")
+    done <<< "$(helper::get_provider_data "$function_name" "$script")"
 
-    for function_name in "${functions_to_run[@]}"; do
-      if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
-        break
-      fi
-
-      local provider_data=()
-      while IFS=" " read -r line; do
-        provider_data+=("$line")
-      done <<< "$(helper::get_provider_data "$function_name" "$script")"
-
-      # No data provider found
-      if [[ "${#provider_data[@]}" -eq 0 ]]; then
-        runner::run_test "$script" "$function_name"
-        unset function_name
-        continue
-      fi
-
-      # Execute the test function for each line of data
-      for data in "${provider_data[@]}"; do
-        IFS=" " read -r -a args <<< "$data"
-        if [ "${#args[@]}" -gt 1 ]; then
-          runner::run_test "$script" "$function_name" "${args[@]}"
-        else
-          runner::run_test "$script" "$function_name" "$data"
-        fi
-      done
+    # No data provider found
+    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+      runner::run_test "$script" "$function_name"
       unset function_name
+      continue
+    fi
+
+    # Execute the test function for each line of data
+    for data in "${provider_data[@]}"; do
+      IFS=" " read -r -a args <<< "$data"
+      if [ "${#args[@]}" -gt 1 ]; then
+        runner::run_test "$script" "$function_name" "${args[@]}"
+      else
+        runner::run_test "$script" "$function_name" "$data"
+      fi
     done
-  fi
+    unset function_name
+  done
 }
 
 # shellcheck disable=SC2155
