@@ -25,13 +25,15 @@ function random_str() {
 }
 
 function temp_file() {
+  local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp /tmp/bashunit/tmp/bashunit.XXXXXXX
+  mktemp /tmp/bashunit/tmp/"$prefix".XXXXXXX
 }
 
 function temp_dir() {
+  local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp -d /tmp/bashunit/tmp/bashunit.XXXXXXX
+  mktemp -d /tmp/bashunit/tmp/"$prefix".XXXXXXX
 }
 
 function cleanup_temp_files() {
