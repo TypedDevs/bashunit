@@ -75,7 +75,7 @@ function test_globals_temp_dir() {
 
 ## log
 
-Write into the `BASHUNIT_LOG_PATH` a log message.
+Write into the `BASHUNIT_DEV_LOG` a log message.
 
 > See: [Log path](/configuration#log-path)
 
