@@ -44,7 +44,10 @@ function runner::load_test_files() {
 }
 
 function runner::spinner() {
-  printf "\n"
+  if env::is_simple_output_enabled; then
+    printf "\n"
+  fi
+
   local delay=0.1
   local spin_chars="|/-\\"
   while true; do
