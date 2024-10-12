@@ -1,26 +1,27 @@
 #!/bin/bash
 # shellcheck disable=SC2155
 # shellcheck disable=SC2164
-# shellcheck disable=SC2103
 
-function check_git_is_installed() {
+function build_and_install_beta() {
+  echo "> Downloading non-stable version: 'beta'"
+
   if ! command -v git >/dev/null 2>&1; then
     echo "Error: git is not installed." >&2
     exit 1
   fi
-}
 
-function build_and_install_beta() {
-  echo "> Downloading non-stable version: 'beta'"
   git clone --depth 1 --no-tags $BASHUNIT_GIT_REPO temp_bashunit 2>/dev/null
   cd temp_bashunit
   ./build.sh >/dev/null
-  local latest_commit
-  latest_commit=$(git rev-parse --short=8 HEAD)
+  local latest_commit=$(git rev-parse --short=7 HEAD)
+  # shellcheck disable=SC2103
   cd ..
 
-  local beta_version
-  beta_version='(non-stable) beta after '"$LATEST_BASHUNIT_VERSION"' ['"$(date +'%Y-%m-%d')"'] 🐍 #'"$latest_commit"
+  local beta_version=$(printf "(non-stable) beta after %s [%s] 🐍 #%s" \
+    "$LATEST_BASHUNIT_VERSION" \
+    "$(date +'%Y-%m-%d')" \
+    "$latest_commit"
+  )
 
   sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
@@ -48,8 +49,6 @@ function install() {
 #########################
 ######### MAIN ##########
 #########################
-
-check_git_is_installed
 
 DIR=${1-lib}
 VERSION=${2-latest}
