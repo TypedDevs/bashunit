@@ -21,6 +21,7 @@
     - `LOG_PATH="out.log"`
     - `LOAD_FILE="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
+- Fixed `-S|--stop-on-failure` behaviour
 - Improved time taken display
 - Improved clean up temporal files and directories
 - Improved CI test speed by running them in parallel

@@ -64,3 +64,17 @@ function parallel::aggregate_test_results() {
   export _ASSERTIONS_INCOMPLETE=$total_incomplete
   export _ASSERTIONS_SNAPSHOT=$total_snapshot
 }
+
+function parallel::mark_stop_on_failure() {
+  touch "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
+}
+
+function parallel::must_stop_on_failure() {
+  [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
+}
+
+function parallel::reset() {
+  # shellcheck disable=SC2153
+  rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+  [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
+}

@@ -1,27 +1,20 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
 function runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
-  local pids=()
-
-  if env::is_parallel_run_enabled; then
-    rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
-  fi
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
-
     # shellcheck source=/dev/null
     source "$test_file"
-
     runner::run_set_up_before_script
     if env::is_parallel_run_enabled; then
       runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
-      pids+=($!)
     else
       runner::call_test_functions "$test_file" "$filter"
     fi
@@ -31,12 +24,9 @@ function runner::load_test_files() {
 
   if env::is_parallel_run_enabled; then
     wait
-
     runner::spinner &
     local spinner_pid=$!
-
     parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
-
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r " # Clear the spinner output
@@ -70,59 +60,56 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
-# todo: remove me; deprecated. Helper function for test authors to invoke a named test case
-function run_test() {
-  runner::run_test "testing-fn" "$function_name" "$@"
-}
-
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
   # Use declare -F to list all function names
-  local all_function_names
-  all_function_names=$(declare -F | awk '{print $3}')
-  local filtered_functions
-  filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
-
+  local all_function_names=$(declare -F | awk '{print $3}')
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_function_names")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
-  if [[ "${#functions_to_run[@]}" -gt 0 ]]; then
-    if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
-      echo "Running $script"
+  if [[ "${#functions_to_run[@]}" -le 0 ]]; then
+    return
+  fi
+
+  if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
+    echo "Running $script"
+  fi
+
+  helper::check_duplicate_functions "$script" || true
+
+  for function_name in "${functions_to_run[@]}"; do
+    if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+      break
     fi
 
-    helper::check_duplicate_functions "$script" || true
+    local provider_data=()
+    while IFS=" " read -r line; do
+      provider_data+=("$line")
+    done <<< "$(helper::get_provider_data "$function_name" "$script")"
 
-    for function_name in "${functions_to_run[@]}"; do
-      local provider_data=()
-      while IFS=" " read -r line; do
-        provider_data+=("$line")
-      done <<< "$(helper::get_provider_data "$function_name" "$script")"
-
-      # No data provider found
-      if [[ "${#provider_data[@]}" -eq 0 ]]; then
-        runner::run_test "$script" "$function_name"
-        unset function_name
-        continue
-      fi
-
-      # Execute the test function for each line of data
-      for data in "${provider_data[@]}"; do
-        IFS=" " read -r -a args <<< "$data"
-        if [ "${#args[@]}" -gt 1 ]; then
-          runner::run_test "$script" "$function_name" "${args[@]}"
-        else
-          runner::run_test "$script" "$function_name" "$data"
-        fi
-      done
+    # No data provider found
+    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+      runner::run_test "$script" "$function_name"
       unset function_name
+      continue
+    fi
+
+    # Execute the test function for each line of data
+    for data in "${provider_data[@]}"; do
+      IFS=" " read -r -a args <<< "$data"
+      if [ "${#args[@]}" -gt 1 ]; then
+        runner::run_test "$script" "$function_name" "${args[@]}"
+      else
+        runner::run_test "$script" "$function_name" "$data"
+      fi
     done
-  fi
+    unset function_name
+  done
 }
 
-# shellcheck disable=SC2155
 function runner::run_test() {
   local start_time
   start_time=$(clock::now)
@@ -204,8 +191,13 @@ function runner::run_test() {
     state::add_tests_failed
     reports::add_test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
+
     if env::is_stop_on_failure_enabled; then
-      exit 1
+      if env::is_parallel_run_enabled; then
+        parallel::mark_stop_on_failure
+      else
+        exit "$EXIT_CODE_STOP_ON_FAILURE"
+      fi
     fi
     return
   fi
@@ -264,7 +256,6 @@ function runner::parse_result() {
   fi
 }
 
-# shellcheck disable=SC2155
 function runner::parse_result_parallel() {
   local function_name=$1
   shift
@@ -304,7 +295,6 @@ function runner::parse_result_parallel() {
   echo "$execution_result" > "$unique_test_result_file"
 }
 
-# shellcheck disable=SC2155
 function runner::parse_result_sync() {
   local function_name=$1
   local execution_result=$2
