@@ -1,4 +1,5 @@
 #!/bin/bash
+# shellcheck disable=SC2155
 
 _REPORTS_TEST_FILES=()
 _REPORTS_TEST_NAMES=()
@@ -6,27 +7,27 @@ _REPORTS_TEST_STATUSES=()
 _REPORTS_TEST_DURATIONS=()
 _REPORTS_TEST_ASSERTIONS=()
 
-function reports::add_snapshot() {
-  reports::log_test "$1" "$2" "$3" "$4" "snapshot"
+function reports::add_test_snapshot() {
+  reports::add_test "$1" "$2" "$3" "$4" "snapshot"
 }
 
-function reports::add_incomplete() {
-  reports::log_test "$1" "$2" "$3" "$4" "incomplete"
+function reports::add_test_incomplete() {
+  reports::add_test "$1" "$2" "$3" "$4" "incomplete"
 }
 
-function reports::add_skipped() {
-  reports::log_test "$1" "$2" "$3" "$4" "skipped"
+function reports::add_test_skipped() {
+  reports::add_test "$1" "$2" "$3" "$4" "skipped"
 }
 
-function reports::add_passed() {
-  reports::log_test "$1" "$2" "$3" "$4" "passed"
+function reports::add_test_passed() {
+  reports::add_test "$1" "$2" "$3" "$4" "passed"
 }
 
-function reports::add_failed() {
-  reports::log_test "$1" "$2" "$3" "$4" "failed"
+function reports::add_test_failed() {
+  reports::add_test "$1" "$2" "$3" "$4" "failed"
 }
 
-function reports::log_test() {
+function reports::add_test() {
   local file="$1"
   local test_name="$2"
   local duration="$3"
@@ -42,18 +43,13 @@ function reports::log_test() {
 
 function reports::generate_junit_xml() {
   local output_file="$1"
-  local test_passed
-  test_passed=$(state::get_tests_passed)
-  local tests_skipped
-  tests_skipped=$(state::get_tests_skipped)
-  local tests_incomplete
-  tests_incomplete=$(state::get_tests_incomplete)
-  local tests_snapshot
-  tests_snapshot=$(state::get_tests_snapshot)
-  local tests_failed
-  tests_failed=$(state::get_tests_failed)
-  local time
-  time=$(clock::total_runtime_in_milliseconds)
+
+  local test_passed=$(state::get_tests_passed)
+  local tests_skipped=$(state::get_tests_skipped)
+  local tests_incomplete=$(state::get_tests_incomplete)
+  local tests_snapshot=$(state::get_tests_snapshot)
+  local tests_failed=$(state::get_tests_failed)
+  local time=$(clock::total_runtime_in_milliseconds)
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -85,18 +81,13 @@ function reports::generate_junit_xml() {
 
 function reports::generate_report_html() {
   local output_file="$1"
-  local test_passed
-  test_passed=$(state::get_tests_passed)
-  local tests_skipped
-  tests_skipped=$(state::get_tests_skipped)
-  local tests_incomplete
-  tests_incomplete=$(state::get_tests_incomplete)
-  local tests_snapshot
-  tests_snapshot=$(state::get_tests_snapshot)
-  local tests_failed
-  tests_failed=$(state::get_tests_failed)
-  local time
-  time=$(clock::total_runtime_in_milliseconds)
+
+  local test_passed=$(state::get_tests_passed)
+  local tests_skipped=$(state::get_tests_skipped)
+  local tests_incomplete=$(state::get_tests_incomplete)
+  local tests_snapshot=$(state::get_tests_snapshot)
+  local tests_failed=$(state::get_tests_failed)
+  local time=$(clock::total_runtime_in_milliseconds)
 
   # Temporary file to store test cases by file
   local temp_file="temp_test_cases.txt"
