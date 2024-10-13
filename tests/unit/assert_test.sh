@@ -124,7 +124,7 @@ function test_successful_assert_not_equals() {
 }
 
 function test_unsuccessful_assert_not_equals() {
-  assert_equals\
+  assert_same\
     "$(console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")"\
     "$(assert_not_equals "1" "1")"
 }
