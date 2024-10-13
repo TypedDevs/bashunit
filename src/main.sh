@@ -37,8 +37,10 @@ function main::exec_tests() {
       echo ""
     fi
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
-    printf "%s\n" "Filter:           ${filter:-None}"
-    printf "%s\n" "Total test files: ${#test_files[@]}"
+    printf "%s\n" "Filter:      ${filter:-None}"
+    printf "%s\n" "Total files: ${#test_files[@]}"
+    printf "%s\n" "Test files:"
+    printf -- "- %s\n" "${test_files[@]}"
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '.'
     env::print_verbose
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
