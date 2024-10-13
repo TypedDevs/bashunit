@@ -72,6 +72,10 @@ docker/alpine:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
 		sh -c  "apk add bash make shellcheck git && bash"
 
+docker/ubuntu:
+	@docker run --rm -it -v "$(shell pwd)":/project -w /project ubuntu:latest \
+		sh -c "apt update && apt install -y bash make shellcheck git && bash"
+
 env/example:
 	@echo "Copying variables without the values from .env into .env.example"
 	@sed 's/=.*/=/' .env > .env.example

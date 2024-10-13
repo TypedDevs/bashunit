@@ -3,6 +3,7 @@
 ## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
 
 - Added `-p|--parallel` to enable running tests in parallel
+    - Enabled only in macOS and Ubuntu
 - Added `assert_file_contains` and `assert_file_not_contains`
 - Added `assert_true` and `assert_false`
 - Added `BASHUNIT_DEV_LOG`

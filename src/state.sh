@@ -205,7 +205,7 @@ function state::print_line() {
     *)                char="?" && log "warning" "unknown test type '$type'" ;;
   esac
 
-  if env::is_parallel_run_enabled; then
+  if parallel::is_enabled; then
       printf "%s" "$char"
   else
     if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
