@@ -24,6 +24,7 @@
     - `BASHUNIT_DEV_LOG="dev.log"`
     - `BASHUNIT_LOAD_FILE="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
+- Add `-vvv|--verbose` to display internal details of each test
 - Fixed `-S|--stop-on-failure` behaviour
 - Improved time taken display
 - Improved clean up temporal files and directories

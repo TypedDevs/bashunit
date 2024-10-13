@@ -144,6 +144,23 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
+  local end_time=$(clock::now)
+  local duration_ns=$(math::calculate "($end_time - $start_time) ")
+  local duration=$(math::calculate "$duration_ns / 1000000")
+
+  if env::is_verbose_enabled; then
+    if env::is_simple_output_enabled; then
+      echo ""
+    fi
+
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '='
+    printf "%s\n" "File:     $test_file"
+    printf "%s\n" "Function: $function_name"
+    printf "%s\n" "Duration: $duration ms"
+    printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
+  fi
+
   local subshell_output=$(runner::decode_subshell_output "$test_execution_result")
 
   if [[ -n "$subshell_output" ]]; then
@@ -174,10 +191,6 @@ function runner::run_test() {
   runner::parse_result "$function_name" "$test_execution_result" "$@"
 
   local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
-
-  local end_time=$(clock::now)
-  local duration_ns=$(math::calculate "($end_time - $start_time) ")
-  local duration=$(math::calculate "$duration_ns / 1000000")
 
   if [[ -n $runtime_error ]]; then
     state::add_tests_failed
