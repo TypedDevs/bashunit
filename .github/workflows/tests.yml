@@ -9,7 +9,7 @@ on:
 jobs:
 
   simple-output:
-    name: "On ${{ matrix.os }} - simple & sync"
+    name: "${{ matrix.os }} - simple & sync"
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
@@ -28,7 +28,7 @@ jobs:
           ./bashunit --simple --no-parallel tests/
 
   simple-output-parallel:
-    name: "On ${{ matrix.os }} - simple & parallel"
+    name: "${{ matrix.os }} - simple & parallel"
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
@@ -47,7 +47,7 @@ jobs:
           ./bashunit --simple --parallel tests/
 
   detailed-output-parallel:
-    name: "On ${{ matrix.os }} - detailed & parallel"
+    name: "${{ matrix.os }} - detailed & parallel"
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
@@ -66,7 +66,7 @@ jobs:
           ./bashunit --detailed --parallel tests/
 
   windows:
-    name: "On windows (${{ matrix.test_chunk }})"
+    name: "windows (${{ matrix.test_chunk }})"
     timeout-minutes: 10
     runs-on: windows-latest
     strategy:
@@ -85,7 +85,7 @@ jobs:
           ./bashunit tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
-    name: "On alpine-latest"
+    name: "alpine-latest"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

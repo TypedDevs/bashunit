@@ -83,3 +83,8 @@ function parallel::reset() {
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
   [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
+
+function parallel::is_enabled() {
+  [[ $(env::is_parallel_run_enabled) \
+    && ($(check_os::is_macos) || $(check_os::is_ubuntu)) ]]
+}

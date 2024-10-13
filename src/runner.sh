@@ -13,7 +13,7 @@ function runner::load_test_files() {
     # shellcheck source=/dev/null
     source "$test_file"
     runner::run_set_up_before_script
-    if env::is_parallel_run_enabled; then
+    if parallel::is_enabled; then
       runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
     else
       runner::call_test_functions "$test_file" "$filter"
@@ -22,7 +22,7 @@ function runner::load_test_files() {
     runner::clean_set_up_and_tear_down_after_script
   done
 
-  if env::is_parallel_run_enabled; then
+  if parallel::is_enabled; then
     wait
     runner::spinner &
     local spinner_pid=$!
@@ -74,14 +74,14 @@ function runner::call_test_functions() {
     return
   fi
 
-  if ! env::is_simple_output_enabled && ! env::is_parallel_run_enabled; then
+  if ! env::is_simple_output_enabled && ! parallel::is_enabled; then
     echo "Running $script"
   fi
 
   helper::check_duplicate_functions "$script" || true
 
   for function_name in "${functions_to_run[@]}"; do
-    if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+    if parallel::is_enabled && parallel::must_stop_on_failure; then
       break
     fi
 
@@ -193,7 +193,7 @@ function runner::run_test() {
     runner::write_failure_result_output "$test_file" "$subshell_output"
 
     if env::is_stop_on_failure_enabled; then
-      if env::is_parallel_run_enabled; then
+      if parallel::is_enabled; then
         parallel::mark_stop_on_failure
       else
         exit "$EXIT_CODE_STOP_ON_FAILURE"
@@ -249,7 +249,7 @@ function runner::parse_result() {
   shift
   local args=("$@")
 
-  if env::is_parallel_run_enabled; then
+  if parallel::is_enabled; then
     runner::parse_result_parallel "$function_name" "$execution_result" "${args[@]}"
   else
     runner::parse_result_sync "$function_name" "$execution_result"
