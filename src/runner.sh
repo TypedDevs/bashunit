@@ -349,7 +349,12 @@ function runner::write_failure_result_output() {
   local test_file=$1
   local error_msg=$2
 
-  echo -e "$(state::get_tests_failed)) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+  local test_nr="*"
+  if ! parallel::is_enabled; then
+    test_nr=$(state::get_tests_failed)
+  fi
+
+  echo -e "$test_nr) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
 function runner::run_set_up() {
