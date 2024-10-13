@@ -140,7 +140,7 @@ function assert_not_empty() {
   state::add_assertions_passed
 }
 
-function assert_not_equals() {
+function assert_not_same() {
   local expected="$1"
   local actual="$2"
 
