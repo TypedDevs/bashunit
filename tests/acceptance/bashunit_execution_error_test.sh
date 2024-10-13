@@ -36,7 +36,7 @@ function test_bashunit_when_a_execution_error() {
   }
 
   fixture_start=$(
-    printf "Running ./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh"
+    printf "${color_bold}%s${color_default}\n" "Running ./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh"
     format_fail_title "✗ Failed" ": Error"
     format_expect_title "Expected"
     format_expect_value "'127'"
@@ -53,7 +53,9 @@ function test_bashunit_when_a_execution_error() {
   todo "Add snapshots with regex to assert this test (part of the error message is localized)"
   todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"
 
-  assert_contains "$fixture_start" "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
-  assert_contains "$fixture_end" "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  # shellcheck disable=SC2155
+  local actual="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_contains "$fixture_start" "$actual"
+  assert_contains "$fixture_end" "$actual"
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }

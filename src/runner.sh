@@ -108,12 +108,18 @@ function runner::call_test_functions() {
 }
 
 function runner::render_running_file_header() {
-  if ! env::is_simple_output_enabled && ! parallel::is_enabled; then
-    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running: $script"
+  if parallel::is_enabled; then
+    return
   fi
 
-  if env::is_simple_output_enabled && env::is_verbose_enabled; then
-    printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running: $script"
+  if ! env::is_simple_output_enabled; then
+    if env::is_verbose_enabled; then
+      printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+    else
+      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+    fi
+  elif env::is_verbose_enabled; then
+    printf "\n\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
   fi
 }
 
