@@ -224,6 +224,20 @@ log "warning" "different log level messages!"
 ```
 :::
 
+## Verbose
+
+> `BASHUNIT_VERBOSE=bool`
+
+Display internal details for each test.
+
+Similarly, you can use the command line option for this: [command line](/command-line#verbose).
+
+::: code-group
+```bash [Example]
+BASHUNIT_VERBOSE=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>

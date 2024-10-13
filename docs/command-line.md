@@ -189,6 +189,21 @@ to make this behavior permanent.
 ```
 :::
 
+## Verbose
+
+> `bashunit -vvv|--verbose`
+
+Display internal details for each test
+
+You can use `BASHUNIT_VERBOSE` option in your [configuration](/configuration#verbose)
+to make this behavior permanent.
+
+::: code-group
+```bash [Example]
+./bashunit --verbose
+```
+:::
+
 ## Version
 
 > `bashunit --version`

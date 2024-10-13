@@ -35,6 +35,9 @@ Options:
     Print all executed shell commands to the terminal.
     If a file-path is passed, it will redirect the output to that file.
 
+  -vvv, --verbose
+    Display internal details for each test.
+
   --version
     Displays the current version of bashunit.
 
