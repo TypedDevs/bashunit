@@ -50,6 +50,10 @@ function cleanup_temp_files() {
 
 # shellcheck disable=SC2145
 function log() {
+  if ! env::is_dev_mode_enabled; then
+    return
+  fi
+
   local level="$1"
   shift
 
