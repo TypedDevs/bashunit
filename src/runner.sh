@@ -144,6 +144,16 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
+  if env::is_verbose_enabled; then
+    if env::is_simple_output_enabled; then
+      echo ""
+    fi
+
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '='
+    printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
+  fi
+
   local subshell_output=$(runner::decode_subshell_output "$test_execution_result")
 
   if [[ -n "$subshell_output" ]]; then
