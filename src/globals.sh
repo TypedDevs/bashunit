@@ -29,16 +29,12 @@ function is_command_available() {
 
 function random_str() {
   local length=${1:-6}
-
-  if command -v openssl >/dev/null 2>&1; then
-    openssl rand -base64 "$length" | tr -dc A-Za-z0-9 | head -c "$length"
-  elif command -v uuidgen >/dev/null 2>&1; then
-    uuidgen | tr -dc A-Za-z0-9 | head -c "$length"
-  elif [[ -r /dev/urandom ]]; then
-    LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c "$length"
-  else
-    date +%s%N$$ | tr -dc A-Za-z0-9 | head -c "$length"
-  fi
+  local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  local str=''
+  for (( i=0; i<length; i++ )); do
+    str+="${chars:RANDOM%${#chars}:1}"
+  done
+  echo "$str"
 }
 
 function temp_file() {
