@@ -31,6 +31,21 @@ function main::exec_tests() {
   fi
 
   console_header::print_version_with_env "$filter" "${test_files[@]}"
+
+  if env::is_verbose_enabled; then
+    if env::is_simple_output_enabled; then
+      echo ""
+    fi
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
+    printf "%s\n" "Filter:      ${filter:-None}"
+    printf "%s\n" "Total files: ${#test_files[@]}"
+    printf "%s\n" "Test files:"
+    printf -- "- %s\n" "${test_files[@]}"
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '.'
+    env::print_verbose
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
+  fi
+
   runner::load_test_files "$filter" "${test_files[@]}"
 
   if parallel::is_enabled; then

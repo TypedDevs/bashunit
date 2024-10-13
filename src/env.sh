@@ -84,6 +84,36 @@ function env::find_terminal_width() {
   echo "${cols:-100}"
 }
 
+function env::print_verbose() {
+  local keys=(
+    "BASHUNIT_DEFAULT_PATH"
+    "BASHUNIT_DEV_LOG"
+    "BASHUNIT_LOAD_FILE"
+    "BASHUNIT_LOG_JUNIT"
+    "BASHUNIT_REPORT_HTML"
+    "BASHUNIT_PARALLEL_RUN"
+    "BASHUNIT_SHOW_HEADER"
+    "BASHUNIT_HEADER_ASCII_ART"
+    "BASHUNIT_SIMPLE_OUTPUT"
+    "BASHUNIT_STOP_ON_FAILURE"
+    "BASHUNIT_SHOW_EXECUTION_TIME"
+    "BASHUNIT_DEV_MODE"
+    "BASHUNIT_VERBOSE"
+  )
+
+  local max_length=0
+
+  for key in "${keys[@]}"; do
+    if (( ${#key} > max_length )); then
+      max_length=${#key}
+    fi
+  done
+
+  for key in "${keys[@]}"; do
+    printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
+  done
+}
+
 EXIT_CODE_STOP_ON_FAILURE=4
 TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel/${_OS:-Unknown}"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
