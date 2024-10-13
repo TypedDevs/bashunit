@@ -30,6 +30,7 @@
 - Removed git dependency for stable installations
 - Rename option `--verbose` to `--detailed`
     - which is the default display behaviour, the opposite as `--simple`
+- Added `assert_not_same`
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
