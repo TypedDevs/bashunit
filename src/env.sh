@@ -85,19 +85,33 @@ function env::find_terminal_width() {
 }
 
 function env::print_verbose() {
-  printf "%s\n" "BASHUNIT_DEFAULT_PATH: $BASHUNIT_DEFAULT_PATH"
-  printf "%s\n" "BASHUNIT_DEV_LOG: $BASHUNIT_DEV_LOG"
-  printf "%s\n" "BASHUNIT_LOAD_FILE: $BASHUNIT_LOAD_FILE"
-  printf "%s\n" "BASHUNIT_LOG_JUNIT: $BASHUNIT_LOG_JUNIT"
-  printf "%s\n" "BASHUNIT_REPORT_HTML: $BASHUNIT_REPORT_HTML"
-  printf "%s\n" "BASHUNIT_PARALLEL_RUN: $BASHUNIT_PARALLEL_RUN"
-  printf "%s\n" "BASHUNIT_SHOW_HEADER: $BASHUNIT_SHOW_HEADER"
-  printf "%s\n" "BASHUNIT_HEADER_ASCII_ART: $BASHUNIT_HEADER_ASCII_ART"
-  printf "%s\n" "BASHUNIT_SIMPLE_OUTPUT: $BASHUNIT_SIMPLE_OUTPUT"
-  printf "%s\n" "BASHUNIT_STOP_ON_FAILURE: $BASHUNIT_STOP_ON_FAILURE"
-  printf "%s\n" "BASHUNIT_SHOW_EXECUTION_TIME: $BASHUNIT_SHOW_EXECUTION_TIME"
-  printf "%s\n" "BASHUNIT_DEV_MODE: $BASHUNIT_DEV_MODE"
-  printf "%s\n" "BASHUNIT_VERBOSE: $BASHUNIT_VERBOSE"
+  local keys=(
+    "BASHUNIT_DEFAULT_PATH"
+    "BASHUNIT_DEV_LOG"
+    "BASHUNIT_LOAD_FILE"
+    "BASHUNIT_LOG_JUNIT"
+    "BASHUNIT_REPORT_HTML"
+    "BASHUNIT_PARALLEL_RUN"
+    "BASHUNIT_SHOW_HEADER"
+    "BASHUNIT_HEADER_ASCII_ART"
+    "BASHUNIT_SIMPLE_OUTPUT"
+    "BASHUNIT_STOP_ON_FAILURE"
+    "BASHUNIT_SHOW_EXECUTION_TIME"
+    "BASHUNIT_DEV_MODE"
+    "BASHUNIT_VERBOSE"
+  )
+
+  local max_length=0
+
+  for key in "${keys[@]}"; do
+    if (( ${#key} > max_length )); then
+      max_length=${#key}
+    fi
+  done
+
+  for key in "${keys[@]}"; do
+    printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
+  done
 }
 
 EXIT_CODE_STOP_ON_FAILURE=4
