@@ -83,6 +83,9 @@ while [[ $# -gt 0 ]]; do
       export BASHUNIT_REPORT_HTML="$2";
       shift
       ;;
+    -vvv|--verbose)
+      export BASHUNIT_VERBOSE=true
+      ;;
     -v|--version)
       console_header::print_version
       trap '' EXIT && exit 0
