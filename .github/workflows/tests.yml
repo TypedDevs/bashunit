@@ -7,9 +7,8 @@ on:
       - main
 
 jobs:
-
-  simple-output:
-    name: "${{ matrix.os }} - simple & sync"
+  ubuntu-macos:
+    name: "On ${{ matrix.os }}"
     timeout-minutes: 10
     runs-on: ${{ matrix.os }}
     strategy:
@@ -24,49 +23,10 @@ jobs:
           fetch-depth: 1
 
       - name: Run Tests
-        run: |
-          ./bashunit --simple --no-parallel tests/
-
-  simple-output-parallel:
-    name: "${{ matrix.os }} - simple & parallel"
-    timeout-minutes: 10
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Tests
-        run: |
-          ./bashunit --simple --parallel tests/
-
-  detailed-output-parallel:
-    name: "${{ matrix.os }} - detailed & parallel"
-    timeout-minutes: 10
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: Run Tests
-        run: |
-          ./bashunit --detailed --parallel tests/
+        run: make test
 
   windows:
-    name: "windows (${{ matrix.test_chunk }})"
+    name: "On windows (${{ matrix.test_chunk }})"
     timeout-minutes: 10
     runs-on: windows-latest
     strategy:
@@ -85,7 +45,7 @@ jobs:
           ./bashunit tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
-    name: "alpine-latest"
+    name: "On alpine-latest"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -101,3 +61,42 @@ jobs:
             adduser -D builder && \
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
+
+  simple-output:
+    name: "Simple output"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --simple tests/
+
+  simple-output-parallel:
+    name: "Simple output in parallel"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --parallel --simple tests/
+
+  extended-output-parallel:
+    name: "Extended output in parallel"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          ./bashunit --parallel tests/
