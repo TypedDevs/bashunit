@@ -156,7 +156,7 @@ function runner::run_test() {
     subshell_output=$line
   fi
 
-  local runtime_output="${test_execution_result%%##TEST_ID=*}"
+  local runtime_output="${test_execution_result%%##ASSERTIONS_=*}"
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \
@@ -281,14 +281,7 @@ function runner::parse_result_parallel() {
     count=$((count + 1))
   done
 
-  if env::is_dev_mode_enabled; then
-    local test_id=$(\
-      echo "$execution_result" |\
-      tail -n 1 |\
-      sed -E -e 's/.*##TEST_ID=([a-zA-Z0-9]*)##.*/\1/g'\
-    )
-    log "debug" "[PARA] test_id:$test_id" "function_name:$function_name" "execution_result:$execution_result"
-  fi
+  log "debug" "[PARA]" "function_name:$function_name" "execution_result:$execution_result"
 
   runner::parse_result_sync "$function_name" "$execution_result"
 
@@ -329,14 +322,7 @@ function runner::parse_result_sync() {
     sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
   )
 
-  if env::is_dev_mode_enabled; then
-    local test_id=$(\
-      echo "$execution_result" |\
-      tail -n 1 |\
-      sed -E -e 's/.*##TEST_ID=([a-zA-Z0-9]*)##.*/\1/g'\
-    )
-    log "debug" "[SYNC] test_id:$test_id" "function_name:$function_name" "execution_result:$execution_result"
-  fi
+  log "debug" "[SYNC]" "function_name:$function_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true

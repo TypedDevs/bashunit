@@ -249,8 +249,7 @@ function test_initialize_assertions_count() {
   )
 
   assert_same\
-    "##TEST_ID=abc123\
-##ASSERTIONS_FAILED=0\
+    "##ASSERTIONS_FAILED=0\
 ##ASSERTIONS_PASSED=0\
 ##ASSERTIONS_SKIPPED=0\
 ##ASSERTIONS_INCOMPLETE=0\
@@ -277,8 +276,7 @@ function test_export_assertions_count() {
   )
 
   assert_same\
-    "##TEST_ID=abc123\
-##ASSERTIONS_FAILED=5\
+    "##ASSERTIONS_FAILED=5\
 ##ASSERTIONS_PASSED=10\
 ##ASSERTIONS_SKIPPED=42\
 ##ASSERTIONS_INCOMPLETE=12\
@@ -288,8 +286,7 @@ function test_export_assertions_count() {
 }
 
 function test_calculate_total_assertions() {
-  local input="##TEST_ID=abc123\
-  ##ASSERTIONS_FAILED=1\
+  local input="##ASSERTIONS_FAILED=1\
   ##ASSERTIONS_PASSED=2\
   ##ASSERTIONS_SKIPPED=3\
   ##ASSERTIONS_INCOMPLETE=4\

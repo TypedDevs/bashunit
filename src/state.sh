@@ -149,11 +149,7 @@ function state::export_subshell_context() {
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  local test_id
-  test_id=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
-
   cat <<EOF
-##TEST_ID=$test_id\
 ##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
