@@ -119,6 +119,25 @@ function test_unsuccessful_assert_not_same() {
     "$(assert_not_same "1" "1")"
 }
 
+function test_successful_assert_not_equals() {
+  assert_empty "$(assert_not_equals "1" "2")"
+}
+
+function test_unsuccessful_assert_not_equals() {
+  assert_equals\
+    "$(console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")"\
+    "$(assert_not_equals "1" "1")"
+}
+
+function test_unsuccessful_assert_not_equals_with_special_chars() {
+  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+  local str2="✗ Failed foo"
+
+  assert_equals\
+    "$(console_results::print_failed_test "Unsuccessful assert not equals with special chars" "$str1" "but got " "$str2")"\
+    "$(assert_not_equals "$str1" "$str2")"
+}
+
 function test_successful_assert_contains_ignore_case() {
   assert_empty "$(assert_contains_ignore_case "Linux" "GNU/LINUX")"
 }

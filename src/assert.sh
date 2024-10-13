@@ -112,6 +112,31 @@ function assert_equals() {
   state::add_assertions_passed
 }
 
+function assert_not_equals() {
+  local expected="$1"
+  local actual="$2"
+
+  # Remove ANSI escape sequences (color codes)
+  local actual_cleaned
+  actual_cleaned=$(echo -e "$actual" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
+  local expected_cleaned
+  expected_cleaned=$(echo -e "$expected" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
+
+  # Remove all control characters and whitespace (optional, depending on your needs)
+  actual_cleaned=$(echo "$actual_cleaned" | tr -d '[:cntrl:]')
+  expected_cleaned=$(echo "$expected_cleaned" | tr -d '[:cntrl:]')
+
+  if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
 function assert_empty() {
   local expected="$1"
 
