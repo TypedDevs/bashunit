@@ -74,10 +74,7 @@ function runner::call_test_functions() {
     return
   fi
 
-  if ! env::is_simple_output_enabled && ! parallel::is_enabled; then
-    echo "Running $script"
-  fi
-
+  runner::render_running_file_header
   helper::check_duplicate_functions "$script" || true
 
   for function_name in "${functions_to_run[@]}"; do
@@ -108,6 +105,16 @@ function runner::call_test_functions() {
     done
     unset function_name
   done
+}
+
+function runner::render_running_file_header() {
+  if ! env::is_simple_output_enabled && ! parallel::is_enabled; then
+    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running: $script"
+  fi
+
+  if env::is_simple_output_enabled && env::is_verbose_enabled; then
+    printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running: $script"
+  fi
 }
 
 function runner::run_test() {
