@@ -134,7 +134,9 @@ function test_unsuccessful_assert_not_equals_with_special_chars() {
   local str2="✗ Failed foo"
 
   assert_equals\
-    "$(console_results::print_failed_test "Unsuccessful assert not equals with special chars" "$str1" "but got " "$str2")"\
+    "$(console_results::print_failed_test \
+      "Unsuccessful assert not equals with special chars" \
+      "$str1" "but got " "$str2")"\
     "$(assert_not_equals "$str1" "$str2")"
 }
 
