@@ -188,7 +188,7 @@ function runner::run_test() {
     subshell_output=$line
   fi
 
-  local runtime_output="${test_execution_result%%##ASSERTIONS_=*}"
+  local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \
