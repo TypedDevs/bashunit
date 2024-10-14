@@ -1,4 +1,4 @@
-Running ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh
+[1mRunning ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh[0m
 [32m✓ Passed[0m: Success
 [31m✗ Failed[0m: Fail
     [2mExpected[0m [1m'to be empty'[0m

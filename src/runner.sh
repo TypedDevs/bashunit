@@ -74,10 +74,7 @@ function runner::call_test_functions() {
     return
   fi
 
-  if ! env::is_simple_output_enabled && ! parallel::is_enabled; then
-    echo "Running $script"
-  fi
-
+  runner::render_running_file_header
   helper::check_duplicate_functions "$script" || true
 
   for function_name in "${functions_to_run[@]}"; do
@@ -108,6 +105,22 @@ function runner::call_test_functions() {
     done
     unset function_name
   done
+}
+
+function runner::render_running_file_header() {
+  if parallel::is_enabled; then
+    return
+  fi
+
+  if ! env::is_simple_output_enabled; then
+    if env::is_verbose_enabled; then
+      printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+    else
+      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+    fi
+  elif env::is_verbose_enabled; then
+    printf "\n\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
+  fi
 }
 
 function runner::run_test() {
@@ -157,6 +170,8 @@ function runner::run_test() {
     printf "%s\n" "File:     $test_file"
     printf "%s\n" "Function: $function_name"
     printf "%s\n" "Duration: $duration ms"
+    local raw_text=${test_execution_result%%##ASSERTIONS_*}
+    [[ -n $raw_text ]] && printf "%s" "Raw text: ${test_execution_result%%##ASSERTIONS_*}"
     printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
   fi
@@ -173,7 +188,7 @@ function runner::run_test() {
     subshell_output=$line
   fi
 
-  local runtime_output="${test_execution_result%%##ASSERTIONS_=*}"
+  local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
 
   local runtime_error=""
   for error in "command not found" "unbound variable" "permission denied" \
