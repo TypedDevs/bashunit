@@ -170,6 +170,8 @@ function runner::run_test() {
     printf "%s\n" "File:     $test_file"
     printf "%s\n" "Function: $function_name"
     printf "%s\n" "Duration: $duration ms"
+    local raw_text=${test_execution_result%%##ASSERTIONS_*}
+    [[ -n $raw_text ]] && printf "%s" "Raw text: ${test_execution_result%%##ASSERTIONS_*}"
     printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
   fi
