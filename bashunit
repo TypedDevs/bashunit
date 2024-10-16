@@ -70,7 +70,7 @@ while [[ $# -gt 0 ]]; do
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
-    -e|--env|--load)
+    -e|--env|--boot)
       # shellcheck disable=SC1090
       source "$2"
       shift
@@ -108,7 +108,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # shellcheck disable=SC1090
-[[ -f "$BASHUNIT_LOAD_FILE" ]] && source "$BASHUNIT_LOAD_FILE"
+[[ -f "$BASHUNIT_BOOTSTRAP" ]] && source "$BASHUNIT_BOOTSTRAP"
 
 set +eu
 
