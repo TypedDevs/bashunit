@@ -45,15 +45,15 @@ Once **bashunit** is installed, you're ready to get started.
 
 4.  If everything works correctly, you should see an output similar to the following:
     ```-vue
-    bashunit - {{ pkg.version }} | Total tests: 1
-    Running local/example_test.sh
-    ✓ Passed: Bashunit is working
+    bashunit - {{ pkg.version }} | Tests: ~1
+    Running tests/example_test.sh
+    ✓ Passed: Bashunit is working                                         16 ms
 
     Tests:      1 passed, 1 total
     Assertions: 1 passed, 1 total
 
     All tests passed
-    Time taken: 100 ms
+    Time taken: 90 ms
     ```
 
 5.  Now you can start testing the functionalities of your own Bash scripts.
