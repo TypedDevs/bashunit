@@ -60,9 +60,8 @@ Once **bashunit** is installed, you're ready to get started.
 
 ## Next steps
 
-Dive deeper into the documentation to discover the options provided by [test files](/test-files),
-[data providers](/data-providers), [test doubles](test-doubles) and [assertions](assertions),
-among many other features.
+Dive deeper into the documentation to discover the options provided by [assertions](assertions),
+[snapshots](snapshots), [test files](/test-files), [data providers](/data-providers) and [test doubles](test-doubles) among many other features.
 
 <script setup>
 import pkg from '../package.json'
