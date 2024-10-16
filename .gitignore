@@ -17,5 +17,6 @@ log-junit.xml
 report.html
 
 # internal
+src/dev/
 local/
 dev.log

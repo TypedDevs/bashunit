@@ -8,7 +8,7 @@ declare -r BASHUNIT_VERSION="0.17.0"
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
-source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
+source "$BASHUNIT_ROOT_DIR/src/dev/dumper.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
 source "$BASHUNIT_ROOT_DIR/src/globals.sh"

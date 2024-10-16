@@ -1,5 +1,7 @@
 ## 📚 Description
 
+<!-- {{TICKET_LINK}} -->
+
 Replace this text with a short description of your feature/bugfix.
 
 ## 🔖 Changes
