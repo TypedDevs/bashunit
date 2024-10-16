@@ -76,15 +76,11 @@ docker/ubuntu:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project ubuntu:latest \
 		sh -c "apt update && apt install -y bash make shellcheck git && bash"
 
-env/example:
-	@echo "Copying variables without the values from .env into .env.example"
-	@sed 's/=.*/=/' .env > .env.example
-
 pre_commit/install:
 	@echo "Installing pre-commit hook"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) $(GIT_DIR)/hooks/
 
-pre_commit/run: test sa lint env/example
+pre_commit/run: test sa lint
 
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
