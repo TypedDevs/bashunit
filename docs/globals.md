@@ -1,6 +1,6 @@
 # Globals
 
-You can use this list of global/common functions that exists to primarily to improve your developer experience.
+You can use this list of global functions that exists to primarily to improve your developer experience.
 
 > Using the existing tests as documentation.
 
@@ -77,7 +77,7 @@ function test_globals_temp_dir() {
 
 Write into the `BASHUNIT_DEV_LOG` a log message.
 
-> See: [Log path](/configuration#log-path)
+> See: [Dev log](/configuration#dev-log)
 
 ```bash
 log "hello" "world" # default level: info
