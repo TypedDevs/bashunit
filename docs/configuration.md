@@ -205,7 +205,7 @@ BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
-## Log path
+## Dev log
 
 > `BASHUNIT_DEV_LOG=file`
 
@@ -213,7 +213,7 @@ BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 
 ::: code-group
 ```bash [Setup]
-BASHUNIT_DEV_LOG="out.log"
+BASHUNIT_DEV_LOG="dev.log"
 ```
 ```bash [Usage]
 log "I am tracing something..."
