@@ -15,6 +15,5 @@ This is a guide to know the steps to create a new release.
     1. `bin/checksum`
     1. Keep the same name
 1. Commit and push
-    1. It is OK that `tests/acceptance/bashunit_upgrade_test.sh` fails
 1. Rebase `latest` branch from the newly created tag and push
     1. This will trigger "build and deploy" the docs
