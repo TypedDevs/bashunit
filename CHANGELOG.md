@@ -21,7 +21,7 @@
     - log
 - Add default env values:
     - `BASHUNIT_DEFAULT_PATH="tests"`
-    - `BASHUNIT_LOAD_FILE="tests/bootstrap.sh"`
+    - `BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
 - Add `-vvv|--verbose` to display internal details of each test
 - Fixed `-S|--stop-on-failure` behaviour
@@ -43,7 +43,7 @@
 - Added failing tests after running the entire suite
 - Improved runtime errors handling
 - Simplified total tests display on the header
-- Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
+- Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_BOOTSTRAP`
 - Better handler runtime errors
 - Display failing tests after running the entire suite
 - Added defer expressions with `eval` when using standalone assertions

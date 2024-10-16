@@ -10,7 +10,7 @@ Options:
   -a, --assert <function ...args>
     Run a core assert function standalone without a test context.
 
-  -e, --env, --load <file-path>
+  -e, --env, --boot <file-path>
     Load a custom file, overriding the existing .env variables or loading a file with global functions.
 
   -f, --filter <filter>

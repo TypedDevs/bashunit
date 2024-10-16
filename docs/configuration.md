@@ -183,9 +183,9 @@ BASHUNIT_REPORT_HTML=report.html
 ```
 :::
 
-## Load file
+## Bootstrap
 
-> `BASHUNIT_LOAD_FILE=file`
+> `BASHUNIT_BOOTSTRAP=file`
 
 Specifies an additional file to be loaded for all tests cases.
 Useful to set up global variables or functions accessible in all your tests.
@@ -195,10 +195,13 @@ Similarly, you can use load an additional file via the [command line](/command-l
 ::: code-group
 ```bash [Example]
 # a simple .env file
-BASHUNIT_LOAD_FILE=".env.tests"
+BASHUNIT_BOOTSTRAP=".env.tests"
 
 # or a complete script file
-BASHUNIT_LOAD_FILE="tests/globals.sh"
+BASHUNIT_BOOTSTRAP="tests/globals.sh"
+
+# Default value
+BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
