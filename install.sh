@@ -3,7 +3,7 @@
 # shellcheck disable=SC2164
 
 function is_git_installed() {
-   command -v git > /dev/null 2>&1
+  command -v git > /dev/null 2>&1
 }
 
 function get_latest_tag() {
