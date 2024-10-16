@@ -8,8 +8,8 @@ set -o allexport
 set +o allexport
 
 _DEFAULT_DEFAULT_PATH="tests"
-_DEFAULT_DEV_LOG="dev.log"
 _DEFAULT_LOAD_FILE="tests/bootstrap.sh"
+_DEFAULT_DEV_LOG=""
 _DEFAULT_LOG_JUNIT=""
 _DEFAULT_REPORT_HTML=""
 

@@ -21,7 +21,6 @@
     - log
 - Add default env values:
     - `BASHUNIT_DEFAULT_PATH="tests"`
-    - `BASHUNIT_DEV_LOG="dev.log"`
     - `BASHUNIT_LOAD_FILE="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
 - Add `-vvv|--verbose` to display internal details of each test
