@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+function tear_down_after_script() {
+  export BASHUNIT_DEV_LOG=""
+}
+
 function set_up() {
   BASHUNIT_DEV_LOG=$(temp_file)
   export BASHUNIT_DEV_LOG
@@ -8,14 +12,6 @@ function set_up() {
 
 function tear_down() {
   rm "$BASHUNIT_DEV_LOG"
-}
-
-function set_up_before_script() {
-  export BASHUNIT_DEV_MODE=true
-}
-
-function tear_down_after_script() {
-  export BASHUNIT_DEV_MODE=$_DEFAULT_DEV_MODE
 }
 
 function test_globals_current_dir() {

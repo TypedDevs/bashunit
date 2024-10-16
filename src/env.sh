@@ -26,7 +26,6 @@ _DEFAULT_HEADER_ASCII_ART="false"
 _DEFAULT_SIMPLE_OUTPUT="false"
 _DEFAULT_STOP_ON_FAILURE="false"
 _DEFAULT_SHOW_EXECUTION_TIME="true"
-_DEFAULT_DEV_MODE="false"
 _DEFAULT_VERBOSE="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_DEFAULT_PARALLEL_RUN}}"
@@ -35,7 +34,6 @@ _DEFAULT_VERBOSE="false"
 : "${BASHUNIT_SIMPLE_OUTPUT:=${SIMPLE_OUTPUT:=$_DEFAULT_SIMPLE_OUTPUT}}"
 : "${BASHUNIT_STOP_ON_FAILURE:=${STOP_ON_FAILURE:=$_DEFAULT_STOP_ON_FAILURE}}"
 : "${BASHUNIT_SHOW_EXECUTION_TIME:=${SHOW_EXECUTION_TIME:=$_DEFAULT_SHOW_EXECUTION_TIME}}"
-: "${BASHUNIT_DEV_MODE:=${DEV_MODE:=$_DEFAULT_DEV_MODE}}"
 : "${BASHUNIT_VERBOSE:=${VERBOSE:=$_DEFAULT_VERBOSE}}"
 
 function env::is_parallel_run_enabled() {
@@ -63,7 +61,7 @@ function env::is_show_execution_time_enabled() {
 }
 
 function env::is_dev_mode_enabled() {
-  [[ "$BASHUNIT_DEV_MODE" == "true" ]]
+  [[ -f "$BASHUNIT_DEV_LOG" ]]
 }
 
 function env::is_verbose_enabled() {
