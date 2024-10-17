@@ -67,6 +67,7 @@ function test_unsuccessful_spy_called_times() {
 }
 
 function test_successful_spy_with_source_function() {
+    # shellcheck source=/dev/null
     source ./fixtures/fake_function_to_spy.sh
     spy function_to_be_spied_on
 
@@ -76,6 +77,7 @@ function test_successful_spy_with_source_function() {
 }
 
 function test_unsuccessful_spy_with_source_function_have_been_called() {
+  # shellcheck source=/dev/null
   source ./fixtures/fake_function_to_spy.sh
   spy function_to_be_spied_on
 
@@ -89,6 +91,7 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
 
 
 function test_successful_spy_called_times_with_source() {
+  # shellcheck source=/dev/null
   source ./fixtures/fake_function_to_spy.sh
   spy function_to_be_spied_on
 
