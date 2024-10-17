@@ -7,8 +7,6 @@ function test_mock_ps_when_executing_a_script() {
 }
 
 function test_mock_ps_when_executing_a_sourced_function() {
-  skip "The mock is not been able to cat the output of the cat"
-  return
   source ./tests/functional/fixtures/doubles_function.sh
   mock ps cat ./tests/functional/fixtures/doubles_ps_output
 
