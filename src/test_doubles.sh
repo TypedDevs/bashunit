@@ -96,3 +96,32 @@ function assert_have_been_called_times() {
 
   state::add_assertions_passed
 }
+
+
+# Spy function that wraps around a target function and logs calls
+function spy_on() {
+  local target_function="$1"
+
+  # Ensure the target function exists
+  if ! declare -f "$target_function" > /dev/null; then
+    echo "Function '$target_function' does not exist."
+    return 1
+  fi
+
+  # Create spy variables to track calls and arguments
+  eval "__${target_function}_call_count=0"
+  eval "__${target_function}_args=()"
+
+  # Create a wrapper function to spy on calls
+  eval "
+  ${target_function}() {
+    # Increment the call count
+    __${target_function}_call_count=\$((__${target_function}_call_count + 1))
+
+    # Save the arguments
+    __${target_function}_args+=(\"\$*\")
+
+    # Call the original function
+    $(declare -f "$target_function" | tail -n +2)
+  }"
+}

@@ -65,3 +65,36 @@ function test_unsuccessful_spy_called_times() {
     "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
     "$(assert_have_been_called_times 1 ps)"
 }
+
+function test_successful_spy_with_source_function() {
+    source ./fixtures/fake_function_to_spy.sh
+    spy function_to_be_spied_on
+
+    function_to_be_spied_on
+
+    assert_have_been_called function_to_be_spied_on
+}
+
+function test_unsuccessful_spy_with_source_function_have_been_called() {
+  source ./fixtures/fake_function_to_spy.sh
+  spy function_to_be_spied_on
+
+  function_to_be_spied_on
+  function_to_be_spied_on
+
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful spy with source function have been called" "function_to_be_spied_on" "to has been called" "1 times")"\
+    "$(assert_have_been_called_times 1 function_to_be_spied_on)"
+}
+
+
+function test_successful_spy_called_times_with_source() {
+  source ./fixtures/fake_function_to_spy.sh
+  spy function_to_be_spied_on
+
+  function_to_be_spied_on
+  function_to_be_spied_on
+
+  assert_have_been_called_times 2 function_to_be_spied_on
+}
+
