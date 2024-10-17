@@ -24,7 +24,7 @@ function build_and_install_beta() {
     exit 1
   fi
 
-  git clone --depth 1 --no-tags $BASHUNIT_GIT_REPO temp_bashunit 2>/dev/null
+  git clone --depth 1 --no-tags "$BASHUNIT_GIT_REPO" temp_bashunit 2>/dev/null
   cd temp_bashunit
   ./build.sh >/dev/null
   local latest_commit=$(git rev-parse --short=7 HEAD)
