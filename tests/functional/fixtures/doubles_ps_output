@@ -1,0 +1,8 @@
+CMD                         %MEM
+firefox                      2.0
+Xorg                         1.6
+jetbrains-toolbox            1.3
+vitepress                    1.0
+bashunit                     0.1
+bash                         0.0
+ps                           0.0
