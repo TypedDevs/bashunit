@@ -8,4 +8,14 @@ docs/.vitepress/cache
 docs/.vitepress/dist
 
 # installation
+lib/
 bin/bashunit
+bin/checksum
+
+# logger
+log-junit.xml
+report.html
+
+# internal
+local/
+dev.log

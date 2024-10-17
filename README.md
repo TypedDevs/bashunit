@@ -5,10 +5,10 @@
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/static_analysis.yml/badge.svg" alt="Static analysis">
     </a>
-    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml">
-        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/deploy-docs.yml/badge.svg" alt="Docs deployment">
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/publish-docs.yml">
+        <img src="https://github.com/TypedDevs/bashunit/actions/workflows/publish-docs.yml/badge.svg" alt="Publish Docs">
     </a>
-<a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
+    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
     </a>
     <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">

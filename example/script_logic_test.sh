@@ -6,9 +6,9 @@ function set_up() {
 }
 
 function test_script_123() {
-  assert_equals "expected 123" "$($SCRIPT "123")"
+  assert_same "expected 123" "$($SCRIPT "123")"
 }
 
 function test_script_456() {
-  assert_equals "expected 456" "$($SCRIPT "456")"
+  assert_same "expected 456" "$($SCRIPT "456")"
 }

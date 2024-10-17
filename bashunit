@@ -1,14 +1,23 @@
 #!/bin/bash
+set -euo pipefail
 
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.11.0"
+declare -r BASHUNIT_VERSION="0.18.0"
 
-readonly BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# shellcheck disable=SC2155
+declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
-source "$BASHUNIT_ROOT_DIR/src/default_env_config.sh"
-source "$BASHUNIT_ROOT_DIR/src/env_configuration.sh"
+source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
+source "$BASHUNIT_ROOT_DIR/src/str.sh"
+source "$BASHUNIT_ROOT_DIR/src/globals.sh"
+source "$BASHUNIT_ROOT_DIR/src/dependencies.sh"
+source "$BASHUNIT_ROOT_DIR/src/io.sh"
+source "$BASHUNIT_ROOT_DIR/src/math.sh"
+source "$BASHUNIT_ROOT_DIR/src/parallel.sh"
+source "$BASHUNIT_ROOT_DIR/src/env.sh"
+source "$BASHUNIT_ROOT_DIR/src/clock.sh"
 source "$BASHUNIT_ROOT_DIR/src/state.sh"
 source "$BASHUNIT_ROOT_DIR/src/colors.sh"
 source "$BASHUNIT_ROOT_DIR/src/console_header.sh"
@@ -16,42 +25,68 @@ source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
+source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
+source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-###############
-#### MAIN #####
-###############
-
+_ASSERT_FN=""
 _FILTER=""
-_FILES=()
+_ARGS=()
+
+check_os::init
+clock::init
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
+    -a|--assert)
+      _ASSERT_FN="$2"
+      shift
+      ;;
     -f|--filter)
       _FILTER="$2"
       shift
-      shift
       ;;
     -s|--simple)
-      SIMPLE_OUTPUT=true
-      shift
+      export BASHUNIT_SIMPLE_OUTPUT=true
       ;;
-    -v|--verbose)
-      SIMPLE_OUTPUT=false
-      shift
+    --detailed)
+      export BASHUNIT_SIMPLE_OUTPUT=false
+      ;;
+    --debug)
+      OUTPUT_FILE="${2:-}"
+      if [[ -n $OUTPUT_FILE ]]; then
+        exec > "$OUTPUT_FILE" 2>&1
+      fi
+      set -x
       ;;
     -S|--stop-on-failure)
-      STOP_ON_FAILURE=true
-      shift
+      export BASHUNIT_STOP_ON_FAILURE=true
       ;;
-    -e|--env)
+    -p|--parallel)
+      export BASHUNIT_PARALLEL_RUN=true
+      ;;
+    --no-parallel)
+      export BASHUNIT_PARALLEL_RUN=false
+      ;;
+    -e|--env|--boot)
       # shellcheck disable=SC1090
       source "$2"
       shift
+      ;;
+    -l|--log-junit)
+      export BASHUNIT_LOG_JUNIT="$2";
       shift
       ;;
-    --version)
+    -r|--report-html)
+      export BASHUNIT_REPORT_HTML="$2";
+      shift
+      ;;
+    -vvv|--verbose)
+      export BASHUNIT_VERBOSE=true
+      ;;
+    -v|--version)
       console_header::print_version
       trap '' EXIT && exit 0
       ;;
@@ -59,21 +94,26 @@ while [[ $# -gt 0 ]]; do
       upgrade::upgrade
       trap '' EXIT && exit 0
       ;;
-    --help)
+    -h|--help)
       console_header::print_help
       trap '' EXIT && exit 0
       ;;
     *)
       while IFS='' read -r line; do
-        _FILES+=("$line");
+        _ARGS+=("$line");
       done < <(helper::find_files_recursive "$argument")
-      shift
       ;;
   esac
+  shift
 done
 
-console_header::print_version_with_env
-runner::load_test_files "$_FILTER" "${_FILES[@]}"
-console_results::render_result
+# shellcheck disable=SC1090
+[[ -f "$BASHUNIT_BOOTSTRAP" ]] && source "$BASHUNIT_BOOTSTRAP"
 
-exit 0
+set +eu
+
+if [[ -n "$_ASSERT_FN" ]]; then
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+else
+  main::exec_tests "$_FILTER" "${_ARGS[@]}"
+fi

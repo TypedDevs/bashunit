@@ -67,6 +67,33 @@ this will require to have installed [fswatcher](https://github.com/emcrisostomo/
 make test/watch
 ```
 
+### Testing different OS
+
+- Linux
+    - Ubuntu latest
+    - Alpine latest
+- Windows latest
+- MacOS latest
+
+#### Docker
+
+##### Ubuntu latest
+
+```bash
+docker run --rm -it -v "$(pwd)":/project -w /project ubuntu:latest \
+    sh -c  "apt-get update && \
+            apt-get install -y bash make shellcheck git curl perl && make test"
+```
+
+##### Alpine latest
+
+```bash
+make test/alpine
+# or
+docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
+    sh -c  "apk add bash make shellcheck git && make test"
+```
+
 ## Coding Guidelines
 
 ### ShellCheck
@@ -116,7 +143,8 @@ make pre_commit/install
 [Shell Guide](https://google.github.io/styleguide/shellguide.html#s7.2-variable-names) by Google Conventions.
 
 ### Documentation
-For us the documentation its really important, we are a small group and we want to mantain this project for long, to do that we will need your help
+
+For us the documentation it's really important, we are a small group, and we want to maintain this project for long, to do that we will need your help.
 
 ## ADR
 If you want to change something related to the architecture or apply a change that it's a decision on how the library works please use [ADR](https://adr.github.io/) otherwise we will request you to do so on the PR.

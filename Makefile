@@ -43,7 +43,7 @@ help:
 	@echo "  test                     Run the tests"
 	@echo "  test/list                List all tests under the tests directory"
 	@echo "  test/watch               Automatically run tests every second"
-	@echo "  env/example              Copy variables without the values from .env into .env.example"
+	@echo "  docker/alpine            Run into a Docker Linux/Alpine:latest image"
 	@echo "  pre_commit/install       Install the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit hook runs"
 	@echo "  sa                       Run shellcheck static analysis tool"
@@ -67,21 +67,25 @@ test/watch: $(TEST_SCRIPTS)
 	@./bashunit $(TEST_SCRIPTS)
 	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
 
-env/example:
-	@echo "Copying variables without the values from .env into .env.example"
-	@sed 's/=.*/=/' .env > .env.example
+docker/alpine:
+	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
+		sh -c  "apk add bash make shellcheck git && bash"
+
+docker/ubuntu:
+	@docker run --rm -it -v "$(shell pwd)":/project -w /project ubuntu:latest \
+		sh -c "apt update && apt install -y bash make shellcheck git && bash"
 
 pre_commit/install:
 	@echo "Installing pre-commit hook"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) $(GIT_DIR)/hooks/
 
-pre_commit/run: test sa lint env/example
+pre_commit/run: test sa lint
 
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
-	@shellcheck ./**/*.sh -C && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
+	@find . -name "*.sh" -not -path "./local/*" | xargs shellcheck -xC && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
 
 lint:

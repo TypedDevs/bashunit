@@ -19,9 +19,9 @@ function tear_down_after_script() {
 }
 
 function test_counter_is_incremented_after_setup_before_script_and_setup() {
-  assert_equals "3" "$TEST_COUNTER"
+  assert_same "3" "$TEST_COUNTER"
 }
 
 function test_counter_is_decremented_and_incremented_after_teardown_and_setup() {
-  assert_equals "3" "$TEST_COUNTER"
+  assert_same "3" "$TEST_COUNTER"
 }

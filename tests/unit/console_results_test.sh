@@ -266,46 +266,67 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
 }
 
 function test_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=true
+    BASHUNIT_SHOW_EXECUTION_TIME=true
 
     console_results::render_result
   )
-  assert_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
 }
 
 function test_not_render_execution_time() {
-  if [[ $_OS == "OSX" ]]; then
-    skip "Skipping in OSX"
-    return
-  fi
-
   local render_result
   render_result=$(
     # shellcheck disable=SC2034
-    SHOW_EXECUTION_TIME=false
+    BASHUNIT_SHOW_EXECUTION_TIME=false
 
     console_results::render_result
   )
   assert_not_matches "Time taken" "$render_result"
 }
 
-function test_not_render_execution_time_on_osx() {
+function test_render_execution_time_on_osx_without_perl() {
+  if check_os::is_windows; then
+    skip
+    return
+  fi
+
+  mock_macos
+  mock dependencies::has_perl mock_false
+
+  _START_TIME=1727771758.0664479733
+  EPOCHREALTIME=1727780556.4266040325
+
   local render_result
   render_result=$(
-    _OS='OSX'
+    console_results::render_result
+  )
+
+  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
+}
+
+function test_render_execution_time_on_osx_with_perl() {
+  if check_os::is_windows; then
+    skip
+    return
+  fi
+
+  local render_result
+  mock_macos
+  mock dependencies::has_adjtimex mock_false
+  mock dependencies::has_perl mock_true
+  _START_TIME="1726393394574382186"
+  mock perl echo "1726393394574372186"
+  mock uname echo "Darwin"
+  render_result=$(
+  mock perl echo "1726393394574372186";
 
     console_results::render_result
   )
 
-  assert_not_matches "Time taken: [[:digit:]]+ ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
 }
 
 function test_render_file_with_duplicated_functions_if_found_true() {
@@ -503,20 +524,28 @@ function test_no_tests_found() {
 }
 
 function test_print_successful_test_output_no_args() {
+  original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+
   local test_name="a custom test"
 
-  local actual
-  actual=$(console_results::print_successful_test "$test_name")
+  assert_matches \
+    "✓ Passed.*$test_name.*(12 ms)" \
+    "$(console_results::print_successful_test "$test_name" "12")"
 
-  assert_equals_ignore_colors "✓ Passed: $test_name" "$actual"
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
 
 function test_print_successful_test_output_with_args() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+
   local test_name="a custom test"
   local data="foo"
 
-  local actual
-  actual=$(console_results::print_successful_test "$test_name" "$data")
+  assert_matches \
+    "✓ Passed.*$test_name \($data\).*(12 ms)" \
+    "$(console_results::print_successful_test "$test_name" "12" "$data")"
 
-  assert_equals_ignore_colors "✓ Passed: $test_name ($data)" "$actual"
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }

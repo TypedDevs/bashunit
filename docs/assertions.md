@@ -4,38 +4,106 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
-## assert_equals
-> `assert_equals "expected" "actual"`
+## assert_true
+> `assert_true bool|function|command`
 
-Reports an error if the two variables `expected` and `actual` are not equal.
+Reports an error if the argument result in a truthy value: `true` or `0`.
 
-[assert_not_equals](#assert-not-equals) is the inverse of this assertion and takes the same arguments.
+- [assert_false](#assert-false) is similar but different.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals "foo" "foo"
+  assert_true true
+  assert_true 0
+  assert_true "eval return 0"
+  assert_true mock_true
 }
 
 function test_failure() {
-  assert_equals "foo" "bar"
+  assert_true false
+  assert_true 1
+  assert_true "eval return 1"
+  assert_true mock_false
+}
+```
+```bash [globals.sh]
+function mock_true() {
+  return 0
+}
+function mock_false() {
+  return 1
+}
+:::
+
+## assert_false
+> `assert_false bool|function|command`
+
+Reports an error if the argument result in a falsy value: `false` or `1`.
+
+- [assert_true](#assert-true) is similar but different.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_false false
+  assert_false 1
+  assert_false "eval return 1"
+  assert_false mock_false
+}
+
+function test_failure() {
+  assert_false true
+  assert_false 0
+  assert_false "eval return 0"
+  assert_false mock_true
+}
+```
+```bash [globals.sh]
+function mock_true() {
+  return 0
+}
+function mock_false() {
+  return 1
 }
 ```
 :::
 
-## assert_equals_ignore_colors
-> `assert_equals_ignore_colors "expected" "actual"`
+## assert_same
+> `assert_same "expected" "actual"`
 
-Reports an error if the two variables `expected` and `actual` are not equal ignoring the colors ONLY from `actual`.
+Reports an error if the `expected` and `actual` are not the same - including special chars.
+
+- [assert_not_same](#assert-not-same) is the inverse of this assertion and takes the same arguments.
+- [assert_equals](#assert-equals) is similar but ignoring the special chars.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals_ignore_colors "foo" "\e[31mfoo"
+  assert_same "foo" "foo"
 }
 
 function test_failure() {
-  assert_equals_ignore_colors "\e[31mfoo" "\e[31mfoo"
+  assert_same "foo" "bar"
+}
+```
+:::
+
+## assert_equals
+> `assert_equals "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
+
+- [assert_same](#assert-same) is similar but including special chars.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_equals "foo" "\e[31mfoo"
+}
+
+function test_failure() {
+  assert_equals "\e[31mfoo" "\e[31mfoo"
 }
 ```
 :::
@@ -149,6 +217,27 @@ function test_success() {
 
 function test_failure() {
   assert_string_ends_with "foo" "foobar"
+}
+```
+:::
+
+## assert_line_count
+> `assert_line_count "count" "haystack"`
+
+Reports an error if `haystack` does not contain `count` lines.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local string="this is line one
+this is line two
+this is line three"
+
+  assert_line_count 3 "$string"
+}
+
+function test_failure() {
+  assert_line_count 2 "foobar"
 }
 ```
 :::
@@ -432,6 +521,31 @@ function test_failure() {
 ```
 :::
 
+## assert_file_contains
+> `assert_file_contains "file" "search"`
+
+Reports an error if `file` does not contains the search string.
+
+[assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_contains "$file" "content"
+}
+
+function test_failure() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_contains "$file" "non existing"
+}
+```
+:::
+
 ## assert_is_file
 > `assert_is_file "file"`
 
@@ -598,21 +712,61 @@ function test_failure() {
 ```
 :::
 
-## assert_not_equals
-> `assert_not_equals "expected" "actual"`
+## assert_files_equals
+> `assert_files_equals "expected" "actual"`
 
-Reports an error if the two variables `expected` and `actual` are equal.
+Reports an error if `expected` and `actual` are not equals.
 
-[assert_equals](#assert-equals) is the inverse of this assertion and takes the same arguments.
+[assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_not_equals "foo" "bar"
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "file content" > "$actual"
+
+  assert_files_equals "$expected" "$actual"
 }
 
 function test_failure() {
-  assert_not_equals "foo" "foo"
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "different content" > "$actual"
+
+  assert_files_equals "$expected" "$actual"
+}
+```
+```[Output]
+✓ Passed: Success
+✗ Failed: Failure
+    Expected '/tmp/file1.txt'
+    Compared '/tmp/file2.txt'
+    Diff '@@ -1 +1 @@
+-file content
++different content'
+```
+:::
+
+## assert_not_same
+> `assert_not_same "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are the same value.
+
+[assert_same](#assert-same) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_not_same "foo" "bar"
+}
+
+function test_failure() {
+  assert_not_same "foo" "foo"
 }
 ```
 :::
@@ -762,6 +916,31 @@ function test_failed() {
 ```
 :::
 
+## assert_file_not_contains
+> `assert_file_not_contains "file" "search"`
+
+Reports an error if `file` contains the search string.
+
+[assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_not_contains "$file" "non existing"
+}
+
+function test_failure() {
+  local file="/tmp/file-path.txt"
+  echo -e "original content" > "$file"
+
+  assert_file_not_contains "$file" "content"
+}
+```
+:::
+
 ## assert_directory_not_exists
 > `assert_directory_not_exists "directory"`
 
@@ -853,6 +1032,67 @@ function test_failure() {
   local directory="/tmp"
 
   assert_is_directory_not_writable "$directory"
+}
+```
+:::
+
+
+## assert_files_not_equals
+> `assert_files_not_equals "expected" "actual"`
+
+Reports an error if `expected` and `actual` are not equals.
+
+[assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "different content" > "$actual"
+
+  assert_files_not_equals "$expected" "$actual"
+}
+
+function test_failure() {
+
+  local expected="/tmp/file1.txt"
+  local actual="/tmp/file2.txt"
+
+  echo "file content" > "$expected"
+  echo "file content" > "$actual"
+
+  assert_files_not_equals "$expected" "$actual"
+}
+```
+```[Output]
+✓ Passed: Success
+✗ Failed: Failure
+    Expected '/tmp/file1.txt'
+    Compared '/tmp/file2.txt'
+    Diff 'Files are equals'
+```
+:::
+
+## fail
+> `fail "failure message"`
+
+Unambiguously reports an error message. Useful for reporting specific message
+when testing situations not covered by any `assert_*` functions.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  if [ "$(date +%-H)" -gt 25 ]; then
+    fail "Something is very wrong with your clock"
+  fi
+}
+function test_failure() {
+  if [ "$(date +%-H)" -lt 25 ]; then
+    fail "This test will always fail"
+  fi
 }
 ```
 :::

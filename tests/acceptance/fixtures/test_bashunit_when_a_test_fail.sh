@@ -1,7 +1,7 @@
 #!/bin/bash
 
-function test_assert_equals() {
-  assert_equals 1 1
+function test_assert_same() {
+  assert_same 1 1
 }
 
 function test_assert_contains() {
@@ -10,7 +10,7 @@ function test_assert_contains() {
 }
 
 function test_assert_failing() {
-  assert_equals 1 0
+  assert_same 1 0
 }
 
 function test_assert_greater_and_less_than() {

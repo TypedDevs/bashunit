@@ -9,7 +9,7 @@ but you can give it another name if you pass it as an argument to the command wi
 
 ## Default path
 
-> `DEFAULT_PATH=directory|file`
+> `BASHUNIT_DEFAULT_PATH=directory|file`
 
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
@@ -18,34 +18,34 @@ If a directory is specified, it will execute tests within files ending in `test.
 If you use wildcards, **bashunit** will run any tests it finds.
 
 ::: code-group
-```[Example]
+```bash [Example]
 # all tests inside the tests directory
-DEFAULT_PATH=tests
+BASHUNIT_DEFAULT_PATH=tests
 
 # concrete test by full path
-DEFAULT_PATH=tests/example_test.sh
+BASHUNIT_DEFAULT_PATH=tests/example_test.sh
 
 # all test matching given wildcard
-DEFAULT_PATH=tests/**/*_test.sh
+BASHUNIT_DEFAULT_PATH=tests/**/*_test.sh
 ```
 :::
 
 ## Output
 
-> `SIMPLE_OUTPUT=true|false`
+> `BASHUNIT_SIMPLE_OUTPUT=true|false`
 
 Enables simplified output to the console. `false` by default.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple|-v|--verbose` option on the [command line](/command-line#output).
+Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output).
 
 ::: code-group
-```[Simple output]
+```bash [Simple output]
 ....
 ```
-```[.env]
-SIMPLE_OUTPUT=true
+```bash [.env]
+BASHUNIT_SIMPLE_OUTPUT=true
 ```
 :::
 
@@ -57,13 +57,23 @@ Running tests/functional/logic_test.sh
 ✓ Passed: Should validate an ok exit code
 ✓ Passed: Text should be equal
 ```
-```[.env]
-SIMPLE_OUTPUT=false
+```bash [.env]
+BASHUNIT_SIMPLE_OUTPUT=false
 ```
 :::
+
+## Parallel
+
+> `BASHUNIT_PARALLEL_RUN=true|false`
+
+Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+
+Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
+
+
 ## Stop on failure
 
-> `STOP_ON_FAILURE=true|false`
+> `BASHUNIT_STOP_ON_FAILURE=true|false`
 
 Force to stop the runner right after encountering one failing test. `false` by default.
 
@@ -71,20 +81,20 @@ Similar as using `-S|--stop-on-failure` option on the [command line](/command-li
 
 ## Show header
 
-> `SHOW_HEADER=true|false`
+> `BASHUNIT_SHOW_HEADER=true|false`
 >
-> `HEADER_ASCII_ART=true|false`
+> `BASHUNIT_HEADER_ASCII_ART=true|false`
 
-Specifies if you want to show the bashunit header. `true` by default.
+Specify if you want to show the bashunit header. `true` by default.
 
-Additionally, you can use the env-var `HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
+Additionally, you can use the env-var `BASHUNIT_HEADER_ASCII_ART` to display bashunit in ASCII. `false` by default.
 
 ::: code-group
-```[Without header]
+``` [Without header]
 ✓ Passed: foo bar
 ```
-```[.env]
-SHOW_HEADER=false
+```bash [.env]
+BASHUNIT_SHOW_HEADER=false
 ```
 :::
 
@@ -94,8 +104,8 @@ bashunit - {{ pkg.version }} // [!code hl]
 
 ✓ Passed: foo bar
 ```
-```[.env]
-SHOW_HEADER=true
+```bash [.env]
+BASHUNIT_SHOW_HEADER=true
 ```
 :::
 
@@ -110,33 +120,29 @@ __               _                   _    // [!code hl]
 
 ✓ Passed: foo bar
 ```
-```[.env]
-SHOW_HEADER=true
-HEADER_ASCII_ART=true
+```bash [.env]
+BASHUNIT_SHOW_HEADER=true
+BASHUNIT_HEADER_ASCII_ART=true
 ```
 :::
 
 ## Show execution time
 
-> `SHOW_EXECUTION_TIME=true|false`
+> `BASHUNIT_SHOW_EXECUTION_TIME=true|false`
 
-Specifies if you want to display the execution time after running **bashunit**. `true` by default.
-
-::: warning
-This feature is not available on macOS.
-:::
+Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
 ::: code-group
-```[With execution time]
+```-vue [With execution time]
 ✓ Passed: foo bar
 
 Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
-Time taken: 14 ms // [!code hl]
+Time taken: 14 ms  // [!code hl]
 ```
-```[.env]
-SHOW_EXECUTION_TIMEER=true
+```bash [.env]
+BASHUNIT_SHOW_EXECUTION_TIME=true
 ```
 :::
 
@@ -148,8 +154,90 @@ Tests:      1 passed, 1 total
 Assertions: 3 passed, 3 total
 All tests passed
 ```
-```[.env]
-SHOW_EXECUTION_TIMEER=false
+```bash [.env]
+BASHUNIT_SHOW_EXECUTION_TIME=false
+```
+:::
+
+## Log JUnit
+
+> `BASHUNIT_LOG_JUNIT=file`
+
+Create a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+BASHUNIT_LOG_JUNIT=log-junit.xml
+```
+:::
+
+## Report HTML
+
+> `BASHUNIT_REPORT_HTML=file`
+
+Create a report HTML file that contains information about the test results of your bashunit tests.
+
+::: code-group
+```bash [Example]
+BASHUNIT_REPORT_HTML=report.html
+```
+:::
+
+## Bootstrap
+
+> `BASHUNIT_BOOTSTRAP=file`
+
+Specifies an additional file to be loaded for all tests cases.
+Useful to set up global variables or functions accessible in all your tests.
+
+Similarly, you can use load an additional file via the [command line](/command-line#environment).
+
+::: code-group
+```bash [Example]
+# a simple .env file
+BASHUNIT_BOOTSTRAP=".env.tests"
+
+# or a complete script file
+BASHUNIT_BOOTSTRAP="tests/globals.sh"
+
+# Default value
+BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
+```
+:::
+
+## Dev log
+
+> `BASHUNIT_DEV_LOG=file`
+
+> See: [Globals > log](/globals#log)
+
+::: code-group
+```bash [Setup]
+BASHUNIT_DEV_LOG="dev.log"
+```
+```bash [Usage]
+log "I am tracing something..."
+log "error" "an" "error" "message"
+log "warning" "different log level messages!"
+```
+```bash [Output: out.log]
+2024-10-03 21:27:23 [INFO]: I am tracing something...
+2024-10-03 21:27:23 [ERROR]: an error message
+2024-10-03 21:27:23 [WARNING]: different log level messages!
+```
+:::
+
+## Verbose
+
+> `BASHUNIT_VERBOSE=bool`
+
+Display internal details for each test.
+
+Similarly, you can use the command line option for this: [command line](/command-line#verbose).
+
+::: code-group
+```bash [Example]
+BASHUNIT_VERBOSE=true
 ```
 :::
 

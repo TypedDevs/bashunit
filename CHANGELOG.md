@@ -1,6 +1,122 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.11.0...main)
+## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
+
+- Added `-p|--parallel` to enable running tests in parallel
+    - Enabled only in macOS and Ubuntu
+- Added `assert_file_contains` and `assert_file_not_contains`
+- Added `assert_true` and `assert_false`
+- Added `BASHUNIT_DEV_LOG`
+- Added global util functions
+    - current_dir
+    - current_filename
+    - caller_filename
+    - caller_line
+    - current_timestamp
+    - is_command_available
+    - random_str
+    - temp_file
+    - temp_dir
+    - cleanup_temp_files
+    - log
+- Add default env values:
+    - `BASHUNIT_DEFAULT_PATH="tests"`
+    - `BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"`
+- Add check that git is installed to `install.sh`
+- Add `-vvv|--verbose` to display internal details of each test
+- Fixed `-S|--stop-on-failure` behaviour
+- Improved time taken display
+- Improved clean up temporal files and directories
+- Improved CI test speed by running them in parallel
+- Removed git dependency for stable installations
+- Rename option `--verbose` to `--detailed`
+    - which is the default display behaviour, the opposite as `--simple`
+- Added `assert_not_same`
+
+## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
+
+- Fixed simple output for non-successful states
+- Added support for Alpine (Linux Distro)
+- Added optional file-path as 2nd arg to `--debug` option
+- Added runtime duration per test
+- Added defer expressions with when using standalone assertions
+- Added failing tests after running the entire suite
+- Improved runtime errors handling
+- Simplified total tests display on the header
+- Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_BOOTSTRAP`
+- Better handler runtime errors
+- Display failing tests after running the entire suite
+- Added defer expressions with `eval` when using standalone assertions
+- Fixed simple output for non-successful states
+- Remove deprecated assertions
+- Some required dependencies now optional: perl, coreutils
+- Upgrade and install script can now use `wget` if `curl` is not installed
+- Tests can be also be timed by making use of `EPOCHREALTIME` on supported system
+- Switch to testing the environment of capabilities
+    - rather than assuming various operating systems and Linux distributions have programs installed
+
+## [0.16.0](https://github.com/TypedDevs/bashunit/compare/0.15.0...0.16.0) - 2024-09-15
+
+- Fixed `clock::now` can't locate Time when is not available
+- Fixed failing tests when `command not found` and `unbound variable`
+- Fixed total tests wrong number
+- Update GitHub actions installation steps documentation
+- Added `assert_files_equals`, `assert_files_not_equals`
+- Added `BASHUNIT_TESTS_ENV`
+
+## [0.15.0](https://github.com/TypedDevs/bashunit/compare/0.14.0...0.15.0) - 2024-09-01
+
+- Fixed `--filter|-f` to work with `test_*` matching function name input.
+- Added assertions to log file
+- Rename the current `assert_equals` to `assert_same`
+- Rename `assert_equals_ignore_colors` to `assert_equals` and ignore all special chars
+- Data providers support multiple arguments
+- Remove `multi-invokers` in favor of `data providers`
+- Removing trailing slashes `/` from the test directories naming output.
+- Align "Expected" and "but got" on `assert_*` fails message.
+- Change `-v` as shortcut for `--version`
+- Add `-vvv` as shortcut for `--verbose`
+- Fix wrong commit id when installing beta
+- Add display total tests upfront when running bashunit
+- Add `BASHUNIT_` suffix to all .env config keys
+    - BASHUNIT_SHOW_HEADER
+    - BASHUNIT_HEADER_ASCII_ART
+    - BASHUNIT_SIMPLE_OUTPUT
+    - BASHUNIT_STOP_ON_FAILURE
+    - BASHUNIT_SHOW_EXECUTION_TIME
+    - BASHUNIT_DEFAULT_PATH
+    - BASHUNIT_LOG_JUNIT
+    - BASHUNIT_REPORT_HTML
+
+## [0.14.0](https://github.com/TypedDevs/bashunit/compare/0.13.0...0.14.0) - 2024-07-14
+
+- Fix echo does not break test execution results
+- Add bashunit facade to enable custom assertions
+- Document how to verify the `sha256sum` of the final executable
+- Generate checksum on build
+- Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
+- Support for displaying the clock without `perl` (for non-macOS)
+- Enable strict mode
+- Add `-l|--log-junit <log.xml>` option
+- Add `-r|--report-html <report.html>` option
+- Add `--debug` option
+- Add `dump` and `dd` functions for local debugging
+
+## [0.13.0](https://github.com/TypedDevs/bashunit/compare/0.12.0...0.13.0) - 2024-06-23
+
+- Allow calling assertions standalone outside tests
+- Add the latest version when installing beta
+- Add `assert_line_count`
+- Add hash to the installation script when installing a beta version
+- Add GitHub Actions to installation doc
+
+## [0.12.0](https://github.com/TypedDevs/bashunit/compare/0.11.0...0.12.0) - 2024-06-11
+
+- Add missing assertion in non-stable versions
+- Fix test with `rm` command in macOS
+- Add multi-invokers; consolidate parameterized-testing documentation
+- Add `fail()` function
+- Remove all test mocks after each test case
 
 ## [0.11.0](https://github.com/TypedDevs/bashunit/compare/0.10.1...0.11.0) - 2024-03-02
 

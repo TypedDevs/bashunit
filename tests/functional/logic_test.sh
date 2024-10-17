@@ -1,11 +1,12 @@
 #!/bin/bash
+set -euo pipefail
 
-ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+ROOT_DIR="$(current_dir)"
 
 SCRIPT="$ROOT_DIR/logic.sh"
 
 function test_text_should_be_equal() {
-  assert_equals "expected 123" "$($SCRIPT "123")"
+  assert_same "expected 123" "$($SCRIPT "123")"
 }
 
 function test_text_should_contain() {

@@ -1,5 +1,19 @@
 #!/bin/bash
 
+declare -a MOCKED_FUNCTIONS=()
+
+function unmock() {
+  local command=$1
+
+  for i in "${!MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+      unset "MOCKED_FUNCTIONS[$i]"
+      unset -f "$command"
+      break
+    fi
+  done
+}
+
 function mock() {
   local command=$1
   shift
@@ -11,6 +25,8 @@ function mock() {
   fi
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function spy() {
@@ -24,6 +40,8 @@ function spy() {
   eval "function $command() { ${variable}_params=(\"\$*\"); ((${variable}_times++)) || true; }"
 
   export -f "${command?}"
+
+  MOCKED_FUNCTIONS+=("$command")
 }
 
 function assert_have_been_called() {
@@ -54,7 +72,7 @@ function assert_have_been_called_with() {
 
   if [[ "$expected" != "${!actual}" ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got" "${!actual}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "${!actual}"
     return
   fi
 
@@ -70,7 +88,7 @@ function assert_have_been_called_times() {
   actual="${variable}_times"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ ${!actual} -ne $expected ]]; then
+  if [[ -z "${!actual-}" && $expected -ne 0 || ${!actual-0} -ne $expected ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" "to has been called" "${expected} times"
     return

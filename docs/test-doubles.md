@@ -12,7 +12,7 @@ Allows you to override the behavior of a callable.
 function test_example() {
   mock ps echo hello world
 
-  assert_equals "hello world" "$(ps)"
+  assert_same "hello world" "$(ps)"
 }
 ```
 :::
@@ -25,7 +25,7 @@ Allows you to override the output of a callable.
 ```bash [Example]
 function test_example() {
   function code() {
-      ps a | grep bash
+    ps a | grep bash
   }
 
   mock ps<<EOF
@@ -34,7 +34,7 @@ PID TTY          TIME CMD
 24162 pts/7    00:00:00 ps
 EOF
 
-  assert_equals "13525 pts/7    00:00:01 bash" "$(code)"
+  assert_same "13525 pts/7    00:00:01 bash" "$(code)"
 }
 ```
 :::

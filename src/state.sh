@@ -13,6 +13,7 @@ _ASSERTIONS_SNAPSHOT=0
 _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
+_TEST_OUTPUT=""
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -118,11 +119,14 @@ function state::set_file_with_duplicated_function_names() {
   _FILE_WITH_DUPLICATED_FUNCTION_NAMES="$1"
 }
 
+function state::add_test_output() {
+  _TEST_OUTPUT+="$1"
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
   state::set_duplicated_function_names "$2"
-
 }
 
 function state::initialize_assertions_count() {
@@ -131,13 +135,79 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_SKIPPED=0
     _ASSERTIONS_INCOMPLETE=0
     _ASSERTIONS_SNAPSHOT=0
+    _TEST_OUTPUT=""
 }
 
-function state::export_assertions_count() {
-  echo "##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
+function state::export_subshell_context() {
+  local encoded_test_output
+
+  if base64 --help 2>&1 | grep -q -- "-w"; then
+    # Alpine requires the -w 0 option to avoid wrapping
+    encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
+  else
+    # macOS and others: default base64 without wrapping
+    encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
+  fi
+
+  cat <<EOF
+##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
-##"
+##TEST_OUTPUT=$encoded_test_output\
+##
+EOF
+}
+
+function state::calculate_total_assertions() {
+  local input="$1"
+  local total=0
+
+  local numbers
+  numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
+
+  for number in $numbers; do
+    ((total += number))
+  done
+
+  echo $total
+}
+
+function state::print_line() {
+  # shellcheck disable=SC2034
+  local type=$1
+  local line=$2
+
+  ((_TOTAL_TESTS_COUNT++)) || true
+
+  state::add_test_output "[$type]$line"
+
+  if ! env::is_simple_output_enabled; then
+    printf "%s\n" "$line"
+    return
+  fi
+
+  local char
+  case "$type" in
+    successful)       char="." ;;
+    failure)          char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
+    failed)           char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
+    failed_snapshot)  char="${_COLOR_FAILED}F${_COLOR_DEFAULT}" ;;
+    skipped)          char="${_COLOR_SKIPPED}S${_COLOR_DEFAULT}" ;;
+    incomplete)       char="${_COLOR_INCOMPLETE}I${_COLOR_DEFAULT}" ;;
+    snapshot)         char="${_COLOR_SNAPSHOT}N${_COLOR_DEFAULT}" ;;
+    error)            char="${_COLOR_FAILED}E${_COLOR_DEFAULT}" ;;
+    *)                char="?" && log "warning" "unknown test type '$type'" ;;
+  esac
+
+  if parallel::is_enabled; then
+      printf "%s" "$char"
+  else
+    if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
+      printf "%s\n" "$char"
+    else
+      printf "%s" "$char"
+    fi
+  fi
 }
