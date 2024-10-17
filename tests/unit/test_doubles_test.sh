@@ -85,7 +85,11 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
   function_to_be_spied_on
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful spy with source function have been called" "function_to_be_spied_on" "to has been called" "1 times")"\
+    "$(console_results::print_failed_test \
+    "Unsuccessful spy with source function have been called"\
+    "function_to_be_spied_on" \
+    "to has been called" \
+    "1 times")"\
     "$(assert_have_been_called_times 1 function_to_be_spied_on)"
 }
 
