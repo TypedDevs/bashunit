@@ -297,7 +297,6 @@ function test_render_execution_time_on_osx_without_perl() {
   mock dependencies::has_perl mock_false
 
   _START_TIME=1727771758.0664479733
-  EPOCHREALTIME=1727780556.4266040325
 
   local render_result
   render_result=$(
