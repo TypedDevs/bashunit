@@ -29,8 +29,6 @@ function test_spy_commands_called_once_when_executing_a_script() {
 }
 
 function test_spy_commands_called_once_when_executing_a_sourced_function() {
-  skip "The spies can not spy inside the scope of the function"
-  return
 
   source ./tests/functional/fixtures/doubles_function.sh
   spy ps
