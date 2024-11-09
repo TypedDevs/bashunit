@@ -1,4 +1,6 @@
 #!/bin/bash
+set -uo pipefail
+set +e
 
 TMP_DIR="tmp"
 TMP_BIN="$TMP_DIR/bashunit"
@@ -7,6 +9,10 @@ ACTIVE_INTERNET=0
 function set_up_before_script() {
   env::active_internet_connection
   ACTIVE_INTERNET=$?
+}
+
+function tear_down_after_script() {
+  set -e
 }
 
 function set_up() {
