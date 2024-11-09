@@ -12,7 +12,9 @@ function console_results::render_result() {
     return 1
   fi
 
-  echo ""
+  if env::is_simple_output_enabled; then
+    printf "\n\n"
+  fi
 
   local total_tests=0
   ((total_tests += $(state::get_tests_passed))) || true
@@ -262,7 +264,10 @@ function console_results::print_failing_tests_and_reset() {
     local total_failed
     total_failed=$(state::get_tests_failed)
 
-    echo ""
+    if env::is_simple_output_enabled; then
+      printf "\n\n"
+    fi
+
     if [[ "$total_failed" -eq 1 ]]; then
       echo -e "${_COLOR_BOLD}There was 1 failure:${_COLOR_DEFAULT}\n"
     else
@@ -271,5 +276,7 @@ function console_results::print_failing_tests_and_reset() {
 
     sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
     rm "$FAILURES_OUTPUT_PATH"
+
+    echo ""
   fi
 }

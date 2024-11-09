@@ -105,6 +105,10 @@ function runner::call_test_functions() {
     done
     unset function_name
   done
+
+  if ! env::is_simple_output_enabled; then
+    echo ""
+  fi
 }
 
 function runner::render_running_file_header() {
