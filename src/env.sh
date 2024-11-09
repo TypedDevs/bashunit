@@ -68,6 +68,14 @@ function env::is_verbose_enabled() {
   [[ "$BASHUNIT_VERBOSE" == "true" ]]
 }
 
+function env::active_internet_connection() {
+  if ping -c 1 -W 3 google.com &> /dev/null; then
+    return 0
+  fi
+
+  return 1
+}
+
 function env::find_terminal_width() {
   local cols=""
 
