@@ -19,6 +19,10 @@ If your project utilizes **bashunit**, you can add it to this list by submitting
 
 **bashunit** uses itself to test the proper operation of each one of its features.
 
+### [phpstan/phpstan-src](https://github.com/phpstan/phpstan-src/blob/2.0.x/.github/workflows/e2e-tests.yml)
+
+PHPStan uses bashunit [standalone assertions](/standalone) to check for errors in their CI e2e tests.
+
 ### [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr)
 
 A bash script to create a PR based on your branch name.
