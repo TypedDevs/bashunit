@@ -17,8 +17,7 @@ however, it will indicate that some tests were skipped in the final output.
 ```bash [Example]
 function test_skipped() {
   if [[ $OS != "GEOS" ]]; then
-    skip
-    return
+    skip && return
   fi
 
   assert_empty "not reached"
@@ -26,8 +25,7 @@ function test_skipped() {
 
 function test_skipped_with_reason() {
   if [[ $OS != "GEOS" ]]; then
-    skip "Not running under Commodore"
-    return
+    skip "Not running under Commodore" && return
   fi
 
   assert_empty "not reached"
