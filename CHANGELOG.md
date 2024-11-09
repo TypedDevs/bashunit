@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improved output: adding a space between each test file
+
 ## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
 
 - Added `-p|--parallel` to enable running tests in parallel
