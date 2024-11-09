@@ -8,9 +8,6 @@ function skip() {
   console_results::print_skipped_test "${label}" "${reason}"
 
   state::add_assertions_skipped
-
-  # Stop the current test function execution
-  return 0
 }
 
 function todo() {

@@ -27,8 +27,7 @@ function tear_down() {
 
 function test_install_downloads_the_latest_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -47,8 +46,7 @@ function test_install_downloads_the_latest_version() {
 
 function test_install_downloads_in_given_folder() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   local installed_bashunit="./deps/bashunit"
@@ -67,8 +65,7 @@ function test_install_downloads_in_given_folder() {
 
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -89,8 +86,7 @@ function test_install_downloads_the_given_version() {
 
 function test_install_downloads_the_non_stable_beta_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   mock date echo "2023-11-13"

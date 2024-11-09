@@ -26,19 +26,18 @@ function tear_down() {
 }
 
 function test_do_not_upgrade_when_latest() {
-  skip "failing when having a new release"
-  return
-#  local output
-#  output="$($TMP_BIN --upgrade)"
-#
-#  assert_same "> You are already on latest version" "$output"
-#  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
+  skip "failing when having a new release" && return
+
+  local output
+  output="$($TMP_BIN --upgrade)"
+
+  assert_same "> You are already on latest version" "$output"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
 }
 
 function test_upgrade_when_a_new_version_found() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   sed -i -e \
@@ -59,8 +58,7 @@ function test_upgrade_when_a_new_version_found() {
 
 function test_do_not_update_on_consecutive_calls() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection"
-    return
+    skip "no internet connection" && return
   fi
 
   sed -i -e \
