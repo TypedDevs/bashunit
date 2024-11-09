@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Improved output: adding a space between each test file
+- Remove `BASHUNIT_DEV_MODE` in favor of `BASHUNIT_DEV_LOG`
 
 ## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
 

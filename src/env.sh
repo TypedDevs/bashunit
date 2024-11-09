@@ -61,7 +61,7 @@ function env::is_show_execution_time_enabled() {
 }
 
 function env::is_dev_mode_enabled() {
-  [[ -f "$BASHUNIT_DEV_LOG" ]]
+  [[ -n "$BASHUNIT_DEV_LOG" ]]
 }
 
 function env::is_verbose_enabled() {
@@ -103,7 +103,6 @@ function env::print_verbose() {
     "BASHUNIT_SIMPLE_OUTPUT"
     "BASHUNIT_STOP_ON_FAILURE"
     "BASHUNIT_SHOW_EXECUTION_TIME"
-    "BASHUNIT_DEV_MODE"
     "BASHUNIT_VERBOSE"
   )
 
