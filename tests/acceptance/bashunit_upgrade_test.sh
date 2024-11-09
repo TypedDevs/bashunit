@@ -1,8 +1,13 @@
 #!/bin/bash
-set -euo pipefail
 
 TMP_DIR="tmp"
 TMP_BIN="$TMP_DIR/bashunit"
+ACTIVE_INTERNET=0
+
+function set_up_before_script() {
+  env::active_internet_connection
+  ACTIVE_INTERNET=$?
+}
 
 function set_up() {
   ./build.sh "$TMP_DIR" >/dev/null
@@ -25,6 +30,11 @@ function test_do_not_upgrade_when_latest() {
 }
 
 function test_upgrade_when_a_new_version_found() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection"
+    return
+  fi
+
   sed -i -e \
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     "$TMP_BIN"
@@ -42,6 +52,11 @@ function test_upgrade_when_a_new_version_found() {
 }
 
 function test_do_not_update_on_consecutive_calls() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection"
+    return
+  fi
+
   sed -i -e \
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     $TMP_BIN
