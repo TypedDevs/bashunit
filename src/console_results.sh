@@ -276,5 +276,7 @@ function console_results::print_failing_tests_and_reset() {
 
     sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
     rm "$FAILURES_OUTPUT_PATH"
+
+    echo ""
   fi
 }
