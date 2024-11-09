@@ -12,7 +12,9 @@ function console_results::render_result() {
     return 1
   fi
 
-  echo ""
+  if env::is_simple_output_enabled; then
+    printf "\n\n"
+  fi
 
   local total_tests=0
   ((total_tests += $(state::get_tests_passed))) || true
