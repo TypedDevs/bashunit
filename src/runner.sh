@@ -187,6 +187,10 @@ function runner::run_test() {
     local type="${subshell_output%%]*}" # Remove everything after "]"
     type="${type#[}"                    # Remove the leading "["
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
+
+    # Replace [failed] with a newline to split failure messages
+    line=$(echo "$line" | sed 's/\[failed\]/\n/g')
+
     state::print_line "$type" "$line"
 
     subshell_output=$line

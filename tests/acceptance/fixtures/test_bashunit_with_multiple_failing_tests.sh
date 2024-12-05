@@ -5,7 +5,6 @@ function test_assert_same() {
 }
 
 function test_assert_failing() {
-  assert_same 1 0
-  assert_same 2 3
-  assert_same 4 5
+  assert_same 1 2
+  assert_same 3 4
 }
