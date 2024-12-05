@@ -11,12 +11,14 @@ function helper::normalize_test_function_name() {
   local original_function_name="${1-}"
   local result
 
-  # Remove "test_" prefix
+  # Remove the first "test_" prefix, if present
   result="${original_function_name#test_}"
+  # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
+  if [[ "$result" == "$original_function_name" ]]; then
+    result="${original_function_name#test}"
+  fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Remove "test" prefix
-  result="${result#test}"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
 

@@ -24,6 +24,10 @@ function test_normalize_test_function_name_snake_case() {
   assert_same "Some logic" "$(helper::normalize_test_function_name "test_some_logic")"
 }
 
+function test_normalize_double_test_function_name_snake_case() {
+  assert_same "Test some logic" "$(helper::normalize_test_function_name "test_test_some_logic")"
+}
+
 function test_normalize_test_function_name_camel_case() {
   assert_same "SomeLogic" "$(helper::normalize_test_function_name "testSomeLogic")"
 }
