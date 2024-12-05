@@ -71,5 +71,7 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  echo "$(current_timestamp) [$level]: $@" >> "$BASHUNIT_DEV_LOG"
+  local GRAY='\033[1;30m'
+  local RESET='\033[0m'
+  echo -e "$(current_timestamp) [$level]: $@ ${GRAY}#${BASH_SOURCE[1]}:${BASH_LINENO[0]}${RESET}" >> "$BASHUNIT_DEV_LOG"
 }
