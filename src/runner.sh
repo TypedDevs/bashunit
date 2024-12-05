@@ -188,7 +188,7 @@ function runner::run_test() {
     type="${type#[}"                    # Remove the leading "["
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
-    # Replace [failed] with a newline to split failure messages
+    # Replace [type] with a newline to split the messages
     line=$(echo "$line" | sed -e 's/\[failed\]/\n/g' \
                               -e 's/\[skipped\]/\n/g' \
                               -e 's/\[incomplete\]/\n/g')
