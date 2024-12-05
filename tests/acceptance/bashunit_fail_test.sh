@@ -48,7 +48,7 @@ function test_bashunit_with_multiple_failing_tests() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh
 
   # shellcheck disable=SC2317
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
   # shellcheck disable=SC2317
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }

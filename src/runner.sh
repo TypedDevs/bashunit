@@ -189,7 +189,9 @@ function runner::run_test() {
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
     # Replace [failed] with a newline to split failure messages
-    line=$(echo "$line" | sed 's/\[failed\]/\n/g')
+    line=$(echo "$line" | sed -e 's/\[failed\]/\n/g' \
+                              -e 's/\[skipped\]/\n/g' \
+                              -e 's/\[incomplete\]/\n/g')
 
     state::print_line "$type" "$line"
 
