@@ -25,8 +25,7 @@ function test_different_verbose_snapshots_matches() {
 }
 
 function test_bashunit_when_a_test_fail_simple_output_env() {
-  todo "Should print something like ...F."
-  return
+  todo "Should print something like ...F." && return
 
   # shellcheck disable=SC2317
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
@@ -38,8 +37,7 @@ function test_bashunit_when_a_test_fail_simple_output_env() {
 }
 
 function test_bashunit_when_a_test_fail_simple_output_option() {
-  todo "Should print something like ...F."
-  return
+  todo "Should print something like ...F." && return
 
   # shellcheck disable=SC2317
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
