@@ -2,9 +2,11 @@
 
 ## Unreleased
 
+- Fixed name rendered when having `test_test_*`
+- Fixed display test with multiple outputs in multiline
 - Improved output: adding a space between each test file
 - Removed `BASHUNIT_DEV_MODE` in favor of `BASHUNIT_DEV_LOG`
-- Fixed name rendered when having `test_test_*`
+- Added source file and line on global dev function `log`
 
 ## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
 
