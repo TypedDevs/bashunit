@@ -25,31 +25,23 @@ function test_different_verbose_snapshots_matches() {
 }
 
 function test_bashunit_when_a_test_fail_simple_output_env() {
-  # shellcheck disable=SC2317
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  # shellcheck disable=SC2317
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
-  # shellcheck disable=SC2317
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
 }
 
 function test_bashunit_when_a_test_fail_simple_output_option() {
-  # shellcheck disable=SC2317
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  # shellcheck disable=SC2317
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
-  # shellcheck disable=SC2317
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }
 
 function test_bashunit_with_multiple_failing_tests() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh
 
-  # shellcheck disable=SC2317
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
-  # shellcheck disable=SC2317
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }
 
