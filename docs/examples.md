@@ -21,7 +21,7 @@ If your project utilizes **bashunit**, you can add it to this list by submitting
 
 ### [phpstan/phpstan-src](https://github.com/phpstan/phpstan-src/blob/2.0.x/.github/workflows/e2e-tests.yml)
 
-PHPStan uses bashunit [standalone assertions](/standalone) to check for errors in their CI e2e tests.
+PHPStan is a widely used static analysis tool for PHP. It uses **bashunit** [standalone assertions](/standalone) to check for errors in their CI e2e tests.
 
 ### [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr)
 
@@ -31,7 +31,7 @@ A bash script to create a PR based on your branch name.
 
 A specification for adding human and machine-readable meaning to commit messages.
 
-### [Tito-Kati/fizzbuzz-bashunit](https://github.com/Tito-Kati/fizzbuzz-bashunit)
+### [antonio-gg-dev/fizzbuzz-bashunit](https://github.com/antonio-gg-dev/fizzbuzz-bashunit)
 
 Popular introductory FizzBuzz kata solved in Bash with **bashunit** as the testing framework.
 
@@ -42,3 +42,7 @@ Loading bar for your shell scripts.
 ### [phpctl](https://github.com/opencodeco/phpctl)
 
 It is a Docker (containers) based development environment for PHP.
+
+### [SherpaBasecamp/sherpa](https://sherpa-basecamp.netlify.app/tools/unit-tests/)
+
+Sh:erpa is a tool for simplifying script creation. It integrates **bashunit** to ensure reliable, tested Bash scripts for its users.
