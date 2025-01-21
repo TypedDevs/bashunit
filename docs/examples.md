@@ -43,6 +43,6 @@ Loading bar for your shell scripts.
 
 It is a Docker (containers) based development environment for PHP.
 
-### [SherpaBasecamp/sherpa](https://sherpa-basecamp.netlify.app/tools/unit-tests/)
+### [SherpaCLI/sherpa](https://sherpa-cli.netlify.app/tools/unit-tests)
 
 Sh:erpa is a tool for simplifying script creation. It integrates **bashunit** to ensure reliable, tested Bash scripts for its users.
