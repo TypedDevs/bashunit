@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed false negative with `set -e`
 - Fixed name rendered when having `test_test_*`
 - Fixed display test with multiple outputs in multiline
 - Improved output: adding a space between each test file

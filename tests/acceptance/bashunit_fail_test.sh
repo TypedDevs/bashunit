@@ -45,6 +45,13 @@ function test_bashunit_with_multiple_failing_tests() {
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }
 
+function test_bashunit_with_a_test_fail_and_exit_immediately() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_exit_immediately_after_execution_error.sh
+
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
+}
+
 function test_different_simple_snapshots_matches() {
   todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
 }
