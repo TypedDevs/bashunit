@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed name rendered when having `test_test_*`
+- Fixed duplicate function detection
 - Fixed display test with multiple outputs in multiline
 - Improved output: adding a space between each test file
 - Removed `BASHUNIT_DEV_MODE` in favor of `BASHUNIT_DEV_LOG`
