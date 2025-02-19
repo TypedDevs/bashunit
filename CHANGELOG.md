@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.19.0](https://github.com/TypedDevs/bashunit/compare/0.18.0...0.19.0) - 2025-02-19
 
 - Fixed false negative with `set -e`
 - Fixed name rendered when having `test_test_*`
