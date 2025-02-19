@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed false negative with `set -e`
 - Fixed name rendered when having `test_test_*`
 - Fixed duplicate function detection
 - Fixed display test with multiple outputs in multiline
