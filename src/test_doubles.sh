@@ -87,7 +87,6 @@ function assert_have_been_called_times() {
   local actual
   actual="${variable}_times"
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
   if [[ -z "${!actual-}" && $expected -ne 0 || ${!actual-0} -ne $expected ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" "to has been called" "${expected} times"
