@@ -32,7 +32,15 @@ function helper::check_duplicate_functions() {
   filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
 
   local function_names
-  function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
+  function_names=$(echo "$filtered_lines" | awk '{
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
+        gsub(/\(\)/, "", $i)
+        print $i
+        break
+      }
+    }
+  }')
 
   local duplicates
   duplicates=$(echo "$function_names" | sort | uniq -d)
@@ -40,6 +48,7 @@ function helper::check_duplicate_functions() {
     state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
   fi
+  return 0
 }
 
 #

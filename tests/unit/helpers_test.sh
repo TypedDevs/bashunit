@@ -97,6 +97,13 @@ function test_check_duplicate_functions_without_duplicates() {
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }
 
+function test_check_duplicate_functions_without_function_keyword() {
+  local file
+  file="$(current_dir)/fixtures/no_function_keyword_duplicates.sh"
+
+  assert_general_error "$(helper::check_duplicate_functions "$file")"
+}
+
 function test_normalize_variable_name() {
   assert_same "valid_name123" "$(helper::normalize_variable_name "valid_name123")"
   assert_same "non_valid_symbols__________" "$(helper::normalize_variable_name "non_valid_symbols!@#$%^&*()")"
