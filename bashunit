@@ -30,7 +30,8 @@ source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-_ASSERT_FN=""
+_ASSERT_FN_KEY=()
+_ASSERT_FN_VALUES=()
 _FILTER=""
 _ARGS=()
 
@@ -41,8 +42,9 @@ while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
     -a|--assert)
-      _ASSERT_FN="$2"
-      shift
+      _ASSERT_FN_KEY+=("$2")
+      _ASSERT_FN_VALUES+=("$3")
+      shift 2
       ;;
     -f|--filter)
       _FILTER="$2"
@@ -112,8 +114,28 @@ done
 
 set +eu
 
-if [[ -n "$_ASSERT_FN" ]]; then
-  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+if [[ ${#_ASSERT_FN_KEY[@]} -gt 0 ]]; then
+  output=""
+  last_exit_code=0
+
+  for i in "${!_ASSERT_FN_KEY[@]}"; do
+    assert_fn="${_ASSERT_FN_KEY[$i]}"
+    assert_value="${_ASSERT_FN_VALUES[$i]}"
+
+    if [[ -n "$output" ]]; then
+      # Pass the output from the previous assertion as input to the next
+      output=$(main::exec_assert "$assert_fn" "$assert_value" "$output" )
+    else
+      # First assertion, run with original args
+      output=$(main::exec_assert "$assert_fn" "$assert_value" "${_ARGS[@]}" )
+    fi
+
+    last_exit_code=$?
+    if [[ $last_exit_code -ne 0 ]]; then
+      break  # Stop if any assertion fails
+    fi
+  done
+  exit $last_exit_code
 else
   main::exec_tests "$_FILTER" "${_ARGS[@]}"
 fi
