@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function tear_down() {
   helper::unset_if_exists fake_function

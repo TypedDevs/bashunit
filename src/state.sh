@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 _TESTS_PASSED=0
 _TESTS_FAILED=0

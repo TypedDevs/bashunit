@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function tear_down() {
   unset code
@@ -104,4 +104,3 @@ function test_successful_spy_called_times_with_source() {
 
   assert_have_been_called_times 2 function_to_be_spied_on
 }
-

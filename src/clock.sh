@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function clock::now() {
   if dependencies::has_perl && perl -MTime::HiRes -e "" > /dev/null 2>&1; then

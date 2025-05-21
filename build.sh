@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source src/check_os.sh
 
@@ -37,7 +37,7 @@ function build::generate_bin() {
   local temp
   temp="$(dirname "$out")/temp.sh"
 
-  echo '#!/bin/bash' > "$temp"
+  echo '#!/usr/bin/env bash' > "$temp"
   echo "Generating bashunit in the '$(dirname "$out")' folder..."
 
   for file in $(build::dependencies); do

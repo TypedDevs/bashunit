@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source "$BASHUNIT_ROOT_DIR/src/assert.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert_arrays.sh"

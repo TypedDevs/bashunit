@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function test_has_perl_search_path_for_perl() {
   spy command

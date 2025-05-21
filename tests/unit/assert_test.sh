@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function test_successful_fail() {
   true || fail "This cannot fail"
