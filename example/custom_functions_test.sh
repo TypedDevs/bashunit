@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function set_up() {
   ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")/.."

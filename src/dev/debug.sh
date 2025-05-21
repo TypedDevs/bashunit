@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # An alternative to echo when debugging.
 # This is debug function; do not use in prod!

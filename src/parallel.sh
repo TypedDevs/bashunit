@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1

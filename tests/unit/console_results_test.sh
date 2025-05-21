@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function mock_all_state_getters() {
   mock state::is_duplicated_test_functions_found echo false

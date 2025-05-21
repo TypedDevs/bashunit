@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function set_up() {
   export BASHUNIT_SIMPLE_OUTPUT=false

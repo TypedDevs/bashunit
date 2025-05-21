@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function assert_directory_exists() {
   local expected="$1"
