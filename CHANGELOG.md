@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
 
 - replace `#!/bin/bash` with `#!/usr/bin/env bash`
 - usage printf with awk, which correctly handles float rounding and improves portability
