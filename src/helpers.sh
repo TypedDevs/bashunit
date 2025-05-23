@@ -8,21 +8,20 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 # @return string Eg: "Some logic camelCase"
 #
 function helper::normalize_test_function_name() {
-  local original_function_name="${1-}"
+  local original_fn_name="${1-}"
+  local interpolated_fn_name="${2-}"
 
-  if [[ -n "${BASHUNIT_CURRENT_FUNCTION_NAME-}" &&
-        "$original_function_name" == "$BASHUNIT_CURRENT_FUNCTION_NAME" &&
-        -n "${BASHUNIT_INTERPOLATED_FUNCTION_NAME-}" ]]; then
-    original_function_name="$BASHUNIT_INTERPOLATED_FUNCTION_NAME"
+  if [[ -n "${interpolated_fn_name-}" ]]; then
+    original_fn_name="$interpolated_fn_name"
   fi
 
   local result
 
   # Remove the first "test_" prefix, if present
-  result="${original_function_name#test_}"
+  result="${original_fn_name#test_}"
   # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
-  if [[ "$result" == "$original_function_name" ]]; then
-    result="${original_function_name#test}"
+  if [[ "$result" == "$original_fn_name" ]]; then
+    result="${original_fn_name#test}"
   fi
   # Replace underscores with spaces
   result="${result//_/ }"

@@ -136,7 +136,7 @@ function runner::run_test() {
   local function_name="$1"
   shift
   export BASHUNIT_CURRENT_FUNCTION_NAME="$function_name"
-  export BASHUNIT_INTERPOLATED_FUNCTION_NAME="$(helper::interpolate_function_name "$function_name" "$@")"
+  local interpolated_function_name="$(helper::interpolate_function_name "$function_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
@@ -265,7 +265,7 @@ function runner::run_test() {
     return
   fi
 
-  local label="$(helper::normalize_test_function_name "$function_name")"
+  local label="$(helper::normalize_test_function_name "$function_name" "$interpolated_function_name")"
 
   console_results::print_successful_test "${label}" "$duration" "$@"
   state::add_tests_passed
