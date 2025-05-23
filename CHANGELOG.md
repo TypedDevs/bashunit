@@ -3,6 +3,7 @@
 ## Unreleased
 
 - replace `#!/bin/bash` with `#!/usr/bin/env bash`
+- usage printf with awk, which correctly handles float rounding and improves portability
 
 ## [0.19.0](https://github.com/TypedDevs/bashunit/compare/0.18.0...0.19.0) - 2025-02-19
 
