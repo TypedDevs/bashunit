@@ -14,13 +14,11 @@ function test_mock_ps_when_executing_a_sourced_function() {
 }
 
 function test_spy_commands_called_once_when_executing_a_script() {
-  skip "not working while executing commands outside a function" && return
-
   spy ps
   spy awk
   spy head
 
-  ./tests/functional/fixtures/doubles_script.sh
+  bash ./tests/functional/fixtures/doubles_script.sh
 
   assert_have_been_called_times 1 ps
   assert_have_been_called_times 1 awk
