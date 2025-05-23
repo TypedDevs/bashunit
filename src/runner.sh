@@ -135,8 +135,8 @@ function runner::run_test() {
   shift
   local fn_name="$1"
   shift
-  export BASHUNIT_CURRENT_fn_name="$fn_name"
-  local interpolated_fn_name="$(helper::interpolate_fn_name "$fn_name" "$@")"
+
+  local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
@@ -265,9 +265,13 @@ function runner::run_test() {
     return
   fi
 
-  local label="$(helper::normalize_test_fn_name "$fn_name" "$interpolated_fn_name")"
+  local label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
 
-  console_results::print_successful_test "${label}" "$duration" "$@"
+  if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
+    console_results::print_successful_test "${label}" "$duration" "$@"
+  else
+    console_results::print_successful_test "${label}" "$duration"
+  fi
   state::add_tests_passed
   reports::add_test_passed "$test_file" "$fn_name" "$duration" "$total_assertions"
 }

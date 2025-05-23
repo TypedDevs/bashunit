@@ -225,7 +225,7 @@ function test_to_run_with_filter_matching_string_in_function_name() {
     "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
 
-function test_interpolate_function_name() {
+function test_interpolate_fn_name() {
   local result
   result="$(helper::interpolate_function_name "test_name_::1::_foo" "bar")"
 
