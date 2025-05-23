@@ -130,7 +130,9 @@ function assert_have_been_called_times() {
 
   if [[ -z "${!actual-}" && $expected -ne 0 || $times -ne $expected ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${command}" "to has been called" "${expected} times"
+    console_results::print_failed_test "${label}" "${command}" \
+      "to has been called" "${expected} times" \
+      "actual" "${times} times"
     return
   fi
 

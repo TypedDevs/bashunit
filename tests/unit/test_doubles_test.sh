@@ -62,7 +62,9 @@ function test_unsuccessful_spy_called_times() {
   ps
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
+    "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" \
+    "to has been called" "1 times" \
+    "actual" "2 times")"\
     "$(assert_have_been_called_times 1 ps)"
 }
 
@@ -88,8 +90,8 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
     "$(console_results::print_failed_test \
     "Unsuccessful spy with source function have been called"\
     "function_to_be_spied_on" \
-    "to has been called" \
-    "1 times")"\
+    "to has been called" "1 times" \
+    "actual" "2 times")"\
     "$(assert_have_been_called_times 1 function_to_be_spied_on)"
 }
 
@@ -106,18 +108,19 @@ function test_successful_spy_called_times_with_source() {
 }
 
 function test_spy_called_in_subshell() {
-  spy create_remote_time_entries
+  spy spy_called_in_subshell
 
   function run() {
-    create_remote_time_entries "$1"
+    spy_called_in_subshell "$1"
+    spy_called_in_subshell "$1"
     echo "done"
   }
 
   local result
-  result="$(run "2023-10-01")"
+  result="$(run "2025-05-23")"
 
   assert_same "done" "$result"
-  assert_have_been_called create_remote_time_entries
-  assert_have_been_called_with "2023-10-01" create_remote_time_entries
-  assert_have_been_called_times 1 create_remote_time_entries
+  assert_have_been_called spy_called_in_subshell
+  assert_have_been_called_times 2 spy_called_in_subshell
+  assert_have_been_called_with "2025-05-23" spy_called_in_subshell
 }
