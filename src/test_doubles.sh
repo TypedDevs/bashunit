@@ -9,6 +9,16 @@ function unmock() {
     if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
       unset "MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
+      local variable
+      variable="$(helper::normalize_variable_name "$command")"
+      local times_file_var="${variable}_times_file"
+      local params_file_var="${variable}_params_file"
+      [[ -f "${!times_file_var-}" ]] && rm -f "${!times_file_var}"
+      [[ -f "${!params_file_var-}" ]] && rm -f "${!params_file_var}"
+      unset "${variable}_times"
+      unset "${variable}_params"
+      unset "$times_file_var"
+      unset "$params_file_var"
       break
     fi
   done
@@ -37,7 +47,22 @@ function spy() {
   export "${variable}_times"=0
   export "${variable}_params"
 
-  eval "function $command() { ${variable}_params=(\"\$*\"); ((${variable}_times++)) || true; }"
+  local times_file params_file
+  times_file=$(temp_file "${variable}_times")
+  params_file=$(temp_file "${variable}_params")
+  echo 0 > "$times_file"
+  : > "$params_file"
+  export "${variable}_times_file"="$times_file"
+  export "${variable}_params_file"="$params_file"
+
+  eval "function $command() {
+    ${variable}_params=(\"\$*\")
+    echo \"\$*\" > '$params_file'
+    ((${variable}_times++)) || true
+    local _c=\$(cat '$times_file')
+    _c=\$((_c+1))
+    echo \"\$_c\" > '$times_file'
+  }"
 
   export -f "${command?}"
 
@@ -50,9 +75,14 @@ function assert_have_been_called() {
   variable="$(helper::normalize_variable_name "$command")"
   local actual
   actual="${variable}_times"
+  local file_var="${variable}_times_file"
+  local times="${!actual-0}"
+  if [[ -f "${!file_var-}" ]]; then
+    times=$(cat "${!file_var}")
+  fi
   local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ ${!actual} -eq 0 ]]; then
+  if [[ $times -eq 0 ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" "to has been called" "once"
     return
@@ -68,11 +98,16 @@ function assert_have_been_called_with() {
   variable="$(helper::normalize_variable_name "$command")"
   local actual
   actual="${variable}_params"
+  local file_var="${variable}_params_file"
+  local params="${!actual-}"
+  if [[ -f "${!file_var-}" ]]; then
+    params=$(cat "${!file_var}")
+  fi
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ "$expected" != "${!actual}" ]]; then
+  if [[ "$expected" != "$params" ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got " "${!actual}"
+    console_results::print_failed_test "${label}" "${expected}" "but got " "$params"
     return
   fi
 
@@ -86,11 +121,18 @@ function assert_have_been_called_times() {
   variable="$(helper::normalize_variable_name "$command")"
   local actual
   actual="${variable}_times"
+  local file_var="${variable}_times_file"
+  local times="${!actual-0}"
+  if [[ -f "${!file_var-}" ]]; then
+    times=$(cat "${!file_var}")
+  fi
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ -z "${!actual-}" && $expected -ne 0 || ${!actual-0} -ne $expected ]]; then
+  if [[ -z "${!actual-}" && $expected -ne 0 || $times -ne $expected ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${command}" "to has been called" "${expected} times"
+    console_results::print_failed_test "${label}" "${command}" \
+      "to has been called" "${expected} times" \
+      "actual" "${times} times"
     return
   fi
 

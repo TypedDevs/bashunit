@@ -1,9 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Fix asserts on test doubles in subshell
+
 ## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
 
-- replace `#!/bin/bash` with `#!/usr/bin/env bash`
-- usage printf with awk, which correctly handles float rounding and improves portability
+- Replace `#!/bin/bash` with `#!/usr/bin/env bash`
+- Usage printf with awk, which correctly handles float rounding and improves portability
 
 ## [0.19.0](https://github.com/TypedDevs/bashunit/compare/0.18.0...0.19.0) - 2025-02-19
 
