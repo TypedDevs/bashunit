@@ -224,3 +224,15 @@ function test_to_run_with_filter_matching_string_in_function_name() {
     "test_my_awesome_function test_your_awesome_function"\
     "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
+
+function test_get_function_categories() {
+  # shellcheck disable=SC2317
+  # @category slow integration
+  function fake_function_with_categories() {
+    return 0
+  }
+
+  assert_same \
+    "slow integration" \
+    "$(helper::get_function_categories "fake_function_with_categories" "${BASH_SOURCE[0]}")"
+}

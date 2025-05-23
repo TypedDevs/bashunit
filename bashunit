@@ -32,6 +32,7 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
 _FILTER=""
+_CATEGORY=""
 _ARGS=()
 
 check_os::init
@@ -46,6 +47,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -f|--filter)
       _FILTER="$2"
+      shift
+      ;;
+    -c|--category)
+      _CATEGORY="$2"
+      export BASHUNIT_CATEGORY="$2"
       shift
       ;;
     -s|--simple)
@@ -115,5 +121,5 @@ set +eu
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 else
-  main::exec_tests "$_FILTER" "${_ARGS[@]}"
+  main::exec_tests "$_FILTER" "$_CATEGORY" "${_ARGS[@]}"
 fi

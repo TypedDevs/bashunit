@@ -140,6 +140,34 @@ function helper::get_provider_data() {
   fi
 }
 
+#
+# @param $1 string Function name
+# @param $2 string Script path
+#
+# @return string Categories separated by spaces
+#
+function helper::get_function_categories() {
+  local function_name="$1"
+  local script="$2"
+
+  if [[ ! -f "$script" ]]; then
+    return
+  fi
+
+  local line_number
+  line_number=$(grep -n -m1 -E "^[[:space:]]*(function[[:space:]]+)?${function_name}[[:space:]]*\(" "$script" | cut -d: -f1)
+  if [[ -z $line_number ]]; then
+    return
+  fi
+
+  local prev_line=$((line_number - 1))
+  if [[ $prev_line -le 0 ]]; then
+    return
+  fi
+
+  sed -n "${prev_line}p" "$script" | grep -E "# *@category" | sed -E 's/^.*# *@category *//'
+}
+
 function helper::trim() {
   local input_string="$1"
   local trimmed_string

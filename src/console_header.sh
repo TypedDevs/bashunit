@@ -2,7 +2,9 @@
 
 function console_header::print_version_with_env() {
   local filter=${1:-}
-  local files=("${@:2}")
+  local category=${2:-}
+  shift 2
+  local files=("$@")
 
   if ! env::is_show_header_enabled; then
     return
@@ -68,6 +70,9 @@ Options:
 
   -f, --filter <filter>
     Filters the tests to run based on the test name.
+
+  -c, --category <name>
+    Filters the tests to run based on @category tags.
 
   -l, --log-junit <out.xml>
     Create a report JUnit XML file that contains information about the test results.

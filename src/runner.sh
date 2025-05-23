@@ -3,7 +3,8 @@
 
 function runner::load_test_files() {
   local filter=$1
-  shift
+  local category=$2
+  shift 2
   local files=("${@}")
 
   for test_file in "${files[@]}"; do
@@ -14,9 +15,9 @@ function runner::load_test_files() {
     source "$test_file"
     runner::run_set_up_before_script
     if parallel::is_enabled; then
-      runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
+      runner::call_test_functions "$test_file" "$filter" "$category" 2>/dev/null &
     else
-      runner::call_test_functions "$test_file" "$filter"
+      runner::call_test_functions "$test_file" "$filter" "$category"
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
@@ -63,6 +64,7 @@ function runner::functions_for_script() {
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
+  local category="$3"
   local prefix="test"
   # Use declare -F to list all function names
   local all_function_names=$(declare -F | awk '{print $3}')
@@ -80,6 +82,21 @@ function runner::call_test_functions() {
   for function_name in "${functions_to_run[@]}"; do
     if parallel::is_enabled && parallel::must_stop_on_failure; then
       break
+    fi
+
+    if [[ -n "$category" ]]; then
+      local fn_categories
+      fn_categories="$(helper::get_function_categories "$function_name" "$script")"
+      local match=false
+      for cat in $category; do
+        if [[ " $fn_categories " == *" $cat "* ]]; then
+          match=true
+          break
+        fi
+      done
+      if [[ $match == false ]]; then
+        continue
+      fi
     fi
 
     local provider_data=()
