@@ -127,7 +127,6 @@ function assert_have_been_called_times() {
     times=$(cat "${!file_var}")
   fi
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-
   if [[ -z "${!actual-}" && $expected -ne 0 || $times -ne $expected ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" \
