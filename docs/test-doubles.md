@@ -37,6 +37,22 @@ EOF
   assert_same "13525 pts/7    00:00:01 bash" "$(code)"
 }
 ```
+
+:::
+Mocked functions are also available inside subshells:
+
+::: code-group
+```bash [Example]
+function test_example() {
+  mock date echo "2024-05-01"
+
+  function run() {
+    date
+  }
+
+  assert_same "2024-05-01" "$(run)"
+}
+```
 :::
 
 ## spy
