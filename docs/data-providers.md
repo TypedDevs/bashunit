@@ -24,6 +24,31 @@ function test_my_test_case() {
 
 The provider function can echo a single value like `"one"` or multiple values `"one" "two" "three"`.
 
+## Interpolating arguments in test names
+
+You can reference the values provided by a data provider directly in the test
+function name using placeholders like `::1::`, `::2::`, ... matching the
+argument position.
+
+::: code-group
+```bash [example_test.sh]
+# data_provider fizz_numbers
+function test_returns_fizz_when_multiple_of_::1::_like_::2::_given() {
+  # ...
+}
+
+function fizz_numbers() {
+  echo 3 4
+  echo 3 6
+}
+```
+```[Output]
+Running example_test.sh
+✓ Passed: Returns fizz when multiple of '3' like '4' given
+✓ Passed: Returns fizz when multiple of '3' like '6' given
+```
+:::
+
 ## Multiple args in one call
 
 ::: code-group
