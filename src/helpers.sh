@@ -9,6 +9,13 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 #
 function helper::normalize_test_function_name() {
   local original_function_name="${1-}"
+
+  if [[ -n "${BASHUNIT_CURRENT_FUNCTION_NAME-}" &&
+        "$original_function_name" == "$BASHUNIT_CURRENT_FUNCTION_NAME" &&
+        -n "${BASHUNIT_INTERPOLATED_FUNCTION_NAME-}" ]]; then
+    original_function_name="$BASHUNIT_INTERPOLATED_FUNCTION_NAME"
+  fi
+
   local result
 
   # Remove the first "test_" prefix, if present
@@ -21,6 +28,29 @@ function helper::normalize_test_function_name() {
   result="${result//_/ }"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+
+  echo "$result"
+}
+
+function helper::escape_single_quotes() {
+  local value="$1"
+  # shellcheck disable=SC1003
+  echo "${value//\'/'\'\\''\'}"
+}
+
+function helper::interpolate_function_name() {
+  local function_name="$1"
+  shift
+  local args=("$@")
+  local result="$function_name"
+
+  for ((i=0; i<${#args[@]}; i++)); do
+    local placeholder="::$((i+1))::"
+    # shellcheck disable=SC2155
+    local value="$(helper::escape_single_quotes "${args[$i]}")"
+    value="'$value'"
+    result="${result//${placeholder}/${value}}"
+  done
 
   echo "$result"
 }

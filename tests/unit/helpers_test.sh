@@ -224,3 +224,17 @@ function test_to_run_with_filter_matching_string_in_function_name() {
     "test_my_awesome_function test_your_awesome_function"\
     "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
+
+function test_interpolate_function_name() {
+  local result
+  result="$(helper::interpolate_function_name "test_name_::1::_foo" "bar")"
+  assert_same "test_name_'bar'_foo" "$result"
+}
+
+function test_normalize_test_function_name_with_interpolation() {
+  local fn="test_returns_value_::1::_given"
+  export BASHUNIT_CURRENT_FUNCTION_NAME="$fn"
+  # shellcheck disable=SC2155
+  export BASHUNIT_INTERPOLATED_FUNCTION_NAME="$(helper::interpolate_function_name "$fn" "3")"
+  assert_same "Returns value '3' given" "$(helper::normalize_test_function_name "$fn")"
+}

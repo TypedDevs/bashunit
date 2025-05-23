@@ -135,6 +135,8 @@ function runner::run_test() {
   shift
   local function_name="$1"
   shift
+  export BASHUNIT_CURRENT_FUNCTION_NAME="$function_name"
+  export BASHUNIT_INTERPOLATED_FUNCTION_NAME="$(helper::interpolate_function_name "$function_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
