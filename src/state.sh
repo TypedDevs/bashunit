@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 _TESTS_PASSED=0
 _TESTS_FAILED=0
@@ -14,6 +14,7 @@ _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 _TEST_OUTPUT=""
+_TEST_EXIT_CODE=0
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -123,6 +124,14 @@ function state::add_test_output() {
   _TEST_OUTPUT+="$1"
 }
 
+function state::get_test_exit_code() {
+  echo "$_TEST_EXIT_CODE"
+}
+
+function state::set_test_exit_code() {
+  _TEST_EXIT_CODE="$1"
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
@@ -155,6 +164,7 @@ function state::export_subshell_context() {
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
+##TEST_EXIT_CODE=$_TEST_EXIT_CODE\
 ##TEST_OUTPUT=$encoded_test_output\
 ##
 EOF

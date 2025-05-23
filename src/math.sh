@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if dependencies::has_bc; then
   # bc is better than awk because bc has no integer limits.

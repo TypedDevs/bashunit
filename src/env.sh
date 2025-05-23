@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # shellcheck disable=SC2034
 
@@ -61,11 +61,19 @@ function env::is_show_execution_time_enabled() {
 }
 
 function env::is_dev_mode_enabled() {
-  [[ -f "$BASHUNIT_DEV_LOG" ]]
+  [[ -n "$BASHUNIT_DEV_LOG" ]]
 }
 
 function env::is_verbose_enabled() {
   [[ "$BASHUNIT_VERBOSE" == "true" ]]
+}
+
+function env::active_internet_connection() {
+  if ping -c 1 -W 3 google.com &> /dev/null; then
+    return 0
+  fi
+
+  return 1
 }
 
 function env::find_terminal_width() {
@@ -95,7 +103,6 @@ function env::print_verbose() {
     "BASHUNIT_SIMPLE_OUTPUT"
     "BASHUNIT_STOP_ON_FAILURE"
     "BASHUNIT_SHOW_EXECUTION_TIME"
-    "BASHUNIT_DEV_MODE"
     "BASHUNIT_VERBOSE"
   )
 

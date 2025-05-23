@@ -304,7 +304,6 @@ BASHUNIT_HEADER_ASCII_ART:    false
 BASHUNIT_SIMPLE_OUTPUT:       false
 BASHUNIT_STOP_ON_FAILURE:     false
 BASHUNIT_SHOW_EXECUTION_TIME: true
-BASHUNIT_DEV_MODE:            true
 BASHUNIT_VERBOSE:             true
 ########################################################################################################################################
 

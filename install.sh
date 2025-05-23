@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2155
 # shellcheck disable=SC2164
 
@@ -70,7 +70,7 @@ BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 if is_git_installed; then
     LATEST_BASHUNIT_VERSION="$(get_latest_tag "$BASHUNIT_GIT_REPO")"
 else
-    LATEST_BASHUNIT_VERSION="0.18.0"
+    LATEST_BASHUNIT_VERSION="0.19.1"
 fi
 TAG="$LATEST_BASHUNIT_VERSION"
 

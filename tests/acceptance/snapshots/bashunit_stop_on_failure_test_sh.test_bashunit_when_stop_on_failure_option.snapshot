@@ -5,7 +5,6 @@
     [2mbut got [0m [1m'2'[0m
 
 [33mStop on failure enabled...[0m
-
 [1mThere was 1 failure:[0m
 
 |1) ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh

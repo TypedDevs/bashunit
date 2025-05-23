@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
@@ -11,12 +11,14 @@ function helper::normalize_test_function_name() {
   local original_function_name="${1-}"
   local result
 
-  # Remove "test_" prefix
+  # Remove the first "test_" prefix, if present
   result="${original_function_name#test_}"
+  # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
+  if [[ "$result" == "$original_function_name" ]]; then
+    result="${original_function_name#test}"
+  fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Remove "test" prefix
-  result="${result#test}"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
 
@@ -30,7 +32,15 @@ function helper::check_duplicate_functions() {
   filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
 
   local function_names
-  function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
+  function_names=$(echo "$filtered_lines" | awk '{
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
+        gsub(/\(\)/, "", $i)
+        print $i
+        break
+      }
+    }
+  }')
 
   local duplicates
   duplicates=$(echo "$function_names" | sort | uniq -d)
@@ -38,6 +48,7 @@ function helper::check_duplicate_functions() {
     state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
   fi
+  return 0
 }
 
 #

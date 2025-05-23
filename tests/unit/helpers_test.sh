@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function tear_down() {
   helper::unset_if_exists fake_function
@@ -22,6 +22,10 @@ function test_normalize_test_function_name_one_word() {
 
 function test_normalize_test_function_name_snake_case() {
   assert_same "Some logic" "$(helper::normalize_test_function_name "test_some_logic")"
+}
+
+function test_normalize_double_test_function_name_snake_case() {
+  assert_same "Test some logic" "$(helper::normalize_test_function_name "test_test_some_logic")"
 }
 
 function test_normalize_test_function_name_camel_case() {
@@ -91,6 +95,13 @@ function test_check_duplicate_functions_without_duplicates() {
   file="$(current_dir)/fixtures/no_duplicate_functions.sh"
 
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
+}
+
+function test_check_duplicate_functions_without_function_keyword() {
+  local file
+  file="$(current_dir)/fixtures/no_function_keyword_duplicates.sh"
+
+  assert_general_error "$(helper::check_duplicate_functions "$file")"
 }
 
 function test_normalize_variable_name() {

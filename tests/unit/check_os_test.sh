@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function test_default_os() {
   mock uname echo "bogus OS"

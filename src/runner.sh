@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2155
 
 function runner::load_test_files() {
@@ -105,6 +105,10 @@ function runner::call_test_functions() {
     done
     unset function_name
   done
+
+  if ! env::is_simple_output_enabled; then
+    echo ""
+  fi
 }
 
 function runner::render_running_file_header() {
@@ -142,6 +146,12 @@ function runner::run_test() {
   exec 3>&1
 
   local test_execution_result=$(
+    trap '
+      state::set_test_exit_code $?
+      runner::run_tear_down
+      runner::clear_mocks
+      state::export_subshell_context
+    ' EXIT
     state::initialize_assertions_count
     runner::run_set_up
 
@@ -149,9 +159,6 @@ function runner::run_test() {
     # points to the original std-output.
     "$function_name" "$@" 2>&1
 
-    runner::run_tear_down
-    runner::clear_mocks
-    state::export_subshell_context
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
@@ -183,6 +190,12 @@ function runner::run_test() {
     local type="${subshell_output%%]*}" # Remove everything after "]"
     type="${type#[}"                    # Remove the leading "["
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
+
+    # Replace [type] with a newline to split the messages
+    line=$(echo "$line" | sed -e 's/\[failed\]/\n/g' \
+                              -e 's/\[skipped\]/\n/g' \
+                              -e 's/\[incomplete\]/\n/g')
+
     state::print_line "$type" "$line"
 
     subshell_output=$line
@@ -206,8 +219,9 @@ function runner::run_test() {
   runner::parse_result "$function_name" "$test_execution_result" "$@"
 
   local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
+  local test_exit_code="$(state::get_test_exit_code)"
 
-  if [[ -n $runtime_error ]]; then
+  if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
     state::add_tests_failed
     console_results::print_error_test "$function_name" "$runtime_error"
     reports::add_test_failed "$test_file" "$function_name" "$duration" "$total_assertions"
@@ -350,6 +364,12 @@ function runner::parse_result_sync() {
     sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
   )
 
+  local test_exit_code=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##TEST_EXIT_CODE=([0-9]*)##.*/\1/g'\
+  )
+
   log "debug" "[SYNC]" "function_name:$function_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
@@ -357,6 +377,7 @@ function runner::parse_result_sync() {
   ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
   ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
+  ((_TEST_EXIT_CODE += test_exit_code)) || true
 }
 
 function runner::write_failure_result_output() {

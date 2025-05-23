@@ -1,8 +1,18 @@
-#!/bin/bash
-set -euo pipefail
+#!/usr/bin/env bash
+# shellcheck disable=SC2317
+set -uo pipefail
+set +e
+
+ACTIVE_INTERNET=0
 
 function set_up_before_script() {
+  env::active_internet_connection
+  ACTIVE_INTERNET=$?
   TEST_ENV_FILE="./tests/acceptance/fixtures/.env.default"
+}
+
+function tear_down_after_script() {
+  set -e
 }
 
 function set_up() {
@@ -16,6 +26,10 @@ function tear_down() {
 }
 
 function test_install_downloads_the_latest_version() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection" && return
+  fi
+
   local installed_bashunit="./lib/bashunit"
   local output
 
@@ -31,6 +45,10 @@ function test_install_downloads_the_latest_version() {
 }
 
 function test_install_downloads_in_given_folder() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection" && return
+  fi
+
   local installed_bashunit="./deps/bashunit"
   local output
 
@@ -46,6 +64,10 @@ function test_install_downloads_in_given_folder() {
 }
 
 function test_install_downloads_the_given_version() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection" && return
+  fi
+
   local installed_bashunit="./lib/bashunit"
   local output
 
@@ -63,6 +85,10 @@ function test_install_downloads_the_given_version() {
 }
 
 function test_install_downloads_the_non_stable_beta_version() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    skip "no internet connection" && return
+  fi
+
   mock date echo "2023-11-13"
   mock tput echo ""
   local installed_bashunit="./deps/bashunit"
