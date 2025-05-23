@@ -14,8 +14,7 @@ function test_mock_ps_when_executing_a_sourced_function() {
 }
 
 function test_spy_commands_called_once_when_executing_a_script() {
-  skip "not working while executing commands outside a function"
-  return
+  skip "not working while executing commands outside a function" && return
 
   spy ps
   spy awk
