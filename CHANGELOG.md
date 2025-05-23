@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix asserts on test doubles in subshell
+- Allow interpolating arguments in data providers output
 
 ## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
 

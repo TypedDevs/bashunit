@@ -142,6 +142,12 @@ Creates a report XML file that follows the JUnit XML format and contains informa
 
 bashunit provides an option to run each test in a separate child process, allowing you to parallelize the test execution and potentially speed up the testing process. When running in parallel mode, the execution order of tests is randomized.
 
+::: warning
+Parallel mode is currently only supported on **macOS** and **Ubuntu**. On other
+systems (like Alpine Linux or Windows) the option is automatically disabled due
+to inconsistent results. In those environments consider using `--no-parallel`.
+:::
+
 ::: code-group
 ```bash [Example]
 ./bashunit ./tests --parallel
