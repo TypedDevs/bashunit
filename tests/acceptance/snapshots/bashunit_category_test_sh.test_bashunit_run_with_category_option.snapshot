@@ -1,4 +1,4 @@
-[1mRunning tests/acceptance/fixtures/test_bashunit_categories.sh[0m
+[1mRunning ./tests/acceptance/fixtures/test_bashunit_categories.sh[0m
 [32m✓ Passed[0m: Slow example
 
 [2mTests:     [0m [32m1 passed[0m, 1 total
