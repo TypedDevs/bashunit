@@ -104,3 +104,20 @@ function test_successful_spy_called_times_with_source() {
 
   assert_have_been_called_times 2 function_to_be_spied_on
 }
+
+function test_spy_called_in_subshell() {
+  spy create_remote_time_entries
+
+  function run() {
+    create_remote_time_entries "$1"
+    echo "done"
+  }
+
+  local result
+  result="$(run "2023-10-01")"
+
+  assert_same "done" "$result"
+  assert_have_been_called create_remote_time_entries
+  assert_have_been_called_with "2023-10-01" create_remote_time_entries
+  assert_have_been_called_times 1 create_remote_time_entries
+}
