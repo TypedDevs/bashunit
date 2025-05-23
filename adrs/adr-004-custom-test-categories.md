@@ -1,21 +1,18 @@
 # Title: Support custom test categories
 
-* Status: proposed
-* Authors: @CodexBot
-* Date: 2024-10-30
-
-Technical Story:
-  - Issue: [TypedDevs/bashunit#357](https://github.com/TypedDevs/bashunit/issues/357)
+* Status: accepted
+* Authors: @Chemaclass
+* Date: 2025-04-24
 
 ## Context and Problem Statement
 
-Currently bashunit only groups tests by file or by matching a filter in the test name. Users would like to run subsets such as "slow" tests without relying on file structure or naming conventions.
+Currently, bashunit only groups tests by file or by matching a filter in the test name. Users would like to run subsets such as "slow" tests without relying on file structure or naming conventions.
 
 ## Considered Options
 
 * Parse category annotations in comments and filter via a command line option.
 * Require categories in function names (e.g. `test_slow_example`).
-* Keep relying on folder structure only.
+* Keep relying on the folder structure only.
 
 ## Decision Outcome
 
