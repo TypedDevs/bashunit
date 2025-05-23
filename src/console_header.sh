@@ -10,11 +10,13 @@ function console_header::print_version_with_env() {
     return
   fi
 
-  console_header::print_version "$filter" "${files[@]}"
+  console_header::print_version "$filter" "$category" "${files[@]}"
 }
 
 function console_header::print_version() {
   local filter=${1:-}
+  local category=${2:-}
+
   if [[ -n "$filter" ]]; then
    shift
   fi
@@ -46,9 +48,16 @@ EOF
   if [ "$total_tests" -eq 0 ]; then
     printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: ~%s\n"\
-      "$BASHUNIT_VERSION"\
-      "$total_tests"
+    if [ -n "$category" ]; then
+      printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: ~%s | Category: %s\n"\
+        "$BASHUNIT_VERSION"\
+        "$total_tests"\
+        "$category"
+    else
+      printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: ~%s\n"\
+        "$BASHUNIT_VERSION"\
+        "$total_tests"
+    fi
   fi
 }
 
