@@ -184,7 +184,10 @@ function helper::get_function_categories() {
   fi
 
   local line_number
-  line_number=$(grep -n -m1 -E "^[[:space:]]*(function[[:space:]]+)?${function_name}[[:space:]]*\(" "$script" | cut -d: -f1)
+  line_number=$(
+    grep -n -m1 -E "^[[:space:]]*(function[[:space:]]+)?${function_name}[[:space:]]*\(" \
+      "$script" | cut -d: -f1
+  )
   if [[ -z $line_number ]]; then
     return
   fi
