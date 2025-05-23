@@ -86,7 +86,7 @@ function runner::call_test_functions() {
 
     if [[ -n "$category" ]]; then
       local fn_categories
-      fn_categories="$(helper::get_function_categories "$function_name" "$script")"
+      fn_categories="$(helper::get_function_categories "$fn_name" "$script")"
       local match=false
       for cat in $category; do
         if [[ " $fn_categories " == *" $cat "* ]]; then
