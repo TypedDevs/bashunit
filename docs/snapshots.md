@@ -52,3 +52,20 @@ Some tests failed
 You need to run the tests for this example twice to see them work.
 The first time you run them, the snapshots will be generated and the second time they will be asserted.
 :::
+
+## assert_match_snapshot_ignore_colors
+> `assert_match_snapshot_ignore_colors "actual"`
+
+Like `assert_match_snapshot` but ANSI escape codes in `actual` are ignored. This allows
+verifying the output text while disregarding its style.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_match_snapshot_ignore_colors "$(printf '\e[31mHello\e[0m World!')"
+}
+function test_failure() {
+  assert_match_snapshot_ignore_colors "World"
+}
+```
+:::
