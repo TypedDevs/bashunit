@@ -124,3 +124,16 @@ function test_spy_called_in_subshell() {
   assert_have_been_called_times 2 spy_called_in_subshell
   assert_have_been_called_with "2025-05-23" spy_called_in_subshell
 }
+
+function test_mock_called_in_subshell() {
+  mock date echo "2024-05-01"
+
+  function run() {
+    date
+  }
+
+  local result
+  result="$(run)"
+
+  assert_same "2024-05-01" "$result"
+}

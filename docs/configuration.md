@@ -68,6 +68,11 @@ BASHUNIT_SIMPLE_OUTPUT=false
 
 Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
 
+::: warning
+Parallel execution is supported only on **macOS** and **Ubuntu**. On other
+systems bashunit forces sequential execution to avoid inconsistent results.
+:::
+
 Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
 
 

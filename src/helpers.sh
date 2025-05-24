@@ -8,19 +8,48 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 # @return string Eg: "Some logic camelCase"
 #
 function helper::normalize_test_function_name() {
-  local original_function_name="${1-}"
+  local original_fn_name="${1-}"
+  local interpolated_fn_name="${2-}"
+
+  if [[ -n "${interpolated_fn_name-}" ]]; then
+    original_fn_name="$interpolated_fn_name"
+  fi
+
   local result
 
   # Remove the first "test_" prefix, if present
-  result="${original_function_name#test_}"
+  result="${original_fn_name#test_}"
   # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
-  if [[ "$result" == "$original_function_name" ]]; then
-    result="${original_function_name#test}"
+  if [[ "$result" == "$original_fn_name" ]]; then
+    result="${original_fn_name#test}"
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+
+  echo "$result"
+}
+
+function helper::escape_single_quotes() {
+  local value="$1"
+  # shellcheck disable=SC1003
+  echo "${value//\'/'\'\\''\'}"
+}
+
+function helper::interpolate_function_name() {
+  local function_name="$1"
+  shift
+  local args=("$@")
+  local result="$function_name"
+
+  for ((i=0; i<${#args[@]}; i++)); do
+    local placeholder="::$((i+1))::"
+    # shellcheck disable=SC2155
+    local value="$(helper::escape_single_quotes "${args[$i]}")"
+    value="'$value'"
+    result="${result//${placeholder}/${value}}"
+  done
 
   echo "$result"
 }

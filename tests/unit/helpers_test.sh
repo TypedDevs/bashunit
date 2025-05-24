@@ -224,3 +224,18 @@ function test_to_run_with_filter_matching_string_in_function_name() {
     "test_my_awesome_function test_your_awesome_function"\
     "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
+
+function test_interpolate_fn_name() {
+  local result
+  result="$(helper::interpolate_function_name "test_name_::1::_foo" "bar")"
+
+  assert_same "test_name_'bar'_foo" "$result"
+}
+
+function test_normalize_test_function_name_with_interpolation() {
+  local fn="test_returns_value_::1::_and_::2::_given"
+  # shellcheck disable=SC2155
+  local interpolated_fn="$(helper::interpolate_function_name "$fn" "3" "4")"
+
+  assert_same "Returns value '3' and '4' given" "$(helper::normalize_test_function_name "$fn" "$interpolated_fn")"
+}
