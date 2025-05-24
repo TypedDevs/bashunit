@@ -136,6 +136,13 @@ function runner::run_test() {
   local fn_name="$1"
   shift
 
+  # Export a unique test identifier so that test doubles can
+  # create temporary files scoped per test run. This prevents
+  # race conditions when running tests in parallel.
+  local sanitized_fn_name
+  sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
+  export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
+
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"

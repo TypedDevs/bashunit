@@ -48,8 +48,9 @@ function spy() {
   export "${variable}_params"
 
   local times_file params_file
-  times_file=$(temp_file "${variable}_times")
-  params_file=$(temp_file "${variable}_params")
+  local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
+  times_file=$(temp_file "${test_id}_${variable}_times")
+  params_file=$(temp_file "${test_id}_${variable}_params")
   echo 0 > "$times_file"
   : > "$params_file"
   export "${variable}_times_file"="$times_file"
