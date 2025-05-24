@@ -16,6 +16,9 @@ Options:
   -f, --filter <filter>
     Filters the tests to run based on the test name.
 
+  -c, --category <name>
+    Filters the tests to run based on @category tags.
+
   -l, --log-junit <out.xml>
     Create a report JUnit XML file that contains information about the test results.
 

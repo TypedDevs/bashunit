@@ -90,6 +90,19 @@ Filters the tests to be run based on the `test name`.
 ```
 :::
 
+## Category
+
+> `bashunit -c|--category <name>`
+
+Filters the tests to run based on `@category` comments.
+
+::: code-group
+```bash [Example]
+# run only tests tagged as slow
+./bashunit ./tests --category slow
+```
+:::
+
 ## JUnit Logging
 
 > `bashunit -l|--log-junit <out.xml>`

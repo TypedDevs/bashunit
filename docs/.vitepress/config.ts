@@ -76,6 +76,9 @@ export default defineConfig({
         text: 'Skipping/incomplete',
         link: '/skipping-incomplete'
       }, {
+        text: 'Test categories',
+        link: '/test-categories'
+      }, {
         text: 'Standalone',
         link: '/standalone'
       }, {
