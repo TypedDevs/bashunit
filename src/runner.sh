@@ -343,6 +343,7 @@ function runner::parse_result_parallel() {
   echo "$execution_result" > "$unique_test_result_file"
 }
 
+# shellcheck disable=SC2295
 function runner::parse_result_sync() {
   local fn_name=$1
   local execution_result=$2
