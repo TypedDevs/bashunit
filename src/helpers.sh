@@ -159,8 +159,8 @@ function helper::get_provider_data() {
 
   data_provider_function=$(\
     grep -B 1 "function $function_name()" "$script" |\
-    grep "# data_provider " |\
-    sed -E -e 's/\ *# data_provider (.*)$/\1/g'\
+    grep -E "# *@?data_provider " |\
+    sed -E -e 's/\ *# *@?data_provider (.*)$/\1/g'\
     || true
   )
 
