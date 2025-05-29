@@ -123,7 +123,7 @@ function fake_provider_data_string() {
 
 function test_get_provider_data() {
   # shellcheck disable=SC2317
-  # data_provider fake_provider_data_string
+  # @data_provider fake_provider_data_string
   function fake_function_get_provider_data() {
     return 0
   }
@@ -137,8 +137,8 @@ function fake_provider_data_array() {
 }
 
 function test_get_provider_data_array() {
+  # @data_provider fake_provider_data_array
   # shellcheck disable=SC2317
-  # data_provider fake_provider_data_array
   function fake_function_get_provider_data_array() {
     return 0
   }
@@ -150,7 +150,7 @@ function test_get_provider_data_array() {
 
 function test_get_provider_data_should_returns_empty_when_not_exists_provider_function() {
   # shellcheck disable=SC2317
-  # data_provider not_existing_provider
+  # @data_provider not_existing_provider
   function fake_function_get_not_existing_provider_data() {
     return 0
   }

@@ -5,7 +5,7 @@ function set_up() {
   _GLOBAL="aa-bb"
 }
 
-# data_provider provide_multiples_values
+# @data_provider provide_multiples_values
 function test_multiple_values_from_data_provider() {
   local first=$1
   local second=$2
@@ -17,7 +17,7 @@ function provide_multiples_values() {
   echo "aa" "bb"
 }
 
-# data_provider provide_single_values
+# @data_provider provide_single_values
 function test_single_values_from_data_provider() {
   local data="$1"
 
@@ -30,7 +30,7 @@ function provide_single_values() {
   echo "three"
 }
 
-# data_provider provide_single_value
+# @data_provider provide_single_value
 function test_single_value_from_data_provider() {
   local current_data="$1"
 
