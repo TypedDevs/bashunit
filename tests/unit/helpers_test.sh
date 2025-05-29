@@ -137,8 +137,8 @@ function fake_provider_data_array() {
 }
 
 function test_get_provider_data_array() {
-  # shellcheck disable=SC2317
   # @data_provider fake_provider_data_array
+  # shellcheck disable=SC2317
   function fake_function_get_provider_data_array() {
     return 0
   }
