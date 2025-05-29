@@ -2,6 +2,11 @@
 
 When creating tests, you might need to override existing function to be able to write isolated tests from external behaviour. To accomplish this, you can use mocks. You can also check that a function was called with certain arguments or even a number of times with a spy.
 
+Temporary files created by spies are isolated per test run, so they work reliably when executing tests in parallel.
+
+Spies record their calls in temporary files scoped to each test run.
+This avoids clashes between processes and allows spies to work reliably when tests execute in parallel using `BASHUNIT_PARALLEL_RUN`.
+
 ## mock
 > `mock "function" "body"`
 
@@ -35,6 +40,22 @@ PID TTY          TIME CMD
 EOF
 
   assert_same "13525 pts/7    00:00:01 bash" "$(code)"
+}
+```
+
+:::
+Mocked functions are also available inside subshells:
+
+::: code-group
+```bash [Example]
+function test_example() {
+  mock date echo "2024-05-01"
+
+  function run() {
+    date
+  }
+
+  assert_same "2024-05-01" "$(run)"
 }
 ```
 :::

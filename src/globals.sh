@@ -40,17 +40,29 @@ function random_str() {
 function temp_file() {
   local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp /tmp/bashunit/tmp/"$prefix".XXXXXXX
+  local test_prefix=""
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  fi
+  mktemp /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
 }
 
 function temp_dir() {
   local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp -d /tmp/bashunit/tmp/"$prefix".XXXXXXX
+  local test_prefix=""
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  fi
+  mktemp -d /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
 }
 
 function cleanup_temp_files() {
-  rm -rf /tmp/bashunit/tmp/*
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
+  else
+    rm -rf /tmp/bashunit/tmp/*
+  fi
 }
 
 # shellcheck disable=SC2145
