@@ -13,9 +13,12 @@ Each run is treated as a separate test, so it can pass or fail independently. Pl
 
 A data provider function is specified as follows:
 
+> **Note**: The previous `# data_provider` syntax is still supported but
+> deprecated. Prefer using the `@` prefix going forward.
+
 ::: code-group
 ```bash [Example]
-# data_provider provider_function_name
+# @data_provider provider_function_name
 function test_my_test_case() {
   ...
 }
@@ -32,7 +35,7 @@ argument position.
 
 ::: code-group
 ```bash [example_test.sh]
-# data_provider fizz_numbers
+# @data_provider fizz_numbers
 function test_returns_fizz_when_multiple_of_::1::_like_::2::_given() {
   # ...
 }
@@ -53,7 +56,7 @@ Running example_test.sh
 
 ::: code-group
 ```bash [example_test.sh]
-# data_provider provider_directories
+# @data_provider provider_directories
 function test_directories_exists() {
   local dir1=$1
   local dir2=$2
@@ -78,7 +81,7 @@ Running example_test.sh
 
 ::: code-group
 ```bash [example_test.sh]
-# data_provider provider_directories
+# @data_provider provider_directories
 function test_directory_exists() {
   local directory=$1
 
@@ -103,7 +106,7 @@ Running example_test.sh
 
 ::: code-group
 ```bash [example_test.sh]
-# data_provider provider_directories
+# @data_provider provider_directories
 function test_directory_exists() {
   local outro=$1
   local directory=$2
