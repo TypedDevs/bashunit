@@ -4,6 +4,9 @@ When creating tests, you might need to override existing function to be able to 
 
 Temporary files created by spies are isolated per test run, so they work reliably when executing tests in parallel.
 
+Spies record their calls in temporary files scoped to each test run.
+This avoids clashes between processes and allows spies to work reliably when tests execute in parallel using `BASHUNIT_PARALLEL_RUN`.
+
 ## mock
 > `mock "function" "body"`
 

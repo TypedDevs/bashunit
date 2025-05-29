@@ -141,7 +141,11 @@ function runner::run_test() {
   # race conditions when running tests in parallel.
   local sanitized_fn_name
   sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
+  if env::is_parallel_run_enabled; then
+    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
+  else
+    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
+  fi
 
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
@@ -344,40 +348,45 @@ function runner::parse_result_parallel() {
 }
 
 # shellcheck disable=SC2295
-function runner::_extract_field_value() {
-  local line=$1
-  local key=$2
-
-  local value="${line##*##${key}=}"
-  value="${value%%##*}"
-
-  echo "$value"
-}
-
 function runner::parse_result_sync() {
   local fn_name=$1
   local execution_result=$2
 
-  local trimmed="${execution_result%$'\n'}"
-  local result_line="${trimmed##*$'\n'}"
+  local assertions_failed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
+  )
 
-  local assertions_failed
-  assertions_failed=$(runner::_extract_field_value "$result_line" "ASSERTIONS_FAILED")
+  local assertions_passed=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
+  )
 
-  local assertions_passed
-  assertions_passed=$(runner::_extract_field_value "$result_line" "ASSERTIONS_PASSED")
+  local assertions_skipped=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
+  )
 
-  local assertions_skipped
-  assertions_skipped=$(runner::_extract_field_value "$result_line" "ASSERTIONS_SKIPPED")
+  local assertions_incomplete=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
+  )
 
-  local assertions_incomplete
-  assertions_incomplete=$(runner::_extract_field_value "$result_line" "ASSERTIONS_INCOMPLETE")
+  local assertions_snapshot=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
+  )
 
-  local assertions_snapshot
-  assertions_snapshot=$(runner::_extract_field_value "$result_line" "ASSERTIONS_SNAPSHOT")
-
-  local test_exit_code
-  test_exit_code=$(runner::_extract_field_value "$result_line" "TEST_EXIT_CODE")
+  local test_exit_code=$(\
+    echo "$execution_result" |\
+    tail -n 1 |\
+    sed -E -e 's/.*##TEST_EXIT_CODE=([0-9]*)##.*/\1/g'\
+  )
 
   log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
