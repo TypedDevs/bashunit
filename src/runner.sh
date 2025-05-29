@@ -141,7 +141,7 @@ function runner::run_test() {
   # race conditions when running tests in parallel.
   local sanitized_fn_name
   sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
+  export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
 
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
@@ -343,6 +343,7 @@ function runner::parse_result_parallel() {
   echo "$execution_result" > "$unique_test_result_file"
 }
 
+# shellcheck disable=SC2295
 function runner::_extract_field_value() {
   local line=$1
   local key=$2

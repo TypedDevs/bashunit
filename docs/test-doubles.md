@@ -2,6 +2,8 @@
 
 When creating tests, you might need to override existing function to be able to write isolated tests from external behaviour. To accomplish this, you can use mocks. You can also check that a function was called with certain arguments or even a number of times with a spy.
 
+Temporary files created by spies are isolated per test run, so they work reliably when executing tests in parallel.
+
 ## mock
 > `mock "function" "body"`
 
