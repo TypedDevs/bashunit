@@ -87,7 +87,8 @@ function parallel::reset() {
 }
 
 function parallel::is_enabled() {
-  if env::is_parallel_run_enabled && (check_os::is_macos || check_os::is_ubuntu); then
+  if env::is_parallel_run_enabled && \
+    (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
     return 0
   fi
   return 1
