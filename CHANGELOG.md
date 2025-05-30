@@ -7,6 +7,7 @@
 - Deprecate `# data_provider` in favor of `# @data_provider`
 - Allow `assert_have_been_called_with` to check arguments of specific calls
 - Enable parallel tests on Windows
+- Add `assert_not_called`
 
 ## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
 
