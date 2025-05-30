@@ -42,7 +42,7 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          ./bashunit tests/${{ matrix.test_chunk }}/*_test.sh
+          ./bashunit --parallel tests/${{ matrix.test_chunk }}/*_test.sh
 
   alpine:
     name: "On alpine-latest"
