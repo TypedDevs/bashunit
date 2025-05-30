@@ -110,23 +110,24 @@ function main::exec_assert() {
   local inner_exit_code=0
   local bashunit_exit_code=0
 
-  # Handle different assert_* functions
+  # Handle the `assert_exit_code` function by evaluating the command and capturing output
   case "$assert_fn" in
     assert_exit_code)
+      # Evaluate the command and capture both output and exit code
+#      output=$(eval "$last_arg" 2>&1)
       output=$(main::handle_assert_exit_code "$last_arg")
       inner_exit_code=$?
-      # Remove the last argument and append the exit code
+      # Remove the last argument (command) and append the actual exit code
       args=("${args[@]:0:last_index}")
       args+=("$inner_exit_code")
       ;;
     *)
-      # Add more cases here for other assert_* handlers if needed
+      # Any other assertion functions (like assert_contains) are passed normally
       ;;
   esac
 
   if [[ -n "$output" ]]; then
     echo "$output" 1>&1
-    assert_fn="assert_same"
   fi
 
   # Run the assertion function and write into stderr
@@ -149,6 +150,7 @@ function main::handle_assert_exit_code() {
     output=$(eval "$cmd" 2>&1 || echo "inner_exit_code:$?")
     local last_line
     last_line=$(echo "$output" | tail -n 1)
+
     if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
       inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
       if ! [[ $inner_exit_code =~ ^[0-9]+$ ]]; then
@@ -156,6 +158,7 @@ function main::handle_assert_exit_code() {
       fi
       output=$(echo "$output" | sed '$d')
     fi
+
     echo "$output"
     return "$inner_exit_code"
   else
