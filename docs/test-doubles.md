@@ -156,3 +156,26 @@ function test_failure() {
 }
 ```
 :::
+
+## assert_not_called
+> `assert_not_called "spy"`
+
+Reports an error if `spy` has been executed at least once.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  spy ps
+
+  assert_not_called ps
+}
+
+function test_failure() {
+  spy ps
+
+  ps
+
+  assert_not_called ps
+}
+```
+:::

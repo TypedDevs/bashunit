@@ -141,3 +141,9 @@ function assert_have_been_called_times() {
 
   state::add_assertions_passed
 }
+
+function assert_not_called() {
+  local command=$1
+  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  assert_have_been_called_times 0 "$command" "$label"
+}
