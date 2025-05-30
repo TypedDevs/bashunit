@@ -147,3 +147,21 @@ function test_spy_called_with_different_arguments() {
   assert_have_been_called_with "first_a first_b" ps 1
   assert_have_been_called_with "second" ps 2
 }
+
+function test_spy_successful_not_called() {
+  spy ps
+
+  assert_not_called ps
+}
+
+function test_spy_unsuccessful_not_called() {
+  spy ps
+
+  ps
+
+  assert_same \
+    "$(console_results::print_failed_test "Spy unsuccessful not called" "ps" \
+      "to has been called" "0 times" \
+      "actual" "1 times")" \
+    "$(assert_not_called ps)"
+}
