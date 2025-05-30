@@ -137,3 +137,13 @@ function test_mock_called_in_subshell() {
 
   assert_same "2024-05-01" "$result"
 }
+
+function test_spy_called_with_different_arguments() {
+  spy ps
+
+  ps first_a first_b
+  ps second
+
+  assert_have_been_called_with "first_a first_b" ps 1
+  assert_have_been_called_with "second" ps 2
+}

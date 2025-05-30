@@ -102,26 +102,30 @@ function test_failure() {
 :::
 
 ## assert_have_been_called_with
-> `assert_have_been_called_with "expected" "spy"`
+> `assert_have_been_called_with "expected" "spy" [call_index]`
 
-Reports an error if `callable` is not called with `expected`.
+Reports an error if `spy` is not called with `expected`. When `call_index` is
+provided, the assertion checks the arguments of that specific call (starting at
+1). Without `call_index` it checks the last invocation.
 
 ::: code-group
 ```bash [Example]
 function test_success() {
   spy ps
 
-  ps foo bar
+  ps foo
+  ps bar
 
-  assert_have_been_called_with "foo bar" ps
+  assert_have_been_called_with "foo" ps 1
+  assert_have_been_called_with "bar" ps 2
 }
 
 function test_failure() {
   spy ps
 
-  ps bar foo
+  ps bar
 
-  assert_have_been_called_with "foo bar" ps
+  assert_have_been_called_with "foo" ps 1
 }
 ```
 :::
