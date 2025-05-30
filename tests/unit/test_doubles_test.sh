@@ -160,7 +160,7 @@ function test_spy_unsuccessful_not_called() {
   ps
 
   assert_same \
-    "$(console_results::print_failed_test "Unsuccessful not called" "ps" \
+    "$(console_results::print_failed_test "Spy unsuccessful not called" "ps" \
       "to has been called" "0 times" \
       "actual" "1 times")" \
     "$(assert_not_called ps)"
