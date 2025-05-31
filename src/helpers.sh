@@ -127,9 +127,9 @@ function helper::find_files_recursive() {
   local path="${1%%/}"
 
   if [[ "$path" == *"*"* ]]; then
-    eval find "$path" -type f -name '*[tT]est.sh' | sort | uniq
+    eval find "$path" -type f -name '*[tT]est.sh' | sort -u
   elif [[ -d "$path" ]]; then
-    find "$path" -type f -name '*[tT]est.sh' | sort | uniq
+    find "$path" -type f -name '*[tT]est.sh' | sort -u
   else
     echo "$path"
   fi
@@ -201,7 +201,7 @@ function helpers::find_total_tests() {
         pattern+=".*$filter"
     fi
 
-    grep -r -E "$pattern" --include="*.sh" "${files[@]}" 2>/dev/null | wc -l | xargs
+    grep -r -E "$pattern" --include="*[tT]est.sh" "${files[@]}" 2>/dev/null | wc -l | xargs
 }
 
 function helper::load_test_files() {
