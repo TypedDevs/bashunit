@@ -35,3 +35,40 @@ function assert_match_snapshot() {
 
   state::add_assertions_passed
 }
+
+function assert_match_snapshot_ignore_colors() {
+  local actual
+  actual=$(echo -n "$1" | sed -r 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
+
+  local directory
+  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+  local test_file
+  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
+  local snapshot_name
+  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
+  local snapshot_file
+  snapshot_file="${directory}/${test_file}.${snapshot_name}"
+
+  if [[ ! -f "$snapshot_file" ]]; then
+    mkdir -p "$directory"
+    echo "$actual" > "$snapshot_file"
+
+    state::add_assertions_snapshot
+    return
+  fi
+
+  local snapshot
+  snapshot=$(tr -d '\r' < "$snapshot_file")
+
+  if [[ "$actual" != "$snapshot" ]]; then
+    local label
+    label=$(helper::normalize_test_function_name "${FUNCNAME[1]}")
+
+    state::add_assertions_failed
+    console_results::print_failed_snapshot_test "$label" "$snapshot_file"
+
+    return
+  fi
+
+  state::add_assertions_passed
+}
