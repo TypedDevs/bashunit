@@ -40,7 +40,7 @@ function test_detect_osx_os() {
   assert_equals "OSX" "$_OS"
 }
 
-# data_provider window_linux_variations
+# @data_provider window_linux_variations
 function test_detect_windows_os() {
   local windows_linux="$1"
   mock uname echo "$windows_linux"

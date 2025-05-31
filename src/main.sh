@@ -20,8 +20,8 @@ function main::exec_tests() {
   trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure_sync' EXIT
 
   if env::is_parallel_run_enabled && ! parallel::is_enabled; then
-    printf "%sWarning: Parallel tests are working only for macOS and Ubuntu.\n" "${_COLOR_INCOMPLETE}"
-    printf "For other OS (Linux/Alpine, Windows), --parallel is not enabled due to inconsistent results,\n"
+    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_COLOR_INCOMPLETE}"
+    printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"
     printf "particularly involving race conditions.%s " "${_COLOR_DEFAULT}"
     printf "%sFallback using --no-parallel%s\n" "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   fi

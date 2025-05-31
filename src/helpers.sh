@@ -158,9 +158,9 @@ function helper::get_provider_data() {
   fi
 
   data_provider_function=$(\
-    grep -B 1 "function $function_name()" "$script" |\
-    grep "# data_provider " |\
-    sed -E -e 's/\ *# data_provider (.*)$/\1/g'\
+    grep -B 2 "function $function_name()" "$script" |\
+    grep -E "# *@?data_provider " |\
+    sed -E -e 's/\ *# *@?data_provider (.*)$/\1/g'\
     || true
   )
 
@@ -190,19 +190,18 @@ function helpers::get_latest_tag() {
 function helpers::find_total_tests() {
     local filter=${1:-}
     local files=("${@:2}")
-    local total_count=0
 
-    for file in "${files[@]}"; do
-        local count
-        if [[ -n "$filter" ]]; then
-            count=$(grep -r -E "^\s*function\s+test.*$filter" "$file" --include=\*.sh 2>/dev/null | wc -l)
-        else
-            count=$(grep -r -E '^\s*function\s+test' "$file" --include=\*.sh 2>/dev/null | wc -l)
-        fi
-        total_count=$((total_count + count))
-    done
+    if [[ ${#files[@]} -eq 0 ]]; then
+        echo 0
+        return
+    fi
 
-    echo "$total_count"
+    local pattern='^\s*function\s+test'
+    if [[ -n "$filter" ]]; then
+        pattern+=".*$filter"
+    fi
+
+    grep -r -E "$pattern" --include="*.sh" "${files[@]}" 2>/dev/null | wc -l | xargs
 }
 
 function helper::load_test_files() {
