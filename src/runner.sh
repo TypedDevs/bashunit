@@ -178,8 +178,8 @@ function runner::run_test() {
   exec 3>&-
 
   local end_time=$(clock::now)
-  local duration_ns=$(math::calculate "($end_time - $start_time) ")
-  local duration=$(math::calculate "$duration_ns / 1000000")
+  local duration_ns=$((end_time - start_time))
+  local duration=$((duration_ns / 1000000))
 
   if env::is_verbose_enabled; then
     if env::is_simple_output_enabled; then

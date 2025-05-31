@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
 function clock::now() {
+  if [[ -n ${EPOCHREALTIME+x} && -n "$EPOCHREALTIME" ]]; then
+    local seconds microseconds
+    seconds=${EPOCHREALTIME%%.*}
+    microseconds=${EPOCHREALTIME##*.}
+    printf '%d\n' $((10#$seconds * 1000000000 + 10#$microseconds * 1000))
+    return 0
+  fi
+
   if dependencies::has_perl && perl -MTime::HiRes -e "" > /dev/null 2>&1; then
     if perl -MTime::HiRes -e 'printf("%.0f\n",Time::HiRes::time()*1000000000)'; then
-        return 0
+      return 0
     fi
   fi
 
@@ -52,7 +60,7 @@ function clock::shell_time() {
 function clock::total_runtime_in_milliseconds() {
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "($end_time-$_START_TIME)/1000000"
+    printf '%d\n' $(((end_time - _START_TIME)/1000000))
   else
     echo ""
   fi
@@ -61,7 +69,7 @@ function clock::total_runtime_in_milliseconds() {
 function clock::total_runtime_in_nanoseconds() {
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "($end_time-$_START_TIME)"
+    printf '%d\n' $((end_time - _START_TIME))
   else
     echo ""
   fi
