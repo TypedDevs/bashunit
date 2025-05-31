@@ -30,7 +30,7 @@ Once **bashunit** is installed, you're ready to get started.
 2.  Next, create your first test file named `example_test.sh` within this folder:
     ::: code-group
     ```bash [tests/example_test.sh]
-    #!/bin/bash
+    #!/usr/bin/env bash
 
     function test_bashunit_is_working() {
       assert_same "bashunit is working" "bashunit is working"

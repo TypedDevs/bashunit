@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function tear_down() {
   unset code
@@ -62,7 +62,9 @@ function test_unsuccessful_spy_called_times() {
   ps
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" "to has been called" "1 times")"\
+    "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" \
+    "to has been called" "1 times" \
+    "actual" "2 times")"\
     "$(assert_have_been_called_times 1 ps)"
 }
 
@@ -88,8 +90,8 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
     "$(console_results::print_failed_test \
     "Unsuccessful spy with source function have been called"\
     "function_to_be_spied_on" \
-    "to has been called" \
-    "1 times")"\
+    "to has been called" "1 times" \
+    "actual" "2 times")"\
     "$(assert_have_been_called_times 1 function_to_be_spied_on)"
 }
 
@@ -105,3 +107,61 @@ function test_successful_spy_called_times_with_source() {
   assert_have_been_called_times 2 function_to_be_spied_on
 }
 
+function test_spy_called_in_subshell() {
+  spy spy_called_in_subshell
+
+  function run() {
+    spy_called_in_subshell "$1"
+    spy_called_in_subshell "$1"
+    echo "done"
+  }
+
+  local result
+  result="$(run "2025-05-23")"
+
+  assert_same "done" "$result"
+  assert_have_been_called spy_called_in_subshell
+  assert_have_been_called_times 2 spy_called_in_subshell
+  assert_have_been_called_with "2025-05-23" spy_called_in_subshell
+}
+
+function test_mock_called_in_subshell() {
+  mock date echo "2024-05-01"
+
+  function run() {
+    date
+  }
+
+  local result
+  result="$(run)"
+
+  assert_same "2024-05-01" "$result"
+}
+
+function test_spy_called_with_different_arguments() {
+  spy ps
+
+  ps first_a first_b
+  ps second
+
+  assert_have_been_called_with "first_a first_b" ps 1
+  assert_have_been_called_with "second" ps 2
+}
+
+function test_spy_successful_not_called() {
+  spy ps
+
+  assert_not_called ps
+}
+
+function test_spy_unsuccessful_not_called() {
+  spy ps
+
+  ps
+
+  assert_same \
+    "$(console_results::print_failed_test "Spy unsuccessful not called" "ps" \
+      "to has been called" "0 times" \
+      "actual" "1 times")" \
+    "$(assert_not_called ps)"
+}

@@ -1,3 +1,3 @@
 User-agent: *
 Disallow:
-Sitemap: https://flagppe.com/sitemap.xml
+Sitemap: https://bashunit.typeddevs.com/sitemap.xml

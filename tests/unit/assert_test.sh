@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function test_successful_fail() {
   true || fail "This cannot fail"
@@ -11,7 +11,7 @@ function test_unsuccessful_fail() {
     "$(fail "Failure message")"
 }
 
-# data_provider provider_successful_assert_true
+# @data_provider provider_successful_assert_true
 function test_successful_assert_true() {
   # shellcheck disable=SC2086
   assert_empty "$(assert_true $1)"
@@ -45,7 +45,7 @@ function test_unsuccessful_assert_true_on_function() {
     "$(assert_true "eval return 2")"
 }
 
-# data_provider provider_successful_assert_false
+# @data_provider provider_successful_assert_false
 function test_successful_assert_false() {
   # shellcheck disable=SC2086
   assert_empty "$(assert_false $1)"

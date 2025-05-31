@@ -1,5 +1,30 @@
 # Changelog
 
+## Unreleased
+
+- Fix asserts on test doubles in subshell
+- Allow interpolating arguments in data providers output
+- Deprecate `# data_provider` in favor of `# @data_provider`
+- Allow `assert_have_been_called_with` to check arguments of specific calls
+- Enable parallel tests on Windows
+- Add `assert_not_called`
+- Improve `find_total_tests` performance
+
+## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
+
+- Replace `#!/bin/bash` with `#!/usr/bin/env bash`
+- Usage printf with awk, which correctly handles float rounding and improves portability
+
+## [0.19.0](https://github.com/TypedDevs/bashunit/compare/0.18.0...0.19.0) - 2025-02-19
+
+- Fixed false negative with `set -e`
+- Fixed name rendered when having `test_test_*`
+- Fixed duplicate function detection
+- Fixed display test with multiple outputs in multiline
+- Improved output: adding a space between each test file
+- Removed `BASHUNIT_DEV_MODE` in favor of `BASHUNIT_DEV_LOG`
+- Added source file and line on global dev function `log`
+
 ## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
 
 - Added `-p|--parallel` to enable running tests in parallel

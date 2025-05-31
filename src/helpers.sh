@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
@@ -8,17 +8,48 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 # @return string Eg: "Some logic camelCase"
 #
 function helper::normalize_test_function_name() {
-  local original_function_name="${1-}"
+  local original_fn_name="${1-}"
+  local interpolated_fn_name="${2-}"
+
+  if [[ -n "${interpolated_fn_name-}" ]]; then
+    original_fn_name="$interpolated_fn_name"
+  fi
+
   local result
 
-  # Remove "test_" prefix
-  result="${original_function_name#test_}"
+  # Remove the first "test_" prefix, if present
+  result="${original_fn_name#test_}"
+  # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
+  if [[ "$result" == "$original_fn_name" ]]; then
+    result="${original_fn_name#test}"
+  fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Remove "test" prefix
-  result="${result#test}"
   # Capitalize the first letter
   result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+
+  echo "$result"
+}
+
+function helper::escape_single_quotes() {
+  local value="$1"
+  # shellcheck disable=SC1003
+  echo "${value//\'/'\'\\''\'}"
+}
+
+function helper::interpolate_function_name() {
+  local function_name="$1"
+  shift
+  local args=("$@")
+  local result="$function_name"
+
+  for ((i=0; i<${#args[@]}; i++)); do
+    local placeholder="::$((i+1))::"
+    # shellcheck disable=SC2155
+    local value="$(helper::escape_single_quotes "${args[$i]}")"
+    value="'$value'"
+    result="${result//${placeholder}/${value}}"
+  done
 
   echo "$result"
 }
@@ -30,7 +61,15 @@ function helper::check_duplicate_functions() {
   filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
 
   local function_names
-  function_names=$(echo "$filtered_lines" | awk '{gsub(/\(|\)/, ""); print $2}')
+  function_names=$(echo "$filtered_lines" | awk '{
+    for (i=1; i<=NF; i++) {
+      if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
+        gsub(/\(\)/, "", $i)
+        print $i
+        break
+      }
+    }
+  }')
 
   local duplicates
   duplicates=$(echo "$function_names" | sort | uniq -d)
@@ -38,6 +77,7 @@ function helper::check_duplicate_functions() {
     state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
   fi
+  return 0
 }
 
 #
@@ -118,9 +158,9 @@ function helper::get_provider_data() {
   fi
 
   data_provider_function=$(\
-    grep -B 1 "function $function_name()" "$script" |\
-    grep "# data_provider " |\
-    sed -E -e 's/\ *# data_provider (.*)$/\1/g'\
+    grep -B 2 "function $function_name()" "$script" |\
+    grep -E "# *@?data_provider " |\
+    sed -E -e 's/\ *# *@?data_provider (.*)$/\1/g'\
     || true
   )
 
@@ -150,19 +190,18 @@ function helpers::get_latest_tag() {
 function helpers::find_total_tests() {
     local filter=${1:-}
     local files=("${@:2}")
-    local total_count=0
 
-    for file in "${files[@]}"; do
-        local count
-        if [[ -n "$filter" ]]; then
-            count=$(grep -r -E "^\s*function\s+test.*$filter" "$file" --include=\*.sh 2>/dev/null | wc -l)
-        else
-            count=$(grep -r -E '^\s*function\s+test' "$file" --include=\*.sh 2>/dev/null | wc -l)
-        fi
-        total_count=$((total_count + count))
-    done
+    if [[ ${#files[@]} -eq 0 ]]; then
+        echo 0
+        return
+    fi
 
-    echo "$total_count"
+    local pattern='^\s*function\s+test'
+    if [[ -n "$filter" ]]; then
+        pattern+=".*$filter"
+    fi
+
+    grep -r -E "$pattern" --include="*.sh" "${files[@]}" 2>/dev/null | wc -l | xargs
 }
 
 function helper::load_test_files() {

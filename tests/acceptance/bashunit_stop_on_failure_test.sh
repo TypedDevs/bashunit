@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 function set_up_before_script() {
@@ -25,14 +25,8 @@ function test_different_snapshots_matches() {
 }
 
 function test_bashunit_when_stop_on_failure_env_simple_output() {
-  todo "Should print something like .F"
-  return
-
-  # shellcheck disable=SC2317
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh
 
-  # shellcheck disable=SC2317
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_STOP_ON_FAILURE" "$test_file" --simple)"
-  # shellcheck disable=SC2317
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_STOP_ON_FAILURE" "$test_file" --simple)"
 }

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function tear_down() {
   helper::unset_if_exists fake_function
@@ -22,6 +22,10 @@ function test_normalize_test_function_name_one_word() {
 
 function test_normalize_test_function_name_snake_case() {
   assert_same "Some logic" "$(helper::normalize_test_function_name "test_some_logic")"
+}
+
+function test_normalize_double_test_function_name_snake_case() {
+  assert_same "Test some logic" "$(helper::normalize_test_function_name "test_test_some_logic")"
 }
 
 function test_normalize_test_function_name_camel_case() {
@@ -93,6 +97,13 @@ function test_check_duplicate_functions_without_duplicates() {
   assert_successful_code "$(helper::check_duplicate_functions "$file")"
 }
 
+function test_check_duplicate_functions_without_function_keyword() {
+  local file
+  file="$(current_dir)/fixtures/no_function_keyword_duplicates.sh"
+
+  assert_general_error "$(helper::check_duplicate_functions "$file")"
+}
+
 function test_normalize_variable_name() {
   assert_same "valid_name123" "$(helper::normalize_variable_name "valid_name123")"
   assert_same "non_valid_symbols__________" "$(helper::normalize_variable_name "non_valid_symbols!@#$%^&*()")"
@@ -112,7 +123,7 @@ function fake_provider_data_string() {
 
 function test_get_provider_data() {
   # shellcheck disable=SC2317
-  # data_provider fake_provider_data_string
+  # @data_provider fake_provider_data_string
   function fake_function_get_provider_data() {
     return 0
   }
@@ -126,8 +137,8 @@ function fake_provider_data_array() {
 }
 
 function test_get_provider_data_array() {
+  # @data_provider fake_provider_data_array
   # shellcheck disable=SC2317
-  # data_provider fake_provider_data_array
   function fake_function_get_provider_data_array() {
     return 0
   }
@@ -139,7 +150,7 @@ function test_get_provider_data_array() {
 
 function test_get_provider_data_should_returns_empty_when_not_exists_provider_function() {
   # shellcheck disable=SC2317
-  # data_provider not_existing_provider
+  # @data_provider not_existing_provider
   function fake_function_get_not_existing_provider_data() {
     return 0
   }
@@ -212,4 +223,19 @@ function test_to_run_with_filter_matching_string_in_function_name() {
   assert_same\
     "test_my_awesome_function test_your_awesome_function"\
     "$(helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
+}
+
+function test_interpolate_fn_name() {
+  local result
+  result="$(helper::interpolate_function_name "test_name_::1::_foo" "bar")"
+
+  assert_same "test_name_'bar'_foo" "$result"
+}
+
+function test_normalize_test_function_name_with_interpolation() {
+  local fn="test_returns_value_::1::_and_::2::_given"
+  # shellcheck disable=SC2155
+  local interpolated_fn="$(helper::interpolate_function_name "$fn" "3" "4")"
+
+  assert_same "Returns value '3' and '4' given" "$(helper::normalize_test_function_name "$fn" "$interpolated_fn")"
 }

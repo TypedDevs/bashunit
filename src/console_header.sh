@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function console_header::print_version_with_env() {
   local filter=${1:-}

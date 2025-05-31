@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function fail() {
   local message="${1:-${FUNCNAME[1]}}"

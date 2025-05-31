@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # shellcheck disable=SC2155
 
 _TOTAL_TESTS_COUNT=0
@@ -12,7 +12,9 @@ function console_results::render_result() {
     return 1
   fi
 
-  echo ""
+  if env::is_simple_output_enabled; then
+    printf "\n\n"
+  fi
 
   local total_tests=0
   ((total_tests += $(state::get_tests_passed))) || true
@@ -104,7 +106,7 @@ function console_results::print_execution_time() {
     return
   fi
 
-  local time=$(printf "%.0f" "$(clock::total_runtime_in_milliseconds)")
+  local time=$(clock::total_runtime_in_milliseconds | awk '{printf "%.0f", $1}')
 
   if [[ "$time" -lt 1000 ]]; then
     printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
@@ -114,7 +116,7 @@ function console_results::print_execution_time() {
 
   local time_in_seconds=$(( time / 1000 ))
   local remainder_ms=$(( time % 1000 ))
-  local formatted_seconds=$(printf "%.2f" "$time_in_seconds.$remainder_ms")
+  local formatted_seconds=$(echo "$time_in_seconds.$remainder_ms" | awk '{printf "%.0f", $1}')
 
   printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
     "Time taken: $formatted_seconds s"
@@ -262,7 +264,10 @@ function console_results::print_failing_tests_and_reset() {
     local total_failed
     total_failed=$(state::get_tests_failed)
 
-    echo ""
+    if env::is_simple_output_enabled; then
+      printf "\n\n"
+    fi
+
     if [[ "$total_failed" -eq 1 ]]; then
       echo -e "${_COLOR_BOLD}There was 1 failure:${_COLOR_DEFAULT}\n"
     else
@@ -271,5 +276,7 @@ function console_results::print_failing_tests_and_reset() {
 
     sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
     rm "$FAILURES_OUTPUT_PATH"
+
+    echo ""
   fi
 }
