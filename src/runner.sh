@@ -354,21 +354,28 @@ function runner::parse_result_sync() {
   local result_line
   result_line=$(echo "$execution_result" | tail -n 1)
 
-  local regex='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##TEST_EXIT_CODE=([0-9]*)'
+  local assertions_failed=0
+  local assertions_passed=0
+  local assertions_skipped=0
+  local assertions_incomplete=0
+  local assertions_snapshot=0
+  local test_exit_code=0
+
+  local regex
+  regex='ASSERTIONS_FAILED=([0-9]*)##'
+  regex+='ASSERTIONS_PASSED=([0-9]*)##'
+  regex+='ASSERTIONS_SKIPPED=([0-9]*)##'
+  regex+='ASSERTIONS_INCOMPLETE=([0-9]*)##'
+  regex+='ASSERTIONS_SNAPSHOT=([0-9]*)##'
+  regex+='TEST_EXIT_CODE=([0-9]*)'
+
   if [[ $result_line =~ $regex ]]; then
-    local assertions_failed="${BASH_REMATCH[1]}"
-    local assertions_passed="${BASH_REMATCH[2]}"
-    local assertions_skipped="${BASH_REMATCH[3]}"
-    local assertions_incomplete="${BASH_REMATCH[4]}"
-    local assertions_snapshot="${BASH_REMATCH[5]}"
-    local test_exit_code="${BASH_REMATCH[6]}"
-  else
-    local assertions_failed=0
-    local assertions_passed=0
-    local assertions_skipped=0
-    local assertions_incomplete=0
-    local assertions_snapshot=0
-    local test_exit_code=0
+    assertions_failed="${BASH_REMATCH[1]}"
+    assertions_passed="${BASH_REMATCH[2]}"
+    assertions_skipped="${BASH_REMATCH[3]}"
+    assertions_incomplete="${BASH_REMATCH[4]}"
+    assertions_snapshot="${BASH_REMATCH[5]}"
+    test_exit_code="${BASH_REMATCH[6]}"
   fi
 
   log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
