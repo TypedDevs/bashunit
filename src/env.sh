@@ -79,15 +79,19 @@ function env::active_internet_connection() {
 function env::find_terminal_width() {
   local cols=""
 
-  if [[ -z "$cols" ]] && command -v stty > /dev/null; then
+  if command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
-  if [[ -n "$TERM" ]] && command -v tput > /dev/null; then
+
+  if [[ -n "$TERM" ]] && command -v stty >/dev/null; then
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
-  # Directly echo the value with fallback
-  echo "${cols:-100}"
+  if [[ -z "$cols" || "$cols" == "0" ]]; then
+    cols=100
+  fi
+
+  echo "$cols"
 }
 
 function env::print_verbose() {
