@@ -325,20 +325,17 @@ function runner::parse_result_parallel() {
   local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
   mkdir -p "$test_suite_dir"
 
-  local test_result_file=$(echo "${args[@]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
-  if [[ -z "$test_result_file" ]]; then
-    test_result_file="${fn_name}.$$.result"
+  local sanitized_args
+  sanitized_args=$(echo "${args[*]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+  local template
+  if [[ -z "$sanitized_args" ]]; then
+    template="${fn_name}.XXXXXX.result"
   else
-    test_result_file="${fn_name}-${test_result_file}.$$.result"
+    template="${fn_name}-${sanitized_args}.XXXXXX.result"
   fi
 
-  local unique_test_result_file="${test_suite_dir}/${test_result_file}"
-  local count=1
-
-  while [ -e "$unique_test_result_file" ]; do
-    unique_test_result_file="${test_suite_dir}/${test_result_file%.result}-$count.result"
-    count=$((count + 1))
-  done
+  local unique_test_result_file
+  unique_test_result_file=$(mktemp -p "$test_suite_dir" "$template")
 
   log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
