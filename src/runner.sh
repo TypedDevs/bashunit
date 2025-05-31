@@ -54,9 +54,11 @@ function runner::functions_for_script() {
 
   # Filter the names down to the ones defined in the script, sort them by line number
   shopt -s extdebug
-  for f in $all_fn_names; do
-    declare -F "$f" | grep "$script"
-  done | sort -k2 -n | awk '{print $1}'
+  # shellcheck disable=SC2086
+  declare -F $all_fn_names |
+    awk -v s="$script" '$3 == s {print $1" " $2}' |
+    sort -k2 -n |
+    awk '{print $1}'
   shopt -u extdebug
 }
 
@@ -349,41 +351,25 @@ function runner::parse_result_sync() {
   local fn_name=$1
   local execution_result=$2
 
-  local assertions_failed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_FAILED=([0-9]*)##.*/\1/g'\
-  )
+  local result_line
+  result_line=$(echo "$execution_result" | tail -n 1)
 
-  local assertions_passed=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_PASSED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_skipped=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SKIPPED=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_incomplete=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_INCOMPLETE=([0-9]*)##.*/\1/g'\
-  )
-
-  local assertions_snapshot=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##ASSERTIONS_SNAPSHOT=([0-9]*)##.*/\1/g'\
-  )
-
-  local test_exit_code=$(\
-    echo "$execution_result" |\
-    tail -n 1 |\
-    sed -E -e 's/.*##TEST_EXIT_CODE=([0-9]*)##.*/\1/g'\
-  )
+  local regex='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##TEST_EXIT_CODE=([0-9]*)'
+  if [[ $result_line =~ $regex ]]; then
+    local assertions_failed="${BASH_REMATCH[1]}"
+    local assertions_passed="${BASH_REMATCH[2]}"
+    local assertions_skipped="${BASH_REMATCH[3]}"
+    local assertions_incomplete="${BASH_REMATCH[4]}"
+    local assertions_snapshot="${BASH_REMATCH[5]}"
+    local test_exit_code="${BASH_REMATCH[6]}"
+  else
+    local assertions_failed=0
+    local assertions_passed=0
+    local assertions_skipped=0
+    local assertions_incomplete=0
+    local assertions_snapshot=0
+    local test_exit_code=0
+  fi
 
   log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
