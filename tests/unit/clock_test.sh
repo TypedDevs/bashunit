@@ -4,10 +4,12 @@ __ORIGINAL_OS=""
 
 function set_up_before_script() {
   __ORIGINAL_OS=$_OS
+  unset EPOCHREALTIME
 }
 
 function tear_down_after_script() {
   export _OS=$__ORIGINAL_OS
+  unset EPOCHREALTIME
 }
 
 function mock_non_existing_fn() {
@@ -18,6 +20,12 @@ function test_now_with_perl() {
   mock perl echo "1720705883457"
 
   assert_same "1720705883457" "$(clock::now)"
+}
+
+function test_now_with_epochrealtime() {
+  EPOCHREALTIME="12345.678901"
+
+  assert_same "12345678901000" "$(clock::now)"
 }
 
 function test_now_on_linux_unknown() {
