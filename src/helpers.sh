@@ -151,17 +151,17 @@ function helper::normalize_variable_name() {
 function helper::get_provider_data() {
   local function_name="$1"
   local script="$2"
-  local data_provider_function
 
   if [[ ! -f "$script" ]]; then
     return
   fi
 
-  data_provider_function=$(\
-    grep -B 2 "function $function_name()" "$script" |\
-    grep -E "# *@?data_provider " |\
-    sed -E -e 's/\ *# *@?data_provider (.*)$/\1/g'\
-    || true
+  local data_provider_function
+  data_provider_function=$(
+    # shellcheck disable=SC1087
+    grep -B 2 -E "function[[:space:]]+$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
+    grep -E "^[[:space:]]*# *@?data_provider[[:space:]]+" | \
+    sed -E 's/^[[:space:]]*# *@?data_provider[[:space:]]+//' || true
   )
 
   if [[ -n "$data_provider_function" ]]; then
