@@ -76,7 +76,7 @@ function assert_have_been_called() {
 
   if [[ $times -eq 0 ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${command}" "to has been called" "once"
+    console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
     return
   fi
 
@@ -134,7 +134,7 @@ function assert_have_been_called_times() {
   if [[ $times -ne $expected ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" \
-      "to has been called" "${expected} times" \
+      "to have been called" "${expected} times" \
       "actual" "${times} times"
     return
   fi
