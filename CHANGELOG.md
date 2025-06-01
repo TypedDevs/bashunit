@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
 
 - Fix asserts on test doubles in subshell
 - Allow interpolating arguments in data providers output
