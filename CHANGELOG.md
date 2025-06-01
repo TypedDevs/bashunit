@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix typo "to has been called"
+
 ## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
 
 - Fix asserts on test doubles in subshell
