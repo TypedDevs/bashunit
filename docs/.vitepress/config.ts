@@ -122,7 +122,17 @@ export default defineConfig({
     }],
 
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: {
+        _render(src, env, md) {
+          const html = md.render(src, env)
+
+          return html.replace(
+            /{{\s*\$frontmatter\.(\w+)\s*}}/g,
+            (_, key) => env.frontmatter[key]?.toString() || ''
+          )
+        }
+      }
     },
 
     footer: {
