@@ -84,9 +84,34 @@ export default defineComponent({
   },
 
   async mounted() {
-    const response = await fetch('https://bashunit.typeddevs.com/downloads')
+    const cacheKey = 'bashunit-weekly-downloads'
+    const ttl = 24 * 60 * 60 * 1000
 
-    this.downloads = (await response.json()).reverse()
+    try {
+      const cached = localStorage.getItem(cacheKey)
+
+      if (cached !== null) {
+        const { timestamp, data } = JSON.parse(cached)
+
+        if (Date.now() - timestamp < ttl) {
+          this.downloads = data
+        }
+      }
+    } catch (error) {
+      console.error('Failed to read cached downloads', error)
+    }
+
+    if (this.downloads.length === 0) {
+      const response = await fetch('https://bashunit.typeddevs.com/downloads')
+      const downloads = await response.json()
+      this.downloads = downloads.reverse()
+
+      try {
+        localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: downloads }))
+      } catch (error) {
+        console.error('Failed to cache downloads', error)
+      }
+    }
 
     let dataCount = 0
     let totalCount = 0
