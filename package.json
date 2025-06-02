@@ -14,10 +14,11 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "chart.js": "^4.4.9",
     "vanilla-tilt": "^1.8.1"
   },
   "devDependencies": {
-    "vitepress": "^1.0.0-rc.44",
-    "vue": "^3.4.21"
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.16"
   }
 }

@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix typo "to has been called"
+- Add weekly downloads to the docs
 
 ## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
 
