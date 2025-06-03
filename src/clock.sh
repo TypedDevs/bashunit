@@ -31,11 +31,12 @@ function clock::now() {
   shell_time="$(clock::shell_time)"
   has_shell_time="$?"
   if [[ "$has_shell_time" -eq 0 ]]; then
-    local  seconds microseconds
-    seconds=$(echo "$shell_time" | cut -f 1 -d '.')
-    microseconds=$(echo "$shell_time" | cut -f 2 -d '.')
+    local seconds microseconds
+    seconds="${shell_time%%.*}"
+    microseconds="${shell_time#*.}"
+    microseconds="${microseconds:-0}"
 
-    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+    echo $((seconds * 1000000000 + microseconds * 1000))
     return 0
   fi
 
@@ -52,7 +53,7 @@ function clock::shell_time() {
 function clock::total_runtime_in_milliseconds() {
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "($end_time-$_START_TIME)/1000000"
+    echo $(((end_time - _START_TIME)/1000000))
   else
     echo ""
   fi
@@ -61,7 +62,7 @@ function clock::total_runtime_in_milliseconds() {
 function clock::total_runtime_in_nanoseconds() {
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "($end_time-$_START_TIME)"
+    echo $((end_time - _START_TIME))
   else
     echo ""
   fi
