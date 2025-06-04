@@ -32,9 +32,15 @@ function clock::now() {
   has_shell_time="$?"
   if [[ "$has_shell_time" -eq 0 ]]; then
     local seconds microseconds
-    seconds="${shell_time%%.*}"
-    microseconds="${shell_time#*.}"
-    microseconds="${microseconds:-0}"
+    if [[ "$shell_time" == *.* ]]; then
+      seconds="${shell_time%%.*}"
+      microseconds="${shell_time#*.}"
+      microseconds="$(echo "$microseconds" | sed 's/^0*//')"
+      microseconds="${microseconds:-0}"
+    else
+      seconds="$shell_time"
+      microseconds=0
+    fi
 
     echo $((seconds * 1000000000 + microseconds * 1000))
     return 0

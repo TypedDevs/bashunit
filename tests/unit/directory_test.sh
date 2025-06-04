@@ -111,7 +111,8 @@ function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
 }
 
 function test_unsuccessful_assert_is_directory_readable_without_execution_permission() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+    skip "permission checks unreliable as root"
     return
   fi
 
@@ -126,7 +127,8 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
 }
 
 function test_unsuccessful_assert_is_directory_readable_without_read_permission() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+      skip "permission checks unreliable as root"
       return
   fi
 
@@ -141,7 +143,8 @@ function test_unsuccessful_assert_is_directory_readable_without_read_permission(
 }
 
 function test_successful_assert_is_directory_not_readable_without_read_permission() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+      skip "permission checks unreliable as root"
       return
   fi
 
@@ -152,7 +155,8 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
 }
 
 function test_successful_assert_is_directory_not_readable_without_execution_permission() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+      skip "permission checks unreliable as root"
       return
   fi
 
@@ -178,7 +182,8 @@ function test_successful_assert_is_directory_writable() {
 }
 
 function test_unsuccessful_assert_is_directory_writable() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+      skip "permission checks unreliable as root"
       return
   fi
 
@@ -202,7 +207,8 @@ function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
 }
 
 function test_successful_assert_is_directory_not_writable() {
-  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
+  if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" || $(id -u) -eq 0 ]]; then
+      skip "permission checks unreliable as root"
       return
   fi
 
