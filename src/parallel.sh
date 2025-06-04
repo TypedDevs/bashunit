@@ -34,6 +34,9 @@ function parallel::aggregate_test_results() {
       local snapshot="${result_line##*##ASSERTIONS_SNAPSHOT=}"
       snapshot="${snapshot%%##*}"; snapshot=${snapshot:-0}
 
+      local exit_code="${result_line##*##TEST_EXIT_CODE=}"
+      exit_code="${exit_code%%##*}"; exit_code=${exit_code:-0}
+
       # Add to the total counts
       total_failed=$((total_failed + failed))
       total_passed=$((total_passed + passed))
@@ -42,6 +45,11 @@ function parallel::aggregate_test_results() {
       total_snapshot=$((total_snapshot + snapshot))
 
       if [ "${failed:-0}" -gt 0 ]; then
+        state::add_tests_failed
+        continue
+      fi
+
+      if [ "${exit_code:-0}" -ne 0 ]; then
         state::add_tests_failed
         continue
       fi
@@ -83,6 +91,7 @@ function parallel::must_stop_on_failure() {
 function parallel::reset() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+  mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
   [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
 
