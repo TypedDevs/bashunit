@@ -196,12 +196,49 @@ function helpers::find_total_tests() {
         return
     fi
 
-    local pattern='^\s*function\s+test'
-    if [[ -n "$filter" ]]; then
-        pattern+=".*$filter"
-    fi
+    local total_count=0
+    local file
 
-    grep -r -E "$pattern" --include="*[tT]est.sh" "${files[@]}" 2>/dev/null | wc -l | xargs
+    for file in "${files[@]}"; do
+        if [[ ! -f "$file" ]]; then
+            continue
+        fi
+
+        local file_count
+        file_count=$( (
+            # shellcheck source=/dev/null
+            source "$file"
+            local all_fn_names
+            all_fn_names=$(declare -F | awk '{print $3}')
+            local filtered_functions
+            filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
+
+            local count=0
+            if [[ -n "$filtered_functions" ]]; then
+                # shellcheck disable=SC2206
+                # shellcheck disable=SC2207
+                local functions_to_run=($filtered_functions)
+                for fn_name in "${functions_to_run[@]}"; do
+                    local provider_data=()
+                    while IFS=" " read -r line; do
+                        provider_data+=("$line")
+                    done <<< "$(helper::get_provider_data "$fn_name" "$file")"
+
+                    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+                        count=$((count + 1))
+                    else
+                        count=$((count + ${#provider_data[@]}))
+                    fi
+                done
+            fi
+
+            echo "$count"
+        ) )
+
+        total_count=$((total_count + file_count))
+    done
+
+    echo "$total_count"
 }
 
 function helper::load_test_files() {
