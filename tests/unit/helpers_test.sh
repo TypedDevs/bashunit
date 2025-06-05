@@ -239,3 +239,43 @@ function test_normalize_test_function_name_with_interpolation() {
 
   assert_same "Returns value '3' and '4' given" "$(helper::normalize_test_function_name "$fn" "$interpolated_fn")"
 }
+
+function helpers_test::find_total_in_subshell() {
+  bash -c 'source "$1"; shift; helpers::find_total_tests "$@"' bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
+}
+
+function test_find_total_tests_no_files() {
+  assert_same "0" "$(helpers_test::find_total_in_subshell)"
+}
+
+function test_find_total_tests_simple_file() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
+}
+
+function test_find_total_tests_with_provider() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/provider_test.sh"
+
+  assert_same "3" "$(helpers_test::find_total_in_subshell "" "$file")"
+}
+
+function test_find_total_tests_multiple_files() {
+  local file1
+  local file2
+  file1="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file2="$(current_dir)/fixtures/find_total_tests/provider_test.sh"
+
+  assert_same "5" "$(helpers_test::find_total_in_subshell "" "$file1" "$file2")"
+}
+
+function test_find_total_tests_with_filter() {
+  local file1
+  local file2
+  file1="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file2="$(current_dir)/fixtures/find_total_tests/provider_test.sh"
+
+  assert_same "3" "$(helpers_test::find_total_in_subshell "with_provider" "$file1" "$file2")"
+}
