@@ -525,11 +525,12 @@ function test_no_tests_found() {
 function test_print_successful_test_output_no_args() {
   original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
 
   local test_name="a custom test"
 
   assert_matches \
-    "✓ Passed.*$test_name.*(12 ms)" \
+    "✓ Passed.*$test_name.*12 ms" \
     "$(console_results::print_successful_test "$test_name" "12")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
@@ -538,12 +539,13 @@ function test_print_successful_test_output_no_args() {
 function test_print_successful_test_output_with_args() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
 
   local test_name="a custom test"
   local data="foo"
 
   assert_matches \
-    "✓ Passed.*$test_name \($data\).*(12 ms)" \
+    "✓ Passed.*$test_name \($data\).*12 ms" \
     "$(console_results::print_successful_test "$test_name" "12" "$data")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
