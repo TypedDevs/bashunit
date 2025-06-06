@@ -217,6 +217,20 @@ Creates a report HTML file that contains information about the test results of y
 ```
 :::
 
+## Benchmarks
+
+> `bashunit --bench <file>`
+
+Run benchmark functions prefixed with `bench_`. Use `@revs` and `@its` comments to
+control revolutions and iterations. When no file is provided, bashunit will search
+for `*.bench.sh` files under `BASHUNIT_DEFAULT_PATH`.
+
+::: code-group
+```bash [Example]
+./bashunit --bench benchmarks.sh
+```
+:::
+
 ## Output
 
 > `bashunit -s|--simple`

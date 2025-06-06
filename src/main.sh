@@ -72,6 +72,30 @@ function main::exec_tests() {
   exit $exit_code
 }
 
+function main::exec_benchmarks() {
+  local filter=$1
+  local files=("${@:2}")
+
+  local bench_files=()
+  while IFS= read -r line; do
+    bench_files+=("$line")
+  done < <(helper::load_bench_files "$filter" "${files[@]}")
+
+  if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
+    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    console_header::print_help
+    exit 1
+  fi
+
+  console_header::print_version_with_env "$filter" "${bench_files[@]}"
+
+  runner::load_bench_files "$filter" "${bench_files[@]}"
+
+  benchmark::print_results
+
+  cleanup_temp_files
+}
+
 function main::cleanup() {
   printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   # Kill all child processes of this script

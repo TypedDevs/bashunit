@@ -6,6 +6,7 @@
 - Add weekly downloads to the docs
 - Fix parallel runner
 - Count data providers when counting total tests
+- Add benchmark feature
 - Support placeholder `::ignore::` in snapshots
 
 ## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
