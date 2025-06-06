@@ -4,12 +4,14 @@ _BENCH_NAMES=()
 _BENCH_REVS=()
 _BENCH_ITS=()
 _BENCH_AVERAGES=()
+_BENCH_MAX_MILLIS=()
 
 function benchmark::parse_annotations() {
   local fn_name=$1
   local script=$2
   local revs=1
   local its=1
+  local max_ms=""
 
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
@@ -26,7 +28,17 @@ function benchmark::parse_annotations() {
     its="${BASH_REMATCH[1]}"
   fi
 
-  echo "$revs" "$its"
+  if [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+    max_ms="${BASH_REMATCH[1]}"
+  elif [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+    max_ms="${BASH_REMATCH[1]}"
+  fi
+
+  if [[ -n "$max_ms" ]]; then
+    echo "$revs" "$its" "$max_ms"
+  else
+    echo "$revs" "$its"
+  fi
 }
 
 function benchmark::add_result() {
@@ -34,6 +46,7 @@ function benchmark::add_result() {
   _BENCH_REVS+=("$2")
   _BENCH_ITS+=("$3")
   _BENCH_AVERAGES+=("$4")
+  _BENCH_MAX_MILLIS+=("$5")
 }
 
 # shellcheck disable=SC2155
@@ -41,6 +54,7 @@ function benchmark::run_function() {
   local fn_name=$1
   local revs=$2
   local its=$3
+  local max_ms=$4
   local durations=()
 
   for ((i=1; i<=its; i++)); do
@@ -64,7 +78,7 @@ function benchmark::run_function() {
     sum=$(math::calculate "$sum + $d")
   done
   local avg=$(math::calculate "$sum / ${#durations[@]}")
-  benchmark::add_result "$fn_name" "$revs" "$its" "$avg"
+  benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
 }
 
 function benchmark::print_results() {
@@ -77,6 +91,16 @@ function benchmark::print_results() {
   printf "\nBenchmark Results (avg ms)\n"
   printf '%-40s %8s %8s %8s\n' "Name" "Revs" "Its" "Avg(ms)"
   for i in "${!_BENCH_NAMES[@]}"; do
-    printf '%-40s %8s %8s %8s\n' "${_BENCH_NAMES[$i]}" "${_BENCH_REVS[$i]}" "${_BENCH_ITS[$i]}" "${_BENCH_AVERAGES[$i]}"
+    local name="${_BENCH_NAMES[$i]}"
+    local revs="${_BENCH_REVS[$i]}"
+    local its="${_BENCH_ITS[$i]}"
+    local avg="${_BENCH_AVERAGES[$i]}"
+    local max_ms="${_BENCH_MAX_MILLIS[$i]}"
+
+    if [[ -n "$max_ms" ]] && awk "BEGIN { exit !(${avg} > ${max_ms}) }"; then
+      printf '%-40s %8s %8s %s%8s%s\n' "$name" "$revs" "$its" "${_COLOR_FAILED}" "$avg" "${_COLOR_DEFAULT}"
+    else
+      printf '%-40s %8s %8s %8s\n' "$name" "$revs" "$its" "$avg"
+    fi
   done
 }

@@ -144,8 +144,8 @@ function runner::call_bench_functions() {
   fi
 
   for fn_name in "${functions_to_run[@]}"; do
-    read -r revs its <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
-    benchmark::run_function "$fn_name" "$revs" "$its"
+    read -r revs its max_ms <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
+    benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset fn_name
   done
 

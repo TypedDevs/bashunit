@@ -4,7 +4,8 @@ bashunit allows defining benchmark functions to measure execution time of your s
 
 Functions prefixed with `bench` are treated as benchmarks. You can annotate them with
 `@revs` (revolutions) and `@its` (iterations) comments to control how many times the code
-is executed.
+is executed. Use `@max_ms` to mark the benchmark as failed when the average
+execution time exceeds the given value in milliseconds.
 
 Each iteration is executed in a separate process, and the average time is reported.
 
@@ -12,6 +13,15 @@ Each iteration is executed in a separate process, and the average time is report
 # @revs=1000 @its=5
 function bench_my_function() {
   my_function_under_test
+}
+```
+
+You can optionally fail a benchmark when it exceeds a max_ms:
+
+```bash
+# @revs=10 @its=1 @max_ms=5
+function bench_slow() {
+  slow_operation
 }
 ```
 
