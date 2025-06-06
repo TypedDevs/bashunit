@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# @revs=3 @its=2
+# @revs=2 @its=1
 function bench_run_bashunit_functional() {
-  ./bashunit tests/functional -s -p >/dev/null
+  ./bashunit tests/functional/for_bench_test.sh -s -p >/dev/null
 }
