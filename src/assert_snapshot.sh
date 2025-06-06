@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 function snapshot::match_with_placeholder() {
   local actual="$1"
   local snapshot="$2"
@@ -13,11 +12,26 @@ function snapshot::match_with_placeholder() {
   regex="${regex//$token/(.|\\n)*}"
   regex="^${regex}$"
 
-  if REGEX="$regex" perl -0 -e 'my $r=$ENV{REGEX}; exit((join("",<>)) =~ /$r/s ? 0 : 1);' <<< "$actual"; then
-    return 0
-  fi
+  if command -v perl >/dev/null 2>&1; then
+    if REGEX="$regex" perl -0 -e 'my $r=$ENV{REGEX}; exit((join("",<>)) =~ /$r/s ? 0 : 1);' <<< "$actual"; then
+      return 0
+    else
+      return 1
+    fi
+  else
+    # fallback: only supports single-line ignores
+    local fallback_pattern
+    fallback_pattern=$(printf '%s' "$snapshot" | sed "s|$placeholder|.*|g")
+    # escape other special regex chars
+    fallback_pattern=$(printf '%s' "$fallback_pattern" | sed -e 's/[][\.^$*+?{}|()]/\\&/g')
+    fallback_pattern="^${fallback_pattern}$"
 
-  return 1
+    if printf '%s\n' "$actual" | grep -Eq "$fallback_pattern"; then
+      return 0
+    else
+      return 1
+    fi
+  fi
 }
 
 function assert_match_snapshot() {
