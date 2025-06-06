@@ -125,11 +125,12 @@ function helper::unset_if_exists() {
 function helper::find_files_recursive() {
   ## Remove trailing slash using parameter expansion
   local path="${1%%/}"
+  local pattern="${2:-*[tT]est.sh}"
 
   if [[ "$path" == *"*"* ]]; then
-    eval find "$path" -type f -name '*[tT]est.sh' | sort -u
+    eval find "$path" -type f -name "$pattern" | sort -u
   elif [[ -d "$path" ]]; then
-    find "$path" -type f -name '*[tT]est.sh' | sort -u
+    find "$path" -type f -name "$pattern" | sort -u
   else
     echo "$path"
   fi
@@ -258,4 +259,23 @@ function helper::load_test_files() {
   fi
 
   printf "%s\n" "${test_files[@]}"
+}
+
+function helper::load_bench_files() {
+  local filter=$1
+  local files=("${@:2}")
+
+  local bench_files=()
+
+  if [[ "${#files[@]}" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
+      while IFS='' read -r line; do
+        bench_files+=("$line")
+      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*bench.sh')
+    fi
+  else
+    bench_files=("${files[@]}")
+  fi
+
+  printf "%s\n" "${bench_files[@]}"
 }

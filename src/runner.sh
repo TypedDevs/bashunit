@@ -33,6 +33,22 @@ function runner::load_test_files() {
   fi
 }
 
+function runner::load_bench_files() {
+  local filter=$1
+  shift
+  local files=("${@}")
+
+  for bench_file in "${files[@]}"; do
+    [[ -f $bench_file ]] || continue
+    # shellcheck source=/dev/null
+    source "$bench_file"
+    runner::run_set_up_before_script
+    runner::call_bench_functions "$bench_file" "$filter"
+    runner::run_tear_down_after_script
+    runner::clean_set_up_and_tear_down_after_script
+  done
+}
+
 function runner::spinner() {
   if env::is_simple_output_enabled; then
     printf "\n"
@@ -105,6 +121,31 @@ function runner::call_test_functions() {
         runner::run_test "$script" "$fn_name" "$data"
       fi
     done
+    unset fn_name
+  done
+
+  if ! env::is_simple_output_enabled; then
+    echo ""
+  fi
+}
+
+function runner::call_bench_functions() {
+  local script="$1"
+  local filter="$2"
+  local prefix="bench"
+
+  local all_fn_names=$(declare -F | awk '{print $3}')
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_fn_names")
+  # shellcheck disable=SC2207
+  local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
+
+  if [[ "${#functions_to_run[@]}" -le 0 ]]; then
+    return
+  fi
+
+  for fn_name in "${functions_to_run[@]}"; do
+    read -r revs its <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
+    benchmark::run_function "$fn_name" "$revs" "$its"
     unset fn_name
   done
 

@@ -27,12 +27,22 @@ source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
+source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
 _FILTER=""
 _ARGS=()
+_BENCH_MODE=false
+
+# Determine bench mode early so path arguments use correct pattern
+for arg in "$@"; do
+  if [[ $arg == "-b" || $arg == "--bench" ]]; then
+    _BENCH_MODE=true
+    break
+  fi
+done
 
 check_os::init
 clock::init
@@ -60,6 +70,9 @@ while [[ $# -gt 0 ]]; do
         exec > "$OUTPUT_FILE" 2>&1
       fi
       set -x
+      ;;
+    -b|--bench)
+      _BENCH_MODE=true
       ;;
     -S|--stop-on-failure)
       export BASHUNIT_STOP_ON_FAILURE=true
@@ -99,9 +112,13 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
+      pattern='*[tT]est.sh'
+      if [[ "$_BENCH_MODE" == true ]]; then
+        pattern='*[bB]ench.sh'
+      fi
       while IFS='' read -r line; do
         _ARGS+=("$line");
-      done < <(helper::find_files_recursive "$argument")
+      done < <(helper::find_files_recursive "$argument" "$pattern")
       ;;
   esac
   shift
@@ -114,6 +131,8 @@ set +eu
 
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+elif [[ "$_BENCH_MODE" == true ]]; then
+  main::exec_benchmarks "$_FILTER" "${_ARGS[@]}"
 else
   main::exec_tests "$_FILTER" "${_ARGS[@]}"
 fi
