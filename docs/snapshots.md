@@ -69,3 +69,17 @@ function test_failure() {
 }
 ```
 :::
+
+## Placeholders
+
+Snapshot files can contain placeholder tokens to ignore variable parts of the output.
+By default the token `::ignore::` will match any text. You can override it with the
+`BASHUNIT_SNAPSHOT_PLACEHOLDER` environment variable.
+
+```bash [Example]
+# snapshot file content
+echo 'Run at ::ignore::' > snapshots/example.snapshot
+
+# test
+assert_match_snapshot "Run at $(date)"
+```
