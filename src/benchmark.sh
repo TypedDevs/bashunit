@@ -12,7 +12,7 @@ function benchmark::parse_annotations() {
   local its=1
 
   local annotation
-  annotation=$(awk "/function[[:space:]]+$fn_name[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
+  annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
   if [[ $annotation =~ @revs=([0-9]+) ]]; then
     revs="${BASH_REMATCH[1]}"
@@ -36,6 +36,7 @@ function benchmark::add_result() {
   _BENCH_AVERAGES+=("$4")
 }
 
+# shellcheck disable=SC2155
 function benchmark::run_function() {
   local fn_name=$1
   local revs=$2
