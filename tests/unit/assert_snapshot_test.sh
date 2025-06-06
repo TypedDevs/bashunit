@@ -100,6 +100,9 @@ function test_assert_match_snapshot_with_placeholder() {
 }
 
 function test_assert_match_snapshot_with_custom_placeholder() {
+  if check_os::is_alpine; then
+    skip "not supported on alpine" && return
+  fi
   local snapshot_path
   snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot
   mkdir -p tests/unit/snapshots
