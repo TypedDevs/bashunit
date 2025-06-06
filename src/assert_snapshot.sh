@@ -1,5 +1,25 @@
 #!/usr/bin/env bash
 
+
+function snapshot::match_with_placeholder() {
+  local actual="$1"
+  local snapshot="$2"
+  local placeholder="${BASHUNIT_SNAPSHOT_PLACEHOLDER:-::ignore::}"
+  local token="__BASHUNIT_IGNORE__"
+
+  local sanitized_snapshot="${snapshot//$placeholder/$token}"
+  local regex
+  regex=$(printf '%s' "$sanitized_snapshot" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
+  regex="${regex//$token/(.|\\n)*}"
+  regex="^${regex}$"
+
+  if REGEX="$regex" perl -0 -e 'my $r=$ENV{REGEX}; exit((join("",<>)) =~ /$r/s ? 0 : 1);' <<< "$actual"; then
+    return 0
+  fi
+
+  return 1
+}
+
 function assert_match_snapshot() {
   local actual
   actual=$(echo -n "$1" | tr -d '\r')
@@ -23,7 +43,7 @@ function assert_match_snapshot() {
   local snapshot
   snapshot=$(tr -d '\r' < "$snapshot_file")
 
-  if [[ "$actual" != "$snapshot" ]]; then
+  if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label
     label=$(helper::normalize_test_function_name "${FUNCNAME[1]}")
 
@@ -60,7 +80,7 @@ function assert_match_snapshot_ignore_colors() {
   local snapshot
   snapshot=$(tr -d '\r' < "$snapshot_file")
 
-  if [[ "$actual" != "$snapshot" ]]; then
+  if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label
     label=$(helper::normalize_test_function_name "${FUNCNAME[1]}")
 

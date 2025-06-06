@@ -84,3 +84,14 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
 
   assert_equals "$expected" "$actual"
 }
+
+function test_assert_match_snapshot_with_placeholder() {
+  local snapshot_file_path
+  snapshot_file_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot
+  mkdir -p tests/unit/snapshots
+  echo 'Run at ::ignore::' > "$snapshot_file_path"
+
+  assert_empty "$(assert_match_snapshot "Run at $(date)")"
+
+  rm "$snapshot_file_path"
+}
