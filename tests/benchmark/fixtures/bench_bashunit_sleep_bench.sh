@@ -2,5 +2,5 @@
 
 # @revs=5 @its=2
 function bench_sleep() {
-  sleep 0.001
+  sleep 0.01
 }
