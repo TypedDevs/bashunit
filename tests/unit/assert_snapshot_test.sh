@@ -9,18 +9,18 @@ function test_successful_assert_match_snapshot() {
 }
 
 function test_creates_a_snapshot() {
-  local snapshot_file_path=tests/unit/snapshots/assert_snapshot_test_sh.test_creates_a_snapshot.snapshot
+  local snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_creates_a_snapshot.snapshot
   local expected=$((_ASSERTIONS_SNAPSHOT + 1))
 
-  assert_file_not_exists $snapshot_file_path
+  assert_file_not_exists $snapshot_path
 
   assert_match_snapshot "Expected snapshot"
 
   assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
-  assert_file_exists $snapshot_file_path
-  assert_same "Expected snapshot" "$(cat $snapshot_file_path)"
+  assert_file_exists $snapshot_path
+  assert_same "Expected snapshot" "$(cat $snapshot_path)"
 
-  rm $snapshot_file_path
+  rm $snapshot_path
 }
 
 function test_unsuccessful_assert_match_snapshot() {
@@ -48,10 +48,10 @@ function test_successful_assert_match_snapshot_ignore_colors() {
 }
 
 function test_creates_a_snapshot_ignore_colors() {
-  local snapshot_file_path=tests/unit/snapshots/assert_snapshot_test_sh.test_creates_a_snapshot_ignore_colors.snapshot
+  local snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_creates_a_snapshot_ignore_colors.snapshot
   local expected=$((_ASSERTIONS_SNAPSHOT + 1))
 
-  assert_file_not_exists $snapshot_file_path
+  assert_file_not_exists $snapshot_path
 
   local colored
   colored=$(printf '\e[32mExpected\e[0m snapshot')
@@ -59,10 +59,10 @@ function test_creates_a_snapshot_ignore_colors() {
   assert_match_snapshot_ignore_colors "$colored"
 
   assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
-  assert_file_exists $snapshot_file_path
-  assert_same "Expected snapshot" "$(cat $snapshot_file_path)"
+  assert_file_exists $snapshot_path
+  assert_same "Expected snapshot" "$(cat $snapshot_path)"
 
-  rm $snapshot_file_path
+  rm $snapshot_path
 }
 
 function test_unsuccessful_assert_match_snapshot_ignore_colors() {
@@ -89,12 +89,24 @@ function test_assert_match_snapshot_with_placeholder() {
   if check_os::is_alpine; then
     skip "not supported on alpine" && return
   fi
-  local snapshot_file_path
-  snapshot_file_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot
+  local snapshot_path
+  snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot
   mkdir -p tests/unit/snapshots
-  echo 'Run at ::ignore::' > "$snapshot_file_path"
+  echo 'Run at ::ignore::' > "$snapshot_path"
 
   assert_empty "$(assert_match_snapshot "Run at $(date)")"
 
-  rm "$snapshot_file_path"
+  rm "$snapshot_path"
+}
+
+function test_assert_match_snapshot_with_custom_placeholder() {
+  local snapshot_path
+  snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot
+  mkdir -p tests/unit/snapshots
+  echo 'Value __ANY__' > "$snapshot_path"
+
+  export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
+  assert_empty "$(assert_match_snapshot "Value 42")"
+
+  rm "$snapshot_path"
 }

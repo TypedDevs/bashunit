@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 function test_parse_annotations() {
-  local script="tests/benchmark/fixtures/bench_bashunit_sleep.bench.sh"
+  local script="tests/benchmark/fixtures/bench_bashunit_sleep_bench.sh"
   assert_same "5 2" "$(benchmark::parse_annotations bench_sleep "$script")"
 }
 
 function test_run_function_collects_results() {
-  source tests/benchmark/fixtures/bench_bashunit_sleep.bench.sh
+  source tests/benchmark/fixtures/bench_bashunit_sleep_bench.sh
   _BENCH_NAMES=()
   _BENCH_REVS=()
   _BENCH_ITS=()

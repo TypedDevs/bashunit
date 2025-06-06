@@ -8,7 +8,7 @@ function set_up_before_script() {
 
 function test_bashunit_runs_benchmark_file() {
   skip "we need custom placeholders on snapshot first" && return
-  local bench_file=./tests/benchmark/fixtures/bench_bashunit_sleep.bench.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_sleep_bench.sh
   assert_match_snapshot "$(./bashunit --bench --env "$TEST_ENV_FILE" "$bench_file")"
   assert_successful_code "$(./bashunit --bench --env "$TEST_ENV_FILE" "$bench_file")"
 }
@@ -22,7 +22,7 @@ function test_bashunit_runs_benchmark_from_default_path() {
 
 function test_bashunit_functional_benchmark() {
   skip "we need custom placeholders on snapshot first" && return
-  local bench_file=./tests/benchmark/fixtures/bench_bashunit_functional.bench.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_functional_bench.sh
   assert_match_snapshot "$(./bashunit --bench --env "$TEST_ENV_FILE_SIMPLE" "$bench_file")"
   assert_successful_code "$(./bashunit --bench --env "$TEST_ENV_FILE_SIMPLE" "$bench_file")"
 }

@@ -271,7 +271,7 @@ function helper::load_bench_files() {
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
         bench_files+=("$line")
-      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*bench.sh')
+      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
     fi
   else
     bench_files=("${files[@]}")

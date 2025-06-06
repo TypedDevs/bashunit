@@ -2,7 +2,7 @@
 set -euo pipefail
 
 function bench_bashunit_runs_benchmarks() {
-  local bench_file=./tests/benchmark/fixtures/bench_bashunit_sleep.bench.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_sleep.sh
 
   local output
   output="$(./bashunit --bench "$bench_file")"
@@ -11,7 +11,7 @@ function bench_bashunit_runs_benchmarks() {
 }
 
 function bench_bashunit_functional_run() {
-  local bench_file=./tests/benchmark/fixtures/bench_bashunit_functional.bench.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_functional.sh
 
   local output
   output="$(./bashunit --bench "$bench_file")"
