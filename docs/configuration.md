@@ -14,6 +14,7 @@ but you can give it another name if you pass it as an argument to the command wi
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
 If a directory is specified, it will execute tests within files ending in `test.sh`.
+When running benchmarks (`--bench`), the same path is used to search for files ending in `.bench.sh`.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 

@@ -79,6 +79,9 @@ export default defineConfig({
         text: 'Standalone',
         link: '/standalone'
       }, {
+        text: 'Benchmarks',
+        link: '/benchmarks'
+      }, {
         text: 'Globals',
         link: '/globals'
       }, {
