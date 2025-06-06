@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# @revs=5 @its=2
+# @revs=3 @its=2
 function bench_bashunit_runs_benchmarks() {
-  local bench_file=./tests/benchmark/fixtures/bashunit_sleep_test.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_sleep_bench.sh
 
   local output
   output="$(./bashunit --bench "$bench_file")"
@@ -13,7 +13,7 @@ function bench_bashunit_runs_benchmarks() {
 
 # @revs=1 @its=1
 function bench_bashunit_functional_run() {
-  local bench_file=./tests/benchmark/fixtures/bashunit_functional_test.sh
+  local bench_file=./tests/benchmark/fixtures/bashunit_sleep_bench.sh
 
   local output
   output="$(./bashunit --bench "$bench_file")"

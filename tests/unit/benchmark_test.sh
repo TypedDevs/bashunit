@@ -1,12 +1,21 @@
 #!/usr/bin/env bash
 
+function set_up() {
+  SCRIPT="tests/benchmark/fixtures/bashunit_sleep_bench.sh"
+}
+
 function test_parse_annotations() {
-  local script="tests/benchmark/fixtures/bashunit_sleep_bench.sh"
-  assert_same "5 2" "$(benchmark::parse_annotations bench_sleep "$script")"
+  assert_same "5 2" "$(benchmark::parse_annotations bench_sleep "$SCRIPT")"
+}
+
+function test_parse_annotations_with_synonyms() {
+  assert_same "3 2" "$(benchmark::parse_annotations bench_sleep_synonym "$SCRIPT")"
 }
 
 function test_run_function_collects_results() {
-  source tests/benchmark/fixtures/bashunit_sleep_bench.sh
+  # shellcheck disable=SC1090
+  source "$SCRIPT"
+
   _BENCH_NAMES=()
   _BENCH_REVS=()
   _BENCH_ITS=()
