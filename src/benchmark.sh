@@ -85,11 +85,29 @@ function benchmark::print_results() {
   if (( ${#_BENCH_NAMES[@]} == 0 )); then
     return
   fi
+
   if env::is_simple_output_enabled; then
     printf "\n"
   fi
+
   printf "\nBenchmark Results (avg ms)\n"
-  printf '%-40s %8s %8s %8s\n' "Name" "Revs" "Its" "Avg(ms)"
+  print_line 80 "="
+  printf "\n"
+
+  local has_threshold=false
+  for val in "${_BENCH_MAX_MILLIS[@]}"; do
+    if [[ -n "$val" ]]; then
+      has_threshold=true
+      break
+    fi
+  done
+
+  if $has_threshold; then
+    printf '%-40s %6s %6s %10s %12s\n' "Name" "Revs" "Its" "Avg(ms)" "Status"
+  else
+    printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
+  fi
+
   for i in "${!_BENCH_NAMES[@]}"; do
     local name="${_BENCH_NAMES[$i]}"
     local revs="${_BENCH_REVS[$i]}"
@@ -97,10 +115,22 @@ function benchmark::print_results() {
     local avg="${_BENCH_AVERAGES[$i]}"
     local max_ms="${_BENCH_MAX_MILLIS[$i]}"
 
-    if [[ -n "$max_ms" ]] && awk "BEGIN { exit !(${avg} > ${max_ms}) }"; then
-      printf '%-40s %8s %8s %s%8s%s\n' "$name" "$revs" "$its" "${_COLOR_FAILED}" "$avg" "${_COLOR_DEFAULT}"
-    else
-      printf '%-40s %8s %8s %8s\n' "$name" "$revs" "$its" "$avg"
+    if [[ -z "$max_ms" ]]; then
+      printf '%-40s %6s %6s %10s\n' "$name" "$revs" "$its" "$avg"
+      continue
     fi
+
+    if (( $(echo "$avg <= $max_ms" | bc -l) )); then
+      local raw="≤ ${max_ms}"
+      printf -v padded "%14s" "$raw"
+      printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"
+      continue
+    fi
+
+    local raw="> ${max_ms}"
+    printf -v padded "%12s" "$raw"
+    printf '%-40s %6s %6s %10s %s%s%s\n' \
+      "$name" "$revs" "$its" "$avg" \
+      "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"
   done
 }
