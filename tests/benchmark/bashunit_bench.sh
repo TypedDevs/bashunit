@@ -21,7 +21,7 @@ function bench_bashunit_functional_run() {
   assert_successful_code "$output"
 }
 
-# @revs=1 @its=1
+# @revs=1 @its=1 @max_ms=600
 function bench_bashunit_default_path() {
   local env_file=./tests/benchmark/fixtures/.env.with_path
 

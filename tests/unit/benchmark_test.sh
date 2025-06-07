@@ -5,7 +5,7 @@ function set_up() {
 }
 
 function test_parse_annotations() {
-  assert_same "5 2" "$(benchmark::parse_annotations bench_sleep "$SCRIPT")"
+  assert_same "5 2 25" "$(benchmark::parse_annotations bench_sleep "$SCRIPT")"
 }
 
 function test_parse_annotations_with_synonyms() {
@@ -21,7 +21,7 @@ function test_run_function_collects_results() {
   _BENCH_ITS=()
   _BENCH_AVERAGES=()
 
-  benchmark::run_function bench_sleep 2 1
+  benchmark::run_function bench_sleep 2 1 ""
 
   assert_same "bench_sleep" "${_BENCH_NAMES[0]}"
   assert_same "2" "${_BENCH_REVS[0]}"

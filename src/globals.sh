@@ -87,3 +87,9 @@ function log() {
   local RESET='\033[0m'
   echo -e "$(current_timestamp) [$level]: $@ ${GRAY}#${BASH_SOURCE[1]}:${BASH_LINENO[0]}${RESET}" >> "$BASHUNIT_DEV_LOG"
 }
+
+function print_line() {
+  local length="${1:-70}"   # Default to 70 if not passed
+  local char="${2:--}"      # Default to '-' if not passed
+  printf '%*s\n' "$length" '' | tr ' ' "$char"
+}
