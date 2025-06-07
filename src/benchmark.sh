@@ -140,4 +140,6 @@ function benchmark::print_results() {
       "$name" "$revs" "$its" "$avg" \
       "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"
   done
+
+  console_results::print_execution_time
 }
