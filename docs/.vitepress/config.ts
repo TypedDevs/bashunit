@@ -91,6 +91,9 @@ export default defineConfig({
         text: 'Examples',
         link: '/examples'
       }, {
+        text: 'Project overview',
+        link: '/project-overview',
+      }, {
         text: 'Support',
         link: '/support',
       }],
