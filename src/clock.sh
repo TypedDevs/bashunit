@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 
 function clock::now() {
+  local shell_time
+  if shell_time="$(clock::shell_time)"; then
+    local seconds="${shell_time%%.*}"
+    local microseconds="${shell_time#*.}"
+
+    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+    return 0
+  fi
+
   if dependencies::has_perl && perl -MTime::HiRes -e "" > /dev/null 2>&1; then
     if perl -MTime::HiRes -e 'printf("%.0f\n",Time::HiRes::time()*1000000000)'; then
         return 0
@@ -25,18 +34,6 @@ function clock::now() {
       echo "$result"
       return 0
     fi
-  fi
-
-  local shell_time has_shell_time
-  shell_time="$(clock::shell_time)"
-  has_shell_time="$?"
-  if [[ "$has_shell_time" -eq 0 ]]; then
-    local  seconds microseconds
-    seconds=$(echo "$shell_time" | cut -f 1 -d '.')
-    microseconds=$(echo "$shell_time" | cut -f 2 -d '.')
-
-    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
-    return 0
   fi
 
   echo ""

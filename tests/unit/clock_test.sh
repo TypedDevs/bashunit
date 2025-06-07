@@ -15,6 +15,7 @@ function mock_non_existing_fn() {
 }
 
 function test_now_with_perl() {
+  mock clock::shell_time mock_non_existing_fn
   mock perl echo "1720705883457"
 
   assert_same "1720705883457" "$(clock::now)"
@@ -22,6 +23,7 @@ function test_now_with_perl() {
 
 function test_now_on_linux_unknown() {
   mock_unknown_linux_os
+  mock clock::shell_time mock_non_existing_fn
   mock perl mock_non_existing_fn
   mock date echo "1720705883457"
 
@@ -30,6 +32,7 @@ function test_now_on_linux_unknown() {
 
 function test_now_on_linux_alpine() {
   mock_alpine_os
+  mock clock::shell_time mock_non_existing_fn
   mock perl echo "1720705883457"
 
   assert_same "1720705883457" "$(clock::now)"
@@ -40,6 +43,7 @@ function test_now_on_windows_without_with_powershell() {
   mock dependencies::has_perl mock_false
   mock dependencies::has_powershell mock_true
   mock powershell echo "1727768183281580800"
+  mock clock::shell_time mock_non_existing_fn
 
   assert_same "1727768183281580800" "$(clock::now)"
 }
@@ -49,6 +53,7 @@ function test_now_on_windows_without_without_powershell() {
   mock dependencies::has_perl mock_false
   mock dependencies::has_powershell mock_false
   mock date echo "1727768951"
+  mock clock::shell_time mock_non_existing_fn
 
   assert_same "1727768951" "$(clock::now)"
 }
