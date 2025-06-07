@@ -32,3 +32,11 @@ function dependencies::has_curl() {
 function dependencies::has_wget() {
   command -v wget >/dev/null 2>&1
 }
+
+function dependencies::has_python() {
+  command -v python >/dev/null 2>&1
+}
+
+function dependencies::has_node() {
+  command -v node >/dev/null 2>&1
+}

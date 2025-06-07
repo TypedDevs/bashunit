@@ -35,3 +35,17 @@ function test_has_git() {
 
   assert_have_been_called_with "-v git" command
 }
+
+function test_has_python() {
+  spy command
+  dependencies::has_python
+
+  assert_have_been_called_with "-v python" command
+}
+
+function test_has_node() {
+  spy command
+  dependencies::has_node
+
+  assert_have_been_called_with "-v node" command
+}
