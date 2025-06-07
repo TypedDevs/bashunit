@@ -36,13 +36,57 @@ If no file is provided, **bashunit** uses `BASHUNIT_DEFAULT_PATH` to locate all 
 
 Example output:
 
-```-vue
-bashunit - {{ pkg.version }}
+::: code-group
+```bash [Simple]
+./bashunit --bench --simple
+
+.........
 
 Benchmark Results (avg ms)
-Name                                         Revs      Its  Avg(ms)
-bench_my_function                             1000        5    12.34
+======================================================================
+
+Name                                 Revs    Its    Avg(ms)     Status
+bench_bashunit_runs_benchmarks          3      2        727
+bench_bashunit_functional_run           1      1        243
+bench_bashunit_default_path             1      1        731      > 600
+bench_run_bashunit_functional           2      1        371      > 300
+bench_sleep                             5      2         21       ≤ 25
+bench_sleep_synonym                     3      2         32
 ```
+```bash [Detailed]
+./bashunit --bench
+
+Running tests/benchmark/bashunit_bench.sh
+Bench bashunit runs benchmarks [1/2] 843 ms
+Bench bashunit runs benchmarks [2/2] 834 ms
+Bench bashunit functional run [1/1] 281 ms
+Bench bashunit default path [1/1] 736 ms
+
+Running tests/benchmark/fixtures/bashunit_functional_bench.sh
+Bench run bashunit functional [1/1] 430 ms
+
+Running tests/benchmark/fixtures/bashunit_sleep_bench.sh
+Bench sleep [1/2] 48 ms
+Bench sleep [2/2] 26 ms
+Bench sleep synonym [1/2] 32 ms
+Bench sleep synonym [2/2] 34 ms
+
+
+Benchmark Results (avg ms)
+=====================================================================
+
+Name                                 Revs    Its    Avg(ms)    Status
+bench_bashunit_runs_benchmarks          3      2        838
+bench_bashunit_functional_run           1      1        281
+bench_bashunit_default_path             1      1        736     > 600
+bench_run_bashunit_functional           2      1        430     > 300
+bench_sleep                             5      2         37      > 25
+bench_sleep_synonym                     3      2         33
+
+```
+:::
+
+
 
 <script setup>
 import pkg from '../package.json'

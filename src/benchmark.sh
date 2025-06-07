@@ -70,7 +70,8 @@ function benchmark::run_function() {
     durations+=("$dur_ms")
 
     if env::is_bench_mode_enabled; then
-      local line="bench $fn_name [$i/$its] ${dur_ms} ms"
+      local label="$(helper::normalize_test_function_name "$fn_name")"
+      local line="$label [$i/$its] ${dur_ms} ms"
       state::print_line "successful" "$line"
     fi
   done
