@@ -27,7 +27,6 @@ source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
-source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
@@ -36,21 +35,12 @@ _FILTER=""
 _ARGS=()
 _BENCH_MODE=false
 
-# Determine bench mode early so path arguments use correct pattern
-for arg in "$@"; do
-  if [[ $arg == "-b" || $arg == "--bench" ]]; then
-    export BASHUNIT_BENCH_MODE=true
-    _BENCH_MODE=true
-    break
-  fi
-done
-
 check_os::init
 clock::init
 
+# Argument parsing
 while [[ $# -gt 0 ]]; do
-  argument="$1"
-  case $argument in
+  case "$1" in
     -a|--assert)
       _ASSERT_FN="$2"
       shift
@@ -67,13 +57,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     --debug)
       OUTPUT_FILE="${2:-}"
-      if [[ -n $OUTPUT_FILE ]]; then
+      if [[ -n "$OUTPUT_FILE" ]]; then
         exec > "$OUTPUT_FILE" 2>&1
       fi
       set -x
       ;;
     -b|--bench)
       _BENCH_MODE=true
+      export BASHUNIT_BENCH_MODE=true
+      source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
       ;;
     -S|--stop-on-failure)
       export BASHUNIT_STOP_ON_FAILURE=true
@@ -90,11 +82,11 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -l|--log-junit)
-      export BASHUNIT_LOG_JUNIT="$2";
+      export BASHUNIT_LOG_JUNIT="$2"
       shift
       ;;
     -r|--report-html)
-      export BASHUNIT_REPORT_HTML="$2";
+      export BASHUNIT_REPORT_HTML="$2"
       shift
       ;;
     -vvv|--verbose)
@@ -114,22 +106,24 @@ while [[ $# -gt 0 ]]; do
       ;;
     *)
       pattern='*[tT]est.sh'
-      if [[ "$_BENCH_MODE" == true ]]; then
-        pattern='*[bB]ench.sh'
-      fi
-      while IFS='' read -r line; do
-        _ARGS+=("$line");
-      done < <(helper::find_files_recursive "$argument" "$pattern")
+      [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
+      while IFS= read -r file; do
+        _ARGS+=("$file")
+      done < <(helper::find_files_recursive "$1" "$pattern")
       ;;
   esac
   shift
 done
 
+# Optional bootstrap
 # shellcheck disable=SC1090
-[[ -f "$BASHUNIT_BOOTSTRAP" ]] && source "$BASHUNIT_BOOTSTRAP"
+[[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
 
 set +eu
 
+#################
+# Main execution
+#################
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 elif [[ "$_BENCH_MODE" == true ]]; then
