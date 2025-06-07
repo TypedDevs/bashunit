@@ -32,6 +32,7 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
 _FILTER=""
+_RAW_ARGS=()
 _ARGS=()
 _BENCH_MODE=false
 
@@ -105,15 +106,22 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
-      pattern='*[tT]est.sh'
-      [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
-      while IFS= read -r file; do
-        _ARGS+=("$file")
-      done < <(helper::find_files_recursive "$1" "$pattern")
+      _RAW_ARGS+=("$1")
       ;;
   esac
   shift
 done
+
+# Expand positional arguments after all options have been processed
+if [[ ${#_RAW_ARGS[@]} -gt 0 ]]; then
+  pattern='*[tT]est.sh'
+  [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
+  for arg in "${_RAW_ARGS[@]}"; do
+    while IFS= read -r file; do
+      _ARGS+=("$file")
+    done < <(helper::find_files_recursive "$arg" "$pattern")
+  done
+fi
 
 # Optional bootstrap
 # shellcheck disable=SC1090
