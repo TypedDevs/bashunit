@@ -39,6 +39,7 @@ _BENCH_MODE=false
 # Determine bench mode early so path arguments use correct pattern
 for arg in "$@"; do
   if [[ $arg == "-b" || $arg == "--bench" ]]; then
+    export BASHUNIT_BENCH_MODE=true
     _BENCH_MODE=true
     break
   fi

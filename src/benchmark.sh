@@ -69,8 +69,10 @@ function benchmark::run_function() {
     local dur_ms=$(math::calculate "$dur_ns / 1000000")
     durations+=("$dur_ms")
 
-    local line="bench $fn_name [$i/$its] ${dur_ms} ms"
-    state::print_line "successful" "$line"
+    if env::is_bench_mode_enabled; then
+      local line="bench $fn_name [$i/$its] ${dur_ms} ms"
+      state::print_line "successful" "$line"
+    fi
   done
 
   local sum=0
@@ -82,6 +84,10 @@ function benchmark::run_function() {
 }
 
 function benchmark::print_results() {
+  if ! env::is_bench_mode_enabled; then
+    return
+  fi
+
   if (( ${#_BENCH_NAMES[@]} == 0 )); then
     return
   fi
