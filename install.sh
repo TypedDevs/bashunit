@@ -63,14 +63,32 @@ function install() {
 ######### MAIN ##########
 #########################
 
-DIR=${1-lib}
-VERSION=${2-latest}
+# Defaults
+DIR="lib"
+VERSION="latest"
 
-# When only one argument is provided, treat it as the version if it matches
-# the pattern N.N.N (e.g. 0.20.0)
-if [[ $# -eq 1 && $DIR =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  VERSION=$DIR
-  DIR="lib"
+function is_version() {
+  [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || "$1" == "latest" || "$1" == "beta" ]]
+}
+
+# Parse arguments flexibly
+if [[ $# -eq 1 ]]; then
+  if is_version "$1"; then
+    VERSION="$1"
+  else
+    DIR="$1"
+  fi
+elif [[ $# -eq 2 ]]; then
+  if is_version "$1"; then
+    VERSION="$1"
+    DIR="$2"
+  elif is_version "$2"; then
+    DIR="$1"
+    VERSION="$2"
+  else
+    echo "Invalid arguments. Expected version or directory." >&2
+    exit 1
+  fi
 fi
 
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
