@@ -66,6 +66,13 @@ function install() {
 DIR=${1-lib}
 VERSION=${2-latest}
 
+# When only one argument is provided, treat it as the version if it matches
+# the pattern N.N.N (e.g. 0.20.0)
+if [[ $# -eq 1 && $DIR =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  VERSION=$DIR
+  DIR="lib"
+fi
+
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 if is_git_installed; then
     LATEST_BASHUNIT_VERSION="$(get_latest_tag "$BASHUNIT_GIT_REPO")"
