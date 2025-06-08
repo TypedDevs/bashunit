@@ -94,7 +94,10 @@ function test_install_downloads_the_given_version_without_dir() {
   output="$(./install.sh 0.19.0)"
 
   assert_same \
-    "$(printf "> Downloading a concrete version: '0.19.0'\n> bashunit has been installed in the 'lib' folder")" \
+    "$(printf "%s\n" \
+      "> Downloading a concrete version: '0.19.0'" \
+      "> bashunit has been installed in the 'lib' folder" \
+    )" \
     "$output"
 
   assert_file_exists "$installed_bashunit"
