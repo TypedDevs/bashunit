@@ -31,13 +31,13 @@ https://github.com/TypedDevs/bashunit/releases/download/{{ pkg.version }}/checks
 
 #### Define custom tag and folder
 
-The installation script can receive two optional arguments:
+The installation script can receive arguments (in any order):
 
 ```bash
 curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 ```
 - `[dir]`: the destiny directory to save the executable bashunit; `lib` by default
-- `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default
+- `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default.
 
 ::: tip
 You can use `beta` as `[version]` to get the next non-stable preview release.
