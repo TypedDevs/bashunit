@@ -10,7 +10,7 @@
 - Support placeholder `::ignore::` in snapshots
 - Add project overview docs
 - Improve clock performance
-- Allow using install.sh with only a version argument
+- Make install.sh args more flexible
 
 ## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
 
