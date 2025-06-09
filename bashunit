@@ -64,6 +64,9 @@ while [[ $# -gt 0 ]]; do
       fi
       set -x
       ;;
+    -pb|--progress-bar)
+      export BASHUNIT_PROGRESS=true
+      ;;
     -b|--bench)
       _BENCH_MODE=true
       export BASHUNIT_BENCH_MODE=true

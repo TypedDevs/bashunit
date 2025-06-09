@@ -28,7 +28,7 @@ _DEFAULT_STOP_ON_FAILURE="false"
 _DEFAULT_SHOW_EXECUTION_TIME="true"
 _DEFAULT_VERBOSE="false"
 _DEFAULT_BENCH_MODE="false"
-_DEFAULT_PROGRESS="true"
+_DEFAULT_PROGRESS="false"
 
 # Controls if the progress bar should render during execution
 _PROGRESS_ENABLED=true

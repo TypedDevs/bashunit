@@ -77,7 +77,7 @@ function progress::finish() {
 # Re-render the last progress bar if progress display is enabled
 function progress::refresh() {
   if [[ "$_PROGRESS_ENABLED" == true ]]; then
-    progress::render "$PROGRESS_CURRENT" "$PROGRESS_TOTAL"
+    progress::render "${PROGRESS_CURRENT:-}" "${PROGRESS_TOTAL:-}"
   fi
 }
 

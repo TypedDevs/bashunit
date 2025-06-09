@@ -340,6 +340,18 @@ Duration: 48 ms
 ```
 :::
 
+## Progress bar
+
+> `bashunit -pb|--progress-bar`
+
+Enable the progress bar during test execution. By default, the progress bar is disabled.
+
+::: code-group
+```bash [Example]
+./bashunit --progress-bar
+```
+:::
+
 ## Version
 
 > `bashunit --version`

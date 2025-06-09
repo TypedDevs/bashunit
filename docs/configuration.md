@@ -247,6 +247,18 @@ BASHUNIT_VERBOSE=true
 ```
 :::
 
+## Progress bar
+
+> `BASHUNIT_PROGRESS=true|false`
+
+Controls whether the progress bar is rendered. `false` by default.
+
+::: code-group
+```bash [Example]
+BASHUNIT_PROGRESS=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
