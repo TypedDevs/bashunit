@@ -4,6 +4,7 @@
 [31m✗ Failed[0m: Assert failing
     [2mExpected[0m [1m'1'[0m
     [2mbut got [0m [1m'0'[0m
+[31m✗ Failed[0m: test_assert_failing
 [32m✓ Passed[0m: Assert greater and less than
 [32m✓ Passed[0m: Assert empty
 

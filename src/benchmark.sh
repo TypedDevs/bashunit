@@ -94,12 +94,13 @@ function benchmark::print_results() {
   fi
 
   if env::is_simple_output_enabled; then
-    printf "\n"
+    progress::blank_line
   fi
 
-  printf "\nBenchmark Results (avg ms)\n"
+  progress::blank_line
+  printf "Benchmark Results (avg ms)\n"
   print_line 80 "="
-  printf "\n"
+  progress::blank_line
 
   local has_threshold=false
   for val in "${_BENCH_MAX_MILLIS[@]}"; do

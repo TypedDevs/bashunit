@@ -15,6 +15,15 @@ _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 _TEST_OUTPUT=""
 _TEST_EXIT_CODE=0
+_TOTAL_TESTS_TO_RUN=0
+
+function state::set_total_tests_to_run() {
+  _TOTAL_TESTS_TO_RUN=$1
+}
+
+function state::get_total_tests_to_run() {
+  echo "$_TOTAL_TESTS_TO_RUN"
+}
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -195,6 +204,7 @@ function state::print_line() {
 
   if ! env::is_simple_output_enabled; then
     printf "%s\n" "$line"
+    progress::render "$_TOTAL_TESTS_COUNT" "$(state::get_total_tests_to_run)"
     return
   fi
 
@@ -220,4 +230,6 @@ function state::print_line() {
       printf "%s" "$char"
     fi
   fi
+
+  progress::render "$_TOTAL_TESTS_COUNT" "$(state::get_total_tests_to_run)"
 }

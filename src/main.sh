@@ -32,9 +32,14 @@ function main::exec_tests() {
 
   console_header::print_version_with_env "$filter" "${test_files[@]}"
 
+  local total_tests
+  total_tests=$(helpers::find_total_tests "$filter" "${test_files[@]}")
+  state::set_total_tests_to_run "$total_tests"
+  progress::init "$total_tests"
+
   if env::is_verbose_enabled; then
     if env::is_simple_output_enabled; then
-      echo ""
+      progress::blank_line
     fi
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
     printf "%s\n" "Filter:      ${filter:-None}"
@@ -59,6 +64,7 @@ function main::exec_tests() {
   console_results::print_failing_tests_and_reset
   console_results::render_result
   exit_code=$?
+  progress::finish
 
   if [[ -n "$BASHUNIT_LOG_JUNIT" ]]; then
     reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
@@ -105,7 +111,8 @@ function main::cleanup() {
 }
 
 function main::handle_stop_on_failure_sync() {
-  printf "\n%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  progress::blank_line
+  printf "%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   console_results::print_failing_tests_and_reset
   console_results::render_result
   cleanup_temp_files

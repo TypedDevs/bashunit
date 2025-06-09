@@ -51,7 +51,7 @@ function runner::load_bench_files() {
 
 function runner::spinner() {
   if env::is_simple_output_enabled; then
-    printf "\n"
+    progress::blank_line
   fi
 
   local delay=0.1
@@ -125,7 +125,7 @@ function runner::call_test_functions() {
   done
 
   if ! env::is_simple_output_enabled; then
-    echo ""
+    progress::blank_line
   fi
 }
 
@@ -154,7 +154,7 @@ function runner::call_bench_functions() {
   done
 
   if ! env::is_simple_output_enabled; then
-    echo ""
+    progress::blank_line
   fi
 }
 
@@ -164,13 +164,16 @@ function runner::render_running_file_header() {
   fi
 
   if ! env::is_simple_output_enabled; then
-    if env::is_verbose_enabled; then
-      printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
-    else
-      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
-    fi
-  elif env::is_verbose_enabled; then
-    printf "\n\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
+      if env::is_verbose_enabled; then
+        progress::blank_line
+        printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+      else
+        printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+      fi
+    elif env::is_verbose_enabled; then
+      progress::blank_line
+      progress::blank_line
+      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
   fi
 }
 
@@ -230,7 +233,7 @@ function runner::run_test() {
 
   if env::is_verbose_enabled; then
     if env::is_simple_output_enabled; then
-      echo ""
+      progress::blank_line
     fi
 
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '='
@@ -283,7 +286,8 @@ function runner::run_test() {
 
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$fn_name" "$runtime_error"
+    console_results::print_error_test "$fn_name" "$runtime_error" "$duration"
+    console_results::print_failed_test_summary "$fn_name" "$duration"
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$runtime_error"
     return
@@ -291,6 +295,7 @@ function runner::run_test() {
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
+    console_results::print_failed_test_summary "$fn_name" "$duration"
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
 
@@ -306,19 +311,21 @@ function runner::run_test() {
 
   if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
     state::add_tests_snapshot
-    console_results::print_snapshot_test "$fn_name"
+    console_results::print_snapshot_test "$fn_name" "$duration"
     reports::add_test_snapshot "$test_file" "$fn_name" "$duration" "$total_assertions"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
+    console_results::print_incomplete_test "$fn_name" "" "$duration"
     reports::add_test_incomplete "$test_file" "$fn_name" "$duration" "$total_assertions"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
+    console_results::print_skipped_test "$fn_name" "" "$duration"
     reports::add_test_skipped "$test_file" "$fn_name" "$duration" "$total_assertions"
     return
   fi

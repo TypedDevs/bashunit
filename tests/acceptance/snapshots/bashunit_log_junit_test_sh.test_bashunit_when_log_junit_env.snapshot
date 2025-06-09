@@ -3,6 +3,7 @@
 [31m✗ Failed[0m: Failure
     [2mExpected[0m [1m'2'[0m
     [2mbut got [0m [1m'3'[0m
+[31m✗ Failed[0m: test_failure
 
 [1mThere was 1 failure:[0m
 

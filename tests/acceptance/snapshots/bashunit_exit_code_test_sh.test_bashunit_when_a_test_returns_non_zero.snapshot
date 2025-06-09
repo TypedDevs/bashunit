@@ -1,6 +1,7 @@
 [1mRunning tests/acceptance/fixtures/test_bashunit_when_a_test_returns_non_zero.sh[0m
 [31m✗ Error[0m: Returns non zero
     [2m[0m
+[31m✗ Failed[0m: test_returns_non_zero
 
 [1mThere was 1 failure:[0m
 
