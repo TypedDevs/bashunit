@@ -7,14 +7,22 @@
 # Credit:
 #   https://superuser.com/a/1119396
 sgr() {
-  local codes=${1:-0}
+  local codes return
+
+  codes=${1:-0}
   shift
 
   for c in "$@"; do
     codes="$codes;$c"
   done
 
-  echo $'\e'"[${codes}m"
+  return=$'\e'"[${codes}m"
+
+  if [[ $TERM == 'dumb' ]]; then
+    return=""
+  fi
+
+  echo "$return"
 }
 
 _COLOR_BOLD="$(sgr 1)"
