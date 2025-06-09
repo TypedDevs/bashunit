@@ -18,7 +18,7 @@ sgr() {
 
   return=$'\e'"[${codes}m"
 
-  if [[ $TERM == 'dumb' ]]; then
+  if [[ $TERM == 'dumb' ]] || [[ -n ${NO_COLOR+x} ]]; then
     return=""
   fi
 
