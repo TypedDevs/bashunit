@@ -33,6 +33,11 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 _ASSERT_FN=""
 _FILTER=""
 _RAW_ARGS=()
+_ASSERT_FNS=()
+_ASSERT_ARGS_LIST=()
+_CURRENT_ASSERT_ARGS=()
+_ASSERT_COUNT=0
+_CURRENT_ASSERT_FN=""
 _ARGS=()
 _BENCH_MODE=false
 
@@ -40,12 +45,19 @@ check_os::init
 clock::init
 
 # Argument parsing
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -a|--assert)
-      _ASSERT_FN="$2"
-      shift
-      ;;
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -a|--assert)
+        if [[ -n "$_CURRENT_ASSERT_FN" ]]; then
+          _ASSERT_FNS+=("$_CURRENT_ASSERT_FN")
+          joined="$(printf '%s\n' "${_CURRENT_ASSERT_ARGS[@]}")"
+          _ASSERT_ARGS_LIST+=("$joined")
+          _ASSERT_COUNT=$(( _ASSERT_COUNT + 1 ))
+          _CURRENT_ASSERT_ARGS=()
+        fi
+        _CURRENT_ASSERT_FN="$2"
+        shift
+        ;;
     -f|--filter)
       _FILTER="$2"
       shift
@@ -106,11 +118,20 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
-      _RAW_ARGS+=("$1")
+      if [[ -n "$_CURRENT_ASSERT_FN" ]]; then
+        _CURRENT_ASSERT_ARGS+=("$1")
+      else
+        _RAW_ARGS+=("$1")
+      fi
       ;;
   esac
   shift
 done
+if [[ -n "$_CURRENT_ASSERT_FN" ]]; then
+  _ASSERT_FNS+=("$_CURRENT_ASSERT_FN")
+  joined="$(printf '%s\n' "${_CURRENT_ASSERT_ARGS[@]}")"
+  _ASSERT_ARGS_LIST+=("$joined")
+fi
 
 # Expand positional arguments after all options have been processed
 if [[ ${#_RAW_ARGS[@]} -gt 0 ]]; then
@@ -132,8 +153,16 @@ set +eu
 #################
 # Main execution
 #################
-if [[ -n "$_ASSERT_FN" ]]; then
-  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+if [[ ${#_ASSERT_FNS[@]} -gt 0 ]]; then
+  if [[ ${#_ASSERT_FNS[@]} -eq 1 ]]; then
+    args=()
+    while IFS= read -r line; do
+      args+=("$line")
+    done <<< "${_ASSERT_ARGS_LIST[0]}"
+    main::exec_assert "${_ASSERT_FNS[0]}" "${args[@]}"
+  else
+    main::exec_assert_chain
+  fi
 elif [[ "$_BENCH_MODE" == true ]]; then
   main::exec_benchmarks "$_FILTER" "${_ARGS[@]}"
 else

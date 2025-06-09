@@ -73,6 +73,18 @@ OUTPUT=$(./bashunit -a exit_code "1" "$PHPSTAN_PATH analyze \
 ```
 :::
 
+You can also chain assertions directly using multiple `-a` flags.
+The output from `exit_code` will be passed as the last argument of the next assertion:
+
+::: code-group
+```bash [Example]
+./bashunit -a exit_code "1" "my_program" -a contains "some error"
+```
+```[Output]
+# No output
+```
+:::
+
 ### Full control over the stdout and stderr
 
 The stdout will be used for the callable result, while bashunit output will be on stderr.

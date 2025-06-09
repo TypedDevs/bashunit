@@ -164,6 +164,28 @@ function main::exec_assert() {
   return "$bashunit_exit_code"
 }
 
+function main::exec_assert_chain() {
+  local output=""
+  local exit_code=0
+
+  for idx in "${!_ASSERT_FNS[@]}"; do
+    local fn="${_ASSERT_FNS[$idx]}"
+    args=()
+    while IFS= read -r line; do
+      args+=("$line")
+    done <<< "${_ASSERT_ARGS_LIST[$idx]}"
+    if [[ $idx -gt 0 ]]; then
+      args+=("$output")
+    fi
+    state::initialize_assertions_count
+    output=$(main::exec_assert "$fn" "${args[@]}")
+    exit_code=$?
+  done
+
+  [[ -n "$output" ]] && echo "$output"
+  return "$exit_code"
+}
+
 function main::handle_assert_exit_code() {
   local cmd="$1"
   local output
