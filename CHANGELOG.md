@@ -24,6 +24,7 @@
 - Improve `find_total_tests` performance
 - Added `assert_match_snapshot_ignore_colors`
 - Optimize `runner::parse_result_sync`
+- Fix `parse_result_parallel` template
 
 ## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
 
