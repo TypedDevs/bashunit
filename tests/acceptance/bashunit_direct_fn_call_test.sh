@@ -138,3 +138,8 @@ function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
   assert_same "something to stdout" "$output"
   assert_empty "$(cat "$temp")"
 }
+
+function test_bashunit_assert_exit_code_and_contains_chained() {
+  ./bashunit -a exit_code "1" "bash -c 'echo some error; exit 1'" -a contains "some error"
+  assert_successful_code
+}

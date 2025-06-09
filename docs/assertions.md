@@ -366,6 +366,13 @@ function test_failure() {
 ```
 :::
 
+You can chain another assertion to inspect the generated output when using
+`assert_exit_code` standalone with the `-a` option:
+
+```bash
+bashunit -a exit_code "1" "my_program" -a contains "error"
+```
+
 ## assert_array_contains
 > `assert_array_contains "needle" "haystack"`
 
