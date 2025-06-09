@@ -28,7 +28,7 @@ _DEFAULT_STOP_ON_FAILURE="false"
 _DEFAULT_SHOW_EXECUTION_TIME="true"
 _DEFAULT_VERBOSE="false"
 _DEFAULT_BENCH_MODE="false"
-_DEFAULT_PROGRESS="false"
+_DEFAULT_PROGRESS_BAR="false"
 
 # Controls if the progress bar should render during execution
 _PROGRESS_ENABLED=true
@@ -41,7 +41,7 @@ _PROGRESS_ENABLED=true
 : "${BASHUNIT_SHOW_EXECUTION_TIME:=${SHOW_EXECUTION_TIME:=$_DEFAULT_SHOW_EXECUTION_TIME}}"
 : "${BASHUNIT_VERBOSE:=${VERBOSE:=$_DEFAULT_VERBOSE}}"
 : "${BASHUNIT_BENCH_MODE:=${BENCH_MODE:=$_DEFAULT_BENCH_MODE}}"
-: "${BASHUNIT_PROGRESS:=${PROGRESS:=$_DEFAULT_PROGRESS}}"
+: "${BASHUNIT_PROGRESS_BAR:=${PROGRESS_BAR:=$_DEFAULT_PROGRESS_BAR}}"
 
 function env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -79,8 +79,8 @@ function env::is_bench_mode_enabled() {
   [[ "$BASHUNIT_BENCH_MODE" == "true" ]]
 }
 
-function env::is_progress_enabled() {
-  [[ "$BASHUNIT_PROGRESS" == "true" ]]
+function env::is_progress_bar_enabled() {
+  [[ "$BASHUNIT_PROGRESS_BAR" == "true" ]]
 }
 
 function env::active_internet_connection() {

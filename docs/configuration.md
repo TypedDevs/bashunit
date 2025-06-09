@@ -249,13 +249,13 @@ BASHUNIT_VERBOSE=true
 
 ## Progress bar
 
-> `BASHUNIT_PROGRESS=true|false`
+> `BASHUNIT_PROGRESS_BAR=true|false`
 
 Controls whether the progress bar is rendered. `false` by default.
 
 ::: code-group
 ```bash [Example]
-BASHUNIT_PROGRESS=true
+BASHUNIT_PROGRESS_BAR=true
 ```
 :::
 
