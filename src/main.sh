@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function main::exec_tests() {
   local filter=$1
@@ -19,23 +19,40 @@ function main::exec_tests() {
   trap 'main::cleanup' SIGINT
   trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure_sync' EXIT
 
-  if env::is_parallel_run_enabled && check_os::is_alpine; then
-    printf "%sWarning: Parallel test execution on Alpine Linux is currently" "${_COLOR_INCOMPLETE}"
-    printf "in a beta stage.\nThis means there may be unresolved issues, "
-    printf "particularly involving race conditions.%s\n" "${_COLOR_DEFAULT}"
+  if env::is_parallel_run_enabled && ! parallel::is_enabled; then
+    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_COLOR_INCOMPLETE}"
+    printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"
+    printf "particularly involving race conditions.%s " "${_COLOR_DEFAULT}"
+    printf "%sFallback using --no-parallel%s\n" "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   fi
 
-  if env::is_parallel_run_enabled; then
+  if parallel::is_enabled; then
     parallel::reset
   fi
 
   console_header::print_version_with_env "$filter" "${test_files[@]}"
+
+  if env::is_verbose_enabled; then
+    if env::is_simple_output_enabled; then
+      echo ""
+    fi
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
+    printf "%s\n" "Filter:      ${filter:-None}"
+    printf "%s\n" "Total files: ${#test_files[@]}"
+    printf "%s\n" "Test files:"
+    printf -- "- %s\n" "${test_files[@]}"
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '.'
+    env::print_verbose
+    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
+  fi
+
   runner::load_test_files "$filter" "${test_files[@]}"
-  if env::is_parallel_run_enabled; then
+
+  if parallel::is_enabled; then
     wait
   fi
 
-  if env::is_parallel_run_enabled && parallel::must_stop_on_failure; then
+  if parallel::is_enabled && parallel::must_stop_on_failure; then
     printf "\r%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   fi
 
@@ -53,6 +70,30 @@ function main::exec_tests() {
 
   cleanup_temp_files
   exit $exit_code
+}
+
+function main::exec_benchmarks() {
+  local filter=$1
+  local files=("${@:2}")
+
+  local bench_files=()
+  while IFS= read -r line; do
+    bench_files+=("$line")
+  done < <(helper::load_bench_files "$filter" "${files[@]}")
+
+  if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
+    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    console_header::print_help
+    exit 1
+  fi
+
+  console_header::print_version_with_env "$filter" "${bench_files[@]}"
+
+  runner::load_bench_files "$filter" "${bench_files[@]}"
+
+  benchmark::print_results
+
+  cleanup_temp_files
 }
 
 function main::cleanup() {

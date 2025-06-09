@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
@@ -10,31 +10,46 @@ function parallel::aggregate_test_results() {
   local total_snapshot=0
 
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
+    if ! compgen -G "$script_dir"/*.result > /dev/null; then
+      printf "%sNo tests found%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+      continue
+    fi
+
     for result_file in "$script_dir"/*.result; do
-      while IFS= read -r line; do
-        # Extract assertion counts from the result lines using sed
-        failed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_FAILED=\([0-9]*\)##.*/\1/p')
-        passed=$(echo "$line" | sed -n 's/.*##ASSERTIONS_PASSED=\([0-9]*\)##.*/\1/p')
-        skipped=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SKIPPED=\([0-9]*\)##.*/\1/p')
-        incomplete=$(echo "$line" | sed -n 's/.*##ASSERTIONS_INCOMPLETE=\([0-9]*\)##.*/\1/p')
-        snapshot=$(echo "$line" | sed -n 's/.*##ASSERTIONS_SNAPSHOT=\([0-9]*\)##.*/\1/p')
+      local result_line
+      result_line=$(tail -n 1 "$result_file")
 
-        # Default to 0 if no match is found
-        failed=${failed:-0}
-        passed=${passed:-0}
-        skipped=${skipped:-0}
-        incomplete=${incomplete:-0}
-        snapshot=${snapshot:-0}
+      local failed="${result_line##*##ASSERTIONS_FAILED=}"
+      failed="${failed%%##*}"; failed=${failed:-0}
 
-        # Add to the total counts
-        total_failed=$((total_failed + failed))
-        total_passed=$((total_passed + passed))
-        total_skipped=$((total_skipped + skipped))
-        total_incomplete=$((total_incomplete + incomplete))
-        total_snapshot=$((total_snapshot + snapshot))
-      done < "$result_file"
+      local passed="${result_line##*##ASSERTIONS_PASSED=}"
+      passed="${passed%%##*}"; passed=${passed:-0}
+
+      local skipped="${result_line##*##ASSERTIONS_SKIPPED=}"
+      skipped="${skipped%%##*}"; skipped=${skipped:-0}
+
+      local incomplete="${result_line##*##ASSERTIONS_INCOMPLETE=}"
+      incomplete="${incomplete%%##*}"; incomplete=${incomplete:-0}
+
+      local snapshot="${result_line##*##ASSERTIONS_SNAPSHOT=}"
+      snapshot="${snapshot%%##*}"; snapshot=${snapshot:-0}
+
+      local exit_code="${result_line##*##TEST_EXIT_CODE=}"
+      exit_code="${exit_code%%##*}"; exit_code=${exit_code:-0}
+
+      # Add to the total counts
+      total_failed=$((total_failed + failed))
+      total_passed=$((total_passed + passed))
+      total_skipped=$((total_skipped + skipped))
+      total_incomplete=$((total_incomplete + incomplete))
+      total_snapshot=$((total_snapshot + snapshot))
 
       if [ "${failed:-0}" -gt 0 ]; then
+        state::add_tests_failed
+        continue
+      fi
+
+      if [ "${exit_code:-0}" -ne 0 ]; then
         state::add_tests_failed
         continue
       fi
@@ -76,5 +91,14 @@ function parallel::must_stop_on_failure() {
 function parallel::reset() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+  mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
   [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
+}
+
+function parallel::is_enabled() {
+  if env::is_parallel_run_enabled && \
+    (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
+    return 0
+  fi
+  return 1
 }

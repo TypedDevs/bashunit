@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function test_default_os() {
   mock uname echo "bogus OS"
@@ -40,7 +40,7 @@ function test_detect_osx_os() {
   assert_equals "OSX" "$_OS"
 }
 
-# data_provider window_linux_variations
+# @data_provider window_linux_variations
 function test_detect_windows_os() {
   local windows_linux="$1"
   mock uname echo "$windows_linux"
@@ -52,6 +52,10 @@ function test_detect_windows_os() {
 function window_linux_variations() {
   echo "MINGW"
   echo "junkMINGWjunk"
+  echo "MSYS_NT-10.0"
+  echo "junkMSYSjunk"
+  echo "CYGWIN_NT-10.0"
+  echo "junkCYGWINjunk"
 }
 
 function test_alpine_is_busybox() {

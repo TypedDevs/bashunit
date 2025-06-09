@@ -1,14 +1,57 @@
 # Changelog
 
-## [Unreleased](https://github.com/TypedDevs/bashunit/compare/0.17.0...main)
+## Unreleased
+
+- Fix typo "to has been called"
+- Add weekly downloads to the docs
+- Fix parallel runner
+- Count data providers when counting total tests
+- Add benchmark feature
+- Support placeholder `::ignore::` in snapshots
+- Add project overview docs
+- Improve clock performance
+- Make install.sh args more flexible
+- Improve Windows detection allowing parallel tests on Git Bash, MSYS and Cygwin
+
+## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
+
+- Fix asserts on test doubles in subshell
+- Allow interpolating arguments in data providers output
+- Deprecate `# data_provider` in favor of `# @data_provider`
+- Allow `assert_have_been_called_with` to check arguments of specific calls
+- Enable parallel tests on Windows
+- Add `assert_not_called`
+- Improve `find_total_tests` performance
+- Added `assert_match_snapshot_ignore_colors`
+- Optimize `runner::parse_result_sync`
+
+## [0.19.1](https://github.com/TypedDevs/bashunit/compare/0.19.0...0.19.1) - 2025-05-23
+
+- Replace `#!/bin/bash` with `#!/usr/bin/env bash`
+- Usage printf with awk, which correctly handles float rounding and improves portability
+
+## [0.19.0](https://github.com/TypedDevs/bashunit/compare/0.18.0...0.19.0) - 2025-02-19
+
+- Fixed false negative with `set -e`
+- Fixed name rendered when having `test_test_*`
+- Fixed duplicate function detection
+- Fixed display test with multiple outputs in multiline
+- Improved output: adding a space between each test file
+- Removed `BASHUNIT_DEV_MODE` in favor of `BASHUNIT_DEV_LOG`
+- Added source file and line on global dev function `log`
+
+## [0.18.0](https://github.com/TypedDevs/bashunit/compare/0.17.0...0.18.0) - 2024-10-16
 
 - Added `-p|--parallel` to enable running tests in parallel
+    - Enabled only in macOS and Ubuntu
 - Added `assert_file_contains` and `assert_file_not_contains`
 - Added `assert_true` and `assert_false`
-- Added `BASHUNIT_LOG_PATH`
+- Added `BASHUNIT_DEV_LOG`
 - Added global util functions
     - current_dir
     - current_filename
+    - caller_filename
+    - caller_line
     - current_timestamp
     - is_command_available
     - random_str
@@ -17,15 +60,18 @@
     - cleanup_temp_files
     - log
 - Add default env values:
-    - `DEFAULT_PATH="tests"`
-    - `LOG_PATH="out.log"`
-    - `LOAD_FILE="tests/bootstrap.sh"`
+    - `BASHUNIT_DEFAULT_PATH="tests"`
+    - `BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"`
 - Add check that git is installed to `install.sh`
+- Add `-vvv|--verbose` to display internal details of each test
 - Fixed `-S|--stop-on-failure` behaviour
 - Improved time taken display
 - Improved clean up temporal files and directories
 - Improved CI test speed by running them in parallel
 - Removed git dependency for stable installations
+- Rename option `--verbose` to `--detailed`
+    - which is the default display behaviour, the opposite as `--simple`
+- Added `assert_not_same`
 
 ## [0.17.0](https://github.com/TypedDevs/bashunit/compare/0.16.0...0.17.0) - 2024-10-01
 
@@ -37,7 +83,7 @@
 - Added failing tests after running the entire suite
 - Improved runtime errors handling
 - Simplified total tests display on the header
-- Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_LOAD_FILE`
+- Renamed `BASHUNIT_TESTS_ENV` to `BASHUNIT_BOOTSTRAP`
 - Better handler runtime errors
 - Display failing tests after running the entire suite
 - Added defer expressions with `eval` when using standalone assertions

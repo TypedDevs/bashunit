@@ -1,4 +1,4 @@
-Running ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+[1mRunning ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh[0m
 [32m✓ Passed[0m: Assert same
 [32m✓ Passed[0m: Assert contains
 [31m✗ Failed[0m: Assert failing

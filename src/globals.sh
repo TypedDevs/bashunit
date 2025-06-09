@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # This file provides a set of global functions to developers.
@@ -11,6 +11,14 @@ function current_filename() {
   basename "${BASH_SOURCE[1]}"
 }
 
+function caller_filename() {
+  dirname "${BASH_SOURCE[2]}"
+}
+
+function caller_line() {
+  echo "${BASH_LINENO[1]}"
+}
+
 function current_timestamp() {
   date +"%Y-%m-%d %H:%M:%S"
 }
@@ -21,27 +29,48 @@ function is_command_available() {
 
 function random_str() {
   local length=${1:-6}
-  LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c "$length"
+  local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  local str=''
+  for (( i=0; i<length; i++ )); do
+    str+="${chars:RANDOM%${#chars}:1}"
+  done
+  echo "$str"
 }
 
 function temp_file() {
   local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp /tmp/bashunit/tmp/"$prefix".XXXXXXX
+  local test_prefix=""
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  fi
+  mktemp /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
 }
 
 function temp_dir() {
   local prefix=${1:-bashunit}
   mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
-  mktemp -d /tmp/bashunit/tmp/"$prefix".XXXXXXX
+  local test_prefix=""
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  fi
+  mktemp -d /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
 }
 
 function cleanup_temp_files() {
-  rm -rf /tmp/bashunit/tmp/*
+  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
+  else
+    rm -rf /tmp/bashunit/tmp/*
+  fi
 }
 
 # shellcheck disable=SC2145
 function log() {
+  if ! env::is_dev_mode_enabled; then
+    return
+  fi
+
   local level="$1"
   shift
 
@@ -54,5 +83,13 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  echo "$(current_timestamp) [$level]: $@" >> "$BASHUNIT_LOG_PATH"
+  local GRAY='\033[1;30m'
+  local RESET='\033[0m'
+  echo -e "$(current_timestamp) [$level]: $@ ${GRAY}#${BASH_SOURCE[1]}:${BASH_LINENO[0]}${RESET}" >> "$BASHUNIT_DEV_LOG"
+}
+
+function print_line() {
+  local length="${1:-70}"   # Default to 70 if not passed
+  local char="${2:--}"      # Default to '-' if not passed
+  printf '%*s\n' "$length" '' | tr ' ' "$char"
 }

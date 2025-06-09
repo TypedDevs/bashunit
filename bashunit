@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.17.0"
+declare -r BASHUNIT_VERSION="0.20.0"
 
 # shellcheck disable=SC2155
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
@@ -33,14 +33,16 @@ source "$BASHUNIT_ROOT_DIR/src/main.sh"
 _ASSERT_FN_KEY=()
 _ASSERT_FN_VALUES=()
 _FILTER=""
+_RAW_ARGS=()
 _ARGS=()
+_BENCH_MODE=false
 
 check_os::init
 clock::init
 
+# Argument parsing
 while [[ $# -gt 0 ]]; do
-  argument="$1"
-  case $argument in
+  case "$1" in
     -a|--assert)
       _ASSERT_FN_KEY+=("$2")
       _ASSERT_FN_VALUES+=("$3")
@@ -53,15 +55,20 @@ while [[ $# -gt 0 ]]; do
     -s|--simple)
       export BASHUNIT_SIMPLE_OUTPUT=true
       ;;
-    -vvv|--verbose)
+    --detailed)
       export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
     --debug)
       OUTPUT_FILE="${2:-}"
-      if [[ -n $OUTPUT_FILE ]]; then
+      if [[ -n "$OUTPUT_FILE" ]]; then
         exec > "$OUTPUT_FILE" 2>&1
       fi
       set -x
+      ;;
+    -b|--bench)
+      _BENCH_MODE=true
+      export BASHUNIT_BENCH_MODE=true
+      source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
       ;;
     -S|--stop-on-failure)
       export BASHUNIT_STOP_ON_FAILURE=true
@@ -72,18 +79,21 @@ while [[ $# -gt 0 ]]; do
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
-    -e|--env|--load)
+    -e|--env|--boot)
       # shellcheck disable=SC1090
       source "$2"
       shift
       ;;
     -l|--log-junit)
-      export BASHUNIT_LOG_JUNIT="$2";
+      export BASHUNIT_LOG_JUNIT="$2"
       shift
       ;;
     -r|--report-html)
-      export BASHUNIT_REPORT_HTML="$2";
+      export BASHUNIT_REPORT_HTML="$2"
       shift
+      ;;
+    -vvv|--verbose)
+      export BASHUNIT_VERBOSE=true
       ;;
     -v|--version)
       console_header::print_version
@@ -93,25 +103,40 @@ while [[ $# -gt 0 ]]; do
       upgrade::upgrade
       trap '' EXIT && exit 0
       ;;
-    --help)
+    -h|--help)
       console_header::print_help
       trap '' EXIT && exit 0
       ;;
     *)
-      while IFS='' read -r line; do
-        _ARGS+=("$line");
-      done < <(helper::find_files_recursive "$argument")
+      _RAW_ARGS+=("$1")
       ;;
   esac
   shift
 done
 
+# Expand positional arguments after all options have been processed
+if [[ ${#_RAW_ARGS[@]} -gt 0 ]]; then
+  pattern='*[tT]est.sh'
+  [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
+  for arg in "${_RAW_ARGS[@]}"; do
+    while IFS= read -r file; do
+      _ARGS+=("$file")
+    done < <(helper::find_files_recursive "$arg" "$pattern")
+  done
+fi
+
+# Optional bootstrap
 # shellcheck disable=SC1090
-[[ -f "$BASHUNIT_LOAD_FILE" ]] && source "$BASHUNIT_LOAD_FILE"
+[[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
 
 set +eu
 
-if [[ ${#_ASSERT_FN_KEY[@]} -gt 0 ]]; then
+#################
+# Main execution
+#################
+if [[ -n "$_ASSERT_FN" ]]; then
+  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
+elif [[ ${#_ASSERT_FN_KEY[@]} -gt 0 ]]; then
   output=""
   last_exit_code=0
 
@@ -133,6 +158,8 @@ if [[ ${#_ASSERT_FN_KEY[@]} -gt 0 ]]; then
     fi
   done
   exit $last_exit_code
+elif [[ "$_BENCH_MODE" == true ]]; then
+  main::exec_benchmarks "$_FILTER" "${_ARGS[@]}"
 else
   main::exec_tests "$_FILTER" "${_ARGS[@]}"
 fi

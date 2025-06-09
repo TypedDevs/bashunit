@@ -1,7 +1,8 @@
-Running ./tests/acceptance/fixtures/tests_path/a_test.sh
+[1mRunning ./tests/acceptance/fixtures/tests_path/a_test.sh[0m
 [32m✓ Passed[0m: Assert greater and less than
 [32m✓ Passed[0m: Assert empty
-Running ./tests/acceptance/fixtures/tests_path/other_test.sh
+
+[1mRunning ./tests/acceptance/fixtures/tests_path/other_test.sh[0m
 [32m✓ Passed[0m: Assert same
 [32m✓ Passed[0m: Assert contains
 

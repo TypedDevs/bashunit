@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function console_header::print_version_with_env() {
   local filter=${1:-}
@@ -36,7 +36,7 @@ EOF
     if [ "$total_tests" -eq 0 ]; then
       printf "%s\n" "$BASHUNIT_VERSION"
     else
-      printf "%s | Tests: ~%s\n" "$BASHUNIT_VERSION" "$total_tests"
+      printf "%s | Tests: %s\n" "$BASHUNIT_VERSION" "$total_tests"
     fi
     return
   fi
@@ -44,7 +44,7 @@ EOF
   if [ "$total_tests" -eq 0 ]; then
     printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: ~%s\n"\
+    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: %s\n"\
       "$BASHUNIT_VERSION"\
       "$total_tests"
   fi
@@ -60,36 +60,36 @@ Arguments:
   If you use wildcards, bashunit will run any tests it finds.
 
 Options:
-  -a|--assert <function ...args>
+  -a, --assert <function ...args>
     Run a core assert function standalone without a test context.
+
+  -e, --env, --boot <file-path>
+    Load a custom file, overriding the existing .env variables or loading a file with global functions.
+
+  -f, --filter <filter>
+    Filters the tests to run based on the test name.
+
+  -l, --log-junit <out.xml>
+    Create a report JUnit XML file that contains information about the test results.
+
+  -p, --parallel || --no-parallel [default]
+    Run each test in child process, randomizing the tests execution order.
+
+  -r, --report-html <out.html>
+    Create a report HTML file that contains information about the test results.
+
+  -s, --simple || --detailed [default]
+    Enables simple or detailed output to the console.
+
+  -S, --stop-on-failure
+    Force to stop the runner right after encountering one failing test.
 
   --debug <?file-path>
     Print all executed shell commands to the terminal.
     If a file-path is passed, it will redirect the output to that file.
 
-  -e|--env|--load <file-path>
-    Load a custom file, overriding the existing .env variables or loading a file with global functions.
-
-  -f|--filter <filter>
-    Filters the tests to run based on the test name.
-
-  -l|--log-junit <out.xml>
-    Create a report JUnit XML file that contains information about the test results.
-
-  -p|--parallel
-    Run each test in child process, randomizing the tests execution order.
-
-  --no-parallel
-    Disable the --parallel option. Util to disable parallel tests from within another test.
-
-  -r|--report-html <out.html>
-    Create a report HTML file that contains information about the test results.
-
-  -s|simple || -v|verbose
-    Enables simplified or verbose output to the console.
-
-  -S|--stop-on-failure
-    Force to stop the runner right after encountering one failing test.
+  -vvv, --verbose
+    Display internal details for each test.
 
   --version
     Displays the current version of bashunit.
@@ -97,7 +97,7 @@ Options:
   --upgrade
     Upgrade to latest version of bashunit.
 
-  --help
+  -h, --help
     This message.
 
 See more: https://bashunit.typeddevs.com/command-line

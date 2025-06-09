@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # shellcheck disable=SC2034
 _OS="Unknown"
@@ -41,7 +41,14 @@ function check_os::is_macos() {
 }
 
 function check_os::is_windows() {
-  [[ "$(uname)" == *"MINGW"* ]]
+  case "$(uname)" in
+    *MINGW*|*MSYS*|*CYGWIN*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
 }
 
 function check_os::is_busybox() {

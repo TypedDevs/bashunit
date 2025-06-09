@@ -1,7 +1,7 @@
 {
   "name": "bashunit-docs",
-  "version": "0.17.0",
-  "checksum": "f8d49a52ae5a89e86024feb21214693db31511a9eb391aad22dd2645aebd82f2",
+  "version": "0.20.0",
+  "checksum": "d1eed647b705ff91a3ce233b06cf300fcaf540a411404e2287d50c66699773a8",
   "description": "Docs for bashunit a simple testing library for bash scripts",
   "main": "index.js",
   "repository": "git@github.com:TypedDevs/bashunit.git",
@@ -14,10 +14,11 @@
     "docs:preview": "vitepress preview docs"
   },
   "dependencies": {
+    "chart.js": "^4.4.9",
     "vanilla-tilt": "^1.8.1"
   },
   "devDependencies": {
-    "vitepress": "^1.0.0-rc.44",
-    "vue": "^3.4.21"
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.16"
   }
 }

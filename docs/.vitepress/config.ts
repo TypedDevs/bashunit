@@ -79,6 +79,9 @@ export default defineConfig({
         text: 'Standalone',
         link: '/standalone'
       }, {
+        text: 'Benchmarks',
+        link: '/benchmarks'
+      }, {
         text: 'Globals',
         link: '/globals'
       }, {
@@ -87,6 +90,9 @@ export default defineConfig({
       }, {
         text: 'Examples',
         link: '/examples'
+      }, {
+        text: 'Project overview',
+        link: '/project-overview',
       }, {
         text: 'Support',
         link: '/support',
@@ -122,7 +128,17 @@ export default defineConfig({
     }],
 
     search: {
-      provider: 'local'
+      provider: 'local',
+      options: {
+        _render(src, env, md) {
+          const html = md.render(src, env)
+
+          return html.replace(
+            /{{\s*\$frontmatter\.(\w+)\s*}}/g,
+            (_, key) => env.frontmatter[key]?.toString() || ''
+          )
+        }
+      }
     },
 
     footer: {

@@ -13,7 +13,8 @@ but you can give it another name if you pass it as an argument to the command wi
 
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
-If a directory is specified, it will execute tests within files ending in `test.sh`.
+If a directory is specified, it will execute tests within files ending in `bench.sh`.
+When running benchmarks (`--bench`), the same path is used to search for files ending in `bench.sh`.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
@@ -38,7 +39,7 @@ Enables simplified output to the console. `false` by default.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple | -vvv|--verbose` option on the [command line](/command-line#output).
+Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output).
 
 ::: code-group
 ```bash [Simple output]
@@ -67,6 +68,11 @@ BASHUNIT_SIMPLE_OUTPUT=false
 > `BASHUNIT_PARALLEL_RUN=true|false`
 
 Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+
+::: warning
+Parallel execution is supported only on **macOS** and **Ubuntu**. On other
+systems bashunit forces sequential execution to avoid inconsistent results.
+:::
 
 Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
 
@@ -183,9 +189,9 @@ BASHUNIT_REPORT_HTML=report.html
 ```
 :::
 
-## Load file
+## Bootstrap
 
-> `BASHUNIT_LOAD_FILE=file`
+> `BASHUNIT_BOOTSTRAP=file`
 
 Specifies an additional file to be loaded for all tests cases.
 Useful to set up global variables or functions accessible in all your tests.
@@ -195,22 +201,25 @@ Similarly, you can use load an additional file via the [command line](/command-l
 ::: code-group
 ```bash [Example]
 # a simple .env file
-BASHUNIT_LOAD_FILE=".env.tests"
+BASHUNIT_BOOTSTRAP=".env.tests"
 
 # or a complete script file
-BASHUNIT_LOAD_FILE="tests/globals.sh"
+BASHUNIT_BOOTSTRAP="tests/globals.sh"
+
+# Default value
+BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
-## Log path
+## Dev log
 
-> `BASHUNIT_LOG_PATH=file`
+> `BASHUNIT_DEV_LOG=file`
 
 > See: [Globals > log](/globals#log)
 
 ::: code-group
 ```bash [Setup]
-BASHUNIT_LOG_PATH="out.log"
+BASHUNIT_DEV_LOG="dev.log"
 ```
 ```bash [Usage]
 log "I am tracing something..."
@@ -221,6 +230,20 @@ log "warning" "different log level messages!"
 2024-10-03 21:27:23 [INFO]: I am tracing something...
 2024-10-03 21:27:23 [ERROR]: an error message
 2024-10-03 21:27:23 [WARNING]: different log level messages!
+```
+:::
+
+## Verbose
+
+> `BASHUNIT_VERBOSE=bool`
+
+Display internal details for each test.
+
+Similarly, you can use the command line option for this: [command line](/command-line#verbose).
+
+::: code-group
+```bash [Example]
+BASHUNIT_VERBOSE=true
 ```
 :::
 

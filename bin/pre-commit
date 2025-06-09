@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 echo "Running pre-commit checks"
 
 make pre_commit/run

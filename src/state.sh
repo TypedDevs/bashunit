@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 _TESTS_PASSED=0
 _TESTS_FAILED=0
@@ -14,6 +14,7 @@ _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 _TEST_OUTPUT=""
+_TEST_EXIT_CODE=0
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -123,6 +124,14 @@ function state::add_test_output() {
   _TEST_OUTPUT+="$1"
 }
 
+function state::get_test_exit_code() {
+  echo "$_TEST_EXIT_CODE"
+}
+
+function state::set_test_exit_code() {
+  _TEST_EXIT_CODE="$1"
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
@@ -149,16 +158,13 @@ function state::export_subshell_context() {
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
   fi
 
-  local test_id
-  test_id=$(LC_ALL=C tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
-
   cat <<EOF
-##TEST_ID=$test_id\
 ##ASSERTIONS_FAILED=$_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_ASSERTIONS_SKIPPED\
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
+##TEST_EXIT_CODE=$_TEST_EXIT_CODE\
 ##TEST_OUTPUT=$encoded_test_output\
 ##
 EOF
@@ -205,7 +211,7 @@ function state::print_line() {
     *)                char="?" && log "warning" "unknown test type '$type'" ;;
   esac
 
-  if env::is_parallel_run_enabled; then
+  if parallel::is_enabled; then
       printf "%s" "$char"
   else
     if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then

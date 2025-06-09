@@ -18,4 +18,5 @@ report.html
 
 # internal
 local/
-out.log
+tmp/
+dev.log

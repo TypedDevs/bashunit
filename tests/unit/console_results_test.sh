@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function mock_all_state_getters() {
   mock state::is_duplicated_test_functions_found echo false
@@ -288,7 +288,7 @@ function test_not_render_execution_time() {
 }
 
 function test_render_execution_time_on_osx_without_perl() {
-  if check_os::is_windows; then
+  if ! check_os::is_macos; then
     skip
     return
   fi
@@ -297,7 +297,6 @@ function test_render_execution_time_on_osx_without_perl() {
   mock dependencies::has_perl mock_false
 
   _START_TIME=1727771758.0664479733
-  EPOCHREALTIME=1727780556.4266040325
 
   local render_result
   render_result=$(
@@ -308,7 +307,7 @@ function test_render_execution_time_on_osx_without_perl() {
 }
 
 function test_render_execution_time_on_osx_with_perl() {
-  if check_os::is_windows; then
+  if ! check_os::is_macos; then
     skip
     return
   fi
@@ -526,11 +525,12 @@ function test_no_tests_found() {
 function test_print_successful_test_output_no_args() {
   original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
 
   local test_name="a custom test"
 
   assert_matches \
-    "✓ Passed.*$test_name.*(12 ms)" \
+    "✓ Passed.*$test_name.*12 ms" \
     "$(console_results::print_successful_test "$test_name" "12")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
@@ -539,12 +539,13 @@ function test_print_successful_test_output_no_args() {
 function test_print_successful_test_output_with_args() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
 
   local test_name="a custom test"
   local data="foo"
 
   assert_matches \
-    "✓ Passed.*$test_name \($data\).*(12 ms)" \
+    "✓ Passed.*$test_name \($data\).*12 ms" \
     "$(console_results::print_successful_test "$test_name" "12" "$data")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output

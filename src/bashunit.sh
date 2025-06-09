@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This file provides a facade to developers who wants
 # to interact with the internals of bashunit.

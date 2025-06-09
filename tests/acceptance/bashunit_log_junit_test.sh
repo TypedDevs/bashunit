@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
