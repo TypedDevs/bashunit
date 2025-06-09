@@ -48,10 +48,16 @@ function runner::load_bench_files() {
     runner::clean_set_up_and_tear_down_after_script
   done
 }
-
 function runner::spinner() {
+  if env::is_simple_output_enabled; then
+    printf "\n"
+  fi
+
   local delay=0.1
   local spin_chars="|/-\\"
+
+  trap 'printf "\r \r"' EXIT
+
   while true; do
     for ((i=0; i<${#spin_chars}; i++)); do
       printf "\r%s" "${spin_chars:$i:1}"

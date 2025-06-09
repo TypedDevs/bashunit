@@ -14,7 +14,6 @@ function console_results::render_result() {
 
   if env::is_simple_output_enabled; then
     progress::blank_line
-    progress::blank_line
   fi
 
   local total_tests=0
