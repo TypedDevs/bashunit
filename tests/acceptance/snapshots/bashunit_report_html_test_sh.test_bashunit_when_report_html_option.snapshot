@@ -3,8 +3,11 @@
 [31m✗ Failed[0m: Fail
     [2mExpected[0m [1m'to be empty'[0m
     [2mbut got [0m [1m'non empty'[0m
+[31m✗ Failed[0m: test_fail
 [33m↷ Skipped[0m: Skipped
+[33m↷ Skipped[0m: test_skipped
 [36m✒ Incomplete[0m: Todo
+[36m✒ Incomplete[0m: test_todo
 
 [1mThere was 1 failure:[0m
 

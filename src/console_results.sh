@@ -13,7 +13,7 @@ function console_results::render_result() {
   fi
 
   if env::is_simple_output_enabled; then
-    printf "\n\n"
+    progress::blank_line
   fi
 
   local total_tests=0
@@ -67,36 +67,42 @@ function console_results::render_result() {
   printf " %s total\n" "$total_assertions"
 
   if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
+    progress::blank_line
+    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 1
   fi
 
   if [[ "$(state::get_tests_incomplete)" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
+    progress::blank_line
+    printf "%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
+    progress::blank_line
+    printf "%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ "$(state::get_tests_snapshot)" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
+    progress::blank_line
+    printf "%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ $total_tests -eq 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " No tests found " "$_COLOR_DEFAULT"
+    progress::blank_line
+    printf "%s%s%s\n" "$_COLOR_RETURN_ERROR" " No tests found " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 1
   fi
 
-  printf "\n%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
+  progress::blank_line
+  printf "%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
   console_results::print_execution_time
   return 0
 }
@@ -143,9 +149,25 @@ function console_results::print_successful_test() {
   state::print_line "successful" "$full_line"
 }
 
+function console_results::print_failed_test_summary() {
+  local test_name=$1
+  local duration=${2:-"0"}
+
+  local line
+  line=$(printf "%s✗ Failed%s: %s" "$_COLOR_FAILED" "$_COLOR_DEFAULT" "$test_name")
+
+  local full_line=$line
+  if env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "failed" "$full_line"
+}
+
 function console_results::print_failure_message() {
   local test_name=$1
   local failure_message=$2
+  local duration=${3-}
 
   local line
   line="$(printf "\
@@ -153,7 +175,12 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
     "${test_name}" "${failure_message}")"
 
-  state::print_line "failure" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "failure" "$full_line"
 }
 
 function console_results::print_failed_test() {
@@ -163,6 +190,7 @@ function console_results::print_failed_test() {
   local actual=$4
   local extra_key=${5-}
   local extra_value=${6-}
+  local duration=${7-}
 
   local line
   line="$(printf "\
@@ -178,13 +206,19 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${extra_key}" "${extra_value}")"
   fi
 
-  state::print_line "failed" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "failed" "$full_line"
 }
 
 
 function console_results::print_failed_snapshot_test() {
   local function_name=$1
   local snapshot_file=$2
+  local duration=${3-}
 
   local line
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
@@ -203,12 +237,18 @@ function console_results::print_failed_snapshot_test() {
     rm "$actual_file"
   fi
 
-  state::print_line "failed_snapshot" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "failed_snapshot" "$full_line"
 }
 
 function console_results::print_skipped_test() {
   local function_name=$1
   local reason=${2-}
+  local duration=${3-}
 
   local line
   line="$(printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${function_name}")"
@@ -217,12 +257,18 @@ function console_results::print_skipped_test() {
     line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
-  state::print_line "skipped" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "skipped" "$full_line"
 }
 
 function console_results::print_incomplete_test() {
   local function_name=$1
   local pending=${2-}
+  local duration=${3-}
 
   local line
   line="$(printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${function_name}")"
@@ -231,23 +277,35 @@ function console_results::print_incomplete_test() {
     line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
-  state::print_line "incomplete" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "incomplete" "$full_line"
 }
 
 function console_results::print_snapshot_test() {
   local function_name=$1
+  local duration=${2-}
   local test_name
   test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
   line="$(printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}")"
 
-  state::print_line "snapshot" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "snapshot" "$full_line"
 }
 
 function console_results::print_error_test() {
   local function_name=$1
   local error="$2"
+  local duration=${3-}
 
   local test_name
   test_name=$(helper::normalize_test_function_name "$function_name")
@@ -256,7 +314,12 @@ function console_results::print_error_test() {
   line="$(printf "${_COLOR_FAILED}✗ Error${_COLOR_DEFAULT}: %s
     ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
-  state::print_line "error" "$line"
+  local full_line=$line
+  if [[ -n "$duration" ]] && env::is_show_execution_time_enabled; then
+    full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
+  fi
+
+  state::print_line "error" "$full_line"
 }
 
 function console_results::print_failing_tests_and_reset() {
@@ -265,7 +328,8 @@ function console_results::print_failing_tests_and_reset() {
     total_failed=$(state::get_tests_failed)
 
     if env::is_simple_output_enabled; then
-      printf "\n\n"
+      progress::blank_line
+      progress::blank_line
     fi
 
     if [[ "$total_failed" -eq 1 ]]; then
@@ -277,6 +341,6 @@ function console_results::print_failing_tests_and_reset() {
     sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
     rm "$FAILURES_OUTPUT_PATH"
 
-    echo ""
+    progress::blank_line
   fi
 }

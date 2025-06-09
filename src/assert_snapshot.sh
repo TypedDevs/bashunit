@@ -34,9 +34,17 @@ function snapshot::match_with_placeholder() {
   fi
 }
 
+# Remove progress bar output from a given string. Progress bar sequences are
+# wrapped between ESC7 and ESC8 control codes when a TTY is present.
+function snapshot::strip_progress_line() {
+  local input="$1"
+  echo -n "$input" | sed $'s/\x1b7.*\x1b8//'
+}
+
 function assert_match_snapshot() {
   local actual
   actual=$(echo -n "$1" | tr -d '\r')
+  actual=$(snapshot::strip_progress_line "$actual")
   local directory
   directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
   local test_file
@@ -73,6 +81,7 @@ function assert_match_snapshot() {
 function assert_match_snapshot_ignore_colors() {
   local actual
   actual=$(echo -n "$1" | sed -r 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
+  actual=$(snapshot::strip_progress_line "$actual")
 
   local directory
   directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"

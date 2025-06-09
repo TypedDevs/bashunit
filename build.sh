@@ -94,6 +94,7 @@ function build::dependencies() {
     "src/env.sh"
     "src/clock.sh"
     "src/state.sh"
+    "src/progress.sh"
     "src/colors.sh"
     "src/console_header.sh"
     "src/console_results.sh"

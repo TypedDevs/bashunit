@@ -6,10 +6,13 @@
 [31m✗ Failed[0m: Assert failing
     [2mExpected[0m [1m'3'[0m
     [2mbut got [0m [1m'4'[0m
+[31m✗ Failed[0m: test_assert_failing
 [36m✒ Incomplete[0m: Assert todo and skip[2m    foo[0m
 [33m↷ Skipped[0m: Assert todo and skip[2m    bar[0m
+[36m✒ Incomplete[0m: test_assert_todo_and_skip
 [33m↷ Skipped[0m: Assert skip and todo[2m    baz[0m
 [36m✒ Incomplete[0m: Assert skip and todo[2m    yei[0m
+[36m✒ Incomplete[0m: test_assert_skip_and_todo
 
 [1mThere was 1 failure:[0m
 

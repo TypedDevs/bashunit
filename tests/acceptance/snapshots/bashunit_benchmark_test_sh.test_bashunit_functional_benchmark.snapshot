@@ -1,5 +1,0 @@
-.
-
-Benchmark Results (avg ms)
-Name                                         Revs      Its  Avg(ms)
-bench_run_bashunit_functional                   2        1      ::ignore::
