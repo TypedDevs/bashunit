@@ -50,10 +50,6 @@ function runner::load_bench_files() {
 }
 
 function runner::spinner() {
-  if env::is_simple_output_enabled; then
-    progress::blank_line
-  fi
-
   local delay=0.1
   local spin_chars="|/-\\"
   while true; do
