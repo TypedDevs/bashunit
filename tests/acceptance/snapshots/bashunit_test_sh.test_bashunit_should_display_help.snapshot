@@ -21,6 +21,9 @@ Options:
   -p, --parallel || --no-parallel [default]
     Run each test in child process, randomizing the tests execution order.
 
+  -pb, --progress-bar
+    Display a real-time progress bar during test execution. Requires a TTY and disables parallel mode.
+
   -r, --report-html <out.html>
     Create a report HTML file that contains information about the test results.
 
