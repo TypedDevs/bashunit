@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function progress::init() {
-  PROGRESS_TOTAL=$1
+  export PROGRESS_TOTAL=$1
 
   if parallel::is_enabled || [[ ! -t 1 ]] || ! env::is_progress_enabled; then
     _PROGRESS_ENABLED=false
