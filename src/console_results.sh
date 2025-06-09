@@ -149,7 +149,6 @@ function console_results::print_successful_test() {
   state::print_line "successful" "$full_line"
 }
 
-# Print a summary line for a failed test with its duration.
 function console_results::print_failed_test_summary() {
   local test_name=$1
   local duration=${2:-"0"}

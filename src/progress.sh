@@ -1,60 +1,58 @@
 #!/usr/bin/env bash
 
+# Check if progress bar is enabled and not in parallel mode
 function progress::enabled() {
   env::is_progress_bar_enabled && ! parallel::is_enabled
 }
 
+# Initialize progress tracking variables and optionally render the first bar
 function progress::init() {
   export PROGRESS_TOTAL=$1
-  # Track the last rendered progress state so the bar can be redrawn
   export PROGRESS_CURRENT=0
 
   if env::is_progress_bar_enabled && parallel::is_enabled; then
-    printf "%sWarning: Progress bar is not supported in parallel mode.%s\n" "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}"
+    printf "%sWarning: Progress bar is not supported in parallel mode.%s\n" \
+      "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}"
   fi
 
-  if progress::enabled ; then
+  if progress::enabled; then
     progress::render 0 "$PROGRESS_TOTAL"
   fi
 }
 
+# Render the progress bar line
 function progress::render() {
-  local current=$1
-  local total=$2
+  local current total width filled empty i bar line
 
+  current=$1
+  total=$2
   PROGRESS_CURRENT=$current
 
-  if ! progress::enabled ; then
+  if ! progress::enabled || [[ ! -t 1 ]] || [[ -z "$total" || "$total" -eq 0 ]]; then
     return
   fi
 
-  if [[ ! -t 1 ]]; then
-    return
-  fi
+  width=$((TERMINAL_WIDTH - 20))
+  [ "$width" -lt 10 ] && width=10
 
-  if [[ -z "$total" || "$total" -eq 0 ]]; then
-    return
-  fi
+  filled=$(( current * width / total ))
+  empty=$(( width - filled ))
 
-  local width=$((TERMINAL_WIDTH - 20))
-  (( width < 10 )) && width=10
-
-  local filled=$(( current * width / total ))
-  local empty=$(( width - filled ))
-  local bar
-
-  bar=""
-  for ((i=0; i<filled; i++)); do
-    bar+="#"
+  bar=''
+  i=0
+  while [ $i -lt $filled ]; do
+    bar="${bar}#"
+    i=$((i + 1))
   done
-  for ((i=0; i<empty; i++)); do
-    bar+="-"
+  i=0
+  while [ $i -lt $empty ]; do
+    bar="${bar}-"
+    i=$((i + 1))
   done
 
-  local line
   line=$(printf '[%s] %d/%d' "$bar" "$current" "$total")
 
-  if command -v tput > /dev/null; then
+  if command -v tput >/dev/null; then
     tput sc
     tput cup $(( $(tput lines) - 1 )) 0
     printf '%-*s' "$TERMINAL_WIDTH" "$line"
@@ -64,12 +62,13 @@ function progress::render() {
   fi
 }
 
+# Finish and clear the progress bar line
 function progress::finish() {
-  if ! progress::enabled ; then
+  if ! progress::enabled; then
     return
   fi
 
-  if command -v tput > /dev/null; then
+  if command -v tput >/dev/null; then
     tput sc
     tput cup $(( $(tput lines) - 1 )) 0
     printf '%*s' "$TERMINAL_WIDTH" ''
@@ -79,17 +78,16 @@ function progress::finish() {
   fi
 }
 
-# Re-render the last progress bar if progress display is enabled
+# Redraw the progress bar using the current known state
 function progress::refresh() {
-  if progress::enabled ; then
-    progress::render "${PROGRESS_CURRENT:-}" "${PROGRESS_TOTAL:-}"
+  if progress::enabled; then
+    progress::render "${PROGRESS_CURRENT:-0}" "${PROGRESS_TOTAL:-0}"
   fi
 }
 
-# Print an empty line, ensuring any residual characters are cleared by
-# filling the entire terminal width with spaces before emitting a newline.
+# Print an empty line, clearing any previous progress bar content
 function progress::blank_line() {
-  if [[ -t 1 ]] && command -v tput > /dev/null; then
+  if [[ -t 1 ]] && command -v tput >/dev/null; then
     printf '%*s\n' "$TERMINAL_WIDTH" ''
   else
     printf '\n'
