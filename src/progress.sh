@@ -7,8 +7,8 @@ function progress::enabled() {
 
 # Initialize progress tracking variables and optionally render the first bar
 function progress::init() {
-  export PROGRESS_TOTAL=$1
-  export PROGRESS_CURRENT=0
+  export PROGRESS_BAR_TOTAL=$1
+  export PROGRESS_BAR_CURRENT=0
 
   if env::is_progress_bar_enabled && parallel::is_enabled; then
     printf "%sWarning: Progress bar is not supported in parallel mode.%s\n" \
@@ -16,7 +16,7 @@ function progress::init() {
   fi
 
   if progress::enabled; then
-    progress::render 0 "$PROGRESS_TOTAL"
+    progress::render 0 "$PROGRESS_BAR_TOTAL"
   fi
 }
 
@@ -26,7 +26,7 @@ function progress::render() {
 
   current=$1
   total=$2
-  PROGRESS_CURRENT=$current
+  PROGRESS_BAR_CURRENT=$current
 
   if ! progress::enabled || [[ ! -t 1 ]] || [[ -z "$total" || "$total" -eq 0 ]]; then
     return
@@ -81,7 +81,7 @@ function progress::finish() {
 # Redraw the progress bar using the current known state
 function progress::refresh() {
   if progress::enabled; then
-    progress::render "${PROGRESS_CURRENT:-0}" "${PROGRESS_TOTAL:-0}"
+    progress::render "${PROGRESS_BAR_CURRENT:-0}" "${PROGRESS_BAR_TOTAL:-0}"
   fi
 }
 
