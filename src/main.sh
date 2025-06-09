@@ -49,6 +49,9 @@ function main::exec_tests() {
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '.'
     env::print_verbose
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
+    if env::is_simple_output_enabled; then
+      progress::refresh
+    fi
   fi
 
   runner::load_test_files "$filter" "${test_files[@]}"

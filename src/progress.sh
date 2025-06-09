@@ -2,6 +2,8 @@
 
 function progress::init() {
   export PROGRESS_TOTAL=$1
+  # Track the last rendered progress state so the bar can be redrawn
+  export PROGRESS_CURRENT=0
 
   if parallel::is_enabled || [[ ! -t 1 ]] || ! env::is_progress_enabled; then
     _PROGRESS_ENABLED=false
@@ -14,6 +16,8 @@ function progress::init() {
 function progress::render() {
   local current=$1
   local total=$2
+
+  PROGRESS_CURRENT=$current
 
   if [[ "$_PROGRESS_ENABLED" != true ]]; then
     return
@@ -63,10 +67,17 @@ function progress::finish() {
   if command -v tput > /dev/null; then
     tput sc
     tput cup $(( $(tput lines) - 1 )) 0
-    printf '%*s\n' "$TERMINAL_WIDTH" ''
+    printf '%*s' "$TERMINAL_WIDTH" ''
     tput rc
   else
-    printf '\n'
+    printf '\r%-*s' "$TERMINAL_WIDTH" ''
+  fi
+}
+
+# Re-render the last progress bar if progress display is enabled
+function progress::refresh() {
+  if [[ "$_PROGRESS_ENABLED" == true ]]; then
+    progress::render "$PROGRESS_CURRENT" "$PROGRESS_TOTAL"
   fi
 }
 

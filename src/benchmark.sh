@@ -101,6 +101,9 @@ function benchmark::print_results() {
   printf "Benchmark Results (avg ms)\n"
   print_line 80 "="
   progress::blank_line
+  if env::is_simple_output_enabled; then
+    progress::refresh
+  fi
 
   local has_threshold=false
   for val in "${_BENCH_MAX_MILLIS[@]}"; do

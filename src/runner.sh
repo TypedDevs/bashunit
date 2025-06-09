@@ -174,6 +174,10 @@ function runner::render_running_file_header() {
       progress::blank_line
       progress::blank_line
       printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
+    fi
+
+  if env::is_simple_output_enabled && env::is_verbose_enabled; then
+    progress::refresh
   fi
 }
 
