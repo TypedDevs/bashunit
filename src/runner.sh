@@ -389,13 +389,15 @@ function runner::parse_result_parallel() {
   sanitized_args=$(echo "${args[*]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
   local template
   if [[ -z "$sanitized_args" ]]; then
-    template="${fn_name}.XXXXXX.result"
+    template="${fn_name}.XXXXXX"
   else
-    template="${fn_name}-${sanitized_args}.XXXXXX.result"
+    template="${fn_name}-${sanitized_args}.XXXXXX"
   fi
 
   local unique_test_result_file
   unique_test_result_file=$(mktemp -p "$test_suite_dir" "$template")
+  mv "$unique_test_result_file" "${unique_test_result_file}.result"
+  unique_test_result_file="${unique_test_result_file}.result"
 
   log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
