@@ -346,6 +346,10 @@ Duration: 48 ms
 
 Enable the progress bar during test execution. By default, the progress bar is disabled.
 
+::: warning
+The progress bar cannot be used when running tests in parallel. If `--progress-bar` is combined with `--parallel`, a warning is printed and the bar is disabled.
+:::
+
 ::: code-group
 ```bash [Example]
 ./bashunit --progress-bar

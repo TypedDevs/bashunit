@@ -9,6 +9,10 @@ function progress::init() {
   # Track the last rendered progress state so the bar can be redrawn
   export PROGRESS_CURRENT=0
 
+  if env::is_progress_bar_enabled && parallel::is_enabled; then
+    printf "%sWarning: Progress bar is not supported in parallel mode.%s\n" "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}"
+  fi
+
   if progress::enabled ; then
     progress::render 0 "$PROGRESS_TOTAL"
   fi

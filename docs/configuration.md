@@ -253,6 +253,10 @@ BASHUNIT_VERBOSE=true
 
 Controls whether the progress bar is rendered. `false` by default.
 
+::: warning
+The progress bar is disabled when tests run in parallel. Enabling `BASHUNIT_PROGRESS_BAR` while `BASHUNIT_PARALLEL_RUN` is `true` will print a warning and no bar will be shown.
+:::
+
 ::: code-group
 ```bash [Example]
 BASHUNIT_PROGRESS_BAR=true
