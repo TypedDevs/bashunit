@@ -9,7 +9,7 @@ function progress::init() {
     _PROGRESS_ENABLED=false
   else
     _PROGRESS_ENABLED=true
-    progress::blank_line
+    progress::render 0 "$PROGRESS_TOTAL"
   fi
 }
 
