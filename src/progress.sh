@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 
+function progress::enabled() {
+  env::is_progress_bar_enabled && ! parallel::is_enabled
+}
+
 function progress::init() {
   export PROGRESS_TOTAL=$1
   # Track the last rendered progress state so the bar can be redrawn
   export PROGRESS_CURRENT=0
 
-  if parallel::is_enabled || [[ ! -t 1 ]] || ! env::is_progress_bar_enabled; then
-    _PROGRESS_ENABLED=false
-  else
-    _PROGRESS_ENABLED=true
+  if progress::enabled ; then
     progress::render 0 "$PROGRESS_TOTAL"
   fi
 }
@@ -19,7 +20,7 @@ function progress::render() {
 
   PROGRESS_CURRENT=$current
 
-  if [[ "$_PROGRESS_ENABLED" != true ]]; then
+  if ! progress::enabled ; then
     return
   fi
 
@@ -60,7 +61,7 @@ function progress::render() {
 }
 
 function progress::finish() {
-  if [[ "$_PROGRESS_ENABLED" != true ]]; then
+  if ! progress::enabled ; then
     return
   fi
 
@@ -76,7 +77,7 @@ function progress::finish() {
 
 # Re-render the last progress bar if progress display is enabled
 function progress::refresh() {
-  if [[ "$_PROGRESS_ENABLED" == true ]]; then
+  if progress::enabled ; then
     progress::render "${PROGRESS_CURRENT:-}" "${PROGRESS_TOTAL:-}"
   fi
 }
