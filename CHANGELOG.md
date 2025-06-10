@@ -12,6 +12,7 @@
 - Improve clock performance
 - Make install.sh args more flexible
 - Improve Windows detection allowing parallel tests on Git Bash, MSYS and Cygwin
+- Add more CI jobs for different ubuntu and macos versions
 
 ## [0.20.0](https://github.com/TypedDevs/bashunit/compare/0.19.1...0.20.0) - 2025-06-01
 

@@ -7,15 +7,33 @@ on:
       - main
 
 jobs:
-  ubuntu-macos:
-    name: "On ${{ matrix.os }}"
+  ubuntu:
+    name: "Ubuntu - ${{ matrix.version }}"
+    runs-on: ${{ matrix.version }}
     timeout-minutes: 10
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os:
+        version:
           - ubuntu-latest
+          - ubuntu-22.04  # one version before latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: make test
+
+  macos:
+    name: "macOS - ${{ matrix.version }}"
+    runs-on: ${{ matrix.version }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        version:
           - macos-latest
+          - macos-13  # one version before latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
