@@ -382,7 +382,11 @@ function runner::parse_result_parallel() {
   fi
 
   local unique_test_result_file
-  unique_test_result_file=$(mktemp -p "$test_suite_dir" "$template")
+  if unique_test_result_file=$(mktemp -p "$test_suite_dir" "$template" 2>/dev/null); then
+    true
+  else
+    unique_test_result_file=$(mktemp "$test_suite_dir/$template")
+  fi
   mv "$unique_test_result_file" "${unique_test_result_file}.result"
   unique_test_result_file="${unique_test_result_file}.result"
 
