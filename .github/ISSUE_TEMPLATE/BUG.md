@@ -11,11 +11,11 @@ labels: bug
 - Please remove this comment before submitting your issue.
 -->
 
-| Q                | A                       |
-|------------------|-------------------------|
-| OS               | macOS / Linux / Windows |
-| Shell            | sh / bash / ...         |
-| bashunit version | x.y.z                   |
+| Q                | A                        |
+|------------------|--------------------------|
+| OS               | macOS / Linux / Windows  |
+| Shell & version  | sh 2.0  / bash 3.2 / ... |
+| bashunit version | x.y.z                    |
 
 #### Summary
 
