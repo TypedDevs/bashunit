@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.21.0](https://github.com/TypedDevs/bashunit/compare/0.20.0...0.21.0) - 2025-06-18
 
 - Fix typo "to has been called"
 - Add weekly downloads to the docs
