@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix process time always shows as 0 ms
+- Add release.sh to automate create new releases
 
 ## [0.21.0](https://github.com/TypedDevs/bashunit/compare/0.20.0...0.21.0) - 2025-06-18
 
