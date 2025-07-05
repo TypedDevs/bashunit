@@ -1,6 +1,6 @@
 <template>
   <a
-    class="post-card__card"
+    :class="['post-card__card', { 'no-image': !post.frontmatter.coverUrl }]"
     :href="post.url"
   >
     <h2 class="post-card__title">
@@ -10,6 +10,7 @@
       {{ $formatDate(post.frontmatter.date) }}
     </time>
     <img
+      v-if="post.frontmatter.coverUrl"
       class="post-card__image"
       :src="post.frontmatter.coverUrl"
       :alt="post.frontmatter.coverAlt"
@@ -77,6 +78,13 @@ export default defineComponent({
     "image  link";
     grid-template-columns: 3fr 4fr;
     grid-template-rows: auto auto 1fr auto;
+  }
+  .post-card__card.no-image {
+    grid-template-areas:
+    "title  title"
+    "date   date"
+    "description description"
+    "link link";
   }
 }
 
