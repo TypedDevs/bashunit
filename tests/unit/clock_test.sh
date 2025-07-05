@@ -100,6 +100,16 @@ function test_now_prefers_perl_over_shell_time() {
   assert_same "999999999999" "$(clock::now)"
 }
 
+function test_now_prefers_python_over_node() {
+  mock perl mock_non_existing_fn
+  mock dependencies::has_python mock_true
+  mock python echo "777777777777"
+  mock dependencies::has_node mock_true
+  mock node echo "888888888888"
+
+  assert_same "777777777777" "$(clock::now)"
+}
+
 function test_runtime_in_milliseconds_when_empty_time() {
   mock_macos
   mock perl mock_non_existing_fn
