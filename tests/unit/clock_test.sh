@@ -91,6 +91,15 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
   assert_not_empty "$(clock::total_runtime_in_milliseconds)"
 }
 
+function test_now_prefers_perl_over_shell_time() {
+  mock clock::shell_time echo "1234.0"
+  mock perl echo "999999999999"
+  mock dependencies::has_python mock_false
+  mock dependencies::has_node mock_false
+
+  assert_same "999999999999" "$(clock::now)"
+}
+
 function test_runtime_in_milliseconds_when_empty_time() {
   mock_macos
   mock perl mock_non_existing_fn
