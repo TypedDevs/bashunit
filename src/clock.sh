@@ -4,22 +4,13 @@ function clock::now() {
   local shell_time
   local attempts=()
 
-  # 1. Try using native shell EPOCHREALTIME (if available)
-  attempts+=("EPOCHREALTIME")
-  if shell_time="$(clock::shell_time)"; then
-    local seconds="${shell_time%%.*}"
-    local microseconds="${shell_time#*.}"
-    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
-    return 0
-  fi
-
-  # 2. Try Perl with Time::HiRes
+  # 1. Try Perl with Time::HiRes
   attempts+=("Perl")
   if dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
     perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)' && return 0
   fi
 
-  # 3. Try Python 3 with time module
+  # 2. Try Python 3 with time module
   attempts+=("Python")
   if dependencies::has_python; then
     python - <<'EOF'
@@ -29,12 +20,12 @@ EOF
     return 0
   fi
 
-  # 4. Try Node.js
+  # 3. Try Node.js
   attempts+=("Node")
   if dependencies::has_node; then
     node -e 'process.stdout.write((BigInt(Date.now()) * 1000000n).toString())' && return 0
   fi
-  # 5. Windows fallback with PowerShell
+  # 4. Windows fallback with PowerShell
   attempts+=("PowerShell")
   if check_os::is_windows && dependencies::has_powershell; then
     powershell -Command "
@@ -46,7 +37,7 @@ EOF
     " && return 0
   fi
 
-  # 6. Unix fallback using `date +%s%N` (if not macOS or Alpine)
+  # 5. Unix fallback using `date +%s%N` (if not macOS or Alpine)
   attempts+=("date")
   if ! check_os::is_macos && ! check_os::is_alpine; then
     local result
@@ -55,6 +46,15 @@ EOF
       echo "$result"
       return 0
     fi
+  fi
+
+  # 6. Try using native shell EPOCHREALTIME (if available)
+  attempts+=("EPOCHREALTIME")
+  if shell_time="$(clock::shell_time)"; then
+    local seconds="${shell_time%%.*}"
+    local microseconds="${shell_time#*.}"
+    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+    return 0
   fi
 
   # 7. All methods failed
