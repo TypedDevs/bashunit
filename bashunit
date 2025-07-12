@@ -78,6 +78,12 @@ while [[ $# -gt 0 ]]; do
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
+    --no-color)
+      export BASHUNIT_COLOR=false
+      ;;
+    --color)
+      export BASHUNIT_COLOR=true
+      ;;
     -e|--env|--boot)
       # shellcheck disable=SC1090
       source "$2"

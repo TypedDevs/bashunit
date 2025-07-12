@@ -247,6 +247,18 @@ BASHUNIT_VERBOSE=true
 ```
 :::
 
+## Colors
+
+> `BASHUNIT_COLOR=true|false`
+
+Specify if you want to display colored output. `true` by default.
+
+::: code-group
+```bash [Without colors]
+BASHUNIT_COLOR=false
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>

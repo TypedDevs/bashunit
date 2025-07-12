@@ -340,6 +340,30 @@ Duration: 48 ms
 ```
 :::
 
+## No color
+
+> `bashunit --no-color`
+
+Disables colored output.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --no-color
+```
+:::
+
+## Color
+
+> `bashunit --color`
+
+Forces colored output, overriding `.env` configuration.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --color
+```
+:::
+
 ## Version
 
 > `bashunit --version`
