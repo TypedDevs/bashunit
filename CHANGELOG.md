@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `--init` option to get you started quickly
 - Fix process time always shows as 0 ms
 - Refactor clock optimizing the implementation used to get the time
 
