@@ -115,6 +115,11 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
     return
   fi
 
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
+  fi
+
   local a_directory=$(mktemp -d)
   chmod a-x "$a_directory"
 
@@ -128,6 +133,11 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
 function test_unsuccessful_assert_is_directory_readable_without_read_permission() {
   if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
       return
+  fi
+
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
   fi
 
   local a_directory=$(mktemp -d)
@@ -145,6 +155,11 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
       return
   fi
 
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
+  fi
+
   local a_directory=$(mktemp -d)
   chmod a-r "$a_directory"
 
@@ -154,6 +169,11 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
 function test_successful_assert_is_directory_not_readable_without_execution_permission() {
   if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
       return
+  fi
+
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
   fi
 
   local a_directory=$(mktemp -d)
@@ -182,6 +202,11 @@ function test_unsuccessful_assert_is_directory_writable() {
       return
   fi
 
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
+  fi
+
   local a_directory=$(mktemp -d)
   chmod a-w "$a_directory"
 
@@ -204,6 +229,11 @@ function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
 function test_successful_assert_is_directory_not_writable() {
   if [[ "$_OS" == "Windows" || $_DISTRO = "Alpine" ]]; then
       return
+  fi
+
+  if [[ $EUID -eq 0 ]]; then
+    skip "running as root"
+    return
   fi
 
   local a_directory=$(mktemp -d)
