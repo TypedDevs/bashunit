@@ -31,6 +31,9 @@ Options:
   -S, --stop-on-failure
     Force to stop the runner right after encountering one failing test.
 
+  --no-color
+    Disable colored output.
+
   --debug <?file-path>
     Print all executed shell commands to the terminal.
     If a file-path is passed, it will redirect the output to that file.
