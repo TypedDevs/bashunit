@@ -1,40 +1,36 @@
 #!/usr/bin/env bash
 
-function clock::now() {
+_CLOCK_NOW_IMPL=""
+
+function clock::_choose_impl() {
   local shell_time
   local attempts=()
 
   # 1. Try Perl with Time::HiRes
   attempts+=("Perl")
   if dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
-    perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)' && return 0
+    _CLOCK_NOW_IMPL="perl"
+    return 0
   fi
 
   # 2. Try Python 3 with time module
   attempts+=("Python")
   if dependencies::has_python; then
-    python - <<'EOF'
-import time, sys
-sys.stdout.write(str(int(time.time() * 1_000_000_000)))
-EOF
+    _CLOCK_NOW_IMPL="python"
     return 0
   fi
 
   # 3. Try Node.js
   attempts+=("Node")
   if dependencies::has_node; then
-    node -e 'process.stdout.write((BigInt(Date.now()) * 1000000n).toString())' && return 0
+    _CLOCK_NOW_IMPL="node"
+    return 0
   fi
   # 4. Windows fallback with PowerShell
   attempts+=("PowerShell")
   if check_os::is_windows && dependencies::has_powershell; then
-    powershell -Command "
-      \$unixEpoch = [DateTime]'1970-01-01 00:00:00';
-      \$now = [DateTime]::UtcNow;
-      \$ticksSinceEpoch = (\$now - \$unixEpoch).Ticks;
-      \$nanosecondsSinceEpoch = \$ticksSinceEpoch * 100;
-      Write-Output \$nanosecondsSinceEpoch
-    " && return 0
+    _CLOCK_NOW_IMPL="powershell"
+    return 0
   fi
 
   # 5. Unix fallback using `date +%s%N` (if not macOS or Alpine)
@@ -43,7 +39,7 @@ EOF
     local result
     result=$(date +%s%N 2>/dev/null)
     if [[ "$result" != *N && "$result" =~ ^[0-9]+$ ]]; then
-      echo "$result"
+      _CLOCK_NOW_IMPL="date"
       return 0
     fi
   fi
@@ -51,9 +47,7 @@ EOF
   # 6. Try using native shell EPOCHREALTIME (if available)
   attempts+=("EPOCHREALTIME")
   if shell_time="$(clock::shell_time)"; then
-    local seconds="${shell_time%%.*}"
-    local microseconds="${shell_time#*.}"
-    math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+    _CLOCK_NOW_IMPL="shell"
     return 0
   fi
 
@@ -61,6 +55,50 @@ EOF
   printf "clock::now implementations tried: %s\n" "${attempts[*]}" >&2
   echo ""
   return 1
+}
+
+function clock::now() {
+  if [[ -z "$_CLOCK_NOW_IMPL" ]]; then
+    clock::_choose_impl || return 1
+  fi
+
+  case "$_CLOCK_NOW_IMPL" in
+    perl)
+      perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)'
+      ;;
+    python)
+      python - <<'EOF'
+import time, sys
+sys.stdout.write(str(int(time.time() * 1_000_000_000)))
+EOF
+      ;;
+    node)
+      node -e 'process.stdout.write((BigInt(Date.now()) * 1000000n).toString())'
+      ;;
+    powershell)
+      powershell -Command "\
+        \$unixEpoch = [DateTime]'1970-01-01 00:00:00';\
+        \$now = [DateTime]::UtcNow;\
+        \$ticksSinceEpoch = (\$now - \$unixEpoch).Ticks;\
+        \$nanosecondsSinceEpoch = \$ticksSinceEpoch * 100;\
+        Write-Output \$nanosecondsSinceEpoch\
+      "
+      ;;
+    date)
+      date +%s%N
+      ;;
+    shell)
+      # shellcheck disable=SC2155
+      local shell_time="$(clock::shell_time)"
+      local seconds="${shell_time%%.*}"
+      local microseconds="${shell_time#*.}"
+      math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+      ;;
+    *)
+      clock::_choose_impl || return 1
+      clock::now
+      ;;
+  esac
 }
 
 function clock::shell_time() {
