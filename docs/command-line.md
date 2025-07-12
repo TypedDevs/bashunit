@@ -370,6 +370,21 @@ Upgrade **bashunit** to latest version.
 ```
 :::
 
+## Init
+
+> `bashunit --init`
+
+Generates a `tests` folder with a sample test and bootstrap file to get you started quickly.
+
+::: code-group
+```bash [Example]
+./bashunit --init
+```
+```bash [Output]
+> bashunit initialized in tests
+```
+:::
+
 ## Help
 
 > `bashunit --help`

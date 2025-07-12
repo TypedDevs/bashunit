@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `--init` option to get you started quickly
 - Fix process time always shows as 0 ms
 - Fixed terminal width detection first tput and fall back stty
 - Refactor clock optimizing the implementation used to get the time
