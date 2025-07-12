@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add `--init` option to get you started quickly
-- Add `--no-color` option for enabling or disabling colorized output
+- Add `--color|--no-color` option for enabling or disabling colorized output
 - Fix process time always shows as 0 ms
 - Fixed terminal width detection first tput and fall back stty
 - Refactor clock optimizing the implementation used to get the time

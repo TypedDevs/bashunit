@@ -352,6 +352,18 @@ Disables colored output.
 ```
 :::
 
+## Color
+
+> `bashunit --color`
+
+Forces colored output, overriding `.env` configuration.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --color
+```
+:::
+
 ## Version
 
 > `bashunit --version`
