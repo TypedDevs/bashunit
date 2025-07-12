@@ -36,6 +36,7 @@ _FILTER=""
 _RAW_ARGS=()
 _ARGS=()
 _BENCH_MODE=false
+_COUNT_ONLY=false
 
 check_os::init
 clock::init
@@ -91,6 +92,9 @@ while [[ $# -gt 0 ]]; do
       export BASHUNIT_REPORT_HTML="$2"
       shift
       ;;
+    -c|--count)
+      _COUNT_ONLY=true
+      ;;
     -vvv|--verbose)
       export BASHUNIT_VERBOSE=true
       ;;
@@ -137,6 +141,11 @@ set +eu
 #################
 # Main execution
 #################
+if [[ "$_COUNT_ONLY" == true ]]; then
+  total_tests=$(helpers::find_total_tests "$_FILTER" "${_ARGS[@]}")
+  echo "$total_tests"
+  exit 0
+fi
 if [[ -n "$_ASSERT_FN" ]]; then
   main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
 elif [[ "$_BENCH_MODE" == true ]]; then

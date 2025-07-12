@@ -6,6 +6,7 @@
 - Fix process time always shows as 0 ms
 - Fixed terminal width detection first tput and fall back stty
 - Refactor clock optimizing the implementation used to get the time
+- Add `-c|--count` option to print the total number of tests without running them
 
 ## [0.21.0](https://github.com/TypedDevs/bashunit/compare/0.20.0...0.21.0) - 2025-06-18
 
