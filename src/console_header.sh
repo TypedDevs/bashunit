@@ -97,6 +97,10 @@ Options:
   --upgrade
     Upgrade to latest version of bashunit.
 
+  --init [dir]
+    Generate a tests folder (or the provided directory) with a sample test
+    and bootstrap file to get you started quickly.
+
   -h, --help
     This message.
 
