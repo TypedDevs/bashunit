@@ -22,3 +22,11 @@ function test_bashunit_init_creates_structure() {
   # return to the original working directory
   popd >/dev/null
 }
+
+function test_bashunit_init_custom_directory() {
+  pushd "$TMP_DIR" >/dev/null
+  ../../bashunit --init custom > /tmp/init.log
+  assert_file_exists custom/example_test.sh
+  assert_file_exists custom/bootstrap.sh
+  popd >/dev/null
+}

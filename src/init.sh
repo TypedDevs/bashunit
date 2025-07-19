@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function init::init() {
-  local tests_dir="$BASHUNIT_DEFAULT_PATH"
+  local tests_dir="${1:-$BASHUNIT_DEFAULT_PATH}"
   mkdir -p "$tests_dir"
 
   local bootstrap_file="$tests_dir/bootstrap.sh"

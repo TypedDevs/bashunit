@@ -372,16 +372,16 @@ Upgrade **bashunit** to latest version.
 
 ## Init
 
-> `bashunit --init`
+> `bashunit --init [dir]`
 
-Generates a `tests` folder with a sample test and bootstrap file to get you started quickly.
+Generates a `tests` folder (or the provided `dir`) with a sample test and bootstrap file to get you started quickly.
 
 ::: code-group
 ```bash [Example]
-./bashunit --init
+./bashunit --init tests_dir
 ```
 ```bash [Output]
-> bashunit initialized in tests
+> bashunit initialized in tests_dir
 ```
 :::
 
