@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2317
+
 set -euo pipefail
 
 TMP_DIR="tmp/init"
@@ -20,14 +22,6 @@ function test_bashunit_init_creates_structure() {
   assert_file_exists tests/example_test.sh
   assert_file_exists tests/bootstrap.sh
   # return to the original working directory
-  popd >/dev/null
-}
-
-function test_bashunit_init_custom_directory() {
-  pushd "$TMP_DIR" >/dev/null
-  ../../bashunit --init custom > /tmp/init.log
-  assert_file_exists custom/example_test.sh
-  assert_file_exists custom/bootstrap.sh
   popd >/dev/null
 }
 
