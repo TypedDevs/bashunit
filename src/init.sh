@@ -28,5 +28,16 @@ SH
     echo "> Created $example_test"
   fi
 
+  local env_file=".env"
+  local env_line="BASHUNIT_BOOTSTRAP=$bootstrap_file"
+  if [[ -f "$env_file" ]]; then
+    if grep -q "^BASHUNIT_BOOTSTRAP=" "$env_file"; then
+      sed -i -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"
+    fi
+    echo "$env_line" >> "$env_file"
+  else
+    echo "$env_line" > "$env_file"
+  fi
+
   echo "> bashunit initialized in $tests_dir"
 }

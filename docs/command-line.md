@@ -375,13 +375,15 @@ Upgrade **bashunit** to latest version.
 > `bashunit --init [dir]`
 
 Generates a `tests` folder (or the provided `dir`) with a sample test and bootstrap file to get you started quickly.
+When a custom directory is used, bashunit writes `BASHUNIT_BOOTSTRAP=<dir>/bootstrap.sh` to a `.env` file. If `.env` already defines
+`BASHUNIT_BOOTSTRAP`, the existing line is commented out and the new value appended.
 
 ::: code-group
 ```bash [Example]
-./bashunit --init tests_dir
+./bashunit --init tests
 ```
 ```bash [Output]
-> bashunit initialized in tests_dir
+> bashunit initialized in tests
 ```
 :::
 
