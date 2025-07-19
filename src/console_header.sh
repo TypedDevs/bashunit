@@ -75,6 +75,9 @@ Options:
   -p, --parallel || --no-parallel [default]
     Run each test in child process, randomizing the tests execution order.
 
+  -c, --count
+    Prints the total number of tests that would be executed and exits.
+
   -r, --report-html <out.html>
     Create a report HTML file that contains information about the test results.
 

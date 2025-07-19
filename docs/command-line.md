@@ -90,6 +90,21 @@ Filters the tests to be run based on the `test name`.
 ```
 :::
 
+## Count
+
+> `bashunit -c|--count`
+
+Prints the total number of tests that would be executed and exits.
+
+::: code-group
+```bash [Example]
+./bashunit ./tests --count
+```
+```[Output]
+340
+```
+:::
+
 ## JUnit Logging
 
 > `bashunit -l|--log-junit <out.xml>`
