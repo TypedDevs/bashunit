@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Add `--init [dir]` option to get you started quickly
-  - Init with custom directory updates `.env` with `BASHUNIT_BOOTSTRAP`, commenting any previous value
+    - Init with custom directory updates `.env` with `BASHUNIT_BOOTSTRAP`
 - Fix process time always shows as 0 ms
 - Fixed terminal width detection first tput and fall back stty
 - Refactor clock optimizing the implementation used to get the time
