@@ -6,10 +6,15 @@ Arguments:
   PATH                      File or directory containing tests.
                             - Directories: runs all '*test.sh' files.
                             - Wildcards: supported to match multiple test files.
+                            - Default search path is 'tests'
 
 Options:
   -a, --assert <function args>
                             Run a core assert function standalone (outside test context).
+
+  -b, --bench [file]
+                            Run benchmark functions from file or '*.bench.sh' under
+                            BASHUNIT_DEFAULT_PATH when no file is provided.
 
   --debug [file]
                             Enable shell debug mode. Logs to file if provided.

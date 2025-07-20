@@ -398,16 +398,46 @@ Displays a help message with all allowed arguments and options.
 ./bashunit --help
 ```
 ```[Output]
-bashunit [arguments] [options]
+Usage:
+  bashunit [PATH] [OPTIONS]
 
 Arguments:
-  Specifies the directory or file containing [...]
+  PATH                      File or directory containing tests.
+                            - Directories: runs all '*test.sh' files.
+                            - Wildcards: supported to match multiple test files.
+                            - Default search path is 'tests'
 
 Options:
-  -f|--filter
-    Filters the tests to run based on the test name.
-
-  [...]
+  -a, --assert <function args>
+                            Run a core assert function standalone.
+  -b, --bench [file]
+                            Run benchmark functions from file or '*.bench.sh'.
+  --debug [file]
+                            Enable shell debug mode. Logs to file if provided.
+  -e, --env, --boot <file>
+                            Load a custom env/bootstrap file.
+  -f, --filter <name>
+                            Only run tests matching the given name.
+  --init [dir]
+                            Generate a sample test suite.
+  -l, --log-junit <file>
+                            Write test results as JUnit XML report.
+  -p, --parallel | --no-parallel
+                            Run tests in parallel (default). Random execution order.
+  -r, --report-html <file>
+                            Write test results as an HTML report.
+  -s, --simple | --detailed
+                            Choose console output style (default: detailed).
+  -S, --stop-on-failure
+                            Stop execution immediately on the first failing test.
+  --upgrade
+                            Upgrade bashunit to the latest version.
+  -vvv, --verbose
+                            Show internal execution details per test.
+  --version
+                            Display the current version of bashunit.
+  -h, --help
+                            Show this help message.
 ```
 :::
 
