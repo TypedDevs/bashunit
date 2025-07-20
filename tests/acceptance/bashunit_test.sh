@@ -18,3 +18,13 @@ function test_bashunit_should_display_help() {
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --help)"
   assert_successful_code "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --help)"
 }
+
+function test_bashunit_should_display_all_assert_docs() {
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --doc)"
+  assert_successful_code "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --doc)"
+}
+
+function test_bashunit_should_display_filtered_assert_docs() {
+  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --doc equals)"
+  assert_successful_code "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --doc equals)"
+}

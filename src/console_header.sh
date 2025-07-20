@@ -81,6 +81,10 @@ Options:
   -h, --help
                             Show this help message.
 
+  --doc <?filter>
+                            Display the documentation for assert functions. When a filter is
+                            provided, only matching asserts will be shown.
+
   --init [dir]
                             Generate a sample test suite in current or specified directory.
 

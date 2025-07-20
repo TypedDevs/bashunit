@@ -370,6 +370,23 @@ Upgrade **bashunit** to latest version.
 ```
 :::
 
+## Doc
+
+> `bashunit --doc [filter]`
+
+Display the documentation for assert functions. When `filter` is provided,
+only matching asserts will be shown.
+
+::: code-group
+```bash [Example]
+./bashunit --doc equals
+```
+```bash [Output]
+## assert_equals
+...
+```
+:::
+
 ## Init
 
 > `bashunit --init [dir]`
