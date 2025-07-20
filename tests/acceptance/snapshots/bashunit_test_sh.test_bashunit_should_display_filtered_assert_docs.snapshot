@@ -1,118 +1,25 @@
 ## assert_equals
+--------------
 > `assert_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
 
-- [assert_same](#assert-same) is similar but including special chars.
+- assert_same is similar but including special chars.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_equals "foo" "\e[31mfoo"
-}
-
-function test_failure() {
-  assert_equals "\e[31mfoo" "\e[31mfoo"
-}
-```
-:::
 
 ## assert_files_equals
+--------------
 > `assert_files_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
+- assert_files_not_equals is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "file content" > "$actual"
-
-  assert_files_equals "$expected" "$actual"
-}
-
-function test_failure() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "different content" > "$actual"
-
-  assert_files_equals "$expected" "$actual"
-}
-```
-```[Output]
-✓ Passed: Success
-✗ Failed: Failure
-    Expected '/tmp/file1.txt'
-    Compared '/tmp/file2.txt'
-    Diff '@@ -1 +1 @@
--file content
-+different content'
-```
-:::
 
 ## assert_files_not_equals
+--------------
 > `assert_files_not_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
-
-::: code-group
-```bash [Example]
-function test_success() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "different content" > "$actual"
-
-  assert_files_not_equals "$expected" "$actual"
-}
-
-function test_failure() {
-
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "file content" > "$actual"
-
-  assert_files_not_equals "$expected" "$actual"
-}
-```
-```[Output]
-✓ Passed: Success
-✗ Failed: Failure
-    Expected '/tmp/file1.txt'
-    Compared '/tmp/file2.txt'
-    Diff 'Files are equals'
-```
-:::
-
-## fail
-> `fail "failure message"`
-
-Unambiguously reports an error message. Useful for reporting specific message
-when testing situations not covered by any `assert_*` functions.
-
-::: code-group
-```bash [Example]
-function test_success() {
-  if [ "$(date +%-H)" -gt 25 ]; then
-    fail "Something is very wrong with your clock"
-  fi
-}
-function test_failure() {
-  if [ "$(date +%-H)" -lt 25 ]; then
-    fail "This test will always fail"
-  fi
-}
-```
-:::
+- assert_files_equals is the inverse of this assertion and takes the same arguments.

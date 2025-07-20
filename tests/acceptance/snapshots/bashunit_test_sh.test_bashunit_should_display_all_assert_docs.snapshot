@@ -1,1092 +1,396 @@
 ## assert_true
+--------------
 > `assert_true bool|function|command`
 
 Reports an error if the argument result in a truthy value: `true` or `0`.
 
-- [assert_false](#assert-false) is similar but different.
+- assert_false is similar but different.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_true true
-  assert_true 0
-  assert_true "eval return 0"
-  assert_true mock_true
-}
-
-function test_failure() {
-  assert_true false
-  assert_true 1
-  assert_true "eval return 1"
-  assert_true mock_false
-}
-```
-```bash [globals.sh]
-function mock_true() {
-  return 0
-}
-function mock_false() {
-  return 1
-}
-:::
 
 ## assert_false
+--------------
 > `assert_false bool|function|command`
 
 Reports an error if the argument result in a falsy value: `false` or `1`.
 
-- [assert_true](#assert-true) is similar but different.
+- assert_true is similar but different.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_false false
-  assert_false 1
-  assert_false "eval return 1"
-  assert_false mock_false
-}
-
-function test_failure() {
-  assert_false true
-  assert_false 0
-  assert_false "eval return 0"
-  assert_false mock_true
-}
-```
-```bash [globals.sh]
-function mock_true() {
-  return 0
-}
-function mock_false() {
-  return 1
-}
-```
-:::
 
 ## assert_same
+--------------
 > `assert_same "expected" "actual"`
 
 Reports an error if the `expected` and `actual` are not the same - including special chars.
 
-- [assert_not_same](#assert-not-same) is the inverse of this assertion and takes the same arguments.
-- [assert_equals](#assert-equals) is similar but ignoring the special chars.
+- assert_not_same is the inverse of this assertion and takes the same arguments.
+- assert_equals is similar but ignoring the special chars.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_same "foo" "foo"
-}
-
-function test_failure() {
-  assert_same "foo" "bar"
-}
-```
-:::
 
 ## assert_equals
+--------------
 > `assert_equals "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
 
-- [assert_same](#assert-same) is similar but including special chars.
+- assert_same is similar but including special chars.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_equals "foo" "\e[31mfoo"
-}
-
-function test_failure() {
-  assert_equals "\e[31mfoo" "\e[31mfoo"
-}
-```
-:::
 
 ## assert_contains
+--------------
 > `assert_contains "needle" "haystack"`
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assert_not_contains](#assert-not-contains) is the inverse of this assertion and takes the same arguments.
+- assert_not_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_contains "foo" "foobar"
-}
-
-function test_failure() {
-  assert_contains "baz" "foobar"
-}
-```
-
-:::
 
 ## assert_contains_ignore_case
+--------------
 > `assert_contains_ignore_case "needle" "haystack"`
 
 Reports an error if `needle` is not a substring of `haystack`.
 Differences in casing are ignored when needle is searched for in haystack.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_contains_ignore_case "foo" "FooBar"
-}
-function test_failure() {
-  assert_contains_ignore_case "baz" "FooBar"
-}
-```
-:::
 
 ## assert_empty
+--------------
 > `assert_empty "actual"`
 
 Reports an error if `actual` is not empty.
 
-[assert_not_empty](#assert-not-empty) is the inverse of this assertion and takes the same arguments.
+- assert_not_empty is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_empty ""
-}
-
-function test_failure() {
-  assert_empty "foo"
-}
-```
-:::
 
 ## assert_matches
+--------------
 > `assert_matches "pattern" "value"`
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
+- assert_not_matches is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_matches "^foo" "foobar"
-}
-
-function test_failure() {
-  assert_matches "^bar" "foobar"
-}
-```
-:::
 
 ## assert_string_starts_with
+--------------
 > `assert_string_starts_with "needle" "haystack"`
 
 Reports an error if `haystack` does not starts with `needle`.
 
-[assert_string_not_starts_with](#assert-string-not-starts-with) is the inverse of this assertion and takes the same arguments.
+- assert_string_not_starts_with is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_string_starts_with "foo" "foobar"
-}
-
-function test_failure() {
-  assert_string_starts_with "baz" "foobar"
-}
-```
-:::
 
 ## assert_string_ends_with
+--------------
 > `assert_string_ends_with "needle" "haystack"`
 
 Reports an error if `haystack` does not ends with `needle`.
 
-[assert_string_not_ends_with](#assert-string-not-ends-with) is the inverse of this assertion and takes the same arguments.
+- assert_string_not_ends_with is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_string_ends_with "bar" "foobar"
-}
-
-function test_failure() {
-  assert_string_ends_with "foo" "foobar"
-}
-```
-:::
 
 ## assert_line_count
+--------------
 > `assert_line_count "count" "haystack"`
 
 Reports an error if `haystack` does not contain `count` lines.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local string="this is line one
-this is line two
-this is line three"
-
-  assert_line_count 3 "$string"
-}
-
-function test_failure() {
-  assert_line_count 2 "foobar"
-}
-```
-:::
 
 ## assert_less_than
+--------------
 > `assert_less_than "expected" "actual"`
 
 Reports an error if `actual` is not less than `expected`.
 
-[assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
+- assert_greater_than is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_less_than "999" "1"
-}
-
-function test_failure() {
-  assert_less_than "1" "999"
-}
-```
-:::
 
 ## assert_less_or_equal_than
+--------------
 > `assert_less_or_equal_than "expected" "actual"`
 
 Reports an error if `actual` is not less than or equal to `expected`.
 
-[assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
+- assert_greater_than is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_less_or_equal_than "999" "1"
-}
-
-function test_success_with_two_equal_numbers() {
-  assert_less_or_equal_than "999" "999"
-}
-
-function test_failure() {
-  assert_less_or_equal_than "1" "999"
-}
-```
-:::
 
 ## assert_greater_than
+--------------
 > `assert_greater_than "expected" "actual"`
 
 Reports an error if `actual` is not greater than `expected`.
 
-[assert_less_than](#assert-less-than) is the inverse of this assertion and takes the same arguments.
+- assert_less_than is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_greater_than "1" "999"
-}
-
-function test_failure() {
-  assert_greater_than "999" "1"
-}
-```
-:::
 
 ## assert_greater_or_equal_than
+--------------
 > `assert_greater_or_equal_than "expected" "actual"`
 
 Reports an error if `actual` is not greater than or equal to `expected`.
 
-[assert_less_or_equal_than](#assert-less-or-equal-than) is the inverse of this assertion and takes the same arguments.
+- assert_less_or_equal_than is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_greater_or_equal_than "1" "999"
-}
-
-function test_success_with_two_equal_numbers() {
-  assert_greater_or_equal_than "999" "999"
-}
-
-function test_failure() {
-  assert_greater_or_equal_than "999" "1"
-}
-```
-:::
 
 ## assert_exit_code
-> `assert_exit_code "expected" ["callable"]`
+--------------
+> `assert_exit_code "expected" "callable"`
 
 Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_successful_code](#assert-successful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
+- assert_successful_code, assert_general_error and assert_command_not_found
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
-::: code-group
-```bash [Example]
-function test_success_with_callable() {
-  function foo() {
-    return 1
-  }
-
-  assert_exit_code "1" "$(foo)"
-}
-
-function test_success_without_callable() {
-  function foo() {
-    return 1
-  }
-
-  foo # function took instead `callable`
-
-  assert_exit_code "1"
-}
-
-function test_failure() {
-  function foo() {
-    return 1
-  }
-
-  assert_exit_code "0" "$(foo)"
-}
-```
-:::
 
 ## assert_array_contains
+--------------
 > `assert_array_contains "needle" "haystack"`
 
 Reports an error if `needle` is not an element of `haystack`.
 
-[assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
+- assert_array_not_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local haystack=(foo bar baz)
-
-  assert_array_contains "bar" "${haystack[@]}"
-}
-
-function test_failure() {
-  local haystack=(foo bar baz)
-
-  assert_array_contains "foobar" "${haystack[@]}"
-}
-```
-:::
 
 ## assert_successful_code
-> `assert_successful_code ["callable"]`
+--------------
+> `assert_successful_code "callable"`
 
 Reports an error if the exit code of `callable` is not successful (`0`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
 
-::: code-group
-```bash [Example]
-function test_success_with_callable() {
-  function foo() {
-    return 0
-  }
-
-  assert_successful_code "$(foo)"
-}
-
-function test_success_without_callable() {
-  function foo() {
-    return 0
-  }
-
-  foo # function took instead `callable`
-
-  assert_successful_code
-}
-
-function test_failure() {
-  function foo() {
-    return 1
-  }
-
-  assert_successful_code "$(foo)"
-}
-```
-:::
 
 ## assert_general_error
-> `assert_general_error ["callable"]`
+--------------
+> `assert_general_error "callable"`
 
 Reports an error if the exit code of `callable` is not a general error (`1`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
 
-::: code-group
-```bash [Example]
-function test_success_with_callable() {
-  function foo() {
-    return 1
-  }
-
-  assert_general_error "$(foo)"
-}
-
-function test_success_without_callable() {
-  function foo() {
-    return 1
-  }
-
-  foo # function took instead `callable`
-
-  assert_general_error
-}
-
-function test_failure() {
-  function foo() {
-    return 0
-  }
-
-  assert_general_error "$(foo)"
-}
-```
-:::
 
 ## assert_command_not_found
-> `assert_general_error ["callable"]`
+--------------
+> `assert_general_error "callable"`
 
 Reports an error if `callable` exists.
 In other words, if executing `callable` does not return a command not found exit code (`127`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
 
-::: code-group
-```bash [Example]
-function test_success_with_callable() {
-  assert_command_not_found "$(foo > /dev/null 2>&1)"
-}
-
-function test_success_without_callable() {
-  foo > /dev/null 2>&1
-
-  assert_command_not_found
-}
-
-function test_failure() {
-  assert_command_not_found "$(ls > /dev/null 2>&1)"
-}
-```
-:::
 
 ## assert_file_exists
+--------------
 > `assert_file_exists "file"`
 
 Reports an error if `file` does not exists, or it is a directory.
 
-[assert_file_not_exists](#assert-file-not-exists) is the inverse of this assertion and takes the same arguments.
+- assert_file_not_exists is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file_path="foo.txt"
-  touch "$file_path"
-
-  assert_file_exists "$file_path"
-  rm "$file_path"
-}
-
-function test_failure() {
-  local file_path="foo.txt"
-  rm -f $file_path
-
-  assert_file_exists "$file_path"
-}
-```
-:::
 
 ## assert_file_contains
+--------------
 > `assert_file_contains "file" "search"`
 
 Reports an error if `file` does not contains the search string.
 
-[assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
+- assert_file_not_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file="/tmp/file-path.txt"
-  echo -e "original content" > "$file"
-
-  assert_file_contains "$file" "content"
-}
-
-function test_failure() {
-  local file="/tmp/file-path.txt"
-  echo -e "original content" > "$file"
-
-  assert_file_contains "$file" "non existing"
-}
-```
-:::
 
 ## assert_is_file
+--------------
 > `assert_is_file "file"`
 
 Reports an error if `file` is not a file.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file_path="foo.txt"
-  touch "$file_path"
-
-  assert_is_file "$file_path"
-  rm "$file_path"
-}
-
-function test_failure() {
-  local dir_path="bar"
-  mkdir "$dir_path"
-
-  assert_is_file "$dir_path"
-  rmdir "$dir_path"
-}
-```
-:::
 
 ## assert_is_file_empty
+--------------
 > `assert_is_file_empty "file"`
 
 Reports an error if `file` is not empty.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file_path="foo.txt"
-  touch "$file_path"
-
-  assert_is_file_empty "$file_path"
-  rm "$file_path"
-}
-
-function test_failure() {
-  local file_path="foo.txt"
-  echo "bar" > "$file_path"
-
-  assert_is_file_empty "$file_path"
-  rm "$file_path"
-}
-```
-:::
 
 ## assert_directory_exists
+--------------
 > `assert_directory_exists "directory"`
 
 Reports an error if `directory` does not exist.
 
-[assert_directory_not_exists](#assert-directory-not-exists) is the inverse of this assertion and takes the same arguments.
+- assert_directory_not_exists is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/var"
-
-  assert_directory_exists "$directory"
-}
-
-function test_failure() {
-  local directory="/nonexistent_directory"
-
-  assert_directory_exists "$directory"
-}
-```
-:::
 
 ## assert_is_directory
+--------------
 > `assert_is_directory "directory"`
 
 Reports an error if `directory` is not a directory.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/var"
-
-  assert_is_directory "$directory"
-}
-
-function test_failure() {
-  local file="/etc/hosts"
-
-  assert_is_directory "$file"
-}
-```
-:::
 
 ## assert_is_directory_empty
+--------------
 > `assert_is_directory_empty "directory"`
 
 Reports an error if `directory` is not an empty directory.
 
-[assert_is_directory_not_empty](#assert-is-directory-not-empty) is the inverse of this assertion and takes the same arguments.
+- assert_is_directory_not_empty is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/home/user/empty_directory"
-  mkdir "$directory"
-
-  assert_is_directory_empty "$directory"
-}
-
-function test_failure() {
-  local directory="/etc"
-
-  assert_is_directory_empty "$directory"
-}
-```
-:::
 
 ## assert_is_directory_readable
+--------------
 > `assert_is_directory_readable "directory"`
 
 Reports an error if `directory` is not a readable directory.
 
-[assert_is_directory_not_readable](#assert-is-directory-not-readable) is the inverse of this assertion and takes the same arguments.
+- assert_is_directory_not_readable is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/var"
-
-  assert_is_directory_readable "$directory"
-}
-
-function test_failure() {
-  local directory="/home/user/test"
-  chmod -r "$directory"
-
-  assert_is_directory_readable "$directory"
-}
-```
-:::
 
 ## assert_is_directory_writable
+--------------
 > `assert_is_directory_writable "directory"`
 
 Reports an error if `directory` is not a writable directory.
 
-[assert_is_directory_not_writable](#assert-is-directory-not-writable) is the inverse of this assertion and takes the same arguments.
+- assert_is_directory_not_writable is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/tmp"
-
-  assert_is_directory_writable "$directory"
-}
-
-function test_failure() {
-  local directory="/home/user/test"
-  chmod -w "$directory"
-
-  assert_is_directory_writable "$directory"
-}
-```
-:::
 
 ## assert_files_equals
+--------------
 > `assert_files_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
+- assert_files_not_equals is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "file content" > "$actual"
-
-  assert_files_equals "$expected" "$actual"
-}
-
-function test_failure() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "different content" > "$actual"
-
-  assert_files_equals "$expected" "$actual"
-}
-```
-```[Output]
-✓ Passed: Success
-✗ Failed: Failure
-    Expected '/tmp/file1.txt'
-    Compared '/tmp/file2.txt'
-    Diff '@@ -1 +1 @@
--file content
-+different content'
-```
-:::
 
 ## assert_not_same
+--------------
 > `assert_not_same "expected" "actual"`
 
 Reports an error if the two variables `expected` and `actual` are the same value.
 
-[assert_same](#assert-same) is the inverse of this assertion and takes the same arguments.
+- assert_same is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_not_same "foo" "bar"
-}
-
-function test_failure() {
-  assert_not_same "foo" "foo"
-}
-```
-:::
 
 ## assert_not_contains
+--------------
 > `assert_not_contains "needle" "haystack"`
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assert_contains](#assert-contains) is the inverse of this assertion and takes the same arguments.
+- assert_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_not_contains "baz" "foobar"
-}
-
-function test_failure() {
-  assert_not_contains "foo" "foobar"
-}
-```
-:::
 
 ## assert_string_not_starts_with
+--------------
 > `assert_string_not_starts_with "needle" "haystack"`
 
 Reports an error if `haystack` does starts with `needle`.
 
-[assert_string_starts_with](#assert-string-starts-with) is the inverse of this assertion and takes the same arguments.
+- assert_string_starts_with is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_string_not_starts_with "bar" "foobar"
-}
-
-function test_failure() {
-  assert_string_not_starts_with "foo" "foobar"
-}
-```
-:::
 
 ## assert_string_not_ends_with
+--------------
 > `assert_string_not_ends_with "needle" "haystack"`
 
 Reports an error if `haystack` does ends with `needle`.
 
-[assert_string_ends_with](#assert-string-ends-with) is the inverse of this assertion and takes the same arguments.
+- assert_string_ends_with is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_string_not_ends_with "foo" "foobar"
-}
-
-function test_failure() {
-  assert_string_not_ends_with "bar" "foobar"
-}
-```
-:::
 
 ## assert_not_empty
+--------------
 > `assert_not_empty "actual"`
 
 Reports an error if `actual` is empty.
 
-[assert_empty](#assert-empty) is the inverse of this assertion and takes the same arguments.
+- assert_empty is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_not_empty "foo"
-}
-
-function test_failure() {
-  assert_not_empty ""
-}
-```
-:::
 
 ## assert_not_matches
+--------------
 > `assert_not_matches "pattern" "value"`
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assert_matches](#assert-matches) is the inverse of this assertion and takes the same arguments.
+- assert_matches is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  assert_not_matches "foo$" "foobar"
-}
-
-function test_failure() {
-  assert_not_matches "bar$" "foobar"
-}
-```
-:::
 
 ## assert_array_not_contains
+--------------
 > `assert_array_not_contains "needle" "haystack"`
 
 Reports an error if `needle` is an element of `haystack`.
 
-[assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
+- assert_array_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local haystack=(foo bar baz)
-
-  assert_array_not_contains "foobar" "${haystack[@]}"
-}
-
-function test_failure() {
-  local haystack=(foo bar baz)
-
-  assert_array_not_contains "baz" "${haystack[@]}"
-}
-```
-:::
 
 ## assert_file_not_exists
+--------------
 > `assert_file_not_exists "file"`
 
 Reports an error if `file` does exists.
 
-[assert_file_exists](#assert-file-exists) is the inverse of this assertion and takes the same arguments.
+- assert_file_exists is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file_path="foo.txt"
-  touch "$file_path"
-  rm "$file_path"
-
-  assert_file_not_exists "$file_path"
-}
-
-function test_failed() {
-  local file_path="foo.txt"
-  touch "$file_path"
-
-  assert_file_not_exists "$file_path"
-  rm "$file_path"
-}
-```
-:::
 
 ## assert_file_not_contains
+--------------
 > `assert_file_not_contains "file" "search"`
 
 Reports an error if `file` contains the search string.
 
-[assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
+- assert_file_contains is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local file="/tmp/file-path.txt"
-  echo -e "original content" > "$file"
-
-  assert_file_not_contains "$file" "non existing"
-}
-
-function test_failure() {
-  local file="/tmp/file-path.txt"
-  echo -e "original content" > "$file"
-
-  assert_file_not_contains "$file" "content"
-}
-```
-:::
 
 ## assert_directory_not_exists
+--------------
 > `assert_directory_not_exists "directory"`
 
 Reports an error if `directory` exists.
 
-[assert_directory_exists](#assert-directory-exists) is the inverse of this assertion and takes the same arguments.
+- assert_directory_exists is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/nonexistent_directory"
-
-  assert_directory_not_exists "$directory"
-}
-
-function test_failure() {
-  local directory="/var"
-
-  assert_directory_not_exists "$directory"
-}
-```
-:::
 
 ## assert_is_directory_not_empty
+--------------
 > `assert_is_directory_not_empty "directory"`
 
 Reports an error if `directory` is empty.
 
-[assert_is_directory_empty](#assert-is-directory-empty) is the inverse of this assertion and takes the same arguments.
+- assert_is_directory_empty is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/etc"
-
-  assert_is_directory_not_empty "$directory"
-}
-
-function test_failure() {
-  local directory="/home/user/empty_directory"
-  mkdir "$directory"
-
-  assert_is_directory_not_empty "$directory"
-}
-```
-:::
 
 ## assert_is_directory_not_readable
+--------------
 > `assert_is_directory_not_readable "directory"`
 
 Reports an error if `directory` is readable.
 
-[assert_is_directory_readable](#assert-is-directory-readable) is the inverse of this assertion and takes the same arguments.
+- assert_is_directory_readable is the inverse of this assertion and takes the same arguments.
 
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/home/user/test"
-  chmod -r "$directory"
-
-  assert_is_directory_not_readable "$directory"
-}
-
-function test_failure() {
-  local directory="/var"
-
-  assert_is_directory_not_readable "$directory"
-}
-```
-:::
 
 ## assert_is_directory_not_writable
+--------------
 > `assert_is_directory_not_writable "directory"`
 
 Reports an error if `directory` is writable.
 
-[assert_is_directory_writable](#assert-is-directory-writable) is the inverse of this assertion and takes the same arguments.
-
-::: code-group
-```bash [Example]
-function test_success() {
-  local directory="/home/user/test"
-  chmod -w "$directory"
-
-  assert_is_directory_not_writable "$directory"
-}
-
-function test_failure() {
-  local directory="/tmp"
-
-  assert_is_directory_not_writable "$directory"
-}
-```
-:::
+- assert_is_directory_writable is the inverse of this assertion and takes the same arguments.
 
 
 ## assert_files_not_equals
+--------------
 > `assert_files_not_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
-
-::: code-group
-```bash [Example]
-function test_success() {
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "different content" > "$actual"
-
-  assert_files_not_equals "$expected" "$actual"
-}
-
-function test_failure() {
-
-  local expected="/tmp/file1.txt"
-  local actual="/tmp/file2.txt"
-
-  echo "file content" > "$expected"
-  echo "file content" > "$actual"
-
-  assert_files_not_equals "$expected" "$actual"
-}
-```
-```[Output]
-✓ Passed: Success
-✗ Failed: Failure
-    Expected '/tmp/file1.txt'
-    Compared '/tmp/file2.txt'
-    Diff 'Files are equals'
-```
-:::
-
-## fail
-> `fail "failure message"`
-
-Unambiguously reports an error message. Useful for reporting specific message
-when testing situations not covered by any `assert_*` functions.
-
-::: code-group
-```bash [Example]
-function test_success() {
-  if [ "$(date +%-H)" -gt 25 ]; then
-    fail "Something is very wrong with your clock"
-  fi
-}
-function test_failure() {
-  if [ "$(date +%-H)" -lt 25 ]; then
-    fail "This test will always fail"
-  fi
-}
-```
-:::
+- assert_files_equals is the inverse of this assertion and takes the same arguments.
