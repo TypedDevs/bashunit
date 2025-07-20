@@ -394,3 +394,11 @@ Reports an error if `directory` is writable.
 Reports an error if `expected` and `actual` are not equals.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
+
+
+## fail
+--------------
+> `fail "failure message"`
+
+Unambiguously reports an error message. Useful for reporting specific message
+when testing situations not covered by any `assert_*` functions.

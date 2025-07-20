@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function doc::print_asserts() {
-  local search="${1:-}"
+  local filter="${1:-}"
   local doc_file="$BASHUNIT_ROOT_DIR/docs/assertions.md"
   local line
   local print=0
@@ -9,7 +9,7 @@ function doc::print_asserts() {
   while IFS='' read -r line || [[ -n "$line" ]]; do
     if [[ $line =~ ^##\ ([A-Za-z0-9_]+) ]]; then
       local fn="${BASH_REMATCH[1]}"
-      if [[ -z "$search" || "$fn" == *"$search"* ]]; then
+      if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
         print=1
         echo "$line"
         docstring=""
