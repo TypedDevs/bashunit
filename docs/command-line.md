@@ -379,10 +379,13 @@ only matching asserts will be shown.
 
 ::: code-group
 ```bash [Example]
-./bashunit --doc equals
+./bashunit --doc same
 ```
 ```bash [Output]
 ## assert_equals
+...
+
+## assert_not_same
 ...
 ```
 :::
