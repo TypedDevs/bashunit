@@ -5,19 +5,31 @@ function doc::print_asserts() {
   local doc_file="$BASHUNIT_ROOT_DIR/docs/assertions.md"
   local line
   local print=0
+  local docstring=""
   while IFS='' read -r line || [[ -n "$line" ]]; do
     if [[ $line =~ ^##\ (assert_[A-Za-z0-9_]+) ]]; then
       local fn="${BASH_REMATCH[1]}"
       if [[ -z "$search" || "$fn" == *"$search"* ]]; then
         print=1
         echo "$line"
+        docstring=""
       else
         print=0
       fi
       continue
     fi
+
     if [[ $print -eq 1 ]]; then
-      echo "$line"
+      if [[ "$line" =~ ^\`\`\` ]]; then
+        print=0
+        echo "--------------"
+        echo "$docstring"
+        continue
+      fi
+      [[ "$line" == "::: code-group" ]] && continue
+      line="${line//[\[\]]/}"
+      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<< "$line")"
+      docstring+="$line"$'\n'
     fi
   done < "$doc_file"
 }
