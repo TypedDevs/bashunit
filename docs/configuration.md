@@ -247,6 +247,20 @@ BASHUNIT_VERBOSE=true
 ```
 :::
 
+## No output
+
+> `BASHUNIT_NO_OUTPUT=true|false`
+
+Suppress all console output. Defaults to `false`.
+
+Similar as using `--no-output` option on the [command line](/command-line#no-output).
+
+::: code-group
+```bash [Example]
+BASHUNIT_NO_OUTPUT=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
