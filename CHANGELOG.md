@@ -2,12 +2,12 @@
 
 ## Unreleased
 
-- Add `--init [dir]` option to get you started quickly
-    - Init with custom directory updates `.env` with `BASHUNIT_BOOTSTRAP`
 - Fix process time always shows as 0 ms
 - Fixed terminal width detection first tput and fall back stty
 - Refactor clock optimizing the implementation used to get the time
-- Update and optimize `--help` message
+- Add `--init [dir]` option to get you started quickly
+- Optimize `--help` message
+- Add `--no-output` option
 - Add `--doc [search]` option
 
 ## [0.21.0](https://github.com/TypedDevs/bashunit/compare/0.20.0...0.21.0) - 2025-06-18

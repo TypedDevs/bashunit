@@ -92,6 +92,9 @@ while [[ $# -gt 0 ]]; do
       export BASHUNIT_REPORT_HTML="$2"
       shift
       ;;
+    --no-output)
+      export BASHUNIT_NO_OUTPUT=true
+      ;;
     -vvv|--verbose)
       export BASHUNIT_VERBOSE=true
       ;;
@@ -146,6 +149,10 @@ fi
 # Optional bootstrap
 # shellcheck disable=SC1090
 [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
+
+if [[ "${BASHUNIT_NO_OUTPUT:-false}" == true ]]; then
+  exec >/dev/null 2>&1
+fi
 
 set +eu
 

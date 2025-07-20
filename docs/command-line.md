@@ -340,6 +340,18 @@ Duration: 48 ms
 ```
 :::
 
+## No output
+
+> `bashunit --no-output`
+
+Run tests without printing any output. Exit code will be `0` if all tests pass or `1` otherwise.
+
+::: code-group
+```bash [Example]
+./bashunit tests --no-output
+```
+:::
+
 ## Version
 
 > `bashunit --version`
@@ -446,6 +458,8 @@ Options:
                             Run tests in parallel (default). Random execution order.
   -r, --report-html <file>
                             Write test results as an HTML report.
+  --no-output
+                            Suppress all console output; rely on exit code.
   -s, --simple | --detailed
                             Choose console output style (default: detailed).
   -S, --stop-on-failure
