@@ -89,27 +89,29 @@ function test_assert_match_snapshot_with_placeholder() {
   if check_os::is_alpine; then
     skip "not supported on alpine" && return
   fi
-  local snapshot_path
-  snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot
-  mkdir -p tests/unit/snapshots
+
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  local snapshot_path="$temp_dir/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot"
   echo 'Run at ::ignore::' > "$snapshot_path"
 
-  assert_empty "$(assert_match_snapshot "Run at $(date)")"
+  assert_empty "$(assert_match_snapshot "Run at $(date)" "$snapshot_path")"
 
-  rm "$snapshot_path"
+  rm -rf "$temp_dir"
 }
 
 function test_assert_match_snapshot_with_custom_placeholder() {
   if check_os::is_alpine; then
     skip "not supported on alpine" && return
   fi
-  local snapshot_path
-  snapshot_path=tests/unit/snapshots/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot
-  mkdir -p tests/unit/snapshots
+
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  local snapshot_path="$temp_dir/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot"
   echo 'Value __ANY__' > "$snapshot_path"
 
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
-  assert_empty "$(assert_match_snapshot "Value 42")"
+  assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
 
-  rm "$snapshot_path"
+  rm -rf "$temp_dir"
 }
