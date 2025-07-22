@@ -227,9 +227,9 @@ log "error" "an" "error" "message"
 log "warning" "different log level messages!"
 ```
 ```bash [Output: out.log]
-2024-10-03 21:27:23 [INFO]: I am tracing something...
-2024-10-03 21:27:23 [ERROR]: an error message
-2024-10-03 21:27:23 [WARNING]: different log level messages!
+2024-10-03 21:27:23 [INFO]: I am tracing something... #tests/sample.sh:42
+2024-10-03 21:27:23 [ERROR]: an error message #tests/sample.sh:43
+2024-10-03 21:27:23 [WARNING]: different log level messages! #tests/sample.sh:44
 ```
 :::
 
