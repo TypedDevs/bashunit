@@ -232,6 +232,8 @@ log "warning" "different log level messages!"
 2024-10-03 21:27:23 [WARNING]: different log level messages! #tests/sample.sh:44
 ```
 :::
+When enabled, the selected log file path is printed in the header so you can
+quickly `tail -f` it while the tests run.
 
 ## Verbose
 
