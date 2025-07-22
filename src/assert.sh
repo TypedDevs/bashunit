@@ -333,7 +333,7 @@ function assert_string_starts_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ $actual =~ ^"$expected"* ]]; then
+  if [[ $actual != "$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
@@ -348,7 +348,7 @@ function assert_string_not_starts_with() {
   local expected="$1"
   local actual="$2"
 
-  if [[ $actual =~ ^"$expected"* ]]; then
+  if [[ $actual == "$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
@@ -365,7 +365,7 @@ function assert_string_ends_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ $actual =~ .*"$expected"$ ]]; then
+  if [[ $actual != *"$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed
@@ -382,7 +382,7 @@ function assert_string_not_ends_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual =~ .*"$expected"$ ]]; then
+  if [[ $actual == *"$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
     state::add_assertions_failed

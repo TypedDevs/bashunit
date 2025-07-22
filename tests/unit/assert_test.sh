@@ -354,6 +354,23 @@ function test_unsuccessful_assert_string_not_ends_with() {
     "$(assert_string_not_ends_with "bar" "foobar")"
 }
 
+function test_assert_string_start_end_with_special_chars() {
+  assert_empty "$(assert_string_starts_with "foo." "foo.bar")"
+  assert_empty "$(assert_string_ends_with ".bar" "foo.bar")"
+}
+
+function test_assert_string_start_end_with_special_chars_fail() {
+  assert_same\
+    "$(console_results::print_failed_test\
+      "Assert string start end with special chars fail" "fooX" "to start with" "foo.")"\
+    "$(assert_string_starts_with "foo." "fooX")"
+
+  assert_same\
+    "$(console_results::print_failed_test\
+      "Assert string start end with special chars fail" "fooX" "to end with" ".bar")"\
+    "$(assert_string_ends_with ".bar" "fooX")"
+}
+
 function test_successful_assert_less_than() {
   assert_empty "$(assert_less_than "3" "1")"
 }

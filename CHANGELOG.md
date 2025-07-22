@@ -5,6 +5,7 @@
 - Fix prevents writing in src dir during tests
 - Fix negative widths with rpad
 - Fix internal assert_line_count and call_test_functions
+- Improve suffix assertion checks to use shell pattern matching
 - Include calling function name in dev log output for easier debugging
 - Add more internal dev log messages and prefix them with [INTERNAL]
     - Toggle internal log messages with `BASHUNIT_INTERNAL_LOG=true|false`
