@@ -464,6 +464,7 @@ function assert_line_count() {
   else
     local actual
     actual=$(echo "$input_str" | wc -l | tr -d '[:blank:]')
+    local additional_new_lines
     additional_new_lines=$(grep -o '\\n' <<< "$input_str" | wc -l | tr -d '[:blank:]')
     ((actual+=additional_new_lines))
   fi

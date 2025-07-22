@@ -467,3 +467,9 @@ function test_unsuccessful_assert_line_count() {
       "Unsuccessful assert line count" "one_line_string" "to contain number of lines equal to" "10" "but found" "1")"\
     "$(assert_line_count 10 "one_line_string")"
 }
+
+function test_assert_line_count_does_not_modify_existing_variable() {
+  local additional_new_lines="original"
+  assert_empty "$(assert_line_count 1 "one")"
+  assert_same "original" "$additional_new_lines"
+}
