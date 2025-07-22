@@ -104,6 +104,7 @@ function env::find_terminal_width() {
 }
 
 function env::print_verbose() {
+  internal_log "debug" "Printing verbose environment variables"
   local keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"

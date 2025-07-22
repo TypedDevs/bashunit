@@ -83,8 +83,14 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  local caller_fn="${FUNCNAME[1]:-main}"
-  echo "$(current_timestamp) [$level] ($caller_fn): $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+  echo "$(current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+}
+
+# Prefix internal log messages so users can easily differentiate them
+function internal_log() {
+  local level="$1"
+  shift
+  log "$level" "[INTERNAL]" "$@"
 }
 
 function print_line() {

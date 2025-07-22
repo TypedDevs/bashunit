@@ -392,7 +392,7 @@ function runner::parse_result_parallel() {
   mv "$unique_test_result_file" "${unique_test_result_file}.result"
   unique_test_result_file="${unique_test_result_file}.result"
 
-  log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   runner::parse_result_sync "$fn_name" "$execution_result"
 
@@ -431,7 +431,7 @@ function runner::parse_result_sync() {
     test_exit_code="${BASH_REMATCH[6]}"
   fi
 
-  log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
@@ -454,14 +454,17 @@ function runner::write_failure_result_output() {
 }
 
 function runner::run_set_up() {
+  internal_log "debug" "run_set_up"
   helper::execute_function_if_exists 'set_up'
 }
 
 function runner::run_set_up_before_script() {
+  internal_log "debug" "run_set_up_before_script"
   helper::execute_function_if_exists 'set_up_before_script'
 }
 
 function runner::run_tear_down() {
+  internal_log "debug" "run_tear_down"
   helper::execute_function_if_exists 'tear_down'
 }
 
@@ -472,10 +475,12 @@ function runner::clear_mocks() {
 }
 
 function runner::run_tear_down_after_script() {
+  internal_log "debug" "run_tear_down_after_script"
   helper::execute_function_if_exists 'tear_down_after_script'
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
+  internal_log "debug" "clean_set_up_and_tear_down_after_script"
   helper::unset_if_exists 'set_up'
   helper::unset_if_exists 'tear_down'
   helper::unset_if_exists 'set_up_before_script'
