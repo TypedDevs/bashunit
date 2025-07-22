@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.22.1](https://github.com/TypedDevs/bashunit/compare/0.22.0...0.22.1) - 2025-07-23
 
 - Fix prevents writing in src dir during tests
 - Fix negative widths with rpad
