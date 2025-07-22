@@ -213,8 +213,11 @@ function runner::run_test() {
   exec 3>&1
 
   local test_execution_result=$(
+    # shellcheck disable=SC2154
     trap '
-      state::set_test_exit_code $?
+      exit_code=$?
+      set +e
+      state::set_test_exit_code "$exit_code"
       runner::run_tear_down
       runner::clear_mocks
       state::export_subshell_context
