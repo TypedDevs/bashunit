@@ -6,6 +6,9 @@ function str::rpad() {
   local width_padding="${3:-$TERMINAL_WIDTH}"
   # Subtract 1 more to account for the extra space
   local padding=$((width_padding - ${#right_word} - 1))
+  if (( padding < 0 )); then
+    padding=0
+  fi
 
   # Remove ANSI escape sequences (non-visible characters) for length calculation
   # shellcheck disable=SC2155
@@ -14,7 +17,7 @@ function str::rpad() {
   local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."
   if [[ ${#clean_left_text} -gt $padding ]]; then
-    local truncation_length=$((padding - 3))  # Subtract 3 for "..."
+    local truncation_length=$((padding < 3 ? 0 : padding - 3))
     clean_left_text="${clean_left_text:0:$truncation_length}"
     is_truncated=true
   fi

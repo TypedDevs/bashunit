@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix prevents writing in src dir during tests
+- Fix negative widths with rpad
 
 ## [0.22.0](https://github.com/TypedDevs/bashunit/compare/0.21.0...0.22.0) - 2025-07-20
 

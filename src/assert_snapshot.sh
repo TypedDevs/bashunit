@@ -34,20 +34,21 @@ function snapshot::match_with_placeholder() {
   fi
 }
 
+# shellcheck disable=SC2155
 function assert_match_snapshot() {
   local actual
   actual=$(echo -n "$1" | tr -d '\r')
-  local directory
-  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
-  local test_file
-  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
-  local snapshot_name
-  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
-  local snapshot_file
-  snapshot_file="${directory}/${test_file}.${snapshot_name}"
+  local snapshot_file="${2-}"
+
+  if [[ -z "$snapshot_file" ]]; then
+    local directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+    local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
+    local snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
+    snapshot_file="${directory}/${test_file}.${snapshot_name}"
+  fi
 
   if [[ ! -f "$snapshot_file" ]]; then
-    mkdir -p "$directory"
+    mkdir -p "$(dirname "$snapshot_file")"
     echo "$actual" > "$snapshot_file"
 
     state::add_assertions_snapshot
@@ -70,21 +71,21 @@ function assert_match_snapshot() {
   state::add_assertions_passed
 }
 
+# shellcheck disable=SC2155
 function assert_match_snapshot_ignore_colors() {
   local actual
   actual=$(echo -n "$1" | sed -r 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
 
-  local directory
-  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
-  local test_file
-  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
-  local snapshot_name
-  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
-  local snapshot_file
-  snapshot_file="${directory}/${test_file}.${snapshot_name}"
+  local snapshot_file="${2-}"
+  if [[ -z "$snapshot_file" ]]; then
+    local directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+    local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
+    local snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
+    snapshot_file="${directory}/${test_file}.${snapshot_name}"
+  fi
 
   if [[ ! -f "$snapshot_file" ]]; then
-    mkdir -p "$directory"
+    mkdir -p "$(dirname "$snapshot_file")"
     echo "$actual" > "$snapshot_file"
 
     state::add_assertions_snapshot
