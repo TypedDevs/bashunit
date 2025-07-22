@@ -5,7 +5,7 @@ You can use this list of global functions that exists to primarily to improve yo
 
 ## log
 
-Write into the `BASHUNIT_DEV_LOG` a log message.
+Write into the `BASHUNIT_DEV_LOG` a log message. The log line records the calling function name, source file and line number for easier debugging.
 
 > See: [Dev log](/configuration#dev-log)
 

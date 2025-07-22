@@ -83,7 +83,8 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  echo "$(current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+  local caller_fn="${FUNCNAME[1]:-main}"
+  echo "$(current_timestamp) [$level] ($caller_fn): $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
 }
 
 function print_line() {
