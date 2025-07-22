@@ -1,7 +1,0 @@
-bench bench_sleep [1/2] ::ignore::
-bench bench_sleep [2/2] ::ignore::
-
-
-Benchmark Results (avg ms)
-Name                                         Revs      Its  Avg(ms)
-bench_sleep                                     5        2       ::ignore::

@@ -5,7 +5,7 @@ You can use this list of global functions that exists to primarily to improve yo
 
 ## log
 
-Write into the `BASHUNIT_DEV_LOG` a log message.
+Write into the `BASHUNIT_DEV_LOG` a log message. The log line records the source file and line number for easier debugging.
 
 > See: [Dev log](/configuration#dev-log)
 
@@ -17,6 +17,7 @@ log "warning" "hello" "world"
 log "critical" "hello" "world"
 log "error" "hello" "world"
 ```
+Internal messages from bashunit include the `[INTERNAL]` prefix so you can easily spot them. You can enable them with `BASHUNIT_INTERNAL_LOG=true|false`.
 
 ## current_dir
 

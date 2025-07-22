@@ -3,6 +3,8 @@
 function parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
 
+  internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
+
   local total_failed=0
   local total_passed=0
   local total_skipped=0
@@ -78,6 +80,13 @@ function parallel::aggregate_test_results() {
   export _ASSERTIONS_SKIPPED=$total_skipped
   export _ASSERTIONS_INCOMPLETE=$total_incomplete
   export _ASSERTIONS_SNAPSHOT=$total_snapshot
+
+  internal_log "aggregate_totals" \
+    "failed:$total_failed" \
+    "passed:$total_passed" \
+    "skipped:$total_skipped" \
+    "incomplete:$total_incomplete" \
+    "snapshot:$total_snapshot"
 }
 
 function parallel::mark_stop_on_failure() {
@@ -96,6 +105,8 @@ function parallel::reset() {
 }
 
 function parallel::is_enabled() {
+  internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_OS:-Unknown}"
+
   if env::is_parallel_run_enabled && \
     (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
     return 0

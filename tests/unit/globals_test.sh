@@ -107,3 +107,11 @@ function test_globals_log_level_default() {
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
+
+function test_internal_log_prefix() {
+  export BASHUNIT_INTERNAL_LOG=true
+  internal_log "info" "some" "message"
+  export BASHUNIT_INTERNAL_LOG=false
+
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL]: info some message"
+}

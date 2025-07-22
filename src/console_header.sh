@@ -9,6 +9,10 @@ function console_header::print_version_with_env() {
   fi
 
   console_header::print_version "$filter" "${files[@]}"
+
+  if env::is_dev_mode_enabled; then
+    printf "%sDev log:%s %s\n" "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+  fi
 }
 
 function console_header::print_version() {
