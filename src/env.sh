@@ -135,6 +135,7 @@ function env::print_verbose() {
   done
 
   for key in "${keys[@]}"; do
+    internal_log "debug" "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done
 }
@@ -147,3 +148,7 @@ TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failu
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
 CAT="$(which cat)"
+
+if env::is_dev_mode_enabled; then
+  internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
+fi

@@ -237,6 +237,8 @@ When enabled, the selected log file path is printed in the header so you can
 quickly `tail -f` it while the tests run.
 All internal messages emitted by bashunit are prefixed with `[INTERNAL]`.
 
+You can toggle internal messages with `BASHUNIT_INTERNAL_LOG=true|false`.
+
 ## Verbose
 
 > `BASHUNIT_VERBOSE=bool`

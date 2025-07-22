@@ -3,6 +3,8 @@
 function parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
 
+  internal_log "debug" "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
+
   local total_failed=0
   local total_passed=0
   local total_skipped=0
@@ -78,6 +80,13 @@ function parallel::aggregate_test_results() {
   export _ASSERTIONS_SKIPPED=$total_skipped
   export _ASSERTIONS_INCOMPLETE=$total_incomplete
   export _ASSERTIONS_SNAPSHOT=$total_snapshot
+
+  internal_log "debug" "aggregate_totals" \
+    "failed:$total_failed" \
+    "passed:$total_passed" \
+    "skipped:$total_skipped" \
+    "incomplete:$total_incomplete" \
+    "snapshot:$total_snapshot"
 }
 
 function parallel::mark_stop_on_failure() {

@@ -58,6 +58,7 @@ function temp_dir() {
 }
 
 function cleanup_temp_files() {
+  internal_log "debug" "cleanup_temp_files"
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
     rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
   else

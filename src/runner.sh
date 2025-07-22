@@ -10,6 +10,7 @@ function runner::load_test_files() {
     if [[ ! -f $test_file ]]; then
       continue
     fi
+    internal_log "info" "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
     runner::run_set_up_before_script
@@ -20,6 +21,7 @@ function runner::load_test_files() {
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
+    internal_log "info" "Finished file" "$test_file"
   done
 
   if parallel::is_enabled; then
@@ -449,6 +451,14 @@ function runner::parse_result_sync() {
   ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
   ((_TEST_EXIT_CODE += test_exit_code)) || true
+
+  internal_log "debug" "result_summary" \
+    "failed:$assertions_failed" \
+    "passed:$assertions_passed" \
+    "skipped:$assertions_skipped" \
+    "incomplete:$assertions_incomplete" \
+    "snapshot:$assertions_snapshot" \
+    "exit_code:$test_exit_code"
 }
 
 function runner::write_failure_result_output() {
