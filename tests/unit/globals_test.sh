@@ -113,5 +113,5 @@ function test_internal_log_prefix() {
   internal_log "info" "some" "message"
   export BASHUNIT_INTERNAL_LOG=false
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL]: info some message"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL] (test_internal_log_prefix): info some message"
 }

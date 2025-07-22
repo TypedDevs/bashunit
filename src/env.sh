@@ -110,7 +110,7 @@ function env::find_terminal_width() {
 }
 
 function env::print_verbose() {
-  internal_log "debug" "Printing verbose environment variables"
+  internal_log "Printing verbose environment variables"
   local keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"
@@ -135,7 +135,7 @@ function env::print_verbose() {
   done
 
   for key in "${keys[@]}"; do
-    internal_log "debug" "$key=${!key}"
+    internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done
 }

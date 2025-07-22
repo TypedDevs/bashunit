@@ -230,7 +230,7 @@ log "warning" "different log level messages!"
 2024-10-03 21:27:23 [INFO] (main): I am tracing something... #tests/sample.sh:42
 2024-10-03 21:27:23 [ERROR] (main): an error message #tests/sample.sh:43
 2024-10-03 21:27:23 [WARNING] (main): different log level messages! #tests/sample.sh:44
-2024-10-03 21:27:23 [DEBUG] (bashunit): [INTERNAL] exec_tests filter:none files:sample.sh #src/main.sh:5
+2024-10-03 21:27:23 [INTERNAL] (main::exec_tests): debug exec_tests filter:none files:sample.sh #src/main.sh:5
 ```
 :::
 When enabled, the selected log file path is printed in the header so you can

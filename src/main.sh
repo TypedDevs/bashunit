@@ -9,8 +9,8 @@ function main::exec_tests() {
     test_files+=("$line")
   done < <(helper::load_test_files "$filter" "${files[@]}")
 
-  internal_log "debug" "exec_tests" "filter:$filter" "files:${test_files[*]}"
-  internal_log "info" "Start tests" "files:${test_files[*]}"
+  internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
+  internal_log "Start tests" "files:${test_files[*]}"
 
   if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
@@ -72,7 +72,7 @@ function main::exec_tests() {
   fi
 
   cleanup_temp_files
-  internal_log "info" "Finished tests" "exit_code:$exit_code"
+  internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
 }
 
@@ -85,7 +85,7 @@ function main::exec_benchmarks() {
     bench_files+=("$line")
   done < <(helper::load_bench_files "$filter" "${files[@]}")
 
-  internal_log "debug" "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
+  internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
 
   if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
@@ -100,7 +100,7 @@ function main::exec_benchmarks() {
   benchmark::print_results
 
   cleanup_temp_files
-  internal_log "info" "Finished benchmarks"
+  internal_log "Finished benchmarks"
 }
 
 function main::cleanup() {

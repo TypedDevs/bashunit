@@ -58,7 +58,7 @@ function temp_dir() {
 }
 
 function cleanup_temp_files() {
-  internal_log "debug" "cleanup_temp_files"
+  internal_log "cleanup_temp_files"
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
     rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
   else
@@ -93,7 +93,8 @@ function internal_log() {
     return
   fi
 
-  echo "$(current_timestamp) [INTERNAL]: $*" >> "$BASHUNIT_DEV_LOG"
+  local caller_fn="${FUNCNAME[1]:-main}"
+  echo "$(current_timestamp) [INTERNAL] ($caller_fn): $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
 }
 
 function print_line() {

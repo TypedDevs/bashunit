@@ -10,7 +10,7 @@ function runner::load_test_files() {
     if [[ ! -f $test_file ]]; then
       continue
     fi
-    internal_log "info" "Loading file" "$test_file"
+    internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
     runner::run_set_up_before_script
@@ -21,7 +21,7 @@ function runner::load_test_files() {
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
-    internal_log "info" "Finished file" "$test_file"
+    internal_log "Finished file" "$test_file"
   done
 
   if parallel::is_enabled; then
@@ -163,7 +163,7 @@ function runner::call_bench_functions() {
 function runner::render_running_file_header() {
   local script="$1"
 
-  internal_log "info" "Running file" "$script"
+  internal_log "Running file" "$script"
 
   if parallel::is_enabled; then
     return
@@ -194,7 +194,7 @@ function runner::run_test() {
   # race conditions when running tests in parallel.
   local sanitized_fn_name
   sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  internal_log "info" "Running test" "$fn_name" "$*"
+  internal_log "Running test" "$fn_name" "$*"
   if env::is_parallel_run_enabled; then
     export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
   else
@@ -293,7 +293,7 @@ function runner::run_test() {
     console_results::print_error_test "$fn_name" "$runtime_error"
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$runtime_error"
-    internal_log "error" "Test error" "$fn_name" "$runtime_error"
+    internal_log "Test error" "$fn_name" "$runtime_error"
     return
   fi
 
@@ -302,7 +302,7 @@ function runner::run_test() {
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
 
-    internal_log "error" "Test failed" "$fn_name"
+    internal_log "Test failed" "$fn_name"
 
     if env::is_stop_on_failure_enabled; then
       if parallel::is_enabled; then
@@ -318,21 +318,21 @@ function runner::run_test() {
     state::add_tests_snapshot
     console_results::print_snapshot_test "$fn_name"
     reports::add_test_snapshot "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "info" "Test snapshot" "$fn_name"
+    internal_log "Test snapshot" "$fn_name"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "info" "Test incomplete" "$fn_name"
+    internal_log "Test incomplete" "$fn_name"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "info" "Test skipped" "$fn_name"
+    internal_log "Test skipped" "$fn_name"
     return
   fi
 
@@ -345,7 +345,7 @@ function runner::run_test() {
   fi
   state::add_tests_passed
   reports::add_test_passed "$test_file" "$fn_name" "$duration" "$total_assertions"
-  internal_log "info" "Test passed" "$fn_name"
+  internal_log "Test passed" "$fn_name"
 }
 
 function runner::decode_subshell_output() {
@@ -404,7 +404,7 @@ function runner::parse_result_parallel() {
   mv "$unique_test_result_file" "${unique_test_result_file}.result"
   unique_test_result_file="${unique_test_result_file}.result"
 
-  internal_log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   runner::parse_result_sync "$fn_name" "$execution_result"
 
@@ -443,7 +443,7 @@ function runner::parse_result_sync() {
     test_exit_code="${BASH_REMATCH[6]}"
   fi
 
-  internal_log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
@@ -452,7 +452,7 @@ function runner::parse_result_sync() {
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
   ((_TEST_EXIT_CODE += test_exit_code)) || true
 
-  internal_log "debug" "result_summary" \
+  internal_log "result_summary" \
     "failed:$assertions_failed" \
     "passed:$assertions_passed" \
     "skipped:$assertions_skipped" \
@@ -474,17 +474,17 @@ function runner::write_failure_result_output() {
 }
 
 function runner::run_set_up() {
-  internal_log "debug" "run_set_up"
+  internal_log "run_set_up"
   helper::execute_function_if_exists 'set_up'
 }
 
 function runner::run_set_up_before_script() {
-  internal_log "debug" "run_set_up_before_script"
+  internal_log "run_set_up_before_script"
   helper::execute_function_if_exists 'set_up_before_script'
 }
 
 function runner::run_tear_down() {
-  internal_log "debug" "run_tear_down"
+  internal_log "run_tear_down"
   helper::execute_function_if_exists 'tear_down'
 }
 
@@ -495,12 +495,12 @@ function runner::clear_mocks() {
 }
 
 function runner::run_tear_down_after_script() {
-  internal_log "debug" "run_tear_down_after_script"
+  internal_log "run_tear_down_after_script"
   helper::execute_function_if_exists 'tear_down_after_script'
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
-  internal_log "debug" "clean_set_up_and_tear_down_after_script"
+  internal_log "clean_set_up_and_tear_down_after_script"
   helper::unset_if_exists 'set_up'
   helper::unset_if_exists 'tear_down'
   helper::unset_if_exists 'set_up_before_script'
