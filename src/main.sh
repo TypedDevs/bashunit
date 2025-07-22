@@ -10,7 +10,6 @@ function main::exec_tests() {
   done < <(helper::load_test_files "$filter" "${files[@]}")
 
   internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
-  internal_log "Start tests" "files:${test_files[*]}"
 
   if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"

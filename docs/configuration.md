@@ -227,17 +227,16 @@ log "error" "an" "error" "message"
 log "warning" "different log level messages!"
 ```
 ```bash [Output: out.log]
-2024-10-03 21:27:23 [INFO] (main): I am tracing something... #tests/sample.sh:42
-2024-10-03 21:27:23 [ERROR] (main): an error message #tests/sample.sh:43
-2024-10-03 21:27:23 [WARNING] (main): different log level messages! #tests/sample.sh:44
-2024-10-03 21:27:23 [INTERNAL] (main::exec_tests): debug exec_tests filter:none files:sample.sh #src/main.sh:5
+2024-10-03 21:27:23 [INFO]: I am tracing something... #tests/sample.sh:11
+2024-10-03 21:27:23 [ERROR]: an error message #tests/sample.sh:27
+2024-10-03 21:27:24 [WARNING]: different log level messages! #tests/sample.sh:21
 ```
 :::
 When enabled, the selected log file path is printed in the header so you can
 quickly `tail -f` it while the tests run.
-All internal messages emitted by bashunit are prefixed with `[INTERNAL]`.
 
-You can toggle internal messages with `BASHUNIT_INTERNAL_LOG=true|false`.
+> All internal messages emitted by bashunit are prefixed with `[INTERNAL]`.
+> You can toggle internal messages with `BASHUNIT_INTERNAL_LOG=true|false`.
 
 ## Verbose
 

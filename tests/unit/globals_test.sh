@@ -10,9 +10,9 @@ function set_up() {
   export BASHUNIT_DEV_LOG
 }
 
-#function tear_down() {
-#  rm "$BASHUNIT_DEV_LOG"
-#}
+function tear_down() {
+  rm "$BASHUNIT_DEV_LOG"
+}
 
 function test_globals_current_dir() {
   assert_same "tests/unit" "$(current_dir)"
@@ -75,37 +75,37 @@ function test_globals_temp_dir() {
 function test_globals_log_level_error() {
   log "error" "hello," "error"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[ERROR] (test_globals_log_level_error): hello, error"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[ERROR]: hello, error"
 }
 
 function test_globals_log_level_warning() {
   log "warning" "hello," "warning"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[WARNING] (test_globals_log_level_warning): hello, warning"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[WARNING]: hello, warning"
 }
 
 function test_globals_log_level_debug() {
   log "debug" "hello," "debug"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[DEBUG] (test_globals_log_level_debug): hello, debug"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[DEBUG]: hello, debug"
 }
 
 function test_globals_log_level_critical() {
   log "critical" "hello," "critical"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[CRITICAL] (test_globals_log_level_critical): hello, critical"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[CRITICAL]: hello, critical"
 }
 
 function test_globals_log_level_info() {
   log "info" "hello," "info"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO] (test_globals_log_level_info): hello, info"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
 
 function test_globals_log_level_default() {
   log "hello," "info"
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO] (test_globals_log_level_default): hello, info"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
 
 function test_internal_log_prefix() {
@@ -113,5 +113,5 @@ function test_internal_log_prefix() {
   internal_log "info" "some" "message"
   export BASHUNIT_INTERNAL_LOG=false
 
-  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL] (test_internal_log_prefix): info some message"
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL]: info some message"
 }
