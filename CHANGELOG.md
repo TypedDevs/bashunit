@@ -7,6 +7,7 @@
 - Fix internal assert_line_count and call_test_functions
 - Include calling function name in dev log output for easier debugging
 - Add more internal dev log messages and prefix them with [INTERNAL]
+    - Toggle internal log messages with `BASHUNIT_INTERNAL_LOG=true|false`
 
 ## [0.22.0](https://github.com/TypedDevs/bashunit/compare/0.21.0...0.22.0) - 2025-07-20
 

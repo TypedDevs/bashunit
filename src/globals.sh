@@ -83,14 +83,16 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  echo "$(current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+  local caller_fn="${FUNCNAME[1]:-main}"
+  echo "$(current_timestamp) [$level] ($caller_fn): $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
 }
 
-# Prefix internal log messages so users can easily differentiate them
 function internal_log() {
-  local level="$1"
-  shift
-  log "$level" "[INTERNAL]" "$@"
+  if ! env::is_dev_mode_enabled || ! env::is_internal_log_enabled; then
+    return
+  fi
+
+  echo "$(current_timestamp) [INTERNAL]: $*" >> "$BASHUNIT_DEV_LOG"
 }
 
 function print_line() {

@@ -161,6 +161,8 @@ function runner::call_bench_functions() {
 function runner::render_running_file_header() {
   local script="$1"
 
+  internal_log "info" "Running file" "$script"
+
   if parallel::is_enabled; then
     return
   fi
@@ -190,6 +192,7 @@ function runner::run_test() {
   # race conditions when running tests in parallel.
   local sanitized_fn_name
   sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
+  internal_log "info" "Running test" "$fn_name" "$*"
   if env::is_parallel_run_enabled; then
     export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
   else
@@ -288,6 +291,7 @@ function runner::run_test() {
     console_results::print_error_test "$fn_name" "$runtime_error"
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$runtime_error"
+    internal_log "error" "Test error" "$fn_name" "$runtime_error"
     return
   fi
 
@@ -295,6 +299,8 @@ function runner::run_test() {
     state::add_tests_failed
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$subshell_output"
+
+    internal_log "error" "Test failed" "$fn_name"
 
     if env::is_stop_on_failure_enabled; then
       if parallel::is_enabled; then
@@ -310,18 +316,21 @@ function runner::run_test() {
     state::add_tests_snapshot
     console_results::print_snapshot_test "$fn_name"
     reports::add_test_snapshot "$test_file" "$fn_name" "$duration" "$total_assertions"
+    internal_log "info" "Test snapshot" "$fn_name"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$fn_name" "$duration" "$total_assertions"
+    internal_log "info" "Test incomplete" "$fn_name"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$fn_name" "$duration" "$total_assertions"
+    internal_log "info" "Test skipped" "$fn_name"
     return
   fi
 
@@ -334,6 +343,7 @@ function runner::run_test() {
   fi
   state::add_tests_passed
   reports::add_test_passed "$test_file" "$fn_name" "$duration" "$total_assertions"
+  internal_log "info" "Test passed" "$fn_name"
 }
 
 function runner::decode_subshell_output() {
