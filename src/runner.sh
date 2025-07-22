@@ -92,7 +92,7 @@ function runner::call_test_functions() {
     return
   fi
 
-  runner::render_running_file_header
+  runner::render_running_file_header "$script"
   helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
@@ -159,6 +159,8 @@ function runner::call_bench_functions() {
 }
 
 function runner::render_running_file_header() {
+  local script="$1"
+
   if parallel::is_enabled; then
     return
   fi
