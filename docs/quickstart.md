@@ -22,6 +22,16 @@ See more about [installation](/installation).
 
 Once **bashunit** is installed, you're ready to get started.
 
+You can bootstrap a ready to use test suite with the `--init` option:
+
+```bash
+./lib/bashunit --init tests
+```
+
+This will create a `tests` directory containing a sample test and bootstrap file.
+
+Alternatively, create your tests manually:
+
 1.  First, create a folder to place your tests:
     ```bash
     mkdir tests
