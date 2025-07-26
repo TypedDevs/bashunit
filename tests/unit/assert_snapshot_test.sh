@@ -81,8 +81,8 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
 }
 
 function test_assert_match_snapshot_with_placeholder() {
-  if check_os::is_alpine; then
-    skip "not supported on alpine" && return
+  if ! dependencies::has_perl; then
+    skip "perl not available" && return
   fi
 
   local temp_dir
@@ -96,8 +96,8 @@ function test_assert_match_snapshot_with_placeholder() {
 }
 
 function test_assert_match_snapshot_with_custom_placeholder() {
-  if check_os::is_alpine; then
-    skip "not supported on alpine" && return
+  if ! dependencies::has_perl; then
+    skip "perl not available" && return
   fi
 
   local temp_dir
