@@ -2,6 +2,7 @@
 
 function set_up() {
   export BASHUNIT_SIMPLE_OUTPUT=false
+  unset BASHUNIT_SNAPSHOT_PLACEHOLDER
 }
 
 function test_successful_assert_match_snapshot() {
