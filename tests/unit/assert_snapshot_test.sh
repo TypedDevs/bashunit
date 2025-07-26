@@ -84,11 +84,14 @@ function test_assert_match_snapshot_with_placeholder() {
     skip "not supported on alpine" && return
   fi
 
-  # shellcheck disable=SC2155
-  local snapshot_path="$(temp_dir)/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot"
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  local snapshot_path="$temp_dir/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot"
   echo 'Run at ::ignore::' > "$snapshot_path"
 
   assert_empty "$(assert_match_snapshot "Run at $(date)" "$snapshot_path")"
+
+  rm -rf "$temp_dir"
 }
 
 function test_assert_match_snapshot_with_custom_placeholder() {
@@ -96,10 +99,13 @@ function test_assert_match_snapshot_with_custom_placeholder() {
     skip "not supported on alpine" && return
   fi
 
-  # shellcheck disable=SC2155
-  local snapshot_path="$(temp_dir)/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot"
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  local snapshot_path="$temp_dir/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot"
   echo 'Value __ANY__' > "$snapshot_path"
 
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
   assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
+
+  rm -rf "$temp_dir"
 }
