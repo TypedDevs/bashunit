@@ -19,8 +19,6 @@ function test_creates_a_snapshot() {
   assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
   assert_file_exists "$snapshot_path"
   assert_same "Expected snapshot" "$(cat "$snapshot_path")"
-
-  rm -rf "$temp_dir"
 }
 
 function test_unsuccessful_assert_match_snapshot() {
@@ -59,8 +57,6 @@ function test_creates_a_snapshot_ignore_colors() {
   assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
   assert_file_exists "$snapshot_path"
   assert_same "Expected snapshot" "$(cat "$snapshot_path")"
-
-  rm -rf "$temp_dir"
 }
 
 function test_unsuccessful_assert_match_snapshot_ignore_colors() {
@@ -93,8 +89,6 @@ function test_assert_match_snapshot_with_placeholder() {
   echo 'Run at ::ignore::' > "$snapshot_path"
 
   assert_empty "$(assert_match_snapshot "Run at $(date)" "$snapshot_path")"
-
-  rm -rf "$temp_dir"
 }
 
 function test_assert_match_snapshot_with_custom_placeholder() {
@@ -108,6 +102,4 @@ function test_assert_match_snapshot_with_custom_placeholder() {
 
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
   assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
-
-  rm -rf "$temp_dir"
 }
