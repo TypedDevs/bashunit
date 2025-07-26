@@ -118,3 +118,17 @@ jobs:
       - name: Run Tests
         run: |
           ./bashunit --parallel tests/
+
+  nixos:
+    name: "NixOS"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests
+        run: |
+          docker run --rm -v "$(pwd)":/project -w /project nixos/nix:latest \
+            nix-shell -p bash --run "./bashunit --simple tests/"
