@@ -131,4 +131,4 @@ jobs:
       - name: Run Tests
         run: |
           docker run --rm -v "$(pwd)":/project -w /project nixos/nix:latest \
-            nix-shell -p bash gnumake git --run "./bashunit --parallel tests/"
+            nix-shell -p bash gnumake git --run "./bashunit --simple tests/"
