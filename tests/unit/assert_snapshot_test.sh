@@ -89,7 +89,7 @@ function test_assert_match_snapshot_with_placeholder() {
   local snapshot_path="$temp_dir/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder.snapshot"
   echo 'Run at ::ignore::' > "$snapshot_path"
 
-  assert_empty "$(assert_match_snapshot "Run at $(date)" "$snapshot_path")"
+  assert_empty "$(assert_match_snapshot "Run at $(date -u '+%F %T UTC')" "$snapshot_path")"
 
   rm -rf "$temp_dir"
 }
