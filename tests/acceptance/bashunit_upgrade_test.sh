@@ -4,18 +4,22 @@ set +e
 
 TMP_DIR="tmp"
 TMP_BIN="$TMP_DIR/bashunit"
-ACTIVE_INTERNET=0
-HAS_DOWNLOADER=0
-HAS_GIT=0
+ACTIVE_INTERNET=false
+HAS_DOWNLOADER=false
+HAS_GIT=false
 
 function set_up_before_script() {
   env::active_internet_connection
-  ACTIVE_INTERNET=$?
-  if dependencies::has_curl || dependencies::has_wget; then
-    HAS_DOWNLOADER=1
+  if [[ $? -eq 0 ]]; then
+    ACTIVE_INTERNET=true
   fi
+
+  if dependencies::has_curl || dependencies::has_wget; then
+    HAS_DOWNLOADER=true
+  fi
+
   if dependencies::has_git; then
-    HAS_GIT=1
+    HAS_GIT=true
   fi
 }
 
@@ -44,13 +48,13 @@ function test_do_not_upgrade_when_latest() {
 }
 
 function test_upgrade_when_a_new_version_found() {
-  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+  if [[ "$ACTIVE_INTERNET" == false ]]; then
     skip "no internet connection" && return
   fi
-  if [[ "$HAS_GIT" -eq 0 ]]; then
+  if [[ "$HAS_GIT" == false ]]; then
     skip "git not installed" && return
   fi
-  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+  if [[ "$HAS_DOWNLOADER" == false ]]; then
     skip "curl or wget not installed" && return
   fi
 
@@ -71,22 +75,22 @@ function test_upgrade_when_a_new_version_found() {
 }
 
 function test_do_not_update_on_consecutive_calls() {
-  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+  if [[ "$ACTIVE_INTERNET" == false ]]; then
     skip "no internet connection" && return
   fi
-  if [[ "$HAS_GIT" -eq 0 ]]; then
+  if [[ "$HAS_GIT" == false ]]; then
     skip "git not installed" && return
   fi
-  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+  if [[ "$HAS_DOWNLOADER" == false ]]; then
     skip "curl or wget not installed" && return
   fi
 
   sed -i -e \
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
-    $TMP_BIN
+    "$TMP_BIN"
 
   if [[ $_OS == "OSX" ]]; then
-    rm $TMP_BIN-e
+    rm -f "${TMP_BIN}-e"
   fi
 
   $TMP_BIN --upgrade
