@@ -289,8 +289,7 @@ function test_not_render_execution_time() {
 
 function test_render_execution_time_on_osx_without_perl() {
   if ! check_os::is_macos; then
-    skip
-    return
+    skip && return
   fi
 
   mock_macos
@@ -308,8 +307,7 @@ function test_render_execution_time_on_osx_without_perl() {
 
 function test_render_execution_time_on_osx_with_perl() {
   if ! check_os::is_macos; then
-    skip
-    return
+    skip && return
   fi
 
   local render_result
