@@ -69,9 +69,8 @@ function test_now_on_windows_without_without_powershell() {
 }
 
 function test_now_on_osx_without_perl() {
-  if ! check_os::is_macos; then
-    skip
-    return
+  if check_os::is_windows; then
+    skip && return
   fi
 
   mock_macos
