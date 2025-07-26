@@ -4,11 +4,19 @@ set -uo pipefail
 set +e
 
 ACTIVE_INTERNET=0
+HAS_DOWNLOADER=0
+HAS_GIT=0
 
 function set_up_before_script() {
   env::active_internet_connection
   ACTIVE_INTERNET=$?
   TEST_ENV_FILE="./tests/acceptance/fixtures/.env.default"
+  if dependencies::has_curl || dependencies::has_wget; then
+    HAS_DOWNLOADER=1
+  fi
+  if dependencies::has_git; then
+    HAS_GIT=1
+  fi
 }
 
 function tear_down_after_script() {
@@ -29,6 +37,9 @@ function test_install_downloads_the_latest_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     skip "no internet connection" && return
   fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    skip "curl or wget not installed" && return
+  fi
 
   local installed_bashunit="./lib/bashunit"
   local output
@@ -48,6 +59,9 @@ function test_install_downloads_in_given_folder() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     skip "no internet connection" && return
   fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    skip "curl or wget not installed" && return
+  fi
 
   local installed_bashunit="./deps/bashunit"
   local output
@@ -66,6 +80,9 @@ function test_install_downloads_in_given_folder() {
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -87,6 +104,9 @@ function test_install_downloads_the_given_version() {
 function test_install_downloads_the_given_version_without_dir() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -110,6 +130,12 @@ function test_install_downloads_the_given_version_without_dir() {
 function test_install_downloads_the_non_stable_beta_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     skip "no internet connection" && return
+  fi
+  if [[ "$HAS_GIT" -eq 0 ]]; then
+    skip "git not installed" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    skip "curl or wget not installed" && return
   fi
 
   mock date echo "2023-11-13"

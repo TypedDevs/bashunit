@@ -81,7 +81,7 @@ function snapshot::compare() {
   if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label=$(helper::normalize_test_function_name "$func_name")
     state::add_assertions_failed
-    console_results::print_failed_snapshot_test "$label" "$snapshot_path"
+    console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
     return 1
   fi
 
