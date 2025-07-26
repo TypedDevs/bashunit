@@ -97,3 +97,14 @@ function test_assert_match_snapshot_with_custom_placeholder() {
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
   assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
 }
+
+function test_assert_match_snapshot_with_placeholder_without_perl() {
+  mock dependencies::has_perl mock_false
+
+  local snapshot_path
+  snapshot_path="$(temp_dir)/assert_snapshot_test_sh.test_assert_match_snapshot_with_placeholder_without_perl.snapshot"
+  echo 'Value __ANY__' > "$snapshot_path"
+
+  export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
+  assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
+}

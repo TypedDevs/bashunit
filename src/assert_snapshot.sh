@@ -42,8 +42,10 @@ function snapshot::match_with_placeholder() {
       exit($input =~ /$r/s ? 0 : 1);
     ' && return 0 || return 1
   else
-    local fallback=$(printf '%s' "$snapshot" | sed -e "s|$placeholder|.*|g" -e 's/[][\.^$*+?{}|()]/\\&/g')
-    fallback="^${fallback}$"
+    local sanitized_fallback="${snapshot//$placeholder/$token}"
+    local escaped_fallback
+    escaped_fallback=$(printf '%s' "$sanitized_fallback" | sed -e 's/[][\\.^$*+?{}|()]/\\&/g')
+    local fallback="^${escaped_fallback//$token/.*/}$"
     echo "$actual" | grep -Eq "$fallback" && return 0 || return 1
   fi
 }
