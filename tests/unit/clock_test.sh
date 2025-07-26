@@ -79,7 +79,9 @@ function test_now_on_osx_without_perl() {
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
-  assert_same "1727708708326957000" "$(clock::now)"
+  local expected
+  expected=$(math::calculate "(1727708708 * 1000000000) + (326957 * 1000)")
+  assert_same "$expected" "$(clock::now)"
 }
 
 function test_runtime_in_milliseconds_when_not_empty_time() {
