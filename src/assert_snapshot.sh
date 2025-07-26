@@ -26,7 +26,7 @@ function snapshot::match_with_placeholder() {
     fallback_pattern=$(printf '%s' "$fallback_pattern" | sed -e 's/[][\.^$*+?{}|()]/\\&/g')
     fallback_pattern="^${fallback_pattern}$"
 
-    if printf '%s\n' "$actual" | grep -Eq "$fallback_pattern"; then
+    if printf '%s' "$actual" | grep -zEq "$fallback_pattern"; then
       return 0
     else
       return 1
