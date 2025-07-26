@@ -4,7 +4,7 @@
 
 [1mThere was 1 failure:[0m
 
-|1) tests/acceptance/fixtures/test_bashunit_when_a_test_returns_non_zero.sh
+|1) tests/acceptance/fixtures/test_bashunit_when_a_test_returns_non_zero.sh:3
 
 [2mTests:     [0m [31m1 failed[0m, 1 total
 [2mAssertions:[0m [31m0 failed[0m, 0 total
