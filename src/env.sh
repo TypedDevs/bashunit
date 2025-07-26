@@ -4,7 +4,7 @@
 
 set -o allexport
 # shellcheck source=/dev/null
-[[ -f ".env" ]] && source .env set
+[[ -f ".env" ]] && source .env
 set +o allexport
 
 _DEFAULT_DEFAULT_PATH="tests"
