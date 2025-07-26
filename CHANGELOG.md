@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.22.2](https://github.com/TypedDevs/bashunit/compare/0.22.1...0.22.2) - 2025-07-26
 
 - Fix broken core snapshot tests
 - Improve NixOS support
