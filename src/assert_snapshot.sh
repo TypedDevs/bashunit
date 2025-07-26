@@ -41,7 +41,7 @@ function assert_match_snapshot() {
   local snapshot_file="${2-}"
 
   if [[ -z "$snapshot_file" ]]; then
-    local directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+    local directory="$(dirname "${BASH_SOURCE[1]}")/snapshots"
     local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
     local snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
     snapshot_file="${directory}/${test_file}.${snapshot_name}"
@@ -78,7 +78,7 @@ function assert_match_snapshot_ignore_colors() {
 
   local snapshot_file="${2-}"
   if [[ -z "$snapshot_file" ]]; then
-    local directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
+    local directory="$(dirname "${BASH_SOURCE[1]}")/snapshots"
     local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
     local snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
     snapshot_file="${directory}/${test_file}.${snapshot_name}"
