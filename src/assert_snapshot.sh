@@ -1,6 +1,30 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
+function assert_match_snapshot() {
+  local actual=$(echo -n "$1" | tr -d '\r')
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+
+  if [[ ! -f "$snapshot_file" ]]; then
+    snapshot::initialize "$snapshot_file" "$actual"
+    return
+  fi
+
+  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+}
+
+function assert_match_snapshot_ignore_colors() {
+  local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+
+  if [[ ! -f "$snapshot_file" ]]; then
+    snapshot::initialize "$snapshot_file" "$actual"
+    return
+  fi
+
+  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+}
+
 function snapshot::match_with_placeholder() {
   local actual="$1"
   local snapshot="$2"
@@ -24,31 +48,7 @@ function snapshot::match_with_placeholder() {
   fi
 }
 
-function assert_match_snapshot() {
-  local actual=$(echo -n "$1" | tr -d '\r')
-  local snapshot_file=$(_resolve_snapshot_file "${2:-}" "${FUNCNAME[1]}")
-
-  if [[ ! -f "$snapshot_file" ]]; then
-    _initialize_snapshot "$snapshot_file" "$actual"
-    return
-  fi
-
-  _compare_snapshot "$actual" "$snapshot_file" "${FUNCNAME[1]}"
-}
-
-function assert_match_snapshot_ignore_colors() {
-  local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
-  local snapshot_file=$(_resolve_snapshot_file "${2:-}" "${FUNCNAME[1]}")
-
-  if [[ ! -f "$snapshot_file" ]]; then
-    _initialize_snapshot "$snapshot_file" "$actual"
-    return
-  fi
-
-  _compare_snapshot "$actual" "$snapshot_file" "${FUNCNAME[1]}"
-}
-
-function _resolve_snapshot_file() {
+function snapshot::resolve_file() {
   local file_hint="$1"
   local func_name="$2"
 
@@ -62,7 +62,7 @@ function _resolve_snapshot_file() {
   fi
 }
 
-function _initialize_snapshot() {
+function snapshot::initialize() {
   local path="$1"
   local content="$2"
   mkdir -p "$(dirname "$path")"
@@ -70,7 +70,7 @@ function _initialize_snapshot() {
   state::add_assertions_snapshot
 }
 
-function _compare_snapshot() {
+function snapshot::compare() {
   local actual="$1"
   local snapshot_path="$2"
   local func_name="$3"
