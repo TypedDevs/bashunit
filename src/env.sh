@@ -143,7 +143,7 @@ function env::print_verbose() {
 EXIT_CODE_STOP_ON_FAILURE=4
 # Use a unique directory per run to avoid conflicts when bashunit is invoked
 # recursively or multiple instances are executed in parallel.
-TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel/${_OS:-Unknown}/$(random_str 8)"
+TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/$(random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)

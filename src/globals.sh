@@ -39,30 +39,32 @@ function random_str() {
 
 function temp_file() {
   local prefix=${1:-bashunit}
-  mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
+  local base_dir="${TMPDIR:-/tmp}/bashunit/tmp"
+  mkdir -p "$base_dir" && chmod -R 777 "$base_dir"
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
   fi
-  mktemp /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
+  mktemp "$base_dir/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function temp_dir() {
   local prefix=${1:-bashunit}
-  mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
+  local base_dir="${TMPDIR:-/tmp}/bashunit/tmp"
+  mkdir -p "$base_dir" && chmod -R 777 "$base_dir"
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
   fi
-  mktemp -d /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
+  mktemp -d "$base_dir/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function cleanup_temp_files() {
   internal_log "cleanup_temp_files"
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
-    rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
+    rm -rf "${TMPDIR:-/tmp}/bashunit/tmp/${BASHUNIT_CURRENT_TEST_ID}"_*
   else
-    rm -rf /tmp/bashunit/tmp/*
+    rm -rf "${TMPDIR:-/tmp}/bashunit/tmp"/*
   fi
 }
 
