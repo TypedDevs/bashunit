@@ -279,3 +279,18 @@ function helper::load_bench_files() {
 
   printf "%s\n" "${bench_files[@]}"
 }
+
+#
+# @param $1 string function name
+# @return number line number of the function in the source file
+#
+function helper::get_function_line_number() {
+  local fn_name=$1
+
+  shopt -s extdebug
+  local line_number
+  line_number=$(declare -F "$fn_name" | awk '{print $2}')
+  shopt -u extdebug
+
+  echo "$line_number"
+}

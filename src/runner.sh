@@ -295,7 +295,7 @@ function runner::run_test() {
     state::add_tests_failed
     console_results::print_error_test "$fn_name" "$runtime_error"
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$runtime_error"
+    runner::write_failure_result_output "$test_file" "$fn_name" "$runtime_error"
     internal_log "Test error" "$fn_name" "$runtime_error"
     return
   fi
@@ -303,7 +303,7 @@ function runner::run_test() {
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
     reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$subshell_output"
+    runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
     internal_log "Test failed" "$fn_name"
 
@@ -466,14 +466,18 @@ function runner::parse_result_sync() {
 
 function runner::write_failure_result_output() {
   local test_file=$1
-  local error_msg=$2
+  local fn_name=$2
+  local error_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
   if ! parallel::is_enabled; then
     test_nr=$(state::get_tests_failed)
   fi
 
-  echo -e "$test_nr) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
 function runner::run_set_up() {
