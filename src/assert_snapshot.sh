@@ -20,6 +20,11 @@ function snapshot::match_with_placeholder() {
     return
   fi
 
+  if grep -P '' </dev/null >/dev/null 2>&1; then
+    printf '%s\0' "$actual" | grep -Pzo "$regex" >/dev/null
+    return
+  fi
+
   # fallback: only supports single-line ignores
   local pattern="${snapshot//$placeholder/.+}"
   pattern=$(printf '%s' "$pattern" | sed -e 's/[][\.^$*+?{}|()]/\\&/g')
