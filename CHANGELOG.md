@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Fix build issue with bashunit on NixOS
+- Fix parallel and `compgen` issue on NixOS
 
 ## [0.22.2](https://github.com/TypedDevs/bashunit/compare/0.22.1...0.22.2) - 2025-07-26
 

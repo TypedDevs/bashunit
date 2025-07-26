@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-if dependencies::has_bc; then
-  # bc is better than awk because bc has no integer limits.
-  function math::calculate() {
+function math::calculate() {
+  if dependencies::has_bc; then
     echo "$*" | bc
-  }
-elif dependencies::has_awk; then
-  function math::calculate() {
-    awk "BEGIN { print ""$*"" }"
-  }
-fi
+  elif dependencies::has_awk; then
+    awk "BEGIN { print ($*) }"
+  else
+    local result=$(( $* ))
+    echo "$result"
+  fi
+}
