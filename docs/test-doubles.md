@@ -22,9 +22,24 @@ function test_example() {
 ```
 :::
 
-> `mock "function" "output"`
+> `mock "function" <<< "output"`
 
-Allows you to override the output of a callable.
+Allows you to override the output of a callable. When the mocked output fits on
+a single line you can use a here-string:
+
+```bash
+mock uname <<< "Linux"
+```
+
+For multi-line output rely on a here-document:
+
+```bash
+mock ps <<EOF
+PID TTY          TIME CMD
+13525 pts/7    00:00:01 bash
+24162 pts/7    00:00:00 ps
+EOF
+```
 
 ::: code-group
 ```bash [Example]
