@@ -9,8 +9,7 @@ HAS_DOWNLOADER=false
 HAS_GIT=false
 
 function set_up_before_script() {
-  env::active_internet_connection
-  if [[ $? -eq 0 ]]; then
+  if env::active_internet_connection; then
     ACTIVE_INTERNET=true
   fi
 
