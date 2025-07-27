@@ -5,7 +5,7 @@ declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
 
 function _check_bash_version() {
   local current_version
-  current_version="${BASH_VERSION}"
+  current_version="$(bash --version | head -n1 | cut -d' ' -f4 | cut -d. -f1,2)"
   if [[ -n ${BASHUNIT_TEST_BASH_VERSION:-} ]]; then
     current_version="${BASHUNIT_TEST_BASH_VERSION}"
   fi
