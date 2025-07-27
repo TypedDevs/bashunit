@@ -188,7 +188,8 @@ function test_find_files_recursive_given_dir() {
   result=$(helper::find_files_recursive "$path")
 
   assert_same "tests/unit/fixtures/tests/example1_test.sh
-tests/unit/fixtures/tests/example2_test.sh"\
+tests/unit/fixtures/tests/example2_test.sh
+tests/unit/fixtures/tests/example3_test.bash"\
   "$result"
 }
 
@@ -200,6 +201,16 @@ function test_find_files_recursive_given_wildcard() {
   result=$(helper::find_files_recursive "$path")
 
   assert_same "tests/unit/fixtures/tests/example2_test.sh" "$result"
+}
+
+function test_find_files_recursive_given_bash_extension() {
+  local path
+  path="$(current_dir)/fixtures/tests/*3_test.bash"
+
+  local result
+  result=$(helper::find_files_recursive "$path")
+
+  assert_same "tests/unit/fixtures/tests/example3_test.bash" "$result"
 }
 
 function test_get_latest_tag() {
@@ -251,6 +262,13 @@ function test_find_total_tests_no_files() {
 function test_find_total_tests_simple_file() {
   local file
   file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
+}
+
+function test_find_total_tests_simple_file_bash() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.bash"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
