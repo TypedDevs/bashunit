@@ -165,7 +165,7 @@ function runner::render_running_file_header() {
 
   internal_log "Running file" "$script"
 
-  if parallel::is_enabled; then
+  if parallel::is_enabled || env::is_failures_only_enabled; then
     return
   fi
 
