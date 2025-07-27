@@ -227,7 +227,10 @@ function runner::run_test() {
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
+    local failures_only_backup="$BASHUNIT_FAILURES_ONLY"
+    export BASHUNIT_FAILURES_ONLY=false
     "$fn_name" "$@" 2>&1
+    export BASHUNIT_FAILURES_ONLY="$failures_only_backup"
 
   )
 
