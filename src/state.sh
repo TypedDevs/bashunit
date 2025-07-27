@@ -193,6 +193,10 @@ function state::print_line() {
 
   state::add_test_output "[$type]$line"
 
+  if env::is_failures_only_enabled; then
+    return
+  fi
+
   if ! env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return
