@@ -6,16 +6,6 @@ function is_git_installed() {
   command -v git > /dev/null 2>&1
 }
 
-function get_latest_tag() {
-  local repository_url=$1
-
-  git ls-remote --tags "$repository_url" |
-    awk '{print $2}' |
-    sed 's|^refs/tags/||' |
-    sort -Vr |
-    head -n 1
-}
-
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
 
@@ -92,11 +82,7 @@ elif [[ $# -eq 2 ]]; then
 fi
 
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-if is_git_installed; then
-    LATEST_BASHUNIT_VERSION="$(get_latest_tag "$BASHUNIT_GIT_REPO")"
-else
-    LATEST_BASHUNIT_VERSION="0.22.2"
-fi
+LATEST_BASHUNIT_VERSION="0.22.2"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"

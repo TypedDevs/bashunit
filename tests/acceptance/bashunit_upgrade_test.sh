@@ -28,7 +28,11 @@ function tear_down_after_script() {
 
 function set_up() {
   ./build.sh "$TMP_DIR" >/dev/null
-  LATEST_VERSION="$(helpers::get_latest_tag)"
+  if [[ "$ACTIVE_INTERNET" == true ]] && [[ "$HAS_GIT" == true ]]; then
+    LATEST_VERSION="$(helpers::get_latest_tag)"
+  else
+    LATEST_VERSION="${BASHUNIT_VERSION}"
+  fi
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
