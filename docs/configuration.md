@@ -266,6 +266,20 @@ BASHUNIT_NO_OUTPUT=true
 ```
 :::
 
+## Failures only
+
+> `BASHUNIT_FAILURES_ONLY=true|false`
+
+Suppress all per-test output. Failures and summary are shown only after all tests finish. Defaults to `false`.
+
+Similar as using `--failures-only` option on the [command line](/command-line#failures-only).
+
+::: code-group
+```bash [Example]
+BASHUNIT_FAILURES_ONLY=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>

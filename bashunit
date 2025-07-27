@@ -94,6 +94,9 @@ while [[ $# -gt 0 ]]; do
     --no-output)
       export BASHUNIT_NO_OUTPUT=true
       ;;
+    -q|--quiet|--failures-only)
+      export BASHUNIT_FAILURES_ONLY=true
+      ;;
     -vvv|--verbose)
       export BASHUNIT_VERBOSE=true
       ;;

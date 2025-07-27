@@ -100,6 +100,9 @@ Options:
   -s, --simple | --detailed
                             Choose console output style (default: detailed).
 
+  -q, --quiet | --failures-only
+                            Suppress per-test output and show failures at the end.
+
   -S, --stop-on-failure
                             Stop execution immediately on the first failing test.
 

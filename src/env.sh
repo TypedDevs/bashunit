@@ -30,6 +30,7 @@ _DEFAULT_VERBOSE="false"
 _DEFAULT_BENCH_MODE="false"
 _DEFAULT_NO_OUTPUT="false"
 _DEFAULT_INTERNAL_LOG="false"
+_DEFAULT_FAILURES_ONLY="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_DEFAULT_SHOW_HEADER}}"
@@ -41,6 +42,7 @@ _DEFAULT_INTERNAL_LOG="false"
 : "${BASHUNIT_BENCH_MODE:=${BENCH_MODE:=$_DEFAULT_BENCH_MODE}}"
 : "${BASHUNIT_NO_OUTPUT:=${NO_OUTPUT:=$_DEFAULT_NO_OUTPUT}}"
 : "${BASHUNIT_INTERNAL_LOG:=${INTERNAL_LOG:=$_DEFAULT_INTERNAL_LOG}}"
+: "${BASHUNIT_FAILURES_ONLY:=${FAILURES_ONLY:=$_DEFAULT_FAILURES_ONLY}}"
 
 function env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -84,6 +86,10 @@ function env::is_bench_mode_enabled() {
 
 function env::is_no_output_enabled() {
   [[ "$BASHUNIT_NO_OUTPUT" == "true" ]]
+}
+
+function env::is_failures_only_enabled() {
+  [[ "$BASHUNIT_FAILURES_ONLY" == "true" ]]
 }
 
 function env::active_internet_connection() {
@@ -134,6 +140,7 @@ function env::print_verbose() {
     "BASHUNIT_STOP_ON_FAILURE"
     "BASHUNIT_SHOW_EXECUTION_TIME"
     "BASHUNIT_VERBOSE"
+    "BASHUNIT_FAILURES_ONLY"
   )
 
   local max_length=0
