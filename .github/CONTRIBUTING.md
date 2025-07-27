@@ -102,12 +102,6 @@ If you are using NixOS, you can enter a shell with all the required tools using 
 nix-shell --pure --run "./bashunit --simple"
 ```
 
-Alternatively, if you just need Bash for a one-time execution and don’t want to rely on the `shell.nix` file:
-
-```bash
-nix-shell -p bash --run "./bashunit --simple"
-```
-
 ## Coding Guidelines
 
 ### ShellCheck
