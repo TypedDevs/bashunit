@@ -230,8 +230,9 @@ function runner::run_test() {
     local failures_only_backup="$BASHUNIT_FAILURES_ONLY"
     export BASHUNIT_FAILURES_ONLY=false
     "$fn_name" "$@" 2>&1
+    local exit_code=$?
     export BASHUNIT_FAILURES_ONLY="$failures_only_backup"
-
+    exit "$exit_code"
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
