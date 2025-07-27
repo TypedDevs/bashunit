@@ -127,10 +127,23 @@ function helper::find_files_recursive() {
   local path="${1%%/}"
   local pattern="${2:-*[tT]est.sh}"
 
+  local alt_pattern=""
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+    alt_pattern="${pattern%.sh}.bash"
+  fi
+
   if [[ "$path" == *"*"* ]]; then
-    eval find "$path" -type f -name "$pattern" | sort -u
+    if [[ -n $alt_pattern ]]; then
+      eval "find $path -type f \( -name \"$pattern\" -o -name \"$alt_pattern\" \)" | sort -u
+    else
+      eval "find $path -type f -name \"$pattern\"" | sort -u
+    fi
   elif [[ -d "$path" ]]; then
-    find "$path" -type f -name "$pattern" | sort -u
+    if [[ -n $alt_pattern ]]; then
+      find "$path" -type f \( -name "$pattern" -o -name "$alt_pattern" \) | sort -u
+    else
+      find "$path" -type f -name "$pattern" | sort -u
+    fi
   else
     echo "$path"
   fi
