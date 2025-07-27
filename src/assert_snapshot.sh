@@ -35,7 +35,7 @@ function snapshot::match_with_placeholder() {
   local escaped=$(printf '%s' "$sanitized" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
   local regex="^${escaped//$token/(.|\\n)*}$"
 
-  if which perl >/dev/null 2>&1; then
+  if command -v perl >/dev/null 2>&1; then
     echo "$actual" | REGEX="$regex" perl -0 -e '
       my $r = $ENV{REGEX};
       my $input = join("", <STDIN>);
