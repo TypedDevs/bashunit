@@ -14,10 +14,6 @@ function tear_down() {
 }
 
 function test_bashunit_init_creates_structure() {
-  if check_os::is_nixos; then
-    skip && return
-  fi
-
   # switch into a clean temporary directory
   pushd "$TMP_DIR" >/dev/null
   # generate test scaffolding
@@ -30,10 +26,6 @@ function test_bashunit_init_creates_structure() {
 }
 
 function test_bashunit_init_custom_directory() {
-  if check_os::is_nixos; then
-    skip && return
-  fi
-
   pushd "$TMP_DIR" >/dev/null
   ../../bashunit --init custom > /tmp/init.log
   assert_file_exists "custom/example_test.sh"
