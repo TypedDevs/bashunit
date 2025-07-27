@@ -4,7 +4,7 @@ Usage:
 
 Arguments:
   PATH                      File or directory containing tests.
-                            - Directories: runs all '*test.sh' files.
+                            - Directories: runs all '*test.sh' or '*test.bash' files.
                             - Wildcards: supported to match multiple test files.
                             - Default search path is 'tests'
 

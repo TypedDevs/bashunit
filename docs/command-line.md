@@ -8,7 +8,7 @@
 
 Specifies the `directory` or `file` containing the tests to be run.
 
-If a directory is specified, it will execute tests within files ending in `test.sh`.
+If a directory is specified, it will execute tests within files ending in `test.sh` or `test.bash`.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
