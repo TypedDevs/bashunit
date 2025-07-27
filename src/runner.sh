@@ -126,7 +126,7 @@ function runner::call_test_functions() {
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! env::is_simple_output_enabled && ! env::is_failures_only_enabled; then
     echo ""
   fi
 }
@@ -155,7 +155,7 @@ function runner::call_bench_functions() {
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! env::is_simple_output_enabled && ! env::is_failures_only_enabled; then
     echo ""
   fi
 }
