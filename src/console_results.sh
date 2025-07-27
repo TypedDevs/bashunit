@@ -185,6 +185,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 function console_results::print_failed_snapshot_test() {
   local function_name=$1
   local snapshot_file=$2
+  local actual_content=${3-}
 
   local line
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
@@ -192,7 +193,7 @@ function console_results::print_failed_snapshot_test() {
 
   if dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
-    echo "$actual" > "$actual_file"
+    echo "$actual_content" > "$actual_file"
 
     local git_diff_output
     git_diff_output="$(git diff --no-index --word-diff --color=always \

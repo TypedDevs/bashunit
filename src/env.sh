@@ -87,6 +87,16 @@ function env::is_no_output_enabled() {
 }
 
 function env::active_internet_connection() {
+  if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
+    return 1
+  fi
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -sfI https://github.com >/dev/null 2>&1 && return 0
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q --spider https://github.com && return 0
+  fi
+
   if ping -c 1 -W 3 google.com &> /dev/null; then
     return 0
   fi
@@ -147,7 +157,7 @@ TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
-CAT="$(which cat)"
+CAT="$(command -v cat)"
 
 if env::is_dev_mode_enabled; then
   internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"

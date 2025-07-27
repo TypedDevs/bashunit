@@ -35,7 +35,7 @@ function snapshot::match_with_placeholder() {
   local escaped=$(printf '%s' "$sanitized" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
   local regex="^${escaped//$token/(.|\\n)*}$"
 
-  if which perl >/dev/null 2>&1; then
+  if command -v perl >/dev/null 2>&1; then
     echo "$actual" | REGEX="$regex" perl -0 -e '
       my $r = $ENV{REGEX};
       my $input = join("", <STDIN>);
@@ -81,7 +81,7 @@ function snapshot::compare() {
   if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label=$(helper::normalize_test_function_name "$func_name")
     state::add_assertions_failed
-    console_results::print_failed_snapshot_test "$label" "$snapshot_path"
+    console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
     return 1
   fi
 

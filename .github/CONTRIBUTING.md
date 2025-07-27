@@ -94,6 +94,14 @@ docker run --rm -it -v "$(pwd)":/project -w /project alpine:latest \
     sh -c  "apk add bash make shellcheck git && make test"
 ```
 
+##### NixOS
+
+If you are using NixOS, you can enter a shell with all the required tools using the provided `shell.nix`:
+
+```bash
+nix-shell --pure --run "./bashunit --simple"
+```
+
 ## Coding Guidelines
 
 ### ShellCheck

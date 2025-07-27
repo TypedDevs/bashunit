@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Fix parallel and `compgen` issue on NixOS
+- Fix NixOS support
+    - Fix parallel and `compgen`
+    - Use `command -v` instead of `which`
 
 ## [0.22.2](https://github.com/TypedDevs/bashunit/compare/0.22.1...0.22.2) - 2025-07-26
 

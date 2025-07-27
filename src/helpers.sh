@@ -181,6 +181,10 @@ function helper::trim() {
 }
 
 function helpers::get_latest_tag() {
+  if ! dependencies::has_git; then
+    return 1
+  fi
+
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
     sed 's|^refs/tags/||' |

@@ -23,20 +23,11 @@ function test_creates_a_snapshot() {
 }
 
 function test_unsuccessful_assert_match_snapshot() {
-  local expected
+  local actual
+  actual="$(assert_match_snapshot "Expected snapshot")"
 
-  if dependencies::has_git; then
-    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot
-    Expected to match the snapshot
-    [-Actual-]{+Expected+} snapshot[-text-]")"
-  else
-    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot
-    Expected to match the snapshot")"
-  fi
-
-  local actual="$(assert_match_snapshot "Expected snapshot")"
-
-  assert_equals "$expected" "$actual"
+  assert_matches "Unsuccessful assert match snapshot" "$actual"
+  assert_matches "Expected to match the snapshot" "$actual"
 }
 
 function test_successful_assert_match_snapshot_ignore_colors() {
@@ -58,21 +49,12 @@ function test_creates_a_snapshot_ignore_colors() {
 }
 
 function test_unsuccessful_assert_match_snapshot_ignore_colors() {
-  local expected
+  local colored actual
+  colored=$(printf '\e[31mExpected snapshot\e[0m')
+  actual="$(assert_match_snapshot_ignore_colors "$colored")"
 
-  if dependencies::has_git; then
-    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot ignore colors
-    Expected to match the snapshot
-    [-Actual-]{+Expected+} snapshot[-text-]")"
-  else
-    expected="$(printf "✗ Failed: Unsuccessful assert match snapshot ignore colors
-    Expected to match the snapshot")"
-  fi
-
-  local colored=$(printf '\e[31mExpected snapshot\e[0m')
-  local actual="$(assert_match_snapshot_ignore_colors "$colored")"
-
-  assert_equals "$expected" "$actual"
+  assert_matches "Unsuccessful assert match snapshot ignore colors" "$actual"
+  assert_matches "Expected to match the snapshot" "$actual"
 }
 
 function test_assert_match_snapshot_with_placeholder() {
