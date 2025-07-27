@@ -1,6 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+
+function _check_bash_version() {
+  local current_version
+  current_version="${BASH_VERSION}"
+  if [[ -n ${BASHUNIT_TEST_BASH_VERSION:-} ]]; then
+    current_version="${BASHUNIT_TEST_BASH_VERSION}"
+  fi
+
+  local major minor
+  IFS=. read -r major minor _ <<< "$current_version"
+
+  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+    printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
+    exit 1
+  fi
+}
+
+_check_bash_version
+
 # shellcheck disable=SC2034
 declare -r BASHUNIT_VERSION="0.22.3"
 

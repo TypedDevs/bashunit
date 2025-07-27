@@ -5,6 +5,10 @@ you can add **bashunit** as a dependency in your repository according to your pr
 
 Here, we provide different options that you can use to install **bashunit** in your application.
 
+## Requirements
+
+bashunit requires **Bash 3.2** or newer.
+
 ## install.sh
 
 There is a tool that will generate an executable with the whole library in a single file:

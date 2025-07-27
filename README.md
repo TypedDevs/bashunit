@@ -38,6 +38,10 @@ It boasts hundreds of assertions and functionalities like spies, mocks, provider
 
 You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.typeddevs.com).
 
+## Requirements
+
+bashunit requires **Bash 3.2** or newer.
+
 ## Contribute
 
 You are welcome to contribute reporting issues, sharing ideas,
