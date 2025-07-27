@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add support for `.bash` test files
+
 ## [0.22.3](https://github.com/TypedDevs/bashunit/compare/0.22.2...0.22.3) - 2025-07-27
 
 - Fix NixOS support

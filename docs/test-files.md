@@ -7,11 +7,11 @@ In this section, you'll find information about these features along with some he
 
 **bashunit** is flexible about how you name your test files.
 
-You can use a directory name, and bashunit will look for all files (ending with `test.sh`) recursively inside that directory, and execute them.
+You can use a directory name, and bashunit will look for all files (ending with `test.sh` or `test.bash`) recursively inside that directory, and execute them.
 
 If you're using wildcards for scanning your tests, keep in mind that the initial search can slow down if you don't filter the test files in the wildcard.
 
-To optimize this, we recommend adding a `test` prefix or suffix to your test file names, and include this identifier in your wildcard pattern too (e.g., `**/*test.sh`).
+To optimize this, we recommend adding a `test` prefix or suffix to your test file names, and include this identifier in your wildcard pattern too (e.g., `**/*test.sh` or `**/*test.bash`).
 This naming convention not only speeds up the scanning process but also helps you keep your test files organized.
 
 This is useful regardless of whether your test files are located near your production code or share directories with your mocks, stubs, or fixtures.
