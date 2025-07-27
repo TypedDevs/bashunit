@@ -1,14 +1,20 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 function math::calculate() {
   if dependencies::has_bc; then
     echo "$*" | bc
   elif [[ "$*" == *.* ]] && dependencies::has_awk; then
-    # Use awk for floating point calculations when bc is unavailable
     awk "BEGIN { print ($*) }"
+  elif [[ "$*" == *.* ]]; then
+    # Strip decimal parts and leading zeros
+    local expression=$(echo "$*" | sed -E 's/([0-9]+)\.[0-9]+/\1/g' | sed -E 's/\b0*([1-9][0-9]*)/\1/g')
+    local result=$(( expression ))
+    echo "$result"
   else
-    # Fallback to shell arithmetic which has good integer precision
-    local result=$(( $* ))
+    # Strip leading zeros even for purely integer math
+    local expression=$(echo "$*" | sed -E 's/\b0*([1-9][0-9]*)/\1/g')
+    local result=$(( expression ))
     echo "$result"
   fi
 }
