@@ -87,7 +87,13 @@ function env::is_no_output_enabled() {
 }
 
 function env::active_internet_connection() {
-  if ping -c 1 -W 3 google.com &> /dev/null; then
+  if command -v curl >/dev/null 2>&1; then
+    curl -sfI https://github.com >/dev/null 2>&1 && return 0
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q --spider https://github.com && return 0
+  fi
+
+  if ping -c 1 -W 3 github.com &> /dev/null; then
     return 0
   fi
 
