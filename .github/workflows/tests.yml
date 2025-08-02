@@ -80,9 +80,9 @@ jobs:
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
 
-  alpine-bash30:
-    name: "Alpine Bash 3.0"
-    runs-on: ubuntu-22.04
+  bash30:
+    name: "Bash 3.0"
+    runs-on: ubuntu-20.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,7 +90,7 @@ jobs:
           fetch-depth: 1
 
       - name: Build test image
-        run: docker build -t bashunit-bash3 -f .github/docker/alpine-bash3.Dockerfile .
+        run: docker build -t bashunit-bash3 -f .github/docker/bash3.Dockerfile .
 
       - name: Run Tests
         run: |
