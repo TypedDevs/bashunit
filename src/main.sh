@@ -6,7 +6,7 @@ function main::exec_tests() {
 
   local test_files=()
   while IFS= read -r line; do
-    test_files+=("$line")
+    test_files[${#test_files[@]}]="$line"
   done < <(helper::load_test_files "$filter" "${files[@]}")
 
   internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
@@ -81,7 +81,7 @@ function main::exec_benchmarks() {
 
   local bench_files=()
   while IFS= read -r line; do
-    bench_files+=("$line")
+    bench_files[${#bench_files[@]}]="$line"
   done < <(helper::load_bench_files "$filter" "${files[@]}")
 
   internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
@@ -147,7 +147,7 @@ function main::exec_assert() {
       inner_exit_code=$?
       # Remove the last argument and append the exit code
       args=("${args[@]:0:last_index}")
-      args+=("$inner_exit_code")
+      args[${#args[@]}]="$inner_exit_code"
       ;;
     *)
       # Add more cases here for other assert_* handlers if needed

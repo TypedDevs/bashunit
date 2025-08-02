@@ -99,7 +99,7 @@ function helper::get_functions_to_run() {
       if [[ $filtered_functions == *" $fn"* ]]; then
         return 1
       fi
-      filtered_functions+=" $fn"
+      filtered_functions="${filtered_functions} $fn"
     fi
   done
 
@@ -239,7 +239,7 @@ function helpers::find_total_tests() {
                 for fn_name in "${functions_to_run[@]}"; do
                     local provider_data=()
                     while IFS=" " read -r line; do
-                        provider_data+=("$line")
+                        provider_data[${#provider_data[@]}]="$line"
                     done <<< "$(helper::get_provider_data "$fn_name" "$file")"
 
                     if [[ "${#provider_data[@]}" -eq 0 ]]; then
@@ -268,7 +268,7 @@ function helper::load_test_files() {
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        test_files+=("$line")
+        test_files[${#test_files[@]}]="$line"
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
     fi
   else
@@ -287,7 +287,7 @@ function helper::load_bench_files() {
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        bench_files+=("$line")
+        bench_files[${#bench_files[@]}]="$line"
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
     fi
   else

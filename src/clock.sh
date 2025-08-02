@@ -7,34 +7,34 @@ function clock::_choose_impl() {
   local attempts=()
 
   # 1. Try Perl with Time::HiRes
-  attempts+=("Perl")
+  attempts[${#attempts[@]}]="Perl"
   if dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
     _CLOCK_NOW_IMPL="perl"
     return 0
   fi
 
   # 2. Try Python 3 with time module
-  attempts+=("Python")
+  attempts[${#attempts[@]}]="Python"
   if dependencies::has_python; then
     _CLOCK_NOW_IMPL="python"
     return 0
   fi
 
   # 3. Try Node.js
-  attempts+=("Node")
+  attempts[${#attempts[@]}]="Node"
   if dependencies::has_node; then
     _CLOCK_NOW_IMPL="node"
     return 0
   fi
   # 4. Windows fallback with PowerShell
-  attempts+=("PowerShell")
+  attempts[${#attempts[@]}]="PowerShell"
   if check_os::is_windows && dependencies::has_powershell; then
     _CLOCK_NOW_IMPL="powershell"
     return 0
   fi
 
   # 5. Unix fallback using `date +%s%N` (if not macOS or Alpine)
-  attempts+=("date")
+  attempts[${#attempts[@]}]="date"
   if ! check_os::is_macos && ! check_os::is_alpine; then
     local result
     result=$(date +%s%N 2>/dev/null)
@@ -45,7 +45,7 @@ function clock::_choose_impl() {
   fi
 
   # 6. Try using native shell EPOCHREALTIME (if available)
-  attempts+=("EPOCHREALTIME")
+  attempts[${#attempts[@]}]="EPOCHREALTIME"
   if shell_time="$(clock::shell_time)"; then
     _CLOCK_NOW_IMPL="shell"
     return 0

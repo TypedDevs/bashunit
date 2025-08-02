@@ -7,7 +7,7 @@ Here, we provide different options that you can use to install **bashunit** in y
 
 ## Requirements
 
-bashunit requires **Bash 3.2** or newer.
+bashunit requires **Bash 3.0** or newer.
 
 ## install.sh
 
