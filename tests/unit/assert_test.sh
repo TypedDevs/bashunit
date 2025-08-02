@@ -276,6 +276,33 @@ function test_unsuccessful_assert_command_not_found() {
     "$(assert_command_not_found "$(fake_function)")"
 }
 
+function test_successful_assert_exec() {
+  # shellcheck disable=SC2317
+  function fake_command() {
+    echo "Expected output"
+    echo "Expected error" >&2
+    return 1
+  }
+
+  assert_empty "$(assert_exec fake_command --exit 1 --stdout "Expected output" --stderr "Expected error")"
+}
+
+function test_unsuccessful_assert_exec() {
+  # shellcheck disable=SC2317
+  function fake_command() {
+    echo "out"
+    echo "err" >&2
+    return 0
+  }
+
+  local expected="exit: 1"$'\n'"stdout: Expected"$'\n'"stderr: Expected error"
+  local actual="exit: 0"$'\n'"stdout: out"$'\n'"stderr: err"
+
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert exec" "$expected" "but got " "$actual")"\
+    "$(assert_exec fake_command --exit 1 --stdout "Expected" --stderr "Expected error")"
+}
+
 function test_successful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
