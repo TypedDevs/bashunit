@@ -40,7 +40,7 @@ You can find the complete documentation for **bashunit** online, including insta
 
 ## Requirements
 
-bashunit requires **Bash 3.2** or newer.
+bashunit requires **Bash 3.0** or newer.
 
 ## Contribute
 

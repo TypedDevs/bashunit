@@ -42,11 +42,11 @@ function benchmark::parse_annotations() {
 }
 
 function benchmark::add_result() {
-  _BENCH_NAMES+=("$1")
-  _BENCH_REVS+=("$2")
-  _BENCH_ITS+=("$3")
-  _BENCH_AVERAGES+=("$4")
-  _BENCH_MAX_MILLIS+=("$5")
+  _BENCH_NAMES[${#_BENCH_NAMES[@]}]="$1"
+  _BENCH_REVS[${#_BENCH_REVS[@]}]="$2"
+  _BENCH_ITS[${#_BENCH_ITS[@]}]="$3"
+  _BENCH_AVERAGES[${#_BENCH_AVERAGES[@]}]="$4"
+  _BENCH_MAX_MILLIS[${#_BENCH_MAX_MILLIS[@]}]="$5"
 }
 
 # shellcheck disable=SC2155
@@ -67,7 +67,7 @@ function benchmark::run_function() {
     local end_time=$(clock::now)
     local dur_ns=$(math::calculate "($end_time - $start_time)")
     local dur_ms=$(math::calculate "$dur_ns / 1000000")
-    durations+=("$dur_ms")
+    durations[${#durations[@]}]="$dur_ms"
 
     if env::is_bench_mode_enabled; then
       local label="$(helper::normalize_test_function_name "$fn_name")"

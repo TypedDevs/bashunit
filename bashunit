@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+declare -r BASHUNIT_MIN_BASH_VERSION="3.0"
 
 function _check_bash_version() {
   local current_version
@@ -19,7 +19,10 @@ function _check_bash_version() {
   local major minor
   IFS=. read -r major minor _ <<< "$current_version"
 
-  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+  local min_major min_minor
+  IFS=. read -r min_major min_minor _ <<< "$BASHUNIT_MIN_BASH_VERSION"
+
+  if (( major < min_major )) || { (( major == min_major )) && (( minor < min_minor )); }; then
     printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
     exit 1
   fi
@@ -145,7 +148,7 @@ while [[ $# -gt 0 ]]; do
       trap '' EXIT && exit 0
       ;;
     *)
-      _RAW_ARGS+=("$1")
+      _RAW_ARGS[${#_RAW_ARGS[@]}]="$1"
       ;;
   esac
   shift
@@ -157,7 +160,7 @@ if [[ ${#_RAW_ARGS[@]} -gt 0 ]]; then
   [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
   for arg in "${_RAW_ARGS[@]}"; do
     while IFS= read -r file; do
-      _ARGS+=("$file")
+      _ARGS[${#_ARGS[@]}]="$file"
     done < <(helper::find_files_recursive "$arg" "$pattern")
   done
 fi

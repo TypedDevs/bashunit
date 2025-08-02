@@ -121,7 +121,7 @@ function state::set_file_with_duplicated_function_names() {
 }
 
 function state::add_test_output() {
-  _TEST_OUTPUT+="$1"
+  _TEST_OUTPUT="${_TEST_OUTPUT}$1"
 }
 
 function state::get_test_exit_code() {

@@ -4,7 +4,7 @@
 
 - Update docs mocks usage
 - Add support for `.bash` test files
-- Add runtime check for Bash >= 3.2
+- Lower minimum supported Bash version to 3.0
 
 ## [0.22.3](https://github.com/TypedDevs/bashunit/compare/0.22.2...0.22.3) - 2025-07-27
 

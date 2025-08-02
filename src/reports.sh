@@ -34,11 +34,11 @@ function reports::add_test() {
   local assertions="$4"
   local status="$5"
 
-  _REPORTS_TEST_FILES+=("$file")
-  _REPORTS_TEST_NAMES+=("$test_name")
-  _REPORTS_TEST_STATUSES+=("$status")
-  _REPORTS_TEST_ASSERTIONS+=("$assertions")
-  _REPORTS_TEST_DURATIONS+=("$duration")
+  _REPORTS_TEST_FILES[${#_REPORTS_TEST_FILES[@]}]="$file"
+  _REPORTS_TEST_NAMES[${#_REPORTS_TEST_NAMES[@]}]="$test_name"
+  _REPORTS_TEST_STATUSES[${#_REPORTS_TEST_STATUSES[@]}]="$status"
+  _REPORTS_TEST_ASSERTIONS[${#_REPORTS_TEST_ASSERTIONS[@]}]="$assertions"
+  _REPORTS_TEST_DURATIONS[${#_REPORTS_TEST_DURATIONS[@]}]="$duration"
 }
 
 function reports::generate_junit_xml() {

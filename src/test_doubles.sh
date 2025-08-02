@@ -34,7 +34,7 @@ function mock() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[${#MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function spy() {
@@ -60,7 +60,7 @@ function spy() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[${#MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function assert_have_been_called() {

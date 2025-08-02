@@ -172,10 +172,11 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
     "${function_name}" "${expected}" "${failure_condition_message}" "${actual}")"
 
   if [ -n "$extra_key" ]; then
-    line+="$(printf "\
-
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
-    "${extra_key}" "${extra_value}")"
+    line="${line}$(
+      printf "%s%s %s'%s'%s\n" \
+        "${_COLOR_FAINT}" "${extra_key}" \
+        "${_COLOR_BOLD}" "${extra_value}" "${_COLOR_DEFAULT}"
+    )"
   fi
 
   state::print_line "failed" "$line"
@@ -200,7 +201,7 @@ function console_results::print_failed_snapshot_test() {
       "$snapshot_file" "$actual_file" 2>/dev/null \
         | tail -n +6 | sed "s/^/    /")"
 
-    line+="$git_diff_output"
+    line="${line}$git_diff_output"
     rm "$actual_file"
   fi
 
@@ -215,7 +216,7 @@ function console_results::print_skipped_test() {
   line="$(printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$reason" ]]; then
-    line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}")"
+    line="${line}$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
   state::print_line "skipped" "$line"
@@ -229,7 +230,7 @@ function console_results::print_incomplete_test() {
   line="$(printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$pending" ]]; then
-    line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}")"
+    line="${line}$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
   state::print_line "incomplete" "$line"
