@@ -267,6 +267,87 @@ function assert_not_matches() {
   state::add_assertions_passed
 }
 
+function assert_exec() {
+  local cmd="$1"
+  shift
+
+  local expected_exit=0
+  local expected_stdout=""
+  local expected_stderr=""
+  local check_stdout=false
+  local check_stderr=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --exit)
+        expected_exit="$2"
+        shift 2
+        ;;
+      --stdout)
+        expected_stdout="$2"
+        check_stdout=true
+        shift 2
+        ;;
+      --stderr)
+        expected_stderr="$2"
+        check_stderr=true
+        shift 2
+        ;;
+      *)
+        shift
+        ;;
+    esac
+  done
+
+  local stdout_file stderr_file
+  stdout_file=$(mktemp)
+  stderr_file=$(mktemp)
+
+  eval "$cmd" >"$stdout_file" 2>"$stderr_file"
+  local exit_code=$?
+
+  local stdout
+  stdout=$(cat "$stdout_file")
+  local stderr
+  stderr=$(cat "$stderr_file")
+
+  rm -f "$stdout_file" "$stderr_file"
+
+  local expected_desc="exit: $expected_exit"
+  local actual_desc="exit: $exit_code"
+  local failed=0
+
+  if [[ "$exit_code" -ne "$expected_exit" ]]; then
+    failed=1
+  fi
+
+  if $check_stdout; then
+    expected_desc+=$'\n'"stdout: $expected_stdout"
+    actual_desc+=$'\n'"stdout: $stdout"
+    if [[ "$stdout" != "$expected_stdout" ]]; then
+      failed=1
+    fi
+  fi
+
+  if $check_stderr; then
+    expected_desc+=$'\n'"stderr: $expected_stderr"
+    actual_desc+=$'\n'"stderr: $stderr"
+    if [[ "$stderr" != "$expected_stderr" ]]; then
+      failed=1
+    fi
+  fi
+
+  if [[ $failed -eq 1 ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+    console_results::print_failed_test "$label" "$expected_desc" "but got " "$actual_desc"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code="$1"
