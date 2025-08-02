@@ -14,6 +14,14 @@ function mock_non_existing_fn() {
   return 127;
 }
 
+function mock_date_seconds() {
+  if [[ "$1" == "+%s%N" ]]; then
+    echo "unsupportedN"
+  else
+    echo "1727768951"
+  fi
+}
+
 function test_now_with_perl() {
   mock clock::shell_time mock_non_existing_fn
   mock perl echo "1720705883457"
@@ -68,6 +76,17 @@ function test_now_on_windows_without_without_powershell() {
   assert_same "1727768951" "$(clock::now)"
 }
 
+function test_now_with_date_seconds_fallback() {
+  mock_unknown_linux_os
+  mock perl mock_non_existing_fn
+  mock dependencies::has_python mock_false
+  mock dependencies::has_node mock_false
+  mock clock::shell_time mock_non_existing_fn
+  mock date 'mock_date_seconds "$@"'
+
+  assert_same "1727768951000000000" "$(clock::now)"
+}
+
 function test_now_on_osx_without_perl() {
   if check_os::is_windows; then
     skip && return
@@ -115,6 +134,7 @@ function test_runtime_in_milliseconds_when_empty_time() {
   mock clock::shell_time mock_non_existing_fn
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
+  mock date mock_non_existing_fn
 
   assert_empty "$(clock::total_runtime_in_milliseconds)"
 }
