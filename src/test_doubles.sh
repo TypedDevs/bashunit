@@ -151,7 +151,7 @@ function assert_have_been_called_with() {
 }
 
 function assert_have_been_called_times() {
-  local expected=$1
+  local expected_count=$1
   local command=$2
   local variable
   variable="$(helper::normalize_variable_name "$command")"
@@ -161,10 +161,10 @@ function assert_have_been_called_times() {
     times=$(cat "${!file_var}")
   fi
   local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-  if [[ $times -ne $expected ]]; then
+  if [[ $times -ne $expected_count ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" \
-      "to have been called" "${expected} times" \
+      "to have been called" "${expected_count} times" \
       "actual" "${times} times"
     return
   fi
