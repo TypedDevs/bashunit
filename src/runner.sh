@@ -297,13 +297,7 @@ function runner::run_test() {
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
   encoded_test_title="${encoded_test_title%%##*}"
   local test_title=""
-  if [[ -n "$encoded_test_title" ]]; then
-    if command -v base64 >/dev/null; then
-      test_title="$(echo "$encoded_test_title" | base64 -d)"
-    else
-      test_title="$(echo "$encoded_test_title" | openssl enc -d -base64)"
-    fi
-  fi
+  [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
 
   state::set_test_title "$test_title"
   local label
@@ -373,13 +367,7 @@ function runner::decode_subshell_output() {
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-
-  local subshell_output
-  if command -v base64 >/dev/null; then
-    echo "$test_output_base64" | base64 -d
-  else
-    echo "$test_output_base64" | openssl enc -d -base64
-  fi
+  helper::decode_base64 "$test_output_base64"
 }
 
 function runner::parse_result() {
