@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Update docs mocks usage
+- Skip report tracking unless a report output is requested
 - Add support for `.bash` test files
 - Add runtime check for Bash >= 3.2
 - Add fallback for clock with seconds resolution only
