@@ -11,6 +11,13 @@ function helper::normalize_test_function_name() {
   local original_fn_name="${1-}"
   local interpolated_fn_name="${2-}"
 
+  local custom_title
+  custom_title="$(state::get_test_title)"
+  if [[ -n "$custom_title" ]]; then
+    echo "$custom_title"
+    return
+  fi
+
   if [[ -n "${interpolated_fn_name-}" ]]; then
     original_fn_name="$interpolated_fn_name"
   fi
@@ -52,6 +59,16 @@ function helper::interpolate_function_name() {
   done
 
   echo "$result"
+}
+
+function helper::decode_base64() {
+  local value="$1"
+
+  if command -v base64 >/dev/null; then
+    echo "$value" | base64 -d
+  else
+    echo "$value" | openssl enc -d -base64
+  fi
 }
 
 function helper::check_duplicate_functions() {

@@ -6,7 +6,8 @@
 - Skip report tracking unless a report output is requested
 - Add support for `.bash` test files
 - Add runtime check for Bash >= 3.2
-- Add fallback for clock with seconds resolution only
+- Add fallback for `clock::now` with seconds resolution only
+- Add `set_test_title` to allow custom test titles
 
 ## [0.22.3](https://github.com/TypedDevs/bashunit/compare/0.22.2...0.22.3) - 2025-07-27
 

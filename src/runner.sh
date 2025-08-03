@@ -201,6 +201,8 @@ function runner::run_test() {
     export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
   fi
 
+  state::reset_test_title
+
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
@@ -291,21 +293,32 @@ function runner::run_test() {
   local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
   local test_exit_code="$(state::get_test_exit_code)"
 
+  local encoded_test_title
+  encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
+  encoded_test_title="${encoded_test_title%%##*}"
+  local test_title=""
+  [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
+
+  state::set_test_title "$test_title"
+  local label
+  label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  state::reset_test_title
+
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$fn_name" "$runtime_error"
-    reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
+    console_results::print_error_test "$label" "$runtime_error"
+    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$fn_name" "$runtime_error"
-    internal_log "Test error" "$fn_name" "$runtime_error"
+    internal_log "Test error" "$label" "$runtime_error"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
-    reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
+    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
-    internal_log "Test failed" "$fn_name"
+    internal_log "Test failed" "$label"
 
     if env::is_stop_on_failure_enabled; then
       if parallel::is_enabled; then
@@ -319,27 +332,25 @@ function runner::run_test() {
 
   if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
     state::add_tests_snapshot
-    console_results::print_snapshot_test "$fn_name"
-    reports::add_test_snapshot "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "Test snapshot" "$fn_name"
+    console_results::print_snapshot_test "$label"
+    reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test snapshot" "$label"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
-    reports::add_test_incomplete "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "Test incomplete" "$fn_name"
+    reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test incomplete" "$label"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
-    reports::add_test_skipped "$test_file" "$fn_name" "$duration" "$total_assertions"
-    internal_log "Test skipped" "$fn_name"
+    reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test skipped" "$label"
     return
   fi
-
-  local label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
 
   if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
     console_results::print_successful_test "${label}" "$duration" "$@"
@@ -347,8 +358,8 @@ function runner::run_test() {
     console_results::print_successful_test "${label}" "$duration"
   fi
   state::add_tests_passed
-  reports::add_test_passed "$test_file" "$fn_name" "$duration" "$total_assertions"
-  internal_log "Test passed" "$fn_name"
+  reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
+  internal_log "Test passed" "$label"
 }
 
 function runner::decode_subshell_output() {
@@ -356,13 +367,7 @@ function runner::decode_subshell_output() {
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-
-  local subshell_output
-  if command -v base64 >/dev/null; then
-    echo "$test_output_base64" | base64 -d
-  else
-    echo "$test_output_base64" | openssl enc -d -base64
-  fi
+  helper::decode_base64 "$test_output_base64"
 }
 
 function runner::parse_result() {

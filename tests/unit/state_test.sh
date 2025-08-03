@@ -255,6 +255,7 @@ function test_initialize_assertions_count() {
 ##ASSERTIONS_INCOMPLETE=0\
 ##ASSERTIONS_SNAPSHOT=0\
 ##TEST_EXIT_CODE=0\
+##TEST_TITLE=\
 ##TEST_OUTPUT=\
 ##"\
     "$export_assertions_count"
@@ -284,6 +285,7 @@ function test_export_assertions_count() {
 ##ASSERTIONS_INCOMPLETE=12\
 ##ASSERTIONS_SNAPSHOT=33\
 ##TEST_EXIT_CODE=1\
+##TEST_TITLE=\
 ##TEST_OUTPUT=$(echo -n "something" | base64)##"\
     "$export_assertions_count"
 }

@@ -32,6 +32,11 @@ function test_normalize_test_function_name_camel_case() {
   assert_same "SomeLogic" "$(helper::normalize_test_function_name "testSomeLogic")"
 }
 
+function test_normalize_test_function_name_custom_title() {
+  set_test_title "🔥 handles invalid input with 💣"
+  assert_same "🔥 handles invalid input with 💣" "$(helper::normalize_test_function_name "test_handles_invalid_input")"
+}
+
 function test_get_functions_to_run_no_filter_should_return_all_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
