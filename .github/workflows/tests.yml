@@ -90,11 +90,11 @@ jobs:
           fetch-depth: 1
 
       - name: Build test image
-        run: docker build -t bashunit-bash3 -f .github/docker/bash3.Dockerfile .
+        run: docker build -t bash3 -f .github/docker/Dockerfile .
 
       - name: Run Tests
         run: |
-          docker run --rm -v "$(pwd)":/project -w /project bashunit-bash3 make test
+          docker run --rm -v "$(pwd)":/project -w /project bash3 make test
 
   simple-output:
     name: "Simple output"
