@@ -87,7 +87,7 @@ function test_example() {
 
   ps foo bar
 
-  assert_have_been_called_with "foo bar" ps
+  assert_have_been_called_with ps "foo bar"
   assert_have_been_called ps
 }
 ```
@@ -117,11 +117,9 @@ function test_failure() {
 :::
 
 ## assert_have_been_called_with
-> `assert_have_been_called_with "expected" "spy" [call_index]`
+> `assert_have_been_called_with spy expected [call_index]`
 
-Reports an error if `spy` is not called with `expected`. When `call_index` is
-provided, the assertion checks the arguments of that specific call (starting at
-1). Without `call_index` it checks the last invocation.
+Reports an error if `spy` is not called with `expected`. When `call_index` is provided, the assertion checks the arguments of that specific call (starting at 1). Without `call_index` it checks the last invocation. Arguments are joined with spaces before comparison.
 
 ::: code-group
 ```bash [Example]
@@ -131,8 +129,8 @@ function test_success() {
   ps foo
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
-  assert_have_been_called_with "bar" ps 2
+  assert_have_been_called_with ps "foo" 1
+  assert_have_been_called_with ps "bar" 2
 }
 
 function test_failure() {
@@ -140,10 +138,11 @@ function test_failure() {
 
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
+  assert_have_been_called_with ps "foo" 1
 }
 ```
 :::
+
 
 ## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"
