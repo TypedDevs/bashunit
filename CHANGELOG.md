@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Improve `assert_have_been_called_with` with strict argument matching
+
 ## [0.23.0](https://github.com/TypedDevs/bashunit/compare/0.22.3...0.23.0) - 2025-08-03
 
 - Update docs mocks usage

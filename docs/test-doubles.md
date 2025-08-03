@@ -87,7 +87,7 @@ function test_example() {
 
   ps foo bar
 
-  assert_have_been_called_with "foo bar" ps
+  assert_have_been_called_with ps "foo bar"
   assert_have_been_called ps
 }
 ```
@@ -117,11 +117,12 @@ function test_failure() {
 :::
 
 ## assert_have_been_called_with
-> `assert_have_been_called_with "expected" "spy" [call_index]`
+> `assert_have_been_called_with spy expected [call_index] [--strict]`
 
 Reports an error if `spy` is not called with `expected`. When `call_index` is
 provided, the assertion checks the arguments of that specific call (starting at
-1). Without `call_index` it checks the last invocation.
+1). Without `call_index` it checks the last invocation. The optional `--strict`
+flag forces an exact match on argument boundaries.
 
 ::: code-group
 ```bash [Example]
@@ -131,8 +132,8 @@ function test_success() {
   ps foo
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
-  assert_have_been_called_with "bar" ps 2
+  assert_have_been_called_with ps "foo" 1
+  assert_have_been_called_with ps "bar" 2
 }
 
 function test_failure() {
@@ -140,10 +141,21 @@ function test_failure() {
 
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
+  assert_have_been_called_with ps "foo" 1
 }
 ```
 :::
+
+### Argument boundaries
+
+By default, `assert_have_been_called_with` joins arguments with spaces before comparison. This means a call like `ps "foo bar"` is indistinguishable from `ps foo bar`. Use the `--strict` flag to force an exact match on argument boundaries:
+
+```bash
+spy ps
+ps "foo bar"
+assert_have_been_called_with ps "foo bar" --strict # succeeds
+assert_have_been_called_with ps foo bar --strict   # fails
+```
 
 ## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"

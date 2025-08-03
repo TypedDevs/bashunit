@@ -52,7 +52,14 @@ function spy() {
   export "${variable}_params_file"="$params_file"
 
   eval "function $command() {
-    echo \"\$*\" >> '$params_file'
+    local raw=\"\$*\"
+    local serialized=\"\"
+    local arg
+    for arg in \"\$@\"; do
+      serialized+=\"\$(printf '%q' \"\$arg\")$'\\x1f'\"
+    done
+    serialized=\${serialized%$'\\x1f'}
+    printf '%s|%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
     local _c=\$(cat '$times_file')
     _c=\$((_c+1))
     echo \"\$_c\" > '$times_file'
@@ -84,37 +91,60 @@ function assert_have_been_called() {
 }
 
 function assert_have_been_called_with() {
-  local expected=$1
-  local command=$2
-  local third_arg="${3:-}"
-  local fourth_arg="${4:-}"
+  local command=$1
+  shift
+
+  local strict=false
+  if [[ ${!#} == "--strict" ]]; then
+    strict=true
+    set -- "${@:1:$#-1}"
+  fi
 
   local index=""
-  local label=""
-  if [[ -n $third_arg && $third_arg =~ ^[0-9]+$ ]]; then
-    index=$third_arg
-    label="${fourth_arg:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-  else
-    label="${third_arg:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-    index="$fourth_arg"
+  if [[ ${!#} =~ ^[0-9]+$ ]]; then
+    index=${!#}
+    set -- "${@:1:$#-1}"
   fi
+
+  local expected=("$@")
 
   local variable
   variable="$(helper::normalize_variable_name "$command")"
   local file_var="${variable}_params_file"
-  local params=""
+  local line=""
   if [[ -f "${!file_var-}" ]]; then
     if [[ -n $index ]]; then
-      params=$(sed -n "${index}p" "${!file_var}")
+      line=$(sed -n "${index}p" "${!file_var}")
     else
-      params=$(tail -n 1 "${!file_var}")
+      line=$(tail -n 1 "${!file_var}")
     fi
   fi
 
-  if [[ "$expected" != "$params" ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got " "$params"
-    return
+  local raw recorded
+  IFS='|' read -r raw recorded <<<"$line"
+
+  if [[ $strict == true ]]; then
+    local serialized=""
+    local arg
+    for arg in "${expected[@]}"; do
+      serialized+="$(printf '%q' "$arg")$'\x1f'"
+    done
+    serialized=${serialized%$'\x1f'}
+    if [[ "$serialized" != "$recorded" ]]; then
+      state::add_assertions_failed
+      local expected_joined="${expected[*]}"
+      console_results::print_failed_test "$(helper::normalize_test_function_name \
+        "${FUNCNAME[1]}")" "${expected_joined}" "but got " "$raw"
+      return
+    fi
+  else
+    local expected_raw="${expected[*]}"
+    if [[ "$expected_raw" != "$raw" ]]; then
+      state::add_assertions_failed
+      console_results::print_failed_test "$(helper::normalize_test_function_name \
+        "${FUNCNAME[1]}")" "${expected_raw}" "but got " "$raw"
+      return
+    fi
   fi
 
   state::add_assertions_passed
