@@ -148,16 +148,6 @@ function test_spy_called_with_different_arguments() {
   assert_have_been_called_with ps "second" 2
 }
 
-function test_strict_argument_matching() {
-  spy ps
-
-  ps "arg1 arg2"
-  ps arg1 arg2
-
-  assert_have_been_called_with ps "arg1 arg2" 1 --strict
-  assert_have_been_called_with ps arg1 arg2 2 --strict
-}
-
 function test_spy_successful_not_called() {
   spy ps
 

@@ -94,19 +94,13 @@ function assert_have_been_called_with() {
   local command=$1
   shift
 
-  local strict=false
-  if [[ ${!#} == "--strict" ]]; then
-    strict=true
-    set -- "${@:1:$#-1}"
-  fi
-
   local index=""
   if [[ ${!#} =~ ^[0-9]+$ ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi
 
-  local expected=("$@")
+  local expected="$*"
 
   local variable
   variable="$(helper::normalize_variable_name "$command")"
@@ -120,31 +114,14 @@ function assert_have_been_called_with() {
     fi
   fi
 
-  local raw recorded
-  IFS='|' read -r raw recorded <<<"$line"
+  local raw
+  IFS='|' read -r raw _ <<<"$line"
 
-  if [[ $strict == true ]]; then
-    local serialized=""
-    local arg
-    for arg in "${expected[@]}"; do
-      serialized+="$(printf '%q' "$arg")$'\x1f'"
-    done
-    serialized=${serialized%$'\x1f'}
-    if [[ "$serialized" != "$recorded" ]]; then
-      state::add_assertions_failed
-      local expected_joined="${expected[*]}"
-      console_results::print_failed_test "$(helper::normalize_test_function_name \
-        "${FUNCNAME[1]}")" "${expected_joined}" "but got " "$raw"
-      return
-    fi
-  else
-    local expected_raw="${expected[*]}"
-    if [[ "$expected_raw" != "$raw" ]]; then
-      state::add_assertions_failed
-      console_results::print_failed_test "$(helper::normalize_test_function_name \
-        "${FUNCNAME[1]}")" "${expected_raw}" "but got " "$raw"
-      return
-    fi
+  if [[ "$expected" != "$raw" ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "$(helper::normalize_test_function_name \
+      "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
+    return
   fi
 
   state::add_assertions_passed
