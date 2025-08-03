@@ -80,6 +80,22 @@ jobs:
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
 
+  bash30:
+    name: "Bash 3.0"
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build test image
+        run: docker build -t bash3 -f .github/docker/Dockerfile .
+
+      - name: Run Tests
+        run: |
+          docker run --rm -v "$(pwd)":/project -w /project bash3 make test
+
   simple-output:
     name: "Simple output"
     runs-on: ubuntu-latest

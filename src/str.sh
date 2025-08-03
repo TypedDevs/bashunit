@@ -33,14 +33,14 @@ function str::rpad() {
     # If the current character is part of an ANSI sequence, skip it and copy it
     if [[ "$original_char" == $'\x1b' ]]; then
       while [[ "${left_text:$j:1}" != "m" && $j -lt ${#left_text} ]]; do
-        result_left_text+="${left_text:$j:1}"
+        result_left_text="${result_left_text}${left_text:$j:1}"
         ((j++))
       done
-      result_left_text+="${left_text:$j:1}"  # Append the final 'm'
+      result_left_text="${result_left_text}${left_text:$j:1}"  # Append the final 'm'
       ((j++))
     elif [[ "$char" == "$original_char" ]]; then
       # Match the actual character
-      result_left_text+="$char"
+      result_left_text="${result_left_text}$char"
       ((i++))
       ((j++))
     else
@@ -50,13 +50,13 @@ function str::rpad() {
 
   local remaining_space
   if $is_truncated ; then
-    result_left_text+="..."
+    result_left_text="${result_left_text}..."
     # 1: due to a blank space
     # 3: due to the appended ...
     remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1 - 3))
   else
     # Copy any remaining characters after the truncation point
-    result_left_text+="${left_text:$j}"
+    result_left_text="${result_left_text}${left_text:$j}"
     remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1))
   fi
 

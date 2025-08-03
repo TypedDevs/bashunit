@@ -104,7 +104,7 @@ function runner::call_test_functions() {
 
     local provider_data=()
     while IFS=" " read -r line; do
-      provider_data+=("$line")
+      provider_data[${#provider_data[@]}]="$line"
     done <<< "$(helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
@@ -431,11 +431,11 @@ function runner::parse_result_sync() {
 
   local regex
   regex='ASSERTIONS_FAILED=([0-9]*)##'
-  regex+='ASSERTIONS_PASSED=([0-9]*)##'
-  regex+='ASSERTIONS_SKIPPED=([0-9]*)##'
-  regex+='ASSERTIONS_INCOMPLETE=([0-9]*)##'
-  regex+='ASSERTIONS_SNAPSHOT=([0-9]*)##'
-  regex+='TEST_EXIT_CODE=([0-9]*)'
+  regex="${regex}ASSERTIONS_PASSED=([0-9]*)##"
+  regex="${regex}ASSERTIONS_SKIPPED=([0-9]*)##"
+  regex="${regex}ASSERTIONS_INCOMPLETE=([0-9]*)##"
+  regex="${regex}ASSERTIONS_SNAPSHOT=([0-9]*)##"
+  regex="${regex}TEST_EXIT_CODE=([0-9]*)"
 
   if [[ $result_line =~ $regex ]]; then
     assertions_failed="${BASH_REMATCH[1]}"

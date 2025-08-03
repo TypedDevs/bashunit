@@ -14,7 +14,7 @@ labels: bug
 | Q                | A                        |
 |------------------|--------------------------|
 | OS               | macOS / Linux / Windows  |
-| Shell & version  | sh 2.0  / bash 3.2 / ... |
+| Shell & version  | sh 2.0  / bash 3.0 / ... |
 | bashunit version | x.y.z                    |
 
 #### Summary
