@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.23.0](https://github.com/TypedDevs/bashunit/compare/0.22.3...0.23.0) - 2025-08-03
 
 - Update docs mocks usage
 - Skip report tracking unless a report output is requested
