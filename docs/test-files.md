@@ -43,15 +43,14 @@ If you need a more descriptive title, you can override it inside the test using 
 ::: code-group
 ```bash [Example]
 function test_handles_invalid_input() {
-  set_test_title "🔥 handles invalid input with 💣"
+  set_test_title "🔥 handles custom test names 🚀"
   # test logic...
 }
 ```
 :::
 
 The provided title is used only for display purposes. The original function name is still
-used internally, and custom titles are reset automatically after each test, so there's
-no need for manual cleanup. Setting a new title again will replace the previous one for the same test.
+used internally, and custom titles are reset automatically after each test.
 
 ## `set_up` function
 
