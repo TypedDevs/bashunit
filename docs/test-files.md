@@ -35,6 +35,24 @@ test_getFunctionsToRun_with_filter_should_return_matching_functions() { ... }
 You're free to use any of Bash's syntax options to define these functions.
 :::
 
+## Custom test titles
+
+By default, **bashunit** derives the name shown in reports from the test function name.
+If you need a more descriptive title, you can override it inside the test using `set_test_title`:
+
+::: code-group
+```bash [Example]
+function test_handles_invalid_input() {
+  set_test_title "🔥 handles invalid input with 💣"
+  # test logic...
+}
+```
+:::
+
+The provided title is used only for display purposes. The original function name is still
+used internally, and custom titles are reset automatically after each test, so there's
+no need for manual cleanup. Setting a new title again will replace the previous one for the same test.
+
 ## `set_up` function
 
 The `set_up` auxiliary function is called, if it is present in the test file, before each test function in the test file is executed.

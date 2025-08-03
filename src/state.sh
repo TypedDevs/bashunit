@@ -14,6 +14,7 @@ _DUPLICATED_FUNCTION_NAMES=""
 _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 _TEST_OUTPUT=""
+_TEST_TITLE=""
 _TEST_EXIT_CODE=0
 
 function state::get_tests_passed() {
@@ -132,6 +133,18 @@ function state::set_test_exit_code() {
   _TEST_EXIT_CODE="$1"
 }
 
+function state::get_test_title() {
+  echo "$_TEST_TITLE"
+}
+
+function state::set_test_title() {
+  _TEST_TITLE="$1"
+}
+
+function state::reset_test_title() {
+  _TEST_TITLE=""
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
@@ -145,17 +158,21 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_INCOMPLETE=0
     _ASSERTIONS_SNAPSHOT=0
     _TEST_OUTPUT=""
+    _TEST_TITLE=""
 }
 
 function state::export_subshell_context() {
   local encoded_test_output
+  local encoded_test_title
 
   if base64 --help 2>&1 | grep -q -- "-w"; then
     # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
+    encoded_test_title=$(echo -n "$_TEST_TITLE" | base64 -w 0)
   else
     # macOS and others: default base64 without wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
+    encoded_test_title=$(echo -n "$_TEST_TITLE" | base64)
   fi
 
   cat <<EOF
@@ -165,6 +182,7 @@ function state::export_subshell_context() {
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##TEST_EXIT_CODE=$_TEST_EXIT_CODE\
+##TEST_TITLE=$encoded_test_title\
 ##TEST_OUTPUT=$encoded_test_output\
 ##
 EOF
