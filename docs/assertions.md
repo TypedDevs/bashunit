@@ -366,6 +366,31 @@ function test_failure() {
 ```
 :::
 
+## assert_exec
+> `assert_exec "command" [--exit <code>] [--stdout "text"] [--stderr "text"]`
+
+Runs `command` capturing its exit status, standard output and standard error and
+checks all provided expectations. When `--exit` is omitted the expected exit
+status defaults to `0`.
+
+::: code-group
+```bash [Example]
+function sample() {
+  echo "out"
+  echo "err" >&2
+  return 1
+}
+
+function test_success() {
+  assert_exec sample --exit 1 --stdout "out" --stderr "err"
+}
+
+function test_failure() {
+  assert_exec sample --exit 0 --stdout "out" --stderr "err"
+}
+```
+:::
+
 ## assert_array_contains
 > `assert_array_contains "needle" "haystack"`
 

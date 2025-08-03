@@ -8,6 +8,7 @@
 - Add runtime check for Bash >= 3.2
 - Add fallback for `clock::now` with seconds resolution only
 - Add `set_test_title` to allow custom test titles
+- Add `assert_exec` to validate exit code, stdout and stderr at once
 
 ## [0.22.3](https://github.com/TypedDevs/bashunit/compare/0.22.2...0.22.3) - 2025-07-27
 
