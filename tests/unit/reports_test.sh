@@ -3,15 +3,20 @@
 # shellcheck disable=SC2034
 
 function test_add_test_skips_tracking_without_report_output() {
-  local tracked
-  tracked=$(
-    unset BASHUNIT_LOG_JUNIT
-    unset BASHUNIT_REPORT_HTML
+  # Ensure `add_test` does not alter tracked tests when no report output is
+  # requested. Capture the number of tracked tests before and after invoking the
+  # function and assert that it remains unchanged. This avoids interference from
+  # previous tests when the suite runs serially.
+  local before after
 
-    reports::add_test "file.sh" "a test" 0 0 passed
+  unset BASHUNIT_LOG_JUNIT
+  unset BASHUNIT_REPORT_HTML
 
-    echo "${#_REPORTS_TEST_NAMES[@]}"
-  )
+  before=${#_REPORTS_TEST_NAMES[@]}
 
-  assert_same "0" "$tracked"
+  reports::add_test "file.sh" "a test" 0 0 passed
+
+  after=${#_REPORTS_TEST_NAMES[@]}
+
+  assert_same "$before" "$after"
 }
