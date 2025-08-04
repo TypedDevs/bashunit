@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2009
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 
 function tear_down() {
   unset code
@@ -7,8 +10,6 @@ function tear_down() {
 
 function set_up() {
   function code() {
-    # shellcheck disable=SC2009
-    # shellcheck disable=SC2317
     ps a | grep apache
   }
 }

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
+
 set -euo pipefail
 
 function tear_down_after_script() {
@@ -38,7 +41,6 @@ function test_globals_current_timestamp() {
 
 function test_globals_is_command_available() {
   function existing_fn(){
-    # shellcheck disable=SC2317
     return 0
   }
   assert_successful_code "$(is_command_available existing_fn)"

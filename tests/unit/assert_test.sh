@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2327
+# shellcheck disable=SC2328
+# shellcheck disable=SC2329
 
 function test_successful_fail() {
   true || fail "This cannot fail"

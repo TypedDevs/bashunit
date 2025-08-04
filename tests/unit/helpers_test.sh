@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 
 function tear_down() {
   helper::unset_if_exists fake_function
@@ -80,7 +82,6 @@ function test_successful_unset_if_exists_non_existent_function() {
 }
 
 function test_successful_unset_if_exists() {
-  # shellcheck disable=SC2317
   function fake_function() {
     return 0
   }
