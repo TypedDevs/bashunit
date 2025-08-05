@@ -210,7 +210,7 @@ function helper::trim() {
   echo "$trimmed_string"
 }
 
-function helpers::get_latest_tag() {
+function helper::get_latest_tag() {
   if ! dependencies::has_git; then
     return 1
   fi
@@ -222,7 +222,7 @@ function helpers::get_latest_tag() {
     head -n 1
 }
 
-function helpers::find_total_tests() {
+function helper::find_total_tests() {
     local filter=${1:-}
     local files=("${@:2}")
 

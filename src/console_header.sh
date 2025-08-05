@@ -26,7 +26,7 @@ function console_header::print_version() {
   if [[ ${#files[@]} -eq 0 ]]; then
     total_tests=0
   else
-    total_tests=$(helpers::find_total_tests "$filter" "${files[@]}")
+    total_tests=$(helper::find_total_tests "$filter" "${files[@]}")
   fi
 
   if env::is_header_ascii_art_enabled; then
