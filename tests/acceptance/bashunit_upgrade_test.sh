@@ -29,7 +29,7 @@ function tear_down_after_script() {
 function set_up() {
   ./build.sh "$TMP_DIR" >/dev/null
   if [[ "$ACTIVE_INTERNET" == true ]] && [[ "$HAS_GIT" == true ]]; then
-    LATEST_VERSION="$(helpers::get_latest_tag)"
+    LATEST_VERSION="$(helper::get_latest_tag)"
   else
     LATEST_VERSION="${BASHUNIT_VERSION}"
   fi

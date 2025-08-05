@@ -227,7 +227,7 @@ a17e6816669ec8d0f18ed8c6d5564df9fc699bf9        refs/tags/0.10.0
 b546c693198870dd75d1a102b94f4ddad6f4f3ea        refs/tags/0.2.0
 732ea5e8b16c3c05f0a6977b794ed7098e1839e2        refs/tags/0.3.0
 EOF
-  assert_same "0.10.1" "$(helpers::get_latest_tag)"
+  assert_same "0.10.1" "$(helper::get_latest_tag)"
   unset -f git # remove the mock
 }
 
@@ -258,7 +258,7 @@ function test_normalize_test_function_name_with_interpolation() {
 }
 
 function helpers_test::find_total_in_subshell() {
-  bash -c 'source "$1"; shift; helpers::find_total_tests "$@"' bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
+  bash -c 'source "$1"; shift; helper::find_total_tests "$@"' bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
 }
 
 function test_find_total_tests_no_files() {

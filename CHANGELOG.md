@@ -67,7 +67,7 @@
 - Allow `assert_have_been_called_with` to check arguments of specific calls
 - Enable parallel tests on Windows
 - Add `assert_not_called`
-- Improve `find_total_tests` performance
+- Improve `helper::find_total_tests` performance
 - Added `assert_match_snapshot_ignore_colors`
 - Optimize `runner::parse_result_sync`
 - Fix `parse_result_parallel` template
