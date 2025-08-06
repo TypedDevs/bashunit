@@ -55,7 +55,7 @@ Alternatively, create your tests manually:
 
 4.  If everything works correctly, you should see an output similar to the following:
     ```-vue
-    bashunit - {{ pkg.version }} | Tests: ~1
+    bashunit - {{ pkg.version }} | Tests: 1
     Running tests/example_test.sh
     ✓ Passed: Bashunit is working                                         16 ms
 
