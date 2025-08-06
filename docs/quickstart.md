@@ -10,9 +10,23 @@ Thanks to **bashunit**, verifying and validating your Bash code has never been s
 
 There is a tool that will generate an executable with the whole library in a single file:
 
-```bash
+::: code-group
+```bash [Linux/Mac]
 curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
+
+```bash [Windows]
+# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
+#
+# Step 1: Install WSL if you haven't already
+#   - Open PowerShell as Administrator
+#   - Run: wsl --install
+#   - Restart your computer
+#
+# Step 2: Open your WSL terminal and run:
+curl -s https://bashunit.typeddevs.com/install.sh | bash
+```
+:::
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 

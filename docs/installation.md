@@ -13,9 +13,23 @@ bashunit requires **Bash 3.2** or newer.
 
 There is a tool that will generate an executable with the whole library in a single file:
 
-```bash
+::: code-group
+```bash [Linux/Mac]
 curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
+
+```bash [Windows]
+# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
+#
+# Step 1: Install WSL if you haven't already
+#   - Open PowerShell as Administrator
+#   - Run: wsl --install
+#   - Restart your computer
+#
+# Step 2: Open your WSL terminal and run:
+curl -s https://bashunit.typeddevs.com/install.sh | bash
+```
+:::
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
@@ -37,9 +51,24 @@ https://github.com/TypedDevs/bashunit/releases/download/{{ pkg.version }}/checks
 
 The installation script can receive arguments (in any order):
 
-```bash
+::: code-group
+```bash [Linux/Mac]
 curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 ```
+
+```bash [Windows]
+# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
+#
+# Step 1: Install WSL if you haven't already
+#   - Open PowerShell as Administrator
+#   - Run: wsl --install
+#   - Restart your computer
+#
+# Step 2: Open your WSL terminal and run:
+curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
+```
+:::
+
 - `[dir]`: the destiny directory to save the executable bashunit; `lib` by default
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default.
 
@@ -58,7 +87,36 @@ You can manage your dependencies using [bashdep](https://github.com/Chemaclass/b
 a simple dependency manager for bash.
 
 ::: code-group
-```bash-vue [install-dependencies.sh]
+```bash-vue [Linux/Mac - install-dependencies.sh]
+# Ensure bashdep is installed
+[ ! -f lib/bashdep ] && {
+  mkdir -p lib
+  curl -sLo lib/bashdep \
+    https://github.com/Chemaclass/bashdep/releases/download/0.1/bashdep
+  chmod +x lib/bashdep
+}
+
+# Add latest bashunit release to your dependencies
+DEPENDENCIES=(
+  "https://github.com/TypedDevs/bashunit/releases/download/{{ pkg.version }}/bashunit"
+)
+
+# Load, configure and run bashdep
+source lib/bashdep
+bashdep::setup dir="lib" silent=false
+bashdep::install "${DEPENDENCIES[@]}"
+```
+
+```bash-vue [Windows - install-dependencies.sh]
+# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
+#
+# Step 1: Install WSL if you haven't already
+#   - Open PowerShell as Administrator
+#   - Run: wsl --install
+#   - Restart your computer
+#
+# Step 2: Open your WSL terminal and run:
+
 # Ensure bashdep is installed
 [ ! -f lib/bashdep ] && {
   mkdir -p lib
@@ -85,7 +143,7 @@ Downloading 'bashunit' to 'lib'...
 
 ## Brew
 
-You can install **bashunit** globally in your macOS (or Linux) using brew.
+You can install **bashunit** globally on macOS or Linux using brew.
 
 ```bash
 brew install bashunit
