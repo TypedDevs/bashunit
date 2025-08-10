@@ -45,6 +45,7 @@
 - Add `--init [dir]` option to get you started quickly
 - Optimize `--help` message
 - Add `--no-output` option
+- Add `--doc [search]` option
 
 ## [0.21.0](https://github.com/TypedDevs/bashunit/compare/0.20.0...0.21.0) - 2025-06-18
 
