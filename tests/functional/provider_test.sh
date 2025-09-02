@@ -51,7 +51,7 @@ function test_empty_value_from_data_provider() {
 }
 
 function provide_empty_value() {
-  echo "" "two"
+  data_set "" "two"
 }
 
 # @data_provider provide_value_with_whitespace
@@ -64,5 +64,5 @@ function test_value_with_whitespace_from_data_provider() {
 }
 
 function provide_value_with_whitespace() {
-  echo "first value" "second value"
+  data_set "first value" "second value"
 }
