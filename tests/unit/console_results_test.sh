@@ -543,7 +543,7 @@ function test_print_successful_test_output_with_args() {
   local data="foo"
 
   assert_matches \
-    "✓ Passed.*$test_name \($data\).*12 ms" \
+    "✓ Passed.*$test_name \('$data'\).*12 ms" \
     "$(console_results::print_successful_test "$test_name" "12" "$data")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output

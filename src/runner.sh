@@ -116,9 +116,10 @@ function runner::call_test_functions() {
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      IFS=" " read -r -a args <<< "$data"
-      if [ "${#args[@]}" -gt 1 ]; then
-        runner::run_test "$script" "$fn_name" "${args[@]}"
+      # Use eval with set -- to properly parse quoted arguments
+      eval "set -- $data"
+      if [ "$#" -gt 1 ]; then
+        runner::run_test "$script" "$fn_name" "$@"
       else
         runner::run_test "$script" "$fn_name" "$data"
       fi
