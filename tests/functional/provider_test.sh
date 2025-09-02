@@ -40,3 +40,29 @@ function test_single_value_from_data_provider() {
 function provide_single_value() {
   echo "one"
 }
+
+# @data_provider provide_empty_value
+function test_empty_value_from_data_provider() {
+  local first="$1"
+  local second="$2"
+
+  assert_same "" "$first"
+  assert_same "two" "$second"
+}
+
+function provide_empty_value() {
+  echo "" "two"
+}
+
+# @data_provider provide_value_with_whitespace
+function test_value_with_whitespace_from_data_provider() {
+  local first="$1"
+  local second="$2"
+
+  assert_same "first value" "$first"
+  assert_same "second value" "$second"
+}
+
+function provide_value_with_whitespace() {
+  echo "first value" "second value"
+}
