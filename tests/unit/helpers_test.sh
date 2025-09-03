@@ -139,7 +139,7 @@ function test_get_provider_data() {
 
 function fake_provider_data_array() {
   local data=("one" "two" "three")
-  echo "${data[@]}"
+  data_set "${data[@]}"
 }
 
 function test_get_provider_data_array() {
@@ -258,7 +258,9 @@ function test_normalize_test_function_name_with_interpolation() {
 }
 
 function helpers_test::find_total_in_subshell() {
-  bash -c 'source "$1"; shift; helper::find_total_tests "$@"' bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
+  # "helper::find_total_tests" needs the "data_set" function, so we have to source globals.sh first
+  bash -c 'source src/globals.sh; source "$1"; shift; helper::find_total_tests "$@"' \
+    bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
 }
 
 function test_find_total_tests_no_files() {

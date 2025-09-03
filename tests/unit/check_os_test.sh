@@ -50,12 +50,12 @@ function test_detect_windows_os() {
 }
 
 function window_linux_variations() {
-  echo "MINGW"
-  echo "junkMINGWjunk"
-  echo "MSYS_NT-10.0"
-  echo "junkMSYSjunk"
-  echo "CYGWIN_NT-10.0"
-  echo "junkCYGWINjunk"
+  data_set "MINGW"
+  data_set "junkMINGWjunk"
+  data_set "MSYS_NT-10.0"
+  data_set "junkMSYSjunk"
+  data_set "CYGWIN_NT-10.0"
+  data_set "junkCYGWINjunk"
 }
 
 function test_alpine_is_busybox() {

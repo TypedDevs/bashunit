@@ -1,15 +1,11 @@
 # Data providers
 
-**bashunit** offers a way to parameterize your test functions with data providers
-Ideal when the test function needs to accept a single or multiple argument.
+**bashunit** offers a way to parameterize your test functions with data providers.
+Ideal when you want to execute the same test function multiple times, each with a different set of arguments.
 
----
+## Defining a data provider
 
-You can add a special comment before a test function to specify an auxiliary function. This function controls how many times the test will run and what arguments it will receive.
-
-Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
-
----
+You can add a special comment `@data_provider` before a test function to specify an auxiliary function. This function controls how many times the test will run and what arguments it will receive.
 
 A data provider function is specified as follows:
 
@@ -18,14 +14,41 @@ A data provider function is specified as follows:
 
 ::: code-group
 ```bash [Example]
-# @data_provider provider_function_name
+# @data_provider provider_function
 function test_my_test_case() {
   ...
 }
 ```
 :::
 
-The provider function can echo a single value like `"one"` or multiple values `"one" "two" "three"`.
+## Implementing a data provider
+
+A data provider function contains one or more `data_set` lines. Each `data_set` results in a separate run of the test function with the individual `data_set` arguments being passed to it as positional arguments (`$1`, `$2`, ...).
+
+Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
+
+A data provider function is implemented as follows:
+
+::: code-group
+```bash [Example]
+function provider_function() {
+  data_set "one"
+  data_set "two" "three"
+  data_set "value containing spaces"
+  data_set "" "first value is empty"
+}
+
+```
+:::
+
+> **Note**: The previous variant of using `echo` to define data within a data provider
+> provider is still supported but deprecated, as it does not support empty values or
+> values containing spaces. Prefer using the `data_set` function going forward.
+
+> **Note**: A `data_set` cannot end with an empty element. If you need to pass empty
+> elements, reverse the argument order of your test function so that empty arguments can be
+> passed before non-empty arguments. If your test function only accepts one argument and you
+> need to pass an empty value for it, append a non-empty dummy value in the `data_set`.
 
 ## Interpolating arguments in test names
 
@@ -41,8 +64,8 @@ function test_returns_fizz_when_multiple_of_::1::_like_::2::_given() {
 }
 
 function fizz_numbers() {
-  echo 3 4
-  echo 3 6
+  data_set 3 4
+  data_set 3 6
 }
 ```
 ```[Output]
@@ -68,12 +91,12 @@ function test_directories_exists() {
 }
 
 function provider_directories() {
-  echo "/usr" "/etc" "/var"
+  data_set "/usr" "/etc" "/var"
 }
 ```
 ```[Output]
 Running example_test.sh
-✓ Passed: Directories exists (/usr /etc /var)
+✓ Passed: Directories exists ('/usr', '/etc', '/var')
 ```
 :::
 
@@ -89,16 +112,16 @@ function test_directory_exists() {
 }
 
 function provider_directories() {
-  echo "/usr"
-  echo "/etc"
-  echo "/var"
+  data_set "/usr"
+  data_set "/etc"
+  data_set "/var"
 }
 ```
 ```[Output]
 Running example_test.sh
-✓ Passed: Directory exists (/usr)
-✓ Passed: Directory exists (/etc)
-✓ Passed: Directory exists (/var)
+✓ Passed: Directory exists ('/usr')
+✓ Passed: Directory exists ('/etc')
+✓ Passed: Directory exists ('/var')
 ```
 :::
 
@@ -116,15 +139,15 @@ function test_directory_exists() {
 }
 
 function provider_directories() {
-  echo "outro" "/usr"
-  echo "outro" "/etc"
-  echo "outro" "/var"
+  data_set "outro" "/usr"
+  data_set "outro" "/etc"
+  data_set "outro" "/var"
 }
 ```
 ```[Output]
 Running example_test.sh
-✓ Passed: Directory exists (outro /usr)
-✓ Passed: Directory exists (outro /etc)
-✓ Passed: Directory exists (outro /var)
+✓ Passed: Directory exists ('outro', '/usr')
+✓ Passed: Directory exists ('outro', '/etc')
+✓ Passed: Directory exists ('outro', '/var')
 ```
 :::

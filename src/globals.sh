@@ -102,3 +102,18 @@ function print_line() {
   local char="${2:--}"      # Default to '-' if not passed
   printf '%*s\n' "$length" '' | tr ' ' "$char"
 }
+
+function data_set() {
+  local arg
+  local first=true
+
+  for arg in "$@"; do
+    if [ "$first" = true ]; then
+      printf '%q' "$arg"
+      first=false
+    else
+      printf ' %q' "$arg"
+    fi
+  done
+  printf '\n'
+}

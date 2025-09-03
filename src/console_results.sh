@@ -132,7 +132,15 @@ function console_results::print_successful_test() {
   if [[ -z "$*" ]]; then
     line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
   else
-    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
+    local quoted_args=""
+    for arg in "$@"; do
+      if [[ -z "$quoted_args" ]]; then
+        quoted_args="'$arg'"
+      else
+        quoted_args="$quoted_args, '$arg'"
+      fi
+    done
+    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$quoted_args")
   fi
 
   local full_line=$line
