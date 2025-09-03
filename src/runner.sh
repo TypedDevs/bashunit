@@ -80,6 +80,50 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
+function runner::parse_data_provider_args() {
+  local input="$1"
+  local current_arg=""
+  local in_quotes=false
+  local quote_char=""
+  local escaped=false
+  local i
+  local -a args=()
+  # Parse args from the input string into an array, respecting quotes and escapes
+  for ((i=0; i<${#input}; i++)); do
+    local char="${input:$i:1}"
+    if [ "$escaped" = true ]; then
+      current_arg+="$char"
+      escaped=false
+    elif [ "$char" = "\\" ]; then
+      escaped=true
+    elif [ "$in_quotes" = false ]; then
+      case "$char" in
+        "'" | '"')
+          in_quotes=true
+          quote_char="$char"
+          ;;
+        " " | $'\t')
+          args+=("$current_arg")
+          current_arg=""
+          ;;
+        *)
+          current_arg+="$char"
+          ;;
+      esac
+    elif [ "$char" = "$quote_char" ]; then
+      in_quotes=false
+      quote_char=""
+    else
+      current_arg+="$char"
+    fi
+  done
+  args+=("$current_arg")
+  # Print one arg per line to stdout
+  for a in "${args[@]}"; do
+    printf '%s\n' "$a"
+  done
+}
+
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
@@ -116,13 +160,11 @@ function runner::call_test_functions() {
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      # Use eval with set -- to properly parse quoted arguments
-      eval "set -- $data"
-      if [ "$#" -gt 1 ]; then
-        runner::run_test "$script" "$fn_name" "$@"
-      else
-        runner::run_test "$script" "$fn_name" "$data"
-      fi
+      local parsed_data=()
+      while IFS= read -r line; do
+        parsed_data+=("$line")
+      done <<< "$(runner::parse_data_provider_args "$data")"
+      runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
     unset fn_name
   done
