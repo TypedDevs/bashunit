@@ -139,7 +139,7 @@ function test_get_provider_data() {
 
 function fake_provider_data_array() {
   local data=("one" "two" "three")
-  echo "${data[@]}"
+  data_set "${data[@]}"
 }
 
 function test_get_provider_data_array() {

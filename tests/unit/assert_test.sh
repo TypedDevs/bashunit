@@ -21,9 +21,9 @@ function test_successful_assert_true() {
 }
 
 function provider_successful_assert_true() {
-  echo true
-  echo "true"
-  echo 0
+  data_set true
+  data_set "true"
+  data_set 0
 }
 
 function test_unsuccessful_assert_true() {
@@ -55,9 +55,9 @@ function test_successful_assert_false() {
 }
 
 function provider_successful_assert_false() {
-  echo false
-  echo "false"
-  echo 1
+  data_set false
+  data_set "false"
+  data_set 1
 }
 
 function test_unsuccessful_assert_false() {
