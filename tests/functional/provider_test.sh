@@ -66,3 +66,18 @@ function test_value_with_whitespace_from_data_provider() {
 function provide_value_with_whitespace() {
   data_set "first value" "second value"
 }
+
+# @data_provider provide_eval_gotchas
+function test_eval_gotchas_from_data_provider() {
+  input=$1
+  expected=$2
+  assert_equals "${input}" "${expected}"
+}
+
+function provide_eval_gotchas() {
+  echo "*" "*"
+  echo "|" "|"
+  echo "&" "&"
+  echo ";" ";"
+  echo "1;2" "1;2"
+}
