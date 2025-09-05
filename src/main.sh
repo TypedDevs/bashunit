@@ -29,7 +29,7 @@ function main::exec_tests() {
   fi
 
   if parallel::is_enabled; then
-    parallel::reset
+    parallel::init
   fi
 
   console_header::print_version_with_env "$filter" "${test_files[@]}"
@@ -70,6 +70,10 @@ function main::exec_tests() {
     reports::generate_report_html "$BASHUNIT_REPORT_HTML"
   fi
 
+  if parallel::is_enabled; then
+    parallel::cleanup
+  fi
+
   internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
 }
@@ -105,6 +109,9 @@ function main::cleanup() {
   # Kill all child processes of this script
   pkill -P $$
   cleanup_script_temp_files
+  if parallel::is_enabled; then
+    parallel::cleanup
+  fi
   exit 1
 }
 
@@ -113,6 +120,9 @@ function main::handle_stop_on_failure_sync() {
   console_results::print_failing_tests_and_reset
   console_results::render_result
   cleanup_script_temp_files
+  if parallel::is_enabled; then
+    parallel::cleanup
+  fi
   exit 1
 }
 
