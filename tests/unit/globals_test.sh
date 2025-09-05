@@ -67,7 +67,7 @@ function test_globals_temp_file_in_test_function() {
   # shellcheck disable=SC2155
   local temp_file=$(temp_file "custom-prefix")
   assert_file_exists "$temp_file"
-  cleanup_temp_files
+  cleanup_testcase_temp_files
   assert_file_not_exists "$temp_file"
 }
 
@@ -75,14 +75,14 @@ function test_globals_temp_dir_in_test_function() {
   # shellcheck disable=SC2155
   local temp_dir=$(temp_dir "custom-prefix")
   assert_directory_exists "$temp_dir"
-  cleanup_temp_files
+  cleanup_testcase_temp_files
   assert_directory_not_exists "$temp_dir"
 }
 
 function test_globals_temp_dir_and_file_in_script() {
   assert_directory_exists "$SCRIPT_TEMP_DIR"
   assert_file_exists "$SCRIPT_TEMP_FILE"
-  cleanup_temp_files
+  cleanup_script_temp_files
   assert_directory_not_exists "$SCRIPT_TEMP_DIR"
   assert_file_not_exists "$SCRIPT_TEMP_FILE"
 }
