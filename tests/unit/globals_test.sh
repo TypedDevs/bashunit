@@ -4,6 +4,11 @@
 
 set -euo pipefail
 
+function set_up_before_script() {
+  SCRIPT_TEMP_FILE=$(temp_file "custom-prefix")
+  SCRIPT_TEMP_DIR=$(temp_dir "custom-prefix")
+}
+
 function tear_down_after_script() {
   export BASHUNIT_DEV_LOG=""
 }
@@ -58,7 +63,7 @@ function test_globals_random_str_custom_len() {
   assert_matches "^[A-Za-z0-9]{3}$" "$(random_str 3)"
 }
 
-function test_globals_temp_file() {
+function test_globals_temp_file_in_test_function() {
   # shellcheck disable=SC2155
   local temp_file=$(temp_file "custom-prefix")
   assert_file_exists "$temp_file"
@@ -66,12 +71,20 @@ function test_globals_temp_file() {
   assert_file_not_exists "$temp_file"
 }
 
-function test_globals_temp_dir() {
+function test_globals_temp_dir_in_test_function() {
   # shellcheck disable=SC2155
   local temp_dir=$(temp_dir "custom-prefix")
   assert_directory_exists "$temp_dir"
   cleanup_temp_files
   assert_directory_not_exists "$temp_dir"
+}
+
+function test_globals_temp_dir_and_file_in_script() {
+  assert_directory_exists "$SCRIPT_TEMP_DIR"
+  assert_file_exists "$SCRIPT_TEMP_FILE"
+  cleanup_temp_files
+  assert_directory_not_exists "$SCRIPT_TEMP_DIR"
+  assert_file_not_exists "$SCRIPT_TEMP_FILE"
 }
 
 function test_globals_log_level_error() {
