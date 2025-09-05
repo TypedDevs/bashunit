@@ -7,6 +7,7 @@
 - Add support for empty values and values containing spaces in data providers via new `data_set` function
 - Document workaround for global function name collisions when sourcing scripts in tests by copying the original function
 - Fix `temp_dir` and `temp_file` data not being cleaned up when created in `set_up_before_script`
+- Fix `/tmp/bashunit/parallel` not being cleaned after test run
 
 ## [0.23.0](https://github.com/TypedDevs/bashunit/compare/0.22.3...0.23.0) - 2025-08-03
 
