@@ -6,6 +6,7 @@
 - Make Windows install clearer in the docs by adding an option for Linux/Mac and another one for Windows.
 - Add support for empty values and values containing spaces in data providers via new `data_set` function
 - Document workaround for global function name collisions when sourcing scripts in tests by copying the original function
+- Fix `temp_dir` and `temp_file` data not being cleaned up when created in `set_up_before_script`
 
 ## [0.23.0](https://github.com/TypedDevs/bashunit/compare/0.22.3...0.23.0) - 2025-08-03
 
