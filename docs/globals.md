@@ -58,9 +58,13 @@ Internal messages from bashunit include the `[INTERNAL]` prefix so you can easil
 
 > `temp_file <?prefix>`: creates a temporal file
 
+The file is automatically deleted when bashunit completes.
+
 ## temp_dir
 
 > `temp_dir <?prefix>`: creates a temporal directory
+
+The directory is automatically deleted when bashunit completes.
 
 ## is_command_available
 

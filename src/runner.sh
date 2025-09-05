@@ -5,11 +5,15 @@ function runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
+  local scripts_ids=()
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
+    unset BASHUNIT_CURRENT_TEST_ID
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
     internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
@@ -21,6 +25,9 @@ function runner::load_test_files() {
     fi
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
+    if ! parallel::is_enabled; then
+      cleanup_script_temp_files
+    fi
     internal_log "Finished file" "$test_file"
   done
 
@@ -32,6 +39,10 @@ function runner::load_test_files() {
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r " # Clear the spinner output
+    for script_id in "${scripts_ids[@]}"; do
+      export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
+      cleanup_script_temp_files
+    done
   fi
 }
 
@@ -42,12 +53,15 @@ function runner::load_bench_files() {
 
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
+    unset BASHUNIT_CURRENT_TEST_ID
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
     runner::run_set_up_before_script
     runner::call_bench_functions "$bench_file" "$filter"
     runner::run_tear_down_after_script
     runner::clean_set_up_and_tear_down_after_script
+    cleanup_script_temp_files
   done
 }
 
@@ -232,17 +246,11 @@ function runner::run_test() {
   local fn_name="$1"
   shift
 
+  internal_log "Running test" "$fn_name" "$*"
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
-  local sanitized_fn_name
-  sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  internal_log "Running test" "$fn_name" "$*"
-  if env::is_parallel_run_enabled; then
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
-  else
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
-  fi
+  export BASHUNIT_CURRENT_TEST_ID="$(helper::generate_id "$fn_name")"
 
   state::reset_test_title
 
@@ -265,6 +273,7 @@ function runner::run_test() {
       state::set_test_exit_code "$exit_code"
       runner::run_tear_down
       runner::clear_mocks
+      cleanup_testcase_temp_files
       state::export_subshell_context
     ' EXIT
     state::initialize_assertions_count

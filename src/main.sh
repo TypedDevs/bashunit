@@ -70,7 +70,6 @@ function main::exec_tests() {
     reports::generate_report_html "$BASHUNIT_REPORT_HTML"
   fi
 
-  cleanup_temp_files
   internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
 }
@@ -98,7 +97,6 @@ function main::exec_benchmarks() {
 
   benchmark::print_results
 
-  cleanup_temp_files
   internal_log "Finished benchmarks"
 }
 
@@ -106,7 +104,7 @@ function main::cleanup() {
   printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
-  cleanup_temp_files
+  cleanup_script_temp_files
   exit 1
 }
 
@@ -114,7 +112,7 @@ function main::handle_stop_on_failure_sync() {
   printf "\n%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   console_results::print_failing_tests_and_reset
   console_results::render_result
-  cleanup_temp_files
+  cleanup_script_temp_files
   exit 1
 }
 

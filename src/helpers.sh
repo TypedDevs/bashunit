@@ -328,3 +328,14 @@ function helper::get_function_line_number() {
 
   echo "$line_number"
 }
+
+function helper::generate_id() {
+  local basename="$1"
+  local sanitized_basename
+  sanitized_basename="$(helper::normalize_variable_name "$basename")"
+  if env::is_parallel_run_enabled; then
+    echo "${sanitized_basename}_$$_$(random_str 6)"
+  else
+    echo "${sanitized_basename}_$$"
+  fi
+}

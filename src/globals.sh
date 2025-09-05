@@ -43,7 +43,11 @@ function temp_file() {
   mkdir -p "$base_dir" && chmod -R 777 "$base_dir"
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    # We're at script level (e.g., in set_up_before_script) - use script ID
+    test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
   mktemp "$base_dir/${test_prefix}${prefix}.XXXXXXX"
 }
@@ -54,17 +58,26 @@ function temp_dir() {
   mkdir -p "$base_dir" && chmod -R 777 "$base_dir"
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    # We're at script level (e.g., in set_up_before_script) - use script ID
+    test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
   mktemp -d "$base_dir/${test_prefix}${prefix}.XXXXXXX"
 }
 
-function cleanup_temp_files() {
-  internal_log "cleanup_temp_files"
+function cleanup_testcase_temp_files() {
+  internal_log "cleanup_testcase_temp_files"
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
     rm -rf "${TMPDIR:-/tmp}/bashunit/tmp/${BASHUNIT_CURRENT_TEST_ID}"_*
-  else
-    rm -rf "${TMPDIR:-/tmp}/bashunit/tmp"/*
+  fi
+}
+
+function cleanup_script_temp_files() {
+  internal_log "cleanup_script_temp_files"
+  if [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    rm -rf "${TMPDIR:-/tmp}/bashunit/tmp/${BASHUNIT_CURRENT_SCRIPT_ID}"_*
   fi
 }
 
