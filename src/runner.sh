@@ -232,17 +232,11 @@ function runner::run_test() {
   local fn_name="$1"
   shift
 
+  internal_log "Running test" "$fn_name" "$*"
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
-  local sanitized_fn_name
-  sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  internal_log "Running test" "$fn_name" "$*"
-  if env::is_parallel_run_enabled; then
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
-  else
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
-  fi
+  export BASHUNIT_CURRENT_TEST_ID="$(helper::generate_id "$fn_name")"
 
   state::reset_test_title
 
