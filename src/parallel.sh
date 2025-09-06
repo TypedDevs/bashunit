@@ -101,11 +101,14 @@ function parallel::must_stop_on_failure() {
   [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
 }
 
-function parallel::reset() {
+function parallel::cleanup() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+}
+
+function parallel::init() {
+  parallel::cleanup
   mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
-  [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
 
 function parallel::is_enabled() {
