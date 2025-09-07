@@ -65,6 +65,21 @@ function provide_value_with_tabs() {
   data_set "value	with	tabs"
 }
 
+# @data_provider provide_value_with_newline
+function test_value_with_newline_from_data_provider() {
+  local value="$1"
+
+  assert_same "value
+with
+newline" "$value"
+}
+
+function provide_value_with_newline() {
+  data_set "value
+with
+newline"
+}
+
 # @data_provider provide_value_with_whitespace
 function test_value_with_whitespace_from_data_provider() {
   local first="$1"
