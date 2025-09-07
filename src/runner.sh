@@ -101,6 +101,8 @@ function runner::parse_data_provider_args() {
   local quote_char=""
   local escaped=false
   local i
+  local arg
+  local encoded_arg
   local -a args=()
   # Parse args from the input string into an array, respecting quotes and escapes
   for ((i=0; i<${#input}; i++)); do
@@ -147,9 +149,10 @@ function runner::parse_data_provider_args() {
     fi
   done
   args+=("$current_arg")
-  # Print one arg per line to stdout
-  for a in "${args[@]}"; do
-    printf '%s\n' "$a"
+  # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
+  for arg in "${args[@]}"; do
+    encoded_arg="$(echo "$arg" | base64 2>/dev/null)"
+    printf '%s\n' "$encoded_arg"
   done
 }
 
@@ -191,7 +194,7 @@ function runner::call_test_functions() {
     for data in "${provider_data[@]}"; do
       local parsed_data=()
       while IFS= read -r line; do
-        parsed_data+=("$line")
+        parsed_data+=( "$(echo "$line" | base64 -d 2>/dev/null)" )
       done <<< "$(runner::parse_data_provider_args "$data")"
       runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
