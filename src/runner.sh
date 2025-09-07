@@ -106,12 +106,27 @@ function runner::parse_data_provider_args() {
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then
-      current_arg+="$char"
+      case "$char" in
+        t) current_arg+=$'\t' ;;
+        n) current_arg+=$'\n' ;;
+        *) current_arg+="$char" ;;
+      esac
       escaped=false
     elif [ "$char" = "\\" ]; then
       escaped=true
     elif [ "$in_quotes" = false ]; then
       case "$char" in
+        "$")
+          # Handle $'...' syntax
+          if [[ "${input:$i:2}" == "$'" ]]; then
+            in_quotes=true
+            quote_char="'"
+            # Skip the $
+            i=$((i + 1))
+          else
+            current_arg+="$char"
+          fi
+          ;;
         "'" | '"')
           in_quotes=true
           quote_char="$char"
