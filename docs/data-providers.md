@@ -45,11 +45,6 @@ function provider_function() {
 > provider is still supported but deprecated, as it does not support empty values or
 > values containing spaces. Prefer using the `data_set` function going forward.
 
-> **Note**: A `data_set` cannot end with an empty element. If you need to pass empty
-> elements, reverse the argument order of your test function so that empty arguments can be
-> passed before non-empty arguments. If your test function only accepts one argument and you
-> need to pass an empty value for it, append a non-empty dummy value in the `data_set`.
-
 ## Interpolating arguments in test names
 
 You can reference the values provided by a data provider directly in the test
