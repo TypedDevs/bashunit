@@ -151,7 +151,7 @@ function runner::parse_data_provider_args() {
   args+=("$current_arg")
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]}"; do
-    encoded_arg="$(echo "$arg" | base64 2>/dev/null)"
+    encoded_arg="$(echo "$arg" | base64 --wrap=0 2>/dev/null)"
     printf '%s\n' "$encoded_arg"
   done
 }
