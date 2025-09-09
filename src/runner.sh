@@ -151,7 +151,7 @@ function runner::parse_data_provider_args() {
   args+=("$current_arg")
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]}"; do
-    encoded_arg="$(echo "$arg" | base64 --wrap=0 2>/dev/null)"
+    encoded_arg="$(helper::encode_base64 "${arg}")"
     printf '%s\n' "$encoded_arg"
   done
 }
@@ -194,7 +194,7 @@ function runner::call_test_functions() {
     for data in "${provider_data[@]}"; do
       local parsed_data=()
       while IFS= read -r line; do
-        parsed_data+=( "$(echo "$line" | base64 -d 2>/dev/null)" )
+        parsed_data+=( "$(helper::decode_base64 "${line}")" )
       done <<< "$(runner::parse_data_provider_args "$data")"
       runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
