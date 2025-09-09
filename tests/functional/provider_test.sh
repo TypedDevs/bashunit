@@ -54,6 +54,16 @@ function provide_empty_value() {
   data_set "" "two"
 }
 
+# @data_provider provide_long_value
+function test_long_value_from_data_provider() {
+  local value="$1"
+  assert_same "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz" "$value"
+}
+
+function provide_long_value() {
+  data_set "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+}
+
 # @data_provider provide_value_with_tabs
 function test_value_with_tabs_from_data_provider() {
   local value="$1"
