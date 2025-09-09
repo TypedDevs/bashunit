@@ -61,6 +61,16 @@ function helper::interpolate_function_name() {
   echo "$result"
 }
 
+function helper::encode_base64() {
+  local value="$1"
+
+  if command -v base64 >/dev/null; then
+    echo "$value" | base64 | tr -d '\n'
+  else
+    echo "$value" | openssl enc -base64 -A
+  fi
+}
+
 function helper::decode_base64() {
   local value="$1"
 
