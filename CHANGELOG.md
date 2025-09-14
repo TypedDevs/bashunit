@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
 - Improve `assert_have_been_called_with` with strict argument matching
 - Make Windows install clearer in the docs by adding an option for Linux/Mac and another one for Windows.
