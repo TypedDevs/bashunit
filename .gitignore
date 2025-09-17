@@ -1,22 +1,3 @@
-# ide
-.idea/
-.env
+.task/
+.idea
 
-# docs
-node_modules
-docs/.vitepress/cache
-docs/.vitepress/dist
-
-# installation
-lib/
-bin/bashunit
-bin/checksum
-
-# logger
-log-junit.xml
-report.html
-
-# internal
-local/
-tmp/
-dev.log

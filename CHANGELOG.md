@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+- Add Project-wide `copilot-instructions.md`
+  - Add comprehensive TDD workflow with mandatory test-first approach (Red-Green-Refactor cycle)
+  - Add mandatory task file workflow in `.tasks/` directory with Template A (new capabilities) and Template B (modifications)
+  - Add private `.task/` directory to `.gitignore` for scratch notes and logs
+  - Add enhanced definition of done with TDD compliance, pattern compliance, and process requirements
+  - Add complete assertion catalog and testing patterns documentation based on existing codebase analysis
+  - Add logbook requirement for agent thought process tracking with timestamps
+  - Add strict workflow rules with no exceptions for task file creation on every change
+
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
 - Improve `assert_have_been_called_with` with strict argument matching

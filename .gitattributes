@@ -1,4 +1,5 @@
 /.github                export-ignore
+/.task                  export-ignore
 /bin                    export-ignore
 /docs                   export-ignore
 /example                export-ignore
