@@ -8,6 +8,17 @@
 
 > **Clarity Rule:** If acceptance criteria or the intended outcomes are not clear or ambiguous, **ask clarifying questions before making any change** and record the answers in the active task file.
 
+> **📋 External Developer Tools**: This repository includes `AGENTS.md` in the root directory with essential workflow information for external developer tools. When making significant changes to development workflow, TDD methodology, or core patterns, consider updating `AGENTS.md` to keep it synchronized with these comprehensive instructions.
+
+---
+
+## Cross-file synchronization with `AGENTS.md`
+
+To keep guidance coherent and up to date, we enforce a two-way sync policy:
+- When `copilot-instructions.md` changes, evaluate whether the change belongs in `AGENTS.md` and update `AGENTS.md` automatically if so.
+- When `AGENTS.md` changes, evaluate whether the change belongs in `copilot-instructions.md` and update this file automatically if so.
+- If a change is intentionally not mirrored, record the rationale in the active `./.tasks/YYYY-MM-DD-slug.md`.
+
 ---
 
 ## What this repository is
@@ -900,6 +911,8 @@ Use this template for new user-visible capabilities (assertions, CLI features, t
 - [ ] Lint clean (shellcheck + shfmt)
 - [ ] All existing tests still pass
 - [ ] Follows exact patterns from existing test files
+- [ ] **AGENTS.md updated** if changes affect development workflow, TDD methodology, or core patterns
+- [ ] **Two-way sync validated** (`AGENTS.md` ↔ `.github/copilot-instructions.md`)
 - [ ] Docs updated if needed
 - [ ] ADR created if architectural decision made
 - [ ] Timestamp: <YYYY-MM-DD HH:mm:ss>
@@ -974,6 +987,8 @@ Use this template for internal changes, fixes, refactors, documentation.
 - [ ] Docs updated if needed
 - [ ] ADR added/updated if architectural decision
 - [ ] Updated copilot-instructions if relevant and needed
+- [ ] **AGENTS.md updated** if changes affect development workflow, TDD methodology, or core patterns
+- [ ] **Two-way sync validated** (`AGENTS.md` ↔ `.github/copilot-instructions.md`)
 - [ ] Timestamp: <YYYY-MM-DD HH:mm:ss>
 ```
 
@@ -1027,6 +1042,7 @@ Use this template for internal changes, fixes, refactors, documentation.
 - **ADR created** if architectural decision made
 - **Git history** follows existing commit message patterns
 - **No deviation** from established patterns without documented reason
+- **AGENTS.md updated** if changes affect development workflow, TDD methodology, or core patterns
 
 ---
 
@@ -1084,6 +1100,7 @@ Use this template for internal changes, fixes, refactors, documentation.
 12. ✅ Analyze if you are missing any tests if so add them to te list
 13. ✅ Re-prioritize remaining tests
 14. ✅ Update task file logbook with progress
+15. ✅ Repeat until all tests are green and the test list is complete and the acceptance criteria are met
 
 ### Before finishing:
 1. ✅ All tests green (`./bashunit tests/`)
@@ -1092,5 +1109,18 @@ Use this template for internal changes, fixes, refactors, documentation.
 4. ✅ Patterns match existing codebase exactly
 5. ✅ Task file completed with timestamp
 6. ✅ ADR created if architectural decision made
+
+---
+
+## Pull Request Checklist
+
+Use this checklist before requesting review:
+
+- [ ] All tests green for the right reason (`./bashunit tests/`)
+- [ ] Lint/format clean (`shellcheck -x $(find . -name "*.sh")` + `shfmt -w .`)
+- [ ] Task file updated (acceptance criteria, test inventory, logbook, done timestamp)
+- [ ] Docs/README updated; CHANGELOG updated if user-visible
+- [ ] ADR added/updated if a decision was made
+- [ ] **Two-way sync validated** between `AGENTS.md` and `.github/copilot-instructions.md`
 
 **Remember: This project has 40+ test files with established patterns. Always follow them exactly. NEVER proceed without creating a task file first.**
