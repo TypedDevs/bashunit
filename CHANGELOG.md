@@ -9,6 +9,9 @@
   - Add complete assertion catalog and testing patterns documentation based on existing codebase analysis
   - Add logbook requirement for agent thought process tracking with timestamps
   - Add strict workflow rules with no exceptions for task file creation on every change
+- Add `AGENTS.md` for external developer tools integration
+- Add two-way synchronization policy between `AGENTS.md` and `copilot-instructions.md` with automatic validation in task templates and PR checklist
+- Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
