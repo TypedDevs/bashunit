@@ -13,42 +13,42 @@
 ## Agent Workflow
 
 1) **Before coding**
-   - Create `./.tasks/YYYY-MM-DD-slug.md` with context, acceptance criteria, test inventory, current red bar, and a timestamped **Logbook**.
-   - Read `.github/copilot-instructions.md` + relevant ADRs; record links/assumptions in the task file.
-   - Create a list with all tests needed to cover acceptance criteria
-   - Add this list to the task file as a **test inventory** (unit, functional, acceptance).
-   - Prioritize tests by the smallest next step.
-   - Pick the first test to implement.
-   - For the testing approach, see the concise overview of the **TDD approach** in `.github/copilot-instructions.md` and keep this file concise.
+    - Create `./.tasks/YYYY-MM-DD-slug.md` with context, acceptance criteria, test inventory, current red bar, and a timestamped **Logbook**.
+    - Read `.github/copilot-instructions.md` + relevant ADRs; record links/assumptions in the task file.
+    - Create a list with all tests needed to cover acceptance criteria
+    - Add this list to the task file as a **test inventory** (unit, functional, acceptance).
+    - Prioritize tests by the smallest next step.
+    - Pick the first test to implement.
+    - For the testing approach, see the concise overview of the **TDD approach** in `.github/copilot-instructions.md` and keep this file concise.
 
 2) **Red**
-   - Add a test that fails for the intended reason, using **only existing patterns** from `./tests/**`.
+    - Add a test that fails for the intended reason, using **only existing patterns** from `./tests/**`.
 
 3) **Green**
-   - Implement the **minimal** change in `./src/**` to pass; update the Logbook.
+    - Implement the **minimal** change in `./src/**` to pass; update the Logbook.
 
 4) **Refactor**
-   - Improve code/tests incrementally while keeping all tests green. Update docs/ADR if behavior or decisions change.
-   - Use `shellcheck -x $(find . -name "*.sh")` and `shfmt -w .` to ensure lint/format compliance.
-   - Run the test suite with `./bashunit tests/` to ensure everything remains green.
-   - Run the linting/formatting checks again and ensure compliance.
-   - Evaluate if any existing tests can be removed or simplified due to refactoring; Or if new tests are needed to cover edge cases discovered during refactoring, add them to the test inventory in the task file.
-   - Update the task file's Logbook with details of the refactoring process, including any challenges faced and how they were addressed.
-   - if all the tests are green and the code is clean easy to read and maintain, pick the next test from the inventory and repeat steps 2-4 untill all tests in the inventory are done. and the acceptance criteria are met.
+    - Improve code/tests incrementally while keeping all tests green. Update docs/ADR if behavior or decisions change.
+    - Use `shellcheck -x $(find . -name "*.sh")` and `shfmt -w .` to ensure lint/format compliance.
+    - Run the test suite with `./bashunit tests/` to ensure everything remains green.
+    - Run the linting/formatting checks again and ensure compliance.
+    - Evaluate if any existing tests can be removed or simplified due to refactoring; Or if new tests are needed to cover edge cases discovered during refactoring, add them to the test inventory in the task file.
+    - Update the task file's Logbook with details of the refactoring process, including any challenges faced and how they were addressed.
+    - if all the tests are green and the code is clean easy to read and maintain, pick the next test from the inventory and repeat steps 2-4 untill all tests in the inventory are done. and the acceptance criteria are met.
 
 5) **Quality Gate (pre-commit)**
-   - Run repo's real lint/format: `shellcheck -x $(find . -name "*.sh")` and `shfmt -w .`
-   - Run tests with `./bashunit tests/` (or scoped runs as appropriate).
+    - Run repo's real lint/format: `shellcheck -x $(find . -name "*.sh")` and `shfmt -w .`
+    - Run tests with `./bashunit tests/` (or scoped runs as appropriate).
 
 6) **Docs & ADR**
-   - Update `README`/docs when CLI/assertions/behavior changes.
-   - Add/update ADRs for significant decisions; link from the task file.
+    - Update `README`/docs when CLI/assertions/behavior changes.
+    - Add/update ADRs for significant decisions; link from the task file.
 
 7) **Finish (Definition of Done)**
-   - Linters/formatters **clean**.
-   - All tests **green for the right reason**.
-   - Acceptance criteria **met** in the task file.
-   - Docs/CHANGELOG updated when user-visible changes occur.
+    - Linters/formatters **clean**.
+    - All tests **green for the right reason**.
+    - Acceptance criteria **met** in the task file.
+    - Docs/CHANGELOG updated when user-visible changes occur.
 
 ## bashunit Guardrails
 

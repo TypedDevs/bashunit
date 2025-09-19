@@ -39,14 +39,14 @@ An open-source **library** providing a fast, portable Bash testing framework: **
 ### EVERY agent must do this BEFORE any work:
 
 1. **STOP and CREATE task file**: `.tasks/YYYY-MM-DD-feature-title.md` (in English)
-   - Example: `.tasks/2025-09-17-add-assert-json-functionality.md`
-   - Example: `.tasks/2025-09-17-fix-mock-cleanup-bug.md`
-   - Example: `.tasks/2025-09-17-update-documentation.md`
-   - Example: `.tasks/2025-09-17-enhance-copilot-instructions.md`
+    - Example: `.tasks/2025-09-17-add-assert-json-functionality.md`
+    - Example: `.tasks/2025-09-17-fix-mock-cleanup-bug.md`
+    - Example: `.tasks/2025-09-17-update-documentation.md`
+    - Example: `.tasks/2025-09-17-enhance-copilot-instructions.md`
 
 2. **CHOOSE appropriate template**:
-   - **New user capability**: Use Template A (new assertions, CLI features, test doubles)
-   - **Internal modifications**: Use Template B (refactors, fixes, docs)
+    - **New user capability**: Use Template A (new assertions, CLI features, test doubles)
+    - **Internal modifications**: Use Template B (refactors, fixes, docs)
 
 3. **FILL task information immediately**: Complete all sections with specific acceptance criteria
 
@@ -79,22 +79,22 @@ An open-source **library** providing a fast, portable Bash testing framework: **
 # Data provider pattern with @data_provider comment
 # @data_provider provider_successful_assert_true
 function test_successful_assert_true() {
-  assert_empty "$(assert_true $1)"
+    assert_empty "$(assert_true $1)"
 }
 
 function provider_successful_assert_true() {
-  data_set true
-  data_set "true"
-  data_set 0
+    data_set true
+    data_set "true"
+    data_set 0
 }
 
 # Testing assertion failures with expected console output
 function test_unsuccessful_assert_true() {
-  assert_same\
+    assert_same\
     "$(console_results::print_failed_test\
-      "Unsuccessful assert true" \
-      "true or 0" \
-      "but got " "false")"\
+        "Unsuccessful assert true" \
+        "true or 0" \
+        "but got " "false")"\
     "$(assert_true false)"
 }
 ```
@@ -104,122 +104,122 @@ function test_unsuccessful_assert_true() {
 TEST_COUNTER=1
 
 function set_up_before_script() {
-  TEST_COUNTER=$(( TEST_COUNTER + 1 ))
+    TEST_COUNTER=$(( TEST_COUNTER + 1 ))
 }
 
 function set_up() {
-  TEST_COUNTER=$(( TEST_COUNTER + 1 ))
+    TEST_COUNTER=$(( TEST_COUNTER + 1 ))
 }
 
 function tear_down() {
-  TEST_COUNTER=$(( TEST_COUNTER - 1 ))
+    TEST_COUNTER=$(( TEST_COUNTER - 1 ))
 }
 
 function tear_down_after_script() {
-  TEST_COUNTER=$(( TEST_COUNTER - 1 ))
+    TEST_COUNTER=$(( TEST_COUNTER - 1 ))
 }
 
 function test_counter_is_incremented_after_setup_before_script_and_setup() {
-  assert_same "3" "$TEST_COUNTER"
+    assert_same "3" "$TEST_COUNTER"
 }
 ```
 
 ### Test doubles patterns (`tests/functional/doubles_test.sh`)
 ```bash
 function test_mock_ps_when_executing_a_script() {
-  mock ps cat ./tests/functional/fixtures/doubles_ps_output
+    mock ps cat ./tests/functional/fixtures/doubles_ps_output
 
-  assert_match_snapshot "$(source ./tests/functional/fixtures/doubles_script.sh)"
+    assert_match_snapshot "$(source ./tests/functional/fixtures/doubles_script.sh)"
 }
 
 function test_spy_commands_called_when_executing_a_sourced_function() {
-  source ./tests/functional/fixtures/doubles_function.sh
-  spy ps
-  spy awk
-  spy head
+    source ./tests/functional/fixtures/doubles_function.sh
+    spy ps
+    spy awk
+    spy head
 
-  top_mem
+    top_mem
 
-  assert_have_been_called ps
-  assert_have_been_called awk
-  assert_have_been_called head
+    assert_have_been_called ps
+    assert_have_been_called awk
+    assert_have_been_called head
 }
 
 function test_spy_commands_called_once_when_executing_a_script() {
-  spy ps
-  ./tests/functional/fixtures/doubles_script.sh
-  assert_have_been_called_times 1 ps
+    spy ps
+    ./tests/functional/fixtures/doubles_script.sh
+    assert_have_been_called_times 1 ps
 }
 ```
 
 ### Data provider patterns (`tests/functional/provider_test.sh`)
 ```bash
 function set_up() {
-  _GLOBAL="aa-bb"
+    _GLOBAL="aa-bb"
 }
 
 # @data_provider provide_multiples_values
 function test_multiple_values_from_data_provider() {
-  local first=$1
-  local second=$2
-  assert_equals "${_GLOBAL}" "$first-$second"
+    local first=$1
+    local second=$2
+    assert_equals "${_GLOBAL}" "$first-$second"
 }
 
 function provide_multiples_values() {
-  echo "aa" "bb"
+    echo "aa" "bb"
 }
 
 # @data_provider provide_single_values
 function test_single_values_from_data_provider() {
-  local data="$1"
-  assert_not_equals "zero" "$data"
+    local data="$1"
+    assert_not_equals "zero" "$data"
 }
 
 function provide_single_values() {
-  echo "one"
-  echo "two"
-  echo "three"
+    echo "one"
+    echo "two"
+    echo "three"
 }
 ```
 
 ### CLI acceptance patterns (`tests/acceptance/bashunit_fail_test.sh`)
 ```bash
 function set_up_before_script() {
-  TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
-  TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
+    TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
+    TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
 }
 
 function test_bashunit_when_a_test_fail_verbose_output_env() {
-  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+    local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+    assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+    assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }
 ```
 
 ### Custom assertions (`tests/functional/custom_asserts.sh`)
 ```bash
 function assert_foo() {
-  local actual="$1"
-  local expected="foo"
+    local actual="$1"
+    local expected="foo"
 
-  if [[ "$expected" != "$actual" ]]; then
+    if [[ "$expected" != "$actual" ]]; then
     bashunit::assertion_failed "$expected" "${actual}"
     return
-  fi
+    fi
 
-  bashunit::assertion_passed
+    bashunit::assertion_passed
 }
 
 function assert_positive_number() {
-  local actual="$1"
+    local actual="$1"
 
-  if [[ "$actual" -le 0 ]]; then
+    if [[ "$actual" -le 0 ]]; then
     bashunit::assertion_failed "positive number" "${actual}" "got"
     return
-  fi
+    fi
 
-  bashunit::assertion_passed
+    bashunit::assertion_passed
 }
 ```
 
@@ -228,19 +228,19 @@ function assert_positive_number() {
 ## Before you touch any code
 
 1. **Read ADRs first**
-   * Review existing ADRs in the `adrs/` folder to understand decisions, constraints, and paved-road patterns.
-   * Current ADRs: error detection, booleans, parallel testing, metadata prefix, copilot instructions
-   * If your change introduces a significant decision, **create a new ADR** using `adrs/TEMPLATE.md`.
+    * Review existing ADRs in the `adrs/` folder to understand decisions, constraints, and paved-road patterns.
+    * Current ADRs: error detection, booleans, parallel testing, metadata prefix, copilot instructions
+    * If your change introduces a significant decision, **create a new ADR** using `adrs/TEMPLATE.md`.
 
 2. **Create a task file (required)**
-   * Path: `./.tasks/YYYY-MM-DD-slug.md` (format: `YYYY-MM-DD-slug.md`)
-   * This file is **versioned** and is the single source of truth for your current task.
+    * Path: `./.tasks/YYYY-MM-DD-slug.md` (format: `YYYY-MM-DD-slug.md`)
+    * This file is **versioned** and is the single source of truth for your current task.
 
 3. **Study existing test patterns extensively**
-   * **Unit tests**: Look at `tests/unit/assert_test.sh`, `tests/unit/globals_test.sh`, `tests/unit/test_doubles_test.sh`
-   * **Functional tests**: Check `tests/functional/doubles_test.sh`, `tests/functional/provider_test.sh`
-   * **Acceptance tests**: Study `tests/acceptance/bashunit_test.sh`, `tests/acceptance/mock_test.sh`
-   * Follow established naming, structure, and assertion patterns exactly
+    * **Unit tests**: Look at `tests/unit/assert_test.sh`, `tests/unit/globals_test.sh`, `tests/unit/test_doubles_test.sh`
+    * **Functional tests**: Check `tests/functional/doubles_test.sh`, `tests/functional/provider_test.sh`
+    * **Acceptance tests**: Study `tests/acceptance/bashunit_test.sh`, `tests/acceptance/mock_test.sh`
+    * Follow established naming, structure, and assertion patterns exactly
 
 ---
 
@@ -301,7 +301,7 @@ local param="${1:-}"
 
 # ✅ GOOD - Function existence check (from globals_test.sh)
 function existing_fn(){
-  return 0
+    return 0
 }
 assert_successful_code "$(is_command_available existing_fn)"
 
@@ -332,11 +332,11 @@ function provide_single_values() { ... }
 ```bash
 # ✅ GOOD - Line continuation for readability (from assert_test.sh)
 assert_same\
-  "$(console_results::print_failed_test\
+    "$(console_results::print_failed_test\
     "Unsuccessful assert true" \
     "true or 0" \
     "but got " "false")"\
-  "$(assert_true false)"
+    "$(assert_true false)"
 
 # ✅ GOOD - Proper quoting and color handling
 local colored=$(printf '\e[31mHello\e[0m World!')
@@ -407,11 +407,11 @@ assert_not_contains "unexpected_part" "${output}"
 
 # Testing assertion failures (critical pattern from assert_test.sh)
 assert_same\
-  "$(console_results::print_failed_test\
+    "$(console_results::print_failed_test\
     "Test name" \
     "expected_value" \
     "but got " "actual_value")"\
-  "$(failing_assertion)"
+    "$(failing_assertion)"
 ```
 
 ---
@@ -421,80 +421,80 @@ assert_same\
 ### Mock patterns (with file fixtures)
 ```bash
 function test_mock_with_file_content() {
-  # Mock with file content
-  mock ps cat ./tests/functional/fixtures/doubles_ps_output
-  assert_match_snapshot "$(source ./tests/functional/fixtures/doubles_script.sh)"
+    # Mock with file content
+    mock ps cat ./tests/functional/fixtures/doubles_ps_output
+    assert_match_snapshot "$(source ./tests/functional/fixtures/doubles_script.sh)"
 }
 
 function test_mock_with_inline_content() {
-  # Mock with heredoc
-  mock ps<<EOF
+    # Mock with heredoc
+    mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
 8387  ?        00:00:00 /usr/sbin/apache2 -k start
 EOF
 
-  assert_successful_code "$(code_that_uses_ps)"
+    assert_successful_code "$(code_that_uses_ps)"
 }
 
 function test_mock_with_simple_command() {
-  # Mock with simple echo
-  mock ps echo hello world
-  assert_same "hello world" "$(ps)"
+    # Mock with simple echo
+    mock ps echo hello world
+    assert_same "hello world" "$(ps)"
 }
 ```
 
 ### Spy patterns (verification focused)
 ```bash
 function test_spy_function_calls() {
-  spy ps
-  spy awk
-  spy head
+    spy ps
+    spy awk
+    spy head
 
-  # Execute function that uses these commands
-  ./tests/functional/fixtures/doubles_script.sh
+    # Execute function that uses these commands
+    ./tests/functional/fixtures/doubles_script.sh
 
-  # Verify all were called
-  assert_have_been_called ps
-  assert_have_been_called awk
-  assert_have_been_called head
+    # Verify all were called
+    assert_have_been_called ps
+    assert_have_been_called awk
+    assert_have_been_called head
 }
 
 function test_spy_call_counts() {
-  spy ps
+    spy ps
 
-  ps first_call
-  ps second_call
+    ps first_call
+    ps second_call
 
-  assert_have_been_called_times 2 ps
+    assert_have_been_called_times 2 ps
 }
 
 function test_spy_with_arguments() {
-  spy ps
-  ps a_random_parameter_1 a_random_parameter_2
+    spy ps
+    ps a_random_parameter_1 a_random_parameter_2
 
-  assert_have_been_called_with ps "a_random_parameter_1 a_random_parameter_2"
+    assert_have_been_called_with ps "a_random_parameter_1 a_random_parameter_2"
 }
 
 function test_spy_sourced_functions() {
-  source ./fixtures/fake_function_to_spy.sh
-  spy function_to_be_spied_on
+    source ./fixtures/fake_function_to_spy.sh
+    spy function_to_be_spied_on
 
-  function_to_be_spied_on
+    function_to_be_spied_on
 
-  assert_have_been_called function_to_be_spied_on
+    assert_have_been_called function_to_be_spied_on
 }
 
 # CRITICAL: Mock cleanup is automatic between tests (tests/acceptance/mock_test.sh)
 function test_runner_clear_mocks_first() {
-  mock ls echo foo
-  assert_same "foo" "$(ls)"
+    mock ls echo foo
+    assert_same "foo" "$(ls)"
 }
 
 function test_runner_clear_mocks_second() {
-  # Mocks are automatically cleared between tests
-  assert_not_equals "foo" "$(ls)"
+    # Mocks are automatically cleared between tests
+    assert_not_equals "foo" "$(ls)"
 }
 ```
 
@@ -506,13 +506,13 @@ function test_runner_clear_mocks_second() {
 ```bash
 # @data_provider provide_multiples_values
 function test_multiple_values_from_data_provider() {
-  local first=$1
-  local second=$2
-  assert_equals "${_GLOBAL}" "$first-$second"
+    local first=$1
+    local second=$2
+    assert_equals "${_GLOBAL}" "$first-$second"
 }
 
 function provide_multiples_values() {
-  echo "aa" "bb"  # single line with multiple values
+    echo "aa" "bb"  # single line with multiple values
 }
 ```
 
@@ -520,14 +520,14 @@ function provide_multiples_values() {
 ```bash
 # @data_provider provide_single_values
 function test_single_values_from_data_provider() {
-  local data="$1"
-  assert_not_equals "zero" "$data"
+    local data="$1"
+    assert_not_equals "zero" "$data"
 }
 
 function provide_single_values() {
-  echo "one"    # each echo is a separate test case
-  echo "two"
-  echo "three"
+    echo "one"    # each echo is a separate test case
+    echo "two"
+    echo "three"
 }
 ```
 
@@ -535,15 +535,15 @@ function provide_single_values() {
 ```bash
 # @data_provider provide_empty_value
 function test_empty_value_from_data_provider() {
-  local first="$1"
-  local second="$2"
+    local first="$1"
+    local second="$2"
 
-  assert_same "" "$first"
-  assert_same "two" "$second"
+    assert_same "" "$first"
+    assert_same "two" "$second"
 }
 
 function provide_empty_value() {
-  echo "" "two"  # empty first parameter
+    echo "" "two"  # empty first parameter
 }
 ```
 
@@ -555,31 +555,31 @@ function provide_empty_value() {
 ```bash
 # Script-level setup (once before all tests in file)
 function set_up_before_script() {
-  SCRIPT_TEMP_FILE=$(temp_file "custom-prefix")
-  SCRIPT_TEMP_DIR=$(temp_dir "custom-prefix")
-  TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
+    SCRIPT_TEMP_FILE=$(temp_file "custom-prefix")
+    SCRIPT_TEMP_DIR=$(temp_dir "custom-prefix")
+    TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
 # Test-level setup (before each individual test)
 function set_up() {
-  _GLOBAL="aa-bb"
-  TEST_FILE="$(temp_file "test_case")"
-  BASHUNIT_DEV_LOG=$(temp_file)
-  export BASHUNIT_DEV_LOG
+    _GLOBAL="aa-bb"
+    TEST_FILE="$(temp_file "test_case")"
+    BASHUNIT_DEV_LOG=$(temp_file)
+    export BASHUNIT_DEV_LOG
 }
 
 # Test-level teardown (after each individual test)
 function tear_down() {
-  [[ -f "${TEST_FILE:-}" ]] && rm -f "${TEST_FILE}"
-  rm "$BASHUNIT_DEV_LOG"
-  unset code
-  unset ps
+    [[ -f "${TEST_FILE:-}" ]] && rm -f "${TEST_FILE}"
+    rm "$BASHUNIT_DEV_LOG"
+    unset code
+    unset ps
 }
 
 # Script-level teardown (once after all tests in file)
 function tear_down_after_script() {
-  [[ -d "${SCRIPT_TEMP_DIR:-}" ]] && rm -rf "${SCRIPT_TEMP_DIR}"
-  export BASHUNIT_DEV_LOG=""
+    [[ -d "${SCRIPT_TEMP_DIR:-}" ]] && rm -rf "${SCRIPT_TEMP_DIR}"
+    export BASHUNIT_DEV_LOG=""
 }
 ```
 
@@ -588,19 +588,19 @@ function tear_down_after_script() {
 TEST_COUNTER=1
 
 function set_up_before_script() {
-  TEST_COUNTER=$(( TEST_COUNTER + 1 ))  # 2
+    TEST_COUNTER=$(( TEST_COUNTER + 1 ))  # 2
 }
 
 function set_up() {
-  TEST_COUNTER=$(( TEST_COUNTER + 1 ))  # 3 for each test
+    TEST_COUNTER=$(( TEST_COUNTER + 1 ))  # 3 for each test
 }
 
 function tear_down() {
-  TEST_COUNTER=$(( TEST_COUNTER - 1 ))  # back to 2
+    TEST_COUNTER=$(( TEST_COUNTER - 1 ))  # back to 2
 }
 
 function test_counter_state() {
-  assert_same "3" "$TEST_COUNTER"  # setup_before_script + setup
+    assert_same "3" "$TEST_COUNTER"  # setup_before_script + setup
 }
 ```
 
@@ -611,37 +611,37 @@ function test_counter_state() {
 ### Implementation pattern
 ```bash
 function assert_foo() {
-  local actual="$1"
-  local expected="foo"
+    local actual="$1"
+    local expected="foo"
 
-  if [[ "$expected" != "$actual" ]]; then
+    if [[ "$expected" != "$actual" ]]; then
     bashunit::assertion_failed "$expected" "${actual}"
     return
-  fi
+    fi
 
-  bashunit::assertion_passed
+    bashunit::assertion_passed
 }
 
 function assert_positive_number() {
-  local actual="$1"
+    local actual="$1"
 
-  if [[ "$actual" -le 0 ]]; then
+    if [[ "$actual" -le 0 ]]; then
     bashunit::assertion_failed "positive number" "${actual}" "got"
     return
-  fi
+    fi
 
-  bashunit::assertion_passed
+    bashunit::assertion_passed
 }
 ```
 
 ### Testing custom assertions
 ```bash
 function test_assert_foo_passed() {
-  assert_foo "foo"
+    assert_foo "foo"
 }
 
 function test_assert_foo_failed() {
-  assert_same\
+    assert_same\
     "$(console_results::print_failed_test "Assert foo" "foo" "but got " "bar")"\
     "$(assert_foo "bar")"
 }
@@ -654,36 +654,36 @@ function test_assert_foo_failed() {
 ### Environment and configuration
 ```bash
 function set_up_before_script() {
-  TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
-  TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
+    TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
+    TEST_ENV_FILE_SIMPLE="tests/acceptance/fixtures/.env.simple"
 }
 ```
 
 ### Testing CLI output and exit codes
 ```bash
 function test_bashunit_should_display_help() {
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --help)"
-  assert_successful_code "./bashunit --no-parallel --env "$TEST_ENV_FILE" --help"
+    assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --help)"
+    assert_successful_code "./bashunit --no-parallel --env "$TEST_ENV_FILE" --help"
 }
 
 function test_bashunit_when_a_test_fail_verbose_output() {
-  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+    local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file""
+    assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+    assert_general_error "./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file""
 }
 ```
 
 ### Testing different output modes
 ```bash
 function test_bashunit_simple_vs_verbose_output() {
-  local test_file=./tests/acceptance/fixtures/test_failing.sh
+    local test_file=./tests/acceptance/fixtures/test_failing.sh
 
-  # Test simple output
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+    # Test simple output
+    assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
 
-  # Test detailed output
-  assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --detailed)"
+    # Test detailed output
+    assert_match_snapshot "$(./bashunit --env "$TEST_ENV_FILE" "$test_file" --detailed)"
 }
 ```
 
@@ -796,18 +796,18 @@ make format                    # Format code (if Makefile exists)
 ### Testing error conditions (from tests/unit/assert_test.sh)
 ```bash
 function test_unsuccessful_assert_true() {
-  assert_same\
+    assert_same\
     "$(console_results::print_failed_test\
-      "Unsuccessful assert true" \
-      "true or 0" \
-      "but got " "false")"\
+        "Unsuccessful assert true" \
+        "true or 0" \
+        "but got " "false")"\
     "$(assert_true false)"
 }
 
 function test_unsuccessful_spy_called() {
-  spy ps
+    spy ps
 
-  assert_same\
+    assert_same\
     "$(console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")"\
     "$(assert_have_been_called ps)"
 }
@@ -816,13 +816,13 @@ function test_unsuccessful_spy_called() {
 ### Exit code testing patterns
 ```bash
 function test_bashunit_exit_codes() {
-  local test_file="./tests/acceptance/fixtures/test_failing.sh"
+    local test_file="./tests/acceptance/fixtures/test_failing.sh"
 
-  # Test that failing tests return error exit code
-  assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
+    # Test that failing tests return error exit code
+    assert_general_error "$(./bashunit --env "$TEST_ENV_FILE" "$test_file")"
 
-  # Test that passing tests return success exit code
-  assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "passing_test.sh")"
+    # Test that passing tests return success exit code
+    assert_successful_code "$(./bashunit --env "$TEST_ENV_FILE" "passing_test.sh")"
 }
 ```
 
@@ -1005,16 +1005,16 @@ Use this template for internal changes, fixes, refactors, documentation.
 
 ### ✅ Testing (following observed patterns)
 - **Unit tests** follow exact patterns from `tests/unit/assert_test.sh`
-  - Use line continuation for complex assertions
-  - Test both success and failure cases
-  - Follow `test_successful_*` and `test_unsuccessful_*` naming
+    - Use line continuation for complex assertions
+    - Test both success and failure cases
+    - Follow `test_successful_*` and `test_unsuccessful_*` naming
 - **Functional tests** use patterns from `tests/functional/doubles_test.sh`
-  - Proper mock/spy setup and cleanup verification
-  - Integration with fixture files when appropriate
+    - Proper mock/spy setup and cleanup verification
+    - Integration with fixture files when appropriate
 - **CLI tests** follow patterns from `tests/acceptance/bashunit_*_test.sh`
-  - Use proper environment file setup
-  - Test both output content and exit codes
-  - Snapshot testing for stable CLI output
+    - Use proper environment file setup
+    - Test both output content and exit codes
+    - Snapshot testing for stable CLI output
 - **Data providers** use exact `@data_provider` comment syntax
 - **Lifecycle hooks** follow `set_up_before_script` patterns exactly
 
