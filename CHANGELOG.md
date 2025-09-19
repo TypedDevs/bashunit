@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+
 - Add Project-wide `copilot-instructions.md`
     - Add comprehensive TDD workflow with mandatory test-first approach (Red-Green-Refactor cycle)
     - Add mandatory task file workflow in `.tasks/` directory with Template A (new capabilities) and Template B (modifications)
