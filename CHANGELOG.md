@@ -27,6 +27,7 @@
 - Update docs mocks usage
 - Skip report tracking unless a report output is requested
 - Add support for `.bash` test files
+- Add `-q|--quiet|--failures-only` mode
 - Add runtime check for Bash >= 3.2
 - Add fallback for `clock::now` with seconds resolution only
 - Add `set_test_title` to allow custom test titles

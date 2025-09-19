@@ -201,7 +201,7 @@ function runner::call_test_functions() {
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! env::is_simple_output_enabled && ! env::is_failures_only_enabled; then
     echo ""
   fi
 }
@@ -230,7 +230,7 @@ function runner::call_bench_functions() {
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! env::is_simple_output_enabled && ! env::is_failures_only_enabled; then
     echo ""
   fi
 }
@@ -240,7 +240,7 @@ function runner::render_running_file_header() {
 
   internal_log "Running file" "$script"
 
-  if parallel::is_enabled; then
+  if parallel::is_enabled || env::is_failures_only_enabled; then
     return
   fi
 
@@ -299,8 +299,12 @@ function runner::run_test() {
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
+    local failures_only_backup="$BASHUNIT_FAILURES_ONLY"
+    export BASHUNIT_FAILURES_ONLY=false
     "$fn_name" "$@" 2>&1
-
+    local exit_code=$?
+    export BASHUNIT_FAILURES_ONLY="$failures_only_backup"
+    exit "$exit_code"
   )
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
