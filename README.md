@@ -14,6 +14,9 @@
     <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
     </a>
+    <a href="https://deepwiki.com/TypedDevs/bashunit">
+        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+    </a>
 </p>
 <br>
 <p align="center">

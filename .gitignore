@@ -20,3 +20,6 @@ report.html
 local/
 tmp/
 dev.log
+
+# ai
+.tasks/*
