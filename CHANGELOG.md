@@ -8,6 +8,10 @@
 - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
 - Include `set_test_title` helper in the single-file library
 - Fix lifecycle hooks capture-and-report flow errors
+    - set_up
+    - tear_down
+    - set_up_before_script
+    - tear_down_after_script
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 

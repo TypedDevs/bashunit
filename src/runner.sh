@@ -295,17 +295,25 @@ function runner::run_test() {
 
   local test_execution_result=$(
     # shellcheck disable=SC2154
-    trap '
-      exit_code=$?
+    trap "
+      exit_code=\$?
       set +e
-      state::set_test_exit_code "$exit_code"
-      runner::run_tear_down
+      teardown_status=0
+      runner::run_tear_down \"$test_file\" || teardown_status=\$?
       runner::clear_mocks
       cleanup_testcase_temp_files
+      if [[ \$teardown_status -ne 0 ]]; then
+        state::set_test_exit_code \"\$teardown_status\"
+      else
+        state::set_test_exit_code \"\$exit_code\"
+      fi
       state::export_subshell_context
-    ' EXIT
+    " EXIT
     state::initialize_assertions_count
-    runner::run_set_up
+    if ! runner::run_set_up "$test_file"; then
+      status=$?
+      exit "$status"
+    fi
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
@@ -379,17 +387,46 @@ function runner::run_test() {
   local test_title=""
   [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
 
+  local encoded_hook_failure
+  encoded_hook_failure="${test_execution_result##*##TEST_HOOK_FAILURE=}"
+  encoded_hook_failure="${encoded_hook_failure%%##*}"
+  local hook_failure=""
+  if [[ "$encoded_hook_failure" != "$test_execution_result" ]]; then
+    hook_failure="$encoded_hook_failure"
+  fi
+
+  local encoded_hook_message
+  encoded_hook_message="${test_execution_result##*##TEST_HOOK_MESSAGE=}"
+  encoded_hook_message="${encoded_hook_message%%##*}"
+  local hook_message=""
+  if [[ -n "$encoded_hook_message" ]]; then
+    hook_message="$(helper::decode_base64 "$encoded_hook_message")"
+  fi
+
   state::set_test_title "$test_title"
   local label
   label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
   state::reset_test_title
 
+  local failure_label="$label"
+  local failure_function="$fn_name"
+  if [[ -n "$hook_failure" ]]; then
+    failure_label="$(helper::normalize_test_function_name "$hook_failure")"
+    failure_function="$hook_failure"
+  fi
+
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$label" "$runtime_error"
-    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$fn_name" "$runtime_error"
-    internal_log "Test error" "$label" "$runtime_error"
+    local error_message="$runtime_error"
+    if [[ -n "$hook_failure" && -n "$hook_message" ]]; then
+      error_message="$hook_message"
+    elif [[ -z "$error_message" && -n "$hook_message" ]]; then
+      error_message="$hook_message"
+    fi
+    console_results::print_error_test "$failure_function" "$error_message"
+    reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
+    internal_log "Test error" "$failure_label" "$error_message"
     return
   fi
 
@@ -624,8 +661,9 @@ function runner::execute_file_hook() {
 }
 
 function runner::run_set_up() {
+  local _test_file="${1-}"
   internal_log "run_set_up"
-  helper::execute_function_if_exists 'set_up'
+  runner::execute_test_hook 'set_up'
 }
 
 function runner::run_set_up_before_script() {
@@ -635,8 +673,64 @@ function runner::run_set_up_before_script() {
 }
 
 function runner::run_tear_down() {
+  local _test_file="${1-}"
   internal_log "run_tear_down"
-  helper::execute_function_if_exists 'tear_down'
+  runner::execute_test_hook 'tear_down'
+}
+
+function runner::execute_test_hook() {
+  local hook_name="$1"
+
+  if [[ "$(type -t "$hook_name")" != "function" ]]; then
+    return 0
+  fi
+
+  local hook_output=""
+  local status=0
+  local hook_output_file
+  hook_output_file=$(temp_file "${hook_name}_output")
+
+  {
+    "$hook_name"
+  } >"$hook_output_file" 2>&1 || status=$?
+
+  if [[ -f "$hook_output_file" ]]; then
+    hook_output=$(cat "$hook_output_file")
+    rm -f "$hook_output_file"
+  fi
+
+  if [[ $status -ne 0 ]]; then
+    local message="$hook_output"
+    if [[ -n "$hook_output" ]]; then
+      printf "%s" "$hook_output"
+    else
+      message="Hook '$hook_name' failed with exit code $status"
+      printf "%s\n" "$message" >&2
+    fi
+    runner::record_test_hook_failure "$hook_name" "$message" "$status"
+    return "$status"
+  fi
+
+  if [[ -n "$hook_output" ]]; then
+    printf "%s" "$hook_output"
+  fi
+
+  return 0
+}
+
+function runner::record_test_hook_failure() {
+  local hook_name="$1"
+  local hook_message="$2"
+  local status="$3"
+
+  if [[ -n "$(state::get_test_hook_failure)" ]]; then
+    return "$status"
+  fi
+
+  state::set_test_hook_failure "$hook_name"
+  state::set_test_hook_message "$hook_message"
+
+  return "$status"
 }
 
 function runner::clear_mocks() {
