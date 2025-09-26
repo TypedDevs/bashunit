@@ -294,6 +294,7 @@ function runner::run_test() {
   exec 3>&1
 
   local test_execution_result=$(
+    # shellcheck disable=SC2064
     # shellcheck disable=SC2154
     trap "
       exit_code=\$?
