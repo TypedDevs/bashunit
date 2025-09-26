@@ -17,13 +17,19 @@ function runner::load_test_files() {
     internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
-    runner::run_set_up_before_script
+    if ! runner::run_set_up_before_script "$test_file"; then
+      runner::clean_set_up_and_tear_down_after_script
+      if ! parallel::is_enabled; then
+        cleanup_script_temp_files
+      fi
+      continue
+    fi
     if parallel::is_enabled; then
       runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
     else
       runner::call_test_functions "$test_file" "$filter"
     fi
-    runner::run_tear_down_after_script
+    runner::run_tear_down_after_script "$test_file"
     runner::clean_set_up_and_tear_down_after_script
     if ! parallel::is_enabled; then
       cleanup_script_temp_files
@@ -57,9 +63,13 @@ function runner::load_bench_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
-    runner::run_set_up_before_script
+    if ! runner::run_set_up_before_script "$bench_file"; then
+      runner::clean_set_up_and_tear_down_after_script
+      cleanup_script_temp_files
+      continue
+    fi
     runner::call_bench_functions "$bench_file" "$filter"
-    runner::run_tear_down_after_script
+    runner::run_tear_down_after_script "$bench_file"
     runner::clean_set_up_and_tear_down_after_script
     cleanup_script_temp_files
   done
@@ -555,14 +565,73 @@ function runner::write_failure_result_output() {
   echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
+function runner::record_file_hook_failure() {
+  local hook_name="$1"
+  local test_file="$2"
+  local hook_output="$3"
+  local status="$4"
+  local render_header="${5:-false}"
+
+  if [[ "$render_header" == true ]]; then
+    runner::render_running_file_header "$test_file"
+  fi
+
+  if [[ -z "$hook_output" ]]; then
+    hook_output="Hook '$hook_name' failed with exit code $status"
+  fi
+
+  state::add_tests_failed
+  console_results::print_error_test "$hook_name" "$hook_output"
+  reports::add_test_failed "$test_file" "$(helper::normalize_test_function_name "$hook_name")" 0 0
+  runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
+
+  return "$status"
+}
+
+function runner::execute_file_hook() {
+  local hook_name="$1"
+  local test_file="$2"
+  local render_header="${3:-false}"
+
+  if [[ "$(type -t "$hook_name")" != "function" ]]; then
+    return 0
+  fi
+
+  local hook_output=""
+  local status=0
+  local hook_output_file
+  hook_output_file=$(temp_file "${hook_name}_output")
+
+  {
+    "$hook_name"
+  } >"$hook_output_file" 2>&1 || status=$?
+
+  if [[ -f "$hook_output_file" ]]; then
+    hook_output=$(cat "$hook_output_file")
+    rm -f "$hook_output_file"
+  fi
+
+  if [[ $status -ne 0 ]]; then
+    runner::record_file_hook_failure "$hook_name" "$test_file" "$hook_output" "$status" "$render_header"
+    return $status
+  fi
+
+  if [[ -n "$hook_output" ]]; then
+    printf "%s\n" "$hook_output"
+  fi
+
+  return 0
+}
+
 function runner::run_set_up() {
   internal_log "run_set_up"
   helper::execute_function_if_exists 'set_up'
 }
 
 function runner::run_set_up_before_script() {
+  local test_file="$1"
   internal_log "run_set_up_before_script"
-  helper::execute_function_if_exists 'set_up_before_script'
+  runner::execute_file_hook 'set_up_before_script' "$test_file" true
 }
 
 function runner::run_tear_down() {
@@ -577,8 +646,9 @@ function runner::clear_mocks() {
 }
 
 function runner::run_tear_down_after_script() {
+  local test_file="$1"
   internal_log "run_tear_down_after_script"
-  helper::execute_function_if_exists 'tear_down_after_script'
+  runner::execute_file_hook 'tear_down_after_script' "$test_file"
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {

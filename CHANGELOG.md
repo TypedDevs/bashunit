@@ -7,6 +7,7 @@
 - Add two-way synchronization policy between `AGENTS.md` and `copilot-instructions.md` with automatic validation in task templates and PR checklist
 - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
 - Include `set_test_title` helper in the single-file library
+- Fix lifecycle hooks capture-and-report flow errors
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 

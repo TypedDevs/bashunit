@@ -85,6 +85,8 @@ function tear_down() {
 The `set_up_before_script` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
 This is useful for global setup that applies to all test functions in the script, such as loading shared resources.
 
+If any command inside `set_up_before_script` fails, bashunit now halts the file immediately and reports the error (including the failing command and location) before any test functions run. This ensures misconfigured environments or missing dependencies surface clearly during setup.
+
 ::: code-group
 ```bash [Example]
 function set_up_before_script() {
@@ -98,6 +100,8 @@ function set_up_before_script() {
 The `tear_down_after_script` auxiliary function is called, if it is present in the test file, only once when all the test functions in the test file have been executed.
 This auxiliary function is similar to how `set_up_before_script` works but at the end of the tests.
 It provides a hook for any cleanup that should occur after all tests have run, such as deleting temporary files or releasing resources.
+
+Failures inside `tear_down_after_script` are also surfaced as dedicated errors after the final test output so cleanup problems (for example, missing tools or permissions) are visible in the run summary.
 
 ::: code-group
 ```bash [Example]
