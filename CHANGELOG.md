@@ -3,13 +3,6 @@
 ## Unreleased
 
 - Add Project-wide `copilot-instructions.md`
-    - Add comprehensive TDD workflow with mandatory test-first approach (Red-Green-Refactor cycle)
-    - Add mandatory task file workflow in `.tasks/` directory with Template A (new capabilities) and Template B (modifications)
-    - Add private `.task/` directory to `.gitignore` for scratch notes and logs
-    - Add enhanced definition of done with TDD compliance, pattern compliance, and process requirements
-    - Add complete assertion catalog and testing patterns documentation based on existing codebase analysis
-    - Add logbook requirement for agent thought process tracking with timestamps
-    - Add strict workflow rules with no exceptions for task file creation on every change
 - Add `AGENTS.md` for external developer tools integration
 - Add two-way synchronization policy between `AGENTS.md` and `copilot-instructions.md` with automatic validation in task templates and PR checklist
 - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
