@@ -137,9 +137,14 @@ function helper::get_functions_to_run() {
 # @param $1 string Eg: "do_something"
 #
 function helper::execute_function_if_exists() {
-  if [[ "$(type -t "$1")" == "function" ]]; then
-    "$1" 2>/dev/null
+  local fn_name="$1"
+
+  if [[ "$(type -t "$fn_name")" == "function" ]]; then
+    "$fn_name"
+    return $?
   fi
+
+  return 0
 }
 
 #

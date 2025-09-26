@@ -16,6 +16,8 @@ _DUPLICATED_TEST_FUNCTIONS_FOUND=false
 _TEST_OUTPUT=""
 _TEST_TITLE=""
 _TEST_EXIT_CODE=0
+_TEST_HOOK_FAILURE=""
+_TEST_HOOK_MESSAGE=""
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -145,6 +147,30 @@ function state::reset_test_title() {
   _TEST_TITLE=""
 }
 
+function state::get_test_hook_failure() {
+  echo "$_TEST_HOOK_FAILURE"
+}
+
+function state::set_test_hook_failure() {
+  _TEST_HOOK_FAILURE="$1"
+}
+
+function state::reset_test_hook_failure() {
+  _TEST_HOOK_FAILURE=""
+}
+
+function state::get_test_hook_message() {
+  echo "$_TEST_HOOK_MESSAGE"
+}
+
+function state::set_test_hook_message() {
+  _TEST_HOOK_MESSAGE="$1"
+}
+
+function state::reset_test_hook_message() {
+  _TEST_HOOK_MESSAGE=""
+}
+
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
@@ -159,20 +185,26 @@ function state::initialize_assertions_count() {
     _ASSERTIONS_SNAPSHOT=0
     _TEST_OUTPUT=""
     _TEST_TITLE=""
+    _TEST_HOOK_FAILURE=""
+    _TEST_HOOK_MESSAGE=""
 }
 
 function state::export_subshell_context() {
   local encoded_test_output
   local encoded_test_title
 
+  local encoded_test_hook_message
+
   if base64 --help 2>&1 | grep -q -- "-w"; then
     # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64 -w 0)
     encoded_test_title=$(echo -n "$_TEST_TITLE" | base64 -w 0)
+    encoded_test_hook_message=$(echo -n "$_TEST_HOOK_MESSAGE" | base64 -w 0)
   else
     # macOS and others: default base64 without wrapping
     encoded_test_output=$(echo -n "$_TEST_OUTPUT" | base64)
     encoded_test_title=$(echo -n "$_TEST_TITLE" | base64)
+    encoded_test_hook_message=$(echo -n "$_TEST_HOOK_MESSAGE" | base64)
   fi
 
   cat <<EOF
@@ -182,6 +214,8 @@ function state::export_subshell_context() {
 ##ASSERTIONS_INCOMPLETE=$_ASSERTIONS_INCOMPLETE\
 ##ASSERTIONS_SNAPSHOT=$_ASSERTIONS_SNAPSHOT\
 ##TEST_EXIT_CODE=$_TEST_EXIT_CODE\
+##TEST_HOOK_FAILURE=$_TEST_HOOK_FAILURE\
+##TEST_HOOK_MESSAGE=$encoded_test_hook_message\
 ##TEST_TITLE=$encoded_test_title\
 ##TEST_OUTPUT=$encoded_test_output\
 ##

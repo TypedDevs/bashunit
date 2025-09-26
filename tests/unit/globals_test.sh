@@ -19,7 +19,7 @@ function set_up() {
 }
 
 function tear_down() {
-  rm "$BASHUNIT_DEV_LOG"
+  rm -f "$BASHUNIT_DEV_LOG"
 }
 
 function test_globals_current_dir() {

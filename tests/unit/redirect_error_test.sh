@@ -4,7 +4,7 @@ set -euo pipefail
 _ERROR_LOG=temp_error.log
 
 function tear_down() {
-  rm $_ERROR_LOG
+  rm -f "$_ERROR_LOG"
 }
 
 function test_redirect_error_with_log() {
