@@ -295,7 +295,7 @@ function runner::run_test() {
 
   local test_execution_result=$(
     # shellcheck disable=SC2064
-    trap "exit_code=\$?; runner::cleanup_on_exit \"$test_file\" \$exit_code" EXIT
+    trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
     state::initialize_assertions_count
     if ! runner::run_set_up "$test_file"; then
       status=$?
