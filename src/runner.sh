@@ -295,21 +295,7 @@ function runner::run_test() {
 
   local test_execution_result=$(
     # shellcheck disable=SC2064
-    # shellcheck disable=SC2154
-    trap "
-      exit_code=\$?
-      set +e
-      teardown_status=0
-      runner::run_tear_down \"$test_file\" || teardown_status=\$?
-      runner::clear_mocks
-      cleanup_testcase_temp_files
-      if [[ \$teardown_status -ne 0 ]]; then
-        state::set_test_exit_code \"\$teardown_status\"
-      else
-        state::set_test_exit_code \"\$exit_code\"
-      fi
-      state::export_subshell_context
-    " EXIT
+    trap "exit_code=\$?; runner::cleanup_on_exit \"$test_file\" \$exit_code" EXIT
     state::initialize_assertions_count
     if ! runner::run_set_up "$test_file"; then
       status=$?
@@ -478,6 +464,25 @@ function runner::run_test() {
   state::add_tests_passed
   reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   internal_log "Test passed" "$label"
+}
+
+function runner::cleanup_on_exit() {
+  local test_file="$1"
+  local exit_code="$2"
+
+  set +e
+  local teardown_status=0
+  runner::run_tear_down "$test_file" || teardown_status=$?
+  runner::clear_mocks
+  cleanup_testcase_temp_files
+
+  if [[ $teardown_status -ne 0 ]]; then
+    state::set_test_exit_code "$teardown_status"
+  else
+    state::set_test_exit_code "$exit_code"
+  fi
+
+  state::export_subshell_context
 }
 
 function runner::decode_subshell_output() {
