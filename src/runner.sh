@@ -241,7 +241,7 @@ function runner::call_bench_functions() {
   for fn_name in "${functions_to_run[@]}"; do
     local annotation_result
     annotation_result="$(benchmark::parse_annotations "$fn_name" "$script")"
-    set -- $annotation_result
+    set -- "$annotation_result"
     revs="$1"
     its="$2"
     max_ms="$3"
