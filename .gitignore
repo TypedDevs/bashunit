@@ -22,4 +22,5 @@ tmp/
 dev.log
 
 # ai
-.tasks/*
+.tasks/
+.claude/
