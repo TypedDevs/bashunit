@@ -33,7 +33,7 @@ function helper::normalize_test_function_name() {
   # Replace underscores with spaces
   result="${result//_/ }"
   # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  result="$(echo "${result:0:1}" | tr '[:lower:]' '[:upper:]')${result:1}"
 
   echo "$result"
 }
@@ -160,7 +160,8 @@ function helper::find_files_recursive() {
   local pattern="${2:-*[tT]est.sh}"
 
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+  local test_pattern='\[tT\]est\.sh$'
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ $test_pattern ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -187,7 +188,8 @@ function helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+  local valid_start_pattern='^[a-zA-Z_]'
+  if [[ ! $normalized_string =~ $valid_start_pattern ]]; then
     normalized_string="_$normalized_string"
   fi
 
@@ -269,7 +271,8 @@ function helper::find_total_tests() {
                 # shellcheck disable=SC2207
                 local functions_to_run=($filtered_functions)
                 for fn_name in "${functions_to_run[@]}"; do
-                    local provider_data=()
+                    local provider_data
+                    provider_data=()
                     while IFS=" " read -r line; do
                         provider_data+=("$line")
                     done <<< "$(helper::get_provider_data "$fn_name" "$file")"
@@ -295,7 +298,8 @@ function helper::load_test_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local test_files=()
+  local test_files
+  test_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
@@ -314,7 +318,8 @@ function helper::load_bench_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local bench_files=()
+  local bench_files
+  bench_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then

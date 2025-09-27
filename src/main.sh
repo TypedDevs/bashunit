@@ -4,7 +4,8 @@ function main::exec_tests() {
   local filter=$1
   local files=("${@:2}")
 
-  local test_files=()
+  local test_files
+  test_files=()
   while IFS= read -r line; do
     test_files+=("$line")
   done < <(helper::load_test_files "$filter" "${files[@]}")
@@ -82,7 +83,8 @@ function main::exec_benchmarks() {
   local filter=$1
   local files=("${@:2}")
 
-  local bench_files=()
+  local bench_files
+  bench_files=()
   while IFS= read -r line; do
     bench_files+=("$line")
   done < <(helper::load_bench_files "$filter" "${files[@]}")
@@ -189,7 +191,8 @@ function main::handle_assert_exit_code() {
     last_line=$(echo "$output" | tail -n 1)
     if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
       inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
-      if ! [[ $inner_exit_code =~ ^[0-9]+$ ]]; then
+      local number_pattern='^[0-9]+$'
+      if ! [[ $inner_exit_code =~ $number_pattern ]]; then
         inner_exit_code=1
       fi
       output=$(echo "$output" | sed '$d')

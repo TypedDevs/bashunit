@@ -51,10 +51,12 @@ function assert_false() {
 
 function run_command_or_eval() {
   local cmd="$1"
+  local eval_pattern='^eval'
+  local alias_pattern='^alias'
 
-  if [[ "$cmd" =~ ^eval ]]; then
+  if [[ "$cmd" =~ $eval_pattern ]]; then
     eval "${cmd#eval }" &> /dev/null
-  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
+  elif [[ "$(command -v "$cmd")" =~ $alias_pattern ]]; then
     eval "$cmd" &> /dev/null
   else
     "$cmd" &> /dev/null
@@ -546,7 +548,7 @@ function assert_line_count() {
     local actual
     actual=$(echo "$input_str" | wc -l | tr -d '[:blank:]')
     local additional_new_lines
-    additional_new_lines=$(grep -o '\\n' <<< "$input_str" | wc -l | tr -d '[:blank:]')
+    additional_new_lines=$(echo "$input_str" | grep -o '\\n' | wc -l | tr -d '[:blank:]')
     ((actual+=additional_new_lines))
   fi
 

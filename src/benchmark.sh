@@ -16,21 +16,27 @@ function benchmark::parse_annotations() {
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
-  if [[ $annotation =~ @revs=([0-9]+) ]]; then
+  local revs_pattern='@revs=([0-9]+)'
+  local revolutions_pattern='@revolutions=([0-9]+)'
+  local its_pattern='@its=([0-9]+)'
+  local iterations_pattern='@iterations=([0-9]+)'
+  local max_ms_pattern='@max_ms=([0-9.]+)'
+
+  if [[ $annotation =~ $revs_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @revolutions=([0-9]+) ]]; then
+  elif [[ $annotation =~ $revolutions_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @its=([0-9]+) ]]; then
+  if [[ $annotation =~ $its_pattern ]]; then
     its="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @iterations=([0-9]+) ]]; then
+  elif [[ $annotation =~ $iterations_pattern ]]; then
     its="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  if [[ $annotation =~ $max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  elif [[ $annotation =~ $max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
   fi
 
@@ -55,7 +61,8 @@ function benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
-  local durations=()
+  local durations
+  durations=()
 
   for ((i=1; i<=its; i++)); do
     local start_time=$(clock::now)
@@ -129,13 +136,15 @@ function benchmark::print_results() {
 
     if (( $(echo "$avg <= $max_ms" | bc -l) )); then
       local raw="≤ ${max_ms}"
-      printf -v padded "%14s" "$raw"
+      local padded
+      padded=$(printf "%14s" "$raw")
       printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"
       continue
     fi
 
     local raw="> ${max_ms}"
-    printf -v padded "%12s" "$raw"
+    local padded
+    padded=$(printf "%12s" "$raw")
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
       "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"

@@ -12,6 +12,7 @@
     - tear_down
     - set_up_before_script
     - tear_down_after_script
+- Support Bash 3.0 (Previously 3.2)
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 

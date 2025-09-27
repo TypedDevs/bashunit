@@ -31,7 +31,7 @@ Contributions are licensed under the [MIT License](https://github.com/TypedDevs/
 
 ### Prerequisites
 
-- Bash 3.2+
+- Bash 3.0+
 - Git
 - Make
 - [ShellCheck](https://github.com/koalaman/shellcheck#installing)
