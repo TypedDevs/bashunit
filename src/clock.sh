@@ -4,7 +4,8 @@ _CLOCK_NOW_IMPL=""
 
 function clock::_choose_impl() {
   local shell_time
-  local attempts=()
+  local attempts
+  attempts=()
 
   # 1. Try Perl with Time::HiRes
   attempts+=("Perl")

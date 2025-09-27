@@ -61,7 +61,8 @@ function benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
-  local durations=()
+  local durations
+  durations=()
 
   for ((i=1; i<=its; i++)); do
     local start_time=$(clock::now)
@@ -135,13 +136,15 @@ function benchmark::print_results() {
 
     if (( $(echo "$avg <= $max_ms" | bc -l) )); then
       local raw="≤ ${max_ms}"
-      printf -v padded "%14s" "$raw"
+      local padded
+      padded=$(printf "%14s" "$raw")
       printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"
       continue
     fi
 
     local raw="> ${max_ms}"
-    printf -v padded "%12s" "$raw"
+    local padded
+    padded=$(printf "%12s" "$raw")
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
       "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"

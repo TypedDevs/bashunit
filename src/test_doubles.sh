@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-declare -a MOCKED_FUNCTIONS=()
+MOCKED_FUNCTIONS=()
 
 function unmock() {
   local command=$1
@@ -116,7 +116,7 @@ function assert_have_been_called_with() {
   fi
 
   local raw
-  IFS='|' read -r raw _ <<<"$line"
+  raw=$(echo "$line" | cut -d'|' -f1)
 
   if [[ "$expected" != "$raw" ]]; then
     state::add_assertions_failed

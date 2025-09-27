@@ -33,7 +33,7 @@ function helper::normalize_test_function_name() {
   # Replace underscores with spaces
   result="${result//_/ }"
   # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  result="$(echo "${result:0:1}" | tr '[:lower:]' '[:upper:]')${result:1}"
 
   echo "$result"
 }
@@ -271,7 +271,8 @@ function helper::find_total_tests() {
                 # shellcheck disable=SC2207
                 local functions_to_run=($filtered_functions)
                 for fn_name in "${functions_to_run[@]}"; do
-                    local provider_data=()
+                    local provider_data
+                    provider_data=()
                     while IFS=" " read -r line; do
                         provider_data+=("$line")
                     done <<< "$(helper::get_provider_data "$fn_name" "$file")"
@@ -297,7 +298,8 @@ function helper::load_test_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local test_files=()
+  local test_files
+  test_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
@@ -316,7 +318,8 @@ function helper::load_bench_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local bench_files=()
+  local bench_files
+  bench_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then

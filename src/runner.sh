@@ -5,7 +5,8 @@ function runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
-  local scripts_ids=()
+  local scripts_ids
+  scripts_ids=()
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
@@ -189,7 +190,8 @@ function runner::call_test_functions() {
       break
     fi
 
-    local provider_data=()
+    local provider_data
+    provider_data=()
     while IFS=" " read -r line; do
       provider_data+=("$line")
     done <<< "$(helper::get_provider_data "$fn_name" "$script")"
@@ -203,7 +205,8 @@ function runner::call_test_functions() {
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      local parsed_data=()
+      local parsed_data
+      parsed_data=()
       while IFS= read -r line; do
         parsed_data+=( "$(helper::decode_base64 "${line}")" )
       done <<< "$(runner::parse_data_provider_args "$data")"
@@ -236,7 +239,12 @@ function runner::call_bench_functions() {
   fi
 
   for fn_name in "${functions_to_run[@]}"; do
-    read -r revs its max_ms <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
+    local annotation_result
+    annotation_result="$(benchmark::parse_annotations "$fn_name" "$script")"
+    set -- $annotation_result
+    revs="$1"
+    its="$2"
+    max_ms="$3"
     benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset fn_name
   done
