@@ -68,7 +68,8 @@ DIR="lib"
 VERSION="latest"
 
 function is_version() {
-  [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || "$1" == "latest" || "$1" == "beta" ]]
+  local version_pattern='^[0-9]+\.[0-9]+\.[0-9]+$'
+  [[ "$1" =~ $version_pattern || "$1" == "latest" || "$1" == "beta" ]]
 }
 
 # Parse arguments flexibly

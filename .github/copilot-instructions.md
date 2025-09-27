@@ -28,7 +28,7 @@ An open-source **library** providing a fast, portable Bash testing framework: **
 * Minimal overhead, plain Bash test files.
 * Rich **assertions**, **test doubles (mock/spy)**, **data providers**, **snapshots**, **skip/todo**, **globals utilities**, **custom assertions**, **benchmarks**, and **standalone** runs.
 
-**Compatibility**: Bash 3.2+ (macOS, Linux, WSL). No external dependencies beyond standard Unix tools.
+**Compatibility**: Bash 3.0+ (macOS, Linux, WSL). No external dependencies beyond standard Unix tools.
 
 ---
 
@@ -284,7 +284,7 @@ We practice two nested feedback loops to deliver behavior safely and quickly.
 
 ### Compatibility & Portability
 ```bash
-# ✅ GOOD - Works on Bash 3.2+
+# ✅ GOOD - Works on Bash 3.0+
 [[ -n "${var:-}" ]] && echo "set"
 array=("item1" "item2")
 
@@ -1000,7 +1000,7 @@ Use this template for internal changes, fixes, refactors, documentation.
 - **All tests pass** (`./bashunit tests/`)
 - **Shellcheck passes** with existing exceptions (`shellcheck -x $(find . -name "*.sh")`)
 - **Code formatted** (`shfmt -w .`)
-- **Bash 3.2+ compatible** (no `declare -A`, no `readarray`, no `${var^^}`)
+- **Bash 3.0+ compatible** (no `declare -A`, no `readarray`, no `${var^^}`)
 - **Follows established module namespacing** patterns
 
 ### ✅ Testing (following observed patterns)

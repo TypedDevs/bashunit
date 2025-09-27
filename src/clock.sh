@@ -37,8 +37,9 @@ function clock::_choose_impl() {
   attempts+=("date")
   if ! check_os::is_macos && ! check_os::is_alpine; then
     local result
+    local number_pattern='^[0-9]+$'
     result=$(date +%s%N 2>/dev/null)
-    if [[ "$result" != *N && "$result" =~ ^[0-9]+$ ]]; then
+    if [[ "$result" != *N && "$result" =~ $number_pattern ]]; then
       _CLOCK_NOW_IMPL="date"
       return 0
     fi

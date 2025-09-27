@@ -16,21 +16,27 @@ function benchmark::parse_annotations() {
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
-  if [[ $annotation =~ @revs=([0-9]+) ]]; then
+  local revs_pattern='@revs=([0-9]+)'
+  local revolutions_pattern='@revolutions=([0-9]+)'
+  local its_pattern='@its=([0-9]+)'
+  local iterations_pattern='@iterations=([0-9]+)'
+  local max_ms_pattern='@max_ms=([0-9.]+)'
+
+  if [[ $annotation =~ $revs_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @revolutions=([0-9]+) ]]; then
+  elif [[ $annotation =~ $revolutions_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @its=([0-9]+) ]]; then
+  if [[ $annotation =~ $its_pattern ]]; then
     its="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @iterations=([0-9]+) ]]; then
+  elif [[ $annotation =~ $iterations_pattern ]]; then
     its="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  if [[ $annotation =~ $max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  elif [[ $annotation =~ $max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
   fi
 

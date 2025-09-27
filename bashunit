@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+declare -r BASHUNIT_MIN_BASH_VERSION="3.0"
 
 function _check_bash_version() {
   local current_version
@@ -19,7 +19,7 @@ function _check_bash_version() {
   local major minor
   IFS=. read -r major minor _ <<< "$current_version"
 
-  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+  if (( major < 3 )); then
     printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
     exit 1
   fi

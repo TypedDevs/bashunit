@@ -160,7 +160,8 @@ function helper::find_files_recursive() {
   local pattern="${2:-*[tT]est.sh}"
 
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+  local test_pattern='\[tT\]est\.sh$'
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ $test_pattern ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -187,7 +188,8 @@ function helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+  local valid_start_pattern='^[a-zA-Z_]'
+  if [[ ! $normalized_string =~ $valid_start_pattern ]]; then
     normalized_string="_$normalized_string"
   fi
 

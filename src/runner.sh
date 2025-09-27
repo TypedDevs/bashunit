@@ -113,7 +113,8 @@ function runner::parse_data_provider_args() {
   local i
   local arg
   local encoded_arg
-  local -a args=()
+  local args
+  args=()
   # Parse args from the input string into an array, respecting quotes and escapes
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"

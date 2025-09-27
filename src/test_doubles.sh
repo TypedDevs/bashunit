@@ -95,7 +95,8 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if [[ ${!#} =~ ^[0-9]+$ ]]; then
+  local number_pattern='^[0-9]+$'
+  if [[ ${!#} =~ $number_pattern ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi
