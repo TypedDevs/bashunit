@@ -59,7 +59,7 @@ function spy() {
       serialized+=\"\$(printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
-    printf '%s|%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
+    printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
     local _c=\$(cat '$times_file')
     _c=\$((_c+1))
     echo \"\$_c\" > '$times_file'
@@ -115,7 +115,7 @@ function assert_have_been_called_with() {
   fi
 
   local raw
-  IFS='|' read -r raw _ <<<"$line"
+  IFS=$'\x1e' read -r raw _ <<<"$line"
 
   if [[ "$expected" != "$raw" ]]; then
     state::add_assertions_failed
