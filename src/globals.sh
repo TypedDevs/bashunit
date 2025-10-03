@@ -128,5 +128,5 @@ function data_set() {
       printf ' %q' "$arg"
     fi
   done
-  printf '\n'
+  printf ' %q\n' ""
 }

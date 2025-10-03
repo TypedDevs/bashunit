@@ -114,7 +114,28 @@ function runner::parse_data_provider_args() {
   local arg
   local encoded_arg
   local -a args=()
-  # Parse args from the input string into an array, respecting quotes and escapes
+
+  # Check for shell metacharacters that would break eval or cause globbing
+  local has_metachar=false
+  if [[ "$input" =~ [^\\][\|\&\;\*] ]] || [[ "$input" =~ ^[\|\&\;\*] ]]; then
+    has_metachar=true
+  fi
+
+  # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
+  if [[ "$has_metachar" == false ]] && eval "args=($input)" 2>/dev/null; then
+    # Successfully parsed - remove sentinel if present
+    if [[ ${#args[@]} -gt 0 && -z "${args[-1]}" ]]; then
+      unset 'args[-1]'
+    fi
+    # Print args and return early
+    for arg in "${args[@]}"; do
+      encoded_arg="$(helper::encode_base64 "${arg}")"
+      printf '%s\n' "$encoded_arg"
+    done
+    return
+  fi
+
+  # Fallback: parse args from the input string into an array, respecting quotes and escapes
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then

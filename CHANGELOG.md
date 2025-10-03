@@ -13,6 +13,7 @@
     - set_up_before_script
     - tear_down_after_script
 - Fix false negative from `assert_have_been_called_with` with pipes
+- Fix preservation of trailing whitespace in final argument to `data_set`
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
