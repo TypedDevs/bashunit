@@ -2,10 +2,10 @@
 
 ## Unreleased
 
-- Add Project-wide `copilot-instructions.md`
-- Add `AGENTS.md` for external developer tools integration
-- Add two-way synchronization policy between `AGENTS.md` and `copilot-instructions.md` with automatic validation in task templates and PR checklist
-- Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
+- Add AI developer tools integration and guidelines
+    - Add Project-wide `copilot-instructions.md`
+    - Add `AGENTS.md` for external developer tools integration
+    - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (git-ignored)
 - Include `set_test_title` helper in the single-file library
 - Fix lifecycle hooks capture-and-report flow errors
     - set_up
@@ -14,6 +14,7 @@
     - tear_down_after_script
 - Fix false negative from `assert_have_been_called_with` with pipes
 - Fix preservation of trailing whitespace in final argument to `data_set`
+- Fix unbound variable error in `parse_data_provider_args` with `set -u`
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
