@@ -122,10 +122,11 @@ function runner::parse_data_provider_args() {
   fi
 
   # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
-  if [[ "$has_metachar" == false ]] && eval "args=($input)" 2>/dev/null; then
+  if [[ "$has_metachar" == false ]] && eval "args=($input)" 2>/dev/null && [[ ${#args[@]} -gt 0 ]]; then
     # Successfully parsed - remove sentinel if present
-    if [[ ${#args[@]} -gt 0 && -z "${args[-1]}" ]]; then
-      unset 'args[-1]'
+    local last_idx=$((${#args[@]} - 1))
+    if [[ -z "${args[$last_idx]}" ]]; then
+      unset 'args[$last_idx]'
     fi
     # Print args and return early
     for arg in "${args[@]}"; do
