@@ -150,7 +150,7 @@ function test_get_provider_data_array() {
   }
 
   assert_same \
-    "one two three" \
+    "one two three ''" \
     "$(helper::get_provider_data "fake_function_get_provider_data_array" "${BASH_SOURCE[0]}")"
 }
 

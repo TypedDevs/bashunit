@@ -103,6 +103,20 @@ function provide_value_with_whitespace() {
   data_set "first value" "second value"
 }
 
+# @data_provider provide_value_with_trailing_whitespace
+function test_trailing_whitespace_in_last_value_from_data_provider() {
+  local expected="$1"
+  local actual="$2"
+
+  assert_same "${expected}" "${actual}"
+}
+
+function provide_value_with_trailing_whitespace() {
+  # Each data_set is passed the same value twice (expected, actual) to verify preservation
+  data_set "value " "value "
+  data_set "value    " "value    "
+}
+
 # @data_provider provide_eval_gotchas
 function test_eval_gotchas_from_data_provider() {
   input=$1
