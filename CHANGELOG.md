@@ -8,10 +8,7 @@
     - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (git-ignored)
 - Include `set_test_title` helper in the single-file library
 - Fix lifecycle hooks capture-and-report flow errors
-    - `set_up`
-    - `tear_down`
-    - `set_up_before_script`
-    - `tear_down_after_script`
+    - `set_up`, `tear_down`, `set_up_before_script`, `tear_down_after_script`
 - Fix false negative from `assert_have_been_called_with` with pipes
 - Fix preservation of trailing whitespace in final argument to `data_set`
 - Fix unbound variable error in `parse_data_provider_args` with `set -u`
