@@ -10,7 +10,7 @@ function bashunit::assertion_failed() {
   local failure_condition_message=${3:-"but got "}
 
   local label
-  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  label="$(helper::normalize_test_function_name "${FUNCNAME[2]}")"
   state::add_assertions_failed
   console_results::print_failed_test "${label}" "${expected}" \
     "$failure_condition_message" "${actual}"
