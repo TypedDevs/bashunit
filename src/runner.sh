@@ -305,6 +305,11 @@ function runner::run_test() {
   state::reset_test_title
 
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
+  if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
+    state::set_current_test_interpolated_function_name "$interpolated_fn_name"
+  else
+    state::reset_current_test_interpolated_function_name
+  fi
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
@@ -416,6 +421,7 @@ function runner::run_test() {
   local label
   label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
   state::reset_test_title
+  state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"

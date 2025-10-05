@@ -16,6 +16,7 @@
 - Fix preservation of trailing whitespace in final argument to `data_set`
 - Fix unbound variable error in `parse_data_provider_args` with `set -u`
 - Fix wrong assertion_failed name of test on failure
+- Fix test name interpolation on failure
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 
