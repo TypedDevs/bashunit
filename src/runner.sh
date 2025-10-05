@@ -60,7 +60,7 @@ function runner::load_bench_files() {
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
     if ! runner::run_set_up_before_script "$bench_file"; then
