@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-10-05
 
 - Add AI developer tools integration and guidelines
     - Add Project-wide `copilot-instructions.md`
