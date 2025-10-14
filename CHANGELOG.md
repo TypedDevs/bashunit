@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix bench tests missing test_file var
+- Fix compatibility with older python versions for clock::now
 
 ## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-10-05
 
