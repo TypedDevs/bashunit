@@ -273,9 +273,16 @@ function helper::find_total_tests() {
                 for fn_name in "${functions_to_run[@]}"; do
                     local provider_data
                     provider_data=()
-                    while IFS=" " read -r line; do
-                        provider_data+=("$line")
-                    done <<< "$(helper::get_provider_data "$fn_name" "$file")"
+                    local provider_output
+                    provider_output="$(helper::get_provider_data "$fn_name" "$file")"
+                    if [[ -n "$provider_output" ]]; then
+                        local line
+                        while IFS=" " read -r line; do
+                            provider_data+=("$line")
+                        done << EOF
+$provider_output
+EOF
+                    fi
 
                     if [[ "${#provider_data[@]}" -eq 0 ]]; then
                         count=$((count + 1))

@@ -192,9 +192,16 @@ function runner::call_test_functions() {
 
     local provider_data
     provider_data=()
-    while IFS=" " read -r line; do
-      provider_data+=("$line")
-    done <<< "$(helper::get_provider_data "$fn_name" "$script")"
+    local provider_output
+    provider_output="$(helper::get_provider_data "$fn_name" "$script")"
+    if [[ -n "$provider_output" ]]; then
+      local line
+      while IFS=" " read -r line; do
+        provider_data+=("$line")
+      done << EOF
+$provider_output
+EOF
+    fi
 
     # No data provider found
     if [[ "${#provider_data[@]}" -eq 0 ]]; then
@@ -207,9 +214,14 @@ function runner::call_test_functions() {
     for data in "${provider_data[@]}"; do
       local parsed_data
       parsed_data=()
+      local args_output
+      args_output="$(runner::parse_data_provider_args "$data")"
+      local line
       while IFS= read -r line; do
         parsed_data+=( "$(helper::decode_base64 "${line}")" )
-      done <<< "$(runner::parse_data_provider_args "$data")"
+      done << EOF
+$args_output
+EOF
       runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
     unset fn_name
