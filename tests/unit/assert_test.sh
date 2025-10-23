@@ -247,6 +247,24 @@ function test_unsuccessful_assert_successful_code() {
     "$(assert_successful_code "$(fake_function)")"
 }
 
+function test_successful_assert_unsuccessful_code() {
+  function fake_function() {
+    return 2
+  }
+
+  assert_empty "$(assert_unsuccessful_code "$(fake_function)")"
+}
+
+function test_unsuccessful_assert_unsuccessful_code() {
+  function fake_function() {
+    return 0
+  }
+
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"\
+    "$(assert_unsuccessful_code "$(fake_function)")"
+}
+
 function test_successful_assert_general_error() {
   function fake_function() {
     return 1

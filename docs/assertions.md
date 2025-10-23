@@ -333,7 +333,7 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_successful_code](#assert-successful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
+[assert_successful_code](#assert-successful-code), [assert_unsuccessful_code](#assert-unsuccessful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 ::: code-group
@@ -449,6 +449,45 @@ function test_failure() {
   }
 
   assert_successful_code "$(foo)"
+}
+```
+:::
+
+## assert_unsuccessful_code
+> `assert_unsuccessful_code ["callable"]`
+
+Reports an error if the exit code of `callable` is not unsuccessful (non-zero).
+
+If `callable` is not provided, it takes the last executed command or function instead.
+
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+
+::: code-group
+```bash [Example]
+function test_success_with_callable() {
+  function foo() {
+    return 1
+  }
+
+  assert_unsuccessful_code "$(foo)"
+}
+
+function test_success_without_callable() {
+  function foo() {
+    return 2
+  }
+
+  foo # function took instead `callable`
+
+  assert_unsuccessful_code
+}
+
+function test_failure() {
+  function foo() {
+    return 0
+  }
+
+  assert_unsuccessful_code "$(foo)"
 }
 ```
 :::
