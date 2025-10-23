@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
 - Fix bench tests missing test_file var
 - Fix compatibility with older python versions for clock::now
 
