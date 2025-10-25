@@ -5,6 +5,7 @@
 - Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
 - Fix bench tests missing test_file var
 - Fix compatibility with older python versions for clock::now
+- Eliminated redundant `declare -F | awk` calls that were happening for every test/bench file
 
 ## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-10-05
 
