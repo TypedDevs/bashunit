@@ -789,6 +789,3 @@ function runner::clean_set_up_and_tear_down_after_script() {
   helper::unset_if_exists 'set_up_before_script'
   helper::unset_if_exists 'tear_down_after_script'
 }
-
-# Initialize function cache - will be updated after each file is sourced
-CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
