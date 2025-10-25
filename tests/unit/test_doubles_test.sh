@@ -166,3 +166,11 @@ function test_spy_unsuccessful_not_called() {
       "actual" "1 times")" \
     "$(assert_not_called ps)"
 }
+
+function test_spy_with_pipe_in_arguments() {
+  spy grep
+
+  grep -E 'foo|bar'
+
+  assert_have_been_called_with grep '-E foo|bar'
+}

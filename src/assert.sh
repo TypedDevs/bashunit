@@ -380,6 +380,20 @@ function assert_successful_code() {
   state::add_assertions_passed
 }
 
+function assert_unsuccessful_code() {
+  local actual_exit_code=${3-"$?"}
+
+  if [[ "$actual_exit_code" -eq 0 ]]; then
+    local label
+    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    state::add_assertions_failed
+    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be non-zero" "but was 0"
+    return
+  fi
+
+  state::add_assertions_passed
+}
+
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}
   local expected_exit_code=1

@@ -78,7 +78,7 @@ function clock::now() {
     python)
       python - <<'EOF'
 import time, sys
-sys.stdout.write(str(int(time.time() * 1_000_000_000)))
+sys.stdout.write(str(int(time.time() * 1000000000)))
 EOF
       ;;
     node)

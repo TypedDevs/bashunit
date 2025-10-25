@@ -18,6 +18,7 @@ _TEST_TITLE=""
 _TEST_EXIT_CODE=0
 _TEST_HOOK_FAILURE=""
 _TEST_HOOK_MESSAGE=""
+_CURRENT_TEST_INTERPOLATED_NAME=""
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -145,6 +146,18 @@ function state::set_test_title() {
 
 function state::reset_test_title() {
   _TEST_TITLE=""
+}
+
+function state::get_current_test_interpolated_function_name() {
+  echo "$_CURRENT_TEST_INTERPOLATED_NAME"
+}
+
+function state::set_current_test_interpolated_function_name() {
+  _CURRENT_TEST_INTERPOLATED_NAME="$1"
+}
+
+function state::reset_current_test_interpolated_function_name() {
+  _CURRENT_TEST_INTERPOLATED_NAME=""
 }
 
 function state::get_test_hook_failure() {

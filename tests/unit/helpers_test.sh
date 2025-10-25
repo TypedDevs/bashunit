@@ -39,6 +39,17 @@ function test_normalize_test_function_name_custom_title() {
   assert_same "🔥 handles invalid input with 💣" "$(helper::normalize_test_function_name "test_handles_invalid_input")"
 }
 
+function test_normalize_test_function_name_uses_current_interpolated_name_from_state() {
+  local fn_name="test_::1::_interpolated_output"
+  local interpolated_fn="test_'value'_interpolated_output"
+
+  state::set_current_test_interpolated_function_name "$interpolated_fn"
+
+  assert_same "'value' interpolated output" "$(helper::normalize_test_function_name "$fn_name")"
+
+  state::reset_current_test_interpolated_function_name
+}
+
 function test_get_functions_to_run_no_filter_should_return_all_functions() {
   local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
@@ -150,7 +161,7 @@ function test_get_provider_data_array() {
   }
 
   assert_same \
-    "one two three" \
+    "one two three ''" \
     "$(helper::get_provider_data "fake_function_get_provider_data_array" "${BASH_SOURCE[0]}")"
 }
 

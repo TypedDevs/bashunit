@@ -96,7 +96,7 @@ BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 if is_git_installed; then
     LATEST_BASHUNIT_VERSION="$(get_latest_tag "$BASHUNIT_GIT_REPO")"
 else
-    LATEST_BASHUNIT_VERSION="0.24.0"
+    LATEST_BASHUNIT_VERSION="0.25.0"
 fi
 TAG="$LATEST_BASHUNIT_VERSION"
 

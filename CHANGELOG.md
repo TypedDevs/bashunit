@@ -2,17 +2,25 @@
 
 ## Unreleased
 
-- Add Project-wide `copilot-instructions.md`
-- Add `AGENTS.md` for external developer tools integration
-- Add two-way synchronization policy between `AGENTS.md` and `copilot-instructions.md` with automatic validation in task templates and PR checklist
-- Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (private scratch, git-ignored)
+- Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
+- Fix bench tests missing test_file var
+- Fix compatibility with older python versions for clock::now
+- Support Bash 3.0 (Previously 3.2)
+
+## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-10-05
+
+- Add AI developer tools integration and guidelines
+    - Add Project-wide `copilot-instructions.md`
+    - Add `AGENTS.md` for external developer tools integration
+    - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (git-ignored)
 - Include `set_test_title` helper in the single-file library
 - Fix lifecycle hooks capture-and-report flow errors
-    - set_up
-    - tear_down
-    - set_up_before_script
-    - tear_down_after_script
-- Support Bash 3.0 (Previously 3.2)
+    - `set_up`, `tear_down`, `set_up_before_script`, `tear_down_after_script`
+- Fix false negative from `assert_have_been_called_with` with pipes
+- Fix preservation of trailing whitespace in final argument to `data_set`
+- Fix unbound variable error in `parse_data_provider_args` with `set -u`
+- Fix wrong assertion_failed name of test on failure
+- Fix test name interpolation on failure
 
 ## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
 

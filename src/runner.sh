@@ -61,7 +61,7 @@ function runner::load_bench_files() {
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
     if ! runner::run_set_up_before_script "$bench_file"; then
@@ -116,7 +116,29 @@ function runner::parse_data_provider_args() {
   local encoded_arg
   local args
   args=()
-  # Parse args from the input string into an array, respecting quotes and escapes
+
+  # Check for shell metacharacters that would break eval or cause globbing
+  local has_metachar=false
+  if [[ "$input" =~ [^\\][\|\&\;\*] ]] || [[ "$input" =~ ^[\|\&\;\*] ]]; then
+    has_metachar=true
+  fi
+
+  # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
+  if [[ "$has_metachar" == false ]] && eval "args=($input)" 2>/dev/null && [[ ${#args[@]} -gt 0 ]]; then
+    # Successfully parsed - remove sentinel if present
+    local last_idx=$((${#args[@]} - 1))
+    if [[ -z "${args[$last_idx]}" ]]; then
+      unset 'args[$last_idx]'
+    fi
+    # Print args and return early
+    for arg in "${args[@]}"; do
+      encoded_arg="$(helper::encode_base64 "${arg}")"
+      printf '%s\n' "$encoded_arg"
+    done
+    return
+  fi
+
+  # Fallback: parse args from the input string into an array, respecting quotes and escapes
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then
@@ -304,6 +326,11 @@ function runner::run_test() {
   state::reset_test_title
 
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
+  if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
+    state::set_current_test_interpolated_function_name "$interpolated_fn_name"
+  else
+    state::reset_current_test_interpolated_function_name
+  fi
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
@@ -415,6 +442,7 @@ function runner::run_test() {
   local label
   label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
   state::reset_test_title
+  state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"

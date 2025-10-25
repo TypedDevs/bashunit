@@ -18,6 +18,15 @@ function helper::normalize_test_function_name() {
     return
   fi
 
+  if [[ -z "${interpolated_fn_name-}" && "${original_fn_name}" == *"::"* ]]; then
+    local state_interpolated_fn_name
+    state_interpolated_fn_name="$(state::get_current_test_interpolated_function_name)"
+
+    if [[ -n "$state_interpolated_fn_name" ]]; then
+      interpolated_fn_name="$state_interpolated_fn_name"
+    fi
+  fi
+
   if [[ -n "${interpolated_fn_name-}" ]]; then
     original_fn_name="$interpolated_fn_name"
   fi
