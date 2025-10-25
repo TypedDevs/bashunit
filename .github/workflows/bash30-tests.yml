@@ -1,0 +1,62 @@
+name: Tests with Bash 3.0
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  bash3:
+    name: "Bash 3.0 Compatibility Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install Bash 3.0
+        run: |
+          # Update package lists
+          sudo apt-get update
+
+          # Install dependencies for building bash 3.0
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            git \
+            make
+
+          # Download and build bash 3.0.22
+          cd /tmp
+          curl -L https://ftp.gnu.org/gnu/bash/bash-3.0.22.tar.gz -o bash-3.0.22.tar.gz
+          tar xzf bash-3.0.22.tar.gz
+          cd bash-3.0.22
+
+          # Configure and build
+          ./configure --prefix=/opt/bash-3.0
+          make
+          sudo make install
+
+          # Create symlink for easy access
+          sudo ln -sf /opt/bash-3.0/bin/bash /usr/local/bin/bash3
+
+          # Verify installation
+          /usr/local/bin/bash3 --version
+
+      - name: Run Tests with Bash 3.0
+        run: |
+          # Use bash 3.0 explicitly
+          /usr/local/bin/bash3 ./bashunit tests/unit/ -q
+        env:
+          BASH: /usr/local/bin/bash3
+
+      - name: Run tests with different output modes (Bash 3.0)
+        run: |
+          # Test with simple output
+          /usr/local/bin/bash3 ./bashunit --simple tests/unit/ -q
+
+          # Test with parallel execution
+          /usr/local/bin/bash3 ./bashunit --parallel tests/unit/ -q
