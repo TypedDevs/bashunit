@@ -52,7 +52,7 @@ jobs:
           for mirror in "${MIRRORS[@]}"; do
             echo "Trying: $mirror"
             if wget --timeout=15 -q -O "${BASH_TARBALL}" "$mirror" 2>/dev/null && \
-               tar -tzf "${BASH_TARBALL}" > /dev/null 2>&1; then
+                tar -tzf "${BASH_TARBALL}" > /dev/null 2>&1; then
               echo "✓ Successfully downloaded bash 3.0.22"
               DOWNLOADED=true
               break
@@ -72,7 +72,7 @@ jobs:
                           "https://mirrors.aliyun.com/gnu/bash/${BASH_TARBALL}"; do
               echo "Trying: $mirror"
               if wget --timeout=15 -q -O "${BASH_TARBALL}" "$mirror" 2>/dev/null && \
-                 tar -tzf "${BASH_TARBALL}" > /dev/null 2>&1; then
+                  tar -tzf "${BASH_TARBALL}" > /dev/null 2>&1; then
                 echo "✓ Successfully downloaded bash 4.4 as fallback"
                 DOWNLOADED=true
                 break
