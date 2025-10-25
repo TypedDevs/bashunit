@@ -7,17 +7,25 @@ on:
       - main
 
 jobs:
-  bash3:
-    name: "Bash 3.0 Compatibility Tests"
+  bash3-setup:
+    name: "Setup - Install Bash 3.0"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      - name: Cache Bash 3.0 Binary
+        uses: actions/cache@v4
+        id: cache-bash3
+        with:
+          path: /opt/bash-3.0
+          key: bash-3.0.22-${{ runner.os }}
+
       - name: Install Bash 3.0
+        if: steps.cache-bash3.outputs.cache-hit != 'true'
         run: |
           # Update package lists
           sudo apt-get update
@@ -46,17 +54,50 @@ jobs:
           # Verify installation
           /usr/local/bin/bash3 --version
 
-      - name: Run Tests with Bash 3.0
+  bash3-tests:
+    name: "Bash 3.0 Tests - ${{ matrix.test_mode }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: bash3-setup
+    strategy:
+      matrix:
+        test_mode:
+          - standard
+          - simple
+          - parallel
+      fail-fast: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Restore Bash 3.0 from Cache
+        uses: actions/cache@v4
+        with:
+          path: /opt/bash-3.0
+          key: bash-3.0.22-${{ runner.os }}
+
+      - name: Create Bash 3.0 Symlink
+        run: sudo ln -sf /opt/bash-3.0/bin/bash /usr/local/bin/bash3
+
+      - name: Run Tests - Standard Mode
+        if: matrix.test_mode == 'standard'
         run: |
-          # Use bash 3.0 explicitly
           /usr/local/bin/bash3 ./bashunit tests/unit/ -q
         env:
           BASH: /usr/local/bin/bash3
 
-      - name: Run tests with different output modes (Bash 3.0)
+      - name: Run Tests - Simple Output Mode
+        if: matrix.test_mode == 'simple'
         run: |
-          # Test with simple output
           /usr/local/bin/bash3 ./bashunit --simple tests/unit/ -q
+        env:
+          BASH: /usr/local/bin/bash3
 
-          # Test with parallel execution
+      - name: Run Tests - Parallel Mode
+        if: matrix.test_mode == 'parallel'
+        run: |
           /usr/local/bin/bash3 ./bashunit --parallel tests/unit/ -q
+        env:
+          BASH: /usr/local/bin/bash3
