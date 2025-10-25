@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2004
+
 MOCKED_FUNCTIONS=()
 MOCKED_FUNCTIONS_COUNT=0
 

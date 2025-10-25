@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2004
+
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
 #
