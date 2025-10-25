@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2004
+
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
 #
@@ -42,7 +44,7 @@ function helper::normalize_test_function_name() {
   # Replace underscores with spaces
   result="${result//_/ }"
   # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  result="$(echo "${result:0:1}" | tr '[:lower:]' '[:upper:]')${result:1}"
 
   echo "$result"
 }
@@ -138,6 +140,7 @@ function helper::get_functions_to_run() {
       filtered_functions+=" $fn"
     fi
   done
+  unset fn
 
   echo "${filtered_functions# }"
 }
@@ -169,7 +172,8 @@ function helper::find_files_recursive() {
   local pattern="${2:-*[tT]est.sh}"
 
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+  local test_pattern='\[tT\]est\.sh$'
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ $test_pattern ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -196,7 +200,8 @@ function helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+  local valid_start_pattern='^[a-zA-Z_]'
+  if [[ ! $normalized_string =~ $valid_start_pattern ]]; then
     normalized_string="_$normalized_string"
   fi
 
@@ -278,17 +283,29 @@ function helper::find_total_tests() {
                 # shellcheck disable=SC2207
                 local functions_to_run=($filtered_functions)
                 for fn_name in "${functions_to_run[@]}"; do
-                    local provider_data=()
-                    while IFS=" " read -r line; do
-                        provider_data+=("$line")
-                    done <<< "$(helper::get_provider_data "$fn_name" "$file")"
+                    local provider_data
+                    provider_data=()
+                    local provider_count=0
+                    local provider_output
+                    provider_output="$(helper::get_provider_data "$fn_name" "$file")"
+                    if [[ -n "$provider_output" ]]; then
+                        local line
+                        while IFS=" " read -r line; do
+                            provider_data[$provider_count]="$line"
+                            provider_count=$((provider_count + 1))
+                        done << EOF
+$provider_output
+EOF
+                        unset line
+                    fi
 
-                    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+                    if [[ $provider_count -eq 0 ]]; then
                         count=$((count + 1))
                     else
-                        count=$((count + ${#provider_data[@]}))
+                        count=$((count + provider_count))
                     fi
                 done
+                unset fn_name
             fi
 
             echo "$count"
@@ -304,13 +321,15 @@ function helper::load_test_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local test_files=()
+  local test_files
+  test_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        test_files+=("$line")
+        test_files=("${test_files[@]}" "$line")
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+      unset line
     fi
   else
     test_files=("${files[@]}")
@@ -323,13 +342,15 @@ function helper::load_bench_files() {
   local filter=$1
   local files=("${@:2}")
 
-  local bench_files=()
+  local bench_files
+  bench_files=()
 
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        bench_files+=("$line")
+        bench_files=("${bench_files[@]}" "$line")
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
+      unset line
     fi
   else
     bench_files=("${files[@]}")

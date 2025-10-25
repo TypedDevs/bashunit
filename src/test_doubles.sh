@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-declare -a MOCKED_FUNCTIONS=()
+# shellcheck disable=SC2004
+
+MOCKED_FUNCTIONS=()
+MOCKED_FUNCTIONS_COUNT=0
 
 function unmock() {
   local command=$1
@@ -34,7 +37,8 @@ function mock() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[$MOCKED_FUNCTIONS_COUNT]="$command"
+  MOCKED_FUNCTIONS_COUNT=$((MOCKED_FUNCTIONS_COUNT + 1))
 }
 
 function spy() {
@@ -67,7 +71,8 @@ function spy() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[$MOCKED_FUNCTIONS_COUNT]="$command"
+  MOCKED_FUNCTIONS_COUNT=$((MOCKED_FUNCTIONS_COUNT + 1))
 }
 
 function assert_have_been_called() {
@@ -95,7 +100,8 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if [[ ${!#} =~ ^[0-9]+$ ]]; then
+  local number_pattern='^[0-9]+$'
+  if [[ ${!#} =~ $number_pattern ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi
@@ -115,7 +121,7 @@ function assert_have_been_called_with() {
   fi
 
   local raw
-  IFS=$'\x1e' read -r raw _ <<<"$line"
+  raw=$(echo "$line" | cut -d'|' -f1)
 
   if [[ "$expected" != "$raw" ]]; then
     state::add_assertions_failed

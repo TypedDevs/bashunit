@@ -71,7 +71,8 @@ function build::process_file() {
     sourced_file=$(eval echo "$sourced_file")
 
     # Handle relative paths if necessary
-    if [[ ! "$sourced_file" =~ ^/ ]]; then
+    local absolute_path_pattern='^/'
+    if [[ ! "$sourced_file" =~ $absolute_path_pattern ]]; then
       sourced_file="$(dirname "$file")/$sourced_file"
     fi
 
