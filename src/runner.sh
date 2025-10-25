@@ -17,6 +17,8 @@ function runner::load_test_files() {
     internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
+    # Update function cache after sourcing new test file
+    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     if ! runner::run_set_up_before_script "$test_file"; then
       runner::clean_set_up_and_tear_down_after_script
       if ! parallel::is_enabled; then
@@ -63,6 +65,8 @@ function runner::load_bench_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
+    # Update function cache after sourcing new bench file
+    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     if ! runner::run_set_up_before_script "$bench_file"; then
       runner::clean_set_up_and_tear_down_after_script
       cleanup_script_temp_files
@@ -192,9 +196,8 @@ function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
-  # Use declare -F to list all function names
-  local all_fn_names=$(declare -F | awk '{print $3}')
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_fn_names")
+  # Use cached function names for better performance
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -243,8 +246,8 @@ function runner::call_bench_functions() {
   local filter="$2"
   local prefix="bench"
 
-  local all_fn_names=$(declare -F | awk '{print $3}')
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_fn_names")
+  # Use cached function names for better performance
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
