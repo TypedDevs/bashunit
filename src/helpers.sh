@@ -138,6 +138,7 @@ function helper::get_functions_to_run() {
       filtered_functions+=" $fn"
     fi
   done
+  unset fn
 
   echo "${filtered_functions# }"
 }
@@ -282,23 +283,27 @@ function helper::find_total_tests() {
                 for fn_name in "${functions_to_run[@]}"; do
                     local provider_data
                     provider_data=()
+                    local provider_count=0
                     local provider_output
                     provider_output="$(helper::get_provider_data "$fn_name" "$file")"
                     if [[ -n "$provider_output" ]]; then
                         local line
                         while IFS=" " read -r line; do
-                            provider_data+=("$line")
+                            provider_data[$provider_count]="$line"
+                            provider_count=$((provider_count + 1))
                         done << EOF
 $provider_output
 EOF
+                        unset line
                     fi
 
-                    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+                    if [[ $provider_count -eq 0 ]]; then
                         count=$((count + 1))
                     else
-                        count=$((count + ${#provider_data[@]}))
+                        count=$((count + provider_count))
                     fi
                 done
+                unset fn_name
             fi
 
             echo "$count"
@@ -320,8 +325,9 @@ function helper::load_test_files() {
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        test_files+=("$line")
+        test_files=("${test_files[@]}" "$line")
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+      unset line
     fi
   else
     test_files=("${files[@]}")
@@ -340,8 +346,9 @@ function helper::load_bench_files() {
   if [[ "${#files[@]}" -eq 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        bench_files+=("$line")
+        bench_files=("${bench_files[@]}" "$line")
       done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
+      unset line
     fi
   else
     bench_files=("${files[@]}")

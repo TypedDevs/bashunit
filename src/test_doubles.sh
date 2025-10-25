@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 MOCKED_FUNCTIONS=()
+MOCKED_FUNCTIONS_COUNT=0
 
 function unmock() {
   local command=$1
@@ -34,7 +35,8 @@ function mock() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[$MOCKED_FUNCTIONS_COUNT]="$command"
+  MOCKED_FUNCTIONS_COUNT=$((MOCKED_FUNCTIONS_COUNT + 1))
 }
 
 function spy() {
@@ -67,7 +69,8 @@ function spy() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  MOCKED_FUNCTIONS[$MOCKED_FUNCTIONS_COUNT]="$command"
+  MOCKED_FUNCTIONS_COUNT=$((MOCKED_FUNCTIONS_COUNT + 1))
 }
 
 function assert_have_been_called() {

@@ -14,7 +14,7 @@ function runner::load_test_files() {
     fi
     unset BASHUNIT_CURRENT_TEST_ID
     export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
-    scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
+    scripts_ids=("${scripts_ids[@]}" "${BASHUNIT_CURRENT_SCRIPT_ID}")
     internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
@@ -37,6 +37,7 @@ function runner::load_test_files() {
     fi
     internal_log "Finished file" "$test_file"
   done
+  unset test_file
 
   if parallel::is_enabled; then
     wait
@@ -50,6 +51,7 @@ function runner::load_test_files() {
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
       cleanup_script_temp_files
     done
+    unset script_id
   fi
 }
 
@@ -74,6 +76,7 @@ function runner::load_bench_files() {
     runner::clean_set_up_and_tear_down_after_script
     cleanup_script_temp_files
   done
+  unset bench_file
 }
 
 function runner::spinner() {
@@ -135,10 +138,12 @@ function runner::parse_data_provider_args() {
       encoded_arg="$(helper::encode_base64 "${arg}")"
       printf '%s\n' "$encoded_arg"
     done
+    unset arg encoded_arg
     return
   fi
 
   # Fallback: parse args from the input string into an array, respecting quotes and escapes
+  local i
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then
@@ -168,8 +173,10 @@ function runner::parse_data_provider_args() {
           quote_char="$char"
           ;;
         " " | $'\t')
-          args+=("$current_arg")
-          current_arg=""
+          if [[ -n "$current_arg" ]]; then
+            args=("${args[@]}" "$current_arg")
+            current_arg=""
+          fi
           ;;
         *)
           current_arg+="$char"
@@ -182,12 +189,16 @@ function runner::parse_data_provider_args() {
       current_arg+="$char"
     fi
   done
-  args+=("$current_arg")
+  if [[ -n "$current_arg" ]]; then
+    args=("${args[@]}" "$current_arg")
+  fi
+  unset char escaped quote_char i
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]}"; do
     encoded_arg="$(helper::encode_base64 "${arg}")"
     printf '%s\n' "$encoded_arg"
   done
+  unset arg encoded_arg
 }
 
 function runner::call_test_functions() {
@@ -214,39 +225,47 @@ function runner::call_test_functions() {
 
     local provider_data
     provider_data=()
+    local provider_count=0
     local provider_output
     provider_output="$(helper::get_provider_data "$fn_name" "$script")"
     if [[ -n "$provider_output" ]]; then
       local line
       while IFS=" " read -r line; do
-        provider_data+=("$line")
+        provider_data[$provider_count]="$line"
+        provider_count=$((provider_count + 1))
       done << EOF
 $provider_output
 EOF
+      unset line
     fi
 
     # No data provider found
-    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+    if [[ $provider_count -eq 0 ]]; then
       runner::run_test "$script" "$fn_name"
       unset fn_name
       continue
     fi
 
     # Execute the test function for each line of data
-    for data in "${provider_data[@]}"; do
+    local i
+    for ((i=0; i<provider_count; i++)); do
+      local data="${provider_data[$i]}"
       local parsed_data
       parsed_data=()
+      local parsed_count=0
       local args_output
       args_output="$(runner::parse_data_provider_args "$data")"
       local line
       while IFS= read -r line; do
-        parsed_data+=( "$(helper::decode_base64 "${line}")" )
+        parsed_data[$parsed_count]="$(helper::decode_base64 "${line}")"
+        parsed_count=$((parsed_count + 1))
       done << EOF
 $args_output
 EOF
+      unset line
       runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
-    unset fn_name
+    unset i data fn_name
   done
 
   if ! env::is_simple_output_enabled; then
@@ -275,7 +294,7 @@ function runner::call_bench_functions() {
   for fn_name in "${functions_to_run[@]}"; do
     local annotation_result
     annotation_result="$(benchmark::parse_annotations "$fn_name" "$script")"
-    set -- "$annotation_result"
+    set -- $annotation_result
     revs="$1"
     its="$2"
     max_ms="$3"
@@ -410,6 +429,7 @@ function runner::run_test() {
       break
     fi
   done
+  unset error
 
   runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
