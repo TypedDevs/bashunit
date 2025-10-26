@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
+# Pre-compiled regex pattern for parsing test result assertions
+# This regex is used in runner::parse_result_sync() to extract assertion counts and exit codes
+declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##TEST_EXIT_CODE=([0-9]*)'
+
 function runner::load_test_files() {
   local filter=$1
   shift
@@ -369,9 +373,9 @@ function runner::run_test() {
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
     # Replace [type] with a newline to split the messages
-    line=$(echo "$line" | sed -e 's/\[failed\]/\n/g' \
-                              -e 's/\[skipped\]/\n/g' \
-                              -e 's/\[incomplete\]/\n/g')
+    line="${line//\[failed\]/$'\n'}"       # Replace [failed] with newline
+    line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
+    line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
 
     state::print_line "$type" "$line"
 
@@ -589,15 +593,8 @@ function runner::parse_result_sync() {
   local assertions_snapshot=0
   local test_exit_code=0
 
-  local regex
-  regex='ASSERTIONS_FAILED=([0-9]*)##'
-  regex+='ASSERTIONS_PASSED=([0-9]*)##'
-  regex+='ASSERTIONS_SKIPPED=([0-9]*)##'
-  regex+='ASSERTIONS_INCOMPLETE=([0-9]*)##'
-  regex+='ASSERTIONS_SNAPSHOT=([0-9]*)##'
-  regex+='TEST_EXIT_CODE=([0-9]*)'
-
-  if [[ $result_line =~ $regex ]]; then
+  # Use pre-compiled regex constant
+  if [[ $result_line =~ $RUNNER_PARSE_RESULT_REGEX ]]; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"
@@ -682,7 +679,10 @@ function runner::execute_file_hook() {
   } >"$hook_output_file" 2>&1 || status=$?
 
   if [[ -f "$hook_output_file" ]]; then
-    hook_output=$(cat "$hook_output_file")
+    hook_output=""
+    while IFS= read -r line; do
+      [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
+    done < "$hook_output_file"
     rm -f "$hook_output_file"
   fi
 
@@ -733,7 +733,10 @@ function runner::execute_test_hook() {
   } >"$hook_output_file" 2>&1 || status=$?
 
   if [[ -f "$hook_output_file" ]]; then
-    hook_output=$(cat "$hook_output_file")
+    hook_output=""
+    while IFS= read -r line; do
+      [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
+    done < "$hook_output_file"
     rm -f "$hook_output_file"
   fi
 
