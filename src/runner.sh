@@ -388,7 +388,8 @@ function runner::run_test() {
       "readonly variable" "missing keyword" "killed" \
       "cannot execute binary file" "invalid arithmetic operator"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
-      runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
+      runtime_error="${runtime_output#*: }"      # Remove everything up to and including ": "
+      runtime_error="${runtime_error//$'\n'/}"   # Remove all newlines using parameter expansion
       break
     fi
   done
