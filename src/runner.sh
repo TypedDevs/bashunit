@@ -579,7 +579,7 @@ function runner::parse_result_sync() {
   local execution_result=$2
 
   local result_line
-  result_line=$(echo "$execution_result" | tail -n 1)
+  result_line="${execution_result##*$'\n'}"
 
   local assertions_failed=0
   local assertions_passed=0
