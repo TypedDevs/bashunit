@@ -2,10 +2,11 @@
 # shellcheck disable=SC2155
 
 # Pre-compiled regex pattern for parsing test result assertions
-# Used in runner::parse_result_sync() to extract assertion counts and exit codes
-declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
+if [[ -z ${RUNNER_PARSE_RESULT_REGEX+x} ]]; then
+  declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
 'ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##'\
 'TEST_EXIT_CODE=([0-9]*)'
+fi
 
 function runner::load_test_files() {
   local filter=$1
