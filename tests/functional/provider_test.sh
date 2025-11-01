@@ -134,18 +134,16 @@ function provide_eval_gotchas() {
 
 # @data_provider provide_single_arg_with_space
 function test_single_arg_with_space_from_data_provider() {
-  # This should receive exactly 1 argument
   assert_same 1 $#
-  assert_same "test test" "$1"
+  assert_same "test     test" "$1"
 }
 
 function provide_single_arg_with_space() {
-  data_set "test test"
+  data_set "test     test"
 }
 
 # @data_provider provide_two_args_with_spaces
 function test_two_args_with_spaces_from_data_provider() {
-  # This should receive exactly 2 arguments
   assert_same 2 $#
   assert_same "first test" "$1"
   assert_same "second test" "$2"
