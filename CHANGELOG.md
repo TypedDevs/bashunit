@@ -5,6 +5,7 @@
 - Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
 - Fix bench tests missing test_file var
 - Fix compatibility with older python versions for clock::now
+- Fix `data_set` with arguments containing spaces
 - Eliminated redundant `declare -F | awk` calls that were happening for every test/bench file
 - Replaced tail and process with Bash parameter expansion
 

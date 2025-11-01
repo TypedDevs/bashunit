@@ -192,6 +192,11 @@ function runner::parse_data_provider_args() {
     fi
   done
   args+=("$current_arg")
+  # Remove sentinel empty string if present (last element)
+  local last_idx=$((${#args[@]} - 1))
+  if [[ -z "${args[$last_idx]}" ]]; then
+    unset 'args[$last_idx]'
+  fi
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]}"; do
     encoded_arg="$(helper::encode_base64 "${arg}")"
