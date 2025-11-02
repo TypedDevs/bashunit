@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02
 
 - Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
 - Fix bench tests missing test_file var
@@ -9,7 +9,7 @@
 - Eliminated redundant `declare -F | awk` calls that were happening for every test/bench file
 - Replaced tail and process with Bash parameter expansion
 
-## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-10-05
+## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.24.0...0.25.0) - 2025-10-05
 
 - Add AI developer tools integration and guidelines
     - Add Project-wide `copilot-instructions.md`
