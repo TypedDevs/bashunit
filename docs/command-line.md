@@ -352,6 +352,18 @@ Run tests without printing any output. Exit code will be `0` if all tests pass o
 ```
 :::
 
+## Failures only
+
+> `bashunit --failures-only`
+
+Suppress all per-test output. Failures and summary are shown only after all tests finish.
+
+::: code-group
+```bash [Example]
+./bashunit tests --failures-only
+```
+:::
+
 ## Version
 
 > `bashunit --version`
@@ -442,6 +454,8 @@ Options:
                             Suppress all console output; rely on exit code.
   -s, --simple | --detailed
                             Choose console output style (default: detailed).
+  -q, --quiet | --failures-only
+                            Suppress per-test output and show failures at the end.
   -S, --stop-on-failure
                             Stop execution immediately on the first failing test.
   --upgrade
