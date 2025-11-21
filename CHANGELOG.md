@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Pass arguments to mocked functions
+
 ## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02
 
 - Add `assert_unsuccessful_code` assertion to check for non-zero exit codes

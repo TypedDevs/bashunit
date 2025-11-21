@@ -27,7 +27,7 @@ function mock() {
   shift
 
   if [[ $# -gt 0 ]]; then
-    eval "function $command() { $* ; }"
+    eval "function $command() { $* \"\$@\"; }"
   else
     eval "function $command() { echo \"$($CAT)\" ; }"
   fi
