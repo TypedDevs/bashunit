@@ -315,10 +315,10 @@ function test_render_execution_time_on_osx_with_perl() {
   mock dependencies::has_adjtimex mock_false
   mock dependencies::has_perl mock_true
   _START_TIME="1726393394574382186"
-  mock perl echo "1726393394574372186"
-  mock uname echo "Darwin"
+  mock perl <<< "1726393394574372186"
+  mock uname <<< "Darwin"
   render_result=$(
-  mock perl echo "1726393394574372186";
+  mock perl <<< "1726393394574372186";
 
     console_results::render_result
   )
