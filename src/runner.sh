@@ -346,10 +346,7 @@ function runner::run_test() {
     # shellcheck disable=SC2064
     trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
     state::initialize_assertions_count
-    if ! runner::run_set_up "$test_file"; then
-      status=$?
-      exit "$status"
-    fi
+    runner::run_set_up "$test_file" || exit $?
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
