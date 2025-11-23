@@ -205,25 +205,26 @@ function learn::lesson_basics() {
 
 Welcome to bashunit! Let's write your first test.
 
-A test is a function that starts with 'test_' and uses assertions
-to verify behavior.
+CONCEPT: A test is a function that starts with 'test_' and uses
+assertions to verify behavior.
 
 TASK: Create a test file that checks if two values are equal.
-
-Create this file and fill in the assertion:
 
 File: first_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
 function test_bashunit_works() {
-  # Use assert_same to check if "hello" equals "hello"
-  # TODO: Write your assertion here
+  # TODO: Use assert_same to check if "hello" equals "hello"
+  # Hint: assert_same "expected" "actual"
 }
 ───────────────────────────────────────────────────────────────
 
-TIP: The assert_same function takes two arguments:
+TIPS:
+  • The assert_same function takes two arguments:
     assert_same "expected" "actual"
+  • Test functions must start with "test_" prefix
+  • Always quote your strings to avoid word splitting
 EOF
 
   local default_file="first_test.sh"
@@ -236,8 +237,8 @@ EOF
     local template='#!/usr/bin/env bash
 
 function test_bashunit_works() {
-  # Use assert_same to check if "hello" equals "hello"
-  # TODO: Write your assertion here
+  # TODO: Use assert_same to check if "hello" equals "hello"
+  # Hint: assert_same "expected" "actual"
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -264,8 +265,7 @@ function learn::lesson_assertions() {
 ║              Lesson 2: Testing Different Conditions            ║
 ╚════════════════════════════════════════════════════════════════╝
 
-bashunit provides many assertion functions for different checks:
-
+CONCEPT: bashunit provides many assertion functions for different checks:
   • assert_same - exact equality
   • assert_contains - substring check
   • assert_matches - regex pattern
@@ -282,16 +282,22 @@ File: assertions_test.sh
 function test_multiple_assertions() {
   local message="Hello, bashunit!"
 
-  # 1. Check that message contains "bashunit"
-  # TODO: Use assert_contains
+  # TODO: Check that message contains "bashunit"
+  # Hint: assert_contains "substring" "$message"
 
-  # 2. Check that message matches the pattern "Hello.*!"
-  # TODO: Use assert_matches
+  # TODO: Check that message matches the pattern "Hello.*!"
+  # Hint: assert_matches "pattern" "$message"
 
-  # 3. Check that message is not empty
-  # TODO: Use assert_not_empty
+  # TODO: Check that message is not empty
+  # Hint: assert_not_empty "$message"
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • assert_same checks exact equality (useful for strings/numbers)
+  • assert_contains is more flexible for partial matches
+  • assert_matches uses regex patterns (e.g., "^[0-9]+$" for numbers)
+  • Explore more: assert_empty, assert_true, assert_false
 EOF
 
   local default_file="assertions_test.sh"
@@ -306,14 +312,14 @@ EOF
 function test_multiple_assertions() {
   local message="Hello, bashunit!"
 
-  # 1. Check that message contains "bashunit"
-  # TODO: Use assert_contains
+  # TODO: Check that message contains "bashunit"
+  # Hint: assert_contains "substring" "$message"
 
-  # 2. Check that message matches the pattern "Hello.*!"
-  # TODO: Use assert_matches
+  # TODO: Check that message matches the pattern "Hello.*!"
+  # Hint: assert_matches "pattern" "$message"
 
-  # 3. Check that message is not empty
-  # TODO: Use assert_not_empty
+  # TODO: Check that message is not empty
+  # Hint: assert_not_empty "$message"
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -341,8 +347,7 @@ function learn::lesson_lifecycle() {
 ║           Lesson 3: Setup and Teardown Functions               ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Tests often need preparation and cleanup. bashunit provides:
-
+CONCEPT: Tests often need preparation and cleanup. bashunit provides:
   • set_up() - runs before EACH test
   • tear_down() - runs after EACH test
   • set_up_before_script() - runs once before ALL tests
@@ -356,23 +361,29 @@ File: lifecycle_test.sh
 
 function set_up() {
   # Create a temp file before each test
-  # TODO: Create TEST_FILE variable with path /tmp/test_$$
-  # TODO: Write "test content" to TEST_FILE
+  # TODO: export TEST_FILE="/tmp/test_$$"
+  # TODO: echo "test content" > "$TEST_FILE"
 }
 
 function tear_down() {
   # Clean up after each test
-  # TODO: Remove TEST_FILE
+  # TODO: rm -f "$TEST_FILE"
 }
 
 function test_file_exists() {
-  # TODO: Use assert_file_exists to check TEST_FILE exists
+  # TODO: assert_file_exists "$TEST_FILE"
 }
 
 function test_file_has_content() {
-  # TODO: Use assert_file_contains to check for "test content"
+  # TODO: assert_file_contains "test content" "$TEST_FILE"
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • set_up() runs before EACH test (good for test isolation)
+  • set_up_before_script() runs ONCE before all tests (good for expensive setup)
+  • Always clean up in tear_down() to avoid polluting other tests
+  • Use $$ for unique temp file names to avoid conflicts
 EOF
 
   local default_file="lifecycle_test.sh"
@@ -386,21 +397,21 @@ EOF
 
 function set_up() {
   # Create a temp file before each test
-  # TODO: Create TEST_FILE variable with path /tmp/test_$$
-  # TODO: Write "test content" to TEST_FILE
+  # TODO: export TEST_FILE="/tmp/test_$$"
+  # TODO: echo "test content" > "$TEST_FILE"
 }
 
 function tear_down() {
   # Clean up after each test
-  # TODO: Remove TEST_FILE
+  # TODO: rm -f "$TEST_FILE"
 }
 
 function test_file_exists() {
-  # TODO: Use assert_file_exists to check TEST_FILE exists
+  # TODO: assert_file_exists "$TEST_FILE"
 }
 
 function test_file_has_content() {
-  # TODO: Use assert_file_contains to check for "test content"
+  # TODO: assert_file_contains "test content" "$TEST_FILE"
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -427,8 +438,8 @@ function learn::lesson_functions() {
 ║              Lesson 4: Testing Bash Functions                  ║
 ╚════════════════════════════════════════════════════════════════╝
 
-To test functions, source the file containing them, then call them
-in your tests.
+CONCEPT: To test functions, source the file containing them, then
+call them in your tests.
 
 TASK: Create a script with a function, then test it.
 
@@ -447,16 +458,26 @@ File: calculator_test.sh
 
 function set_up() {
   # TODO: Source calculator.sh
+  # Hint: source ./calculator.sh
 }
 
 function test_add_positive_numbers() {
   # TODO: Test that add 2 3 returns "5"
+  # Hint: result=$(add 2 3)
+  # Hint: assert_same "5" "$result"
 }
 
 function test_add_negative_numbers() {
   # TODO: Test that add -2 -3 returns "-5"
+  # Hint: result=$(add -2 -3)
+  # Hint: assert_same "-5" "$result"
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • Source files in set_up() to reload them fresh for each test
+  • Capture function output with: result=$(function_name args)
+  • Test edge cases: positive, negative, zero, large numbers
 EOF
 
   local default_file="calculator_test.sh"
@@ -470,14 +491,19 @@ EOF
 
 function set_up() {
   # TODO: Source calculator.sh
+  # Hint: source ./calculator.sh
 }
 
 function test_add_positive_numbers() {
   # TODO: Test that add 2 3 returns "5"
+  # Hint: result=$(add 2 3)
+  # Hint: assert_same "5" "$result"
 }
 
 function test_add_negative_numbers() {
   # TODO: Test that add -2 -3 returns "-5"
+  # Hint: result=$(add -2 -3)
+  # Hint: assert_same "-5" "$result"
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -503,7 +529,7 @@ function learn::lesson_scripts() {
 ║                 Lesson 5: Testing Bash Scripts                 ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Scripts that execute commands directly are tested differently.
+CONCEPT: Scripts that execute commands directly are tested differently.
 Run them and capture their output.
 
 TASK: Create a script and test its output.
@@ -520,21 +546,27 @@ File: greeter_test.sh
 #!/usr/bin/env bash
 
 function test_default_greeting() {
-  local output
   # TODO: Run greeter.sh and capture output
+  # Hint: output=$(./greeter.sh)
 
   # TODO: Assert output contains "Hello, World!"
+  # Hint: assert_contains "Hello, World!" "$output"
 }
 
 function test_custom_greeting() {
-  local output
   # TODO: Run greeter.sh with argument "Alice"
+  # Hint: output=$(./greeter.sh "Alice")
 
   # TODO: Assert output contains "Hello, Alice!"
+  # Hint: assert_contains "Hello, Alice!" "$output"
 }
 ───────────────────────────────────────────────────────────────
 
-TIP: Use command substitution: output=$(./greeter.sh)
+TIPS:
+  • Use command substitution: output=$(./script.sh)
+  • Make scripts executable: chmod +x script.sh
+  • Test both default behavior and with various arguments
+  • Scripts run in subshells, so they can't modify parent environment
 EOF
 
   local default_file="greeter_test.sh"
@@ -547,17 +579,19 @@ EOF
     local template='#!/usr/bin/env bash
 
 function test_default_greeting() {
-  local output
   # TODO: Run greeter.sh and capture output
+  # Hint: output=$(./greeter.sh)
 
   # TODO: Assert output contains "Hello, World!"
+  # Hint: assert_contains "Hello, World!" "$output"
 }
 
 function test_custom_greeting() {
-  local output
   # TODO: Run greeter.sh with argument "Alice"
+  # Hint: output=$(./greeter.sh "Alice")
 
   # TODO: Assert output contains "Hello, Alice!"
+  # Hint: assert_contains "Hello, Alice!" "$output"
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -577,8 +611,8 @@ function learn::lesson_mocking() {
 ║               Lesson 6: Mocking External Commands              ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Mocks let you override external commands or functions to control
-their behavior in tests.
+CONCEPT: Mocks let you override external commands or functions to
+control their behavior in tests.
 
 TASK: Test a function that uses external commands.
 
@@ -618,6 +652,12 @@ function test_system_info_on_macos() {
   # TODO: Assert output contains "OS: Darwin"
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • Mocks replace commands/functions with custom behavior
+  • Syntax: mock command_name echo "mocked output"
+  • Mocks are automatically cleaned up after each test
+  • Use mocks to avoid calling expensive external commands
 EOF
 
   local default_file="system_info_test.sh"
@@ -675,8 +715,11 @@ function learn::lesson_spies() {
 ║              Lesson 7: Spies - Verifying Calls                 ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Spies let you verify that functions were called with specific
+CONCEPT: Spies let you verify that functions were called with specific
 arguments or a certain number of times.
+
+KEY DIFFERENCE: Spies track calls without changing behavior, while
+mocks (Lesson 6) replace the function entirely with custom behavior.
 
 TASK: Use spies to verify function calls.
 
@@ -721,6 +764,13 @@ function test_deploy_calls_docker_twice() {
   # Hint: assert_have_been_called_times 2 docker
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • Spies track calls but don't change behavior (unlike mocks)
+  • assert_have_been_called - verifies at least one call
+  • assert_have_been_called_times N - verifies exact call count
+  • assert_have_been_called_with - verifies specific arguments
+  • Spies are cleaned up automatically after each test
 EOF
 
   local default_file="deploy_test.sh"
@@ -781,8 +831,11 @@ function learn::lesson_data_providers() {
 ║           Lesson 8: Data Providers - Parameterized Tests       ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Data providers let you run the same test with different inputs.
+CONCEPT: Data providers let you run the same test with different inputs.
 Define a function that echoes test data, one per line.
+
+HOW IT WORKS: Each line from data_provider_* becomes $1 in your test.
+The test runs once for each line of data.
 
 TASK: Test multiple email formats using a data provider.
 
@@ -811,7 +864,7 @@ function data_provider_valid_emails() {
 function test_valid_emails() {
   # $1 contains the email from data provider
   # TODO: Assert is_valid_email succeeds
-  # Hint: assert_successful_code "is_valid_email '$1'"
+  # Hint: assert_successful_code "is_valid_email \"$1\""
 }
 
 function data_provider_invalid_emails() {
@@ -821,9 +874,16 @@ function data_provider_invalid_emails() {
 
 function test_invalid_emails() {
   # TODO: Assert is_valid_email fails
-  # Hint: assert_general_error "is_valid_email '$1'"
+  # Hint: assert_general_error "is_valid_email \"$1\""
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • Data providers must be named: data_provider_<test_name>
+  • Each line of output becomes one test case
+  • The test function receives the line as $1
+  • Great for testing multiple inputs without duplicating code
+  • You can have multiple data provider/test pairs in one file
 EOF
 
   local default_file="validator_test.sh"
@@ -847,7 +907,7 @@ function data_provider_valid_emails() {
 function test_valid_emails() {
   # $1 contains the email from data provider
   # TODO: Assert is_valid_email succeeds
-  # Hint: assert_successful_code "is_valid_email '\''$1'\''"
+  # Hint: assert_successful_code "is_valid_email \"$1\""
 }
 
 function data_provider_invalid_emails() {
@@ -857,7 +917,7 @@ function data_provider_invalid_emails() {
 
 function test_invalid_emails() {
   # TODO: Assert is_valid_email fails
-  # Hint: assert_general_error "is_valid_email '\''$1'\''"
+  # Hint: assert_general_error "is_valid_email \"$1\""
 }'
 
     learn::create_example_file "$test_file" "$template"
@@ -883,9 +943,8 @@ function learn::lesson_exit_codes() {
 ║             Lesson 9: Testing Exit Codes                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Exit codes indicate success (0) or failure (non-zero). bashunit
-provides assertions to test them:
-
+CONCEPT: Exit codes indicate success (0) or failure (non-zero).
+bashunit provides assertions to test them:
   • assert_successful_code - expects exit code 0
   • assert_general_error - expects exit code 1
   • assert_exit_code N - expects specific exit code N
@@ -937,6 +996,13 @@ function test_missing_file_returns_127() {
   # Hint: assert_exit_code 127 "check_file '/nonexistent/file'"
 }
 ───────────────────────────────────────────────────────────────
+
+TIPS:
+  • Exit code 0 = success (assert_successful_code)
+  • Exit code 1 = general error (assert_general_error)
+  • Other codes = specific errors (assert_exit_code N)
+  • Bash uses 'return N' in functions, 'exit N' in scripts
+  • Common codes: 127=not found, 126=not executable, 2=misuse
 EOF
 
   local default_file="checker_test.sh"
@@ -994,7 +1060,10 @@ function learn::lesson_challenge() {
 
 FINAL CHALLENGE: Combine everything you've learned!
 
-Create a backup script and comprehensive tests.
+CONCEPT: Real-world tests combine multiple concepts: lifecycle
+management, assertions, exit codes, and test doubles.
+
+TASK: Create a backup script and comprehensive tests.
 
 File: backup.sh
 ───────────────────────────────────────────────────────────────
@@ -1058,7 +1127,13 @@ function test_backup_failure_when_source_missing() {
 # Add more tests as needed:
 # - Mock or spy on tar command
 # - Verify backup file exists
-# - Check output message'
+# - Check output message
+#
+# TIPS:
+# - Combine lifecycle (set_up/tear_down) with file assertions
+# - Use spies to verify tar was called correctly
+# - Test both success and failure scenarios
+# - Mock external commands to avoid side effects'
 
     learn::create_example_file "$test_file" "$template"
     return 1
