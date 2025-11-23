@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Pass arguments to mocked functions
 - Fix lifecycle hooks not catching failing commands (exit code errors)
 
 ## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02

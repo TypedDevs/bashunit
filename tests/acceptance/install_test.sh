@@ -138,8 +138,8 @@ function test_install_downloads_the_non_stable_beta_version() {
     skip "curl or wget not installed" && return
   fi
 
-  mock date echo "2023-11-13"
-  mock tput echo ""
+  mock date <<< "2023-11-13"
+  mock tput <<< ""
   local installed_bashunit="./deps/bashunit"
   local output
 

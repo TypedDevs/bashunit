@@ -75,6 +75,36 @@ function test_example() {
 ```
 :::
 
+All arguments passed to the original call are forwarded to the mocked function, so you can mock different behavior depending on the arguments.
+
+::: code-group
+```bash [Example]
+mockTool() {
+  if [[ "$1" == "--version" ]]; then
+    echo "1.2.3"
+    return 0
+  else
+    echo "tool: '$1' is not a valid command."
+    return 1
+  fi
+}
+
+test_example() {
+  local output
+  mock tool mockTool
+
+  output="$(tool --version)"
+  assert_successful_code
+  assert_same "1.2.3" "${output}"
+
+  output="$(tool foo)"
+  assert_general_error
+  assert_contains "is not a valid command" "${output}"
+}
+
+```
+:::
+
 ## spy
 > `spy "function"`
 
