@@ -65,16 +65,16 @@ function learn::start() {
     echo ""
 
     case "$choice" in
-      1) learn::lesson_basics ;;
-      2) learn::lesson_assertions ;;
-      3) learn::lesson_lifecycle ;;
-      4) learn::lesson_functions ;;
-      5) learn::lesson_scripts ;;
-      6) learn::lesson_mocking ;;
-      7) learn::lesson_spies ;;
-      8) learn::lesson_data_providers ;;
-      9) learn::lesson_exit_codes ;;
-      10) learn::lesson_challenge ;;
+      1) learn::lesson_basics || true ;;
+      2) learn::lesson_assertions || true ;;
+      3) learn::lesson_lifecycle || true ;;
+      4) learn::lesson_functions || true ;;
+      5) learn::lesson_scripts || true ;;
+      6) learn::lesson_mocking || true ;;
+      7) learn::lesson_spies || true ;;
+      8) learn::lesson_data_providers || true ;;
+      9) learn::lesson_exit_codes || true ;;
+      10) learn::lesson_challenge || true ;;
       p) learn::show_progress ;;
       r) learn::reset_progress ;;
       q)
@@ -223,7 +223,7 @@ function test_bashunit_works() {
 ───────────────────────────────────────────────────────────────
 
 TIP: The assert_same function takes two arguments:
-     assert_same "expected" "actual"
+    assert_same "expected" "actual"
 EOF
 
   local default_file="first_test.sh"
@@ -321,8 +321,8 @@ function test_multiple_assertions() {
   fi
 
   if ! grep -q "assert_contains" "$test_file" || \
-     ! grep -q "assert_matches" "$test_file" || \
-     ! grep -q "assert_not_empty" "$test_file"; then
+      ! grep -q "assert_matches" "$test_file" || \
+      ! grep -q "assert_not_empty" "$test_file"; then
     echo "${_COLOR_FAILED}Your test should use all three assertion types${_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -408,7 +408,7 @@ function test_file_has_content() {
   fi
 
   if ! grep -q "function set_up()" "$test_file" || \
-     ! grep -q "function tear_down()" "$test_file"; then
+      ! grep -q "function tear_down()" "$test_file"; then
     echo "${_COLOR_FAILED}Your test should define set_up and tear_down functions${_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
