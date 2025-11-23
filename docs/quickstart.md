@@ -82,10 +82,25 @@ Alternatively, create your tests manually:
 
 5.  Now you can start testing the functionalities of your own Bash scripts.
 
+## Learning bashunit interactively
+
+If you prefer hands-on learning, bashunit includes an interactive tutorial:
+
+```bash
+./lib/bashunit --learn
+```
+
+This will guide you through 10 progressive lessons covering all major features with practical exercises and immediate feedback.
+
 ## Next steps
 
-Dive deeper into the documentation to discover the options provided by [assertions](assertions),
-[snapshots](snapshots), [test files](/test-files), [data providers](/data-providers) and [test doubles](test-doubles) among many other features.
+Dive deeper into the documentation:
+- **[Common patterns](common-patterns)** - Real-world testing scenarios and best practices
+- **[Assertions](assertions)** - Learn all available assertion functions
+- **[Test doubles](test-doubles)** - Master mocks and spies for isolated testing
+- **[Data providers](/data-providers)** - Write parameterized tests efficiently
+- **[Snapshots](snapshots)** - Test complex output easily
+- **[Test files](/test-files)** - Understand test file structure and lifecycle hooks
 
 <script setup>
 import pkg from '../package.json'

@@ -31,6 +31,9 @@ Options:
   --init [dir]
                             Generate a sample test suite in current or specified directory.
 
+  --learn
+                            Start interactive learning tutorial to learn bashunit step by step.
+
   -l, --log-junit <file>
                             Write test results as JUnit XML report.
 
