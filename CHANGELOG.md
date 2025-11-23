@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Add `--learn` interactive tutorial with 10 progressive lessons for hands-on learning
+- Add comprehensive "Common Patterns" documentation with real-world testing examples
+- Add auto-file creation in learn mode - example test files are created automatically with templates
+
+### Fixed
 - Pass arguments to mocked functions
 - Fix lifecycle hooks not catching failing commands (exit code errors)
 
