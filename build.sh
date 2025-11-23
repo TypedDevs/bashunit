@@ -104,6 +104,7 @@ function build::dependencies() {
     "src/reports.sh"
     "src/runner.sh"
     "src/init.sh"
+    "src/learn.sh"
     "src/bashunit.sh"
     "src/main.sh"
   )

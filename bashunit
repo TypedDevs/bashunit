@@ -56,6 +56,7 @@ source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/init.sh"
+source "$BASHUNIT_ROOT_DIR/src/learn.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
@@ -139,6 +140,10 @@ while [[ $# -gt 0 ]]; do
       else
         init::project
       fi
+      trap '' EXIT && exit 0
+      ;;
+    --learn)
+      learn::start
       trap '' EXIT && exit 0
       ;;
     -h|--help)
