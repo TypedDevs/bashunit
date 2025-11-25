@@ -277,7 +277,7 @@ function state::print_line() {
   esac
 
   if parallel::is_enabled; then
-      printf "%s" "$char" >&3 2>/dev/null || printf "%s" "$char"
+      printf "%s" "$char"
   else
     if (( _TOTAL_TESTS_COUNT % 50 == 0 )); then
       printf "%s\n" "$char"
