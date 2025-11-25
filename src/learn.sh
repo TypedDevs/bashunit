@@ -13,6 +13,7 @@ declare -r LEARN_PROGRESS_FILE="$HOME/.bashunit_learn_progress"
 ##
 function learn::init() {
   mkdir -p "$LEARN_TEMP_DIR"
+  mkdir -p test
 }
 
 ##
@@ -210,7 +211,7 @@ assertions to verify behavior.
 
 TASK: Create a test file that checks if two values are equal.
 
-File: first_test.sh
+File: test/first_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -225,9 +226,10 @@ TIPS:
     assert_same "expected" "actual"
   • Test functions must start with "test_" prefix
   • Always quote your strings to avoid word splitting
+  • Keep test files in a test/ directory for better organization
 EOF
 
-  local default_file="first_test.sh"
+  local default_file="test/first_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -275,7 +277,7 @@ CONCEPT: bashunit provides many assertion functions for different checks:
 
 TASK: Write a test file with 3 different assertions.
 
-File: assertions_test.sh
+File: test/assertions_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -300,7 +302,7 @@ TIPS:
   • Explore more: assert_empty, assert_true, assert_false
 EOF
 
-  local default_file="assertions_test.sh"
+  local default_file="test/assertions_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -355,7 +357,7 @@ CONCEPT: Tests often need preparation and cleanup. bashunit provides:
 
 TASK: Create a test that uses setup and teardown to manage files.
 
-File: lifecycle_test.sh
+File: test/lifecycle_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -386,7 +388,7 @@ TIPS:
   • Use $$ for unique temp file names to avoid conflicts
 EOF
 
-  local default_file="lifecycle_test.sh"
+  local default_file="test/lifecycle_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -443,7 +445,7 @@ call them in your tests.
 
 TASK: Create a script with a function, then test it.
 
-File: calculator.sh
+File: calculator.sh (source code)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -452,13 +454,13 @@ function add() {
 }
 ───────────────────────────────────────────────────────────────
 
-File: calculator_test.sh
+File: test/calculator_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
 function set_up() {
-  # TODO: Source calculator.sh
-  # Hint: source ./calculator.sh
+  # TODO: Source calculator.sh from parent directory
+  # Hint: source ../calculator.sh
 }
 
 function test_add_positive_numbers() {
@@ -478,9 +480,10 @@ TIPS:
   • Source files in set_up() to reload them fresh for each test
   • Capture function output with: result=$(function_name args)
   • Test edge cases: positive, negative, zero, large numbers
+  • Source files from parent directory: source ../file.sh
 EOF
 
-  local default_file="calculator_test.sh"
+  local default_file="test/calculator_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -490,8 +493,8 @@ EOF
     local template='#!/usr/bin/env bash
 
 function set_up() {
-  # TODO: Source calculator.sh
-  # Hint: source ./calculator.sh
+  # TODO: Source calculator.sh from parent directory
+  # Hint: source ../calculator.sh
 }
 
 function test_add_positive_numbers() {
@@ -534,20 +537,20 @@ Run them and capture their output.
 
 TASK: Create a script and test its output.
 
-File: greeter.sh
+File: greeter.sh (source code)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 name=${1:-World}
 echo "Hello, $name!"
 ───────────────────────────────────────────────────────────────
 
-File: greeter_test.sh
+File: test/greeter_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
 function test_default_greeting() {
-  # TODO: Run greeter.sh and capture output
-  # Hint: output=$(./greeter.sh)
+  # TODO: Run greeter.sh from parent directory and capture output
+  # Hint: output=$(../greeter.sh)
 
   # TODO: Assert output contains "Hello, World!"
   # Hint: assert_contains "Hello, World!" "$output"
@@ -555,7 +558,7 @@ function test_default_greeting() {
 
 function test_custom_greeting() {
   # TODO: Run greeter.sh with argument "Alice"
-  # Hint: output=$(./greeter.sh "Alice")
+  # Hint: output=$(../greeter.sh "Alice")
 
   # TODO: Assert output contains "Hello, Alice!"
   # Hint: assert_contains "Hello, Alice!" "$output"
@@ -567,9 +570,10 @@ TIPS:
   • Make scripts executable: chmod +x script.sh
   • Test both default behavior and with various arguments
   • Scripts run in subshells, so they can't modify parent environment
+  • Run scripts from parent directory: ../script.sh
 EOF
 
-  local default_file="greeter_test.sh"
+  local default_file="test/greeter_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -579,8 +583,8 @@ EOF
     local template='#!/usr/bin/env bash
 
 function test_default_greeting() {
-  # TODO: Run greeter.sh and capture output
-  # Hint: output=$(./greeter.sh)
+  # TODO: Run greeter.sh from parent directory and capture output
+  # Hint: output=$(../greeter.sh)
 
   # TODO: Assert output contains "Hello, World!"
   # Hint: assert_contains "Hello, World!" "$output"
@@ -588,7 +592,7 @@ function test_default_greeting() {
 
 function test_custom_greeting() {
   # TODO: Run greeter.sh with argument "Alice"
-  # Hint: output=$(./greeter.sh "Alice")
+  # Hint: output=$(../greeter.sh "Alice")
 
   # TODO: Assert output contains "Hello, Alice!"
   # Hint: assert_contains "Hello, Alice!" "$output"
@@ -616,7 +620,7 @@ control their behavior in tests.
 
 TASK: Test a function that uses external commands.
 
-File: system_info.sh
+File: system_info.sh (source code)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -625,12 +629,12 @@ function get_system_info() {
 }
 ───────────────────────────────────────────────────────────────
 
-File: system_info_test.sh
+File: test/system_info_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
 function set_up() {
-  source system_info.sh
+  source ../system_info.sh
 }
 
 function test_system_info_on_linux() {
@@ -660,7 +664,7 @@ TIPS:
   • Use mocks to avoid calling expensive external commands
 EOF
 
-  local default_file="system_info_test.sh"
+  local default_file="test/system_info_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -670,7 +674,7 @@ EOF
     local template='#!/usr/bin/env bash
 
 function set_up() {
-  source system_info.sh
+  source ../system_info.sh
 }
 
 function test_system_info_on_linux() {
