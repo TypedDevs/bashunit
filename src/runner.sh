@@ -25,7 +25,9 @@ function runner::load_test_files() {
     # shellcheck source=/dev/null
     source "$test_file"
     # Update function cache after sourcing new test file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    local funcs
+    funcs=$(declare -F)
+    CACHED_ALL_FUNCTIONS=${funcs//declare -f /}
     if ! runner::run_set_up_before_script "$test_file"; then
       runner::clean_set_up_and_tear_down_after_script
       if ! parallel::is_enabled; then
@@ -73,7 +75,9 @@ function runner::load_bench_files() {
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    local funcs
+    funcs=$(declare -F)
+    CACHED_ALL_FUNCTIONS=${funcs//declare -f /}
     if ! runner::run_set_up_before_script "$bench_file"; then
       runner::clean_set_up_and_tear_down_after_script
       cleanup_script_temp_files
