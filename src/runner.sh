@@ -346,7 +346,14 @@ function runner::run_test() {
     # shellcheck disable=SC2064
     trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
     state::initialize_assertions_count
-    runner::run_set_up "$test_file" || exit $?
+
+    # Run set_up and capture exit code without || to preserve errexit behavior
+    local setup_exit_code=0
+    runner::run_set_up "$test_file"
+    setup_exit_code=$?
+    if [[ $setup_exit_code -ne 0 ]]; then
+      exit $setup_exit_code
+    fi
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
@@ -740,9 +747,22 @@ function runner::execute_test_hook() {
   local hook_output_file
   hook_output_file=$(temp_file "${hook_name}_output")
 
+  # Enable errexit and errtrace to catch any failing command in the hook
+  set -eE
+  # Set up trap to catch errors and record the exit status
+  trap 'status=$?; set +eE; trap - ERR' ERR
+
   {
     "$hook_name"
-  } >"$hook_output_file" 2>&1 || status=$?
+  } >"$hook_output_file" 2>&1
+
+  # Capture final status and clean up
+  local block_exit=$?
+  if [[ $status -eq 0 ]]; then
+    status=$block_exit
+  fi
+  trap - ERR
+  set +eE
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""
