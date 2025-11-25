@@ -74,9 +74,9 @@ function helper::encode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
-    echo "$value" | base64 | tr -d '\n'
+    printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
   else
-    echo "$value" | openssl enc -base64 -A
+    printf '%s' "$value" | openssl enc -base64 -A
   fi
 }
 
@@ -84,9 +84,9 @@ function helper::decode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
-    echo "$value" | base64 -d
+    printf '%s' "$value" | base64 -d
   else
-    echo "$value" | openssl enc -d -base64
+    printf '%s' "$value" | openssl enc -d -base64
   fi
 }
 
