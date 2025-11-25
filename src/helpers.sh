@@ -41,8 +41,18 @@ function helper::normalize_test_function_name() {
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  # Capitalize the first letter (bash 3.2 compatible, no subprocess)
+  local first_char="${result:0:1}"
+  case "$first_char" in
+    a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
+    e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
+    i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
+    m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
+    q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
+    u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
+    y) first_char='Y' ;; z) first_char='Z' ;;
+  esac
+  result="${first_char}${result:1}"
 
   echo "$result"
 }
