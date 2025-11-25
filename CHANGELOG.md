@@ -8,7 +8,10 @@
 
 ### Fixed
 - Pass arguments to mocked functions
-- Fix lifecycle hooks not catching failing commands (exit code errors)
+- Fix lifecycle hooks not catching intermediate failing commands in `set_up` and `tear_down`
+
+### Changed
+- Simplify CI: use only `-latest` runners for Ubuntu and macOS, remove deprecated `macos-13`
 
 ## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02
 
