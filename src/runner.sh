@@ -684,9 +684,7 @@ function runner::execute_file_hook() {
   local test_file="$2"
   local render_header="${3:-false}"
 
-  if [[ "$(type -t "$hook_name")" != "function" ]]; then
-    return 0
-  fi
+  declare -F "$hook_name" >/dev/null 2>&1 || return 0
 
   local hook_output=""
   local status=0
@@ -738,9 +736,7 @@ function runner::run_tear_down() {
 function runner::execute_test_hook() {
   local hook_name="$1"
 
-  if [[ "$(type -t "$hook_name")" != "function" ]]; then
-    return 0
-  fi
+  declare -F "$hook_name" >/dev/null 2>&1 || return 0
 
   local hook_output=""
   local status=0

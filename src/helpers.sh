@@ -148,7 +148,7 @@ function helper::get_functions_to_run() {
 function helper::execute_function_if_exists() {
   local fn_name="$1"
 
-  if [[ "$(type -t "$fn_name")" == "function" ]]; then
+  if declare -F "$fn_name" >/dev/null 2>&1; then
     "$fn_name"
     return $?
   fi
