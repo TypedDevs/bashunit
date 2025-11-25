@@ -276,9 +276,8 @@ function helper::find_total_tests() {
         file_count=$( (
             # shellcheck source=/dev/null
             source "$file"
-            local funcs all_fn_names
-            funcs=$(declare -F)
-            all_fn_names=${funcs//declare -f /}
+            local all_fn_names
+            all_fn_names=$(declare -F | awk '{print $3}')
             local filtered_functions
             filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 
@@ -356,10 +355,8 @@ function helper::get_function_line_number() {
   local fn_name=$1
 
   shopt -s extdebug
-  local line_info line_number
-  line_info=$(declare -F "$fn_name")
-  line_number=${line_info#* }
-  line_number=${line_number%% *}
+  local line_number
+  line_number=$(declare -F "$fn_name" | awk '{print $2}')
   shopt -u extdebug
 
   echo "$line_number"
