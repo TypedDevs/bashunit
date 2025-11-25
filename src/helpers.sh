@@ -215,8 +215,7 @@ function helper::get_provider_data() {
   data_provider_function=$(
     # shellcheck disable=SC1087
     grep -B 2 -E "function[[:space:]]+$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
-    grep -E "^[[:space:]]*# *@?data_provider[[:space:]]+" | \
-    sed -E 's/^[[:space:]]*# *@?data_provider[[:space:]]+//' || true
+    sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
   if [[ -n "$data_provider_function" ]]; then
