@@ -22,11 +22,8 @@ function parallel::aggregate_test_results() {
     fi
 
     for result_file in "${result_files[@]}"; do
-      local result_line=""
-      # Use bash built-in read instead of spawning tail subprocess
-      while IFS= read -r line || [[ -n "$line" ]]; do
-        result_line="$line"
-      done < "$result_file"
+      local result_line
+      result_line=$(tail -n 1 < "$result_file")
 
       local failed="${result_line##*##ASSERTIONS_FAILED=}"
       failed="${failed%%##*}"; failed=${failed:-0}
