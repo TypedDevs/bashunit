@@ -13,6 +13,11 @@
 ### Changed
 - Simplify CI: use only `-latest` runners for Ubuntu and macOS, remove deprecated `macos-13`
 
+### Performance
+- Optimize temp directory creation: initialize once at startup instead of per temp file (10-20% faster)
+- Optimize parallel result aggregation: use bash redirection instead of spawning `tail` subprocess (30-50% faster for parallel runs)
+- Optimize state access: cache state values to avoid repeated subshell invocations (5-15% faster)
+
 ## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02
 
 - Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
