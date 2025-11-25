@@ -25,6 +25,9 @@ function console_header::print_version() {
   local total_tests
   if [[ ${#files[@]} -eq 0 ]]; then
     total_tests=0
+  elif parallel::is_enabled && env::is_simple_output_enabled; then
+    # Skip counting in parallel+simple mode for faster startup
+    total_tests=0
   else
     total_tests=$(helper::find_total_tests "$filter" "${files[@]}")
   fi
