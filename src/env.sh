@@ -159,6 +159,10 @@ TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
 CAT="$(command -v cat)"
 
+# Initialize temp directory once at startup for performance
+BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
+mkdir -p "$BASHUNIT_TEMP_DIR" && chmod -R 777 "$BASHUNIT_TEMP_DIR"
+
 if env::is_dev_mode_enabled; then
   internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
 fi

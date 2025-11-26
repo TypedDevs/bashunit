@@ -41,8 +41,18 @@ function helper::normalize_test_function_name() {
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  # Capitalize the first letter (bash 3.2 compatible, no subprocess)
+  local first_char="${result:0:1}"
+  case "$first_char" in
+    a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
+    e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
+    i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
+    m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
+    q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
+    u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
+    y) first_char='Y' ;; z) first_char='Z' ;;
+  esac
+  result="${first_char}${result:1}"
 
   echo "$result"
 }
@@ -74,9 +84,9 @@ function helper::encode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
-    echo "$value" | base64 | tr -d '\n'
+    printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
   else
-    echo "$value" | openssl enc -base64 -A
+    printf '%s' "$value" | openssl enc -base64 -A
   fi
 }
 
@@ -84,9 +94,9 @@ function helper::decode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
-    echo "$value" | base64 -d
+    printf '%s' "$value" | base64 -d
   else
-    echo "$value" | openssl enc -d -base64
+    printf '%s' "$value" | openssl enc -d -base64
   fi
 }
 
@@ -148,7 +158,7 @@ function helper::get_functions_to_run() {
 function helper::execute_function_if_exists() {
   local fn_name="$1"
 
-  if [[ "$(type -t "$fn_name")" == "function" ]]; then
+  if declare -F "$fn_name" >/dev/null 2>&1; then
     "$fn_name"
     return $?
   fi
@@ -215,8 +225,7 @@ function helper::get_provider_data() {
   data_provider_function=$(
     # shellcheck disable=SC1087
     grep -B 2 -E "function[[:space:]]+$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
-    grep -E "^[[:space:]]*# *@?data_provider[[:space:]]+" | \
-    sed -E 's/^[[:space:]]*# *@?data_provider[[:space:]]+//' || true
+    sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
   if [[ -n "$data_provider_function" ]]; then

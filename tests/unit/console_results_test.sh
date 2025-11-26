@@ -1,27 +1,73 @@
 #!/usr/bin/env bash
 
+# Helper to set both mock and actual variable for state values
+function set_state_value() {
+  local getter_name=$1
+  local value=$2
+  local var_name
+
+  # Extract variable name from getter function name
+  case "$getter_name" in
+    state::get_tests_passed) var_name="_TESTS_PASSED" ;;
+    state::get_tests_failed) var_name="_TESTS_FAILED" ;;
+    state::get_tests_skipped) var_name="_TESTS_SKIPPED" ;;
+    state::get_tests_incomplete) var_name="_TESTS_INCOMPLETE" ;;
+    state::get_tests_snapshot) var_name="_TESTS_SNAPSHOT" ;;
+    state::get_assertions_passed) var_name="_ASSERTIONS_PASSED" ;;
+    state::get_assertions_failed) var_name="_ASSERTIONS_FAILED" ;;
+    state::get_assertions_skipped) var_name="_ASSERTIONS_SKIPPED" ;;
+    state::get_assertions_incomplete) var_name="_ASSERTIONS_INCOMPLETE" ;;
+    state::get_assertions_snapshot) var_name="_ASSERTIONS_SNAPSHOT" ;;
+    state::is_duplicated_test_functions_found) var_name="_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
+    state::get_duplicated_function_names) var_name="_DUPLICATED_FUNCTION_NAMES" ;;
+    state::get_file_with_duplicated_function_names) var_name="_FILE_WITH_DUPLICATED_FUNCTION_NAMES" ;;
+  esac
+
+  # Set the actual variable
+  eval "$var_name='$value'"
+  # Mock the getter function
+  mock "$getter_name" echo "$value"
+}
+
 function mock_all_state_getters() {
-  mock state::is_duplicated_test_functions_found echo false
-  mock state::get_duplicated_function_names echo ""
-  mock state::get_file_with_duplicated_function_names echo ""
-  mock state::get_tests_passed echo 0
-  mock state::get_tests_failed echo 0
-  mock state::get_tests_skipped echo 0
-  mock state::get_tests_incomplete echo 0
-  mock state::get_tests_snapshot echo 0
-  mock state::get_assertions_passed echo 0
-  mock state::get_assertions_failed echo 0
-  mock state::get_assertions_skipped echo 0
-  mock state::get_assertions_incomplete echo 0
-  mock state::get_assertions_snapshot echo 0
+  set_state_value "state::is_duplicated_test_functions_found" "false"
+  set_state_value "state::get_duplicated_function_names" ""
+  set_state_value "state::get_file_with_duplicated_function_names" ""
+  set_state_value "state::get_tests_passed" "0"
+  set_state_value "state::get_tests_failed" "0"
+  set_state_value "state::get_tests_skipped" "0"
+  set_state_value "state::get_tests_incomplete" "0"
+  set_state_value "state::get_tests_snapshot" "0"
+  set_state_value "state::get_assertions_passed" "0"
+  set_state_value "state::get_assertions_failed" "0"
+  set_state_value "state::get_assertions_skipped" "0"
+  set_state_value "state::get_assertions_incomplete" "0"
+  set_state_value "state::get_assertions_snapshot" "0"
+
+  # Also set actual state variables for direct access optimization
+  _TESTS_PASSED=0
+  _TESTS_FAILED=0
+  _TESTS_SKIPPED=0
+  _TESTS_INCOMPLETE=0
+  _TESTS_SNAPSHOT=0
+  _ASSERTIONS_PASSED=0
+  _ASSERTIONS_FAILED=0
+  _ASSERTIONS_SKIPPED=0
+  _ASSERTIONS_INCOMPLETE=0
+  _ASSERTIONS_SNAPSHOT=0
+  _DUPLICATED_TEST_FUNCTIONS_FOUND=false
+  _DUPLICATED_FUNCTION_NAMES=""
+  _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 }
 
 function test_not_render_passed_when_no_passed_tests_nor_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_passed echo 0
-    mock state::get_assertions_passed echo 0
+    set_state_value "state::get_tests_passed" "0"
+    set_state_value "state::get_assertions_passed" "0"
+    _TESTS_PASSED=0
+    _ASSERTIONS_PASSED=0
 
     console_results::render_result
   )
@@ -34,8 +80,8 @@ function test_render_passed_when_passed_tests() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_passed echo 32
-    mock state::get_assertions_passed echo 0
+    set_state_value "state::get_tests_passed" "32"
+    set_state_value "state::get_assertions_passed" "0"
 
     console_results::render_result
   )
@@ -48,8 +94,8 @@ function test_render_passed_when_passed_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_passed echo 0
-    mock state::get_assertions_passed echo 24
+    set_state_value "state::get_tests_passed" "0"
+    set_state_value "state::get_assertions_passed" "24"
 
     console_results::render_result
   )
@@ -62,8 +108,8 @@ function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_skipped echo 0
-    mock state::get_assertions_skipped echo 0
+    set_state_value "state::get_tests_skipped" "0"
+    set_state_value "state::get_assertions_skipped" "0"
 
     console_results::render_result
   )
@@ -76,8 +122,8 @@ function test_render_skipped_when_skipped_tests() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_skipped echo 11
-    mock state::get_assertions_skipped echo 0
+    set_state_value "state::get_tests_skipped" "11"
+    set_state_value "state::get_assertions_skipped" "0"
 
     console_results::render_result
   )
@@ -90,8 +136,8 @@ function test_render_skipped_when_skipped_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_skipped echo 0
-    mock state::get_assertions_skipped echo 12
+    set_state_value "state::get_tests_skipped" "0"
+    set_state_value "state::get_assertions_skipped" "12"
 
     console_results::render_result
   )
@@ -104,8 +150,8 @@ function test_not_render_incomplete_when_no_incomplete_tests_nor_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_incomplete echo 0
-    mock state::get_assertions_incomplete echo 0
+    set_state_value "state::get_tests_incomplete" "0"
+    set_state_value "state::get_assertions_incomplete" "0"
 
     console_results::render_result
   )
@@ -118,8 +164,8 @@ function test_render_incomplete_when_incomplete_tests() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_incomplete echo 15
-    mock state::get_assertions_incomplete echo 0
+    set_state_value "state::get_tests_incomplete" "15"
+    set_state_value "state::get_assertions_incomplete" "0"
 
     console_results::render_result
   )
@@ -132,8 +178,8 @@ function test_render_incomplete_when_incomplete_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_incomplete echo 0
-    mock state::get_assertions_incomplete echo 20
+    set_state_value "state::get_tests_incomplete" "0"
+    set_state_value "state::get_assertions_incomplete" "20"
 
     console_results::render_result
   )
@@ -146,8 +192,8 @@ function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_snapshot echo 0
-    mock state::get_assertions_snapshot echo 0
+    set_state_value "state::get_tests_snapshot" "0"
+    set_state_value "state::get_assertions_snapshot" "0"
 
     console_results::render_result
   )
@@ -160,8 +206,8 @@ function test_render_snapshot_when_snapshot_tests() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_snapshot echo 16
-    mock state::get_assertions_snapshot echo 0
+    set_state_value "state::get_tests_snapshot" "16"
+    set_state_value "state::get_assertions_snapshot" "0"
 
     console_results::render_result
   )
@@ -174,8 +220,8 @@ function test_render_snapshot_when_snapshot_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_snapshot echo 0
-    mock state::get_assertions_snapshot echo 17
+    set_state_value "state::get_tests_snapshot" "0"
+    set_state_value "state::get_assertions_snapshot" "17"
 
     console_results::render_result
   )
@@ -188,8 +234,8 @@ function test_not_render_failed_when_not_failed_tests_nor_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_failed echo 0
-    mock state::get_assertions_failed echo 0
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_assertions_failed" "0"
 
     console_results::render_result
   )
@@ -203,8 +249,8 @@ function test_render_failed_when_failed_tests() {
 
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_failed echo 42
-    mock state::get_assertions_failed echo 0
+    set_state_value "state::get_tests_failed" "42"
+    set_state_value "state::get_assertions_failed" "0"
 
     console_results::render_result
   )
@@ -219,8 +265,8 @@ function test_render_failed_when_failed_assertions() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_failed echo 0
-    mock state::get_assertions_failed echo 666
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_assertions_failed" "666"
 
     console_results::render_result
   )
@@ -235,11 +281,11 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_snapshot_and_f
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_tests_passed echo 4
-    mock state::get_tests_skipped echo 5
-    mock state::get_tests_incomplete echo 7
-    mock state::get_tests_snapshot echo 11
-    mock state::get_tests_failed echo 2
+    set_state_value "state::get_tests_passed" "4"
+    set_state_value "state::get_tests_skipped" "5"
+    set_state_value "state::get_tests_incomplete" "7"
+    set_state_value "state::get_tests_snapshot" "11"
+    set_state_value "state::get_tests_failed" "2"
 
     console_results::render_result
   )
@@ -253,11 +299,11 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::get_assertions_passed echo 4
-    mock state::get_assertions_skipped echo 5
-    mock state::get_assertions_incomplete echo 7
-    mock state::get_assertions_snapshot echo 11
-    mock state::get_assertions_failed echo 2
+    set_state_value "state::get_assertions_passed" "4"
+    set_state_value "state::get_assertions_skipped" "5"
+    set_state_value "state::get_assertions_incomplete" "7"
+    set_state_value "state::get_assertions_snapshot" "11"
+    set_state_value "state::get_assertions_failed" "2"
 
     console_results::render_result
   )
@@ -332,9 +378,9 @@ function test_render_file_with_duplicated_functions_if_found_true() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo true
-    mock state::get_duplicated_function_names echo "duplicate_function_name"
-    mock state::get_file_with_duplicated_function_names echo "duplicate_file_name.sh"
+    set_state_value "state::is_duplicated_test_functions_found" "true"
+    set_state_value "state::get_duplicated_function_names" "duplicate_function_name"
+    set_state_value "state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
 
     console_results::render_result
   )
@@ -350,9 +396,9 @@ function test_not_render_file_with_duplicated_functions_if_found_false() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_duplicated_function_names echo "duplicate_function_name"
-    mock state::get_file_with_duplicated_function_names echo "duplicate_file_name.sh"
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_duplicated_function_names" "duplicate_function_name"
+    set_state_value "state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
 
     console_results::render_result
   )
@@ -368,12 +414,12 @@ function test_only_render_error_result_when_some_duplicated_fails() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo true
-    mock state::get_tests_failed echo 1
-    mock state::get_tests_incomplete echo 4
-    mock state::get_tests_snapshot echo 7
-    mock state::get_tests_skipped echo 2
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "true"
+    set_state_value "state::get_tests_failed" "1"
+    set_state_value "state::get_tests_incomplete" "4"
+    set_state_value "state::get_tests_snapshot" "7"
+    set_state_value "state::get_tests_skipped" "2"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )
@@ -393,12 +439,12 @@ function test_only_render_error_result_when_some_test_fails() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_tests_failed echo 1
-    mock state::get_tests_incomplete echo 4
-    mock state::get_tests_snapshot echo 7
-    mock state::get_tests_skipped echo 2
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_tests_failed" "1"
+    set_state_value "state::get_tests_incomplete" "4"
+    set_state_value "state::get_tests_snapshot" "7"
+    set_state_value "state::get_tests_skipped" "2"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )
@@ -416,12 +462,12 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_tests_failed echo 0
-    mock state::get_tests_incomplete echo 4
-    mock state::get_tests_snapshot echo 7
-    mock state::get_tests_skipped echo 2
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_tests_incomplete" "4"
+    set_state_value "state::get_tests_snapshot" "7"
+    set_state_value "state::get_tests_skipped" "2"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )
@@ -439,12 +485,12 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_tests_failed echo 0
-    mock state::get_tests_incomplete echo 0
-    mock state::get_tests_snapshot echo 7
-    mock state::get_tests_skipped echo 2
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_tests_incomplete" "0"
+    set_state_value "state::get_tests_snapshot" "7"
+    set_state_value "state::get_tests_skipped" "2"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )
@@ -462,12 +508,12 @@ function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_tests_failed echo 0
-    mock state::get_tests_incomplete echo 0
-    mock state::get_tests_snapshot echo 7
-    mock state::get_tests_skipped echo 0
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_tests_incomplete" "0"
+    set_state_value "state::get_tests_snapshot" "7"
+    set_state_value "state::get_tests_skipped" "0"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )
@@ -485,12 +531,12 @@ function test_only_render_success_result_when_all_tests_passes() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    mock state::is_duplicated_test_functions_found echo false
-    mock state::get_tests_failed echo 0
-    mock state::get_tests_incomplete echo 0
-    mock state::get_tests_snapshot echo 0
-    mock state::get_tests_skipped echo 0
-    mock state::get_tests_passed echo 3
+    set_state_value "state::is_duplicated_test_functions_found" "false"
+    set_state_value "state::get_tests_failed" "0"
+    set_state_value "state::get_tests_incomplete" "0"
+    set_state_value "state::get_tests_snapshot" "0"
+    set_state_value "state::get_tests_skipped" "0"
+    set_state_value "state::get_tests_passed" "3"
 
     console_results::render_result
   )

@@ -23,7 +23,7 @@ function parallel::aggregate_test_results() {
 
     for result_file in "${result_files[@]}"; do
       local result_line
-      result_line=$(tail -n 1 "$result_file")
+      result_line=$(tail -n 1 < "$result_file")
 
       local failed="${result_line##*##ASSERTIONS_FAILED=}"
       failed="${failed%%##*}"; failed=${failed:-0}
