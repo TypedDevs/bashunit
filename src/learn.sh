@@ -13,7 +13,7 @@ declare -r LEARN_PROGRESS_FILE="$HOME/.bashunit_learn_progress"
 ##
 function learn::init() {
   mkdir -p "$LEARN_TEMP_DIR"
-  mkdir -p test
+  mkdir -p tests
 }
 
 ##
@@ -211,7 +211,7 @@ assertions to verify behavior.
 
 TASK: Create a test file that checks if two values are equal.
 
-File: test/first_test.sh
+File: tests/first_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -226,10 +226,10 @@ TIPS:
     assert_same "expected" "actual"
   • Test functions must start with "test_" prefix
   • Always quote your strings to avoid word splitting
-  • Keep test files in a test/ directory for better organization
+  • Keep test files in a tests/ directory for better organization
 EOF
 
-  local default_file="test/first_test.sh"
+  local default_file="tests/first_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -277,7 +277,7 @@ CONCEPT: bashunit provides many assertion functions for different checks:
 
 TASK: Write a test file with 3 different assertions.
 
-File: test/assertions_test.sh
+File: tests/assertions_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -302,7 +302,7 @@ TIPS:
   • Explore more: assert_empty, assert_true, assert_false
 EOF
 
-  local default_file="test/assertions_test.sh"
+  local default_file="tests/assertions_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -357,7 +357,7 @@ CONCEPT: Tests often need preparation and cleanup. bashunit provides:
 
 TASK: Create a test that uses setup and teardown to manage files.
 
-File: test/lifecycle_test.sh
+File: tests/lifecycle_test.sh
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -388,7 +388,7 @@ TIPS:
   • Use $$ for unique temp file names to avoid conflicts
 EOF
 
-  local default_file="test/lifecycle_test.sh"
+  local default_file="tests/lifecycle_test.sh"
   echo ""
   printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -454,7 +454,7 @@ function add() {
 }
 ───────────────────────────────────────────────────────────────
 
-File: test/calculator_test.sh (test file)
+File: tests/calculator_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -483,7 +483,7 @@ TIPS:
   • Source files from parent directory: source ../file.sh
 EOF
 
-  local default_file="test/calculator_test.sh"
+  local default_file="tests/calculator_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -544,7 +544,7 @@ name=${1:-World}
 echo "Hello, $name!"
 ───────────────────────────────────────────────────────────────
 
-File: test/greeter_test.sh (test file)
+File: tests/greeter_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -573,7 +573,7 @@ TIPS:
   • Run scripts from parent directory: ../script.sh
 EOF
 
-  local default_file="test/greeter_test.sh"
+  local default_file="tests/greeter_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
@@ -629,7 +629,7 @@ function get_system_info() {
 }
 ───────────────────────────────────────────────────────────────
 
-File: test/system_info_test.sh (test file)
+File: tests/system_info_test.sh (test file)
 ───────────────────────────────────────────────────────────────
 #!/usr/bin/env bash
 
@@ -664,7 +664,7 @@ TIPS:
   • Use mocks to avoid calling expensive external commands
 EOF
 
-  local default_file="test/system_info_test.sh"
+  local default_file="tests/system_info_test.sh"
   echo ""
   printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
   read -r test_file
