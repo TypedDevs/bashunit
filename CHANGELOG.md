@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.27.0](https://github.com/TypedDevs/bashunit/compare/0.26.0...0.27.0) - 2025-11-26
 
 ### Added
 - Add `--learn` interactive tutorial with 10 progressive lessons for hands-on learning
