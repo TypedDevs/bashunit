@@ -86,3 +86,23 @@ function test_bashunit_when_set_up_with_intermediate_failing_command() {
   assert_contains "$assertions_summary" "$actual"
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }
+
+# Issue #517: When set_up fails, remaining commands should not execute
+function test_bashunit_set_up_stops_on_first_failure() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_setup_stops_on_failure.sh
+  local marker_file="/tmp/bashunit_setup_marker_test"
+
+  # Clean up any existing marker file
+  rm -f "$marker_file"
+
+  set +e
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" >/dev/null 2>&1
+  set -e
+
+  # The marker file should NOT exist because the touch command
+  # should not have executed after the failing command
+  assert_file_not_exists "$marker_file"
+
+  # Clean up
+  rm -f "$marker_file"
+}

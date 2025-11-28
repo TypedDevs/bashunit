@@ -526,8 +526,9 @@ function runner::cleanup_on_exit() {
   local exit_code="$2"
 
   set +e
-  local teardown_status=0
-  runner::run_tear_down "$test_file" || teardown_status=$?
+  # Don't use || here - it disables ERR trap in the entire call chain
+  runner::run_tear_down "$test_file"
+  local teardown_status=$?
   runner::clear_mocks
   cleanup_testcase_temp_files
 
@@ -743,20 +744,22 @@ function runner::execute_test_hook() {
   local hook_output_file
   hook_output_file=$(temp_file "${hook_name}_output")
 
-  # Enable errexit and errtrace to catch any failing command in the hook
+  # Enable errexit and errtrace to catch any failing command in the hook.
+  # The ERR trap saves the exit status to a global variable (since return value
+  # from trap doesn't propagate properly), disables errexit (to prevent caller
+  # from exiting) and returns from the hook function, preventing subsequent
+  # commands from executing.
+  # Variables set before the failure are preserved since we don't use a subshell.
+  _BASHUNIT_HOOK_ERR_STATUS=0
   set -eE
-  # Set up trap to catch errors and record the exit status
-  trap 'status=$?; set +eE; trap - ERR' ERR
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
     "$hook_name"
   } >"$hook_output_file" 2>&1
 
-  # Capture final status and clean up
-  local block_exit=$?
-  if [[ $status -eq 0 ]]; then
-    status=$block_exit
-  fi
+  # Capture exit status from global variable and clean up
+  status=$_BASHUNIT_HOOK_ERR_STATUS
   trap - ERR
   set +eE
 
