@@ -60,141 +60,46 @@ source "$BASHUNIT_ROOT_DIR/src/init.sh"
 source "$BASHUNIT_ROOT_DIR/src/learn.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-_ASSERT_FN=""
-_FILTER=""
-_RAW_ARGS=()
-_ARGS=()
-_BENCH_MODE=false
-
 check_os::init
 clock::init
 
-# Argument parsing
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    -a|--assert)
-      _ASSERT_FN="$2"
-      shift
-      ;;
-    -f|--filter)
-      _FILTER="$2"
-      shift
-      ;;
-    -s|--simple)
-      export BASHUNIT_SIMPLE_OUTPUT=true
-      ;;
-    --detailed)
-      export BASHUNIT_SIMPLE_OUTPUT=false
-      ;;
-    --debug)
-      OUTPUT_FILE="${2:-}"
-      if [[ -n "$OUTPUT_FILE" ]]; then
-        exec > "$OUTPUT_FILE" 2>&1
-      fi
-      set -x
-      ;;
-    -b|--bench)
-      _BENCH_MODE=true
-      export BASHUNIT_BENCH_MODE=true
-      source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
-      ;;
-    -S|--stop-on-failure)
-      export BASHUNIT_STOP_ON_FAILURE=true
-      ;;
-    -p|--parallel)
-      export BASHUNIT_PARALLEL_RUN=true
-      ;;
-    --no-parallel)
-      export BASHUNIT_PARALLEL_RUN=false
-      ;;
-    -e|--env|--boot)
-      # shellcheck disable=SC1090
-      source "$2"
-      shift
-      ;;
-    -l|--log-junit)
-      export BASHUNIT_LOG_JUNIT="$2"
-      shift
-      ;;
-    -r|--report-html)
-      export BASHUNIT_REPORT_HTML="$2"
-      shift
-      ;;
-    --no-output)
-      export BASHUNIT_NO_OUTPUT=true
-      ;;
-    -vvv|--verbose)
-      export BASHUNIT_VERBOSE=true
-      ;;
-    -v|--version)
-      console_header::print_version
-      trap '' EXIT && exit 0
-      ;;
-    --doc)
-      if [[ -n ${2:-} && ${2:0:1} != "-" ]]; then
-        doc::print_asserts "$2"
-        shift
-      else
-        doc::print_asserts
-      fi
-      trap '' EXIT && exit 0
-      ;;
-    --upgrade)
-      upgrade::upgrade
-      trap '' EXIT && exit 0
-      ;;
-    --init)
-      if [[ -n ${2:-} && ${2:0:1} != "-" ]]; then
-        init::project "$2"
-        shift
-      else
-        init::project
-      fi
-      trap '' EXIT && exit 0
-      ;;
-    --learn)
-      learn::start
-      trap '' EXIT && exit 0
-      ;;
-    -h|--help)
-      console_header::print_help
-      trap '' EXIT && exit 0
-      ;;
-    *)
-      _RAW_ARGS+=("$1")
-      ;;
-  esac
-  shift
-done
+# Subcommand detection
+_SUBCOMMAND=""
 
-# Expand positional arguments after all options have been processed
-if [[ ${#_RAW_ARGS[@]} -gt 0 ]]; then
-  pattern='*[tT]est.sh'
-  [[ "$_BENCH_MODE" == true ]] && pattern='*[bB]ench.sh'
-  for arg in "${_RAW_ARGS[@]}"; do
-    while IFS= read -r file; do
-      _ARGS+=("$file")
-    done < <(helper::find_files_recursive "$arg" "$pattern")
-  done
-fi
+case "${1:-}" in
+  test|bench|doc|init|learn|upgrade)
+    _SUBCOMMAND="$1"
+    shift
+    ;;
+  -v|--version)
+    console_header::print_version
+    exit 0
+    ;;
+  -h|--help)
+    console_header::print_help
+    exit 0
+    ;;
+  -*)
+    # Flag without subcommand → assume "test"
+    _SUBCOMMAND="test"
+    ;;
+  "")
+    # No arguments → show help
+    console_header::print_help
+    exit 0
+    ;;
+  *)
+    # Path argument → assume "test"
+    _SUBCOMMAND="test"
+    ;;
+esac
 
-# Optional bootstrap
-# shellcheck disable=SC1090
-[[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
-
-if [[ "${BASHUNIT_NO_OUTPUT:-false}" == true ]]; then
-  exec >/dev/null 2>&1
-fi
-
-set +eu
-
-#################
-# Main execution
-#################
-if [[ -n "$_ASSERT_FN" ]]; then
-  main::exec_assert "$_ASSERT_FN" "${_ARGS[@]}"
-elif [[ "$_BENCH_MODE" == true ]]; then
-  main::exec_benchmarks "$_FILTER" "${_ARGS[@]}"
-else
-  main::exec_tests "$_FILTER" "${_ARGS[@]}"
-fi
+# Route to subcommand handler
+case "$_SUBCOMMAND" in
+  test)    main::cmd_test "$@" ;;
+  bench)   main::cmd_bench "$@" ;;
+  doc)     main::cmd_doc "$@" ;;
+  init)    main::cmd_init "$@" ;;
+  learn)   main::cmd_learn "$@" ;;
+  upgrade) main::cmd_upgrade "$@" ;;
+esac

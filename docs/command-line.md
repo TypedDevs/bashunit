@@ -1,42 +1,73 @@
 # Command line
 
-**bashunit** command accepts options to control its behavior. These options will override the environment [configuration](/configuration), which you can use to make the change permanent.
+**bashunit** uses a subcommand-based CLI. Each command has its own options and behavior.
 
-## Directory or file
+## Quick Reference
 
-> `bashunit "directory|file"`
+```bash
+bashunit test [path] [options]    # Run tests (default)
+bashunit bench [path] [options]   # Run benchmarks
+bashunit doc [filter]             # Show assertion documentation
+bashunit init [dir]               # Initialize test directory
+bashunit learn                    # Interactive tutorial
+bashunit upgrade                  # Upgrade to latest version
+bashunit --help                   # Show help
+bashunit --version                # Show version
+```
 
-Specifies the `directory` or `file` containing the tests to be run.
+## test
 
-If a directory is specified, it will execute tests within files ending in `test.sh` or `test.bash`.
+> `bashunit test [path] [options]`
+> `bashunit [path] [options]`
 
-If you use wildcards, **bashunit** will run any tests it finds.
-
-You can use `BASHUNIT_DEFAULT_PATH` option in your [configuration](/configuration#default-path)
-to choose where the tests are located by default.
+Run test files. This is the default command - you can omit `test` for convenience.
 
 ::: code-group
-```bash [Example]
-# all tests inside the tests directory
-./bashunit ./tests
+```bash [Examples]
+# Run all tests in directory
+bashunit test tests/
 
-# concrete test by full path
-./bashunit ./tests/example_test.sh
+# Shorthand (same as above)
+bashunit tests/
 
-# all test matching given wildcard
-./bashunit ./tests/**/*_test.sh
+# Run specific test file
+bashunit test tests/unit/example_test.sh
+
+# Run with filter
+bashunit test tests/ --filter "user"
+
+# Run with options
+bashunit test tests/ --parallel --simple
 ```
 :::
 
-## Assert
+### Test Options
 
-> `bashunit -a|--assert function "arg1" "arg2"`
+| Option | Description |
+|--------|-------------|
+| `-a, --assert <fn> <args>` | Run a standalone assert function |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-f, --filter <name>` | Only run tests matching name |
+| `-l, --log-junit <file>` | Write JUnit XML report |
+| `-p, --parallel` | Run tests in parallel (default) |
+| `--no-parallel` | Run tests sequentially |
+| `-r, --report-html <file>` | Write HTML report |
+| `-s, --simple` | Simple output (dots) |
+| `--detailed` | Detailed output (default) |
+| `-S, --stop-on-failure` | Stop on first failure |
+| `-vvv, --verbose` | Show execution details |
+| `--debug [file]` | Enable shell debug mode |
+| `--no-output` | Suppress all output |
 
-Run a core assert function standalone without a test context. Read more: [Standalone](/standalone)
+### Standalone Assert
+
+> `bashunit test -a|--assert function "arg1" "arg2"`
+
+Run a core assert function standalone without a test context.
 
 ::: code-group
 ```bash [Example]
-./bashunit --assert equals "foo" "bar"
+bashunit test --assert equals "foo" "bar"
 ```
 ```[Output]
 ✗ Failed: Main::exec assert
@@ -45,210 +76,41 @@ Run a core assert function standalone without a test context. Read more: [Standa
 ```
 :::
 
-## Bootstrap
+### Filter
 
-> `bashunit -e|--env|--boot "file path"`
+> `bashunit test -f|--filter "test name"`
 
-Load a custom file, overriding the existing `.env` variables or loading a bootstrap file.
-
-> You can use `BASHUNIT_BOOTSTRAP` option in your [configuration](/configuration#bootstrap).
-
-::: code-group
-```bash [Example: --boot]
-./bashunit tests --boot tests/globals.sh
-```
-```bash [Example: --env]
-./bashunit tests --env .env.tests
-```
-:::
-
-## Debug
-
-> `bashunit --debug <?file-path>`
-
-Enables a shell mode in which all executed commands are printed to the terminal,
-or printed into a file if this is specified.
-
-Printing every command as executed may help you visualize the script's control flow if it is not working as expected.
+Run only tests matching the given name.
 
 ::: code-group
 ```bash [Example]
-./bashunit --debug local/debug.sh
+bashunit test tests/ --filter "user_login"
 ```
 :::
 
-## Filter
+### Parallel
 
-> `bashunit -f|--filter "test name"`
+> `bashunit test -p|--parallel`
+> `bashunit test --no-parallel`
 
-Filters the tests to be run based on the `test name`.
-
-::: code-group
-```bash [Example]
-# run all test functions including "something" in the name
-./bashunit ./tests --filter "something"
-```
-:::
-
-## JUnit Logging
-
-> `bashunit -l|--log-junit <out.xml>`
-
-Creates a report XML file that follows the JUnit XML format and contains information about the test results of your bashunit tests.
-
-::: code-group
-```bash [Example]
-./bashunit ./tests --log-junit log-junit.xml
-```
-```xml [log-junit.xml]
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites>
-  <testsuite name="bashunit" tests="340"
-             passed="328" failures="0" incomplete="10"
-             skipped="1" snapshot="1"
-             time="43344">
-    <testcase file="tests/acceptance/bashunit_direct_fn_call_test.sh"
-              name="test_bashunit_direct_fn_call_passes"
-              status="passed"
-              assertions="1"
-              time="45">
-    </testcase>
-    <testcase file="tests/acceptance/bashunit_direct_fn_call_test.sh"
-              name="test_bashunit_direct_fn_call_without_assert_prefix_passes"
-              status="passed"
-              assertions="1"
-              time="51">
-    </testcase>
-    ... etc
-```
-:::
-
-## Parallel
-
-> `bashunit -p|--parallel`
-
-bashunit provides an option to run each test in a separate child process, allowing you to parallelize the test execution and potentially speed up the testing process. When running in parallel mode, the execution order of tests is randomized.
+Run tests in parallel (default) or sequentially.
 
 ::: warning
 Parallel mode is supported on **macOS**, **Ubuntu**, and **Windows**. On other
 systems (like Alpine Linux) the option is automatically disabled due to
-inconsistent results. In those environments consider using `--no-parallel`.
+inconsistent results.
 :::
 
-::: code-group
-```bash [Example]
-./bashunit ./tests --parallel
-```
-:::
+### Output Style
 
-This runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+> `bashunit test -s|--simple`
+> `bashunit test --detailed`
 
-You can use `BASHUNIT_PARALLEL_RUN` option in your [configuration](/configuration#parallel).
-
-### Disabling Parallel Testing
-
-> `bashunit --no-parallel`
-
-If parallel testing is enabled by default or within a script, you can disable it using the --no-parallel option. This is useful if you need to run tests in sequence or if parallel execution is causing issues during debugging.
-
-## HTML report
-
-> `bashunit -r|--report-html <out.html>`
-
-Creates a report HTML file that contains information about the test results of your bashunit tests.
+Choose between simple (dots) or detailed output.
 
 ::: code-group
-```bash [Example]
-./bashunit ./tests --report-html report.html
-```
-
-```html [report.html]
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Report</title>
-  <style>
-    body { font-family: Arial, sans-serif; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background-color: #f2f2f2; }
-    .passed { background-color: #dff0d8; }
-    .failed { background-color: #f2dede; }
-    .skipped { background-color: #fcf8e3; }
-    .incomplete { background-color: #d9edf7; }
-    .snapshot { background-color: #dfe6e9; }
-  </style>
-</head>
-<body>
-<h1>Test Report</h1>
-<table>
-  <thead>
-  <tr>
-    <th>Total Tests</th>
-    <th>Passed</th>
-    <th>Failed</th>
-    <th>Incomplete</th>
-    <th>Skipped</th>
-    <th>Snapshot</th>
-    <th>Time (ms)</th>
-  </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td>340</td>
-    <td>328</td>
-    <td>0</td>
-    <td>10</td>
-    <td>1</td>
-    <td>1</td>
-    <td>46811</td>
-  </tr>
-  </tbody>
-</table>
-<p>Time: 46811 ms</p>
-<h2>File: tests/acceptance/bashunit_direct_fn_call_test.sh</h2>
-<table>
-  <thead>
-  <tr>
-    <th>Test Name</th>
-    ... etc
-```
-:::
-
-## Benchmarks
-
-> `bashunit --bench <file>`
-
-Run benchmark functions prefixed with `bench_`. Use `@revs` and `@its` comments to
-control revolutions and iterations. When no file is provided, bashunit will search
-for `*.bench.sh` files under `BASHUNIT_DEFAULT_PATH`.
-
-::: code-group
-```bash [Example]
-./bashunit --bench benchmarks.sh
-```
-:::
-
-## Output
-
-> `bashunit -s|--simple`
->
-> `bashunit --detailed` [Default]
-
-Enables simplified or verbose output to the console.
-
-Verbose is the default output, but it can be overridden by the environment configuration.
-
-This command flag will always take precedence over the environment configuration.
-
-You can use `BASHUNIT_SIMPLE_OUTPUT` option in your [configuration](/configuration#output)
-to choose the default output display.
-
-::: code-group
-```bash [Example]
-./bashunit ./tests --simple
+```bash [Simple]
+bashunit test tests/ --simple
 ```
 ```[Output]
 ........
@@ -256,191 +118,120 @@ to choose the default output display.
 :::
 
 ::: code-group
-```bash [Example]
-./bashunit ./tests --detailed
+```bash [Detailed]
+bashunit test tests/ --detailed
 ```
 ```[Output]
-Running tests/functional/logic_test.sh
-✓ Passed: Other way of using the exit code
-✓ Passed: Should validate a non ok exit code
-✓ Passed: Should validate an ok exit code
-✓ Passed: Text should be equal
-✓ Passed: Text should contain
-✓ Passed: Text should match a regular expression
-✓ Passed: Text should not contain
-✓ Passed: Text should not match a regular expression
+Running tests/unit/example_test.sh
+✓ Passed: Should validate input
+✓ Passed: Should handle errors
 ```
 :::
 
-## Stop on failure
+### Reports
 
-> `bashunit -S|--stop-on-failure`
-
-Force to stop the runner right after encountering one failing test.
-
-You can use `BASHUNIT_STOP_ON_FAILURE` option in your [configuration](/configuration#stop-on-failure)
-to make this behavior permanent.
+Generate test reports in different formats:
 
 ::: code-group
-```bash [Example]
-./bashunit --stop-on-failure
+```bash [JUnit XML]
+bashunit test tests/ --log-junit results.xml
+```
+```bash [HTML Report]
+bashunit test tests/ --report-html report.html
 ```
 :::
 
-## Verbose
+## bench
 
-> `bashunit -vvv|--verbose`
+> `bashunit bench [path] [options]`
 
-Display internal details for each test
-
-You can use `BASHUNIT_VERBOSE` option in your [configuration](/configuration#verbose)
-to make this behavior permanent.
+Run benchmark functions prefixed with `bench_`. Use `@revs` and `@its` comments to control revolutions and iterations.
 
 ::: code-group
-```bash [Example]
-./bashunit --verbose
-```
-```bash [Output]
-bashunit - 0.17.0 | Tests: ~333
-########################################################################################################################################
-Filter:      None
-Total files: 36
-Test files:
-- tests/acceptance/bashunit_direct_fn_call_test.sh
-- tests/acceptance/bashunit_execution_error_test.sh
-- tests/acceptance/bashunit_fail_test.sh
-- tests/acceptance/bashunit_find_tests_command_line_test.sh
-- tests/acceptance/bashunit_log_junit_test.sh
-- ... etc
-........................................................................................................................................
-BASHUNIT_DEFAULT_PATH:        tests
-BASHUNIT_DEV_LOG:             dev.log
-BASHUNIT_BOOTSTRAP:           tests/bootstrap.sh
-BASHUNIT_LOG_JUNIT:           local/log-junit.xml
-BASHUNIT_REPORT_HTML:         local/report.html
-BASHUNIT_PARALLEL_RUN:        false
-BASHUNIT_SHOW_HEADER:         true
-BASHUNIT_HEADER_ASCII_ART:    false
-BASHUNIT_SIMPLE_OUTPUT:       false
-BASHUNIT_STOP_ON_FAILURE:     false
-BASHUNIT_SHOW_EXECUTION_TIME: true
-BASHUNIT_VERBOSE:             true
-########################################################################################################################################
+```bash [Examples]
+# Run all benchmarks
+bashunit bench
 
-Running tests/acceptance/bashunit_direct_fn_call_test.sh
-========================================================================================================================================
-File:     tests/acceptance/bashunit_direct_fn_call_test.sh
-Function: test_bashunit_direct_fn_call_passes
-Duration: 48 ms
-##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=1##ASSERTIONS_SKIPPED=0##ASSERTIONS_INCOMPLETE=0##ASSERTIONS_SNAPSHOT=0##TEST_OUTPUT=##
-----------------------------------------------------------------------------------------------------------------------------------------
-✓ Passed: Bashunit direct fn call passes                                                                                           48 ms
-========================================================================================================================================
-... etc
+# Run specific benchmark file
+bashunit bench benchmarks/parser_bench.sh
+
+# With filter
+bashunit bench --filter "parse"
 ```
 :::
 
-## No output
+### Bench Options
 
-> `bashunit --no-output`
+| Option | Description |
+|--------|-------------|
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-f, --filter <name>` | Only run benchmarks matching name |
+| `-s, --simple` | Simple output |
+| `--detailed` | Detailed output (default) |
+| `-vvv, --verbose` | Show execution details |
 
-Run tests without printing any output. Exit code will be `0` if all tests pass or `1` otherwise.
+## doc
 
-::: code-group
-```bash [Example]
-./bashunit tests --no-output
-```
-:::
+> `bashunit doc [filter]`
 
-## Version
-
-> `bashunit --version`
-
-Displays the current version of **bashunit**.
+Display documentation for assertion functions.
 
 ::: code-group
-```bash [Example]
-./bashunit --version
+```bash [Examples]
+# Show all assertions
+bashunit doc
+
+# Filter by name
+bashunit doc equals
+
+# Show file-related assertions
+bashunit doc file
 ```
-```-vue [Output]
-bashunit - {{ pkg.version }}
-```
-:::
-
-## Upgrade
-
-> `bashunit --upgrade`
-
-Upgrade **bashunit** to latest version.
-
-::: code-group
-```bash [Example]
-./bashunit --upgrade
-```
-```bash [Output]
-> You are already on latest version
-```
-:::
-
-## Doc
-
-> `bashunit --doc [filter]`
-
-Display the documentation for assert functions. When `filter` is provided,
-only matching asserts will be shown.
-
-::: code-group
-```bash [Example]
-./bashunit --doc same
-```
-```bash [Output]
+```[Output]
 ## assert_equals
-...
+--------------
+> `assert_equals "expected" "actual"`
 
-## assert_not_same
+Reports an error if the two variables are not equal...
+
+## assert_not_equals
+--------------
 ...
 ```
 :::
 
-## Init
+## init
 
-> `bashunit --init [dir]`
+> `bashunit init [directory]`
 
-Generates a `tests` folder (or the provided `dir`) with a sample test and bootstrap file to get you started quickly.
-When a custom directory is used, bashunit writes `BASHUNIT_BOOTSTRAP=<dir>/bootstrap.sh` to a `.env` file. If `.env` already defines
-`BASHUNIT_BOOTSTRAP`, the existing line is commented out and the new value appended.
+Initialize a new test directory with sample files.
 
 ::: code-group
-```bash [Example]
-./bashunit --init tests
+```bash [Examples]
+# Create tests/ directory (default)
+bashunit init
+
+# Create custom directory
+bashunit init spec
 ```
-```bash [Output]
+```[Output]
 > bashunit initialized in tests
 ```
 :::
 
-## Learn
+Creates:
+- `bootstrap.sh` - Setup file for test configuration
+- `example_test.sh` - Sample test file to get started
 
-> `bashunit --learn`
+## learn
 
-Starts an interactive learning tutorial that teaches you how to use bashunit step by step through hands-on exercises.
+> `bashunit learn`
 
-The tutorial covers:
-- Writing your first test
-- Using different assertions
-- Setup and teardown functions
-- Testing functions and scripts
-- Mocking external dependencies
-- Using spies to verify calls
-- Parameterized testing with data providers
-- Testing exit codes
-- A complete real-world challenge
-
-Your progress is saved automatically, and you can resume at any time.
+Start the interactive learning tutorial with 10 progressive lessons.
 
 ::: code-group
 ```bash [Example]
-./bashunit --learn
+bashunit learn
 ```
 ```[Output]
 bashunit - Interactive Learning
@@ -467,65 +258,80 @@ Enter your choice:
 :::
 
 ::: tip
-The learn mode is perfect for new users getting started with bashunit.
-It provides practical, hands-on experience with immediate feedback.
+Perfect for new users getting started with bashunit.
 :::
 
-## Help
+## upgrade
 
-> `bashunit --help`
+> `bashunit upgrade`
 
-Displays a help message with all allowed arguments and options.
+Upgrade bashunit to the latest version.
 
 ::: code-group
 ```bash [Example]
-./bashunit --help
+bashunit upgrade
 ```
 ```[Output]
-Usage:
-  bashunit [PATH] [OPTIONS]
-
-Arguments:
-  PATH                      File or directory containing tests.
-                            - Directories: runs all '*test.sh' files.
-                            - Wildcards: supported to match multiple test files.
-                            - Default search path is 'tests'
-
-Options:
-  -a, --assert <function args>
-                            Run a core assert function standalone.
-  -b, --bench [file]
-                            Run benchmark functions from file or '*.bench.sh'.
-  --debug [file]
-                            Enable shell debug mode. Logs to file if provided.
-  -e, --env, --boot <file>
-                            Load a custom env/bootstrap file.
-  -f, --filter <name>
-                            Only run tests matching the given name.
-  --init [dir]
-                            Generate a sample test suite.
-  -l, --log-junit <file>
-                            Write test results as JUnit XML report.
-  -p, --parallel | --no-parallel
-                            Run tests in parallel (default). Random execution order.
-  -r, --report-html <file>
-                            Write test results as an HTML report.
-  --no-output
-                            Suppress all console output; rely on exit code.
-  -s, --simple | --detailed
-                            Choose console output style (default: detailed).
-  -S, --stop-on-failure
-                            Stop execution immediately on the first failing test.
-  --upgrade
-                            Upgrade bashunit to the latest version.
-  -vvv, --verbose
-                            Show internal execution details per test.
-  --version
-                            Display the current version of bashunit.
-  -h, --help
-                            Show this help message.
+> Upgrading bashunit to latest version
+> bashunit upgraded successfully to latest version 0.28.0
 ```
 :::
+
+## Global Options
+
+These options work without a subcommand:
+
+### Version
+
+> `bashunit --version`
+
+Display the current version.
+
+::: code-group
+```bash [Example]
+bashunit --version
+```
+```-vue [Output]
+bashunit - {{ pkg.version }}
+```
+:::
+
+### Help
+
+> `bashunit --help`
+
+Display help message with available commands.
+
+::: code-group
+```bash [Example]
+bashunit --help
+```
+```[Output]
+Usage: bashunit <command> [arguments] [options]
+
+Commands:
+  test [path]       Run tests (default command)
+  bench [path]      Run benchmarks
+  doc [filter]      Display assertion documentation
+  init [dir]        Initialize a new test directory
+  learn             Start interactive tutorial
+  upgrade           Upgrade bashunit to latest version
+
+Global Options:
+  -h, --help        Show this help message
+  -v, --version     Display the current version
+
+Run 'bashunit <command> --help' for command-specific options.
+```
+:::
+
+Each subcommand also supports `--help`:
+
+```bash
+bashunit test --help
+bashunit bench --help
+bashunit doc --help
+```
 
 <script setup>
 import pkg from '../package.json'

@@ -59,69 +59,156 @@ EOF
 
 function console_header::print_help() {
     cat <<EOF
-Usage:
-  bashunit [PATH] [OPTIONS]
+Usage: bashunit <command> [arguments] [options]
 
-Arguments:
-  PATH                      File or directory containing tests.
-                            - Directories: runs all '*test.sh' or '*test.bash' files.
-                            - Wildcards: supported to match multiple test files.
-                            - Default search path is 'tests'
+Commands:
+  test [path]       Run tests (default command)
+  bench [path]      Run benchmarks
+  doc [filter]      Display assertion documentation
+  init [dir]        Initialize a new test directory
+  learn             Start interactive tutorial
+  upgrade           Upgrade bashunit to latest version
 
-Options:
-  -a, --assert <function args>
-                            Run a core assert function standalone (outside test context).
+Global Options:
+  -h, --help        Show this help message
+  -v, --version     Display the current version
 
-  -b, --bench [file]
-                            Run benchmark functions from file or '*.bench.sh' under
-                            BASHUNIT_DEFAULT_PATH when no file is provided.
+Run 'bashunit <command> --help' for command-specific options.
 
-  --debug [file]
-                            Enable shell debug mode. Logs to file if provided.
-
-  --doc <?filter>
-                            Display the documentation for assert functions. When a filter is
-                            provided, only matching asserts will be shown.
-
-  -e, --env, --boot <file>
-                            Load a custom env/bootstrap file to override .env or define globals.
-
-  -f, --filter <name>
-                            Only run tests matching the given name.
-
-  -h, --help
-                            Show this help message.
-
-  --init [dir]
-                            Generate a sample test suite in current or specified directory.
-
-  --learn
-                            Start interactive learning tutorial to learn bashunit step by step.
-
-  -l, --log-junit <file>
-                            Write test results as JUnit XML report.
-
-  -p, --parallel | --no-parallel
-                            Run tests in parallel (default: enabled). Random execution order.
-
-  -r, --report-html <file>
-                            Write test results as an HTML report.
-
-  -s, --simple | --detailed
-                            Choose console output style (default: detailed).
-
-  -S, --stop-on-failure
-                            Stop execution immediately on the first failing test.
-
-  --upgrade
-                            Upgrade bashunit to the latest version.
-
-  -vvv, --verbose
-                            Show internal execution details per test.
-
-  --version
-                            Display the current version of bashunit.
+Examples:
+  bashunit test tests/              Run all tests in directory
+  bashunit tests/                   Run all tests (shorthand)
+  bashunit bench                    Run all benchmarks
+  bashunit doc contains             Show docs for 'contains' assertions
+  bashunit init                     Initialize test directory
 
 More info: https://bashunit.typeddevs.com/command-line
+EOF
+}
+
+function console_header::print_test_help() {
+    cat <<EOF
+Usage: bashunit test [path] [options]
+       bashunit [path] [options]
+
+Run test files. If no path is provided, searches for tests in BASHUNIT_DEFAULT_PATH.
+
+Arguments:
+  path                        File or directory containing tests
+                              - Directories: runs all '*test.sh' files
+                              - Wildcards: supported to match multiple files
+
+Options:
+  -a, --assert <fn> <args>    Run a standalone assert function
+  -e, --env, --boot <file>    Load a custom env/bootstrap file
+  -f, --filter <name>         Only run tests matching the name
+  -l, --log-junit <file>      Write JUnit XML report
+  -p, --parallel              Run tests in parallel (default)
+  --no-parallel               Run tests sequentially
+  -r, --report-html <file>    Write HTML report
+  -s, --simple                Simple output (dots)
+  --detailed                  Detailed output (default)
+  -S, --stop-on-failure       Stop on first failure
+  -vvv, --verbose             Show execution details
+  --debug [file]              Enable shell debug mode
+  --no-output                 Suppress all output
+  -h, --help                  Show this help message
+
+Examples:
+  bashunit test tests/
+  bashunit test tests/unit/ --parallel
+  bashunit test --filter "user" tests/
+  bashunit test -a equals "foo" "foo"
+EOF
+}
+
+function console_header::print_bench_help() {
+    cat <<EOF
+Usage: bashunit bench [path] [options]
+
+Run benchmark files. Searches for '*bench.sh' files.
+
+Arguments:
+  path                        File or directory containing benchmarks
+
+Options:
+  -e, --env, --boot <file>    Load a custom env/bootstrap file
+  -f, --filter <name>         Only run benchmarks matching the name
+  -s, --simple                Simple output
+  --detailed                  Detailed output (default)
+  -vvv, --verbose             Show execution details
+  -h, --help                  Show this help message
+
+Examples:
+  bashunit bench
+  bashunit bench benchmarks/
+  bashunit bench --filter "parse"
+EOF
+}
+
+function console_header::print_doc_help() {
+    cat <<EOF
+Usage: bashunit doc [filter]
+
+Display documentation for assertion functions.
+
+Arguments:
+  filter                      Optional filter to show only matching assertions
+
+Examples:
+  bashunit doc                Show all assertions
+  bashunit doc equals         Show assertions containing 'equals'
+  bashunit doc file           Show file-related assertions
+EOF
+}
+
+function console_header::print_init_help() {
+    cat <<EOF
+Usage: bashunit init [directory]
+
+Initialize a new test directory with sample files.
+
+Arguments:
+  directory                   Target directory (default: tests)
+
+Creates:
+  - bootstrap.sh              Setup file for test configuration
+  - example_test.sh           Sample test file to get started
+
+Examples:
+  bashunit init               Create tests/ directory
+  bashunit init spec          Create spec/ directory
+EOF
+}
+
+function console_header::print_learn_help() {
+    cat <<EOF
+Usage: bashunit learn
+
+Start the interactive learning tutorial.
+
+The tutorial includes 10 progressive lessons:
+  1. Basics - Your First Test
+  2. Assertions - Testing Different Conditions
+  3. Setup & Teardown - Managing Test Lifecycle
+  4. Testing Functions - Unit Testing Patterns
+  5. Testing Scripts - Integration Testing
+  6. Mocking - Test Doubles and Mocks
+  7. Spies - Verifying Function Calls
+  8. Data Providers - Parameterized Tests
+  9. Exit Codes - Testing Success and Failure
+  10. Complete Challenge - Real World Scenario
+
+Your progress is saved automatically.
+EOF
+}
+
+function console_header::print_upgrade_help() {
+    cat <<EOF
+Usage: bashunit upgrade
+
+Upgrade bashunit to the latest version.
+
+Downloads and installs the newest release from GitHub.
 EOF
 }

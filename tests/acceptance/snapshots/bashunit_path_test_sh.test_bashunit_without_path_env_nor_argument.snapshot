@@ -1,65 +1,25 @@
 [31mError: At least one file path is required.[0m
-Usage:
-  bashunit [PATH] [OPTIONS]
+Usage: bashunit <command> [arguments] [options]
 
-Arguments:
-  PATH                      File or directory containing tests.
-                            - Directories: runs all '*test.sh' or '*test.bash' files.
-                            - Wildcards: supported to match multiple test files.
-                            - Default search path is 'tests'
+Commands:
+  test [path]       Run tests (default command)
+  bench [path]      Run benchmarks
+  doc [filter]      Display assertion documentation
+  init [dir]        Initialize a new test directory
+  learn             Start interactive tutorial
+  upgrade           Upgrade bashunit to latest version
 
-Options:
-  -a, --assert <function args>
-                            Run a core assert function standalone (outside test context).
+Global Options:
+  -h, --help        Show this help message
+  -v, --version     Display the current version
 
-  -b, --bench [file]
-                            Run benchmark functions from file or '*.bench.sh' under
-                            BASHUNIT_DEFAULT_PATH when no file is provided.
+Run 'bashunit <command> --help' for command-specific options.
 
-  --debug [file]
-                            Enable shell debug mode. Logs to file if provided.
-
-  --doc <?filter>
-                            Display the documentation for assert functions. When a filter is
-                            provided, only matching asserts will be shown.
-
-  -e, --env, --boot <file>
-                            Load a custom env/bootstrap file to override .env or define globals.
-
-  -f, --filter <name>
-                            Only run tests matching the given name.
-
-  -h, --help
-                            Show this help message.
-
-  --init [dir]
-                            Generate a sample test suite in current or specified directory.
-
-  --learn
-                            Start interactive learning tutorial to learn bashunit step by step.
-
-  -l, --log-junit <file>
-                            Write test results as JUnit XML report.
-
-  -p, --parallel | --no-parallel
-                            Run tests in parallel (default: enabled). Random execution order.
-
-  -r, --report-html <file>
-                            Write test results as an HTML report.
-
-  -s, --simple | --detailed
-                            Choose console output style (default: detailed).
-
-  -S, --stop-on-failure
-                            Stop execution immediately on the first failing test.
-
-  --upgrade
-                            Upgrade bashunit to the latest version.
-
-  -vvv, --verbose
-                            Show internal execution details per test.
-
-  --version
-                            Display the current version of bashunit.
+Examples:
+  bashunit test tests/              Run all tests in directory
+  bashunit tests/                   Run all tests (shorthand)
+  bashunit bench                    Run all benchmarks
+  bashunit doc contains             Show docs for 'contains' assertions
+  bashunit init                     Initialize test directory
 
 More info: https://bashunit.typeddevs.com/command-line
