@@ -333,7 +333,7 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-- [assert_successful_code](#assert-successful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
+- [assert_successful_code](#assert-successful-code), [assert_unsuccessful_code](#assert-unsuccessful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 ::: code-group
@@ -362,6 +362,31 @@ function test_failure() {
   }
 
   assert_exit_code "0" "$(foo)"
+}
+```
+:::
+
+## assert_exec
+> `assert_exec "command" [--exit <code>] [--stdout "text"] [--stderr "text"]`
+
+Runs `command` capturing its exit status, standard output and standard error and
+checks all provided expectations. When `--exit` is omitted the expected exit
+status defaults to `0`.
+
+::: code-group
+```bash [Example]
+function sample() {
+  echo "out"
+  echo "err" >&2
+  return 1
+}
+
+function test_success() {
+  assert_exec sample --exit 1 --stdout "out" --stderr "err"
+}
+
+function test_failure() {
+  assert_exec sample --exit 0 --stdout "out" --stderr "err"
 }
 ```
 :::
@@ -424,6 +449,45 @@ function test_failure() {
   }
 
   assert_successful_code "$(foo)"
+}
+```
+:::
+
+## assert_unsuccessful_code
+> `assert_unsuccessful_code ["callable"]`
+
+Reports an error if the exit code of `callable` is not unsuccessful (non-zero).
+
+If `callable` is not provided, it takes the last executed command or function instead.
+
+[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+
+::: code-group
+```bash [Example]
+function test_success_with_callable() {
+  function foo() {
+    return 1
+  }
+
+  assert_unsuccessful_code "$(foo)"
+}
+
+function test_success_without_callable() {
+  function foo() {
+    return 2
+  }
+
+  foo # function took instead `callable`
+
+  assert_unsuccessful_code
+}
+
+function test_failure() {
+  function foo() {
+    return 0
+  }
+
+  assert_unsuccessful_code "$(foo)"
 }
 ```
 :::

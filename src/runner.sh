@@ -1,25 +1,61 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
+# Pre-compiled regex pattern for parsing test result assertions
+if [[ -z ${RUNNER_PARSE_RESULT_REGEX+x} ]]; then
+  declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
+'ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##'\
+'TEST_EXIT_CODE=([0-9]*)'
+fi
+
 function runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
+  local scripts_ids=()
 
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
+    unset BASHUNIT_CURRENT_TEST_ID
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
+    internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
-    runner::run_set_up_before_script
+    # Update function cache after sourcing new test file
+    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    if ! runner::run_set_up_before_script "$test_file"; then
+      # Count the test functions that couldn't run due to set_up_before_script failure
+      # and add them as failed (minus 1 since the hook failure already counts as 1)
+      local filtered_functions
+      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$CACHED_ALL_FUNCTIONS")
+      if [[ -n "$filtered_functions" ]]; then
+        # shellcheck disable=SC2206
+        local functions_to_run=($filtered_functions)
+        local additional_failures=$((${#functions_to_run[@]} - 1))
+        for ((i = 0; i < additional_failures; i++)); do
+          state::add_tests_failed
+        done
+      fi
+      runner::clean_set_up_and_tear_down_after_script
+      if ! parallel::is_enabled; then
+        cleanup_script_temp_files
+      fi
+      continue
+    fi
     if parallel::is_enabled; then
       runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
     else
       runner::call_test_functions "$test_file" "$filter"
     fi
-    runner::run_tear_down_after_script
+    runner::run_tear_down_after_script "$test_file"
     runner::clean_set_up_and_tear_down_after_script
+    if ! parallel::is_enabled; then
+      cleanup_script_temp_files
+    fi
+    internal_log "Finished file" "$test_file"
   done
 
   if parallel::is_enabled; then
@@ -30,6 +66,10 @@ function runner::load_test_files() {
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r " # Clear the spinner output
+    for script_id in "${scripts_ids[@]}"; do
+      export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
+      cleanup_script_temp_files
+    done
   fi
 }
 
@@ -40,12 +80,33 @@ function runner::load_bench_files() {
 
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
+    unset BASHUNIT_CURRENT_TEST_ID
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
-    runner::run_set_up_before_script
+    # Update function cache after sourcing new bench file
+    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    if ! runner::run_set_up_before_script "$bench_file"; then
+      # Count the bench functions that couldn't run due to set_up_before_script failure
+      # and add them as failed (minus 1 since the hook failure already counts as 1)
+      local filtered_functions
+      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$CACHED_ALL_FUNCTIONS")
+      if [[ -n "$filtered_functions" ]]; then
+        # shellcheck disable=SC2206
+        local functions_to_run=($filtered_functions)
+        local additional_failures=$((${#functions_to_run[@]} - 1))
+        for ((i = 0; i < additional_failures; i++)); do
+          state::add_tests_failed
+        done
+      fi
+      runner::clean_set_up_and_tear_down_after_script
+      cleanup_script_temp_files
+      continue
+    fi
     runner::call_bench_functions "$bench_file" "$filter"
-    runner::run_tear_down_after_script
+    runner::run_tear_down_after_script "$bench_file"
     runner::clean_set_up_and_tear_down_after_script
+    cleanup_script_temp_files
   done
 }
 
@@ -78,13 +139,108 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
+function runner::parse_data_provider_args() {
+  local input="$1"
+  local current_arg=""
+  local in_quotes=false
+  local quote_char=""
+  local escaped=false
+  local i
+  local arg
+  local encoded_arg
+  local -a args=()
+
+  # Check for shell metacharacters that would break eval or cause globbing
+  local has_metachar=false
+  if [[ "$input" =~ [^\\][\|\&\;\*] ]] || [[ "$input" =~ ^[\|\&\;\*] ]]; then
+    has_metachar=true
+  fi
+
+  # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
+  if [[ "$has_metachar" == false ]] && eval "args=($input)" 2>/dev/null && [[ ${#args[@]} -gt 0 ]]; then
+    # Successfully parsed - remove sentinel if present
+    local last_idx=$((${#args[@]} - 1))
+    if [[ -z "${args[$last_idx]}" ]]; then
+      unset 'args[$last_idx]'
+    fi
+    # Print args and return early
+    for arg in "${args[@]}"; do
+      encoded_arg="$(helper::encode_base64 "${arg}")"
+      printf '%s\n' "$encoded_arg"
+    done
+    return
+  fi
+
+  # Fallback: parse args from the input string into an array, respecting quotes and escapes
+  for ((i=0; i<${#input}; i++)); do
+    local char="${input:$i:1}"
+    if [ "$escaped" = true ]; then
+      case "$char" in
+        t) current_arg+=$'\t' ;;
+        n) current_arg+=$'\n' ;;
+        *) current_arg+="$char" ;;
+      esac
+      escaped=false
+    elif [ "$char" = "\\" ]; then
+      escaped=true
+    elif [ "$in_quotes" = false ]; then
+      case "$char" in
+        "$")
+          # Handle $'...' syntax
+          if [[ "${input:$i:2}" == "$'" ]]; then
+            in_quotes=true
+            quote_char="'"
+            # Skip the $
+            i=$((i + 1))
+          else
+            current_arg+="$char"
+          fi
+          ;;
+        "'" | '"')
+          in_quotes=true
+          quote_char="$char"
+          ;;
+        " " | $'\t')
+          # Only add non-empty arguments to avoid duplicates from consecutive separators
+          if [[ -n "$current_arg" ]]; then
+            args+=("$current_arg")
+          fi
+          current_arg=""
+          ;;
+        *)
+          current_arg+="$char"
+          ;;
+      esac
+    elif [ "$char" = "$quote_char" ]; then
+      in_quotes=false
+      quote_char=""
+    else
+      current_arg+="$char"
+    fi
+  done
+  args+=("$current_arg")
+  # Remove all trailing empty strings
+  while [[ ${#args[@]} -gt 0 ]]; do
+    local last_idx=$((${#args[@]} - 1))
+    if [[ -z "${args[$last_idx]}" ]]; then
+      unset 'args[$last_idx]'
+    else
+      break
+    fi
+  done
+  # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
+  for arg in "${args[@]+"${args[@]}"}"; do
+    encoded_arg="$(helper::encode_base64 "${arg}")"
+    printf '%s\n' "$encoded_arg"
+  done
+}
+
 function runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
-  # Use declare -F to list all function names
-  local all_fn_names=$(declare -F | awk '{print $3}')
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_fn_names")
+  # Use cached function names for better performance
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -92,7 +248,7 @@ function runner::call_test_functions() {
     return
   fi
 
-  runner::render_running_file_header
+  runner::render_running_file_header "$script"
   helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
@@ -114,12 +270,11 @@ function runner::call_test_functions() {
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      IFS=" " read -r -a args <<< "$data"
-      if [ "${#args[@]}" -gt 1 ]; then
-        runner::run_test "$script" "$fn_name" "${args[@]}"
-      else
-        runner::run_test "$script" "$fn_name" "$data"
-      fi
+      local parsed_data=()
+      while IFS= read -r line; do
+        parsed_data+=( "$(helper::decode_base64 "${line}")" )
+      done <<< "$(runner::parse_data_provider_args "$data")"
+      runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
     unset fn_name
   done
@@ -134,8 +289,8 @@ function runner::call_bench_functions() {
   local filter="$2"
   local prefix="bench"
 
-  local all_fn_names=$(declare -F | awk '{print $3}')
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$all_fn_names")
+  # Use cached function names for better performance
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -159,6 +314,10 @@ function runner::call_bench_functions() {
 }
 
 function runner::render_running_file_header() {
+  local script="$1"
+
+  internal_log "Running file" "$script"
+
   if parallel::is_enabled; then
     return
   fi
@@ -183,18 +342,20 @@ function runner::run_test() {
   local fn_name="$1"
   shift
 
+  internal_log "Running test" "$fn_name" "$*"
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
-  local sanitized_fn_name
-  sanitized_fn_name="$(helper::normalize_variable_name "$fn_name")"
-  if env::is_parallel_run_enabled; then
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$_$(random_str 6)"
-  else
-    export BASHUNIT_CURRENT_TEST_ID="${sanitized_fn_name}_$$"
-  fi
+  export BASHUNIT_CURRENT_TEST_ID="$(helper::generate_id "$fn_name")"
+
+  state::reset_test_title
 
   local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
+  if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
+    state::set_current_test_interpolated_function_name "$interpolated_fn_name"
+  else
+    state::reset_current_test_interpolated_function_name
+  fi
   local current_assertions_failed="$(state::get_assertions_failed)"
   local current_assertions_snapshot="$(state::get_assertions_snapshot)"
   local current_assertions_incomplete="$(state::get_assertions_incomplete)"
@@ -206,14 +367,17 @@ function runner::run_test() {
   exec 3>&1
 
   local test_execution_result=$(
-    trap '
-      state::set_test_exit_code $?
-      runner::run_tear_down
-      runner::clear_mocks
-      state::export_subshell_context
-    ' EXIT
+    # shellcheck disable=SC2064
+    trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
     state::initialize_assertions_count
-    runner::run_set_up
+
+    # Run set_up and capture exit code without || to preserve errexit behavior
+    local setup_exit_code=0
+    runner::run_set_up "$test_file"
+    setup_exit_code=$?
+    if [[ $setup_exit_code -ne 0 ]]; then
+      exit $setup_exit_code
+    fi
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
@@ -225,8 +389,8 @@ function runner::run_test() {
   exec 3>&-
 
   local end_time=$(clock::now)
-  local duration_ns=$(math::calculate "($end_time - $start_time) ")
-  local duration=$(math::calculate "$duration_ns / 1000000")
+  local duration_ns=$((end_time - start_time))
+  local duration=$((duration_ns / 1000000))
 
   if env::is_verbose_enabled; then
     if env::is_simple_output_enabled; then
@@ -252,9 +416,9 @@ function runner::run_test() {
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
     # Replace [type] with a newline to split the messages
-    line=$(echo "$line" | sed -e 's/\[failed\]/\n/g' \
-                              -e 's/\[skipped\]/\n/g' \
-                              -e 's/\[incomplete\]/\n/g')
+    line="${line//\[failed\]/$'\n'}"       # Replace [failed] with newline
+    line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
+    line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
 
     state::print_line "$type" "$line"
 
@@ -271,7 +435,8 @@ function runner::run_test() {
       "readonly variable" "missing keyword" "killed" \
       "cannot execute binary file" "invalid arithmetic operator"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
-      runtime_error=$(echo "${runtime_output#*: }" | tr -d '\n')
+      runtime_error="${runtime_output#*: }"      # Remove everything up to and including ": "
+      runtime_error="${runtime_error//$'\n'/}"   # Remove all newlines using parameter expansion
       break
     fi
   done
@@ -281,18 +446,62 @@ function runner::run_test() {
   local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
   local test_exit_code="$(state::get_test_exit_code)"
 
+  local encoded_test_title
+  encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
+  encoded_test_title="${encoded_test_title%%##*}"
+  local test_title=""
+  [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
+
+  local encoded_hook_failure
+  encoded_hook_failure="${test_execution_result##*##TEST_HOOK_FAILURE=}"
+  encoded_hook_failure="${encoded_hook_failure%%##*}"
+  local hook_failure=""
+  if [[ "$encoded_hook_failure" != "$test_execution_result" ]]; then
+    hook_failure="$encoded_hook_failure"
+  fi
+
+  local encoded_hook_message
+  encoded_hook_message="${test_execution_result##*##TEST_HOOK_MESSAGE=}"
+  encoded_hook_message="${encoded_hook_message%%##*}"
+  local hook_message=""
+  if [[ -n "$encoded_hook_message" ]]; then
+    hook_message="$(helper::decode_base64 "$encoded_hook_message")"
+  fi
+
+  state::set_test_title "$test_title"
+  local label
+  label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  state::reset_test_title
+  state::reset_current_test_interpolated_function_name
+
+  local failure_label="$label"
+  local failure_function="$fn_name"
+  if [[ -n "$hook_failure" ]]; then
+    failure_label="$(helper::normalize_test_function_name "$hook_failure")"
+    failure_function="$hook_failure"
+  fi
+
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
     state::add_tests_failed
-    console_results::print_error_test "$fn_name" "$runtime_error"
-    reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$runtime_error"
+    local error_message="$runtime_error"
+    if [[ -n "$hook_failure" && -n "$hook_message" ]]; then
+      error_message="$hook_message"
+    elif [[ -z "$error_message" && -n "$hook_message" ]]; then
+      error_message="$hook_message"
+    fi
+    console_results::print_error_test "$failure_function" "$error_message"
+    reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
+    internal_log "Test error" "$failure_label" "$error_message"
     return
   fi
 
   if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
     state::add_tests_failed
-    reports::add_test_failed "$test_file" "$fn_name" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$subshell_output"
+    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
+    runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
+
+    internal_log "Test failed" "$label"
 
     if env::is_stop_on_failure_enabled; then
       if parallel::is_enabled; then
@@ -306,24 +515,25 @@ function runner::run_test() {
 
   if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
     state::add_tests_snapshot
-    console_results::print_snapshot_test "$fn_name"
-    reports::add_test_snapshot "$test_file" "$fn_name" "$duration" "$total_assertions"
+    console_results::print_snapshot_test "$label"
+    reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test snapshot" "$label"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
-    reports::add_test_incomplete "$test_file" "$fn_name" "$duration" "$total_assertions"
+    reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test incomplete" "$label"
     return
   fi
 
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
-    reports::add_test_skipped "$test_file" "$fn_name" "$duration" "$total_assertions"
+    reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    internal_log "Test skipped" "$label"
     return
   fi
-
-  local label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
 
   if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
     console_results::print_successful_test "${label}" "$duration" "$@"
@@ -331,7 +541,28 @@ function runner::run_test() {
     console_results::print_successful_test "${label}" "$duration"
   fi
   state::add_tests_passed
-  reports::add_test_passed "$test_file" "$fn_name" "$duration" "$total_assertions"
+  reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
+  internal_log "Test passed" "$label"
+}
+
+function runner::cleanup_on_exit() {
+  local test_file="$1"
+  local exit_code="$2"
+
+  set +e
+  # Don't use || here - it disables ERR trap in the entire call chain
+  runner::run_tear_down "$test_file"
+  local teardown_status=$?
+  runner::clear_mocks
+  cleanup_testcase_temp_files
+
+  if [[ $teardown_status -ne 0 ]]; then
+    state::set_test_exit_code "$teardown_status"
+  else
+    state::set_test_exit_code "$exit_code"
+  fi
+
+  state::export_subshell_context
 }
 
 function runner::decode_subshell_output() {
@@ -339,13 +570,7 @@ function runner::decode_subshell_output() {
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-
-  local subshell_output
-  if command -v base64 >/dev/null; then
-    echo "$test_output_base64" | base64 -d
-  else
-    echo "$test_output_base64" | openssl enc -d -base64
-  fi
+  helper::decode_base64 "$test_output_base64"
 }
 
 function runner::parse_result() {
@@ -390,7 +615,7 @@ function runner::parse_result_parallel() {
   mv "$unique_test_result_file" "${unique_test_result_file}.result"
   unique_test_result_file="${unique_test_result_file}.result"
 
-  log "debug" "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   runner::parse_result_sync "$fn_name" "$execution_result"
 
@@ -403,7 +628,7 @@ function runner::parse_result_sync() {
   local execution_result=$2
 
   local result_line
-  result_line=$(echo "$execution_result" | tail -n 1)
+  result_line="${execution_result##*$'\n'}"
 
   local assertions_failed=0
   local assertions_passed=0
@@ -412,15 +637,8 @@ function runner::parse_result_sync() {
   local assertions_snapshot=0
   local test_exit_code=0
 
-  local regex
-  regex='ASSERTIONS_FAILED=([0-9]*)##'
-  regex+='ASSERTIONS_PASSED=([0-9]*)##'
-  regex+='ASSERTIONS_SKIPPED=([0-9]*)##'
-  regex+='ASSERTIONS_INCOMPLETE=([0-9]*)##'
-  regex+='ASSERTIONS_SNAPSHOT=([0-9]*)##'
-  regex+='TEST_EXIT_CODE=([0-9]*)'
-
-  if [[ $result_line =~ $regex ]]; then
+  # Use pre-compiled regex constant
+  if [[ $result_line =~ $RUNNER_PARSE_RESULT_REGEX ]]; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"
@@ -429,7 +647,7 @@ function runner::parse_result_sync() {
     test_exit_code="${BASH_REMATCH[6]}"
   fi
 
-  log "debug" "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
+  internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
@@ -437,30 +655,178 @@ function runner::parse_result_sync() {
   ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
   ((_TEST_EXIT_CODE += test_exit_code)) || true
+
+  internal_log "result_summary" \
+    "failed:$assertions_failed" \
+    "passed:$assertions_passed" \
+    "skipped:$assertions_skipped" \
+    "incomplete:$assertions_incomplete" \
+    "snapshot:$assertions_snapshot" \
+    "exit_code:$test_exit_code"
 }
 
 function runner::write_failure_result_output() {
   local test_file=$1
-  local error_msg=$2
+  local fn_name=$2
+  local error_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
   if ! parallel::is_enabled; then
     test_nr=$(state::get_tests_failed)
   fi
 
-  echo -e "$test_nr) $test_file\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+}
+
+function runner::record_file_hook_failure() {
+  local hook_name="$1"
+  local test_file="$2"
+  local hook_output="$3"
+  local status="$4"
+  local render_header="${5:-false}"
+
+  if [[ "$render_header" == true ]]; then
+    runner::render_running_file_header "$test_file"
+  fi
+
+  if [[ -z "$hook_output" ]]; then
+    hook_output="Hook '$hook_name' failed with exit code $status"
+  fi
+
+  state::add_tests_failed
+  console_results::print_error_test "$hook_name" "$hook_output"
+  reports::add_test_failed "$test_file" "$(helper::normalize_test_function_name "$hook_name")" 0 0
+  runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
+
+  return "$status"
+}
+
+function runner::execute_file_hook() {
+  local hook_name="$1"
+  local test_file="$2"
+  local render_header="${3:-false}"
+
+  declare -F "$hook_name" >/dev/null 2>&1 || return 0
+
+  local hook_output=""
+  local status=0
+  local hook_output_file
+  hook_output_file=$(temp_file "${hook_name}_output")
+
+  {
+    "$hook_name"
+  } >"$hook_output_file" 2>&1 || status=$?
+
+  if [[ -f "$hook_output_file" ]]; then
+    hook_output=""
+    while IFS= read -r line; do
+      [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
+    done < "$hook_output_file"
+    rm -f "$hook_output_file"
+  fi
+
+  if [[ $status -ne 0 ]]; then
+    runner::record_file_hook_failure "$hook_name" "$test_file" "$hook_output" "$status" "$render_header"
+    return $status
+  fi
+
+  if [[ -n "$hook_output" ]]; then
+    printf "%s\n" "$hook_output"
+  fi
+
+  return 0
 }
 
 function runner::run_set_up() {
-  helper::execute_function_if_exists 'set_up'
+  local _test_file="${1-}"
+  internal_log "run_set_up"
+  runner::execute_test_hook 'set_up'
 }
 
 function runner::run_set_up_before_script() {
-  helper::execute_function_if_exists 'set_up_before_script'
+  local test_file="$1"
+  internal_log "run_set_up_before_script"
+  runner::execute_file_hook 'set_up_before_script' "$test_file" true
 }
 
 function runner::run_tear_down() {
-  helper::execute_function_if_exists 'tear_down'
+  local _test_file="${1-}"
+  internal_log "run_tear_down"
+  runner::execute_test_hook 'tear_down'
+}
+
+function runner::execute_test_hook() {
+  local hook_name="$1"
+
+  declare -F "$hook_name" >/dev/null 2>&1 || return 0
+
+  local hook_output=""
+  local status=0
+  local hook_output_file
+  hook_output_file=$(temp_file "${hook_name}_output")
+
+  # Enable errexit and errtrace to catch any failing command in the hook.
+  # The ERR trap saves the exit status to a global variable (since return value
+  # from trap doesn't propagate properly), disables errexit (to prevent caller
+  # from exiting) and returns from the hook function, preventing subsequent
+  # commands from executing.
+  # Variables set before the failure are preserved since we don't use a subshell.
+  _BASHUNIT_HOOK_ERR_STATUS=0
+  set -eE
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+
+  {
+    "$hook_name"
+  } >"$hook_output_file" 2>&1
+
+  # Capture exit status from global variable and clean up
+  status=$_BASHUNIT_HOOK_ERR_STATUS
+  trap - ERR
+  set +eE
+
+  if [[ -f "$hook_output_file" ]]; then
+    hook_output=""
+    while IFS= read -r line; do
+      [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
+    done < "$hook_output_file"
+    rm -f "$hook_output_file"
+  fi
+
+  if [[ $status -ne 0 ]]; then
+    local message="$hook_output"
+    if [[ -n "$hook_output" ]]; then
+      printf "%s" "$hook_output"
+    else
+      message="Hook '$hook_name' failed with exit code $status"
+      printf "%s\n" "$message" >&2
+    fi
+    runner::record_test_hook_failure "$hook_name" "$message" "$status"
+    return "$status"
+  fi
+
+  if [[ -n "$hook_output" ]]; then
+    printf "%s" "$hook_output"
+  fi
+
+  return 0
+}
+
+function runner::record_test_hook_failure() {
+  local hook_name="$1"
+  local hook_message="$2"
+  local status="$3"
+
+  if [[ -n "$(state::get_test_hook_failure)" ]]; then
+    return "$status"
+  fi
+
+  state::set_test_hook_failure "$hook_name"
+  state::set_test_hook_message "$hook_message"
+
+  return "$status"
 }
 
 function runner::clear_mocks() {
@@ -470,10 +836,13 @@ function runner::clear_mocks() {
 }
 
 function runner::run_tear_down_after_script() {
-  helper::execute_function_if_exists 'tear_down_after_script'
+  local test_file="$1"
+  internal_log "run_tear_down_after_script"
+  runner::execute_file_hook 'tear_down_after_script' "$test_file"
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
+  internal_log "clean_set_up_and_tear_down_after_script"
   helper::unset_if_exists 'set_up'
   helper::unset_if_exists 'tear_down'
   helper::unset_if_exists 'set_up_before_script'

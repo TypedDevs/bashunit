@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2327
+# shellcheck disable=SC2328
+# shellcheck disable=SC2329
 
 function test_successful_fail() {
   true || fail "This cannot fail"
@@ -18,9 +21,9 @@ function test_successful_assert_true() {
 }
 
 function provider_successful_assert_true() {
-  echo true
-  echo "true"
-  echo 0
+  data_set true
+  data_set "true"
+  data_set 0
 }
 
 function test_unsuccessful_assert_true() {
@@ -52,9 +55,9 @@ function test_successful_assert_false() {
 }
 
 function provider_successful_assert_false() {
-  echo false
-  echo "false"
-  echo 1
+  data_set false
+  data_set "false"
+  data_set 1
 }
 
 function test_unsuccessful_assert_false() {
@@ -244,6 +247,24 @@ function test_unsuccessful_assert_successful_code() {
     "$(assert_successful_code "$(fake_function)")"
 }
 
+function test_successful_assert_unsuccessful_code() {
+  function fake_function() {
+    return 2
+  }
+
+  assert_empty "$(assert_unsuccessful_code "$(fake_function)")"
+}
+
+function test_unsuccessful_assert_unsuccessful_code() {
+  function fake_function() {
+    return 0
+  }
+
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"\
+    "$(assert_unsuccessful_code "$(fake_function)")"
+}
+
 function test_successful_assert_general_error() {
   function fake_function() {
     return 1
@@ -274,6 +295,33 @@ function test_unsuccessful_assert_command_not_found() {
   assert_same\
     "$(console_results::print_failed_test "Unsuccessful assert command not found" "0" "to be exactly" "127")"\
     "$(assert_command_not_found "$(fake_function)")"
+}
+
+function test_successful_assert_exec() {
+  # shellcheck disable=SC2317
+  function fake_command() {
+    echo "Expected output"
+    echo "Expected error" >&2
+    return 1
+  }
+
+  assert_empty "$(assert_exec fake_command --exit 1 --stdout "Expected output" --stderr "Expected error")"
+}
+
+function test_unsuccessful_assert_exec() {
+  # shellcheck disable=SC2317
+  function fake_command() {
+    echo "out"
+    echo "err" >&2
+    return 0
+  }
+
+  local expected="exit: 1"$'\n'"stdout: Expected"$'\n'"stderr: Expected error"
+  local actual="exit: 0"$'\n'"stdout: out"$'\n'"stderr: err"
+
+  assert_same\
+    "$(console_results::print_failed_test "Unsuccessful assert exec" "$expected" "but got " "$actual")"\
+    "$(assert_exec fake_command --exit 1 --stdout "Expected" --stderr "Expected error")"
 }
 
 function test_successful_assert_array_contains() {
@@ -352,6 +400,23 @@ function test_unsuccessful_assert_string_not_ends_with() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert string not ends with" "foobar" "to not end with" "bar")"\
     "$(assert_string_not_ends_with "bar" "foobar")"
+}
+
+function test_assert_string_start_end_with_special_chars() {
+  assert_empty "$(assert_string_starts_with "foo." "foo.bar")"
+  assert_empty "$(assert_string_ends_with ".bar" "foo.bar")"
+}
+
+function test_assert_string_start_end_with_special_chars_fail() {
+  assert_same\
+    "$(console_results::print_failed_test\
+      "Assert string start end with special chars fail" "fooX" "to start with" "foo.")"\
+    "$(assert_string_starts_with "foo." "fooX")"
+
+  assert_same\
+    "$(console_results::print_failed_test\
+      "Assert string start end with special chars fail" "fooX" "to end with" ".bar")"\
+    "$(assert_string_ends_with ".bar" "fooX")"
 }
 
 function test_successful_assert_less_than() {
@@ -466,4 +531,10 @@ function test_unsuccessful_assert_line_count() {
     "$(console_results::print_failed_test\
       "Unsuccessful assert line count" "one_line_string" "to contain number of lines equal to" "10" "but found" "1")"\
     "$(assert_line_count 10 "one_line_string")"
+}
+
+function test_assert_line_count_does_not_modify_existing_variable() {
+  local additional_new_lines="original"
+  assert_empty "$(assert_line_count 1 "one")"
+  assert_same "original" "$additional_new_lines"
 }

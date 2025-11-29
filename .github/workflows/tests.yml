@@ -8,14 +8,9 @@ on:
 
 jobs:
   ubuntu:
-    name: "Ubuntu - ${{ matrix.version }}"
-    runs-on: ${{ matrix.version }}
+    name: "Ubuntu - latest"
+    runs-on: ubuntu-latest
     timeout-minutes: 10
-    strategy:
-      matrix:
-        version:
-          - ubuntu-latest
-          - ubuntu-22.04  # one version before latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,14 +21,9 @@ jobs:
         run: make test
 
   macos:
-    name: "macOS - ${{ matrix.version }}"
-    runs-on: ${{ matrix.version }}
+    name: "macOS - latest"
+    runs-on: macos-latest
     timeout-minutes: 10
-    strategy:
-      matrix:
-        version:
-          - macos-latest
-          - macos-13  # one version before latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4

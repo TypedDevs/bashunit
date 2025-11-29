@@ -3,7 +3,7 @@ SHELL=/bin/bash
 -include .env
 
 STATIC_ANALYSIS_CHECKER := $(shell which shellcheck 2> /dev/null)
-LINTER_CHECKER := $(shell which ec 2> /dev/null)
+LINTER_CHECKER := $(shell which editorconfig-checker 2> /dev/null)
 GIT_DIR = $(shell git rev-parse --git-dir 2> /dev/null)
 
 OS:=
@@ -61,11 +61,11 @@ test/list:
 	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
 
 test: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS)
+	@bash ./bashunit $(TEST_SCRIPTS)
 
 test/watch: $(TEST_SCRIPTS)
-	@./bashunit $(TEST_SCRIPTS)
-	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 ./bashunit $(TEST_SCRIPTS)
+	@bash ./bashunit $(TEST_SCRIPTS)
+	@fswatch -m poll_monitor -or $(SRC_SCRIPTS_DIR) $(TEST_SCRIPTS_DIR) .env Makefile | xargs -n1 bash ./bashunit $(TEST_SCRIPTS)
 
 docker/alpine:
 	@docker run --rm -it -v "$(shell pwd)":/project -w /project alpine:latest \
@@ -85,12 +85,12 @@ sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
-	@find . -name "*.sh" -not -path "./local/*" | xargs shellcheck -xC && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
+	@find . -name "*.sh" -not -path "./local/*" -exec shellcheck -xC {} \; && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
 
 lint:
 ifndef LINTER_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Editorconfig not installed: Lint not performed!" && exit 1
 else
-	@ec -config .editorconfig && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
+	@editorconfig-checker && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
 endif

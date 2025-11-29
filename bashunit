@@ -1,8 +1,34 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+
+function _check_bash_version() {
+  local current_version
+  if [[ -n ${BASHUNIT_TEST_BASH_VERSION:-} ]]; then
+    # Checks if BASHUNIT_TEST_BASH_VERSION is set (typically for testing purposes)
+    current_version="${BASHUNIT_TEST_BASH_VERSION}"
+  elif [[ -n ${BASH_VERSINFO+set} ]]; then
+    # Checks if the special Bash array BASH_VERSINFO exists. This array is only defined in Bash.
+    current_version="${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
+  else
+    # If not in Bash (e.g., running from Zsh). The pipeline extracts just the major.minor version (e.g., 3.2).
+    current_version="$(bash --version | head -n1 | cut -d' ' -f4 | cut -d. -f1,2)"
+  fi
+
+  local major minor
+  IFS=. read -r major minor _ <<< "$current_version"
+
+  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+    printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
+    exit 1
+  fi
+}
+
+_check_bash_version
+
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.22.0"
+declare -r BASHUNIT_VERSION="0.27.0"
 
 # shellcheck disable=SC2155
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
@@ -23,6 +49,7 @@ source "$BASHUNIT_ROOT_DIR/src/colors.sh"
 source "$BASHUNIT_ROOT_DIR/src/console_header.sh"
 source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
+source "$BASHUNIT_ROOT_DIR/src/test_title.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/doc.sh"
@@ -30,6 +57,7 @@ source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
 source "$BASHUNIT_ROOT_DIR/src/init.sh"
+source "$BASHUNIT_ROOT_DIR/src/learn.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
 _ASSERT_FN=""
@@ -122,6 +150,10 @@ while [[ $# -gt 0 ]]; do
       else
         init::project
       fi
+      trap '' EXIT && exit 0
+      ;;
+    --learn)
+      learn::start
       trap '' EXIT && exit 0
       ;;
     -h|--help)

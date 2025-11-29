@@ -9,6 +9,10 @@ function console_header::print_version_with_env() {
   fi
 
   console_header::print_version "$filter" "${files[@]}"
+
+  if env::is_dev_mode_enabled; then
+    printf "%sDev log:%s %s\n" "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+  fi
 }
 
 function console_header::print_version() {
@@ -21,8 +25,11 @@ function console_header::print_version() {
   local total_tests
   if [[ ${#files[@]} -eq 0 ]]; then
     total_tests=0
+  elif parallel::is_enabled && env::is_simple_output_enabled; then
+    # Skip counting in parallel+simple mode for faster startup
+    total_tests=0
   else
-    total_tests=$(helpers::find_total_tests "$filter" "${files[@]}")
+    total_tests=$(helper::find_total_tests "$filter" "${files[@]}")
   fi
 
   if env::is_header_ascii_art_enabled; then
@@ -57,7 +64,7 @@ Usage:
 
 Arguments:
   PATH                      File or directory containing tests.
-                            - Directories: runs all '*test.sh' files.
+                            - Directories: runs all '*test.sh' or '*test.bash' files.
                             - Wildcards: supported to match multiple test files.
                             - Default search path is 'tests'
 
@@ -87,6 +94,9 @@ Options:
 
   --init [dir]
                             Generate a sample test suite in current or specified directory.
+
+  --learn
+                            Start interactive learning tutorial to learn bashunit step by step.
 
   -l, --log-junit <file>
                             Write test results as JUnit XML report.

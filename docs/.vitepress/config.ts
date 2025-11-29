@@ -88,6 +88,9 @@ export default defineConfig({
         text: 'Custom asserts',
         link: '/custom-asserts'
       }, {
+        text: 'Common patterns',
+        link: '/common-patterns',
+      }, {
         text: 'Examples',
         link: '/examples'
       }, {

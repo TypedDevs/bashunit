@@ -16,75 +16,87 @@ function console_results::render_result() {
     printf "\n\n"
   fi
 
+  # Cache state values to avoid repeated subshell invocations
+  local tests_passed=$_TESTS_PASSED
+  local tests_skipped=$_TESTS_SKIPPED
+  local tests_incomplete=$_TESTS_INCOMPLETE
+  local tests_snapshot=$_TESTS_SNAPSHOT
+  local tests_failed=$_TESTS_FAILED
+  local assertions_passed=$_ASSERTIONS_PASSED
+  local assertions_skipped=$_ASSERTIONS_SKIPPED
+  local assertions_incomplete=$_ASSERTIONS_INCOMPLETE
+  local assertions_snapshot=$_ASSERTIONS_SNAPSHOT
+  local assertions_failed=$_ASSERTIONS_FAILED
+
   local total_tests=0
-  ((total_tests += $(state::get_tests_passed))) || true
-  ((total_tests += $(state::get_tests_skipped))) || true
-  ((total_tests += $(state::get_tests_incomplete))) || true
-  ((total_tests += $(state::get_tests_snapshot))) || true
-  ((total_tests += $(state::get_tests_failed))) || true
+  ((total_tests += tests_passed)) || true
+  ((total_tests += tests_skipped)) || true
+  ((total_tests += tests_incomplete)) || true
+  ((total_tests += tests_snapshot)) || true
+  ((total_tests += tests_failed)) || true
 
   local total_assertions=0
-  ((total_assertions += $(state::get_assertions_passed))) || true
-  ((total_assertions += $(state::get_assertions_skipped))) || true
-  ((total_assertions += $(state::get_assertions_incomplete))) || true
-  ((total_assertions += $(state::get_assertions_snapshot))) || true
-  ((total_assertions += $(state::get_assertions_failed))) || true
+  ((total_assertions += assertions_passed)) || true
+  ((total_assertions += assertions_skipped)) || true
+  ((total_assertions += assertions_incomplete)) || true
+  ((total_assertions += assertions_snapshot)) || true
+  ((total_assertions += assertions_failed)) || true
 
   printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
-  if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
-    printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_tests_passed)" "$_COLOR_DEFAULT"
+  if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
+    printf " %s%s passed%s," "$_COLOR_PASSED" "$tests_passed" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
-    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_tests_skipped)" "$_COLOR_DEFAULT"
+  if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
+    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$tests_skipped" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
-    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_tests_incomplete)" "$_COLOR_DEFAULT"
+  if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
+    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$tests_incomplete" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_snapshot)" -gt 0 ]] || [[ "$(state::get_assertions_snapshot)" -gt 0 ]]; then
-    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$(state::get_tests_snapshot)" "$_COLOR_DEFAULT"
+  if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
+    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$tests_snapshot" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_tests_failed)" "$_COLOR_DEFAULT"
+  if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$tests_failed" "$_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
   printf "%sAssertions:%s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
-  if [[ "$(state::get_tests_passed)" -gt 0 ]] || [[ "$(state::get_assertions_passed)" -gt 0 ]]; then
-      printf " %s%s passed%s," "$_COLOR_PASSED" "$(state::get_assertions_passed)" "$_COLOR_DEFAULT"
+  if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
+      printf " %s%s passed%s," "$_COLOR_PASSED" "$assertions_passed" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_skipped)" -gt 0 ]] || [[ "$(state::get_assertions_skipped)" -gt 0 ]]; then
-    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$(state::get_assertions_skipped)" "$_COLOR_DEFAULT"
+  if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
+    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$assertions_skipped" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_incomplete)" -gt 0 ]] || [[ "$(state::get_assertions_incomplete)" -gt 0 ]]; then
-    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$(state::get_assertions_incomplete)" "$_COLOR_DEFAULT"
+  if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
+    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$assertions_incomplete" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_snapshot)" -gt 0 ]] || [[ "$(state::get_assertions_snapshot)" -gt 0 ]]; then
-    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$(state::get_assertions_snapshot)" "$_COLOR_DEFAULT"
+  if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
+    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$assertions_snapshot" "$_COLOR_DEFAULT"
   fi
-  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$(state::get_assertions_failed)" "$_COLOR_DEFAULT"
+  if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
+    printf " %s%s failed%s," "$_COLOR_FAILED" "$assertions_failed" "$_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_assertions"
 
-  if [[ "$(state::get_tests_failed)" -gt 0 ]]; then
+  if [[ "$tests_failed" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 1
   fi
 
-  if [[ "$(state::get_tests_incomplete)" -gt 0 ]]; then
+  if [[ "$tests_incomplete" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
-  if [[ "$(state::get_tests_skipped)" -gt 0 ]]; then
+  if [[ "$tests_skipped" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
-  if [[ "$(state::get_tests_snapshot)" -gt 0 ]]; then
+  if [[ "$tests_snapshot" -gt 0 ]]; then
     printf "\n%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
@@ -132,7 +144,15 @@ function console_results::print_successful_test() {
   if [[ -z "$*" ]]; then
     line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
   else
-    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$*")
+    local quoted_args=""
+    for arg in "$@"; do
+      if [[ -z "$quoted_args" ]]; then
+        quoted_args="'$arg'"
+      else
+        quoted_args="$quoted_args, '$arg'"
+      fi
+    done
+    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$quoted_args")
   fi
 
   local full_line=$line
@@ -185,6 +205,7 @@ ${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
 function console_results::print_failed_snapshot_test() {
   local function_name=$1
   local snapshot_file=$2
+  local actual_content=${3-}
 
   local line
   line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
@@ -192,7 +213,7 @@ function console_results::print_failed_snapshot_test() {
 
   if dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
-    echo "$actual" > "$actual_file"
+    echo "$actual_content" > "$actual_file"
 
     local git_diff_output
     git_diff_output="$(git diff --no-index --word-diff --color=always \

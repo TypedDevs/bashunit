@@ -1,4 +1,29 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
+
+function assert_match_snapshot() {
+  local actual=$(echo -n "$1" | tr -d '\r')
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+
+  if [[ ! -f "$snapshot_file" ]]; then
+    snapshot::initialize "$snapshot_file" "$actual"
+    return
+  fi
+
+  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+}
+
+function assert_match_snapshot_ignore_colors() {
+  local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+
+  if [[ ! -f "$snapshot_file" ]]; then
+    snapshot::initialize "$snapshot_file" "$actual"
+    return
+  fi
+
+  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+}
 
 function snapshot::match_with_placeholder() {
   local actual="$1"
@@ -6,102 +31,58 @@ function snapshot::match_with_placeholder() {
   local placeholder="${BASHUNIT_SNAPSHOT_PLACEHOLDER:-::ignore::}"
   local token="__BASHUNIT_IGNORE__"
 
-  local sanitized_snapshot="${snapshot//$placeholder/$token}"
-  local regex
-  regex=$(printf '%s' "$sanitized_snapshot" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
-  regex="${regex//$token/(.|\\n)*}"
-  regex="^${regex}$"
+  local sanitized="${snapshot//$placeholder/$token}"
+  local escaped=$(printf '%s' "$sanitized" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
+  local regex="^${escaped//$token/(.|\\n)*}$"
 
   if command -v perl >/dev/null 2>&1; then
-    if REGEX="$regex" perl -0 -e 'my $r=$ENV{REGEX}; exit((join("",<>)) =~ /$r/s ? 0 : 1);' <<< "$actual"; then
-      return 0
-    else
-      return 1
-    fi
+    echo "$actual" | REGEX="$regex" perl -0 -e '
+      my $r = $ENV{REGEX};
+      my $input = join("", <STDIN>);
+      exit($input =~ /$r/s ? 0 : 1);
+    ' && return 0 || return 1
   else
-    # fallback: only supports single-line ignores
-    local fallback_pattern
-    fallback_pattern=$(printf '%s' "$snapshot" | sed "s|$placeholder|.*|g")
-    # escape other special regex chars
-    fallback_pattern=$(printf '%s' "$fallback_pattern" | sed -e 's/[][\.^$*+?{}|()]/\\&/g')
-    fallback_pattern="^${fallback_pattern}$"
-
-    if printf '%s\n' "$actual" | grep -Eq "$fallback_pattern"; then
-      return 0
-    else
-      return 1
-    fi
+    local fallback=$(printf '%s' "$snapshot" | sed -e "s|$placeholder|.*|g" -e 's/[][\.^$*+?{}|()]/\\&/g')
+    fallback="^${fallback}$"
+    echo "$actual" | grep -Eq "$fallback" && return 0 || return 1
   fi
 }
 
-function assert_match_snapshot() {
-  local actual
-  actual=$(echo -n "$1" | tr -d '\r')
-  local directory
-  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
-  local test_file
-  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
-  local snapshot_name
-  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
-  local snapshot_file
-  snapshot_file="${directory}/${test_file}.${snapshot_name}"
+function snapshot::resolve_file() {
+  local file_hint="$1"
+  local func_name="$2"
 
-  if [[ ! -f "$snapshot_file" ]]; then
-    mkdir -p "$directory"
-    echo "$actual" > "$snapshot_file"
-
-    state::add_assertions_snapshot
-    return
+  if [[ -n "$file_hint" ]]; then
+    echo "$file_hint"
+  else
+    local dir="./$(dirname "${BASH_SOURCE[2]}")/snapshots"
+    local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[2]}")")"
+    local name="$(helper::normalize_variable_name "$func_name").snapshot"
+    echo "${dir}/${test_file}.${name}"
   fi
-
-  local snapshot
-  snapshot=$(tr -d '\r' < "$snapshot_file")
-
-  if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
-    local label
-    label=$(helper::normalize_test_function_name "${FUNCNAME[1]}")
-
-    state::add_assertions_failed
-    console_results::print_failed_snapshot_test "$label" "$snapshot_file"
-
-    return
-  fi
-
-  state::add_assertions_passed
 }
 
-function assert_match_snapshot_ignore_colors() {
-  local actual
-  actual=$(echo -n "$1" | sed -r 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
+function snapshot::initialize() {
+  local path="$1"
+  local content="$2"
+  mkdir -p "$(dirname "$path")"
+  echo "$content" > "$path"
+  state::add_assertions_snapshot
+}
 
-  local directory
-  directory="./$(dirname "${BASH_SOURCE[1]}")/snapshots"
-  local test_file
-  test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[1]}")")"
-  local snapshot_name
-  snapshot_name="$(helper::normalize_variable_name "${FUNCNAME[1]}").snapshot"
-  local snapshot_file
-  snapshot_file="${directory}/${test_file}.${snapshot_name}"
-
-  if [[ ! -f "$snapshot_file" ]]; then
-    mkdir -p "$directory"
-    echo "$actual" > "$snapshot_file"
-
-    state::add_assertions_snapshot
-    return
-  fi
+function snapshot::compare() {
+  local actual="$1"
+  local snapshot_path="$2"
+  local func_name="$3"
 
   local snapshot
-  snapshot=$(tr -d '\r' < "$snapshot_file")
+  snapshot=$(tr -d '\r' < "$snapshot_path")
 
   if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
-    local label
-    label=$(helper::normalize_test_function_name "${FUNCNAME[1]}")
-
+    local label=$(helper::normalize_test_function_name "$func_name")
     state::add_assertions_failed
-    console_results::print_failed_snapshot_test "$label" "$snapshot_file"
-
-    return
+    console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
+    return 1
   fi
 
   state::add_assertions_passed

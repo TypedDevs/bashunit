@@ -9,7 +9,7 @@
 
 [1mThere was 1 failure:[0m
 
-|1) ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+|1) ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh:12
 |[31m✗ Failed[0m: Assert failing
 |    [2mExpected[0m [1m'1'[0m
 |    [2mbut got [0m [1m'0'[0m

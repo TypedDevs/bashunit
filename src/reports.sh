@@ -28,6 +28,9 @@ function reports::add_test_failed() {
 }
 
 function reports::add_test() {
+  # Skip tracking when no report output is requested
+  [[ -n "${BASHUNIT_LOG_JUNIT:-}" || -n "${BASHUNIT_REPORT_HTML:-}" ]] || return 0
+
   local file="$1"
   local test_name="$2"
   local duration="$3"

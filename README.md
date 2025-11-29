@@ -14,6 +14,9 @@
     <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
     </a>
+    <a href="https://deepwiki.com/TypedDevs/bashunit">
+        <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
+    </a>
 </p>
 <br>
 <p align="center">
@@ -37,6 +40,10 @@ It boasts hundreds of assertions and functionalities like spies, mocks, provider
 ## Documentation
 
 You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.typeddevs.com).
+
+## Requirements
+
+bashunit requires **Bash 3.2** or newer.
 
 ## Contribute
 

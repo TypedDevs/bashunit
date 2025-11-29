@@ -1,5 +1,94 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Stop executing remaining commands in `set_up`/`tear_down` after first failure
+- Count all tests as failed when `set_up_before_script` fails
+
+## [0.27.0](https://github.com/TypedDevs/bashunit/compare/0.26.0...0.27.0) - 2025-11-26
+
+### Added
+- Add `--learn` interactive tutorial with 10 progressive lessons for hands-on learning
+- Add comprehensive "Common Patterns" documentation with real-world testing examples
+
+### Fixed
+- Pass arguments to mocked functions
+- Fix lifecycle hooks not catching intermediate failing commands in `set_up` and `tear_down`
+
+### Changed
+- Simplify CI: use only `-latest` runners for Ubuntu and macOS, remove deprecated `macos-13`
+
+### Performance
+- Optimize temp directory creation: initialize once at startup instead of per temp file
+- Optimize parallel result aggregation: use bash redirection instead of spawning `tail` subprocess
+- Optimize state access: cache state values to avoid repeated subshell invocations
+
+## [0.26.0](https://github.com/TypedDevs/bashunit/compare/0.25.0...0.26.0) - 2025-11-02
+
+- Add `assert_unsuccessful_code` assertion to check for non-zero exit codes
+- Fix bench tests missing test_file var
+- Fix compatibility with older python versions for clock::now
+- Fix `data_set` with arguments containing spaces
+- Eliminated redundant `declare -F | awk` calls that were happening for every test/bench file
+- Replaced tail and process with Bash parameter expansion
+
+## [0.25.0](https://github.com/TypedDevs/bashunit/compare/0.24.0...0.25.0) - 2025-10-05
+
+- Add AI developer tools integration and guidelines
+    - Add Project-wide `copilot-instructions.md`
+    - Add `AGENTS.md` for external developer tools integration
+    - Add tasks storage policy clarifying `.tasks/` (versioned) vs `.task/` (git-ignored)
+- Include `set_test_title` helper in the single-file library
+- Fix lifecycle hooks capture-and-report flow errors
+    - `set_up`, `tear_down`, `set_up_before_script`, `tear_down_after_script`
+- Fix false negative from `assert_have_been_called_with` with pipes
+- Fix preservation of trailing whitespace in final argument to `data_set`
+- Fix unbound variable error in `parse_data_provider_args` with `set -u`
+- Fix wrong assertion_failed name of test on failure
+- Fix test name interpolation on failure
+
+## [0.24.0](https://github.com/TypedDevs/bashunit/compare/0.23.0...0.24.0) - 2025-09-14
+
+- Improve `assert_have_been_called_with` with strict argument matching
+- Make Windows install clearer in the docs by adding an option for Linux/Mac and another one for Windows.
+- Add support for empty values and values containing spaces, tabs or newlines in data providers via new `data_set` function
+- Document workaround for global function name collisions when sourcing scripts in tests by copying the original function
+- Fix `temp_dir` and `temp_file` data not being cleaned up when created in `set_up_before_script`
+- Fix `/tmp/bashunit/parallel` not being cleaned after test run
+
+## [0.23.0](https://github.com/TypedDevs/bashunit/compare/0.22.3...0.23.0) - 2025-08-03
+
+- Update docs mocks usage
+- Skip report tracking unless a report output is requested
+- Add support for `.bash` test files
+- Add runtime check for Bash >= 3.2
+- Add fallback for `clock::now` with seconds resolution only
+- Add `set_test_title` to allow custom test titles
+- Add `assert_exec` to validate exit code, stdout and stderr at once
+
+## [0.22.3](https://github.com/TypedDevs/bashunit/compare/0.22.2...0.22.3) - 2025-07-27
+
+- Fix NixOS support
+    - Fix parallel and `compgen`
+    - Use `command -v` instead of `which`
+
+## [0.22.2](https://github.com/TypedDevs/bashunit/compare/0.22.1...0.22.2) - 2025-07-26
+
+- Fix broken core snapshot tests
+- Improve NixOS support
+- Add line number to failing tests
+
+## [0.22.1](https://github.com/TypedDevs/bashunit/compare/0.22.0...0.22.1) - 2025-07-23
+
+- Fix prevents writing in src dir during tests
+- Fix negative widths with rpad
+- Fix internal assert_line_count and call_test_functions
+- Improve suffix assertion checks to use shell pattern matching
+- Include calling function name in dev log output for easier debugging
+- Add more internal dev log messages and prefix them with [INTERNAL]
+    - Toggle internal log messages with `BASHUNIT_INTERNAL_LOG=true|false`
+
 ## [0.22.0](https://github.com/TypedDevs/bashunit/compare/0.21.0...0.22.0) - 2025-07-20
 
 - Fix process time always shows as 0 ms
@@ -32,7 +121,7 @@
 - Allow `assert_have_been_called_with` to check arguments of specific calls
 - Enable parallel tests on Windows
 - Add `assert_not_called`
-- Improve `find_total_tests` performance
+- Improve `helper::find_total_tests` performance
 - Added `assert_match_snapshot_ignore_colors`
 - Optimize `runner::parse_result_sync`
 - Fix `parse_result_parallel` template

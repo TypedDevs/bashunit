@@ -50,3 +50,9 @@ function test_rpad_custom_width_padding_text_too_long_and_special_chars() {
     "$(printf "%sok: %svery long... 100" "$_COLOR_PASSED" "$_COLOR_DEFAULT")" \
     "$actual"
 }
+
+function test_rpad_width_smaller_than_right_word() {
+  local actual=$(str::rpad "foo" "verylongword" 5)
+
+  assert_same "... verylongword" "$actual"
+}

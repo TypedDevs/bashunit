@@ -51,7 +51,14 @@ function clock::_choose_impl() {
     return 0
   fi
 
-  # 7. All methods failed
+  # 7. Very last fallback: seconds resolution only
+  attempts[${#attempts[@]}]="date-seconds"
+  if date +%s &>/dev/null; then
+    _CLOCK_NOW_IMPL="date-seconds"
+    return 0
+  fi
+
+  # 8. All methods failed
   printf "clock::now implementations tried: %s\n" "${attempts[*]}" >&2
   echo ""
   return 1
@@ -69,7 +76,7 @@ function clock::now() {
     python)
       python - <<'EOF'
 import time, sys
-sys.stdout.write(str(int(time.time() * 1_000_000_000)))
+sys.stdout.write(str(int(time.time() * 1000000000)))
 EOF
       ;;
     node)
@@ -86,6 +93,11 @@ EOF
       ;;
     date)
       date +%s%N
+      ;;
+    date-seconds)
+      local seconds
+      seconds=$(date +%s)
+      math::calculate "$seconds * 1000000000"
       ;;
     shell)
       # shellcheck disable=SC2155

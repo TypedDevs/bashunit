@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2009
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 
 function tear_down() {
   unset code
@@ -7,8 +10,6 @@ function tear_down() {
 
 function set_up() {
   function code() {
-    # shellcheck disable=SC2009
-    # shellcheck disable=SC2317
     ps a | grep apache
   }
 }
@@ -33,7 +34,7 @@ function test_successful_spy() {
   spy ps
   ps a_random_parameter_1 a_random_parameter_2
 
-  assert_have_been_called_with "a_random_parameter_1 a_random_parameter_2" ps
+  assert_have_been_called_with ps "a_random_parameter_1 a_random_parameter_2"
   assert_have_been_called ps
 }
 
@@ -122,7 +123,7 @@ function test_spy_called_in_subshell() {
   assert_same "done" "$result"
   assert_have_been_called spy_called_in_subshell
   assert_have_been_called_times 2 spy_called_in_subshell
-  assert_have_been_called_with "2025-05-23" spy_called_in_subshell
+  assert_have_been_called_with spy_called_in_subshell "2025-05-23"
 }
 
 function test_mock_called_in_subshell() {
@@ -144,8 +145,8 @@ function test_spy_called_with_different_arguments() {
   ps first_a first_b
   ps second
 
-  assert_have_been_called_with "first_a first_b" ps 1
-  assert_have_been_called_with "second" ps 2
+  assert_have_been_called_with ps "first_a first_b" 1
+  assert_have_been_called_with ps "second" 2
 }
 
 function test_spy_successful_not_called() {
@@ -164,4 +165,12 @@ function test_spy_unsuccessful_not_called() {
       "to have been called" "0 times" \
       "actual" "1 times")" \
     "$(assert_not_called ps)"
+}
+
+function test_spy_with_pipe_in_arguments() {
+  spy grep
+
+  grep -E 'foo|bar'
+
+  assert_have_been_called_with grep '-E foo|bar'
 }

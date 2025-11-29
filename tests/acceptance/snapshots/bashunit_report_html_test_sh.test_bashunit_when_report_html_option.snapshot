@@ -8,7 +8,7 @@
 
 [1mThere was 1 failure:[0m
 
-|1) ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh
+|1) ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh:7
 |[31m✗ Failed[0m: Fail
 |    [2mExpected[0m [1m'to be empty'[0m
 |    [2mbut got [0m [1m'non empty'[0m

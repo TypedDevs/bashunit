@@ -3,6 +3,8 @@
 function parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
 
+  internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
+
   local total_failed=0
   local total_passed=0
   local total_skipped=0
@@ -10,14 +12,18 @@ function parallel::aggregate_test_results() {
   local total_snapshot=0
 
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
-    if ! compgen -G "$script_dir"/*.result > /dev/null; then
+    shopt -s nullglob
+    local result_files=("$script_dir"/*.result)
+    shopt -u nullglob
+
+    if [ ${#result_files[@]} -eq 0 ]; then
       printf "%sNo tests found%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
       continue
     fi
 
-    for result_file in "$script_dir"/*.result; do
+    for result_file in "${result_files[@]}"; do
       local result_line
-      result_line=$(tail -n 1 "$result_file")
+      result_line=$(tail -n 1 < "$result_file")
 
       local failed="${result_line##*##ASSERTIONS_FAILED=}"
       failed="${failed%%##*}"; failed=${failed:-0}
@@ -78,6 +84,13 @@ function parallel::aggregate_test_results() {
   export _ASSERTIONS_SKIPPED=$total_skipped
   export _ASSERTIONS_INCOMPLETE=$total_incomplete
   export _ASSERTIONS_SNAPSHOT=$total_snapshot
+
+  internal_log "aggregate_totals" \
+    "failed:$total_failed" \
+    "passed:$total_passed" \
+    "skipped:$total_skipped" \
+    "incomplete:$total_incomplete" \
+    "snapshot:$total_snapshot"
 }
 
 function parallel::mark_stop_on_failure() {
@@ -88,14 +101,19 @@ function parallel::must_stop_on_failure() {
   [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
 }
 
-function parallel::reset() {
+function parallel::cleanup() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+}
+
+function parallel::init() {
+  parallel::cleanup
   mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
-  [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ] && rm "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
 
 function parallel::is_enabled() {
+  internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_OS:-Unknown}"
+
   if env::is_parallel_run_enabled && \
     (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
     return 0

@@ -1,6 +1,6 @@
 # Release
 
-This is a guide to know the steps to create a new release.
+This is a guide to knowing the steps to create a new release.
 
 1. Update the version in [BASHUNIT_VERSION](../bashunit)
 1. Update the version in [LATEST_BASHUNIT_VERSION](../install.sh)

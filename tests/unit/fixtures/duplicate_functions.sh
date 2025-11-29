@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-
 # shellcheck disable=SC2317
+# shellcheck disable=SC2329
+
 function func1() {
   echo "Function 1"
 }

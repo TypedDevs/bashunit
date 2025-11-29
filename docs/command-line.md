@@ -8,7 +8,7 @@
 
 Specifies the `directory` or `file` containing the tests to be run.
 
-If a directory is specified, it will execute tests within files ending in `test.sh`.
+If a directory is specified, it will execute tests within files ending in `test.sh` or `test.bash`.
 
 If you use wildcards, **bashunit** will run any tests it finds.
 
@@ -417,6 +417,58 @@ When a custom directory is used, bashunit writes `BASHUNIT_BOOTSTRAP=<dir>/boots
 ```bash [Output]
 > bashunit initialized in tests
 ```
+:::
+
+## Learn
+
+> `bashunit --learn`
+
+Starts an interactive learning tutorial that teaches you how to use bashunit step by step through hands-on exercises.
+
+The tutorial covers:
+- Writing your first test
+- Using different assertions
+- Setup and teardown functions
+- Testing functions and scripts
+- Mocking external dependencies
+- Using spies to verify calls
+- Parameterized testing with data providers
+- Testing exit codes
+- A complete real-world challenge
+
+Your progress is saved automatically, and you can resume at any time.
+
+::: code-group
+```bash [Example]
+./bashunit --learn
+```
+```[Output]
+bashunit - Interactive Learning
+
+Choose a lesson:
+
+  1. Basics - Your First Test
+  2. Assertions - Testing Different Conditions
+  3. Setup & Teardown - Managing Test Lifecycle
+  4. Testing Functions - Unit Testing Patterns
+  5. Testing Scripts - Integration Testing
+  6. Mocking - Test Doubles and Mocks
+  7. Spies - Verifying Function Calls
+  8. Data Providers - Parameterized Tests
+  9. Exit Codes - Testing Success and Failure
+  10. Complete Challenge - Real World Scenario
+
+  p. Show Progress
+  r. Reset Progress
+  q. Quit
+
+Enter your choice:
+```
+:::
+
+::: tip
+The learn mode is perfect for new users getting started with bashunit.
+It provides practical, hands-on experience with immediate feedback.
 :::
 
 ## Help

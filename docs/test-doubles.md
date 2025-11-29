@@ -22,9 +22,24 @@ function test_example() {
 ```
 :::
 
-> `mock "function" "output"`
+> `mock "function" <<< "output"`
 
-Allows you to override the output of a callable.
+Allows you to override the output of a callable. When the mocked output fits on
+a single line you can use a here-string:
+
+```bash
+mock uname <<< "Linux"
+```
+
+For multi-line output rely on a here-document:
+
+```bash
+mock ps <<EOF
+PID TTY          TIME CMD
+13525 pts/7    00:00:01 bash
+24162 pts/7    00:00:00 ps
+EOF
+```
 
 ::: code-group
 ```bash [Example]
@@ -60,6 +75,36 @@ function test_example() {
 ```
 :::
 
+All arguments passed to the original call are forwarded to the mocked function, so you can mock different behavior depending on the arguments.
+
+::: code-group
+```bash [Example]
+mockTool() {
+  if [[ "$1" == "--version" ]]; then
+    echo "1.2.3"
+    return 0
+  else
+    echo "tool: '$1' is not a valid command."
+    return 1
+  fi
+}
+
+test_example() {
+  local output
+  mock tool mockTool
+
+  output="$(tool --version)"
+  assert_successful_code
+  assert_same "1.2.3" "${output}"
+
+  output="$(tool foo)"
+  assert_general_error
+  assert_contains "is not a valid command" "${output}"
+}
+
+```
+:::
+
 ## spy
 > `spy "function"`
 
@@ -72,7 +117,7 @@ function test_example() {
 
   ps foo bar
 
-  assert_have_been_called_with "foo bar" ps
+  assert_have_been_called_with ps "foo bar"
   assert_have_been_called ps
 }
 ```
@@ -102,11 +147,9 @@ function test_failure() {
 :::
 
 ## assert_have_been_called_with
-> `assert_have_been_called_with "expected" "spy" [call_index]`
+> `assert_have_been_called_with spy expected [call_index]`
 
-Reports an error if `spy` is not called with `expected`. When `call_index` is
-provided, the assertion checks the arguments of that specific call (starting at
-1). Without `call_index` it checks the last invocation.
+Reports an error if `spy` is not called with `expected`. When `call_index` is provided, the assertion checks the arguments of that specific call (starting at 1). Without `call_index` it checks the last invocation. Arguments are joined with spaces before comparison.
 
 ::: code-group
 ```bash [Example]
@@ -116,8 +159,8 @@ function test_success() {
   ps foo
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
-  assert_have_been_called_with "bar" ps 2
+  assert_have_been_called_with ps "foo" 1
+  assert_have_been_called_with ps "bar" 2
 }
 
 function test_failure() {
@@ -125,10 +168,11 @@ function test_failure() {
 
   ps bar
 
-  assert_have_been_called_with "foo" ps 1
+  assert_have_been_called_with ps "foo" 1
 }
 ```
 :::
+
 
 ## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"

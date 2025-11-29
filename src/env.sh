@@ -4,7 +4,7 @@
 
 set -o allexport
 # shellcheck source=/dev/null
-[[ -f ".env" ]] && source .env set
+[[ -f ".env" ]] && source .env
 set +o allexport
 
 _DEFAULT_DEFAULT_PATH="tests"
@@ -29,6 +29,7 @@ _DEFAULT_SHOW_EXECUTION_TIME="true"
 _DEFAULT_VERBOSE="false"
 _DEFAULT_BENCH_MODE="false"
 _DEFAULT_NO_OUTPUT="false"
+_DEFAULT_INTERNAL_LOG="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_DEFAULT_SHOW_HEADER}}"
@@ -39,6 +40,7 @@ _DEFAULT_NO_OUTPUT="false"
 : "${BASHUNIT_VERBOSE:=${VERBOSE:=$_DEFAULT_VERBOSE}}"
 : "${BASHUNIT_BENCH_MODE:=${BENCH_MODE:=$_DEFAULT_BENCH_MODE}}"
 : "${BASHUNIT_NO_OUTPUT:=${NO_OUTPUT:=$_DEFAULT_NO_OUTPUT}}"
+: "${BASHUNIT_INTERNAL_LOG:=${INTERNAL_LOG:=$_DEFAULT_INTERNAL_LOG}}"
 
 function env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -68,6 +70,10 @@ function env::is_dev_mode_enabled() {
   [[ -n "$BASHUNIT_DEV_LOG" ]]
 }
 
+function env::is_internal_log_enabled() {
+  [[ "$BASHUNIT_INTERNAL_LOG" == "true" ]]
+}
+
 function env::is_verbose_enabled() {
   [[ "$BASHUNIT_VERBOSE" == "true" ]]
 }
@@ -81,6 +87,16 @@ function env::is_no_output_enabled() {
 }
 
 function env::active_internet_connection() {
+  if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
+    return 1
+  fi
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -sfI https://github.com >/dev/null 2>&1 && return 0
+  elif command -v wget >/dev/null 2>&1; then
+    wget -q --spider https://github.com && return 0
+  fi
+
   if ping -c 1 -W 3 google.com &> /dev/null; then
     return 0
   fi
@@ -104,6 +120,7 @@ function env::find_terminal_width() {
 }
 
 function env::print_verbose() {
+  internal_log "Printing verbose environment variables"
   local keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"
@@ -128,6 +145,7 @@ function env::print_verbose() {
   done
 
   for key in "${keys[@]}"; do
+    internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done
 }
@@ -135,8 +153,16 @@ function env::print_verbose() {
 EXIT_CODE_STOP_ON_FAILURE=4
 # Use a unique directory per run to avoid conflicts when bashunit is invoked
 # recursively or multiple instances are executed in parallel.
-TEMP_DIR_PARALLEL_TEST_SUITE="/tmp/bashunit/parallel/${_OS:-Unknown}/$(random_str 8)"
+TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/$(random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
-CAT="$(which cat)"
+CAT="$(command -v cat)"
+
+# Initialize temp directory once at startup for performance
+BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
+mkdir -p "$BASHUNIT_TEMP_DIR" && chmod -R 777 "$BASHUNIT_TEMP_DIR"
+
+if env::is_dev_mode_enabled; then
+  internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
+fi

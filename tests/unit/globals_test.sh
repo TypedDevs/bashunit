@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
+
 set -euo pipefail
+
+function set_up_before_script() {
+  SCRIPT_TEMP_FILE=$(temp_file "custom-prefix")
+  SCRIPT_TEMP_DIR=$(temp_dir "custom-prefix")
+}
 
 function tear_down_after_script() {
   export BASHUNIT_DEV_LOG=""
@@ -11,7 +19,7 @@ function set_up() {
 }
 
 function tear_down() {
-  rm "$BASHUNIT_DEV_LOG"
+  rm -f "$BASHUNIT_DEV_LOG"
 }
 
 function test_globals_current_dir() {
@@ -38,7 +46,6 @@ function test_globals_current_timestamp() {
 
 function test_globals_is_command_available() {
   function existing_fn(){
-    # shellcheck disable=SC2317
     return 0
   }
   assert_successful_code "$(is_command_available existing_fn)"
@@ -56,20 +63,28 @@ function test_globals_random_str_custom_len() {
   assert_matches "^[A-Za-z0-9]{3}$" "$(random_str 3)"
 }
 
-function test_globals_temp_file() {
+function test_globals_temp_file_in_test_function() {
   # shellcheck disable=SC2155
   local temp_file=$(temp_file "custom-prefix")
   assert_file_exists "$temp_file"
-  cleanup_temp_files
+  cleanup_testcase_temp_files
   assert_file_not_exists "$temp_file"
 }
 
-function test_globals_temp_dir() {
+function test_globals_temp_dir_in_test_function() {
   # shellcheck disable=SC2155
   local temp_dir=$(temp_dir "custom-prefix")
   assert_directory_exists "$temp_dir"
-  cleanup_temp_files
+  cleanup_testcase_temp_files
   assert_directory_not_exists "$temp_dir"
+}
+
+function test_globals_temp_dir_and_file_in_script() {
+  assert_directory_exists "$SCRIPT_TEMP_DIR"
+  assert_file_exists "$SCRIPT_TEMP_FILE"
+  cleanup_script_temp_files
+  assert_directory_not_exists "$SCRIPT_TEMP_DIR"
+  assert_file_not_exists "$SCRIPT_TEMP_FILE"
 }
 
 function test_globals_log_level_error() {
@@ -106,4 +121,12 @@ function test_globals_log_level_default() {
   log "hello," "info"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
+}
+
+function test_internal_log_prefix() {
+  export BASHUNIT_INTERNAL_LOG=true
+  internal_log "info" "some" "message"
+  export BASHUNIT_INTERNAL_LOG=false
+
+  assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL]: info some message"
 }

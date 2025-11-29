@@ -14,9 +14,17 @@ function mock_non_existing_fn() {
   return 127;
 }
 
+function mock_date_seconds() {
+  if [[ "$1" == "+%s%N" ]]; then
+    echo "unsupportedN"
+  else
+    echo "1727768951"
+  fi
+}
+
 function test_now_with_perl() {
   mock clock::shell_time mock_non_existing_fn
-  mock perl echo "1720705883457"
+  mock perl <<< "1720705883457"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -27,7 +35,7 @@ function test_now_on_linux_unknown() {
   mock_unknown_linux_os
   mock clock::shell_time mock_non_existing_fn
   mock perl mock_non_existing_fn
-  mock date echo "1720705883457"
+  mock date <<< "1720705883457"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -37,7 +45,7 @@ function test_now_on_linux_unknown() {
 function test_now_on_linux_alpine() {
   mock_alpine_os
   mock clock::shell_time mock_non_existing_fn
-  mock perl echo "1720705883457"
+  mock perl <<< "1720705883457"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -48,7 +56,7 @@ function test_now_on_windows_without_with_powershell() {
   mock_windows_os
   mock dependencies::has_perl mock_false
   mock dependencies::has_powershell mock_true
-  mock powershell echo "1727768183281580800"
+  mock powershell <<< "1727768183281580800"
   mock clock::shell_time mock_non_existing_fn
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
@@ -60,7 +68,7 @@ function test_now_on_windows_without_without_powershell() {
   mock_windows_os
   mock dependencies::has_perl mock_false
   mock dependencies::has_powershell mock_false
-  mock date echo "1727768951"
+  mock date <<< "1727768951"
   mock clock::shell_time mock_non_existing_fn
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
@@ -68,15 +76,25 @@ function test_now_on_windows_without_without_powershell() {
   assert_same "1727768951" "$(clock::now)"
 }
 
+function test_now_with_date_seconds_fallback() {
+  mock_unknown_linux_os
+  mock perl mock_non_existing_fn
+  mock dependencies::has_python mock_false
+  mock dependencies::has_node mock_false
+  mock clock::shell_time mock_non_existing_fn
+  mock date 'mock_date_seconds "$@"'
+
+  assert_same "1727768951000000000" "$(clock::now)"
+}
+
 function test_now_on_osx_without_perl() {
-  if ! check_os::is_macos; then
-    skip
-    return
+  if check_os::is_windows; then
+    skip && return
   fi
 
   mock_macos
   mock dependencies::has_perl mock_false
-  mock clock::shell_time echo "1727708708.326957"
+  mock clock::shell_time <<< "1727708708.326957"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -84,7 +102,7 @@ function test_now_on_osx_without_perl() {
 }
 
 function test_runtime_in_milliseconds_when_not_empty_time() {
-  mock perl echo "1720705883457"
+  mock perl <<< "1720705883457"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -92,8 +110,8 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
 }
 
 function test_now_prefers_perl_over_shell_time() {
-  mock clock::shell_time echo "1234.0"
-  mock perl echo "999999999999"
+  mock clock::shell_time <<< "1234.0"
+  mock perl <<< "999999999999"
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
 
@@ -103,9 +121,9 @@ function test_now_prefers_perl_over_shell_time() {
 function test_now_prefers_python_over_node() {
   mock perl mock_non_existing_fn
   mock dependencies::has_python mock_true
-  mock python echo "777777777777"
+  mock python <<< "777777777777"
   mock dependencies::has_node mock_true
-  mock node echo "888888888888"
+  mock node <<< "888888888888"
 
   assert_same "777777777777" "$(clock::now)"
 }
@@ -116,6 +134,7 @@ function test_runtime_in_milliseconds_when_empty_time() {
   mock clock::shell_time mock_non_existing_fn
   mock dependencies::has_python mock_false
   mock dependencies::has_node mock_false
+  mock date mock_non_existing_fn
 
   assert_empty "$(clock::total_runtime_in_milliseconds)"
 }

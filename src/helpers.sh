@@ -11,6 +11,22 @@ function helper::normalize_test_function_name() {
   local original_fn_name="${1-}"
   local interpolated_fn_name="${2-}"
 
+  local custom_title
+  custom_title="$(state::get_test_title)"
+  if [[ -n "$custom_title" ]]; then
+    echo "$custom_title"
+    return
+  fi
+
+  if [[ -z "${interpolated_fn_name-}" && "${original_fn_name}" == *"::"* ]]; then
+    local state_interpolated_fn_name
+    state_interpolated_fn_name="$(state::get_current_test_interpolated_function_name)"
+
+    if [[ -n "$state_interpolated_fn_name" ]]; then
+      interpolated_fn_name="$state_interpolated_fn_name"
+    fi
+  fi
+
   if [[ -n "${interpolated_fn_name-}" ]]; then
     original_fn_name="$interpolated_fn_name"
   fi
@@ -25,8 +41,18 @@ function helper::normalize_test_function_name() {
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Capitalize the first letter
-  result="$(tr '[:lower:]' '[:upper:]' <<< "${result:0:1}")${result:1}"
+  # Capitalize the first letter (bash 3.2 compatible, no subprocess)
+  local first_char="${result:0:1}"
+  case "$first_char" in
+    a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
+    e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
+    i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
+    m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
+    q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
+    u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
+    y) first_char='Y' ;; z) first_char='Z' ;;
+  esac
+  result="${first_char}${result:1}"
 
   echo "$result"
 }
@@ -52,6 +78,26 @@ function helper::interpolate_function_name() {
   done
 
   echo "$result"
+}
+
+function helper::encode_base64() {
+  local value="$1"
+
+  if command -v base64 >/dev/null; then
+    printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
+  else
+    printf '%s' "$value" | openssl enc -base64 -A
+  fi
+}
+
+function helper::decode_base64() {
+  local value="$1"
+
+  if command -v base64 >/dev/null; then
+    printf '%s' "$value" | base64 -d
+  else
+    printf '%s' "$value" | openssl enc -d -base64
+  fi
 }
 
 function helper::check_duplicate_functions() {
@@ -110,9 +156,14 @@ function helper::get_functions_to_run() {
 # @param $1 string Eg: "do_something"
 #
 function helper::execute_function_if_exists() {
-  if [[ "$(type -t "$1")" == "function" ]]; then
-    "$1" 2>/dev/null
+  local fn_name="$1"
+
+  if declare -F "$fn_name" >/dev/null 2>&1; then
+    "$fn_name"
+    return $?
   fi
+
+  return 0
 }
 
 #
@@ -127,10 +178,23 @@ function helper::find_files_recursive() {
   local path="${1%%/}"
   local pattern="${2:-*[tT]est.sh}"
 
+  local alt_pattern=""
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+    alt_pattern="${pattern%.sh}.bash"
+  fi
+
   if [[ "$path" == *"*"* ]]; then
-    eval find "$path" -type f -name "$pattern" | sort -u
+    if [[ -n $alt_pattern ]]; then
+      eval "find $path -type f \( -name \"$pattern\" -o -name \"$alt_pattern\" \)" | sort -u
+    else
+      eval "find $path -type f -name \"$pattern\"" | sort -u
+    fi
   elif [[ -d "$path" ]]; then
-    find "$path" -type f -name "$pattern" | sort -u
+    if [[ -n $alt_pattern ]]; then
+      find "$path" -type f \( -name "$pattern" -o -name "$alt_pattern" \) | sort -u
+    else
+      find "$path" -type f -name "$pattern" | sort -u
+    fi
   else
     echo "$path"
   fi
@@ -161,8 +225,7 @@ function helper::get_provider_data() {
   data_provider_function=$(
     # shellcheck disable=SC1087
     grep -B 2 -E "function[[:space:]]+$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
-    grep -E "^[[:space:]]*# *@?data_provider[[:space:]]+" | \
-    sed -E 's/^[[:space:]]*# *@?data_provider[[:space:]]+//' || true
+    sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
   if [[ -n "$data_provider_function" ]]; then
@@ -180,7 +243,11 @@ function helper::trim() {
   echo "$trimmed_string"
 }
 
-function helpers::get_latest_tag() {
+function helper::get_latest_tag() {
+  if ! dependencies::has_git; then
+    return 1
+  fi
+
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
     sed 's|^refs/tags/||' |
@@ -188,7 +255,7 @@ function helpers::get_latest_tag() {
     head -n 1
 }
 
-function helpers::find_total_tests() {
+function helper::find_total_tests() {
     local filter=${1:-}
     local files=("${@:2}")
 
@@ -278,4 +345,30 @@ function helper::load_bench_files() {
   fi
 
   printf "%s\n" "${bench_files[@]}"
+}
+
+#
+# @param $1 string function name
+# @return number line number of the function in the source file
+#
+function helper::get_function_line_number() {
+  local fn_name=$1
+
+  shopt -s extdebug
+  local line_number
+  line_number=$(declare -F "$fn_name" | awk '{print $2}')
+  shopt -u extdebug
+
+  echo "$line_number"
+}
+
+function helper::generate_id() {
+  local basename="$1"
+  local sanitized_basename
+  sanitized_basename="$(helper::normalize_variable_name "$basename")"
+  if env::is_parallel_run_enabled; then
+    echo "${sanitized_basename}_$$_$(random_str 6)"
+  else
+    echo "${sanitized_basename}_$$"
+  fi
 }

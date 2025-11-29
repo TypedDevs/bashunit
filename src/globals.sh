@@ -39,29 +39,41 @@ function random_str() {
 
 function temp_file() {
   local prefix=${1:-bashunit}
-  mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    # We're at script level (e.g., in set_up_before_script) - use script ID
+    test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
-  mktemp /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
+  mktemp "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function temp_dir() {
   local prefix=${1:-bashunit}
-  mkdir -p /tmp/bashunit/tmp && chmod -R 777 /tmp/bashunit/tmp
   local test_prefix=""
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+    # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
+  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    # We're at script level (e.g., in set_up_before_script) - use script ID
+    test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
-  mktemp -d /tmp/bashunit/tmp/"${test_prefix}${prefix}".XXXXXXX
+  mktemp -d "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
-function cleanup_temp_files() {
+function cleanup_testcase_temp_files() {
+  internal_log "cleanup_testcase_temp_files"
   if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
-    rm -rf /tmp/bashunit/tmp/"${BASHUNIT_CURRENT_TEST_ID}"_*
-  else
-    rm -rf /tmp/bashunit/tmp/*
+    rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*
+  fi
+}
+
+function cleanup_script_temp_files() {
+  internal_log "cleanup_script_temp_files"
+  if [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+    rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_SCRIPT_ID}"_*
   fi
 }
 
@@ -83,13 +95,34 @@ function log() {
     *) set -- "$level $@"; level="INFO" ;;
   esac
 
-  local GRAY='\033[1;30m'
-  local RESET='\033[0m'
-  echo -e "$(current_timestamp) [$level]: $@ ${GRAY}#${BASH_SOURCE[1]}:${BASH_LINENO[0]}${RESET}" >> "$BASHUNIT_DEV_LOG"
+  echo "$(current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+}
+
+function internal_log() {
+  if ! env::is_dev_mode_enabled || ! env::is_internal_log_enabled; then
+    return
+  fi
+
+  echo "$(current_timestamp) [INTERNAL]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
 }
 
 function print_line() {
   local length="${1:-70}"   # Default to 70 if not passed
   local char="${2:--}"      # Default to '-' if not passed
   printf '%*s\n' "$length" '' | tr ' ' "$char"
+}
+
+function data_set() {
+  local arg
+  local first=true
+
+  for arg in "$@"; do
+    if [ "$first" = true ]; then
+      printf '%q' "$arg"
+      first=false
+    else
+      printf ' %q' "$arg"
+    fi
+  done
+  printf ' %q\n' ""
 }

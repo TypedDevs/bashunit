@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2317
+# shellcheck disable=SC2329
 
 function tear_down() {
   helper::unset_if_exists fake_function
@@ -30,6 +32,22 @@ function test_normalize_double_test_function_name_snake_case() {
 
 function test_normalize_test_function_name_camel_case() {
   assert_same "SomeLogic" "$(helper::normalize_test_function_name "testSomeLogic")"
+}
+
+function test_normalize_test_function_name_custom_title() {
+  set_test_title "🔥 handles invalid input with 💣"
+  assert_same "🔥 handles invalid input with 💣" "$(helper::normalize_test_function_name "test_handles_invalid_input")"
+}
+
+function test_normalize_test_function_name_uses_current_interpolated_name_from_state() {
+  local fn_name="test_::1::_interpolated_output"
+  local interpolated_fn="test_'value'_interpolated_output"
+
+  state::set_current_test_interpolated_function_name "$interpolated_fn"
+
+  assert_same "'value' interpolated output" "$(helper::normalize_test_function_name "$fn_name")"
+
+  state::reset_current_test_interpolated_function_name
 }
 
 function test_get_functions_to_run_no_filter_should_return_all_functions() {
@@ -75,7 +93,6 @@ function test_successful_unset_if_exists_non_existent_function() {
 }
 
 function test_successful_unset_if_exists() {
-  # shellcheck disable=SC2317
   function fake_function() {
     return 0
   }
@@ -133,7 +150,7 @@ function test_get_provider_data() {
 
 function fake_provider_data_array() {
   local data=("one" "two" "three")
-  echo "${data[@]}"
+  data_set "${data[@]}"
 }
 
 function test_get_provider_data_array() {
@@ -144,7 +161,7 @@ function test_get_provider_data_array() {
   }
 
   assert_same \
-    "one two three" \
+    "one two three ''" \
     "$(helper::get_provider_data "fake_function_get_provider_data_array" "${BASH_SOURCE[0]}")"
 }
 
@@ -188,7 +205,8 @@ function test_find_files_recursive_given_dir() {
   result=$(helper::find_files_recursive "$path")
 
   assert_same "tests/unit/fixtures/tests/example1_test.sh
-tests/unit/fixtures/tests/example2_test.sh"\
+tests/unit/fixtures/tests/example2_test.sh
+tests/unit/fixtures/tests/example3_test.bash"\
   "$result"
 }
 
@@ -202,6 +220,16 @@ function test_find_files_recursive_given_wildcard() {
   assert_same "tests/unit/fixtures/tests/example2_test.sh" "$result"
 }
 
+function test_find_files_recursive_given_bash_extension() {
+  local path
+  path="$(current_dir)/fixtures/tests/*3_test.bash"
+
+  local result
+  result=$(helper::find_files_recursive "$path")
+
+  assert_same "tests/unit/fixtures/tests/example3_test.bash" "$result"
+}
+
 function test_get_latest_tag() {
   mock git<<EOF
 fc9aac40eb8e5ad4483f08d79eb678a3650dcf78        refs/tags/0.1.0
@@ -210,7 +238,7 @@ a17e6816669ec8d0f18ed8c6d5564df9fc699bf9        refs/tags/0.10.0
 b546c693198870dd75d1a102b94f4ddad6f4f3ea        refs/tags/0.2.0
 732ea5e8b16c3c05f0a6977b794ed7098e1839e2        refs/tags/0.3.0
 EOF
-  assert_same "0.10.1" "$(helpers::get_latest_tag)"
+  assert_same "0.10.1" "$(helper::get_latest_tag)"
   unset -f git # remove the mock
 }
 
@@ -241,7 +269,9 @@ function test_normalize_test_function_name_with_interpolation() {
 }
 
 function helpers_test::find_total_in_subshell() {
-  bash -c 'source "$1"; shift; helpers::find_total_tests "$@"' bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
+  # "helper::find_total_tests" needs the "data_set" function, so we have to source globals.sh first
+  bash -c 'source src/globals.sh; source "$1"; shift; helper::find_total_tests "$@"' \
+    bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
 }
 
 function test_find_total_tests_no_files() {
@@ -251,6 +281,13 @@ function test_find_total_tests_no_files() {
 function test_find_total_tests_simple_file() {
   local file
   file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
+}
+
+function test_find_total_tests_simple_file_bash() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.bash"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }

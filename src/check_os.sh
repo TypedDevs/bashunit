@@ -11,6 +11,8 @@ function check_os::init() {
       _DISTRO="Ubuntu"
     elif check_os::is_alpine; then
       _DISTRO="Alpine"
+    elif check_os::is_nixos; then
+      _DISTRO="NixOS"
     else
       _DISTRO="Other"
     fi
@@ -30,6 +32,11 @@ function check_os::is_ubuntu() {
 
 function check_os::is_alpine() {
   command -v apk > /dev/null
+}
+
+function check_os::is_nixos() {
+  [[ -f /etc/NIXOS ]] && return 0
+  grep -q '^ID=nixos' /etc/os-release 2>/dev/null
 }
 
 function check_os::is_linux() {
@@ -71,3 +78,4 @@ export _DISTRO
 export -f check_os::is_alpine
 export -f check_os::is_busybox
 export -f check_os::is_ubuntu
+export -f check_os::is_nixos

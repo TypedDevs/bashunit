@@ -1,4 +1,6 @@
 #!/bin/bash
+# shellcheck external-sources=false
+# shellcheck disable=SC1091
 
 function test_mock_ps_when_executing_a_script() {
   mock ps cat ./tests/functional/fixtures/doubles_ps_output
