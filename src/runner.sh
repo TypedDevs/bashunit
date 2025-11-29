@@ -65,7 +65,7 @@ function runner::load_test_files() {
     parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
-    printf "\r " # Clear the spinner output
+    printf "\r  \r" # Clear the spinner output
     for script_id in "${scripts_ids[@]}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
       cleanup_script_temp_files
@@ -111,6 +111,13 @@ function runner::load_bench_files() {
 }
 
 function runner::spinner() {
+  # Only show spinner when output is to a terminal
+  if [[ ! -t 1 ]]; then
+    # Not a terminal, just wait silently
+    while true; do sleep 1; done
+    return
+  fi
+
   if env::is_simple_output_enabled; then
     printf "\n"
   fi
