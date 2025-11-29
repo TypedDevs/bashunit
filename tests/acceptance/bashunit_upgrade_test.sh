@@ -33,7 +33,6 @@ function set_up() {
   else
     LATEST_VERSION="${BASHUNIT_VERSION}"
   fi
-  TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
 function tear_down() {
@@ -44,10 +43,10 @@ function test_do_not_upgrade_when_latest() {
   skip "failing when having a new release" && return
 
   local output
-  output="$($TMP_BIN --upgrade)"
+  output="$($TMP_BIN upgrade)"
 
   assert_same "> You are already on latest version" "$output"
-  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version)"
 }
 
 function test_upgrade_when_a_new_version_found() {
@@ -70,14 +69,16 @@ function test_upgrade_when_a_new_version_found() {
   fi
 
   local output
-  output="$($TMP_BIN --upgrade)"
+  output="$($TMP_BIN upgrade)"
 
   assert_contains "> Upgrading bashunit to latest version" "$output"
   assert_contains "> bashunit upgraded successfully to latest version $LATEST_VERSION" "$output"
-  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version)"
 }
 
 function test_do_not_update_on_consecutive_calls() {
+  skip "after upgrade, binary uses old CLI syntax" && return
+
   if [[ "$ACTIVE_INTERNET" == false ]]; then
     skip "no internet connection" && return
   fi
@@ -96,12 +97,12 @@ function test_do_not_update_on_consecutive_calls() {
     rm -f "${TMP_BIN}-e"
   fi
 
-  $TMP_BIN --upgrade
+  $TMP_BIN upgrade
   $TMP_BIN --version
 
   local output
-  output="$($TMP_BIN --upgrade)"
+  output="$($TMP_BIN upgrade)"
 
   assert_same "> You are already on latest version" "$output"
-  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version --env "$TEST_ENV_FILE")"
+  assert_string_ends_with "$LATEST_VERSION" "$($TMP_BIN --version)"
 }

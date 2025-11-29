@@ -1,5 +1,221 @@
 #!/usr/bin/env bash
 
+#############################
+# Subcommand: test
+#############################
+function main::cmd_test() {
+  local filter=""
+  local raw_args=()
+  local args=()
+  local assert_fn=""
+
+  # Parse test-specific options
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -a|--assert)
+        assert_fn="$2"
+        shift
+        ;;
+      -f|--filter)
+        filter="$2"
+        shift
+        ;;
+      -s|--simple)
+        export BASHUNIT_SIMPLE_OUTPUT=true
+        ;;
+      --detailed)
+        export BASHUNIT_SIMPLE_OUTPUT=false
+        ;;
+      --debug)
+        local output_file="${2:-}"
+        if [[ -n "$output_file" && "${output_file:0:1}" != "-" ]]; then
+          exec > "$output_file" 2>&1
+          shift
+        fi
+        set -x
+        ;;
+      -S|--stop-on-failure)
+        export BASHUNIT_STOP_ON_FAILURE=true
+        ;;
+      -p|--parallel)
+        export BASHUNIT_PARALLEL_RUN=true
+        ;;
+      --no-parallel)
+        export BASHUNIT_PARALLEL_RUN=false
+        ;;
+      -e|--env|--boot)
+        # shellcheck disable=SC1090
+        source "$2"
+        shift
+        ;;
+      -l|--log-junit)
+        export BASHUNIT_LOG_JUNIT="$2"
+        shift
+        ;;
+      -r|--report-html)
+        export BASHUNIT_REPORT_HTML="$2"
+        shift
+        ;;
+      --no-output)
+        export BASHUNIT_NO_OUTPUT=true
+        ;;
+      -vvv|--verbose)
+        export BASHUNIT_VERBOSE=true
+        ;;
+      -h|--help)
+        console_header::print_test_help
+        exit 0
+        ;;
+      *)
+        raw_args+=("$1")
+        ;;
+    esac
+    shift
+  done
+
+  # Expand positional arguments
+  if [[ ${#raw_args[@]} -gt 0 ]]; then
+    for arg in "${raw_args[@]}"; do
+      while IFS= read -r file; do
+        args+=("$file")
+      done < <(helper::find_files_recursive "$arg" '*[tT]est.sh')
+    done
+  fi
+
+  # Optional bootstrap
+  # shellcheck disable=SC1090
+  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
+
+  if [[ "${BASHUNIT_NO_OUTPUT:-false}" == true ]]; then
+    exec >/dev/null 2>&1
+  fi
+
+  set +eu
+
+  # Execute
+  if [[ -n "$assert_fn" ]]; then
+    main::exec_assert "$assert_fn" "${args[@]}"
+  else
+    main::exec_tests "$filter" "${args[@]}"
+  fi
+}
+
+#############################
+# Subcommand: bench
+#############################
+function main::cmd_bench() {
+  local filter=""
+  local raw_args=()
+  local args=()
+
+  export BASHUNIT_BENCH_MODE=true
+  source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
+
+  # Parse bench-specific options
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -f|--filter)
+        filter="$2"
+        shift
+        ;;
+      -s|--simple)
+        export BASHUNIT_SIMPLE_OUTPUT=true
+        ;;
+      --detailed)
+        export BASHUNIT_SIMPLE_OUTPUT=false
+        ;;
+      -e|--env|--boot)
+        # shellcheck disable=SC1090
+        source "$2"
+        shift
+        ;;
+      -vvv|--verbose)
+        export BASHUNIT_VERBOSE=true
+        ;;
+      -h|--help)
+        console_header::print_bench_help
+        exit 0
+        ;;
+      *)
+        raw_args+=("$1")
+        ;;
+    esac
+    shift
+  done
+
+  # Expand positional arguments
+  if [[ ${#raw_args[@]} -gt 0 ]]; then
+    for arg in "${raw_args[@]}"; do
+      while IFS= read -r file; do
+        args+=("$file")
+      done < <(helper::find_files_recursive "$arg" '*[bB]ench.sh')
+    done
+  fi
+
+  # Optional bootstrap
+  # shellcheck disable=SC1090
+  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
+
+  set +eu
+
+  main::exec_benchmarks "$filter" "${args[@]}"
+}
+
+#############################
+# Subcommand: doc
+#############################
+function main::cmd_doc() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    console_header::print_doc_help
+    exit 0
+  fi
+
+  doc::print_asserts "${1:-}"
+  exit 0
+}
+
+#############################
+# Subcommand: init
+#############################
+function main::cmd_init() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    console_header::print_init_help
+    exit 0
+  fi
+
+  init::project "${1:-}"
+  exit 0
+}
+
+#############################
+# Subcommand: learn
+#############################
+function main::cmd_learn() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    console_header::print_learn_help
+    exit 0
+  fi
+
+  learn::start
+  exit 0
+}
+
+#############################
+# Subcommand: upgrade
+#############################
+function main::cmd_upgrade() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    console_header::print_upgrade_help
+    exit 0
+  fi
+
+  upgrade::upgrade
+  exit 0
+}
+
+#############################
+# Test execution
+#############################
 function main::exec_tests() {
   local filter=$1
   local files=("${@:2}")
