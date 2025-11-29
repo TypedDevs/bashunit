@@ -2,8 +2,14 @@
 
 ## Unreleased
 
-### Added
-- Add `--doc [search]` option
+### Changed
+- **BREAKING:** Introduce subcommand-based CLI architecture
+    - `bashunit test [path]` - run tests (default, backwards compatible with `bashunit [path]`)
+    - `bashunit bench [path]` - run benchmarks (replaces `--bench`)
+    - `bashunit doc [filter]` - show assertion docs (replaces `--doc`)
+    - `bashunit init [dir]` - initialize project (replaces `--init`)
+    - `bashunit learn` - interactive tutorial (replaces `--learn`)
+    - `bashunit upgrade` - upgrade to latest (replaces `--upgrade`)
 
 ### Fixed
 - Stop executing remaining commands in `set_up`/`tear_down` after first failure
