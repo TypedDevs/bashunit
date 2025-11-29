@@ -30,6 +30,8 @@ _DEFAULT_VERBOSE="false"
 _DEFAULT_BENCH_MODE="false"
 _DEFAULT_NO_OUTPUT="false"
 _DEFAULT_INTERNAL_LOG="false"
+_DEFAULT_SHOW_SKIPPED="false"
+_DEFAULT_SHOW_INCOMPLETE="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_DEFAULT_SHOW_HEADER}}"
@@ -41,6 +43,8 @@ _DEFAULT_INTERNAL_LOG="false"
 : "${BASHUNIT_BENCH_MODE:=${BENCH_MODE:=$_DEFAULT_BENCH_MODE}}"
 : "${BASHUNIT_NO_OUTPUT:=${NO_OUTPUT:=$_DEFAULT_NO_OUTPUT}}"
 : "${BASHUNIT_INTERNAL_LOG:=${INTERNAL_LOG:=$_DEFAULT_INTERNAL_LOG}}"
+: "${BASHUNIT_SHOW_SKIPPED:=${SHOW_SKIPPED:=$_DEFAULT_SHOW_SKIPPED}}"
+: "${BASHUNIT_SHOW_INCOMPLETE:=${SHOW_INCOMPLETE:=$_DEFAULT_SHOW_INCOMPLETE}}"
 
 function env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -84,6 +88,14 @@ function env::is_bench_mode_enabled() {
 
 function env::is_no_output_enabled() {
   [[ "$BASHUNIT_NO_OUTPUT" == "true" ]]
+}
+
+function env::is_show_skipped_enabled() {
+  [[ "$BASHUNIT_SHOW_SKIPPED" == "true" ]]
+}
+
+function env::is_show_incomplete_enabled() {
+  [[ "$BASHUNIT_SHOW_INCOMPLETE" == "true" ]]
 }
 
 function env::active_internet_connection() {
@@ -157,6 +169,8 @@ TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
+SKIPPED_OUTPUT_PATH=$(mktemp)
+INCOMPLETE_OUTPUT_PATH=$(mktemp)
 CAT="$(command -v cat)"
 
 # Initialize temp directory once at startup for performance

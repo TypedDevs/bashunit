@@ -55,6 +55,8 @@ bashunit test tests/ --parallel --simple
 | `-s, --simple` | Simple output (dots) |
 | `--detailed` | Detailed output (default) |
 | `-S, --stop-on-failure` | Stop on first failure |
+| `--show-skipped` | Show skipped tests summary at end |
+| `--show-incomplete` | Show incomplete tests summary at end |
 | `-vvv, --verbose` | Show execution details |
 | `--debug [file]` | Enable shell debug mode |
 | `--no-output` | Suppress all output |

@@ -6,6 +6,7 @@
 - Add inline filter syntax to run specific tests from a file
     - `path::function_name` - filter tests by function name
     - `path:line_number` - run the test containing the specified line
+- Add `--show-skipped` and `--show-incomplete` options to display skipped/incomplete tests at the end
 
 ### Changed
 - **BREAKING:** Introduce subcommand-based CLI architecture

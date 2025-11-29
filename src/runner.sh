@@ -524,6 +524,7 @@ function runner::run_test() {
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
     internal_log "Test incomplete" "$label"
     return
   fi
@@ -531,6 +532,7 @@ function runner::run_test() {
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     internal_log "Test skipped" "$label"
     return
   fi
@@ -679,6 +681,38 @@ function runner::write_failure_result_output() {
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+}
+
+function runner::write_skipped_result_output() {
+  local test_file=$1
+  local fn_name=$2
+  local output_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
+
+  local test_nr="*"
+  if ! parallel::is_enabled; then
+    test_nr=$(state::get_tests_skipped)
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$SKIPPED_OUTPUT_PATH"
+}
+
+function runner::write_incomplete_result_output() {
+  local test_file=$1
+  local fn_name=$2
+  local output_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
+
+  local test_nr="*"
+  if ! parallel::is_enabled; then
+    test_nr=$(state::get_tests_incomplete)
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$INCOMPLETE_OUTPUT_PATH"
 }
 
 function runner::record_file_hook_failure() {
