@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 
+# This function returns the embedded assertions.md content.
+# During development, it reads from the file.
+# During build, this function is replaced with actual content.
+function doc::get_embedded_docs() {
+  # __BASHUNIT_EMBEDDED_DOCS_START__
+  cat "$BASHUNIT_ROOT_DIR/docs/assertions.md"
+  # __BASHUNIT_EMBEDDED_DOCS_END__
+}
+
 function doc::print_asserts() {
   local filter="${1:-}"
-  local doc_file="$BASHUNIT_ROOT_DIR/docs/assertions.md"
   local line
   local docstring=""
   local fn=""
@@ -36,5 +44,5 @@ function doc::print_asserts() {
       line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<< "$line")"
       docstring+="$line"$'\n'
     fi
-  done < "$doc_file"
+  done <<< "$(doc::get_embedded_docs)"
 }
