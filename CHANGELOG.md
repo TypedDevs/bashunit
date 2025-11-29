@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Add inline filter syntax to run specific tests from a file
+    - `path::function_name` - filter tests by function name
+    - `path:line_number` - run the test containing the specified line
+
 ### Changed
 - **BREAKING:** Introduce subcommand-based CLI architecture
     - `bashunit test [path]` - run tests (default, backwards compatible with `bashunit [path]`)

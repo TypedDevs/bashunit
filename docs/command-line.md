@@ -88,6 +88,38 @@ bashunit test tests/ --filter "user_login"
 ```
 :::
 
+### Inline Filter Syntax
+
+You can also specify a filter directly in the file path using `::` or `:line` syntax:
+
+**Run a specific test by function name:**
+> `bashunit test path::function_name`
+
+::: code-group
+```bash [Exact match]
+bashunit test tests/unit/example_test.sh::test_user_login
+```
+```bash [Partial match]
+# Runs all tests containing "user" in their name
+bashunit test tests/unit/example_test.sh::user
+```
+:::
+
+**Run the test at a specific line number:**
+> `bashunit test path:line_number`
+
+This is useful when jumping to a test from your editor or IDE.
+
+::: code-group
+```bash [Example]
+bashunit test tests/unit/example_test.sh:42
+```
+:::
+
+::: tip
+The line number syntax finds the test function that contains the specified line. If the line is before any test function, an error is shown.
+:::
+
 ### Parallel
 
 > `bashunit test -p|--parallel`

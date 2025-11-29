@@ -372,3 +372,72 @@ function helper::generate_id() {
     echo "${sanitized_basename}_$$"
   fi
 }
+
+#
+# Parses a file path that may contain a filter suffix.
+# Supports two syntaxes:
+#   - path::function_name (filter by function name)
+#   - path:line_number (filter by line number)
+#
+# @param $1 string Eg: "tests/test.sh::test_foo" or "tests/test.sh:123"
+#
+# @return string Two lines: first is file path, second is filter (or empty)
+#
+function helper::parse_file_path_filter() {
+  local input="$1"
+  local file_path=""
+  local filter=""
+
+  # Check for :: syntax (function name filter)
+  if [[ "$input" == *"::"* ]]; then
+    file_path="${input%%::*}"
+    filter="${input#*::}"
+  # Check for :number syntax (line number filter)
+  elif [[ "$input" =~ ^(.+):([0-9]+)$ ]]; then
+    file_path="${BASH_REMATCH[1]}"
+    local line_number="${BASH_REMATCH[2]}"
+    # Line number will be resolved to function name later
+    filter="__line__:${line_number}"
+  else
+    file_path="$input"
+  fi
+
+  echo "$file_path"
+  echo "$filter"
+}
+
+#
+# Finds the test function that contains a given line number in a file.
+#
+# @param $1 string File path
+# @param $2 number Line number
+#
+# @return string The function name, or empty if not found
+#
+function helper::find_function_at_line() {
+  local file="$1"
+  local target_line="$2"
+
+  if [[ ! -f "$file" ]]; then
+    return 1
+  fi
+
+  # Find all test function definitions and their line numbers
+  local best_match=""
+  local best_line=0
+
+  while IFS=: read -r line_num content; do
+    # Extract function name from the line
+    local fn_name=""
+    if [[ "$content" =~ ^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\) ]]; then
+      fn_name="${BASH_REMATCH[2]}"
+    fi
+
+    if [[ -n "$fn_name" && "$line_num" -le "$target_line" && "$line_num" -gt "$best_line" ]]; then
+      best_match="$fn_name"
+      best_line="$line_num"
+    fi
+  done < <(grep -n -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)' "$file")
+
+  echo "$best_match"
+}

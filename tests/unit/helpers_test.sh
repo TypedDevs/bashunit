@@ -316,3 +316,91 @@ function test_find_total_tests_with_filter() {
 
   assert_same "3" "$(helpers_test::find_total_in_subshell "with_provider" "$file1" "$file2")"
 }
+
+function test_parse_file_path_filter_plain_path() {
+  local result
+  result=$(helper::parse_file_path_filter "tests/unit/example_test.sh")
+
+  local file_path filter
+  {
+    read -r file_path
+    read -r filter
+  } <<< "$result"
+
+  assert_same "tests/unit/example_test.sh" "$file_path"
+  assert_same "" "$filter"
+}
+
+function test_parse_file_path_filter_with_double_colon() {
+  local result
+  result=$(helper::parse_file_path_filter "tests/unit/example_test.sh::test_my_function")
+
+  local file_path filter
+  {
+    read -r file_path
+    read -r filter
+  } <<< "$result"
+
+  assert_same "tests/unit/example_test.sh" "$file_path"
+  assert_same "test_my_function" "$filter"
+}
+
+function test_parse_file_path_filter_with_line_number() {
+  local result
+  result=$(helper::parse_file_path_filter "tests/unit/example_test.sh:42")
+
+  local file_path filter
+  {
+    read -r file_path
+    read -r filter
+  } <<< "$result"
+
+  assert_same "tests/unit/example_test.sh" "$file_path"
+  assert_same "__line__:42" "$filter"
+}
+
+function test_parse_file_path_filter_with_colon_in_path() {
+  local result
+  result=$(helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func")
+
+  local file_path filter
+  {
+    read -r file_path
+    read -r filter
+  } <<< "$result"
+
+  assert_same "/path/to:weird/example_test.sh" "$file_path"
+  assert_same "test_func" "$filter"
+}
+
+function test_find_function_at_line_first_function() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "test_first" "$(helper::find_function_at_line "$file" 4)"
+}
+
+function test_find_function_at_line_second_function() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "test_second" "$(helper::find_function_at_line "$file" 8)"
+}
+
+function test_find_function_at_line_exact_function_line() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "test_first" "$(helper::find_function_at_line "$file" 3)"
+}
+
+function test_find_function_at_line_before_any_function() {
+  local file
+  file="$(current_dir)/fixtures/find_total_tests/simple_test.sh"
+
+  assert_same "" "$(helper::find_function_at_line "$file" 1)"
+}
+
+function test_find_function_at_line_nonexistent_file() {
+  assert_general_error "$(helper::find_function_at_line "/nonexistent/file.sh" 10)"
+}
