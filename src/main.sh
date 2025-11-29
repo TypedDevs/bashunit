@@ -73,13 +73,57 @@ function main::cmd_test() {
     shift
   done
 
-  # Expand positional arguments
+  # Expand positional arguments and extract inline filters
+  # Skip filter parsing for assert mode - args are not file paths
+  local inline_filter=""
+  local inline_filter_file=""
   if [[ ${#raw_args[@]} -gt 0 ]]; then
-    for arg in "${raw_args[@]}"; do
-      while IFS= read -r file; do
-        args+=("$file")
-      done < <(helper::find_files_recursive "$arg" '*[tT]est.sh')
-    done
+    if [[ -n "$assert_fn" ]]; then
+      # Assert mode: pass args as-is without file path processing
+      args=("${raw_args[@]}")
+    else
+      # Test mode: process file paths and extract inline filters
+      for arg in "${raw_args[@]}"; do
+        local parsed_path parsed_filter
+        {
+          read -r parsed_path
+          read -r parsed_filter
+        } < <(helper::parse_file_path_filter "$arg")
+
+        # If an inline filter was found, store it
+        if [[ -n "$parsed_filter" ]]; then
+          inline_filter="$parsed_filter"
+          inline_filter_file="$parsed_path"
+        fi
+
+        while IFS= read -r file; do
+          args+=("$file")
+        done < <(helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
+      done
+
+      # Resolve line number filter to function name
+      if [[ "$inline_filter" == "__line__:"* ]]; then
+        local line_number="${inline_filter#__line__:}"
+        local resolved_file="${inline_filter_file}"
+
+        # If the file path was a pattern, use the first resolved file
+        if [[ ${#args[@]} -gt 0 ]]; then
+          resolved_file="${args[0]}"
+        fi
+
+        inline_filter=$(helper::find_function_at_line "$resolved_file" "$line_number")
+        if [[ -z "$inline_filter" ]]; then
+          printf "%sError: No test function found at line %s in %s%s\n" \
+            "${_COLOR_FAILED}" "$line_number" "$resolved_file" "${_COLOR_DEFAULT}"
+          exit 1
+        fi
+      fi
+
+      # Use inline filter if no -f filter was provided
+      if [[ -z "$filter" && -n "$inline_filter" ]]; then
+        filter="$inline_filter"
+      fi
+    fi
   fi
 
   # Optional bootstrap
