@@ -79,6 +79,10 @@ Options:
   --debug [file]
                             Enable shell debug mode. Logs to file if provided.
 
+  --doc <?filter>
+                            Display the documentation for assert functions. When a filter is
+                            provided, only matching asserts will be shown.
+
   -e, --env, --boot <file>
                             Load a custom env/bootstrap file to override .env or define globals.
 

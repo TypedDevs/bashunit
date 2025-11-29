@@ -52,6 +52,7 @@ source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/test_title.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
+source "$BASHUNIT_ROOT_DIR/src/doc.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner.sh"
 source "$BASHUNIT_ROOT_DIR/src/bashunit.sh"
@@ -127,6 +128,15 @@ while [[ $# -gt 0 ]]; do
       ;;
     -v|--version)
       console_header::print_version
+      trap '' EXIT && exit 0
+      ;;
+    --doc)
+      if [[ -n ${2:-} && ${2:0:1} != "-" ]]; then
+        doc::print_asserts "$2"
+        shift
+      else
+        doc::print_asserts
+      fi
       trap '' EXIT && exit 0
       ;;
     --upgrade)

@@ -48,6 +48,9 @@ function build::generate_bin() {
   grep -v '^source' "$temp" > "$out"
   rm "$temp"
   chmod u+x "$out"
+
+  # Embed the assertions.md docs into the binary
+  build::embed_docs "$out"
 }
 
 # Recursive function to process each file and any files it sources
@@ -105,11 +108,37 @@ function build::dependencies() {
     "src/runner.sh"
     "src/init.sh"
     "src/learn.sh"
+    "src/doc.sh"
     "src/bashunit.sh"
     "src/main.sh"
   )
 
   echo "${deps[@]}"
+}
+
+function build::embed_docs() {
+  local file=$1
+  local docs_file="docs/assertions.md"
+  local temp_file="${file}.tmp"
+
+  # Build the replacement content
+  {
+    # Print everything before the start marker (excluding the marker line)
+    local line_num
+    line_num=$(grep -n "# __BASHUNIT_EMBEDDED_DOCS_START__" "$file" | cut -d: -f1)
+    head -n "$((line_num - 1))" "$file"
+
+    # Print the heredoc with embedded docs
+    echo "  cat <<'__BASHUNIT_DOCS_EOF__'"
+    cat "$docs_file"
+    echo "__BASHUNIT_DOCS_EOF__"
+
+    # Print everything after the end marker
+    sed -n '/# __BASHUNIT_EMBEDDED_DOCS_END__/,$p' "$file" | tail -n +2
+  } > "$temp_file"
+
+  mv "$temp_file" "$file"
+  chmod u+x "$file"
 }
 
 function build::generate_checksum() {

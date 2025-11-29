@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Add `--doc [search]` option
+
 ### Fixed
 - Stop executing remaining commands in `set_up`/`tear_down` after first failure
 - Count all tests as failed when `set_up_before_script` fails

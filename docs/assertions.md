@@ -113,7 +113,7 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 
-[assert_not_contains](#assert-not-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_not_contains](#assert-not-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -150,7 +150,7 @@ function test_failure() {
 
 Reports an error if `actual` is not empty.
 
-[assert_not_empty](#assert-not-empty) is the inverse of this assertion and takes the same arguments.
+- [assert_not_empty](#assert-not-empty) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -169,7 +169,7 @@ function test_failure() {
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
-[assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
+- [assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -188,7 +188,7 @@ function test_failure() {
 
 Reports an error if `haystack` does not starts with `needle`.
 
-[assert_string_not_starts_with](#assert-string-not-starts-with) is the inverse of this assertion and takes the same arguments.
+- [assert_string_not_starts_with](#assert-string-not-starts-with) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -207,7 +207,7 @@ function test_failure() {
 
 Reports an error if `haystack` does not ends with `needle`.
 
-[assert_string_not_ends_with](#assert-string-not-ends-with) is the inverse of this assertion and takes the same arguments.
+- [assert_string_not_ends_with](#assert-string-not-ends-with) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -247,7 +247,7 @@ function test_failure() {
 
 Reports an error if `actual` is not less than `expected`.
 
-[assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
+- [assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -266,7 +266,7 @@ function test_failure() {
 
 Reports an error if `actual` is not less than or equal to `expected`.
 
-[assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
+- [assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -289,7 +289,7 @@ function test_failure() {
 
 Reports an error if `actual` is not greater than `expected`.
 
-[assert_less_than](#assert-less-than) is the inverse of this assertion and takes the same arguments.
+- [assert_less_than](#assert-less-than) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -308,7 +308,7 @@ function test_failure() {
 
 Reports an error if `actual` is not greater than or equal to `expected`.
 
-[assert_less_or_equal_than](#assert-less-or-equal-than) is the inverse of this assertion and takes the same arguments.
+- [assert_less_or_equal_than](#assert-less-or-equal-than) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -333,7 +333,7 @@ Reports an error if the exit code of `callable` is not equal to `expected`.
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_successful_code](#assert-successful-code), [assert_unsuccessful_code](#assert-unsuccessful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
+- [assert_successful_code](#assert-successful-code), [assert_unsuccessful_code](#assert-unsuccessful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 ::: code-group
@@ -396,7 +396,7 @@ function test_failure() {
 
 Reports an error if `needle` is not an element of `haystack`.
 
-[assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -421,7 +421,7 @@ Reports an error if the exit code of `callable` is not successful (`0`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
@@ -499,7 +499,7 @@ Reports an error if the exit code of `callable` is not a general error (`1`).
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
@@ -539,7 +539,7 @@ In other words, if executing `callable` does not return a command not found exit
 
 If `callable` is not provided, it takes the last executed command or function instead.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+- [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
@@ -564,7 +564,7 @@ function test_failure() {
 
 Reports an error if `file` does not exists, or it is a directory.
 
-[assert_file_not_exists](#assert-file-not-exists) is the inverse of this assertion and takes the same arguments.
+- [assert_file_not_exists](#assert-file-not-exists) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -590,7 +590,7 @@ function test_failure() {
 
 Reports an error if `file` does not contains the search string.
 
-[assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -665,7 +665,7 @@ function test_failure() {
 
 Reports an error if `directory` does not exist.
 
-[assert_directory_not_exists](#assert-directory-not-exists) is the inverse of this assertion and takes the same arguments.
+- [assert_directory_not_exists](#assert-directory-not-exists) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -709,7 +709,7 @@ function test_failure() {
 
 Reports an error if `directory` is not an empty directory.
 
-[assert_is_directory_not_empty](#assert-is-directory-not-empty) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_not_empty](#assert-is-directory-not-empty) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -733,7 +733,7 @@ function test_failure() {
 
 Reports an error if `directory` is not a readable directory.
 
-[assert_is_directory_not_readable](#assert-is-directory-not-readable) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_not_readable](#assert-is-directory-not-readable) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -757,7 +757,7 @@ function test_failure() {
 
 Reports an error if `directory` is not a writable directory.
 
-[assert_is_directory_not_writable](#assert-is-directory-not-writable) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_not_writable](#assert-is-directory-not-writable) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -781,7 +781,7 @@ function test_failure() {
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
+- [assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -821,7 +821,7 @@ function test_failure() {
 
 Reports an error if the two variables `expected` and `actual` are the same value.
 
-[assert_same](#assert-same) is the inverse of this assertion and takes the same arguments.
+- [assert_same](#assert-same) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -840,7 +840,7 @@ function test_failure() {
 
 Reports an error if `needle` is a substring of `haystack`.
 
-[assert_contains](#assert-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_contains](#assert-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -859,7 +859,7 @@ function test_failure() {
 
 Reports an error if `haystack` does starts with `needle`.
 
-[assert_string_starts_with](#assert-string-starts-with) is the inverse of this assertion and takes the same arguments.
+- [assert_string_starts_with](#assert-string-starts-with) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -878,7 +878,7 @@ function test_failure() {
 
 Reports an error if `haystack` does ends with `needle`.
 
-[assert_string_ends_with](#assert-string-ends-with) is the inverse of this assertion and takes the same arguments.
+- [assert_string_ends_with](#assert-string-ends-with) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -897,7 +897,7 @@ function test_failure() {
 
 Reports an error if `actual` is empty.
 
-[assert_empty](#assert-empty) is the inverse of this assertion and takes the same arguments.
+- [assert_empty](#assert-empty) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -916,7 +916,7 @@ function test_failure() {
 
 Reports an error if `value` matches the regular expression `pattern`.
 
-[assert_matches](#assert-matches) is the inverse of this assertion and takes the same arguments.
+- [assert_matches](#assert-matches) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -935,7 +935,7 @@ function test_failure() {
 
 Reports an error if `needle` is an element of `haystack`.
 
-[assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -958,7 +958,7 @@ function test_failure() {
 
 Reports an error if `file` does exists.
 
-[assert_file_exists](#assert-file-exists) is the inverse of this assertion and takes the same arguments.
+- [assert_file_exists](#assert-file-exists) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -985,7 +985,7 @@ function test_failed() {
 
 Reports an error if `file` contains the search string.
 
-[assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
+- [assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -1010,7 +1010,7 @@ function test_failure() {
 
 Reports an error if `directory` exists.
 
-[assert_directory_exists](#assert-directory-exists) is the inverse of this assertion and takes the same arguments.
+- [assert_directory_exists](#assert-directory-exists) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -1033,7 +1033,7 @@ function test_failure() {
 
 Reports an error if `directory` is empty.
 
-[assert_is_directory_empty](#assert-is-directory-empty) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_empty](#assert-is-directory-empty) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -1057,7 +1057,7 @@ function test_failure() {
 
 Reports an error if `directory` is readable.
 
-[assert_is_directory_readable](#assert-is-directory-readable) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_readable](#assert-is-directory-readable) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -1081,7 +1081,7 @@ function test_failure() {
 
 Reports an error if `directory` is writable.
 
-[assert_is_directory_writable](#assert-is-directory-writable) is the inverse of this assertion and takes the same arguments.
+- [assert_is_directory_writable](#assert-is-directory-writable) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -1106,7 +1106,7 @@ function test_failure() {
 
 Reports an error if `expected` and `actual` are not equals.
 
-[assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
+- [assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]

@@ -1,0 +1,179 @@
+## assert_true
+--------------
+::ignore::
+
+## assert_false
+--------------
+::ignore::
+
+## assert_same
+--------------
+::ignore::
+
+## assert_equals
+--------------
+::ignore::
+
+## assert_contains
+--------------
+::ignore::
+
+## assert_contains_ignore_case
+--------------
+::ignore::
+
+## assert_empty
+--------------
+::ignore::
+
+## assert_matches
+--------------
+::ignore::
+
+## assert_string_starts_with
+--------------
+::ignore::
+
+## assert_string_ends_with
+--------------
+::ignore::
+
+## assert_line_count
+--------------
+::ignore::
+
+## assert_less_than
+--------------
+::ignore::
+
+## assert_less_or_equal_than
+--------------
+::ignore::
+
+## assert_greater_than
+--------------
+::ignore::
+
+## assert_greater_or_equal_than
+--------------
+::ignore::
+
+## assert_exit_code
+--------------
+::ignore::
+
+## assert_array_contains
+--------------
+::ignore::
+
+## assert_successful_code
+--------------
+::ignore::
+
+## assert_general_error
+--------------
+::ignore::
+
+## assert_command_not_found
+--------------
+::ignore::
+
+## assert_file_exists
+--------------
+::ignore::
+
+## assert_file_contains
+--------------
+::ignore::
+
+## assert_is_file
+--------------
+::ignore::
+
+## assert_is_file_empty
+--------------
+::ignore::
+
+## assert_directory_exists
+--------------
+::ignore::
+
+## assert_is_directory
+--------------
+::ignore::
+
+## assert_is_directory_empty
+--------------
+::ignore::
+
+## assert_is_directory_readable
+--------------
+::ignore::
+
+## assert_is_directory_writable
+--------------
+::ignore::
+
+## assert_files_equals
+--------------
+::ignore::
+
+## assert_not_same
+--------------
+::ignore::
+
+## assert_not_contains
+--------------
+::ignore::
+
+## assert_string_not_starts_with
+--------------
+::ignore::
+
+## assert_string_not_ends_with
+--------------
+::ignore::
+
+## assert_not_empty
+--------------
+::ignore::
+
+## assert_not_matches
+--------------
+::ignore::
+
+## assert_array_not_contains
+--------------
+::ignore::
+
+## assert_file_not_exists
+--------------
+::ignore::
+
+## assert_file_not_contains
+--------------
+::ignore::
+
+## assert_directory_not_exists
+--------------
+::ignore::
+
+## assert_is_directory_not_empty
+--------------
+::ignore::
+
+## assert_is_directory_not_readable
+--------------
+::ignore::
+
+## assert_is_directory_not_writable
+--------------
+::ignore::
+
+## assert_files_not_equals
+--------------
+::ignore::
+
+## fail
+--------------
+::ignore::
