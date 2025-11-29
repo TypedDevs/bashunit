@@ -84,9 +84,8 @@ case "${1:-}" in
     _SUBCOMMAND="test"
     ;;
   "")
-    # No arguments → show help
-    console_header::print_help
-    exit 0
+    # No arguments → assume "test" (uses BASHUNIT_DEFAULT_PATH)
+    _SUBCOMMAND="test"
     ;;
   *)
     # Path argument → assume "test"
