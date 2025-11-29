@@ -37,7 +37,7 @@ function doc::print_asserts() {
         continue
       fi
 
-      [[ "$line" == "::: code-group" ]] && continue
+      [[ "$line" == "::: code-group"* ]] && continue
 
       # Remove markdown link brackets and anchor tags
       line="${line//[\[\]]/}"
