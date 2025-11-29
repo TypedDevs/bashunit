@@ -27,6 +27,18 @@ function runner::load_test_files() {
     # Update function cache after sourcing new test file
     CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     if ! runner::run_set_up_before_script "$test_file"; then
+      # Count the test functions that couldn't run due to set_up_before_script failure
+      # and add them as failed (minus 1 since the hook failure already counts as 1)
+      local filtered_functions
+      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$CACHED_ALL_FUNCTIONS")
+      if [[ -n "$filtered_functions" ]]; then
+        # shellcheck disable=SC2206
+        local functions_to_run=($filtered_functions)
+        local additional_failures=$((${#functions_to_run[@]} - 1))
+        for ((i = 0; i < additional_failures; i++)); do
+          state::add_tests_failed
+        done
+      fi
       runner::clean_set_up_and_tear_down_after_script
       if ! parallel::is_enabled; then
         cleanup_script_temp_files
@@ -75,6 +87,18 @@ function runner::load_bench_files() {
     # Update function cache after sourcing new bench file
     CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     if ! runner::run_set_up_before_script "$bench_file"; then
+      # Count the bench functions that couldn't run due to set_up_before_script failure
+      # and add them as failed (minus 1 since the hook failure already counts as 1)
+      local filtered_functions
+      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$CACHED_ALL_FUNCTIONS")
+      if [[ -n "$filtered_functions" ]]; then
+        # shellcheck disable=SC2206
+        local functions_to_run=($filtered_functions)
+        local additional_failures=$((${#functions_to_run[@]} - 1))
+        for ((i = 0; i < additional_failures; i++)); do
+          state::add_tests_failed
+        done
+      fi
       runner::clean_set_up_and_tear_down_after_script
       cleanup_script_temp_files
       continue
