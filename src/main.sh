@@ -67,10 +67,10 @@ function main::cmd_test() {
         exit 0
         ;;
       --show-skipped)
-        BASHUNIT_SHOW_SKIPPED=true
+        export BASHUNIT_SHOW_SKIPPED=true
         ;;
       --show-incomplete)
-        BASHUNIT_SHOW_INCOMPLETE=true
+        export BASHUNIT_SHOW_INCOMPLETE=true
         ;;
       *)
         raw_args+=("$1")

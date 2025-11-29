@@ -67,8 +67,8 @@
 
 - Improve `assert_have_been_called_with` with strict argument matching
 - Make Windows install clearer in the docs by adding an option for Linux/Mac and another one for Windows.
-- Add support for empty values and values containing spaces, tabs or newlines in data providers via new `data_set` function
-- Document workaround for global function name collisions when sourcing scripts in tests by copying the original function
+- Add data_set function for empty values and values with spaces/tabs/newlines
+- Document workaround for function name collisions when sourcing scripts
 - Fix `temp_dir` and `temp_file` data not being cleaned up when created in `set_up_before_script`
 - Fix `/tmp/bashunit/parallel` not being cleaned after test run
 
