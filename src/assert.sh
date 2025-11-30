@@ -1,14 +1,5 @@
 #!/usr/bin/env bash
 
-# Guard function: skip assertions if a previous assertion in this test already failed
-# This matches PHPUnit/Jest behavior where tests stop at first failure
-function assert::guard() {
-  if state::is_assertion_failed_in_test; then
-    return 1
-  fi
-  return 0
-}
-
 # Helper to mark assertion as failed and set the guard flag
 function assert::mark_failed() {
   state::add_assertions_failed
@@ -16,7 +7,7 @@ function assert::mark_failed() {
 }
 
 function fail() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local message="${1:-${FUNCNAME[1]}}"
 
@@ -27,7 +18,7 @@ function fail() {
 }
 
 function assert_true() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local actual="$1"
 
@@ -49,7 +40,7 @@ function assert_true() {
 }
 
 function assert_false() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local actual="$1"
 
@@ -94,7 +85,7 @@ function handle_bool_assertion_failure() {
 }
 
 function assert_same() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -111,7 +102,7 @@ function assert_same() {
 }
 
 function assert_equals() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -138,7 +129,7 @@ function assert_equals() {
 }
 
 function assert_not_equals() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -165,7 +156,7 @@ function assert_not_equals() {
 }
 
 function assert_empty() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
 
@@ -181,7 +172,7 @@ function assert_empty() {
 }
 
 function assert_not_empty() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
 
@@ -197,7 +188,7 @@ function assert_not_empty() {
 }
 
 function assert_not_same() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -214,7 +205,7 @@ function assert_not_same() {
 }
 
 function assert_contains() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -233,7 +224,7 @@ function assert_contains() {
 }
 
 function assert_contains_ignore_case() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -254,7 +245,7 @@ function assert_contains_ignore_case() {
 }
 
 function assert_not_contains() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -273,7 +264,7 @@ function assert_not_contains() {
 }
 
 function assert_matches() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -292,7 +283,7 @@ function assert_matches() {
 }
 
 function assert_not_matches() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -311,7 +302,7 @@ function assert_not_matches() {
 }
 
 function assert_exec() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local cmd="$1"
   shift
@@ -395,7 +386,7 @@ function assert_exec() {
 
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code="$1"
 
@@ -412,7 +403,7 @@ function assert_exit_code() {
 
 function assert_successful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=0
 
@@ -429,7 +420,7 @@ function assert_successful_code() {
 
 function assert_unsuccessful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   if [[ "$actual_exit_code" -eq 0 ]]; then
     local label
@@ -444,7 +435,7 @@ function assert_unsuccessful_code() {
 
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=1
 
@@ -461,7 +452,7 @@ function assert_general_error() {
 
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=127
 
@@ -477,7 +468,7 @@ function assert_command_not_found() {
 }
 
 function assert_string_starts_with() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -496,7 +487,7 @@ function assert_string_starts_with() {
 }
 
 function assert_string_not_starts_with() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -513,7 +504,7 @@ function assert_string_not_starts_with() {
 }
 
 function assert_string_ends_with() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -532,7 +523,7 @@ function assert_string_ends_with() {
 }
 
 function assert_string_not_ends_with() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -551,7 +542,7 @@ function assert_string_not_ends_with() {
 }
 
 function assert_less_than() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -568,7 +559,7 @@ function assert_less_than() {
 }
 
 function assert_less_or_equal_than() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -585,7 +576,7 @@ function assert_less_or_equal_than() {
 }
 
 function assert_greater_than() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -602,7 +593,7 @@ function assert_greater_than() {
 }
 
 function assert_greater_or_equal_than() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -619,7 +610,7 @@ function assert_greater_or_equal_than() {
 }
 
 function assert_line_count() {
-  assert::guard || return 0
+  (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local input_arr=("${@:2}")
