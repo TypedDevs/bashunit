@@ -3,9 +3,6 @@
 [31m✗ Failed[0m: Assert failing
     [2mExpected[0m [1m'1'[0m
     [2mbut got [0m [1m'2'[0m
-[31m✗ Failed[0m: Assert failing
-    [2mExpected[0m [1m'3'[0m
-    [2mbut got [0m [1m'4'[0m
 [36m✒ Incomplete[0m: Assert todo and skip[2m    foo[0m
 [33m↷ Skipped[0m: Assert todo and skip[2m    bar[0m
 [33m↷ Skipped[0m: Assert skip and todo[2m    baz[0m
@@ -17,11 +14,8 @@
 |[31m✗ Failed[0m: Assert failing
 |    [2mExpected[0m [1m'1'[0m
 |    [2mbut got [0m [1m'2'[0m
-|[31m✗ Failed[0m: Assert failing
-|    [2mExpected[0m [1m'3'[0m
-|    [2mbut got [0m [1m'4'[0m
 
 [2mTests:     [0m [32m1 passed[0m, [33m0 skipped[0m, [36m2 incomplete[0m, [31m1 failed[0m, 4 total
-[2mAssertions:[0m [32m1 passed[0m, [33m2 skipped[0m, [36m2 incomplete[0m, [31m2 failed[0m, 7 total
+[2mAssertions:[0m [32m1 passed[0m, [33m2 skipped[0m, [36m2 incomplete[0m, [31m1 failed[0m, 6 total
 
 [41m[30m[1m Some tests failed [0m

@@ -6,6 +6,10 @@
 Check the internal functional tests: `tests/functional/custom_asserts_test.sh` ([link](https://github.com/TypedDevs/bashunit/blob/main/tests/functional/custom_asserts_test.sh))
 :::
 
+::: info Assertion behavior
+When using the bashunit facade, assertions automatically respect the guard behavior: if a previous assertion in the same test already failed, subsequent assertions are skipped. This matches popular testing libraries default behavior.
+:::
+
 ## assertion_failed
 > `bashunit::assertion_failed <expected> <actual> <failure_condition_message?>`
 

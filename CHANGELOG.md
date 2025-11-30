@@ -16,6 +16,10 @@
     - `bashunit init [dir]` - initialize project (replaces `--init`)
     - `bashunit learn` - interactive tutorial (replaces `--learn`)
     - `bashunit upgrade` - upgrade to latest (replaces `--upgrade`)
+- **BREAKING:** Tests now stop at first assertion failure within a test function
+    - Matches PHPUnit and Jest default behavior
+    - Subsequent assertions in the same test are skipped after a failure
+    - Other test functions continue to run normally
 
 ### Fixed
 - Stop executing remaining commands in `set_up`/`tear_down` after first failure

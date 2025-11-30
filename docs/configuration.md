@@ -85,6 +85,12 @@ Force to stop the runner right after encountering one failing test. `false` by d
 
 Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#stop-on-failure).
 
+::: tip Assertion behavior
+When an assertion fails within a test, subsequent assertions in the same test are automatically skipped. This matches popular testing libraries default behavior and prevents misleading failures caused by earlier assertion failures.
+
+The `--stop-on-failure` flag is separate – it stops the entire test runner after a failing **test**, while assertion-level stopping happens automatically within each test.
+:::
+
 ## Show header
 
 > `BASHUNIT_SHOW_HEADER=true|false`
