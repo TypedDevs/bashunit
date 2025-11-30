@@ -107,15 +107,10 @@ function assert_equals() {
   local expected="$1"
   local actual="$2"
 
-  # Remove ANSI escape sequences (color codes)
   local actual_cleaned
-  actual_cleaned=$(echo -e "$actual" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
+  actual_cleaned=$(str::strip_ansi "$actual")
   local expected_cleaned
-  expected_cleaned=$(echo -e "$expected" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
-
-  # Remove all control characters and whitespace (optional, depending on your needs)
-  actual_cleaned=$(echo "$actual_cleaned" | tr -d '[:cntrl:]')
-  expected_cleaned=$(echo "$expected_cleaned" | tr -d '[:cntrl:]')
+  expected_cleaned=$(str::strip_ansi "$expected")
 
   if [[ "$expected_cleaned" != "$actual_cleaned" ]]; then
     local label
@@ -134,15 +129,10 @@ function assert_not_equals() {
   local expected="$1"
   local actual="$2"
 
-  # Remove ANSI escape sequences (color codes)
   local actual_cleaned
-  actual_cleaned=$(echo -e "$actual" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
+  actual_cleaned=$(str::strip_ansi "$actual")
   local expected_cleaned
-  expected_cleaned=$(echo -e "$expected" | sed -r "s/\x1B\[[0-9;]*[mK]//g")
-
-  # Remove all control characters and whitespace (optional, depending on your needs)
-  actual_cleaned=$(echo "$actual_cleaned" | tr -d '[:cntrl:]')
-  expected_cleaned=$(echo "$expected_cleaned" | tr -d '[:cntrl:]')
+  expected_cleaned=$(str::strip_ansi "$expected")
 
   if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
     local label
