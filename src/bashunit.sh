@@ -5,17 +5,21 @@
 # e.g. adding custom assertions
 
 function bashunit::assertion_failed() {
+  _assert_guard || return 0
+
   local expected=$1
   local actual=$2
   local failure_condition_message=${3:-"but got "}
 
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[2]}")"
-  state::add_assertions_failed
+  _mark_assertion_failed
   console_results::print_failed_test "${label}" "${expected}" \
     "$failure_condition_message" "${actual}"
 }
 
 function bashunit::assertion_passed() {
+  _assert_guard || return 0
+
   state::add_assertions_passed
 }
