@@ -65,7 +65,7 @@ function runner::load_test_files() {
     parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
-    printf "\r " # Clear the spinner output
+    printf "\r  \r" # Clear the spinner output
     for script_id in "${scripts_ids[@]}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
       cleanup_script_temp_files
@@ -111,6 +111,13 @@ function runner::load_bench_files() {
 }
 
 function runner::spinner() {
+  # Only show spinner when output is to a terminal
+  if [[ ! -t 1 ]]; then
+    # Not a terminal, just wait silently
+    while true; do sleep 1; done
+    return
+  fi
+
   if env::is_simple_output_enabled; then
     printf "\n"
   fi
@@ -524,6 +531,7 @@ function runner::run_test() {
   if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
     state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
     internal_log "Test incomplete" "$label"
     return
   fi
@@ -531,6 +539,7 @@ function runner::run_test() {
   if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
     state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     internal_log "Test skipped" "$label"
     return
   fi
@@ -679,6 +688,38 @@ function runner::write_failure_result_output() {
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+}
+
+function runner::write_skipped_result_output() {
+  local test_file=$1
+  local fn_name=$2
+  local output_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
+
+  local test_nr="*"
+  if ! parallel::is_enabled; then
+    test_nr=$(state::get_tests_skipped)
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$SKIPPED_OUTPUT_PATH"
+}
+
+function runner::write_incomplete_result_output() {
+  local test_file=$1
+  local fn_name=$2
+  local output_msg=$3
+
+  local line_number
+  line_number=$(helper::get_function_line_number "$fn_name")
+
+  local test_nr="*"
+  if ! parallel::is_enabled; then
+    test_nr=$(state::get_tests_incomplete)
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$INCOMPLETE_OUTPUT_PATH"
 }
 
 function runner::record_file_hook_failure() {

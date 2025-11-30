@@ -301,3 +301,47 @@ function console_results::print_failing_tests_and_reset() {
     echo ""
   fi
 }
+
+function console_results::print_skipped_tests_and_reset() {
+  if [[ -s "$SKIPPED_OUTPUT_PATH" ]] && env::is_show_skipped_enabled; then
+    local total_skipped
+    total_skipped=$(state::get_tests_skipped)
+
+    if env::is_simple_output_enabled; then
+      printf "\n"
+    fi
+
+    if [[ "$total_skipped" -eq 1 ]]; then
+      echo -e "${_COLOR_BOLD}There was 1 skipped test:${_COLOR_DEFAULT}\n"
+    else
+      echo -e "${_COLOR_BOLD}There were $total_skipped skipped tests:${_COLOR_DEFAULT}\n"
+    fi
+
+    tr -d '\r' < "$SKIPPED_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
+    rm "$SKIPPED_OUTPUT_PATH"
+
+    echo ""
+  fi
+}
+
+function console_results::print_incomplete_tests_and_reset() {
+  if [[ -s "$INCOMPLETE_OUTPUT_PATH" ]] && env::is_show_incomplete_enabled; then
+    local total_incomplete
+    total_incomplete=$(state::get_tests_incomplete)
+
+    if env::is_simple_output_enabled; then
+      printf "\n"
+    fi
+
+    if [[ "$total_incomplete" -eq 1 ]]; then
+      echo -e "${_COLOR_BOLD}There was 1 incomplete test:${_COLOR_DEFAULT}\n"
+    else
+      echo -e "${_COLOR_BOLD}There were $total_incomplete incomplete tests:${_COLOR_DEFAULT}\n"
+    fi
+
+    tr -d '\r' < "$INCOMPLETE_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
+    rm "$INCOMPLETE_OUTPUT_PATH"
+
+    echo ""
+  fi
+}
