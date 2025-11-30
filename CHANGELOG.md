@@ -25,6 +25,9 @@
 - Stop executing remaining commands in `set_up`/`tear_down` after first failure
 - Count all tests as failed when `set_up_before_script` fails
 
+### Performance
+- Optimize assertion guard: use integer comparison instead of string comparison
+
 ## [0.27.0](https://github.com/TypedDevs/bashunit/compare/0.26.0...0.27.0) - 2025-11-26
 
 ### Added
