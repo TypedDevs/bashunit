@@ -193,10 +193,6 @@ function state::mark_assertion_failed_in_test() {
   _ASSERTION_FAILED_IN_TEST=true
 }
 
-function state::reset_assertion_failed_in_test() {
-  _ASSERTION_FAILED_IN_TEST=false
-}
-
 function state::set_duplicated_functions_merged() {
   state::set_duplicated_test_functions_found
   state::set_file_with_duplicated_function_names "$1"
