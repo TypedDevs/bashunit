@@ -2,7 +2,7 @@
 
 # Guard function: skip assertions if a previous assertion in this test already failed
 # This matches PHPUnit/Jest behavior where tests stop at first failure
-function _assert_guard() {
+function assert::guard() {
   if state::is_assertion_failed_in_test; then
     return 1
   fi
@@ -10,24 +10,24 @@ function _assert_guard() {
 }
 
 # Helper to mark assertion as failed and set the guard flag
-function _mark_assertion_failed() {
+function assert::mark_failed() {
   state::add_assertions_failed
   state::mark_assertion_failed_in_test
 }
 
 function fail() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local message="${1:-${FUNCNAME[1]}}"
 
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-  _mark_assertion_failed
+  assert::mark_failed
   console_results::print_failure_message "${label}" "$message"
 }
 
 function assert_true() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local actual="$1"
 
@@ -49,7 +49,7 @@ function assert_true() {
 }
 
 function assert_false() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local actual="$1"
 
@@ -89,12 +89,12 @@ function handle_bool_assertion_failure() {
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[2]}")"
 
-  _mark_assertion_failed
+  assert::mark_failed
   console_results::print_failed_test "$label" "$expected" "but got " "$got"
 }
 
 function assert_same() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -102,7 +102,7 @@ function assert_same() {
   if [[ "$expected" != "$actual" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
@@ -111,7 +111,7 @@ function assert_same() {
 }
 
 function assert_equals() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -129,7 +129,7 @@ function assert_equals() {
   if [[ "$expected_cleaned" != "$actual_cleaned" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
     return
   fi
@@ -138,7 +138,7 @@ function assert_equals() {
 }
 
 function assert_not_equals() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -156,7 +156,7 @@ function assert_not_equals() {
   if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
     return
   fi
@@ -165,14 +165,14 @@ function assert_not_equals() {
 }
 
 function assert_empty() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
 
   if [[ "$expected" != "" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "to be empty" "but got " "${expected}"
     return
   fi
@@ -181,14 +181,14 @@ function assert_empty() {
 }
 
 function assert_not_empty() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
 
   if [[ "$expected" == "" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "to not be empty" "but got " "${expected}"
     return
   fi
@@ -197,7 +197,7 @@ function assert_not_empty() {
 }
 
 function assert_not_same() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -205,7 +205,7 @@ function assert_not_same() {
   if [[ "$expected" == "$actual" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
@@ -214,7 +214,7 @@ function assert_not_same() {
 }
 
 function assert_contains() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -224,7 +224,7 @@ function assert_contains() {
   if ! [[ $actual == *"$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     return
   fi
@@ -233,7 +233,7 @@ function assert_contains() {
 }
 
 function assert_contains_ignore_case() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -243,7 +243,7 @@ function assert_contains_ignore_case() {
   if ! [[ $actual =~ $expected ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     shopt -u nocasematch
     return
@@ -254,7 +254,7 @@ function assert_contains_ignore_case() {
 }
 
 function assert_not_contains() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -264,7 +264,7 @@ function assert_not_contains() {
   if [[ $actual == *"$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
     return
   fi
@@ -273,7 +273,7 @@ function assert_not_contains() {
 }
 
 function assert_matches() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -283,7 +283,7 @@ function assert_matches() {
   if ! [[ $actual =~ $expected ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
     return
   fi
@@ -292,7 +292,7 @@ function assert_matches() {
 }
 
 function assert_not_matches() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -302,7 +302,7 @@ function assert_not_matches() {
   if [[ $actual =~ $expected ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to not match" "${expected}"
     return
   fi
@@ -311,7 +311,7 @@ function assert_not_matches() {
 }
 
 function assert_exec() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local cmd="$1"
   shift
@@ -385,7 +385,7 @@ function assert_exec() {
   if [[ $failed -eq 1 ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "$label" "$expected_desc" "but got " "$actual_desc"
     return
   fi
@@ -395,14 +395,14 @@ function assert_exec() {
 
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected_exit_code="$1"
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
@@ -412,14 +412,14 @@ function assert_exit_code() {
 
 function assert_successful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected_exit_code=0
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
@@ -429,12 +429,12 @@ function assert_successful_code() {
 
 function assert_unsuccessful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  _assert_guard || return 0
+  assert::guard || return 0
 
   if [[ "$actual_exit_code" -eq 0 ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be non-zero" "but was 0"
     return
   fi
@@ -444,14 +444,14 @@ function assert_unsuccessful_code() {
 
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected_exit_code=1
 
   if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
@@ -461,14 +461,14 @@ function assert_general_error() {
 
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected_exit_code=127
 
   if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
@@ -477,7 +477,7 @@ function assert_command_not_found() {
 }
 
 function assert_string_starts_with() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -487,7 +487,7 @@ function assert_string_starts_with() {
   if [[ $actual != "$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
     return
   fi
@@ -496,7 +496,7 @@ function assert_string_starts_with() {
 }
 
 function assert_string_not_starts_with() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -504,7 +504,7 @@ function assert_string_not_starts_with() {
   if [[ $actual == "$expected"* ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
     return
   fi
@@ -513,7 +513,7 @@ function assert_string_not_starts_with() {
 }
 
 function assert_string_ends_with() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -523,7 +523,7 @@ function assert_string_ends_with() {
   if [[ $actual != *"$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
     return
   fi
@@ -532,7 +532,7 @@ function assert_string_ends_with() {
 }
 
 function assert_string_not_ends_with() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -542,7 +542,7 @@ function assert_string_not_ends_with() {
   if [[ $actual == *"$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
     return
   fi
@@ -551,7 +551,7 @@ function assert_string_not_ends_with() {
 }
 
 function assert_less_than() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -559,7 +559,7 @@ function assert_less_than() {
   if ! [[ "$actual" -lt "$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
     return
   fi
@@ -568,7 +568,7 @@ function assert_less_than() {
 }
 
 function assert_less_or_equal_than() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -576,7 +576,7 @@ function assert_less_or_equal_than() {
   if ! [[ "$actual" -le "$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to be less or equal than" "${expected}"
     return
   fi
@@ -585,7 +585,7 @@ function assert_less_or_equal_than() {
 }
 
 function assert_greater_than() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -593,7 +593,7 @@ function assert_greater_than() {
   if ! [[ "$actual" -gt "$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to be greater than" "${expected}"
     return
   fi
@@ -602,7 +602,7 @@ function assert_greater_than() {
 }
 
 function assert_greater_or_equal_than() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local actual="$2"
@@ -610,7 +610,7 @@ function assert_greater_or_equal_than() {
   if ! [[ "$actual" -ge "$expected" ]]; then
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${actual}" "to be greater or equal than" "${expected}"
     return
   fi
@@ -619,7 +619,7 @@ function assert_greater_or_equal_than() {
 }
 
 function assert_line_count() {
-  _assert_guard || return 0
+  assert::guard || return 0
 
   local expected="$1"
   local input_arr=("${@:2}")
@@ -640,7 +640,7 @@ function assert_line_count() {
     local label
     label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
-    _mark_assertion_failed
+    assert::mark_failed
     console_results::print_failed_test "${label}" "${input_str}"\
       "to contain number of lines equal to" "${expected}"\
       "but found" "${actual}"
