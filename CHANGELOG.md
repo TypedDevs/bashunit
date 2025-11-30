@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## [0.28.0](https://github.com/TypedDevs/bashunit/compare/0.27.0...0.28.0) - 2025-12-01
 
 ### Added
 - Add inline filter syntax to run specific tests from a file
