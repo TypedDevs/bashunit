@@ -19,7 +19,7 @@ _TEST_EXIT_CODE=0
 _TEST_HOOK_FAILURE=""
 _TEST_HOOK_MESSAGE=""
 _CURRENT_TEST_INTERPOLATED_NAME=""
-_ASSERTION_FAILED_IN_TEST=false
+_ASSERTION_FAILED_IN_TEST=0
 
 function state::get_tests_passed() {
   echo "$_TESTS_PASSED"
@@ -186,11 +186,11 @@ function state::reset_test_hook_message() {
 }
 
 function state::is_assertion_failed_in_test() {
-  [[ "$_ASSERTION_FAILED_IN_TEST" == "true" ]]
+  (( _ASSERTION_FAILED_IN_TEST ))
 }
 
 function state::mark_assertion_failed_in_test() {
-  _ASSERTION_FAILED_IN_TEST=true
+  _ASSERTION_FAILED_IN_TEST=1
 }
 
 function state::set_duplicated_functions_merged() {
@@ -209,7 +209,7 @@ function state::initialize_assertions_count() {
     _TEST_TITLE=""
     _TEST_HOOK_FAILURE=""
     _TEST_HOOK_MESSAGE=""
-    _ASSERTION_FAILED_IN_TEST=false
+    _ASSERTION_FAILED_IN_TEST=0
 }
 
 function state::export_subshell_context() {
