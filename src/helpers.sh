@@ -3,6 +3,33 @@
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
 #
+# Walks up the call stack to find the first function that looks like a test function.
+# A test function is one that starts with "test_" or "test" (camelCase).
+# If no test function is found, falls back to the caller of the assertion function.
+#
+# @param $1 number Optional fallback depth (default: 2, i.e., the caller of the assertion)
+#
+# @return string The test function name, or fallback function name
+#
+function helper::find_test_function_name() {
+  local fallback_depth="${1:-2}"
+  local i
+  for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
+    local fn="${FUNCNAME[$i]}"
+    # Check if function starts with "test_" or "test" followed by uppercase
+    if [[ "$fn" == test_* ]] || [[ "$fn" =~ ^test[A-Z] ]]; then
+      echo "$fn"
+      return
+    fi
+  done
+  # No test function found, use fallback (caller of the assertion)
+  # FUNCNAME[0] = helper::find_test_function_name
+  # FUNCNAME[1] = the assertion function (e.g., assert_same)
+  # FUNCNAME[2] = caller of the assertion
+  echo "${FUNCNAME[$fallback_depth]:-}"
+}
+
+#
 # @param $1 string Eg: "test_some_logic_camelCase"
 #
 # @return string Eg: "Some logic camelCase"
