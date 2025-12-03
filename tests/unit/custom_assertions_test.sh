@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Custom assertion that uses fail internally
-function assert_valid_json() {
+function _assert_valid_json() {
   local json="$1"
 
   if ! echo "$json" | jq . > /dev/null 2>&1; then
@@ -13,7 +13,7 @@ function assert_valid_json() {
 }
 
 # Custom assertion that uses bashunit::assertion_failed
-function assert_positive_number() {
+function _assert_positive_number() {
   local number="$1"
 
   if ! [[ "$number" =~ ^[0-9]+$ ]] || [[ "$number" -le 0 ]]; then
@@ -25,7 +25,7 @@ function assert_positive_number() {
 }
 
 # Custom assertion that uses assert_same internally
-function assert_length_equals() {
+function _assert_length_equals() {
   local expected_length="$1"
   local string="$2"
   local actual_length=${#string}
@@ -49,7 +49,7 @@ function test_custom_assertion_with_fail_shows_correct_test_name() {
 
     # Force a failure using our custom assertion with invalid JSON
     _ASSERTION_FAILED_IN_TEST=0
-    assert_valid_json "invalid json"
+    _assert_valid_json "invalid json"
 
     echo "$_captured_output"
   )"
@@ -72,7 +72,7 @@ function test_custom_assertion_with_bashunit_assertion_failed_shows_correct_test
     }
 
     _ASSERTION_FAILED_IN_TEST=0
-    assert_positive_number "-5"
+    _assert_positive_number "-5"
 
     echo "$_captured_output"
   )"
@@ -93,7 +93,7 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
     }
 
     _ASSERTION_FAILED_IN_TEST=0
-    assert_length_equals "5" "abc"  # length is 3, not 5
+    _assert_length_equals "5" "abc"  # length is 3, not 5
 
     echo "$_captured_output"
   )"
