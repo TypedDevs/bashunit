@@ -3,26 +3,30 @@
 
 function assert_match_snapshot() {
   local actual=$(echo -n "$1" | tr -d '\r')
-  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "$test_fn")
 
   if [[ ! -f "$snapshot_file" ]]; then
     snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
 
-  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+  snapshot::compare "$actual" "$snapshot_file" "$test_fn"
 }
 
 function assert_match_snapshot_ignore_colors() {
   local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
-  local snapshot_file=$(snapshot::resolve_file "${2:-}" "${FUNCNAME[1]}")
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local snapshot_file=$(snapshot::resolve_file "${2:-}" "$test_fn")
 
   if [[ ! -f "$snapshot_file" ]]; then
     snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
 
-  snapshot::compare "$actual" "$snapshot_file" "${FUNCNAME[1]}"
+  snapshot::compare "$actual" "$snapshot_file" "$test_fn"
 }
 
 function snapshot::match_with_placeholder() {

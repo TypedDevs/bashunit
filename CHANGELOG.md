@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- Custom assertions now display the correct test function name in failure messages
+
 ## [0.28.0](https://github.com/TypedDevs/bashunit/compare/0.27.0...0.28.0) - 2025-12-01
 
 ### Added

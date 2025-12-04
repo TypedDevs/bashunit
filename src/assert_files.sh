@@ -2,7 +2,9 @@
 
 function assert_file_exists() {
   local expected="$1"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local label="${3:-$(helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
@@ -15,7 +17,9 @@ function assert_file_exists() {
 
 function assert_file_not_exists() {
   local expected="$1"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local label="${3:-$(helper::normalize_test_function_name "$test_fn")}"
 
   if [[ -f "$expected" ]]; then
     state::add_assertions_failed
@@ -28,7 +32,9 @@ function assert_file_not_exists() {
 
 function assert_is_file() {
   local expected="$1"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local label="${3:-$(helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -f "$expected" ]]; then
     state::add_assertions_failed
@@ -41,7 +47,9 @@ function assert_is_file() {
 
 function assert_is_file_empty() {
   local expected="$1"
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local test_fn
+  test_fn="$(helper::find_test_function_name)"
+  local label="${3:-$(helper::normalize_test_function_name "$test_fn")}"
 
   if [[ -s "$expected" ]]; then
     state::add_assertions_failed
@@ -57,8 +65,10 @@ function assert_files_equals() {
   local actual="$2"
 
   if [[ "$(diff -u "$expected" "$actual")" != '' ]] ; then
+    local test_fn
+    test_fn="$(helper::find_test_function_name)"
     local label
-    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    label="$(helper::normalize_test_function_name "$test_fn")"
     state::add_assertions_failed
 
     console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
@@ -74,8 +84,10 @@ function assert_files_not_equals() {
   local actual="$2"
 
   if [[ "$(diff -u "$expected" "$actual")" == '' ]] ; then
+    local test_fn
+    test_fn="$(helper::find_test_function_name)"
     local label
-    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    label="$(helper::normalize_test_function_name "$test_fn")"
     state::add_assertions_failed
 
     console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
@@ -91,8 +103,10 @@ function assert_file_contains() {
   local string="$2"
 
   if ! grep -F -q "$string" "$file"; then
+    local test_fn
+    test_fn="$(helper::find_test_function_name)"
     local label
-    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    label="$(helper::normalize_test_function_name "$test_fn")"
     state::add_assertions_failed
 
     console_results::print_failed_test "${label}" "${file}" "to contain" "${string}"
@@ -107,8 +121,10 @@ function assert_file_not_contains() {
   local string="$2"
 
   if grep -q "$string" "$file"; then
+    local test_fn
+    test_fn="$(helper::find_test_function_name)"
     local label
-    label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+    label="$(helper::normalize_test_function_name "$test_fn")"
     state::add_assertions_failed
 
     console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
