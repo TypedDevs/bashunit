@@ -43,6 +43,8 @@ function runner::load_test_files() {
       if ! parallel::is_enabled; then
         cleanup_script_temp_files
       fi
+      # Restore working directory in case set_up_before_script changed it
+      cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
       continue
     fi
     if parallel::is_enabled; then
@@ -56,6 +58,8 @@ function runner::load_test_files() {
       cleanup_script_temp_files
     fi
     internal_log "Finished file" "$test_file"
+    # Restore working directory in case set_up_before_script changed it
+    cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
   done
 
   if parallel::is_enabled; then
@@ -101,12 +105,16 @@ function runner::load_bench_files() {
       fi
       runner::clean_set_up_and_tear_down_after_script
       cleanup_script_temp_files
+      # Restore working directory in case set_up_before_script changed it
+      cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
       continue
     fi
     runner::call_bench_functions "$bench_file" "$filter"
     runner::run_tear_down_after_script "$bench_file"
     runner::clean_set_up_and_tear_down_after_script
     cleanup_script_temp_files
+    # Restore working directory in case set_up_before_script changed it
+    cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
   done
 }
 
