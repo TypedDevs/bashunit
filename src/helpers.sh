@@ -130,6 +130,11 @@ function helper::decode_base64() {
 function helper::check_duplicate_functions() {
   local script="$1"
 
+  # Handle directory changes in set_up_before_script (issue #529)
+  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+    script="$BASHUNIT_WORKING_DIR/$script"
+  fi
+
   local filtered_lines
   filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
 
@@ -243,6 +248,12 @@ function helper::normalize_variable_name() {
 function helper::get_provider_data() {
   local function_name="$1"
   local script="$2"
+
+  # Handle directory changes in set_up_before_script (issue #529)
+  # If relative path doesn't exist, try with BASHUNIT_WORKING_DIR
+  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+    script="$BASHUNIT_WORKING_DIR/$script"
+  fi
 
   if [[ ! -f "$script" ]]; then
     return

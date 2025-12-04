@@ -34,6 +34,10 @@ declare -r BASHUNIT_VERSION="0.28.0"
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export BASHUNIT_ROOT_DIR
 
+# Capture working directory at startup (before any test changes it)
+declare -r BASHUNIT_WORKING_DIR="$PWD"
+export BASHUNIT_WORKING_DIR
+
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
