@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- Build script now outputs to temp directory (`${TMPDIR}/bashunit/build`) by default instead of `bin/`
+- Add `--cleanup` flag to build script to remove build artifacts after completion
+
 ### Fixed
 - Custom assertions now display the correct test function name in failure messages
 - Data providers now work when `set_up_before_script` changes directory
