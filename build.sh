@@ -16,14 +16,16 @@ function build() {
 
 function build::verify() {
   local out=$1
+  local out_dir
+  out_dir="$(dirname "$out")"
 
   echo "Verifying build ⏱️"
 
-  "$out" tests \
+  BASHUNIT_BUILD_DIR="$out_dir" "$out" tests \
     --simple \
     --parallel \
-    --log-junit "bin/log-junit.xml" \
-    --report-html "bin/report.html" \
+    --log-junit "$out_dir/log-junit.xml" \
+    --report-html "$out_dir/report.html" \
     --stop-on-failure
 
   # shellcheck disable=SC2181
@@ -163,13 +165,17 @@ function build::generate_checksum() {
 ######### MAIN #########
 ########################
 
-DIR="bin"
+DIR="${TMPDIR:-/tmp}/bashunit/build"
 SHOULD_VERIFY_BUILD=false
+SHOULD_CLEANUP=false
 
 for arg in "$@"; do
   case $arg in
     -v|--verify)
       SHOULD_VERIFY_BUILD=true
+      ;;
+    -c|--cleanup)
+      SHOULD_CLEANUP=true
       ;;
     *)
       DIR=$arg
@@ -184,4 +190,9 @@ build "$OUT"
 
 if [[ $SHOULD_VERIFY_BUILD == true ]]; then
   build::verify "$OUT"
+fi
+
+if [[ $SHOULD_CLEANUP == true ]]; then
+  echo "🧹 Cleaning up build directory: $DIR"
+  rm -rf "$DIR"
 fi

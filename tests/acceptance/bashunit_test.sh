@@ -27,13 +27,15 @@ function test_bashunit_should_display_filtered_assert_docs() {
 }
 
 function test_built_binary_should_display_docs_without_file_access() {
-  if [[ ! -f "bin/bashunit" ]]; then
+  local built_bin="${BASHUNIT_BUILD_DIR:-bin}/bashunit"
+
+  if [[ ! -f "$built_bin" ]]; then
     skip "Built binary not found - run ./build.sh first"
     return
   fi
 
   local output
-  output=$(bin/bashunit doc assert_true 2>&1)
+  output=$("$built_bin" doc assert_true 2>&1)
 
   assert_successful_code
   assert_contains "assert_true" "$output"
@@ -41,7 +43,9 @@ function test_built_binary_should_display_docs_without_file_access() {
 }
 
 function test_built_binary_docs_should_match_dev_docs() {
-  if [[ ! -f "bin/bashunit" ]]; then
+  local built_bin="${BASHUNIT_BUILD_DIR:-bin}/bashunit"
+
+  if [[ ! -f "$built_bin" ]]; then
     skip "Built binary not found - run ./build.sh first"
     return
   fi
@@ -49,7 +53,7 @@ function test_built_binary_docs_should_match_dev_docs() {
   local dev_output built_output
 
   dev_output=$(./bashunit doc equals)
-  built_output=$(bin/bashunit doc equals)
+  built_output=$("$built_bin" doc equals)
 
   assert_same "$dev_output" "$built_output"
 }
