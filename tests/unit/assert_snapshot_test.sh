@@ -69,13 +69,13 @@ function test_assert_match_snapshot_with_placeholder() {
   assert_empty "$(assert_match_snapshot "Run at $(date -u '+%F %T UTC')" "$snapshot_path")"
 }
 
-function test_assert_match_snapshot_with_custom_placeholder() {
+function test_assert_snapshot_with_custom_placeholder() {
   if ! dependencies::has_perl; then
     bashunit::skip "perl not available" && return
   fi
 
   local snapshot_path
-  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_assert_match_snapshot_with_custom_placeholder.snapshot"
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_assert_snapshot_with_custom_placeholder.snapshot"
   echo 'Value __ANY__' > "$snapshot_path"
 
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
