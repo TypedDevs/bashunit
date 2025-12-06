@@ -2,7 +2,7 @@
 
 declare -a MOCKED_FUNCTIONS=()
 
-function unmock() {
+function bashunit::unmock() {
   local command=$1
 
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
@@ -22,7 +22,7 @@ function unmock() {
   done
 }
 
-function mock() {
+function bashunit::mock() {
   local command=$1
   shift
 
@@ -37,15 +37,15 @@ function mock() {
   MOCKED_FUNCTIONS+=("$command")
 }
 
-function spy() {
+function bashunit::spy() {
   local command=$1
   local variable
   variable="$(helper::normalize_variable_name "$command")"
 
   local times_file params_file
   local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
-  times_file=$(temp_file "${test_id}_${variable}_times")
-  params_file=$(temp_file "${test_id}_${variable}_params")
+  times_file=$(bashunit::temp_file "${test_id}_${variable}_times")
+  params_file=$(bashunit::temp_file "${test_id}_${variable}_params")
   echo 0 > "$times_file"
   : > "$params_file"
   export "${variable}_times_file"="$times_file"

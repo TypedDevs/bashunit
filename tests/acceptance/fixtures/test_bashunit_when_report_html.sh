@@ -9,9 +9,9 @@ function test_fail() {
 }
 
 function test_skipped() {
-  skip
+  bashunit::skip
 }
 
 function test_todo() {
-  todo
+  bashunit::todo
 }

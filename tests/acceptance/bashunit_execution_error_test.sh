@@ -34,8 +34,8 @@ function test_bashunit_when_a_execution_error() {
     format_summary_value "0 failed" ", 0 total"
   )
 
-  todo "Add snapshots with regex to assert this test (part of the error message is localized)"
-  todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"
+  bashunit::todo "Add snapshots with regex to assert this test (part of the error message is localized)"
+  bashunit::todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"
 
   local actual="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
   assert_contains "$fixture_start" "$actual"

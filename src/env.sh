@@ -132,7 +132,7 @@ function env::find_terminal_width() {
 }
 
 function env::print_verbose() {
-  internal_log "Printing verbose environment variables"
+  bashunit::internal_log "Printing verbose environment variables"
   local keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"
@@ -157,7 +157,7 @@ function env::print_verbose() {
   done
 
   for key in "${keys[@]}"; do
-    internal_log "$key=${!key}"
+    bashunit::internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done
 }
@@ -165,7 +165,7 @@ function env::print_verbose() {
 EXIT_CODE_STOP_ON_FAILURE=4
 # Use a unique directory per run to avoid conflicts when bashunit is invoked
 # recursively or multiple instances are executed in parallel.
-TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/$(random_str 8)"
+TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_OS:-Unknown}/$(bashunit::random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
@@ -178,5 +178,5 @@ BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
 mkdir -p "$BASHUNIT_TEMP_DIR" && chmod -R 777 "$BASHUNIT_TEMP_DIR"
 
 if env::is_dev_mode_enabled; then
-  internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
+  bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
 fi

@@ -34,10 +34,10 @@ function tear_down() {
 
 function test_install_downloads_the_latest_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -56,10 +56,10 @@ function test_install_downloads_the_latest_version() {
 
 function test_install_downloads_in_given_folder() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./deps/bashunit"
@@ -78,10 +78,10 @@ function test_install_downloads_in_given_folder() {
 
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -102,10 +102,10 @@ function test_install_downloads_the_given_version() {
 
 function test_install_downloads_the_given_version_without_dir() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   local installed_bashunit="./lib/bashunit"
@@ -128,17 +128,17 @@ function test_install_downloads_the_given_version_without_dir() {
 
 function test_install_downloads_the_non_stable_beta_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_GIT" -eq 0 ]]; then
-    skip "git not installed" && return
+    bashunit::skip "git not installed" && return
   fi
   if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
-  mock date <<< "2023-11-13"
-  mock tput <<< ""
+  bashunit::mock date <<< "2023-11-13"
+  bashunit::mock tput <<< ""
   local installed_bashunit="./deps/bashunit"
   local output
 

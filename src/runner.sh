@@ -25,7 +25,7 @@ function runner::load_test_files() {
     unset BASHUNIT_CURRENT_TEST_ID
     export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
     scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
-    internal_log "Loading file" "$test_file"
+    bashunit::internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
     # Update function cache after sourcing new test file
@@ -48,7 +48,7 @@ function runner::load_test_files() {
       fi
       runner::clean_set_up_and_tear_down_after_script
       if ! parallel::is_enabled; then
-        cleanup_script_temp_files
+        bashunit::cleanup_script_temp_files
       fi
       runner::restore_workdir
       continue
@@ -61,9 +61,9 @@ function runner::load_test_files() {
     runner::run_tear_down_after_script "$test_file"
     runner::clean_set_up_and_tear_down_after_script
     if ! parallel::is_enabled; then
-      cleanup_script_temp_files
+      bashunit::cleanup_script_temp_files
     fi
-    internal_log "Finished file" "$test_file"
+    bashunit::internal_log "Finished file" "$test_file"
     runner::restore_workdir
   done
 
@@ -77,7 +77,7 @@ function runner::load_test_files() {
     printf "\r  \r" # Clear the spinner output
     for script_id in "${scripts_ids[@]}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
-      cleanup_script_temp_files
+      bashunit::cleanup_script_temp_files
     done
   fi
 }
@@ -112,14 +112,14 @@ function runner::load_bench_files() {
         done
       fi
       runner::clean_set_up_and_tear_down_after_script
-      cleanup_script_temp_files
+      bashunit::cleanup_script_temp_files
       runner::restore_workdir
       continue
     fi
     runner::call_bench_functions "$bench_file" "$filter"
     runner::run_tear_down_after_script "$bench_file"
     runner::clean_set_up_and_tear_down_after_script
-    cleanup_script_temp_files
+    bashunit::cleanup_script_temp_files
     runner::restore_workdir
   done
 }
@@ -337,7 +337,7 @@ function runner::call_bench_functions() {
 function runner::render_running_file_header() {
   local script="$1"
 
-  internal_log "Running file" "$script"
+  bashunit::internal_log "Running file" "$script"
 
   if parallel::is_enabled; then
     return
@@ -363,7 +363,7 @@ function runner::run_test() {
   local fn_name="$1"
   shift
 
-  internal_log "Running test" "$fn_name" "$*"
+  bashunit::internal_log "Running test" "$fn_name" "$*"
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
@@ -489,7 +489,7 @@ function runner::run_test() {
     hook_message="$(helper::decode_base64 "$encoded_hook_message")"
   fi
 
-  state::set_test_title "$test_title"
+  bashunit::set_test_title "$test_title"
   local label
   label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
   state::reset_test_title
@@ -513,7 +513,7 @@ function runner::run_test() {
     console_results::print_error_test "$failure_function" "$error_message"
     reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
-    internal_log "Test error" "$failure_label" "$error_message"
+    bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
   fi
 
@@ -522,7 +522,7 @@ function runner::run_test() {
     reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
-    internal_log "Test failed" "$label"
+    bashunit::internal_log "Test failed" "$label"
 
     if env::is_stop_on_failure_enabled; then
       if parallel::is_enabled; then
@@ -538,7 +538,7 @@ function runner::run_test() {
     state::add_tests_snapshot
     console_results::print_snapshot_test "$label"
     reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
-    internal_log "Test snapshot" "$label"
+    bashunit::internal_log "Test snapshot" "$label"
     return
   fi
 
@@ -546,7 +546,7 @@ function runner::run_test() {
     state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
-    internal_log "Test incomplete" "$label"
+    bashunit::internal_log "Test incomplete" "$label"
     return
   fi
 
@@ -554,7 +554,7 @@ function runner::run_test() {
     state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
-    internal_log "Test skipped" "$label"
+    bashunit::internal_log "Test skipped" "$label"
     return
   fi
 
@@ -565,7 +565,7 @@ function runner::run_test() {
   fi
   state::add_tests_passed
   reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
-  internal_log "Test passed" "$label"
+  bashunit::internal_log "Test passed" "$label"
 }
 
 function runner::cleanup_on_exit() {
@@ -577,7 +577,7 @@ function runner::cleanup_on_exit() {
   runner::run_tear_down "$test_file"
   local teardown_status=$?
   runner::clear_mocks
-  cleanup_testcase_temp_files
+  bashunit::cleanup_testcase_temp_files
 
   if [[ $teardown_status -ne 0 ]]; then
     state::set_test_exit_code "$teardown_status"
@@ -638,7 +638,7 @@ function runner::parse_result_parallel() {
   mv "$unique_test_result_file" "${unique_test_result_file}.result"
   unique_test_result_file="${unique_test_result_file}.result"
 
-  internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
+  bashunit::internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   runner::parse_result_sync "$fn_name" "$execution_result"
 
@@ -670,7 +670,7 @@ function runner::parse_result_sync() {
     test_exit_code="${BASH_REMATCH[6]}"
   fi
 
-  internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
+  bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
   ((_ASSERTIONS_PASSED += assertions_passed)) || true
   ((_ASSERTIONS_FAILED += assertions_failed)) || true
@@ -679,7 +679,7 @@ function runner::parse_result_sync() {
   ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
   ((_TEST_EXIT_CODE += test_exit_code)) || true
 
-  internal_log "result_summary" \
+  bashunit::internal_log "result_summary" \
     "failed:$assertions_failed" \
     "passed:$assertions_passed" \
     "skipped:$assertions_skipped" \
@@ -769,7 +769,7 @@ function runner::execute_file_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  hook_output_file=$(temp_file "${hook_name}_output")
+  hook_output_file=$(bashunit::temp_file "${hook_name}_output")
 
   # Enable errexit and errtrace to catch any failing command in the hook.
   # The ERR trap saves the exit status to a global variable (since return value
@@ -812,19 +812,19 @@ function runner::execute_file_hook() {
 
 function runner::run_set_up() {
   local _test_file="${1-}"
-  internal_log "run_set_up"
+  bashunit::internal_log "run_set_up"
   runner::execute_test_hook 'set_up'
 }
 
 function runner::run_set_up_before_script() {
   local test_file="$1"
-  internal_log "run_set_up_before_script"
+  bashunit::internal_log "run_set_up_before_script"
   runner::execute_file_hook 'set_up_before_script' "$test_file" true
 }
 
 function runner::run_tear_down() {
   local _test_file="${1-}"
-  internal_log "run_tear_down"
+  bashunit::internal_log "run_tear_down"
   runner::execute_test_hook 'tear_down'
 }
 
@@ -836,7 +836,7 @@ function runner::execute_test_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  hook_output_file=$(temp_file "${hook_name}_output")
+  hook_output_file=$(bashunit::temp_file "${hook_name}_output")
 
   # Enable errexit and errtrace to catch any failing command in the hook.
   # The ERR trap saves the exit status to a global variable (since return value
@@ -901,18 +901,18 @@ function runner::record_test_hook_failure() {
 
 function runner::clear_mocks() {
   for i in "${!MOCKED_FUNCTIONS[@]}"; do
-    unmock "${MOCKED_FUNCTIONS[$i]}"
+    bashunit::unmock "${MOCKED_FUNCTIONS[$i]}"
   done
 }
 
 function runner::run_tear_down_after_script() {
   local test_file="$1"
-  internal_log "run_tear_down_after_script"
+  bashunit::internal_log "run_tear_down_after_script"
   runner::execute_file_hook 'tear_down_after_script' "$test_file"
 }
 
 function runner::clean_set_up_and_tear_down_after_script() {
-  internal_log "clean_set_up_and_tear_down_after_script"
+  bashunit::internal_log "clean_set_up_and_tear_down_after_script"
   helper::unset_if_exists 'set_up'
   helper::unset_if_exists 'tear_down'
   helper::unset_if_exists 'set_up_before_script'

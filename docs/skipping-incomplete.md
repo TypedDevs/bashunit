@@ -3,8 +3,8 @@
 There may be various scenarios where the "passed" and "failed" outcomes for a test are not sufficient.
 To address these situations, the following functions are available for your use.
 
-## skip
-> `skip "[reason]"`
+## bashunit::skip
+> `bashunit::skip "[reason]"`
 
 Not all tests can be run in every environment; when such situations arise, you can mark a test as skipped.
 
@@ -17,7 +17,7 @@ however, it will indicate that some tests were skipped in the final output.
 ```bash [Example]
 function test_skipped() {
   if [[ $OS != "GEOS" ]]; then
-    skip && return
+    bashunit::skip && return
   fi
 
   assert_empty "not reached"
@@ -25,7 +25,7 @@ function test_skipped() {
 
 function test_skipped_with_reason() {
   if [[ $OS != "GEOS" ]]; then
-    skip "Not running under Commodore" && return
+    bashunit::skip "Not running under Commodore" && return
   fi
 
   assert_empty "not reached"
@@ -42,8 +42,8 @@ Some tests skipped
 ```
 :::
 
-## todo
-> `todo "[pending]"`
+## bashunit::todo
+> `bashunit::todo "[pending]"`
 
 You may come up with a test that you'd like to implement later.
 Instead of leaving the test implementation empty —which would mark the test as complete— you can flag it as incomplete.
@@ -56,11 +56,11 @@ however, it will indicate that some tests were incomplete in the final output.
 ::: code-group
 ```bash [Example]
 function test_incomplete() {
-  todo
+  bashunit::todo
 }
 
 function test_incomplete_with_pending_details() {
-  todo "Detailed description of what needs to be done"
+  bashunit::todo "Detailed description of what needs to be done"
 }
 ```
 ```[Output]

@@ -3,22 +3,22 @@
 # shellcheck disable=SC1091
 
 function test_mock_ps_when_executing_a_script() {
-  mock ps cat ./tests/functional/fixtures/doubles_ps_output
+  bashunit::mock ps cat ./tests/functional/fixtures/doubles_ps_output
 
   assert_match_snapshot "$(source ./tests/functional/fixtures/doubles_script.sh)"
 }
 
 function test_mock_ps_when_executing_a_sourced_function() {
   source ./tests/functional/fixtures/doubles_function.sh
-  mock ps cat ./tests/functional/fixtures/doubles_ps_output
+  bashunit::mock ps cat ./tests/functional/fixtures/doubles_ps_output
 
   assert_match_snapshot "$(top_mem)"
 }
 
 function test_spy_commands_called_when_executing_a_script() {
-  spy ps
-  spy awk
-  spy head
+  bashunit::spy ps
+  bashunit::spy awk
+  bashunit::spy head
 
   ./tests/functional/fixtures/doubles_script.sh
 
@@ -29,9 +29,9 @@ function test_spy_commands_called_when_executing_a_script() {
 
 function test_spy_commands_called_when_executing_a_sourced_function() {
   source ./tests/functional/fixtures/doubles_function.sh
-  spy ps
-  spy awk
-  spy head
+  bashunit::spy ps
+  bashunit::spy awk
+  bashunit::spy head
 
   top_mem
 
@@ -41,9 +41,9 @@ function test_spy_commands_called_when_executing_a_sourced_function() {
 }
 
 function test_spy_commands_called_once_when_executing_a_script() {
-  spy ps
-  spy awk
-  spy head
+  bashunit::spy ps
+  bashunit::spy awk
+  bashunit::spy head
 
   ./tests/functional/fixtures/doubles_script.sh
 
@@ -54,9 +54,9 @@ function test_spy_commands_called_once_when_executing_a_script() {
 
 function test_spy_commands_called_once_when_executing_a_sourced_function() {
   source ./tests/functional/fixtures/doubles_function.sh
-  spy ps
-  spy awk
-  spy head
+  bashunit::spy ps
+  bashunit::spy awk
+  bashunit::spy head
 
   top_mem
 

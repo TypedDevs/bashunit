@@ -6,7 +6,7 @@ function test_with_provider() {
 }
 
 function provider_lines() {
-  data_set "alpha beta"
-  data_set "gamma"
-  data_set "delta epsilon zeta"
+  bashunit::data_set "alpha beta"
+  bashunit::data_set "gamma"
+  bashunit::data_set "delta epsilon zeta"
 }

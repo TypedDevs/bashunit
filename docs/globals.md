@@ -34,38 +34,38 @@ log "error" "hello" "world"
 ```
 Internal messages from bashunit include the `[INTERNAL]` prefix so you can easily spot them. You can enable them with `BASHUNIT_INTERNAL_LOG=true|false`.
 
-## current_dir
+## bashunit::current_dir
 
-> `current_dir`: Gets the current directory name.
+> `bashunit::current_dir`: Gets the current directory name.
 
-## current_filename
+## bashunit::current_filename
 
-> `current_filename`: Gets the current filename.
+> `bashunit::current_filename`: Gets the current filename.
 
-## caller_filename
+## bashunit::caller_filename
 
-> `caller_filename`: Gets the caller filename.
+> `bashunit::caller_filename`: Gets the caller filename.
 
 ## current_timestamp
 
 > `current_timestamp`: Gets the caller filename.
 
-## random_str
+## bashunit::random_str
 
-> `random_str <?length>`: generate a random string
+> `bashunit::random_str <?length>`: generate a random string
 
-## temp_file
+## bashunit::temp_file
 
-> `temp_file <?prefix>`: creates a temporal file
+> `bashunit::temp_file <?prefix>`: creates a temporal file
 
 The file is automatically deleted when bashunit completes.
 
-## temp_dir
+## bashunit::temp_dir
 
-> `temp_dir <?prefix>`: creates a temporal directory
+> `bashunit::temp_dir <?prefix>`: creates a temporal directory
 
 The directory is automatically deleted when bashunit completes.
 
-## is_command_available
+## bashunit::is_command_available
 
-> `is_command_available`: Checks if command is available
+> `bashunit::is_command_available`: Checks if command is available

@@ -51,7 +51,7 @@ function test_empty_value_from_data_provider() {
 }
 
 function provide_empty_value() {
-  data_set "" "two"
+  bashunit::data_set "" "two"
 }
 
 # @data_provider provide_long_value
@@ -61,7 +61,7 @@ function test_long_value_from_data_provider() {
 }
 
 function provide_long_value() {
-  data_set "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
+  bashunit::data_set "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz"
 }
 
 # @data_provider provide_value_with_tabs
@@ -72,7 +72,7 @@ function test_value_with_tabs_from_data_provider() {
 }
 
 function provide_value_with_tabs() {
-  data_set "value	with	tabs"
+  bashunit::data_set "value	with	tabs"
 }
 
 # @data_provider provide_value_with_newline
@@ -85,7 +85,7 @@ newline" "$value"
 }
 
 function provide_value_with_newline() {
-  data_set "value
+  bashunit::data_set "value
 with
 newline"
 }
@@ -100,7 +100,7 @@ function test_value_with_whitespace_from_data_provider() {
 }
 
 function provide_value_with_whitespace() {
-  data_set "first value" "second value"
+  bashunit::data_set "first value" "second value"
 }
 
 # @data_provider provide_value_with_trailing_whitespace
@@ -112,9 +112,9 @@ function test_trailing_whitespace_in_last_value_from_data_provider() {
 }
 
 function provide_value_with_trailing_whitespace() {
-  # Each data_set is passed the same value twice (expected, actual) to verify preservation
-  data_set "value " "value "
-  data_set "value    " "value    "
+  # Each bashunit::data_set is passed the same value twice (expected, actual) to verify preservation
+  bashunit::data_set "value " "value "
+  bashunit::data_set "value    " "value    "
 }
 
 # @data_provider provide_eval_gotchas
@@ -139,7 +139,7 @@ function test_single_arg_with_space_from_data_provider() {
 }
 
 function provide_single_arg_with_space() {
-  data_set "test     test"
+  bashunit::data_set "test     test"
 }
 
 # @data_provider provide_two_args_with_spaces
@@ -150,5 +150,5 @@ function test_two_args_with_spaces_from_data_provider() {
 }
 
 function provide_two_args_with_spaces() {
-  data_set "first test" "second test"
+  bashunit::data_set "first test" "second test"
 }

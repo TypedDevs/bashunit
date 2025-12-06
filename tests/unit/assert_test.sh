@@ -4,14 +4,14 @@
 # shellcheck disable=SC2329
 
 function test_successful_fail() {
-  true || fail "This cannot fail"
+  true || bashunit::fail "This cannot fail"
 }
 
 function test_unsuccessful_fail() {
   assert_same\
     "$(console_results::print_failure_message \
       "Unsuccessful fail" "Failure message")"\
-    "$(fail "Failure message")"
+    "$(bashunit::fail "Failure message")"
 }
 
 # @data_provider provider_successful_assert_true
@@ -21,9 +21,9 @@ function test_successful_assert_true() {
 }
 
 function provider_successful_assert_true() {
-  data_set true
-  data_set "true"
-  data_set 0
+  bashunit::data_set true
+  bashunit::data_set "true"
+  bashunit::data_set 0
 }
 
 function test_unsuccessful_assert_true() {
@@ -55,9 +55,9 @@ function test_successful_assert_false() {
 }
 
 function provider_successful_assert_false() {
-  data_set false
-  data_set "false"
-  data_set 1
+  bashunit::data_set false
+  bashunit::data_set "false"
+  bashunit::data_set 1
 }
 
 function test_unsuccessful_assert_false() {

@@ -34,7 +34,7 @@ function test_bashunit_init_custom_directory() {
 }
 
 function test_bashunit_init_updates_env() {
-  skip "flaky" && return
+  bashunit::skip "flaky" && return
 
   pushd "$TMP_DIR" >/dev/null
   echo "BASHUNIT_BOOTSTRAP=old/bootstrap.sh" > .env

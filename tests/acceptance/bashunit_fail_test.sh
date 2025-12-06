@@ -21,7 +21,7 @@ function test_bashunit_when_a_test_fail_verbose_output_option() {
 }
 
 function test_different_verbose_snapshots_matches() {
-  todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
+  bashunit::todo "The different snapshots for these tests should also be identical, option to choose snapshot name?"
 }
 
 function test_bashunit_when_a_test_fail_simple_output_env() {
@@ -53,5 +53,5 @@ function test_bashunit_with_a_test_fail_and_exit_immediately() {
 }
 
 function test_different_simple_snapshots_matches() {
-  todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
+  bashunit::todo "The different snapshots for these tests should also be identical, option to choose snapshot name?"
 }

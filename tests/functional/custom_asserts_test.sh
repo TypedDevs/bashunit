@@ -3,7 +3,7 @@ set -euo pipefail
 
 function set_up() {
   # shellcheck disable=SC1091
-  source "$(current_dir)/custom_asserts.sh"
+  source "$(bashunit::current_dir)/custom_asserts.sh"
 }
 
 function test_assert_foo_passed() {

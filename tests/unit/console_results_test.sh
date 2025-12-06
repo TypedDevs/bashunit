@@ -26,7 +26,7 @@ function set_state_value() {
   # Set the actual variable
   eval "$var_name='$value'"
   # Mock the getter function
-  mock "$getter_name" echo "$value"
+  bashunit::mock "$getter_name" echo "$value"
 }
 
 function mock_all_state_getters() {
@@ -335,11 +335,11 @@ function test_not_render_execution_time() {
 
 function test_render_execution_time_on_osx_without_perl() {
   if ! check_os::is_macos; then
-    skip && return
+    bashunit::skip && return
   fi
 
   mock_macos
-  mock dependencies::has_perl mock_false
+  bashunit::mock dependencies::has_perl mock_false
 
   _START_TIME=1727771758.0664479733
 
@@ -353,18 +353,18 @@ function test_render_execution_time_on_osx_without_perl() {
 
 function test_render_execution_time_on_osx_with_perl() {
   if ! check_os::is_macos; then
-    skip && return
+    bashunit::skip && return
   fi
 
   local render_result
   mock_macos
-  mock dependencies::has_adjtimex mock_false
-  mock dependencies::has_perl mock_true
+  bashunit::mock dependencies::has_adjtimex mock_false
+  bashunit::mock dependencies::has_perl mock_true
   _START_TIME="1726393394574382186"
-  mock perl <<< "1726393394574372186"
-  mock uname <<< "Darwin"
+  bashunit::mock perl <<< "1726393394574372186"
+  bashunit::mock uname <<< "Darwin"
   render_result=$(
-  mock perl <<< "1726393394574372186";
+  bashunit::mock perl <<< "1726393394574372186";
 
     console_results::render_result
   )

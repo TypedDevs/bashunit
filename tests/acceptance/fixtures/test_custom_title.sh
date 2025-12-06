@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 function test_custom_title() {
-  set_test_title "🔥 handles invalid input with 💣"
+  bashunit::set_test_title "🔥 handles invalid input with 💣"
   assert_true true
 }
 

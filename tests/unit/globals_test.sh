@@ -5,8 +5,8 @@
 set -euo pipefail
 
 function set_up_before_script() {
-  SCRIPT_TEMP_FILE=$(temp_file "custom-prefix")
-  SCRIPT_TEMP_DIR=$(temp_dir "custom-prefix")
+  SCRIPT_TEMP_FILE=$(bashunit::temp_file "custom-prefix")
+  SCRIPT_TEMP_DIR=$(bashunit::temp_dir "custom-prefix")
 }
 
 function tear_down_after_script() {
@@ -14,7 +14,7 @@ function tear_down_after_script() {
 }
 
 function set_up() {
-  BASHUNIT_DEV_LOG=$(temp_file)
+  BASHUNIT_DEV_LOG=$(bashunit::temp_file)
   export BASHUNIT_DEV_LOG
 }
 
@@ -23,109 +23,109 @@ function tear_down() {
 }
 
 function test_globals_current_dir() {
-  assert_same "tests/unit" "$(current_dir)"
+  assert_same "tests/unit" "$(bashunit::current_dir)"
 }
 
 function test_globals_current_filename() {
-  assert_same "globals_test.sh" "$(current_filename)"
+  assert_same "globals_test.sh" "$(bashunit::current_filename)"
 }
 
 function test_globals_caller_filename() {
-  assert_same "./src" "$(caller_filename)"
+  assert_same "./src" "$(bashunit::caller_filename)"
 }
 
 function test_globals_caller_line() {
-  assert_matches "[0-9]*" "$(caller_line)"
+  assert_matches "[0-9]*" "$(bashunit::caller_line)"
 }
 
 function test_globals_current_timestamp() {
   assert_matches \
     "^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}$" \
-    "$(current_timestamp)"
+    "$(bashunit::current_timestamp)"
 }
 
 function test_globals_is_command_available() {
   function existing_fn(){
     return 0
   }
-  assert_successful_code "$(is_command_available existing_fn)"
+  assert_successful_code "$(bashunit::is_command_available existing_fn)"
 }
 
 function test_globals_is_command_not_available() {
-  assert_general_error "$(is_command_available non_existing_fn)"
+  assert_general_error "$(bashunit::is_command_available non_existing_fn)"
 }
 
 function test_globals_random_str_default_len() {
-  assert_matches "^[A-Za-z0-9]{6}$" "$(random_str)"
+  assert_matches "^[A-Za-z0-9]{6}$" "$(bashunit::random_str)"
 }
 
 function test_globals_random_str_custom_len() {
-  assert_matches "^[A-Za-z0-9]{3}$" "$(random_str 3)"
+  assert_matches "^[A-Za-z0-9]{3}$" "$(bashunit::random_str 3)"
 }
 
 function test_globals_temp_file_in_test_function() {
   # shellcheck disable=SC2155
-  local temp_file=$(temp_file "custom-prefix")
+  local temp_file=$(bashunit::temp_file "custom-prefix")
   assert_file_exists "$temp_file"
-  cleanup_testcase_temp_files
+  bashunit::cleanup_testcase_temp_files
   assert_file_not_exists "$temp_file"
 }
 
 function test_globals_temp_dir_in_test_function() {
   # shellcheck disable=SC2155
-  local temp_dir=$(temp_dir "custom-prefix")
+  local temp_dir=$(bashunit::temp_dir "custom-prefix")
   assert_directory_exists "$temp_dir"
-  cleanup_testcase_temp_files
+  bashunit::cleanup_testcase_temp_files
   assert_directory_not_exists "$temp_dir"
 }
 
 function test_globals_temp_dir_and_file_in_script() {
   assert_directory_exists "$SCRIPT_TEMP_DIR"
   assert_file_exists "$SCRIPT_TEMP_FILE"
-  cleanup_script_temp_files
+  bashunit::cleanup_script_temp_files
   assert_directory_not_exists "$SCRIPT_TEMP_DIR"
   assert_file_not_exists "$SCRIPT_TEMP_FILE"
 }
 
 function test_globals_log_level_error() {
-  log "error" "hello," "error"
+  bashunit::log "error" "hello," "error"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[ERROR]: hello, error"
 }
 
 function test_globals_log_level_warning() {
-  log "warning" "hello," "warning"
+  bashunit::log "warning" "hello," "warning"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[WARNING]: hello, warning"
 }
 
 function test_globals_log_level_debug() {
-  log "debug" "hello," "debug"
+  bashunit::log "debug" "hello," "debug"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[DEBUG]: hello, debug"
 }
 
 function test_globals_log_level_critical() {
-  log "critical" "hello," "critical"
+  bashunit::log "critical" "hello," "critical"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[CRITICAL]: hello, critical"
 }
 
 function test_globals_log_level_info() {
-  log "info" "hello," "info"
+  bashunit::log "info" "hello," "info"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
 
 function test_globals_log_level_default() {
-  log "hello," "info"
+  bashunit::log "hello," "info"
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[INFO]: hello, info"
 }
 
 function test_internal_log_prefix() {
   export BASHUNIT_INTERNAL_LOG=true
-  internal_log "info" "some" "message"
+  bashunit::internal_log "info" "some" "message"
   export BASHUNIT_INTERNAL_LOG=false
 
   assert_file_contains "$BASHUNIT_DEV_LOG" "[INTERNAL]: info some message"

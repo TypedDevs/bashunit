@@ -2,7 +2,7 @@
 # shellcheck disable=SC2155
 
 function test_successful_assert_directory_exists() {
-  local a_directory="$(current_dir)"
+  local a_directory="$(bashunit::current_dir)"
 
   assert_empty "$(assert_directory_exists "$a_directory")"
 }
@@ -17,7 +17,7 @@ function test_unsuccessful_assert_directory_exists() {
 }
 
 function test_assert_directory_exists_should_not_work_with_files() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -32,7 +32,7 @@ function test_successful_assert_directory_not_exists() {
 }
 
 function test_unsuccessful_assert_directory_not_exists() {
-  local a_directory="$(current_dir)"
+  local a_directory="$(bashunit::current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -41,7 +41,7 @@ function test_unsuccessful_assert_directory_not_exists() {
 }
 
 function test_successful_assert_is_directory() {
-  local a_directory="$(current_dir)"
+  local a_directory="$(bashunit::current_dir)"
 
   assert_empty "$(assert_is_directory "$a_directory")"
 }
@@ -56,7 +56,7 @@ function test_unsuccessful_assert_is_directory() {
 }
 
 function test_unsuccessful_assert_is_directory_when_a_file_is_given() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -71,7 +71,7 @@ function test_successful_assert_is_directory_empty() {
 }
 
 function test_unsuccessful_assert_is_directory_empty() {
-  local a_directory="$(current_dir)"
+  local a_directory="$(bashunit::current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -80,7 +80,7 @@ function test_unsuccessful_assert_is_directory_empty() {
 }
 
 function test_successful_assert_is_directory_not_empty() {
-  local a_directory="$(current_dir)"
+  local a_directory="$(bashunit::current_dir)"
 
   assert_empty "$(assert_is_directory_not_empty "$a_directory")"
 }
@@ -101,7 +101,7 @@ function test_successful_assert_is_directory_readable() {
 }
 
 function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -116,7 +116,7 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 
@@ -136,7 +136,7 @@ function test_unsuccessful_assert_is_directory_readable_without_read_permission(
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 
@@ -156,7 +156,7 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 
@@ -172,7 +172,7 @@ function test_successful_assert_is_directory_not_readable_without_execution_perm
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 
@@ -203,7 +203,7 @@ function test_unsuccessful_assert_is_directory_writable() {
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 
@@ -217,7 +217,7 @@ function test_unsuccessful_assert_is_directory_writable() {
 }
 
 function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -232,7 +232,7 @@ function test_successful_assert_is_directory_not_writable() {
   fi
 
   if [[ $EUID -eq 0 ]]; then
-    skip "running as root"
+    bashunit::skip "running as root"
     return
   fi
 

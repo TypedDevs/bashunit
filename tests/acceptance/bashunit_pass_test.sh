@@ -21,7 +21,7 @@ function test_bashunit_when_a_test_passes_verbose_output_option() {
 }
 
 function test_different_verbose_snapshots_matches() {
-  todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
+  bashunit::todo "The different snapshots for these tests should also be identical, option to choose snapshot name?"
 }
 
 function test_bashunit_when_a_test_passes_simple_output_env() {
@@ -39,5 +39,5 @@ function test_bashunit_when_a_test_passes_simple_output_option() {
 }
 
 function test_different_simple_snapshots_matches() {
-  todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
+  bashunit::todo "The different snapshots for these tests should also be identical, option to choose snapshot name?"
 }

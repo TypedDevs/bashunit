@@ -7,7 +7,7 @@ function set_up() {
 }
 
 function test_successful_assert_file_exists() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_empty "$(assert_file_exists "$a_file")"
 }
@@ -21,7 +21,7 @@ function test_unsuccessful_assert_file_exists() {
 }
 
 function test_assert_file_exists_should_not_work_with_folders() {
-  local a_dir="$(current_dir)"
+  local a_dir="$(bashunit::current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test \
@@ -36,7 +36,7 @@ function test_successful_assert_file_not_exists() {
 }
 
 function test_unsuccessful_assert_file_not_exists() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -45,7 +45,7 @@ function test_unsuccessful_assert_file_not_exists() {
 }
 
 function test_successful_assert_is_file() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_empty "$(assert_is_file "$a_file")"
 }
@@ -59,7 +59,7 @@ function test_unsuccessful_assert_is_file() {
 }
 
 function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
-  local a_folder="$(current_dir)"
+  local a_folder="$(bashunit::current_dir)"
 
   assert_same\
     "$(console_results::print_failed_test\
@@ -77,7 +77,7 @@ function test_successful_assert_is_file_empty() {
 }
 
 function test_unsuccessful_assert_is_file_empty() {
-  local a_file="$(current_dir)/$(current_filename)"
+  local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
   assert_same\
     "$(console_results::print_failed_test\

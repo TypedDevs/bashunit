@@ -6,7 +6,7 @@ function test_bashunit_should_display_version() {
   local fixture
   fixture=$(printf "\e[1m\e[32mbashunit\e[0m - %s" "$BASHUNIT_VERSION")
 
-  todo "Add snapshots with regex to assert this test (part of the output changes every version)"
+  bashunit::todo "Add snapshots with regex to assert this test (part of the output changes every version)"
   assert_contains "$fixture" "$(./bashunit --version)"
   assert_successful_code "$(./bashunit --version)"
 }
@@ -30,7 +30,7 @@ function test_built_binary_should_display_docs_without_file_access() {
   local built_bin="${BASHUNIT_BUILD_DIR:-bin}/bashunit"
 
   if [[ ! -f "$built_bin" ]]; then
-    skip "Built binary not found - run ./build.sh first"
+    bashunit::skip "Built binary not found - run ./build.sh first"
     return
   fi
 
@@ -46,7 +46,7 @@ function test_built_binary_docs_should_match_dev_docs() {
   local built_bin="${BASHUNIT_BUILD_DIR:-bin}/bashunit"
 
   if [[ ! -f "$built_bin" ]]; then
-    skip "Built binary not found - run ./build.sh first"
+    bashunit::skip "Built binary not found - run ./build.sh first"
     return
   fi
 
