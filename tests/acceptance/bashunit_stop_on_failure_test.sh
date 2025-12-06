@@ -21,7 +21,7 @@ function test_bashunit_when_stop_on_failure_env() {
 }
 
 function test_different_snapshots_matches() {
-  bashunit::todo "The different snapshots for these tests should also be identical to each other, option to choose snapshot name?"
+  bashunit::todo "The different snapshots for these tests should also be identical, option to choose snapshot name?"
 }
 
 function test_bashunit_when_stop_on_failure_env_simple_output() {
