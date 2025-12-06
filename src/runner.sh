@@ -30,7 +30,10 @@ function runner::load_test_files() {
     source "$test_file"
     # Update function cache after sourcing new test file
     CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
-    if ! runner::run_set_up_before_script "$test_file"; then
+    # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
+    runner::run_set_up_before_script "$test_file"
+    local setup_before_script_status=$?
+    if [[ $setup_before_script_status -ne 0 ]]; then
       # Count the test functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
@@ -92,7 +95,10 @@ function runner::load_bench_files() {
     source "$bench_file"
     # Update function cache after sourcing new bench file
     CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
-    if ! runner::run_set_up_before_script "$bench_file"; then
+    # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
+    runner::run_set_up_before_script "$bench_file"
+    local setup_before_script_status=$?
+    if [[ $setup_before_script_status -ne 0 ]]; then
       # Count the bench functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
@@ -765,9 +771,24 @@ function runner::execute_file_hook() {
   local hook_output_file
   hook_output_file=$(temp_file "${hook_name}_output")
 
+  # Enable errexit and errtrace to catch any failing command in the hook.
+  # The ERR trap saves the exit status to a global variable (since return value
+  # from trap doesn't propagate properly), disables errexit (to prevent caller
+  # from exiting) and returns from the hook function, preventing subsequent
+  # commands from executing.
+  # Variables set before the failure are preserved since we don't use a subshell.
+  _BASHUNIT_HOOK_ERR_STATUS=0
+  set -eE
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+
   {
     "$hook_name"
-  } >"$hook_output_file" 2>&1 || status=$?
+  } >"$hook_output_file" 2>&1
+
+  # Capture exit status from global variable and clean up
+  status=$_BASHUNIT_HOOK_ERR_STATUS
+  trap - ERR
+  set +eE
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""

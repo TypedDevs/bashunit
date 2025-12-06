@@ -10,6 +10,7 @@
 - Custom assertions now display the correct test function name in failure messages
 - Data providers now work when `set_up_before_script` changes directory
 - Subsequent test files now run when `set_up_before_script` changes directory
+- Catch intermediate failing commands in `set_up_before_script` and `tear_down_after_script`
 
 ## [0.28.0](https://github.com/TypedDevs/bashunit/compare/0.27.0...0.28.0) - 2025-12-01
 
