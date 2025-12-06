@@ -15,7 +15,7 @@ function set_up() {
 }
 
 function test_successful_mock() {
-  mock ps<<EOF
+  bashunit::mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
@@ -26,12 +26,12 @@ EOF
 }
 
 function test_successful_override_ps_with_echo_with_mock() {
-  mock ps echo hello world
+  bashunit::mock ps echo hello world
   assert_same "hello world" "$(ps)"
 }
 
 function test_successful_spy() {
-  spy ps
+  bashunit::spy ps
   ps a_random_parameter_1 a_random_parameter_2
 
   assert_have_been_called_with ps "a_random_parameter_1 a_random_parameter_2"
@@ -39,7 +39,7 @@ function test_successful_spy() {
 }
 
 function test_unsuccessful_spy_called() {
-  spy ps
+  bashunit::spy ps
 
   assert_same\
     "$(console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")"\
@@ -47,7 +47,7 @@ function test_unsuccessful_spy_called() {
 }
 
 function test_successful_spy_called_times() {
-  spy ps
+  bashunit::spy ps
 
   ps
   ps
@@ -57,7 +57,7 @@ function test_successful_spy_called_times() {
 
 
 function test_unsuccessful_spy_called_times() {
-  spy ps
+  bashunit::spy ps
 
   ps
   ps
@@ -72,7 +72,7 @@ function test_unsuccessful_spy_called_times() {
 function test_successful_spy_with_source_function() {
     # shellcheck source=/dev/null
     source ./fixtures/fake_function_to_spy.sh
-    spy function_to_be_spied_on
+    bashunit::spy function_to_be_spied_on
 
     function_to_be_spied_on
 
@@ -82,7 +82,7 @@ function test_successful_spy_with_source_function() {
 function test_unsuccessful_spy_with_source_function_have_been_called() {
   # shellcheck source=/dev/null
   source ./fixtures/fake_function_to_spy.sh
-  spy function_to_be_spied_on
+  bashunit::spy function_to_be_spied_on
 
   function_to_be_spied_on
   function_to_be_spied_on
@@ -100,7 +100,7 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
 function test_successful_spy_called_times_with_source() {
   # shellcheck source=/dev/null
   source ./fixtures/fake_function_to_spy.sh
-  spy function_to_be_spied_on
+  bashunit::spy function_to_be_spied_on
 
   function_to_be_spied_on
   function_to_be_spied_on
@@ -109,7 +109,7 @@ function test_successful_spy_called_times_with_source() {
 }
 
 function test_spy_called_in_subshell() {
-  spy spy_called_in_subshell
+  bashunit::spy spy_called_in_subshell
 
   function run() {
     spy_called_in_subshell "$1"
@@ -127,7 +127,7 @@ function test_spy_called_in_subshell() {
 }
 
 function test_mock_called_in_subshell() {
-  mock date echo "2024-05-01"
+  bashunit::mock date echo "2024-05-01"
 
   function run() {
     date
@@ -140,7 +140,7 @@ function test_mock_called_in_subshell() {
 }
 
 function test_spy_called_with_different_arguments() {
-  spy ps
+  bashunit::spy ps
 
   ps first_a first_b
   ps second
@@ -150,13 +150,13 @@ function test_spy_called_with_different_arguments() {
 }
 
 function test_spy_successful_not_called() {
-  spy ps
+  bashunit::spy ps
 
   assert_not_called ps
 }
 
 function test_spy_unsuccessful_not_called() {
-  spy ps
+  bashunit::spy ps
 
   ps
 
@@ -168,7 +168,7 @@ function test_spy_unsuccessful_not_called() {
 }
 
 function test_spy_with_pipe_in_arguments() {
-  spy grep
+  bashunit::spy grep
 
   grep -E 'foo|bar'
 

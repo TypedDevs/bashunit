@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function skip() {
+function bashunit::skip() {
   local reason=${1-}
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
@@ -10,7 +10,7 @@ function skip() {
   state::add_assertions_skipped
 }
 
-function todo() {
+function bashunit::todo() {
   local pending=${1-}
   local label
   label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"

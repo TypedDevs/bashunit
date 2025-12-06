@@ -6,7 +6,7 @@ function assert::mark_failed() {
   state::mark_assertion_failed_in_test
 }
 
-function fail() {
+function bashunit::fail() {
   (( _ASSERTION_FAILED_IN_TEST )) && return 0
 
   local message="${1:-${FUNCNAME[1]}}"
@@ -27,15 +27,15 @@ function assert_true() {
   # Check for expected literal values first
   case "$actual" in
     "true"|"0") state::add_assertions_passed; return ;;
-    "false"|"1") handle_bool_assertion_failure "true or 0" "$actual"; return ;;
+    "false"|"1") bashunit::handle_bool_assertion_failure "true or 0" "$actual"; return ;;
   esac
 
   # Run command or eval and check the exit code
-  run_command_or_eval "$actual"
+  bashunit::run_command_or_eval "$actual"
   local exit_code=$?
 
   if [[ $exit_code -ne 0 ]]; then
-    handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
+    bashunit::handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
   else
     state::add_assertions_passed
   fi
@@ -49,21 +49,21 @@ function assert_false() {
   # Check for expected literal values first
   case "$actual" in
     "false"|"1") state::add_assertions_passed; return ;;
-    "true"|"0") handle_bool_assertion_failure "false or 1" "$actual"; return ;;
+    "true"|"0") bashunit::handle_bool_assertion_failure "false or 1" "$actual"; return ;;
   esac
 
   # Run command or eval and check the exit code
-  run_command_or_eval "$actual"
+  bashunit::run_command_or_eval "$actual"
   local exit_code=$?
 
   if [[ $exit_code -eq 0 ]]; then
-    handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
+    bashunit::handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
   else
     state::add_assertions_passed
   fi
 }
 
-function run_command_or_eval() {
+function bashunit::run_command_or_eval() {
   local cmd="$1"
 
   if [[ "$cmd" =~ ^eval ]]; then
@@ -76,7 +76,7 @@ function run_command_or_eval() {
   return $?
 }
 
-function handle_bool_assertion_failure() {
+function bashunit::handle_bool_assertion_failure() {
   local expected="$1"
   local got="$2"
   local test_fn

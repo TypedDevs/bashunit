@@ -14,52 +14,52 @@ function mock_true() {
 }
 
 function mock_unknown_linux_os() {
-  mock check_os::is_linux mock_true
+  bashunit::mock check_os::is_linux mock_true
 
-  mock check_os::is_ubuntu mock_false
-  mock check_os::is_alpine mock_false
-  mock check_os::is_busybox mock_false
-  mock check_os::is_macos mock_false
-  mock check_os::is_windows mock_false
+  bashunit::mock check_os::is_ubuntu mock_false
+  bashunit::mock check_os::is_alpine mock_false
+  bashunit::mock check_os::is_busybox mock_false
+  bashunit::mock check_os::is_macos mock_false
+  bashunit::mock check_os::is_windows mock_false
 }
 
 
 function mock_ubuntu_os() {
-  mock check_os::is_linux mock_true
-  mock check_os::is_ubuntu mock_true
+  bashunit::mock check_os::is_linux mock_true
+  bashunit::mock check_os::is_ubuntu mock_true
 
-  mock check_os::is_alpine mock_false
-  mock check_os::is_busybox mock_false
-  mock check_os::is_macos mock_false
-  mock check_os::is_windows mock_false
+  bashunit::mock check_os::is_alpine mock_false
+  bashunit::mock check_os::is_busybox mock_false
+  bashunit::mock check_os::is_macos mock_false
+  bashunit::mock check_os::is_windows mock_false
 }
 
 function mock_alpine_os() {
-  mock check_os::is_linux mock_true
-  mock check_os::is_alpine mock_true
-  mock check_os::is_busybox mock_true
+  bashunit::mock check_os::is_linux mock_true
+  bashunit::mock check_os::is_alpine mock_true
+  bashunit::mock check_os::is_busybox mock_true
 
-  mock check_os::is_ubuntu mock_false
-  mock check_os::is_macos mock_false
-  mock check_os::is_windows mock_false
+  bashunit::mock check_os::is_ubuntu mock_false
+  bashunit::mock check_os::is_macos mock_false
+  bashunit::mock check_os::is_windows mock_false
 }
 
 function mock_macos() {
-  mock check_os::is_macos mock_true
+  bashunit::mock check_os::is_macos mock_true
 
-  mock check_os::is_linux mock_false
-  mock check_os::is_alpine mock_false
-  mock check_os::is_ubuntu mock_false
-  mock check_os::is_busybox mock_false
-  mock check_os::is_windows mock_false
+  bashunit::mock check_os::is_linux mock_false
+  bashunit::mock check_os::is_alpine mock_false
+  bashunit::mock check_os::is_ubuntu mock_false
+  bashunit::mock check_os::is_busybox mock_false
+  bashunit::mock check_os::is_windows mock_false
 }
 
 function mock_windows_os() {
-  mock check_os::is_windows mock_true
+  bashunit::mock check_os::is_windows mock_true
 
-  mock check_os::is_linux mock_false
-  mock check_os::is_alpine mock_false
-  mock check_os::is_ubuntu mock_false
-  mock check_os::is_busybox mock_false
-  mock check_os::is_macos mock_false
+  bashunit::mock check_os::is_linux mock_false
+  bashunit::mock check_os::is_alpine mock_false
+  bashunit::mock check_os::is_ubuntu mock_false
+  bashunit::mock check_os::is_busybox mock_false
+  bashunit::mock check_os::is_macos mock_false
 }

@@ -7,34 +7,34 @@ Temporary files created by spies are isolated per test run, so they work reliabl
 Spies record their calls in temporary files scoped to each test run.
 This avoids clashes between processes and allows spies to work reliably when tests execute in parallel using `BASHUNIT_PARALLEL_RUN`.
 
-## mock
-> `mock "function" "body"`
+## bashunit::mock
+> `bashunit::mock "function" "body"`
 
 Allows you to override the behavior of a callable.
 
 ::: code-group
 ```bash [Example]
 function test_example() {
-  mock ps echo hello world
+  bashunit::mock ps echo hello world
 
   assert_same "hello world" "$(ps)"
 }
 ```
 :::
 
-> `mock "function" <<< "output"`
+> `bashunit::mock "function" <<< "output"`
 
 Allows you to override the output of a callable. When the mocked output fits on
 a single line you can use a here-string:
 
 ```bash
-mock uname <<< "Linux"
+bashunit::mock uname <<< "Linux"
 ```
 
 For multi-line output rely on a here-document:
 
 ```bash
-mock ps <<EOF
+bashunit::mock ps <<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
@@ -48,7 +48,7 @@ function test_example() {
     ps a | grep bash
   }
 
-  mock ps<<EOF
+  bashunit::mock ps<<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
@@ -64,7 +64,7 @@ Mocked functions are also available inside subshells:
 ::: code-group
 ```bash [Example]
 function test_example() {
-  mock date echo "2024-05-01"
+  bashunit::mock date echo "2024-05-01"
 
   function run() {
     date
@@ -91,7 +91,7 @@ mockTool() {
 
 test_example() {
   local output
-  mock tool mockTool
+  bashunit::mock tool mockTool
 
   output="$(tool --version)"
   assert_successful_code
@@ -105,15 +105,15 @@ test_example() {
 ```
 :::
 
-## spy
-> `spy "function"`
+## bashunit::spy
+> `bashunit::spy "function"`
 
 Overrides the original behavior of a callable to allow you to make various assertions about its calls.
 
 ::: code-group
 ```bash [Example]
 function test_example() {
-  spy ps
+  bashunit::spy ps
 
   ps foo bar
 
@@ -131,7 +131,7 @@ Reports an error if `spy` is not called.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  spy ps
+  bashunit::spy ps
 
   ps
 
@@ -139,7 +139,7 @@ function test_success() {
 }
 
 function test_failure() {
-  spy ps
+  bashunit::spy ps
 
   assert_have_been_called ps
 }
@@ -154,7 +154,7 @@ Reports an error if `spy` is not called with `expected`. When `call_index` is pr
 ::: code-group
 ```bash [Example]
 function test_success() {
-  spy ps
+  bashunit::spy ps
 
   ps foo
   ps bar
@@ -164,7 +164,7 @@ function test_success() {
 }
 
 function test_failure() {
-  spy ps
+  bashunit::spy ps
 
   ps bar
 
@@ -182,7 +182,7 @@ Reports an error if `spy` is not called exactly `expected` times.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  spy ps
+  bashunit::spy ps
 
   ps
   ps
@@ -191,7 +191,7 @@ function test_success() {
 }
 
 function test_failure() {
-  spy ps
+  bashunit::spy ps
 
   ps
   ps
@@ -209,13 +209,13 @@ Reports an error if `spy` has been executed at least once.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  spy ps
+  bashunit::spy ps
 
   assert_not_called ps
 }
 
 function test_failure() {
-  spy ps
+  bashunit::spy ps
 
   ps
 

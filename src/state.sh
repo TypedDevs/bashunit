@@ -283,7 +283,7 @@ function state::print_line() {
     incomplete)       char="${_COLOR_INCOMPLETE}I${_COLOR_DEFAULT}" ;;
     snapshot)         char="${_COLOR_SNAPSHOT}N${_COLOR_DEFAULT}" ;;
     error)            char="${_COLOR_FAILED}E${_COLOR_DEFAULT}" ;;
-    *)                char="?" && log "warning" "unknown test type '$type'" ;;
+    *)                char="?" && bashunit::log "warning" "unknown test type '$type'" ;;
   esac
 
   if parallel::is_enabled; then

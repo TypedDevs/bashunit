@@ -98,7 +98,7 @@ function benchmark::print_results() {
   fi
 
   printf "\nBenchmark Results (avg ms)\n"
-  print_line 80 "="
+  bashunit::print_line 80 "="
   printf "\n"
 
   local has_threshold=false

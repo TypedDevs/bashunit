@@ -10,11 +10,11 @@ function test_assert_failing() {
 }
 
 function test_assert_todo_and_skip() {
-  todo "foo"
-  skip "bar"
+  bashunit::todo "foo"
+  bashunit::skip "bar"
 }
 
 function test_assert_skip_and_todo() {
-  skip "baz"
-  todo "yei"
+  bashunit::skip "baz"
+  bashunit::todo "yei"
 }

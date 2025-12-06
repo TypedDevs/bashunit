@@ -40,7 +40,7 @@ function tear_down() {
 }
 
 function test_do_not_upgrade_when_latest() {
-  skip "failing when having a new release" && return
+  bashunit::skip "failing when having a new release" && return
 
   local output
   output="$($TMP_BIN upgrade)"
@@ -51,13 +51,13 @@ function test_do_not_upgrade_when_latest() {
 
 function test_upgrade_when_a_new_version_found() {
   if [[ "$ACTIVE_INTERNET" == false ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_GIT" == false ]]; then
-    skip "git not installed" && return
+    bashunit::skip "git not installed" && return
   fi
   if [[ "$HAS_DOWNLOADER" == false ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   sed -i -e \
@@ -77,16 +77,16 @@ function test_upgrade_when_a_new_version_found() {
 }
 
 function test_do_not_update_on_consecutive_calls() {
-  skip "after upgrade, binary uses old CLI syntax" && return
+  bashunit::skip "after upgrade, binary uses old CLI syntax" && return
 
   if [[ "$ACTIVE_INTERNET" == false ]]; then
-    skip "no internet connection" && return
+    bashunit::skip "no internet connection" && return
   fi
   if [[ "$HAS_GIT" == false ]]; then
-    skip "git not installed" && return
+    bashunit::skip "git not installed" && return
   fi
   if [[ "$HAS_DOWNLOADER" == false ]]; then
-    skip "curl or wget not installed" && return
+    bashunit::skip "curl or wget not installed" && return
   fi
 
   sed -i -e \

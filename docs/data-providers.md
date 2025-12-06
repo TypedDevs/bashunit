@@ -23,7 +23,7 @@ function test_my_test_case() {
 
 ## Implementing a data provider
 
-A data provider function contains one or more `data_set` lines. Each `data_set` results in a separate run of the test function with the individual `data_set` arguments being passed to it as positional arguments (`$1`, `$2`, ...).
+A data provider function contains one or more `bashunit::data_set` lines. Each `bashunit::data_set` results in a separate run of the test function with the individual `bashunit::data_set` arguments being passed to it as positional arguments (`$1`, `$2`, ...).
 
 Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
 
@@ -32,10 +32,10 @@ A data provider function is implemented as follows:
 ::: code-group
 ```bash [Example]
 function provider_function() {
-  data_set "one"
-  data_set "two" "three"
-  data_set "value containing spaces"
-  data_set "" "first value is empty"
+  bashunit::data_set "one"
+  bashunit::data_set "two" "three"
+  bashunit::data_set "value containing spaces"
+  bashunit::data_set "" "first value is empty"
 }
 
 ```
@@ -43,7 +43,7 @@ function provider_function() {
 
 > **Note**: The previous variant of using `echo` to define data within a data provider
 > provider is still supported but deprecated, as it does not support empty values or
-> values containing spaces. Prefer using the `data_set` function going forward.
+> values containing spaces. Prefer using the `bashunit::data_set` function going forward.
 
 ## Interpolating arguments in test names
 
@@ -59,8 +59,8 @@ function test_returns_fizz_when_multiple_of_::1::_like_::2::_given() {
 }
 
 function fizz_numbers() {
-  data_set 3 4
-  data_set 3 6
+  bashunit::data_set 3 4
+  bashunit::data_set 3 6
 }
 ```
 ```[Output]
@@ -86,7 +86,7 @@ function test_directories_exists() {
 }
 
 function provider_directories() {
-  data_set "/usr" "/etc" "/var"
+  bashunit::data_set "/usr" "/etc" "/var"
 }
 ```
 ```[Output]
@@ -107,9 +107,9 @@ function test_directory_exists() {
 }
 
 function provider_directories() {
-  data_set "/usr"
-  data_set "/etc"
-  data_set "/var"
+  bashunit::data_set "/usr"
+  bashunit::data_set "/etc"
+  bashunit::data_set "/var"
 }
 ```
 ```[Output]
@@ -134,9 +134,9 @@ function test_directory_exists() {
 }
 
 function provider_directories() {
-  data_set "outro" "/usr"
-  data_set "outro" "/etc"
-  data_set "outro" "/var"
+  bashunit::data_set "outro" "/usr"
+  bashunit::data_set "outro" "/etc"
+  bashunit::data_set "outro" "/var"
 }
 ```
 ```[Output]

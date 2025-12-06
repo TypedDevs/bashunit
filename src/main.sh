@@ -275,7 +275,7 @@ function main::exec_tests() {
     test_files+=("$line")
   done < <(helper::load_test_files "$filter" "${files[@]}")
 
-  internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
+  bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
 
   if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
@@ -342,7 +342,7 @@ function main::exec_tests() {
     parallel::cleanup
   fi
 
-  internal_log "Finished tests" "exit_code:$exit_code"
+  bashunit::internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
 }
 
@@ -355,7 +355,7 @@ function main::exec_benchmarks() {
     bench_files+=("$line")
   done < <(helper::load_bench_files "$filter" "${files[@]}")
 
-  internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
+  bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
 
   if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
@@ -369,14 +369,14 @@ function main::exec_benchmarks() {
 
   benchmark::print_results
 
-  internal_log "Finished benchmarks"
+  bashunit::internal_log "Finished benchmarks"
 }
 
 function main::cleanup() {
   printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
-  cleanup_script_temp_files
+  bashunit::cleanup_script_temp_files
   if parallel::is_enabled; then
     parallel::cleanup
   fi
@@ -389,7 +389,7 @@ function main::handle_stop_on_failure_sync() {
   console_results::print_incomplete_tests_and_reset
   console_results::print_skipped_tests_and_reset
   console_results::render_result
-  cleanup_script_temp_files
+  bashunit::cleanup_script_temp_files
   if parallel::is_enabled; then
     parallel::cleanup
   fi

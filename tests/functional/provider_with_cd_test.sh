@@ -5,7 +5,7 @@ set -euo pipefail
 # Data providers should work even when set_up_before_script changes directory
 
 function set_up_before_script() {
-  cd "$(temp_dir)" || return 1
+  cd "$(bashunit::temp_dir)" || return 1
 }
 
 # @data_provider provide_data

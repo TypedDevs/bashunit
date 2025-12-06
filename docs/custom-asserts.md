@@ -59,14 +59,14 @@ function test_value_is_not_foo() {
 
 ### Using fail() for simple messages
 
-You can also use `fail` for custom assertions that just need a message:
+You can also use `bashunit::fail` for custom assertions that just need a message:
 
 ```bash
 function assert_valid_json() {
   local json="$1"
 
   if ! echo "$json" | jq . > /dev/null 2>&1; then
-    fail "Invalid JSON: $json"
+    bashunit::fail "Invalid JSON: $json"
     return
   fi
 
@@ -114,7 +114,7 @@ function assert_positive_number() {
 
 ## Best practices
 
-1. **Always return after failure**: Call `return` after `bashunit::assertion_failed` or `fail` to stop execution of your custom assertion.
+1. **Always return after failure**: Call `return` after `bashunit::assertion_failed` or `bashunit::fail` to stop execution of your custom assertion.
 
 2. **Always mark success**: Call `bashunit::assertion_passed` or `state::add_assertions_passed` when your assertion succeeds.
 

@@ -5,7 +5,7 @@ function _assert_valid_json() {
   local json="$1"
 
   if ! echo "$json" | jq . > /dev/null 2>&1; then
-    fail "Invalid json: $json"
+    bashunit::fail "Invalid json: $json"
     return
   fi
 

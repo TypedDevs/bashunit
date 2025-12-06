@@ -234,7 +234,7 @@ function test_set_duplicated_functions_merged() {
 }
 
 function test_initialize_assertions_count() {
-  mock tr echo "abc123"
+  bashunit::mock tr echo "abc123"
 
   local export_assertions_count
   export_assertions_count=$(
@@ -264,7 +264,7 @@ function test_initialize_assertions_count() {
 }
 
 function test_export_assertions_count() {
-  mock tr echo "abc123"
+  bashunit::mock tr echo "abc123"
 
   local export_assertions_count
   export_assertions_count=$(

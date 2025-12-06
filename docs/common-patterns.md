@@ -414,7 +414,7 @@ function set_up() {
 }
 
 function test_get_current_branch() {
-  mock git echo "feature/new-feature"
+  bashunit::mock git echo "feature/new-feature"
 
   local branch
   branch=$(get_current_branch)
@@ -423,7 +423,7 @@ function test_get_current_branch() {
 }
 
 function test_check_for_changes() {
-  mock git <<EOF
+  bashunit::mock git <<EOF
 M  src/file1.sh
 A  src/file2.sh
 EOF
@@ -461,7 +461,7 @@ function set_up() {
 }
 
 function test_deployment_calls_docker_push() {
-  spy docker
+  bashunit::spy docker
 
   deploy_image "myapp:latest"
 
@@ -469,7 +469,7 @@ function test_deployment_calls_docker_push() {
 }
 
 function test_docker_called_with_correct_arguments() {
-  spy docker
+  bashunit::spy docker
 
   deploy_image "myapp:v1.0.0"
 
@@ -477,7 +477,7 @@ function test_docker_called_with_correct_arguments() {
 }
 
 function test_deploy_calls_docker_twice() {
-  spy docker
+  bashunit::spy docker
 
   deploy_image "myapp:latest"
   deploy_image "myapp:v1.0.0"

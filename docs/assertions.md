@@ -1140,8 +1140,8 @@ function test_failure() {
 ```
 :::
 
-## fail
-> `fail "failure message"`
+## bashunit::fail
+> `bashunit::fail "failure message"`
 
 Unambiguously reports an error message. Useful for reporting specific message
 when testing situations not covered by any `assert_*` functions.
@@ -1150,12 +1150,12 @@ when testing situations not covered by any `assert_*` functions.
 ```bash [Example]
 function test_success() {
   if [ "$(date +%-H)" -gt 25 ]; then
-    fail "Something is very wrong with your clock"
+    bashunit::fail "Something is very wrong with your clock"
   fi
 }
 function test_failure() {
   if [ "$(date +%-H)" -lt 25 ]; then
-    fail "This test will always fail"
+    bashunit::fail "This test will always fail"
   fi
 }
 ```
