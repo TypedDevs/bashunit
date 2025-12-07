@@ -16,7 +16,8 @@ function test_bashunit_no_output_success() {
 function test_bashunit_no_output_failure() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
   local output
-  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --no-output)
-  assert_general_error "$output"
+  local exit_code=0
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --no-output) || exit_code=$?
+  assert_same 1 "$exit_code"
   assert_empty "$output"
 }
