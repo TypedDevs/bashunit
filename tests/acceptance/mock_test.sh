@@ -2,7 +2,7 @@
 set -euo pipefail
 
 #
-# Make sure that the `runner::clear_mocks()` is being called,
+# Make sure that the `bashunit::runner::clear_mocks()` is being called,
 # removing the mocks and spies from the first test
 #
 function test_runner_clear_mocks_first() {

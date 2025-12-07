@@ -314,7 +314,7 @@ function main::exec_tests() {
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
   fi
 
-  runner::load_test_files "$filter" "${test_files[@]}"
+  bashunit::runner::load_test_files "$filter" "${test_files[@]}"
 
   if parallel::is_enabled; then
     wait
@@ -365,7 +365,7 @@ function main::exec_benchmarks() {
 
   console_header::print_version_with_env "$filter" "${bench_files[@]}"
 
-  runner::load_bench_files "$filter" "${bench_files[@]}"
+  bashunit::runner::load_bench_files "$filter" "${bench_files[@]}"
 
   benchmark::print_results
 
