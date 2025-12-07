@@ -10,8 +10,9 @@ function tear_down() {
 function test_redirect_error_with_log() {
   exec 2>&3 2>$_ERROR_LOG
 
-  _="$(render_into_error_fd_and_exit "arg1" "arg2")"
-  assert_general_error
+  local exit_code=0
+  _="$(render_into_error_fd_and_exit "arg1" "arg2")" || exit_code=$?
+  assert_same 1 "$exit_code"
 
   local error_output
   error_output=$(<$_ERROR_LOG)
@@ -21,13 +22,15 @@ function test_redirect_error_with_log() {
 function test_redirect_error_without_log() {
   exec 2>&3 2>/dev/null
 
-  _="$(render_into_error_fd_and_exit "...args")"
-  assert_general_error
+  local exit_code=0
+  _="$(render_into_error_fd_and_exit "...args")" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function test_echo_does_not_break_test_execution_result() {
-    _="$(render_into_error_fd_and_exit "...args")"
-    assert_general_error
+    local exit_code=0
+    _="$(render_into_error_fd_and_exit "...args")" || exit_code=$?
+    assert_same 1 "$exit_code"
 }
 
 function render_into_error_fd_and_exit() {

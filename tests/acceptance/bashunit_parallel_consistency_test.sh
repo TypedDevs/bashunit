@@ -10,16 +10,16 @@ function test_parallel_and_sequential_results_match() {
   local file3=tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh
 
   local sequential_output
-  sequential_output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$file1" "$file2" "$file3")
+  sequential_output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$file1" "$file2" "$file3" 2>&1) || true
 
   local parallel_output
-  parallel_output=$(./bashunit --parallel --env "$TEST_ENV_FILE" "$file1" "$file2" "$file3")
+  parallel_output=$(./bashunit --parallel --env "$TEST_ENV_FILE" "$file1" "$file2" "$file3" 2>&1) || true
 
   local sequential_summary
-  sequential_summary=$(echo "$sequential_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ')
+  sequential_summary=$(echo "$sequential_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ') || true
 
   local parallel_summary
-  parallel_summary=$(echo "$parallel_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ')
+  parallel_summary=$(echo "$parallel_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ') || true
 
   assert_equals "$sequential_summary" "$parallel_summary"
 }

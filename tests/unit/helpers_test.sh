@@ -325,12 +325,12 @@ function test_find_total_tests_with_filter() {
 
 function test_parse_file_path_filter_plain_path() {
   local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh")
+  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh") || true
 
   local file_path filter
   {
-    read -r file_path
-    read -r filter
+    read -r file_path || true
+    read -r filter || true
   } <<< "$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
@@ -339,12 +339,12 @@ function test_parse_file_path_filter_plain_path() {
 
 function test_parse_file_path_filter_with_double_colon() {
   local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh::test_my_function")
+  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh::test_my_function") || true
 
   local file_path filter
   {
-    read -r file_path
-    read -r filter
+    read -r file_path || true
+    read -r filter || true
   } <<< "$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
@@ -353,12 +353,12 @@ function test_parse_file_path_filter_with_double_colon() {
 
 function test_parse_file_path_filter_with_line_number() {
   local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:42")
+  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:42") || true
 
   local file_path filter
   {
-    read -r file_path
-    read -r filter
+    read -r file_path || true
+    read -r filter || true
   } <<< "$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
@@ -367,12 +367,12 @@ function test_parse_file_path_filter_with_line_number() {
 
 function test_parse_file_path_filter_with_colon_in_path() {
   local result
-  result=$(bashunit::helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func")
+  result=$(bashunit::helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func") || true
 
   local file_path filter
   {
-    read -r file_path
-    read -r filter
+    read -r file_path || true
+    read -r filter || true
   } <<< "$result"
 
   assert_same "/path/to:weird/example_test.sh" "$file_path"
@@ -408,5 +408,7 @@ function test_find_function_at_line_before_any_function() {
 }
 
 function test_find_function_at_line_nonexistent_file() {
-  assert_general_error "$(bashunit::helper::find_function_at_line "/nonexistent/file.sh" 10)"
+  local exit_code=0
+  bashunit::helper::find_function_at_line "/nonexistent/file.sh" 10 2>/dev/null || exit_code=$?
+  assert_same 1 "$exit_code"
 }
