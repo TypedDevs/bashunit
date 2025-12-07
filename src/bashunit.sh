@@ -5,7 +5,7 @@
 # e.g. adding custom assertions
 
 function bashunit::assertion_failed() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected=$1
   local actual=$2
@@ -21,7 +21,7 @@ function bashunit::assertion_failed() {
 }
 
 function bashunit::assertion_passed() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   state::add_assertions_passed
 }

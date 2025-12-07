@@ -133,7 +133,7 @@ function test_unsuccessful_assert_not_equals() {
 }
 
 function test_unsuccessful_assert_not_equals_with_special_chars() {
-  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+  local str1="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
   local str2="✗ Failed foo"
 
   assert_equals\
@@ -474,18 +474,18 @@ function test_unsuccessful_assert_greater_or_equal_than() {
 function test_successful_assert_equals() {
   assert_equals\
     "✗ Failed foo"\
-    "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+    "${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
 }
 
 function test_successful_assert_equals_with_special_chars() {
-  local string="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+  local string="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
 
   assert_equals "$string" "$string"
 }
 
 function test_unsuccessful_assert_equals() {
-  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str1"
-  local str2="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str2"
+  local str1="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} str1"
+  local str2="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} str2"
 
   assert_same\
     "$(console_results::print_failed_test \

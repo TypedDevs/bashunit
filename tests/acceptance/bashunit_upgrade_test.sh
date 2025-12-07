@@ -64,7 +64,7 @@ function test_upgrade_when_a_new_version_found() {
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     "$TMP_BIN"
 
-  if [[ $_OS == "OSX" ]]; then
+  if [[ $_BASHUNIT_OS == "OSX" ]]; then
     rm -f "${TMP_BIN}-e"
   fi
 
@@ -93,7 +93,7 @@ function test_do_not_update_on_consecutive_calls() {
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     "$TMP_BIN"
 
-  if [[ $_OS == "OSX" ]]; then
+  if [[ $_BASHUNIT_OS == "OSX" ]]; then
     rm -f "${TMP_BIN}-e"
   fi
 

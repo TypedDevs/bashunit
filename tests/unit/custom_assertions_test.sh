@@ -49,7 +49,7 @@ function test_custom_assertion_with_fail_shows_correct_test_name() {
     }
 
     # Force a failure using our custom assertion with invalid JSON
-    _ASSERTION_FAILED_IN_TEST=0
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
     _assert_valid_json "invalid json"
 
     echo "$_captured_output"
@@ -72,7 +72,7 @@ function test_custom_assertion_with_bashunit_assertion_failed_shows_correct_test
       echo "$_captured_output"
     }
 
-    _ASSERTION_FAILED_IN_TEST=0
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
     _assert_positive_number "-5"
 
     echo "$_captured_output"
@@ -95,7 +95,7 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
       echo "$_captured_output"
     }
 
-    _ASSERTION_FAILED_IN_TEST=0
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
     _assert_length_equals "5" "abc"  # length is 3, not 5
 
     echo "$_captured_output"

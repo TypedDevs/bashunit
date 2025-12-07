@@ -3,11 +3,11 @@
 __ORIGINAL_OS=""
 
 function set_up_before_script() {
-  __ORIGINAL_OS=$_OS
+  __ORIGINAL_OS=$_BASHUNIT_OS
 }
 
 function tear_down_after_script() {
-  export _OS=$__ORIGINAL_OS
+  export _BASHUNIT_OS=$__ORIGINAL_OS
 }
 
 function mock_non_existing_fn() {

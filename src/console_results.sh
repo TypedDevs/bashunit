@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
-_TOTAL_TESTS_COUNT=0
+_BASHUNIT_TOTAL_TESTS_COUNT=0
 
 function console_results::render_result() {
   if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
     console_results::print_execution_time
-    printf "%s%s%s\n" "${_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_COLOR_DEFAULT}"
+    printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
     printf "File with duplicate functions: %s\n" "$(state::get_file_with_duplicated_function_names)"
     printf "Duplicate functions: %s\n" "$(state::get_duplicated_function_names)"
     return 1
@@ -17,16 +17,16 @@ function console_results::render_result() {
   fi
 
   # Cache state values to avoid repeated subshell invocations
-  local tests_passed=$_TESTS_PASSED
-  local tests_skipped=$_TESTS_SKIPPED
-  local tests_incomplete=$_TESTS_INCOMPLETE
-  local tests_snapshot=$_TESTS_SNAPSHOT
-  local tests_failed=$_TESTS_FAILED
-  local assertions_passed=$_ASSERTIONS_PASSED
-  local assertions_skipped=$_ASSERTIONS_SKIPPED
-  local assertions_incomplete=$_ASSERTIONS_INCOMPLETE
-  local assertions_snapshot=$_ASSERTIONS_SNAPSHOT
-  local assertions_failed=$_ASSERTIONS_FAILED
+  local tests_passed=$_BASHUNIT_TESTS_PASSED
+  local tests_skipped=$_BASHUNIT_TESTS_SKIPPED
+  local tests_incomplete=$_BASHUNIT_TESTS_INCOMPLETE
+  local tests_snapshot=$_BASHUNIT_TESTS_SNAPSHOT
+  local tests_failed=$_BASHUNIT_TESTS_FAILED
+  local assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
+  local assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
+  local assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
+  local assertions_snapshot=$_BASHUNIT_ASSERTIONS_SNAPSHOT
+  local assertions_failed=$_BASHUNIT_ASSERTIONS_FAILED
 
   local total_tests=0
   ((total_tests += tests_passed)) || true
@@ -42,73 +42,73 @@ function console_results::render_result() {
   ((total_assertions += assertions_snapshot)) || true
   ((total_assertions += assertions_failed)) || true
 
-  printf "%sTests:     %s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
+  printf "%sTests:     %s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
   if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
-    printf " %s%s passed%s," "$_COLOR_PASSED" "$tests_passed" "$_COLOR_DEFAULT"
+    printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$tests_passed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
-    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$tests_skipped" "$_COLOR_DEFAULT"
+    printf " %s%s skipped%s," "$_BASHUNIT_COLOR_SKIPPED" "$tests_skipped" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
-    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$tests_incomplete" "$_COLOR_DEFAULT"
+    printf " %s%s incomplete%s," "$_BASHUNIT_COLOR_INCOMPLETE" "$tests_incomplete" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
-    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$tests_snapshot" "$_COLOR_DEFAULT"
+    printf " %s%s snapshot%s," "$_BASHUNIT_COLOR_SNAPSHOT" "$tests_snapshot" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$tests_failed" "$_COLOR_DEFAULT"
+    printf " %s%s failed%s," "$_BASHUNIT_COLOR_FAILED" "$tests_failed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
-  printf "%sAssertions:%s" "$_COLOR_FAINT" "$_COLOR_DEFAULT"
+  printf "%sAssertions:%s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
   if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
-      printf " %s%s passed%s," "$_COLOR_PASSED" "$assertions_passed" "$_COLOR_DEFAULT"
+      printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$assertions_passed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
-    printf " %s%s skipped%s," "$_COLOR_SKIPPED" "$assertions_skipped" "$_COLOR_DEFAULT"
+    printf " %s%s skipped%s," "$_BASHUNIT_COLOR_SKIPPED" "$assertions_skipped" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
-    printf " %s%s incomplete%s," "$_COLOR_INCOMPLETE" "$assertions_incomplete" "$_COLOR_DEFAULT"
+    printf " %s%s incomplete%s," "$_BASHUNIT_COLOR_INCOMPLETE" "$assertions_incomplete" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
-    printf " %s%s snapshot%s," "$_COLOR_SNAPSHOT" "$assertions_snapshot" "$_COLOR_DEFAULT"
+    printf " %s%s snapshot%s," "$_BASHUNIT_COLOR_SNAPSHOT" "$assertions_snapshot" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
-    printf " %s%s failed%s," "$_COLOR_FAILED" "$assertions_failed" "$_COLOR_DEFAULT"
+    printf " %s%s failed%s," "$_BASHUNIT_COLOR_FAILED" "$assertions_failed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_assertions"
 
   if [[ "$tests_failed" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " Some tests failed " "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " Some tests failed " "$_BASHUNIT_COLOR_DEFAULT"
     console_results::print_execution_time
     return 1
   fi
 
   if [[ "$tests_incomplete" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_BASHUNIT_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ "$tests_skipped" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_BASHUNIT_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ "$tests_snapshot" -gt 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_BASHUNIT_COLOR_DEFAULT"
     console_results::print_execution_time
     return 0
   fi
 
   if [[ $total_tests -eq 0 ]]; then
-    printf "\n%s%s%s\n" "$_COLOR_RETURN_ERROR" " No tests found " "$_COLOR_DEFAULT"
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
     console_results::print_execution_time
     return 1
   fi
 
-  printf "\n%s%s%s\n" "$_COLOR_RETURN_SUCCESS" " All tests passed " "$_COLOR_DEFAULT"
+  printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SUCCESS" " All tests passed " "$_BASHUNIT_COLOR_DEFAULT"
   console_results::print_execution_time
   return 0
 }
@@ -121,7 +121,7 @@ function console_results::print_execution_time() {
   local time=$(clock::total_runtime_in_milliseconds | awk '{printf "%.0f", $1}')
 
   if [[ "$time" -lt 1000 ]]; then
-    printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+    printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
       "Time taken: $time ms"
     return
   fi
@@ -130,7 +130,7 @@ function console_results::print_execution_time() {
   local remainder_ms=$(( time % 1000 ))
   local formatted_seconds=$(echo "$time_in_seconds.$remainder_ms" | awk '{printf "%.0f", $1}')
 
-  printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" \
+  printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
     "Time taken: $formatted_seconds s"
 }
 
@@ -142,7 +142,7 @@ function console_results::print_successful_test() {
 
   local line
   if [[ -z "$*" ]]; then
-    line=$(printf "%s✓ Passed%s: %s" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name")
+    line=$(printf "%s✓ Passed%s: %s" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name")
   else
     local quoted_args=""
     for arg in "$@"; do
@@ -152,7 +152,7 @@ function console_results::print_successful_test() {
         quoted_args="$quoted_args, '$arg'"
       fi
     done
-    line=$(printf "%s✓ Passed%s: %s (%s)" "$_COLOR_PASSED" "$_COLOR_DEFAULT" "$test_name" "$quoted_args")
+    line=$(printf "%s✓ Passed%s: %s (%s)" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name" "$quoted_args")
   fi
 
   local full_line=$line
@@ -169,8 +169,8 @@ function console_results::print_failure_message() {
 
   local line
   line="$(printf "\
-${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Message:${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n"\
+${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
+    ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n"\
     "${test_name}" "${failure_message}")"
 
   state::print_line "failure" "$line"
@@ -186,15 +186,15 @@ function console_results::print_failed_test() {
 
   local line
   line="$(printf "\
-${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Expected${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
+${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
+    ${_BASHUNIT_COLOR_FAINT}Expected${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}
+    ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${function_name}" "${expected}" "${failure_condition_message}" "${actual}")"
 
   if [ -n "$extra_key" ]; then
     line+="$(printf "\
 
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT} ${_COLOR_BOLD}'%s'${_COLOR_DEFAULT}\n" \
+    ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${extra_key}" "${extra_value}")"
   fi
 
@@ -208,8 +208,8 @@ function console_results::print_failed_snapshot_test() {
   local actual_content=${3-}
 
   local line
-  line="$(printf "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}Expected to match the snapshot${_COLOR_DEFAULT}\n" "$function_name")"
+  line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
+    ${_BASHUNIT_COLOR_FAINT}Expected to match the snapshot${_BASHUNIT_COLOR_DEFAULT}\n" "$function_name")"
 
   if dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
@@ -232,10 +232,10 @@ function console_results::print_skipped_test() {
   local reason=${2-}
 
   local line
-  line="$(printf "${_COLOR_SKIPPED}↷ Skipped${_COLOR_DEFAULT}: %s\n" "${function_name}")"
+  line="$(printf "${_BASHUNIT_COLOR_SKIPPED}↷ Skipped${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$reason" ]]; then
-    line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${reason}")"
+    line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
   state::print_line "skipped" "$line"
@@ -246,10 +246,10 @@ function console_results::print_incomplete_test() {
   local pending=${2-}
 
   local line
-  line="$(printf "${_COLOR_INCOMPLETE}✒ Incomplete${_COLOR_DEFAULT}: %s\n" "${function_name}")"
+  line="$(printf "${_BASHUNIT_COLOR_INCOMPLETE}✒ Incomplete${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$pending" ]]; then
-    line+="$(printf "${_COLOR_FAINT}    %s${_COLOR_DEFAULT}\n" "${pending}")"
+    line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
   state::print_line "incomplete" "$line"
@@ -261,7 +261,7 @@ function console_results::print_snapshot_test() {
   test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
-  line="$(printf "${_COLOR_SNAPSHOT}✎ Snapshot${_COLOR_DEFAULT}: %s\n" "${test_name}")"
+  line="$(printf "${_BASHUNIT_COLOR_SNAPSHOT}✎ Snapshot${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${test_name}")"
 
   state::print_line "snapshot" "$line"
 }
@@ -274,8 +274,8 @@ function console_results::print_error_test() {
   test_name=$(helper::normalize_test_function_name "$function_name")
 
   local line
-  line="$(printf "${_COLOR_FAILED}✗ Error${_COLOR_DEFAULT}: %s
-    ${_COLOR_FAINT}%s${_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
+  line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Error${_BASHUNIT_COLOR_DEFAULT}: %s
+    ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
   state::print_line "error" "$line"
 }
@@ -290,9 +290,9 @@ function console_results::print_failing_tests_and_reset() {
     fi
 
     if [[ "$total_failed" -eq 1 ]]; then
-      echo -e "${_COLOR_BOLD}There was 1 failure:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 failure:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
-      echo -e "${_COLOR_BOLD}There were $total_failed failures:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_failed failures:${_BASHUNIT_COLOR_DEFAULT}\n"
     fi
 
     sed '${/^$/d;}' "$FAILURES_OUTPUT_PATH" | sed 's/^/|/'
@@ -312,9 +312,9 @@ function console_results::print_skipped_tests_and_reset() {
     fi
 
     if [[ "$total_skipped" -eq 1 ]]; then
-      echo -e "${_COLOR_BOLD}There was 1 skipped test:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 skipped test:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
-      echo -e "${_COLOR_BOLD}There were $total_skipped skipped tests:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_skipped skipped tests:${_BASHUNIT_COLOR_DEFAULT}\n"
     fi
 
     tr -d '\r' < "$SKIPPED_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
@@ -334,9 +334,9 @@ function console_results::print_incomplete_tests_and_reset() {
     fi
 
     if [[ "$total_incomplete" -eq 1 ]]; then
-      echo -e "${_COLOR_BOLD}There was 1 incomplete test:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 incomplete test:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
-      echo -e "${_COLOR_BOLD}There were $total_incomplete incomplete tests:${_COLOR_DEFAULT}\n"
+      echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_incomplete incomplete tests:${_BASHUNIT_COLOR_DEFAULT}\n"
     fi
 
     tr -d '\r' < "$INCOMPLETE_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'

@@ -1,28 +1,28 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC2034
-_OS="Unknown"
-_DISTRO="Unknown"
+_BASHUNIT_OS="Unknown"
+_BASHUNIT_DISTRO="Unknown"
 
 function check_os::init() {
   if check_os::is_linux; then
-    _OS="Linux"
+    _BASHUNIT_OS="Linux"
     if check_os::is_ubuntu; then
-      _DISTRO="Ubuntu"
+      _BASHUNIT_DISTRO="Ubuntu"
     elif check_os::is_alpine; then
-      _DISTRO="Alpine"
+      _BASHUNIT_DISTRO="Alpine"
     elif check_os::is_nixos; then
-      _DISTRO="NixOS"
+      _BASHUNIT_DISTRO="NixOS"
     else
-      _DISTRO="Other"
+      _BASHUNIT_DISTRO="Other"
     fi
   elif check_os::is_macos; then
-    _OS="OSX"
+    _BASHUNIT_OS="OSX"
   elif check_os::is_windows; then
-    _OS="Windows"
+    _BASHUNIT_OS="Windows"
   else
-    _OS="Unknown"
-    _DISTRO="Unknown"
+    _BASHUNIT_OS="Unknown"
+    _BASHUNIT_DISTRO="Unknown"
   fi
 }
 
@@ -60,7 +60,7 @@ function check_os::is_windows() {
 
 function check_os::is_busybox() {
 
-  case "$_DISTRO" in
+  case "$_BASHUNIT_DISTRO" in
 
     "Alpine")
         return 0
@@ -73,8 +73,8 @@ function check_os::is_busybox() {
 
 check_os::init
 
-export _OS
-export _DISTRO
+export _BASHUNIT_OS
+export _BASHUNIT_DISTRO
 export -f check_os::is_alpine
 export -f check_os::is_busybox
 export -f check_os::is_ubuntu

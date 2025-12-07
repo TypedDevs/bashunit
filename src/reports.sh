@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
-_REPORTS_TEST_FILES=()
-_REPORTS_TEST_NAMES=()
-_REPORTS_TEST_STATUSES=()
-_REPORTS_TEST_DURATIONS=()
-_REPORTS_TEST_ASSERTIONS=()
+_BASHUNIT_REPORTS_TEST_FILES=()
+_BASHUNIT_REPORTS_TEST_NAMES=()
+_BASHUNIT_REPORTS_TEST_STATUSES=()
+_BASHUNIT_REPORTS_TEST_DURATIONS=()
+_BASHUNIT_REPORTS_TEST_ASSERTIONS=()
 
 function reports::add_test_snapshot() {
   reports::add_test "$1" "$2" "$3" "$4" "snapshot"
@@ -37,11 +37,11 @@ function reports::add_test() {
   local assertions="$4"
   local status="$5"
 
-  _REPORTS_TEST_FILES+=("$file")
-  _REPORTS_TEST_NAMES+=("$test_name")
-  _REPORTS_TEST_STATUSES+=("$status")
-  _REPORTS_TEST_ASSERTIONS+=("$assertions")
-  _REPORTS_TEST_DURATIONS+=("$duration")
+  _BASHUNIT_REPORTS_TEST_FILES+=("$file")
+  _BASHUNIT_REPORTS_TEST_NAMES+=("$test_name")
+  _BASHUNIT_REPORTS_TEST_STATUSES+=("$status")
+  _BASHUNIT_REPORTS_TEST_ASSERTIONS+=("$assertions")
+  _BASHUNIT_REPORTS_TEST_DURATIONS+=("$duration")
 }
 
 function reports::generate_junit_xml() {
@@ -57,17 +57,17 @@ function reports::generate_junit_xml() {
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     echo "<testsuites>"
-    echo "  <testsuite name=\"bashunit\" tests=\"${#_REPORTS_TEST_NAMES[@]}\""
+    echo "  <testsuite name=\"bashunit\" tests=\"${#_BASHUNIT_REPORTS_TEST_NAMES[@]}\""
     echo "             passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\""
     echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\""
     echo "             time=\"$time\">"
 
-    for i in "${!_REPORTS_TEST_NAMES[@]}"; do
-      local file="${_REPORTS_TEST_FILES[$i]}"
-      local name="${_REPORTS_TEST_NAMES[$i]}"
-      local assertions="${_REPORTS_TEST_ASSERTIONS[$i]}"
-      local status="${_REPORTS_TEST_STATUSES[$i]}"
-      local test_time="${_REPORTS_TEST_DURATIONS[$i]}"
+    for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+      local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]}"
+      local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]}"
+      local assertions="${_BASHUNIT_REPORTS_TEST_ASSERTIONS[$i]}"
+      local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]}"
+      local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]}"
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
@@ -97,11 +97,11 @@ function reports::generate_report_html() {
 
   # Collect test cases by file
   : > "$temp_file"  # Clear temp file if it exists
-  for i in "${!_REPORTS_TEST_NAMES[@]}"; do
-    local file="${_REPORTS_TEST_FILES[$i]}"
-    local name="${_REPORTS_TEST_NAMES[$i]}"
-    local status="${_REPORTS_TEST_STATUSES[$i]}"
-    local test_time="${_REPORTS_TEST_DURATIONS[$i]}"
+  for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+    local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]}"
+    local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]}"
+    local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]}"
+    local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]}"
     local test_case="$file|$name|$status|$test_time"
 
     echo "$test_case" >> "$temp_file"
@@ -142,7 +142,7 @@ function reports::generate_report_html() {
     echo "    </thead>"
     echo "    <tbody>"
     echo "      <tr>"
-    echo "        <td>${#_REPORTS_TEST_NAMES[@]}</td>"
+    echo "        <td>${#_BASHUNIT_REPORTS_TEST_NAMES[@]}</td>"
     echo "        <td>$test_passed</td>"
     echo "        <td>$tests_failed</td>"
     echo "        <td>$tests_incomplete</td>"

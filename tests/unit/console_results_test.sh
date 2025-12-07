@@ -8,19 +8,19 @@ function set_state_value() {
 
   # Extract variable name from getter function name
   case "$getter_name" in
-    state::get_tests_passed) var_name="_TESTS_PASSED" ;;
-    state::get_tests_failed) var_name="_TESTS_FAILED" ;;
-    state::get_tests_skipped) var_name="_TESTS_SKIPPED" ;;
-    state::get_tests_incomplete) var_name="_TESTS_INCOMPLETE" ;;
-    state::get_tests_snapshot) var_name="_TESTS_SNAPSHOT" ;;
-    state::get_assertions_passed) var_name="_ASSERTIONS_PASSED" ;;
-    state::get_assertions_failed) var_name="_ASSERTIONS_FAILED" ;;
-    state::get_assertions_skipped) var_name="_ASSERTIONS_SKIPPED" ;;
-    state::get_assertions_incomplete) var_name="_ASSERTIONS_INCOMPLETE" ;;
-    state::get_assertions_snapshot) var_name="_ASSERTIONS_SNAPSHOT" ;;
-    state::is_duplicated_test_functions_found) var_name="_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
-    state::get_duplicated_function_names) var_name="_DUPLICATED_FUNCTION_NAMES" ;;
-    state::get_file_with_duplicated_function_names) var_name="_FILE_WITH_DUPLICATED_FUNCTION_NAMES" ;;
+    state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
+    state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
+    state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
+    state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
+    state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
+    state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
+    state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
+    state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
+    state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
+    state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
+    state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
+    state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
+    state::get_file_with_duplicated_function_names) var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES" ;;
   esac
 
   # Set the actual variable
@@ -45,19 +45,19 @@ function mock_all_state_getters() {
   set_state_value "state::get_assertions_snapshot" "0"
 
   # Also set actual state variables for direct access optimization
-  _TESTS_PASSED=0
-  _TESTS_FAILED=0
-  _TESTS_SKIPPED=0
-  _TESTS_INCOMPLETE=0
-  _TESTS_SNAPSHOT=0
-  _ASSERTIONS_PASSED=0
-  _ASSERTIONS_FAILED=0
-  _ASSERTIONS_SKIPPED=0
-  _ASSERTIONS_INCOMPLETE=0
-  _ASSERTIONS_SNAPSHOT=0
-  _DUPLICATED_TEST_FUNCTIONS_FOUND=false
-  _DUPLICATED_FUNCTION_NAMES=""
-  _FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
+  _BASHUNIT_TESTS_PASSED=0
+  _BASHUNIT_TESTS_FAILED=0
+  _BASHUNIT_TESTS_SKIPPED=0
+  _BASHUNIT_TESTS_INCOMPLETE=0
+  _BASHUNIT_TESTS_SNAPSHOT=0
+  _BASHUNIT_ASSERTIONS_PASSED=0
+  _BASHUNIT_ASSERTIONS_FAILED=0
+  _BASHUNIT_ASSERTIONS_SKIPPED=0
+  _BASHUNIT_ASSERTIONS_INCOMPLETE=0
+  _BASHUNIT_ASSERTIONS_SNAPSHOT=0
+  _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=false
+  _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
+  _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 }
 
 function test_not_render_passed_when_no_passed_tests_nor_assertions() {
@@ -66,8 +66,8 @@ function test_not_render_passed_when_no_passed_tests_nor_assertions() {
     mock_all_state_getters
     set_state_value "state::get_tests_passed" "0"
     set_state_value "state::get_assertions_passed" "0"
-    _TESTS_PASSED=0
-    _ASSERTIONS_PASSED=0
+    _BASHUNIT_TESTS_PASSED=0
+    _BASHUNIT_ASSERTIONS_PASSED=0
 
     console_results::render_result
   )
@@ -341,7 +341,7 @@ function test_render_execution_time_on_osx_without_perl() {
   mock_macos
   bashunit::mock dependencies::has_perl mock_false
 
-  _START_TIME=1727771758.0664479733
+  _BASHUNIT_START_TIME=1727771758.0664479733
 
   local render_result
   render_result=$(
@@ -360,7 +360,7 @@ function test_render_execution_time_on_osx_with_perl() {
   mock_macos
   bashunit::mock dependencies::has_adjtimex mock_false
   bashunit::mock dependencies::has_perl mock_true
-  _START_TIME="1726393394574382186"
+  _BASHUNIT_START_TIME="1726393394574382186"
   bashunit::mock perl <<< "1726393394574372186"
   bashunit::mock uname <<< "Darwin"
   render_result=$(

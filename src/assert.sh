@@ -7,7 +7,7 @@ function assert::mark_failed() {
 }
 
 function bashunit::fail() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local message="${1:-${FUNCNAME[1]}}"
 
@@ -20,7 +20,7 @@ function bashunit::fail() {
 }
 
 function assert_true() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local actual="$1"
 
@@ -42,7 +42,7 @@ function assert_true() {
 }
 
 function assert_false() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local actual="$1"
 
@@ -89,7 +89,7 @@ function bashunit::handle_bool_assertion_failure() {
 }
 
 function assert_same() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -108,7 +108,7 @@ function assert_same() {
 }
 
 function assert_equals() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -132,7 +132,7 @@ function assert_equals() {
 }
 
 function assert_not_equals() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -156,7 +156,7 @@ function assert_not_equals() {
 }
 
 function assert_empty() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
 
@@ -174,7 +174,7 @@ function assert_empty() {
 }
 
 function assert_not_empty() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
 
@@ -192,7 +192,7 @@ function assert_not_empty() {
 }
 
 function assert_not_same() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -211,7 +211,7 @@ function assert_not_same() {
 }
 
 function assert_contains() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -232,7 +232,7 @@ function assert_contains() {
 }
 
 function assert_contains_ignore_case() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -255,7 +255,7 @@ function assert_contains_ignore_case() {
 }
 
 function assert_not_contains() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -276,7 +276,7 @@ function assert_not_contains() {
 }
 
 function assert_matches() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -297,7 +297,7 @@ function assert_matches() {
 }
 
 function assert_not_matches() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -318,7 +318,7 @@ function assert_not_matches() {
 }
 
 function assert_exec() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local cmd="$1"
   shift
@@ -404,7 +404,7 @@ function assert_exec() {
 
 function assert_exit_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code="$1"
 
@@ -423,7 +423,7 @@ function assert_exit_code() {
 
 function assert_successful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=0
 
@@ -442,7 +442,7 @@ function assert_successful_code() {
 
 function assert_unsuccessful_code() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   if [[ "$actual_exit_code" -eq 0 ]]; then
     local test_fn
@@ -459,7 +459,7 @@ function assert_unsuccessful_code() {
 
 function assert_general_error() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=1
 
@@ -478,7 +478,7 @@ function assert_general_error() {
 
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"}  # Capture $? before guard check
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected_exit_code=127
 
@@ -496,7 +496,7 @@ function assert_command_not_found() {
 }
 
 function assert_string_starts_with() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -517,7 +517,7 @@ function assert_string_starts_with() {
 }
 
 function assert_string_not_starts_with() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -536,7 +536,7 @@ function assert_string_not_starts_with() {
 }
 
 function assert_string_ends_with() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -557,7 +557,7 @@ function assert_string_ends_with() {
 }
 
 function assert_string_not_ends_with() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual_arr=("${@:2}")
@@ -578,7 +578,7 @@ function assert_string_not_ends_with() {
 }
 
 function assert_less_than() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -597,7 +597,7 @@ function assert_less_than() {
 }
 
 function assert_less_or_equal_than() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -616,7 +616,7 @@ function assert_less_or_equal_than() {
 }
 
 function assert_greater_than() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -635,7 +635,7 @@ function assert_greater_than() {
 }
 
 function assert_greater_or_equal_than() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local actual="$2"
@@ -654,7 +654,7 @@ function assert_greater_or_equal_than() {
 }
 
 function assert_line_count() {
-  (( _ASSERTION_FAILED_IN_TEST )) && return 0
+  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
   local expected="$1"
   local input_arr=("${@:2}")

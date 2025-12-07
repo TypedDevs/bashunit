@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-_CLOCK_NOW_IMPL=""
+_BASHUNIT_CLOCK_NOW_IMPL=""
 
 function clock::_choose_impl() {
   local shell_time
@@ -9,27 +9,27 @@ function clock::_choose_impl() {
   # 1. Try Perl with Time::HiRes
   attempts+=("Perl")
   if dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
-    _CLOCK_NOW_IMPL="perl"
+    _BASHUNIT_CLOCK_NOW_IMPL="perl"
     return 0
   fi
 
   # 2. Try Python 3 with time module
   attempts+=("Python")
   if dependencies::has_python; then
-    _CLOCK_NOW_IMPL="python"
+    _BASHUNIT_CLOCK_NOW_IMPL="python"
     return 0
   fi
 
   # 3. Try Node.js
   attempts+=("Node")
   if dependencies::has_node; then
-    _CLOCK_NOW_IMPL="node"
+    _BASHUNIT_CLOCK_NOW_IMPL="node"
     return 0
   fi
   # 4. Windows fallback with PowerShell
   attempts+=("PowerShell")
   if check_os::is_windows && dependencies::has_powershell; then
-    _CLOCK_NOW_IMPL="powershell"
+    _BASHUNIT_CLOCK_NOW_IMPL="powershell"
     return 0
   fi
 
@@ -39,7 +39,7 @@ function clock::_choose_impl() {
     local result
     result=$(date +%s%N 2>/dev/null)
     if [[ "$result" != *N && "$result" =~ ^[0-9]+$ ]]; then
-      _CLOCK_NOW_IMPL="date"
+      _BASHUNIT_CLOCK_NOW_IMPL="date"
       return 0
     fi
   fi
@@ -47,14 +47,14 @@ function clock::_choose_impl() {
   # 6. Try using native shell EPOCHREALTIME (if available)
   attempts+=("EPOCHREALTIME")
   if shell_time="$(clock::shell_time)"; then
-    _CLOCK_NOW_IMPL="shell"
+    _BASHUNIT_CLOCK_NOW_IMPL="shell"
     return 0
   fi
 
   # 7. Very last fallback: seconds resolution only
   attempts[${#attempts[@]}]="date-seconds"
   if date +%s &>/dev/null; then
-    _CLOCK_NOW_IMPL="date-seconds"
+    _BASHUNIT_CLOCK_NOW_IMPL="date-seconds"
     return 0
   fi
 
@@ -65,11 +65,11 @@ function clock::_choose_impl() {
 }
 
 function clock::now() {
-  if [[ -z "$_CLOCK_NOW_IMPL" ]]; then
+  if [[ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]]; then
     clock::_choose_impl || return 1
   fi
 
-  case "$_CLOCK_NOW_IMPL" in
+  case "$_BASHUNIT_CLOCK_NOW_IMPL" in
     perl)
       perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)'
       ;;
@@ -122,7 +122,7 @@ function clock::total_runtime_in_milliseconds() {
   local end_time
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "($end_time - $_START_TIME) / 1000000"
+    math::calculate "($end_time - $_BASHUNIT_START_TIME) / 1000000"
   else
     echo ""
   fi
@@ -132,12 +132,12 @@ function clock::total_runtime_in_nanoseconds() {
   local end_time
   end_time=$(clock::now)
   if [[ -n $end_time ]]; then
-    math::calculate "$end_time - $_START_TIME"
+    math::calculate "$end_time - $_BASHUNIT_START_TIME"
   else
     echo ""
   fi
 }
 
 function clock::init() {
-  _START_TIME=$(clock::now)
+  _BASHUNIT_START_TIME=$(clock::now)
 }

@@ -11,7 +11,7 @@ function console_header::print_version_with_env() {
   console_header::print_version "$filter" "${files[@]}"
 
   if env::is_dev_mode_enabled; then
-    printf "%sDev log:%s %s\n" "${_COLOR_INCOMPLETE}" "${_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+    printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
   fi
 }
 
@@ -49,9 +49,9 @@ EOF
   fi
 
   if [ "$total_tests" -eq 0 ]; then
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
+    printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
   else
-    printf "${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - %s | Tests: %s\n"\
+    printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n"\
       "$BASHUNIT_VERSION"\
       "$total_tests"
   fi

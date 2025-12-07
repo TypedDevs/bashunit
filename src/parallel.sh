@@ -17,7 +17,7 @@ function parallel::aggregate_test_results() {
     shopt -u nullglob
 
     if [ ${#result_files[@]} -eq 0 ]; then
-      printf "%sNo tests found%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+      printf "%sNo tests found%s" "$_BASHUNIT_COLOR_SKIPPED" "$_BASHUNIT_COLOR_DEFAULT"
       continue
     fi
 
@@ -79,11 +79,11 @@ function parallel::aggregate_test_results() {
     done
   done
 
-  export _ASSERTIONS_FAILED=$total_failed
-  export _ASSERTIONS_PASSED=$total_passed
-  export _ASSERTIONS_SKIPPED=$total_skipped
-  export _ASSERTIONS_INCOMPLETE=$total_incomplete
-  export _ASSERTIONS_SNAPSHOT=$total_snapshot
+  export _BASHUNIT_ASSERTIONS_FAILED=$total_failed
+  export _BASHUNIT_ASSERTIONS_PASSED=$total_passed
+  export _BASHUNIT_ASSERTIONS_SKIPPED=$total_skipped
+  export _BASHUNIT_ASSERTIONS_INCOMPLETE=$total_incomplete
+  export _BASHUNIT_ASSERTIONS_SNAPSHOT=$total_snapshot
 
   bashunit::internal_log "aggregate_totals" \
     "failed:$total_failed" \
@@ -112,7 +112,7 @@ function parallel::init() {
 }
 
 function parallel::is_enabled() {
-  bashunit::internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_OS:-Unknown}"
+  bashunit::internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
   if env::is_parallel_run_enabled && \
     (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then

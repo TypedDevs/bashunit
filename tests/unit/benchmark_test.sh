@@ -20,15 +20,15 @@ function test_run_function_collects_results() {
   # shellcheck disable=SC1090
   source "$SCRIPT"
 
-  _BENCH_NAMES=()
-  _BENCH_REVS=()
-  _BENCH_ITS=()
-  _BENCH_AVERAGES=()
+  _BASHUNIT_BENCH_NAMES=()
+  _BASHUNIT_BENCH_REVS=()
+  _BASHUNIT_BENCH_ITS=()
+  _BASHUNIT_BENCH_AVERAGES=()
 
   benchmark::run_function bench_sleep 2 1 ""
 
-  assert_same "bench_sleep" "${_BENCH_NAMES[0]}"
-  assert_same "2" "${_BENCH_REVS[0]}"
-  assert_same "1" "${_BENCH_ITS[0]}"
-  [[ -n "${_BENCH_AVERAGES[0]}" ]]
+  assert_same "bench_sleep" "${_BASHUNIT_BENCH_NAMES[0]}"
+  assert_same "2" "${_BASHUNIT_BENCH_REVS[0]}"
+  assert_same "1" "${_BASHUNIT_BENCH_ITS[0]}"
+  [[ -n "${_BASHUNIT_BENCH_AVERAGES[0]}" ]]
 }

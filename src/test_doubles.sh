@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-declare -a MOCKED_FUNCTIONS=()
+declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 
 function bashunit::unmock() {
   local command=$1
 
-  for i in "${!MOCKED_FUNCTIONS[@]}"; do
-    if [[ "${MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
-      unset "MOCKED_FUNCTIONS[$i]"
+  for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
+    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+      unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
       local variable
       variable="$(helper::normalize_variable_name "$command")"
@@ -34,7 +34,7 @@ function bashunit::mock() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
 }
 
 function bashunit::spy() {
@@ -67,7 +67,7 @@ function bashunit::spy() {
 
   export -f "${command?}"
 
-  MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
 }
 
 function assert_have_been_called() {

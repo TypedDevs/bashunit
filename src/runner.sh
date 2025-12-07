@@ -2,8 +2,8 @@
 # shellcheck disable=SC2155
 
 # Pre-compiled regex pattern for parsing test result assertions
-if [[ -z ${RUNNER_PARSE_RESULT_REGEX+x} ]]; then
-  declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
+if [[ -z ${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x} ]]; then
+  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
 'ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##'\
 'TEST_EXIT_CODE=([0-9]*)'
 fi
@@ -29,7 +29,7 @@ function runner::load_test_files() {
     # shellcheck source=/dev/null
     source "$test_file"
     # Update function cache after sourcing new test file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
     runner::run_set_up_before_script "$test_file"
     local setup_before_script_status=$?
@@ -37,7 +37,7 @@ function runner::load_test_files() {
       # Count the test functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
@@ -94,7 +94,7 @@ function runner::load_bench_files() {
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
     runner::run_set_up_before_script "$bench_file"
     local setup_before_script_status=$?
@@ -102,7 +102,7 @@ function runner::load_bench_files() {
       # Count the bench functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
@@ -261,7 +261,7 @@ function runner::call_test_functions() {
   local filter="$2"
   local prefix="test"
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -311,7 +311,7 @@ function runner::call_bench_functions() {
   local prefix="bench"
 
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
+  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -345,12 +345,12 @@ function runner::render_running_file_header() {
 
   if ! env::is_simple_output_enabled; then
     if env::is_verbose_enabled; then
-      printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+      printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     else
-      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+      printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     fi
   elif env::is_verbose_enabled; then
-    printf "\n\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
+    printf "\n\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}" "Running $script"
   fi
 }
 
@@ -661,7 +661,7 @@ function runner::parse_result_sync() {
   local test_exit_code=0
 
   # Use pre-compiled regex constant
-  if [[ $result_line =~ $RUNNER_PARSE_RESULT_REGEX ]]; then
+  if [[ $result_line =~ $_BASHUNIT_RUNNER_PARSE_RESULT_REGEX ]]; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"
@@ -672,12 +672,12 @@ function runner::parse_result_sync() {
 
   bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
-  ((_ASSERTIONS_PASSED += assertions_passed)) || true
-  ((_ASSERTIONS_FAILED += assertions_failed)) || true
-  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
-  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
-  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
-  ((_TEST_EXIT_CODE += test_exit_code)) || true
+  ((_BASHUNIT_ASSERTIONS_PASSED += assertions_passed)) || true
+  ((_BASHUNIT_ASSERTIONS_FAILED += assertions_failed)) || true
+  ((_BASHUNIT_ASSERTIONS_SKIPPED += assertions_skipped)) || true
+  ((_BASHUNIT_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
+  ((_BASHUNIT_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
+  ((_BASHUNIT_TEST_EXIT_CODE += test_exit_code)) || true
 
   bashunit::internal_log "result_summary" \
     "failed:$assertions_failed" \
@@ -900,8 +900,8 @@ function runner::record_test_hook_failure() {
 }
 
 function runner::clear_mocks() {
-  for i in "${!MOCKED_FUNCTIONS[@]}"; do
-    bashunit::unmock "${MOCKED_FUNCTIONS[$i]}"
+  for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
+    bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}"
   done
 }
 

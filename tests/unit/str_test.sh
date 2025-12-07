@@ -43,11 +43,11 @@ function test_rpad_custom_width_padding_text_too_long() {
 }
 
 function test_rpad_custom_width_padding_text_too_long_and_special_chars() {
-  local txt=$(printf "%s%s%s%s" "$_COLOR_PASSED" "ok: " "$_COLOR_DEFAULT" "very long text as well")
+  local txt=$(printf "%s%s%s%s" "$_BASHUNIT_COLOR_PASSED" "ok: " "$_BASHUNIT_COLOR_DEFAULT" "very long text as well")
   local actual=$(str::rpad "$txt" "100" 20)
 
   assert_same \
-    "$(printf "%sok: %svery long... 100" "$_COLOR_PASSED" "$_COLOR_DEFAULT")" \
+    "$(printf "%sok: %svery long... 100" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT")" \
     "$actual"
 }
 

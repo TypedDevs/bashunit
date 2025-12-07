@@ -120,7 +120,7 @@ function main::cmd_test() {
         inline_filter=$(helper::find_function_at_line "$resolved_file" "$line_number")
         if [[ -z "$inline_filter" ]]; then
           printf "%sError: No test function found at line %s in %s%s\n" \
-            "${_COLOR_FAILED}" "$line_number" "$resolved_file" "${_COLOR_DEFAULT}"
+            "${_BASHUNIT_COLOR_FAILED}" "$line_number" "$resolved_file" "${_BASHUNIT_COLOR_DEFAULT}"
           exit 1
         fi
       fi
@@ -278,7 +278,7 @@ function main::exec_tests() {
   bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
 
   if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
-    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     console_header::print_help
     exit 1
   fi
@@ -288,10 +288,10 @@ function main::exec_tests() {
   trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && main::handle_stop_on_failure_sync' EXIT
 
   if env::is_parallel_run_enabled && ! parallel::is_enabled; then
-    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_COLOR_INCOMPLETE}"
+    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_BASHUNIT_COLOR_INCOMPLETE}"
     printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"
-    printf "particularly involving race conditions.%s " "${_COLOR_DEFAULT}"
-    printf "%sFallback using --no-parallel%s\n" "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+    printf "particularly involving race conditions.%s " "${_BASHUNIT_COLOR_DEFAULT}"
+    printf "%sFallback using --no-parallel%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
   if parallel::is_enabled; then
@@ -321,7 +321,7 @@ function main::exec_tests() {
   fi
 
   if parallel::is_enabled && parallel::must_stop_on_failure; then
-    printf "\r%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+    printf "\r%sStop on failure enabled...%s\n"  "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
   console_results::print_failing_tests_and_reset
@@ -358,7 +358,7 @@ function main::exec_benchmarks() {
   bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
 
   if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
-    printf "%sError: At least one file path is required.%s\n" "${_COLOR_FAILED}" "${_COLOR_DEFAULT}"
+    printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     console_header::print_help
     exit 1
   fi
@@ -373,7 +373,7 @@ function main::exec_benchmarks() {
 }
 
 function main::cleanup() {
-  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
   bashunit::cleanup_script_temp_files
@@ -384,7 +384,7 @@ function main::cleanup() {
 }
 
 function main::handle_stop_on_failure_sync() {
-  printf "\n%sStop on failure enabled...%s\n"  "${_COLOR_SKIPPED}" "${_COLOR_DEFAULT}"
+  printf "\n%sStop on failure enabled...%s\n"  "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   console_results::print_failing_tests_and_reset
   console_results::print_incomplete_tests_and_reset
   console_results::print_skipped_tests_and_reset

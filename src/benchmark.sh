@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-_BENCH_NAMES=()
-_BENCH_REVS=()
-_BENCH_ITS=()
-_BENCH_AVERAGES=()
-_BENCH_MAX_MILLIS=()
+_BASHUNIT_BENCH_NAMES=()
+_BASHUNIT_BENCH_REVS=()
+_BASHUNIT_BENCH_ITS=()
+_BASHUNIT_BENCH_AVERAGES=()
+_BASHUNIT_BENCH_MAX_MILLIS=()
 
 function benchmark::parse_annotations() {
   local fn_name=$1
@@ -42,11 +42,11 @@ function benchmark::parse_annotations() {
 }
 
 function benchmark::add_result() {
-  _BENCH_NAMES+=("$1")
-  _BENCH_REVS+=("$2")
-  _BENCH_ITS+=("$3")
-  _BENCH_AVERAGES+=("$4")
-  _BENCH_MAX_MILLIS+=("$5")
+  _BASHUNIT_BENCH_NAMES+=("$1")
+  _BASHUNIT_BENCH_REVS+=("$2")
+  _BASHUNIT_BENCH_ITS+=("$3")
+  _BASHUNIT_BENCH_AVERAGES+=("$4")
+  _BASHUNIT_BENCH_MAX_MILLIS+=("$5")
 }
 
 # shellcheck disable=SC2155
@@ -89,7 +89,7 @@ function benchmark::print_results() {
     return
   fi
 
-  if (( ${#_BENCH_NAMES[@]} == 0 )); then
+  if (( ${#_BASHUNIT_BENCH_NAMES[@]} == 0 )); then
     return
   fi
 
@@ -102,7 +102,7 @@ function benchmark::print_results() {
   printf "\n"
 
   local has_threshold=false
-  for val in "${_BENCH_MAX_MILLIS[@]}"; do
+  for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]}"; do
     if [[ -n "$val" ]]; then
       has_threshold=true
       break
@@ -115,12 +115,12 @@ function benchmark::print_results() {
     printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
   fi
 
-  for i in "${!_BENCH_NAMES[@]}"; do
-    local name="${_BENCH_NAMES[$i]}"
-    local revs="${_BENCH_REVS[$i]}"
-    local its="${_BENCH_ITS[$i]}"
-    local avg="${_BENCH_AVERAGES[$i]}"
-    local max_ms="${_BENCH_MAX_MILLIS[$i]}"
+  for i in "${!_BASHUNIT_BENCH_NAMES[@]}"; do
+    local name="${_BASHUNIT_BENCH_NAMES[$i]}"
+    local revs="${_BASHUNIT_BENCH_REVS[$i]}"
+    local its="${_BASHUNIT_BENCH_ITS[$i]}"
+    local avg="${_BASHUNIT_BENCH_AVERAGES[$i]}"
+    local max_ms="${_BASHUNIT_BENCH_MAX_MILLIS[$i]}"
 
     if [[ -z "$max_ms" ]]; then
       printf '%-40s %6s %6s %10s\n' "$name" "$revs" "$its" "$avg"
@@ -138,7 +138,7 @@ function benchmark::print_results() {
     printf -v padded "%12s" "$raw"
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
-      "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"
+      "$_BASHUNIT_COLOR_FAILED" "$padded" "${_BASHUNIT_COLOR_DEFAULT}"
   done
 
   console_results::print_execution_time
