@@ -143,11 +143,7 @@ function bashunit::main::cmd_test() {
     exec >/dev/null 2>&1
   fi
 
-  if bashunit::env::is_strict_mode_enabled; then
-    set -euo pipefail
-  else
-    set +euo pipefail
-  fi
+  set +euo pipefail
 
   # Execute
   if [[ -n "$assert_fn" ]]; then
@@ -213,11 +209,7 @@ function bashunit::main::cmd_bench() {
   # shellcheck disable=SC1090
   [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
 
-  if bashunit::env::is_strict_mode_enabled; then
-    set -euo pipefail
-  else
-    set +euo pipefail
-  fi
+  set +euo pipefail
 
   bashunit::main::exec_benchmarks "$filter" "${args[@]}"
 }
