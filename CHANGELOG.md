@@ -3,24 +3,12 @@
 ## Unreleased
 
 ### Changed
-- Build script now outputs to temp directory (`${TMPDIR}/bashunit/build`) by default instead of `bin/`
-- Add `--cleanup` flag to build script to remove build artifacts after completion
-- **BREAKING:** Namespace all helper functions to avoid conflicts with user code (fixes #538)
-    - `skip` → `bashunit::skip`
-    - `todo` → `bashunit::todo`
-    - `fail` → `bashunit::fail`
-    - `mock` → `bashunit::mock`
-    - `unmock` → `bashunit::unmock`
-    - `spy` → `bashunit::spy`
-    - `temp_file` → `bashunit::temp_file`
-    - `temp_dir` → `bashunit::temp_dir`
-    - `data_set` → `bashunit::data_set`
-    - `current_dir` → `bashunit::current_dir`
-    - `current_filename` → `bashunit::current_filename`
-    - `random_str` → `bashunit::random_str`
-    - `log` → `bashunit::log`
-    - `set_test_title` → `bashunit::set_test_title`
-    - All `assert_*` functions remain unchanged
+- Build script now outputs to `bin/` by default
+- **BREAKING:** Namespace all internal functions and variables to prevent collisions with user code (fixes #538)
+    - All helper functions now use `bashunit::` prefix (e.g., `skip` → `bashunit::skip`)
+    - All internal functions now use `bashunit::` prefix (e.g., `helper::trim` → `bashunit::helper::trim`)
+    - All internal variables now use `_BASHUNIT_` prefix (e.g., `_TESTS_PASSED` → `_BASHUNIT_TESTS_PASSED`)
+    - All `assert_*` functions remain unchanged (public API)
 
 ### Fixed
 - Custom assertions now display the correct test function name in failure messages
