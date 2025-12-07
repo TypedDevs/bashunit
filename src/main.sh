@@ -140,7 +140,11 @@ function bashunit::main::cmd_test() {
     exec >/dev/null 2>&1
   fi
 
-  set +eu
+  if bashunit::env::is_strict_mode_enabled; then
+    set -euo pipefail
+  else
+    set +euo pipefail
+  fi
 
   # Execute
   if [[ -n "$assert_fn" ]]; then
