@@ -12,7 +12,7 @@ function assert_array_contains() {
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
+    bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
     return
   fi
 
@@ -30,7 +30,7 @@ function assert_array_not_contains() {
 
   if [[ "${actual[*]}" == *"$expected"* ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
+    bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
   fi
 

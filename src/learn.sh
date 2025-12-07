@@ -12,7 +12,7 @@ declare -r LEARN_PROGRESS_FILE="$HOME/.bashunit_learn_progress"
 ##
 # Initialize learning environment
 ##
-function learn::init() {
+function bashunit::learn::init() {
   mkdir -p "$LEARN_TEMP_DIR"
   mkdir -p tests
 }
@@ -20,14 +20,14 @@ function learn::init() {
 ##
 # Cleanup learning environment
 ##
-function learn::cleanup() {
+function bashunit::learn::cleanup() {
   rm -rf "$LEARN_TEMP_DIR"
 }
 
 ##
 # Print the learning menu
 ##
-function learn::print_menu() {
+function bashunit::learn::print_menu() {
   cat <<EOF
 ${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - Interactive Learning
 
@@ -55,30 +55,30 @@ EOF
 ##
 # Main learning loop
 ##
-function learn::start() {
-  learn::init
+function bashunit::learn::start() {
+  bashunit::learn::init
 
-  trap 'learn::cleanup' EXIT
+  trap 'bashunit::learn::cleanup' EXIT
 
   while true; do
     echo ""
-    learn::print_menu
+    bashunit::learn::print_menu
     read -r choice
     echo ""
 
     case "$choice" in
-      1) learn::lesson_basics || true ;;
-      2) learn::lesson_assertions || true ;;
-      3) learn::lesson_lifecycle || true ;;
-      4) learn::lesson_functions || true ;;
-      5) learn::lesson_scripts || true ;;
-      6) learn::lesson_mocking || true ;;
-      7) learn::lesson_spies || true ;;
-      8) learn::lesson_data_providers || true ;;
-      9) learn::lesson_exit_codes || true ;;
-      10) learn::lesson_challenge || true ;;
-      p) learn::show_progress ;;
-      r) learn::reset_progress ;;
+      1) bashunit::learn::lesson_basics || true ;;
+      2) bashunit::learn::lesson_assertions || true ;;
+      3) bashunit::learn::lesson_lifecycle || true ;;
+      4) bashunit::learn::lesson_functions || true ;;
+      5) bashunit::learn::lesson_scripts || true ;;
+      6) bashunit::learn::lesson_mocking || true ;;
+      7) bashunit::learn::lesson_spies || true ;;
+      8) bashunit::learn::lesson_data_providers || true ;;
+      9) bashunit::learn::lesson_exit_codes || true ;;
+      10) bashunit::learn::lesson_challenge || true ;;
+      p) bashunit::learn::show_progress ;;
+      r) bashunit::learn::reset_progress ;;
       q)
         echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
         break
@@ -89,13 +89,13 @@ function learn::start() {
     esac
   done
 
-  learn::cleanup
+  bashunit::learn::cleanup
 }
 
 ##
 # Mark lesson as completed
 ##
-function learn::mark_completed() {
+function bashunit::learn::mark_completed() {
   local lesson=$1
   echo "$lesson" >> "$LEARN_PROGRESS_FILE"
 }
@@ -103,7 +103,7 @@ function learn::mark_completed() {
 ##
 # Check if lesson is completed
 ##
-function learn::is_completed() {
+function bashunit::learn::is_completed() {
   local lesson=$1
   [[ -f "$LEARN_PROGRESS_FILE" ]] && grep -q "^$lesson$" "$LEARN_PROGRESS_FILE"
 }
@@ -111,7 +111,7 @@ function learn::is_completed() {
 ##
 # Show learning progress
 ##
-function learn::show_progress() {
+function bashunit::learn::show_progress() {
   if [[ ! -f "$LEARN_PROGRESS_FILE" ]]; then
     echo "${_BASHUNIT_COLOR_INCOMPLETE}No progress yet. Start with lesson 1!${_BASHUNIT_COLOR_DEFAULT}"
     return
@@ -124,7 +124,7 @@ function learn::show_progress() {
   local completed=0
 
   for i in $(seq 1 $total_lessons); do
-    if learn::is_completed "lesson_$i"; then
+    if bashunit::learn::is_completed "lesson_$i"; then
       echo "  ${_BASHUNIT_COLOR_PASSED}✓${_BASHUNIT_COLOR_DEFAULT} Lesson $i completed"
       ((completed++))
     else
@@ -146,7 +146,7 @@ function learn::show_progress() {
 ##
 # Reset learning progress
 ##
-function learn::reset_progress() {
+function bashunit::learn::reset_progress() {
   rm -f "$LEARN_PROGRESS_FILE"
   echo "${_BASHUNIT_COLOR_PASSED}Progress reset successfully.${_BASHUNIT_COLOR_DEFAULT}"
   read -p "Press Enter to continue..." -r
@@ -156,7 +156,7 @@ function learn::reset_progress() {
 # Create the example file automatically
 # Arguments: $1 - filename, $2 - file content
 ##
-function learn::create_example_file() {
+function bashunit::learn::create_example_file() {
   local filename=$1
   local content=$2
 
@@ -174,7 +174,7 @@ function learn::create_example_file() {
 ##
 # Run a lesson test and check results
 ##
-function learn::run_lesson_test() {
+function bashunit::learn::run_lesson_test() {
   local test_file=$1
   local lesson_number=$2
 
@@ -184,7 +184,7 @@ function learn::run_lesson_test() {
   if "$BASHUNIT_ROOT_DIR/bashunit" "$test_file" --simple; then
     echo ""
     echo "${_BASHUNIT_COLOR_PASSED}${_BASHUNIT_COLOR_BOLD}✓ Excellent! Lesson $lesson_number completed!${_BASHUNIT_COLOR_DEFAULT}"
-    learn::mark_completed "lesson_$lesson_number"
+    bashunit::learn::mark_completed "lesson_$lesson_number"
     read -p "Press Enter to continue..." -r
     return 0
   else
@@ -198,7 +198,7 @@ function learn::run_lesson_test() {
 ##
 # Lesson 1: Basics - Your First Test
 ##
-function learn::lesson_basics() {
+function bashunit::learn::lesson_basics() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -244,7 +244,7 @@ function test_bashunit_works() {
   # Hint: assert_same "expected" "actual"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -255,13 +255,13 @@ function test_bashunit_works() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 1
+  bashunit::learn::run_lesson_test "$test_file" 1
 }
 
 ##
 # Lesson 2: Assertions - Testing Different Conditions
 ##
-function learn::lesson_assertions() {
+function bashunit::learn::lesson_assertions() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -325,7 +325,7 @@ function test_multiple_assertions() {
   # Hint: assert_not_empty "$message"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -337,13 +337,13 @@ function test_multiple_assertions() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 2
+  bashunit::learn::run_lesson_test "$test_file" 2
 }
 
 ##
 # Lesson 3: Setup & Teardown - Managing Test Lifecycle
 ##
-function learn::lesson_lifecycle() {
+function bashunit::learn::lesson_lifecycle() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -417,7 +417,7 @@ function test_file_has_content() {
   # TODO: assert_file_contains "test content" "$TEST_FILE"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -428,13 +428,13 @@ function test_file_has_content() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 3
+  bashunit::learn::run_lesson_test "$test_file" 3
 }
 
 ##
 # Lesson 4: Testing Functions
 ##
-function learn::lesson_functions() {
+function bashunit::learn::lesson_functions() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -510,7 +510,7 @@ function test_add_negative_numbers() {
   # Hint: assert_same "-5" "$result"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -520,13 +520,13 @@ function test_add_negative_numbers() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 4
+  bashunit::learn::run_lesson_test "$test_file" 4
 }
 
 ##
 # Lesson 5: Testing Scripts
 ##
-function learn::lesson_scripts() {
+function bashunit::learn::lesson_scripts() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -599,17 +599,17 @@ function test_custom_greeting() {
   # Hint: assert_contains "Hello, Alice!" "$output"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 5
+  bashunit::learn::run_lesson_test "$test_file" 5
 }
 
 ##
 # Lesson 6: Mocking
 ##
-function learn::lesson_mocking() {
+function bashunit::learn::lesson_mocking() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -697,7 +697,7 @@ function test_system_info_on_macos() {
   # TODO: Assert output contains "OS: Darwin"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -707,13 +707,13 @@ function test_system_info_on_macos() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 6
+  bashunit::learn::run_lesson_test "$test_file" 6
 }
 
 ##
 # Lesson 7: Spies
 ##
-function learn::lesson_spies() {
+function bashunit::learn::lesson_spies() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -813,7 +813,7 @@ function test_deploy_calls_docker_twice() {
   # Hint: assert_have_been_called_times 2 docker
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -823,13 +823,13 @@ function test_deploy_calls_docker_twice() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 7
+  bashunit::learn::run_lesson_test "$test_file" 7
 }
 
 ##
 # Lesson 8: Data Providers
 ##
-function learn::lesson_data_providers() {
+function bashunit::learn::lesson_data_providers() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -925,7 +925,7 @@ function test_invalid_emails() {
   # Hint: assert_general_error "is_valid_email \"$1\""
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -935,13 +935,13 @@ function test_invalid_emails() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 8
+  bashunit::learn::run_lesson_test "$test_file" 8
 }
 
 ##
 # Lesson 9: Exit Codes
 ##
-function learn::lesson_exit_codes() {
+function bashunit::learn::lesson_exit_codes() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -1040,7 +1040,7 @@ function test_missing_file_returns_127() {
   # Hint: assert_exit_code 127 "check_file '\''/nonexistent/file'\''"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -1050,13 +1050,13 @@ function test_missing_file_returns_127() {
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 9
+  bashunit::learn::run_lesson_test "$test_file" 9
 }
 
 ##
 # Lesson 10: Complete Challenge
 ##
-function learn::lesson_challenge() {
+function bashunit::learn::lesson_challenge() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -1140,7 +1140,7 @@ function test_backup_failure_when_source_missing() {
 # - Test both success and failure scenarios
 # - Mock external commands to avoid side effects'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -1162,7 +1162,7 @@ function test_backup_failure_when_source_missing() {
     return 1
   fi
 
-  if learn::run_lesson_test "$test_file" 10; then
+  if bashunit::learn::run_lesson_test "$test_file" 10; then
     echo ""
     echo "${_BASHUNIT_COLOR_PASSED}${_BASHUNIT_COLOR_BOLD}"
     cat <<'EOF'

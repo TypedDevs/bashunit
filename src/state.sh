@@ -268,7 +268,7 @@ function bashunit::state::print_line() {
 
   bashunit::state::add_test_output "[$type]$line"
 
-  if ! env::is_simple_output_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return
   fi
@@ -286,7 +286,7 @@ function bashunit::state::print_line() {
     *)                char="?" && bashunit::log "warning" "unknown test type '$type'" ;;
   esac
 
-  if parallel::is_enabled; then
+  if bashunit::parallel::is_enabled; then
       printf "%s" "$char"
   else
     if (( _BASHUNIT_TOTAL_TESTS_COUNT % 50 == 0 )); then

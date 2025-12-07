@@ -106,7 +106,7 @@ function test_bashunit_assert_exit_code_error_with_inner_func() {
   assert_empty "$output"
 
   assert_file_contains "$temp" \
-    "$(console_results::print_failed_test "Main::exec assert" "0" "to be" "1")"
+    "$(bashunit::console_results::print_failed_test "Main::exec assert" "0" "to be" "1")"
 }
 
 function test_bashunit_assert_exit_code_str_successful_code() {
@@ -127,7 +127,7 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
   assert_same "something to stdout" "$output"
 
   assert_file_contains "$temp" \
-    "$(console_results::print_failed_test "Main::exec assert" "1" "but got " "0")"
+    "$(bashunit::console_results::print_failed_test "Main::exec assert" "1" "but got " "0")"
 }
 
 # shellcheck disable=SC2155

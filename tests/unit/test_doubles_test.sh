@@ -42,7 +42,7 @@ function test_unsuccessful_spy_called() {
   bashunit::spy ps
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")"\
     "$(assert_have_been_called ps)"
 }
 
@@ -63,7 +63,7 @@ function test_unsuccessful_spy_called_times() {
   ps
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful spy called times" "ps" \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called times" "ps" \
     "to have been called" "1 times" \
     "actual" "2 times")"\
     "$(assert_have_been_called_times 1 ps)"
@@ -88,7 +88,7 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
   function_to_be_spied_on
 
   assert_same\
-    "$(console_results::print_failed_test \
+    "$(bashunit::console_results::print_failed_test \
     "Unsuccessful spy with source function have been called"\
     "function_to_be_spied_on" \
     "to have been called" "1 times" \
@@ -161,7 +161,7 @@ function test_spy_unsuccessful_not_called() {
   ps
 
   assert_same \
-    "$(console_results::print_failed_test "Spy unsuccessful not called" "ps" \
+    "$(bashunit::console_results::print_failed_test "Spy unsuccessful not called" "ps" \
       "to have been called" "0 times" \
       "actual" "1 times")" \
     "$(assert_not_called ps)"

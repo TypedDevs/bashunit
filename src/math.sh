@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-function math::calculate() {
+function bashunit::math::calculate() {
   local expr="$*"
 
-  if dependencies::has_bc; then
+  if bashunit::dependencies::has_bc; then
     echo "$expr" | bc
     return
   fi
 
   if [[ "$expr" == *.* ]]; then
-    if dependencies::has_awk; then
+    if bashunit::dependencies::has_awk; then
       awk "BEGIN { print ($expr) }"
       return
     fi

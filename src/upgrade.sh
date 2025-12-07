@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function upgrade::upgrade() {
+function bashunit::upgrade::upgrade() {
   local script_path
   script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local latest_tag
@@ -14,7 +14,7 @@ function upgrade::upgrade() {
   echo "> Upgrading bashunit to latest version"
   cd "$script_path" || exit
 
-  if ! io::download_to  "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" "bashunit"; then
+  if ! bashunit::io::download_to  "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" "bashunit"; then
     echo "Failed to download bashunit"
   fi
 

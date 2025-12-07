@@ -58,7 +58,7 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
 }
 
 function test_assert_match_snapshot_with_placeholder() {
-  if ! dependencies::has_perl; then
+  if ! bashunit::dependencies::has_perl; then
     bashunit::skip "perl not available" && return
   fi
 
@@ -70,7 +70,7 @@ function test_assert_match_snapshot_with_placeholder() {
 }
 
 function test_assert_snapshot_with_custom_placeholder() {
-  if ! dependencies::has_perl; then
+  if ! bashunit::dependencies::has_perl; then
     bashunit::skip "perl not available" && return
   fi
 

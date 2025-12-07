@@ -15,8 +15,8 @@ function bashunit::assertion_failed() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-  assert::mark_failed
-  console_results::print_failed_test "${label}" "${expected}" \
+  bashunit::assert::mark_failed
+  bashunit::console_results::print_failed_test "${label}" "${expected}" \
     "$failure_condition_message" "${actual}"
 }
 

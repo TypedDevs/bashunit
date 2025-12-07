@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
 # Strip ANSI escape codes and control characters
-function str::strip_ansi() {
+function bashunit::str::strip_ansi() {
   local input="$1"
   echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g'
 }
 
-function str::rpad() {
+function bashunit::str::rpad() {
   local left_text="$1"
   local right_word="$2"
   local width_padding="${3:-$TERMINAL_WIDTH}"
@@ -18,7 +18,7 @@ function str::rpad() {
 
   # Remove ANSI escape sequences (non-visible characters) for length calculation
   # shellcheck disable=SC2155
-  local clean_left_text=$(str::strip_ansi "$left_text")
+  local clean_left_text=$(bashunit::str::strip_ansi "$left_text")
 
   local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."

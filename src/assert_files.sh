@@ -8,7 +8,7 @@ function assert_file_exists() {
 
   if [[ ! -f "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
@@ -23,7 +23,7 @@ function assert_file_not_exists() {
 
   if [[ -f "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
     return
   fi
 
@@ -38,7 +38,7 @@ function assert_is_file() {
 
   if [[ ! -f "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
     return
   fi
 
@@ -53,7 +53,7 @@ function assert_is_file_empty() {
 
   if [[ -s "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
@@ -71,7 +71,7 @@ function assert_files_equals() {
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::state::add_assertions_failed
 
-    console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
         "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
     return
   fi
@@ -90,7 +90,7 @@ function assert_files_not_equals() {
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::state::add_assertions_failed
 
-    console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
         "Diff" "Files are equals"
     return
   fi
@@ -109,7 +109,7 @@ function assert_file_contains() {
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::state::add_assertions_failed
 
-    console_results::print_failed_test "${label}" "${file}" "to contain" "${string}"
+    bashunit::console_results::print_failed_test "${label}" "${file}" "to contain" "${string}"
     return
   fi
 
@@ -127,7 +127,7 @@ function assert_file_not_contains() {
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::state::add_assertions_failed
 
-    console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
+    bashunit::console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
     return
   fi
 

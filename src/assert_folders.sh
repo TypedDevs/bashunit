@@ -8,7 +8,7 @@ function assert_directory_exists() {
 
   if [[ ! -d "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
@@ -23,7 +23,7 @@ function assert_directory_not_exists() {
 
   if [[ -d "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the directory exists"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the directory exists"
     return
   fi
 
@@ -38,7 +38,7 @@ function assert_is_directory() {
 
   if [[ ! -d "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be a directory" "but is not a directory"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be a directory" "but is not a directory"
     return
   fi
 
@@ -53,7 +53,7 @@ function assert_is_directory_empty() {
 
   if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
@@ -68,7 +68,7 @@ function assert_is_directory_not_empty() {
 
   if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to not be empty" "but is empty"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not be empty" "but is empty"
     return
   fi
 
@@ -83,7 +83,7 @@ function assert_is_directory_readable() {
 
   if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be readable" "but is not readable"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be readable" "but is not readable"
     return
   fi
 
@@ -98,7 +98,7 @@ function assert_is_directory_not_readable() {
 
   if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be not readable" "but is readable"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be not readable" "but is readable"
     return
   fi
 
@@ -113,7 +113,7 @@ function assert_is_directory_writable() {
 
   if [[ ! -d "$expected" || ! -w "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be writable" "but is not writable"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be writable" "but is not writable"
     return
   fi
 
@@ -128,7 +128,7 @@ function assert_is_directory_not_writable() {
 
   if [[ ! -d "$expected" || -w "$expected" ]]; then
     bashunit::state::add_assertions_failed
-    console_results::print_failed_test "${label}" "${expected}" "to be not writable" "but is writable"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be not writable" "but is writable"
     return
   fi
 

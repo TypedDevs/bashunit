@@ -64,8 +64,8 @@ source "$BASHUNIT_ROOT_DIR/src/init.sh"
 source "$BASHUNIT_ROOT_DIR/src/learn.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
-check_os::init
-clock::init
+bashunit::check_os::init
+bashunit::clock::init
 
 # Subcommand detection
 _SUBCOMMAND=""
@@ -76,11 +76,11 @@ case "${1:-}" in
     shift
     ;;
   -v|--version)
-    console_header::print_version
+    bashunit::console_header::print_version
     exit 0
     ;;
   -h|--help)
-    console_header::print_help
+    bashunit::console_header::print_help
     exit 0
     ;;
   -*)
@@ -99,10 +99,10 @@ esac
 
 # Route to subcommand handler
 case "$_SUBCOMMAND" in
-  test)    main::cmd_test "$@" ;;
-  bench)   main::cmd_bench "$@" ;;
-  doc)     main::cmd_doc "$@" ;;
-  init)    main::cmd_init "$@" ;;
-  learn)   main::cmd_learn "$@" ;;
-  upgrade) main::cmd_upgrade "$@" ;;
+  test)    bashunit::main::cmd_test "$@" ;;
+  bench)   bashunit::main::cmd_bench "$@" ;;
+  doc)     bashunit::main::cmd_doc "$@" ;;
+  init)    bashunit::main::cmd_init "$@" ;;
+  learn)   bashunit::main::cmd_learn "$@" ;;
+  upgrade) bashunit::main::cmd_upgrade "$@" ;;
 esac

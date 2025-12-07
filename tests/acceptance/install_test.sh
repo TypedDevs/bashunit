@@ -8,12 +8,12 @@ HAS_DOWNLOADER=0
 HAS_GIT=0
 
 function set_up_before_script() {
-  env::active_internet_connection
+  bashunit::env::active_internet_connection
   ACTIVE_INTERNET=$?
-  if dependencies::has_curl || dependencies::has_wget; then
+  if bashunit::dependencies::has_curl || bashunit::dependencies::has_wget; then
     HAS_DOWNLOADER=1
   fi
-  if dependencies::has_git; then
+  if bashunit::dependencies::has_git; then
     HAS_GIT=1
   fi
 }

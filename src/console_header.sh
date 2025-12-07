@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
-function console_header::print_version_with_env() {
+function bashunit::console_header::print_version_with_env() {
   local filter=${1:-}
   local files=("${@:2}")
 
-  if ! env::is_show_header_enabled; then
+  if ! bashunit::env::is_show_header_enabled; then
     return
   fi
 
-  console_header::print_version "$filter" "${files[@]}"
+  bashunit::console_header::print_version "$filter" "${files[@]}"
 
-  if env::is_dev_mode_enabled; then
+  if bashunit::env::is_dev_mode_enabled; then
     printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
   fi
 }
 
-function console_header::print_version() {
+function bashunit::console_header::print_version() {
   local filter=${1:-}
   if [[ -n "$filter" ]]; then
    shift
@@ -25,14 +25,14 @@ function console_header::print_version() {
   local total_tests
   if [[ ${#files[@]} -eq 0 ]]; then
     total_tests=0
-  elif parallel::is_enabled && env::is_simple_output_enabled; then
+  elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
     # Skip counting in parallel+simple mode for faster startup
     total_tests=0
   else
     total_tests=$(bashunit::helper::find_total_tests "$filter" "${files[@]}")
   fi
 
-  if env::is_header_ascii_art_enabled; then
+  if bashunit::env::is_header_ascii_art_enabled; then
     cat <<EOF
  _               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
@@ -57,7 +57,7 @@ EOF
   fi
 }
 
-function console_header::print_help() {
+function bashunit::console_header::print_help() {
     cat <<EOF
 Usage: bashunit <command> [arguments] [options]
 
@@ -86,7 +86,7 @@ More info: https://bashunit.typeddevs.com/command-line
 EOF
 }
 
-function console_header::print_test_help() {
+function bashunit::console_header::print_test_help() {
     cat <<EOF
 Usage: bashunit test [path] [options]
        bashunit [path] [options]
@@ -122,7 +122,7 @@ Examples:
 EOF
 }
 
-function console_header::print_bench_help() {
+function bashunit::console_header::print_bench_help() {
     cat <<EOF
 Usage: bashunit bench [path] [options]
 
@@ -146,7 +146,7 @@ Examples:
 EOF
 }
 
-function console_header::print_doc_help() {
+function bashunit::console_header::print_doc_help() {
     cat <<EOF
 Usage: bashunit doc [filter]
 
@@ -162,7 +162,7 @@ Examples:
 EOF
 }
 
-function console_header::print_init_help() {
+function bashunit::console_header::print_init_help() {
     cat <<EOF
 Usage: bashunit init [directory]
 
@@ -181,7 +181,7 @@ Examples:
 EOF
 }
 
-function console_header::print_learn_help() {
+function bashunit::console_header::print_learn_help() {
     cat <<EOF
 Usage: bashunit learn
 
@@ -203,7 +203,7 @@ Your progress is saved automatically.
 EOF
 }
 
-function console_header::print_upgrade_help() {
+function bashunit::console_header::print_upgrade_help() {
     cat <<EOF
 Usage: bashunit upgrade
 

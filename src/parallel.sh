@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function parallel::aggregate_test_results() {
+function bashunit::parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
 
   bashunit::internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
@@ -93,29 +93,29 @@ function parallel::aggregate_test_results() {
     "snapshot:$total_snapshot"
 }
 
-function parallel::mark_stop_on_failure() {
+function bashunit::parallel::mark_stop_on_failure() {
   touch "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
 
-function parallel::must_stop_on_failure() {
+function bashunit::parallel::must_stop_on_failure() {
   [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
 }
 
-function parallel::cleanup() {
+function bashunit::parallel::cleanup() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
 }
 
-function parallel::init() {
-  parallel::cleanup
+function bashunit::parallel::init() {
+  bashunit::parallel::cleanup
   mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
 }
 
-function parallel::is_enabled() {
-  bashunit::internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
+function bashunit::parallel::is_enabled() {
+  bashunit::internal_log "bashunit::parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
-  if env::is_parallel_run_enabled && \
-    (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
+  if bashunit::env::is_parallel_run_enabled && \
+    (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu || bashunit::check_os::is_windows); then
     return 0
   fi
   return 1

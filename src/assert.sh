@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Helper to mark assertion as failed and set the guard flag
-function assert::mark_failed() {
+function bashunit::assert::mark_failed() {
   bashunit::state::add_assertions_failed
   bashunit::state::mark_assertion_failed_in_test
 }
@@ -15,8 +15,8 @@ function bashunit::fail() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-  assert::mark_failed
-  console_results::print_failure_message "${label}" "$message"
+  bashunit::assert::mark_failed
+  bashunit::console_results::print_failure_message "${label}" "$message"
 }
 
 function assert_true() {
@@ -84,8 +84,8 @@ function bashunit::handle_bool_assertion_failure() {
   local label
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
 
-  assert::mark_failed
-  console_results::print_failed_test "$label" "$expected" "but got " "$got"
+  bashunit::assert::mark_failed
+  bashunit::console_results::print_failed_test "$label" "$expected" "but got " "$got"
 }
 
 function assert_same() {
@@ -99,8 +99,8 @@ function assert_same() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
 
@@ -114,17 +114,17 @@ function assert_equals() {
   local actual="$2"
 
   local actual_cleaned
-  actual_cleaned=$(str::strip_ansi "$actual")
+  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
   local expected_cleaned
-  expected_cleaned=$(str::strip_ansi "$expected")
+  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
 
   if [[ "$expected_cleaned" != "$actual_cleaned" ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
     return
   fi
 
@@ -138,17 +138,17 @@ function assert_not_equals() {
   local actual="$2"
 
   local actual_cleaned
-  actual_cleaned=$(str::strip_ansi "$actual")
+  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
   local expected_cleaned
-  expected_cleaned=$(str::strip_ansi "$expected")
+  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
 
   if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
     return
   fi
 
@@ -165,8 +165,8 @@ function assert_empty() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "to be empty" "but got " "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "to be empty" "but got " "${expected}"
     return
   fi
 
@@ -183,8 +183,8 @@ function assert_not_empty() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "to not be empty" "but got " "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "to not be empty" "but got " "${expected}"
     return
   fi
 
@@ -202,8 +202,8 @@ function assert_not_same() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
     return
   fi
 
@@ -223,8 +223,8 @@ function assert_contains() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     return
   fi
 
@@ -244,8 +244,8 @@ function assert_contains_ignore_case() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     shopt -u nocasematch
     return
   fi
@@ -267,8 +267,8 @@ function assert_not_contains() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
     return
   fi
 
@@ -288,8 +288,8 @@ function assert_matches() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
     return
   fi
 
@@ -309,8 +309,8 @@ function assert_not_matches() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to not match" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not match" "${expected}"
     return
   fi
 
@@ -394,8 +394,8 @@ function assert_exec() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "$label" "$expected_desc" "but got " "$actual_desc"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "$label" "$expected_desc" "but got " "$actual_desc"
     return
   fi
 
@@ -413,8 +413,8 @@ function assert_exit_code() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
 
@@ -432,8 +432,8 @@ function assert_successful_code() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -449,8 +449,8 @@ function assert_unsuccessful_code() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be non-zero" "but was 0"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be non-zero" "but was 0"
     return
   fi
 
@@ -468,8 +468,8 @@ function assert_general_error() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -487,8 +487,8 @@ function assert_command_not_found() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -508,8 +508,8 @@ function assert_string_starts_with() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
     return
   fi
 
@@ -527,8 +527,8 @@ function assert_string_not_starts_with() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
     return
   fi
 
@@ -548,8 +548,8 @@ function assert_string_ends_with() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
     return
   fi
 
@@ -569,8 +569,8 @@ function assert_string_not_ends_with() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
     return
   fi
 
@@ -588,8 +588,8 @@ function assert_less_than() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
     return
   fi
 
@@ -607,8 +607,8 @@ function assert_less_or_equal_than() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to be less or equal than" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be less or equal than" "${expected}"
     return
   fi
 
@@ -626,8 +626,8 @@ function assert_greater_than() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to be greater than" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be greater than" "${expected}"
     return
   fi
 
@@ -645,8 +645,8 @@ function assert_greater_or_equal_than() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${actual}" "to be greater or equal than" "${expected}"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be greater or equal than" "${expected}"
     return
   fi
 
@@ -677,8 +677,8 @@ function assert_line_count() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
 
-    assert::mark_failed
-    console_results::print_failed_test "${label}" "${input_str}"\
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${input_str}"\
       "to contain number of lines equal to" "${expected}"\
       "but found" "${actual}"
     return

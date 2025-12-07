@@ -46,59 +46,59 @@ _BASHUNIT_DEFAULT_SHOW_INCOMPLETE="false"
 : "${BASHUNIT_SHOW_SKIPPED:=${SHOW_SKIPPED:=$_BASHUNIT_DEFAULT_SHOW_SKIPPED}}"
 : "${BASHUNIT_SHOW_INCOMPLETE:=${SHOW_INCOMPLETE:=$_BASHUNIT_DEFAULT_SHOW_INCOMPLETE}}"
 
-function env::is_parallel_run_enabled() {
+function bashunit::env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
 }
 
-function env::is_show_header_enabled() {
+function bashunit::env::is_show_header_enabled() {
   [[ "$BASHUNIT_SHOW_HEADER" == "true" ]]
 }
 
-function env::is_header_ascii_art_enabled() {
+function bashunit::env::is_header_ascii_art_enabled() {
   [[ "$BASHUNIT_HEADER_ASCII_ART" == "true" ]]
 }
 
-function env::is_simple_output_enabled() {
+function bashunit::env::is_simple_output_enabled() {
   [[ "$BASHUNIT_SIMPLE_OUTPUT" == "true" ]]
 }
 
-function env::is_stop_on_failure_enabled() {
+function bashunit::env::is_stop_on_failure_enabled() {
   [[ "$BASHUNIT_STOP_ON_FAILURE" == "true" ]]
 }
 
-function env::is_show_execution_time_enabled() {
+function bashunit::env::is_show_execution_time_enabled() {
   [[ "$BASHUNIT_SHOW_EXECUTION_TIME" == "true" ]]
 }
 
-function env::is_dev_mode_enabled() {
+function bashunit::env::is_dev_mode_enabled() {
   [[ -n "$BASHUNIT_DEV_LOG" ]]
 }
 
-function env::is_internal_log_enabled() {
+function bashunit::env::is_internal_log_enabled() {
   [[ "$BASHUNIT_INTERNAL_LOG" == "true" ]]
 }
 
-function env::is_verbose_enabled() {
+function bashunit::env::is_verbose_enabled() {
   [[ "$BASHUNIT_VERBOSE" == "true" ]]
 }
 
-function env::is_bench_mode_enabled() {
+function bashunit::env::is_bench_mode_enabled() {
   [[ "$BASHUNIT_BENCH_MODE" == "true" ]]
 }
 
-function env::is_no_output_enabled() {
+function bashunit::env::is_no_output_enabled() {
   [[ "$BASHUNIT_NO_OUTPUT" == "true" ]]
 }
 
-function env::is_show_skipped_enabled() {
+function bashunit::env::is_show_skipped_enabled() {
   [[ "$BASHUNIT_SHOW_SKIPPED" == "true" ]]
 }
 
-function env::is_show_incomplete_enabled() {
+function bashunit::env::is_show_incomplete_enabled() {
   [[ "$BASHUNIT_SHOW_INCOMPLETE" == "true" ]]
 }
 
-function env::active_internet_connection() {
+function bashunit::env::active_internet_connection() {
   if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
     return 1
   fi
@@ -116,7 +116,7 @@ function env::active_internet_connection() {
   return 1
 }
 
-function env::find_terminal_width() {
+function bashunit::env::find_terminal_width() {
   local cols=""
 
   if [[ -z "$cols" ]] && command -v tput > /dev/null; then
@@ -131,7 +131,7 @@ function env::find_terminal_width() {
   echo "${cols:-100}"
 }
 
-function env::print_verbose() {
+function bashunit::env::print_verbose() {
   bashunit::internal_log "Printing verbose environment variables"
   local keys=(
     "BASHUNIT_DEFAULT_PATH"
@@ -167,7 +167,7 @@ EXIT_CODE_STOP_ON_FAILURE=4
 # recursively or multiple instances are executed in parallel.
 TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
-TERMINAL_WIDTH="$(env::find_terminal_width)"
+TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
 FAILURES_OUTPUT_PATH=$(mktemp)
 SKIPPED_OUTPUT_PATH=$(mktemp)
 INCOMPLETE_OUTPUT_PATH=$(mktemp)
@@ -177,6 +177,6 @@ CAT="$(command -v cat)"
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
 mkdir -p "$BASHUNIT_TEMP_DIR" && chmod -R 777 "$BASHUNIT_TEMP_DIR"
 
-if env::is_dev_mode_enabled; then
+if bashunit::env::is_dev_mode_enabled; then
   bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
 fi

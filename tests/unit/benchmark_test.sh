@@ -9,11 +9,11 @@ function set_up() {
 }
 
 function test_parse_annotations() {
-  assert_same "5 2 25" "$(benchmark::parse_annotations bench_sleep "$SCRIPT")"
+  assert_same "5 2 25" "$(bashunit::benchmark::parse_annotations bench_sleep "$SCRIPT")"
 }
 
 function test_parse_annotations_with_synonyms() {
-  assert_same "3 2" "$(benchmark::parse_annotations bench_sleep_synonym "$SCRIPT")"
+  assert_same "3 2" "$(bashunit::benchmark::parse_annotations bench_sleep_synonym "$SCRIPT")"
 }
 
 function test_run_function_collects_results() {
@@ -25,7 +25,7 @@ function test_run_function_collects_results() {
   _BASHUNIT_BENCH_ITS=()
   _BASHUNIT_BENCH_AVERAGES=()
 
-  benchmark::run_function bench_sleep 2 1 ""
+  bashunit::benchmark::run_function bench_sleep 2 1 ""
 
   assert_same "bench_sleep" "${_BASHUNIT_BENCH_NAMES[0]}"
   assert_same "2" "${_BASHUNIT_BENCH_REVS[0]}"

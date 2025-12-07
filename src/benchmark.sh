@@ -6,7 +6,7 @@ _BASHUNIT_BENCH_ITS=()
 _BASHUNIT_BENCH_AVERAGES=()
 _BASHUNIT_BENCH_MAX_MILLIS=()
 
-function benchmark::parse_annotations() {
+function bashunit::benchmark::parse_annotations() {
   local fn_name=$1
   local script=$2
   local revs=1
@@ -41,7 +41,7 @@ function benchmark::parse_annotations() {
   fi
 }
 
-function benchmark::add_result() {
+function bashunit::benchmark::add_result() {
   _BASHUNIT_BENCH_NAMES+=("$1")
   _BASHUNIT_BENCH_REVS+=("$2")
   _BASHUNIT_BENCH_ITS+=("$3")
@@ -50,7 +50,7 @@ function benchmark::add_result() {
 }
 
 # shellcheck disable=SC2155
-function benchmark::run_function() {
+function bashunit::benchmark::run_function() {
   local fn_name=$1
   local revs=$2
   local its=$3
@@ -58,18 +58,18 @@ function benchmark::run_function() {
   local durations=()
 
   for ((i=1; i<=its; i++)); do
-    local start_time=$(clock::now)
+    local start_time=$(bashunit::clock::now)
     (
       for ((r=1; r<=revs; r++)); do
         "$fn_name" >/dev/null 2>&1
       done
     )
-    local end_time=$(clock::now)
-    local dur_ns=$(math::calculate "($end_time - $start_time)")
-    local dur_ms=$(math::calculate "$dur_ns / 1000000")
+    local end_time=$(bashunit::clock::now)
+    local dur_ns=$(bashunit::math::calculate "($end_time - $start_time)")
+    local dur_ms=$(bashunit::math::calculate "$dur_ns / 1000000")
     durations+=("$dur_ms")
 
-    if env::is_bench_mode_enabled; then
+    if bashunit::env::is_bench_mode_enabled; then
       local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
       local line="$label [$i/$its] ${dur_ms} ms"
       bashunit::state::print_line "successful" "$line"
@@ -78,14 +78,14 @@ function benchmark::run_function() {
 
   local sum=0
   for d in "${durations[@]}"; do
-    sum=$(math::calculate "$sum + $d")
+    sum=$(bashunit::math::calculate "$sum + $d")
   done
-  local avg=$(math::calculate "$sum / ${#durations[@]}")
-  benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
+  local avg=$(bashunit::math::calculate "$sum / ${#durations[@]}")
+  bashunit::benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
 }
 
-function benchmark::print_results() {
-  if ! env::is_bench_mode_enabled; then
+function bashunit::benchmark::print_results() {
+  if ! bashunit::env::is_bench_mode_enabled; then
     return
   fi
 
@@ -93,7 +93,7 @@ function benchmark::print_results() {
     return
   fi
 
-  if env::is_simple_output_enabled; then
+  if bashunit::env::is_simple_output_enabled; then
     printf "\n"
   fi
 
@@ -141,5 +141,5 @@ function benchmark::print_results() {
       "$_BASHUNIT_COLOR_FAILED" "$padded" "${_BASHUNIT_COLOR_DEFAULT}"
   done
 
-  console_results::print_execution_time
+  bashunit::console_results::print_execution_time
 }

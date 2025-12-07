@@ -47,31 +47,31 @@ function bashunit::runner::load_test_files() {
         done
       fi
       bashunit::runner::clean_set_up_and_tear_down_after_script
-      if ! parallel::is_enabled; then
+      if ! bashunit::parallel::is_enabled; then
         bashunit::cleanup_script_temp_files
       fi
       bashunit::runner::restore_workdir
       continue
     fi
-    if parallel::is_enabled; then
+    if bashunit::parallel::is_enabled; then
       bashunit::runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
     else
       bashunit::runner::call_test_functions "$test_file" "$filter"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_set_up_and_tear_down_after_script
-    if ! parallel::is_enabled; then
+    if ! bashunit::parallel::is_enabled; then
       bashunit::cleanup_script_temp_files
     fi
     bashunit::internal_log "Finished file" "$test_file"
     bashunit::runner::restore_workdir
   done
 
-  if parallel::is_enabled; then
+  if bashunit::parallel::is_enabled; then
     wait
     bashunit::runner::spinner &
     local spinner_pid=$!
-    parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r  \r" # Clear the spinner output
@@ -132,7 +132,7 @@ function bashunit::runner::spinner() {
     return
   fi
 
-  if env::is_simple_output_enabled; then
+  if bashunit::env::is_simple_output_enabled; then
     printf "\n"
   fi
 
@@ -273,7 +273,7 @@ function bashunit::runner::call_test_functions() {
   bashunit::helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
-    if parallel::is_enabled && parallel::must_stop_on_failure; then
+    if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
     fi
 
@@ -300,7 +300,7 @@ function bashunit::runner::call_test_functions() {
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
@@ -319,17 +319,17 @@ function bashunit::runner::call_bench_functions() {
     return
   fi
 
-  if env::is_bench_mode_enabled; then
+  if bashunit::env::is_bench_mode_enabled; then
     bashunit::runner::render_running_file_header "$script"
   fi
 
   for fn_name in "${functions_to_run[@]}"; do
-    read -r revs its max_ms <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
-    benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
+    read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
+    bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
@@ -339,24 +339,24 @@ function bashunit::runner::render_running_file_header() {
 
   bashunit::internal_log "Running file" "$script"
 
-  if parallel::is_enabled; then
+  if bashunit::parallel::is_enabled; then
     return
   fi
 
-  if ! env::is_simple_output_enabled; then
-    if env::is_verbose_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
+    if bashunit::env::is_verbose_enabled; then
       printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     else
       printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     fi
-  elif env::is_verbose_enabled; then
+  elif bashunit::env::is_verbose_enabled; then
     printf "\n\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}" "Running $script"
   fi
 }
 
 function bashunit::runner::run_test() {
   local start_time
-  start_time=$(clock::now)
+  start_time=$(bashunit::clock::now)
 
   local test_file="$1"
   shift
@@ -409,12 +409,12 @@ function bashunit::runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  local end_time=$(clock::now)
+  local end_time=$(bashunit::clock::now)
   local duration_ns=$((end_time - start_time))
   local duration=$((duration_ns / 1000000))
 
-  if env::is_verbose_enabled; then
-    if env::is_simple_output_enabled; then
+  if bashunit::env::is_verbose_enabled; then
+    if bashunit::env::is_simple_output_enabled; then
       echo ""
     fi
 
@@ -510,8 +510,8 @@ function bashunit::runner::run_test() {
     elif [[ -z "$error_message" && -n "$hook_message" ]]; then
       error_message="$hook_message"
     fi
-    console_results::print_error_test "$failure_function" "$error_message"
-    reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    bashunit::console_results::print_error_test "$failure_function" "$error_message"
+    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
@@ -519,14 +519,14 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
     bashunit::state::add_tests_failed
-    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
     bashunit::internal_log "Test failed" "$label"
 
-    if env::is_stop_on_failure_enabled; then
-      if parallel::is_enabled; then
-        parallel::mark_stop_on_failure
+    if bashunit::env::is_stop_on_failure_enabled; then
+      if bashunit::parallel::is_enabled; then
+        bashunit::parallel::mark_stop_on_failure
       else
         exit "$EXIT_CODE_STOP_ON_FAILURE"
       fi
@@ -536,15 +536,15 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_snapshot" != "$(bashunit::state::get_assertions_snapshot)" ]]; then
     bashunit::state::add_tests_snapshot
-    console_results::print_snapshot_test "$label"
-    reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::console_results::print_snapshot_test "$label"
+    bashunit::reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::internal_log "Test snapshot" "$label"
     return
   fi
 
   if [[ "$current_assertions_incomplete" != "$(bashunit::state::get_assertions_incomplete)" ]]; then
     bashunit::state::add_tests_incomplete
-    reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test incomplete" "$label"
     return
@@ -552,19 +552,19 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_skipped" != "$(bashunit::state::get_assertions_skipped)" ]]; then
     bashunit::state::add_tests_skipped
-    reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test skipped" "$label"
     return
   fi
 
   if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
-    console_results::print_successful_test "${label}" "$duration" "$@"
+    bashunit::console_results::print_successful_test "${label}" "$duration" "$@"
   else
-    console_results::print_successful_test "${label}" "$duration"
+    bashunit::console_results::print_successful_test "${label}" "$duration"
   fi
   bashunit::state::add_tests_passed
-  reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
+  bashunit::reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   bashunit::internal_log "Test passed" "$label"
 }
 
@@ -603,7 +603,7 @@ function bashunit::runner::parse_result() {
   shift
   local args=("$@")
 
-  if parallel::is_enabled; then
+  if bashunit::parallel::is_enabled; then
     bashunit::runner::parse_result_parallel "$fn_name" "$execution_result" "${args[@]}"
   else
     bashunit::runner::parse_result_sync "$fn_name" "$execution_result"
@@ -697,7 +697,7 @@ function bashunit::runner::write_failure_result_output() {
   line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
+  if ! bashunit::parallel::is_enabled; then
     test_nr=$(bashunit::state::get_tests_failed)
   fi
 
@@ -713,7 +713,7 @@ function bashunit::runner::write_skipped_result_output() {
   line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
+  if ! bashunit::parallel::is_enabled; then
     test_nr=$(bashunit::state::get_tests_skipped)
   fi
 
@@ -729,7 +729,7 @@ function bashunit::runner::write_incomplete_result_output() {
   line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
+  if ! bashunit::parallel::is_enabled; then
     test_nr=$(bashunit::state::get_tests_incomplete)
   fi
 
@@ -752,8 +752,8 @@ function bashunit::runner::record_file_hook_failure() {
   fi
 
   bashunit::state::add_tests_failed
-  console_results::print_error_test "$hook_name" "$hook_output"
-  reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
+  bashunit::console_results::print_error_test "$hook_name" "$hook_output"
+  bashunit::reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
   bashunit::runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"

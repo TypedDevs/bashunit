@@ -7,27 +7,27 @@ _BASHUNIT_REPORTS_TEST_STATUSES=()
 _BASHUNIT_REPORTS_TEST_DURATIONS=()
 _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
 
-function reports::add_test_snapshot() {
-  reports::add_test "$1" "$2" "$3" "$4" "snapshot"
+function bashunit::reports::add_test_snapshot() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "snapshot"
 }
 
-function reports::add_test_incomplete() {
-  reports::add_test "$1" "$2" "$3" "$4" "incomplete"
+function bashunit::reports::add_test_incomplete() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "incomplete"
 }
 
-function reports::add_test_skipped() {
-  reports::add_test "$1" "$2" "$3" "$4" "skipped"
+function bashunit::reports::add_test_skipped() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "skipped"
 }
 
-function reports::add_test_passed() {
-  reports::add_test "$1" "$2" "$3" "$4" "passed"
+function bashunit::reports::add_test_passed() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "passed"
 }
 
-function reports::add_test_failed() {
-  reports::add_test "$1" "$2" "$3" "$4" "failed"
+function bashunit::reports::add_test_failed() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "failed"
 }
 
-function reports::add_test() {
+function bashunit::reports::add_test() {
   # Skip tracking when no report output is requested
   [[ -n "${BASHUNIT_LOG_JUNIT:-}" || -n "${BASHUNIT_REPORT_HTML:-}" ]] || return 0
 
@@ -44,7 +44,7 @@ function reports::add_test() {
   _BASHUNIT_REPORTS_TEST_DURATIONS+=("$duration")
 }
 
-function reports::generate_junit_xml() {
+function bashunit::reports::generate_junit_xml() {
   local output_file="$1"
 
   local test_passed=$(bashunit::state::get_tests_passed)
@@ -52,7 +52,7 @@ function reports::generate_junit_xml() {
   local tests_incomplete=$(bashunit::state::get_tests_incomplete)
   local tests_snapshot=$(bashunit::state::get_tests_snapshot)
   local tests_failed=$(bashunit::state::get_tests_failed)
-  local time=$(clock::total_runtime_in_milliseconds)
+  local time=$(bashunit::clock::total_runtime_in_milliseconds)
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -82,7 +82,7 @@ function reports::generate_junit_xml() {
   } > "$output_file"
 }
 
-function reports::generate_report_html() {
+function bashunit::reports::generate_report_html() {
   local output_file="$1"
 
   local test_passed=$(bashunit::state::get_tests_passed)
@@ -90,7 +90,7 @@ function reports::generate_report_html() {
   local tests_incomplete=$(bashunit::state::get_tests_incomplete)
   local tests_snapshot=$(bashunit::state::get_tests_snapshot)
   local tests_failed=$(bashunit::state::get_tests_failed)
-  local time=$(clock::total_runtime_in_milliseconds)
+  local time=$(bashunit::clock::total_runtime_in_milliseconds)
 
   # Temporary file to store test cases by file
   local temp_file="temp_test_cases.txt"

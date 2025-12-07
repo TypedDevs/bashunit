@@ -282,7 +282,7 @@ function bashunit::helper::trim() {
 }
 
 function bashunit::helper::get_latest_tag() {
-  if ! dependencies::has_git; then
+  if ! bashunit::dependencies::has_git; then
     return 1
   fi
 
@@ -404,7 +404,7 @@ function bashunit::helper::generate_id() {
   local basename="$1"
   local sanitized_basename
   sanitized_basename="$(bashunit::helper::normalize_variable_name "$basename")"
-  if env::is_parallel_run_enabled; then
+  if bashunit::env::is_parallel_run_enabled; then
     echo "${sanitized_basename}_$$_$(bashunit::random_str 6)"
   else
     echo "${sanitized_basename}_$$"

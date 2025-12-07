@@ -79,7 +79,7 @@ function bashunit::cleanup_script_temp_files() {
 
 # shellcheck disable=SC2145
 function bashunit::log() {
-  if ! env::is_dev_mode_enabled; then
+  if ! bashunit::env::is_dev_mode_enabled; then
     return
   fi
 
@@ -99,7 +99,7 @@ function bashunit::log() {
 }
 
 function bashunit::internal_log() {
-  if ! env::is_dev_mode_enabled || ! env::is_internal_log_enabled; then
+  if ! bashunit::env::is_dev_mode_enabled || ! bashunit::env::is_internal_log_enabled; then
     return
   fi
 
