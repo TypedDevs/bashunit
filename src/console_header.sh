@@ -49,7 +49,8 @@ EOF
   fi
 
   if [ "$total_tests" -eq 0 ]; then
-    printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s\n" "$BASHUNIT_VERSION"
+    printf "%s%sbashunit%s - %s\n" \
+      "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$BASHUNIT_VERSION"
   else
     printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n"\
       "$BASHUNIT_VERSION"\

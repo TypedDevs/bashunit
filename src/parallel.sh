@@ -112,7 +112,8 @@ function bashunit::parallel::init() {
 }
 
 function bashunit::parallel::is_enabled() {
-  bashunit::internal_log "bashunit::parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
+  bashunit::internal_log "bashunit::parallel::is_enabled" \
+    "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
   if bashunit::env::is_parallel_run_enabled && \
     (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu || bashunit::check_os::is_windows); then

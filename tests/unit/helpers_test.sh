@@ -36,7 +36,9 @@ function test_normalize_test_function_name_camel_case() {
 
 function test_normalize_test_function_name_custom_title() {
   bashunit::set_test_title "🔥 handles invalid input with 💣"
-  assert_same "🔥 handles invalid input with 💣" "$(bashunit::helper::normalize_test_function_name "test_handles_invalid_input")"
+  local expected="🔥 handles invalid input with 💣"
+  assert_same "$expected" \
+    "$(bashunit::helper::normalize_test_function_name "test_handles_invalid_input")"
 }
 
 function test_normalize_test_function_name_uses_current_interpolated_name_from_state() {
@@ -127,9 +129,11 @@ function test_normalize_variable_name() {
   assert_same "_123_starting_with_numbers" "$(bashunit::helper::normalize_variable_name "123_starting_with_numbers")"
   assert_same "variable_name_with_spaces" "$(bashunit::helper::normalize_variable_name "variable name with spaces")"
   assert_same "variable_name_with_hyphens" "$(bashunit::helper::normalize_variable_name "variable-name-with-hyphens")"
-  assert_same "_123_variable_name_" "$(bashunit::helper::normalize_variable_name "123 variable-name!")"
+  assert_same "_123_variable_name_" \
+    "$(bashunit::helper::normalize_variable_name "123 variable-name!")"
   assert_same "_" "$(bashunit::helper::normalize_variable_name "")"
-  assert_same "variable_name_with_underscores" "$(bashunit::helper::normalize_variable_name "variable_name_with_underscores")"
+  assert_same "variable_name_with_underscores" \
+    "$(bashunit::helper::normalize_variable_name "variable_name_with_underscores")"
   assert_same "_variable" "$(bashunit::helper::normalize_variable_name "_variable")"
   assert_same "__________" "$(bashunit::helper::normalize_variable_name "!@#$%^&*()")"
 }
@@ -145,7 +149,8 @@ function test_get_provider_data() {
     return 0
   }
 
-  assert_same "data_provided" "$(bashunit::helper::get_provider_data "fake_function_get_provider_data" "${BASH_SOURCE[0]}")"
+  assert_same "data_provided" \
+    "$(bashunit::helper::get_provider_data "fake_function_get_provider_data" "${BASH_SOURCE[0]}")"
 }
 
 function fake_provider_data_array() {
@@ -172,7 +177,8 @@ function test_get_provider_data_should_returns_empty_when_not_exists_provider_fu
     return 0
   }
 
-  assert_same "" "$(bashunit::helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
+  assert_same "" \
+    "$(bashunit::helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
 }
 
 function test_left_trim() {
@@ -245,11 +251,10 @@ EOF
 function test_to_run_with_filter_matching_string_in_function_name() {
   local functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
 
-  assert_same\
-    "test_your_awesome_function" "$(bashunit::helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"
+  assert_same "test_your_awesome_function" \
+    "$(bashunit::helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"
 
-  assert_same\
-    "test_my_awesome_function test_your_awesome_function"\
+  assert_same "test_my_awesome_function test_your_awesome_function" \
     "$(bashunit::helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
 
@@ -265,7 +270,8 @@ function test_normalize_test_function_name_with_interpolation() {
   # shellcheck disable=SC2155
   local interpolated_fn="$(bashunit::helper::interpolate_function_name "$fn" "3" "4")"
 
-  assert_same "Returns value '3' and '4' given" "$(bashunit::helper::normalize_test_function_name "$fn" "$interpolated_fn")"
+  assert_same "Returns value '3' and '4' given" \
+    "$(bashunit::helper::normalize_test_function_name "$fn" "$interpolated_fn")"
 }
 
 function helpers_test::find_total_in_subshell() {

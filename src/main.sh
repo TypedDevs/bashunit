@@ -373,7 +373,8 @@ function bashunit::main::exec_benchmarks() {
 }
 
 function bashunit::main::cleanup() {
-  printf "%sCaught Ctrl-C, killing all child processes...%s\n"  "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "%sCaught Ctrl-C, killing all child processes...%s\n" \
+    "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
   bashunit::cleanup_script_temp_files

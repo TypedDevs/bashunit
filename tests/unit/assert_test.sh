@@ -148,9 +148,10 @@ function test_successful_assert_contains_ignore_case() {
 }
 
 function test_unsuccessful_assert_contains_ignore_case() {
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"\
-    "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"
+  assert_same "$expected" "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
 }
 
 function test_successful_assert_contains() {
@@ -168,9 +169,10 @@ function test_successful_assert_not_contains() {
 }
 
 function test_unsuccessful_assert_not_contains() {
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"\
-    "$(assert_not_contains "Linux" "GNU/Linux")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"
+  assert_same "$expected" "$(assert_not_contains "Linux" "GNU/Linux")"
 }
 
 function test_successful_assert_matches() {
@@ -188,9 +190,10 @@ function test_successful_assert_not_matches() {
 }
 
 function test_unsuccessful_assert_not_matches() {
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"\
-    "$(assert_not_matches ".*Linu*" "GNU/Linux")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"
+  assert_same "$expected" "$(assert_not_matches ".*Linu*" "GNU/Linux")"
 }
 
 function test_successful_assert_exit_code() {
@@ -260,9 +263,10 @@ function test_unsuccessful_assert_unsuccessful_code() {
     return 0
   }
 
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"\
-    "$(assert_unsuccessful_code "$(fake_function)")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"
+  assert_same "$expected" "$(assert_unsuccessful_code "$(fake_function)")"
 }
 
 function test_successful_assert_general_error() {

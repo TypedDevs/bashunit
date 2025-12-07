@@ -14,7 +14,8 @@ function bashunit::upgrade::upgrade() {
   echo "> Upgrading bashunit to latest version"
   cd "$script_path" || exit
 
-  if ! bashunit::io::download_to  "https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit" "bashunit"; then
+  local url="https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit"
+  if ! bashunit::io::download_to "$url" "bashunit"; then
     echo "Failed to download bashunit"
   fi
 

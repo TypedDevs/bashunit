@@ -433,7 +433,8 @@ function assert_successful_code() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::console_results::print_failed_test \
+      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -469,7 +470,8 @@ function assert_general_error() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::console_results::print_failed_test \
+      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -488,7 +490,8 @@ function assert_command_not_found() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+    bashunit::console_results::print_failed_test \
+      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 

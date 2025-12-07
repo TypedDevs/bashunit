@@ -152,7 +152,8 @@ function bashunit::console_results::print_successful_test() {
         quoted_args="$quoted_args, '$arg'"
       fi
     done
-    line=$(printf "%s✓ Passed%s: %s (%s)" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name" "$quoted_args")
+    line=$(printf "%s✓ Passed%s: %s (%s)" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name" "$quoted_args")
   fi
 
   local full_line=$line

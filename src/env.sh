@@ -175,7 +175,7 @@ CAT="$(command -v cat)"
 
 # Initialize temp directory once at startup for performance
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
-mkdir -p "$BASHUNIT_TEMP_DIR" && chmod -R 777 "$BASHUNIT_TEMP_DIR"
+mkdir -p "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
 
 if bashunit::env::is_dev_mode_enabled; then
   bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"

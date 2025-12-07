@@ -137,7 +137,8 @@ function bashunit::learn::show_progress() {
 
   if [[ $completed -eq $total_lessons ]]; then
     echo ""
-    echo "${_BASHUNIT_COLOR_PASSED}${_BASHUNIT_COLOR_BOLD}🎉 Congratulations! You've completed all lessons!${_BASHUNIT_COLOR_DEFAULT}"
+    printf "%s%s🎉 Congratulations! You've completed all lessons!%s\n" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_DEFAULT"
   fi
 
   read -p "Press Enter to continue..." -r
@@ -183,7 +184,8 @@ function bashunit::learn::run_lesson_test() {
 
   if "$BASHUNIT_ROOT_DIR/bashunit" "$test_file" --simple; then
     echo ""
-    echo "${_BASHUNIT_COLOR_PASSED}${_BASHUNIT_COLOR_BOLD}✓ Excellent! Lesson $lesson_number completed!${_BASHUNIT_COLOR_DEFAULT}"
+    printf "%s%s✓ Excellent! Lesson %s completed!%s\n" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$lesson_number" "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::learn::mark_completed "lesson_$lesson_number"
     read -p "Press Enter to continue..." -r
     return 0
@@ -232,7 +234,8 @@ EOF
 
   local default_file="tests/first_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -305,7 +308,8 @@ EOF
 
   local default_file="tests/assertions_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -391,7 +395,8 @@ EOF
 
   local default_file="tests/lifecycle_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -486,7 +491,8 @@ EOF
 
   local default_file="tests/calculator_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -576,7 +582,8 @@ EOF
 
   local default_file="tests/greeter_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -667,7 +674,8 @@ EOF
 
   local default_file="tests/system_info_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -780,7 +788,8 @@ EOF
 
   local default_file="deploy_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -893,7 +902,8 @@ EOF
 
   local default_file="validator_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -1012,7 +1022,8 @@ EOF
 
   local default_file="checker_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -1105,7 +1116,8 @@ EOF
 
   local default_file="backup_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 

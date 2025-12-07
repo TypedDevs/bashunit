@@ -19,7 +19,8 @@ function test_todo_output() {
 }
 
 function test_todo_output_with_pending_details() {
-  assert_same\
-    "$(bashunit::console_results::print_incomplete_test "Todo output with pending details" "Incomplete because pending details")"\
-    "$(bashunit::todo "Incomplete because pending details")"
+  local expected
+  expected="$(bashunit::console_results::print_incomplete_test \
+    "Todo output with pending details" "Incomplete because pending details")"
+  assert_same "$expected" "$(bashunit::todo "Incomplete because pending details")"
 }

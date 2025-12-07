@@ -261,7 +261,9 @@ function bashunit::runner::call_test_functions() {
   local filter="$2"
   local prefix="test"
   # Use cached function names for better performance
-  local filtered_functions=$(bashunit::helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+  local filtered_functions
+  filtered_functions=$(bashunit::helper::get_functions_to_run \
+    "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -311,7 +313,9 @@ function bashunit::runner::call_bench_functions() {
   local prefix="bench"
 
   # Use cached function names for better performance
-  local filtered_functions=$(bashunit::helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+  local filtered_functions
+  filtered_functions=$(bashunit::helper::get_functions_to_run \
+    "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -336,10 +340,11 @@ function bashunit::runner::call_bench_functions() {
 
 function bashunit::runner::render_running_file_header() {
   local script="$1"
+  local force="${2:-false}"
 
   bashunit::internal_log "Running file" "$script"
 
-  if bashunit::parallel::is_enabled; then
+  if [[ "$force" != true ]] && bashunit::parallel::is_enabled; then
     return
   fi
 
@@ -744,7 +749,7 @@ function bashunit::runner::record_file_hook_failure() {
   local render_header="${5:-false}"
 
   if [[ "$render_header" == true ]]; then
-    bashunit::runner::render_running_file_header "$test_file"
+    bashunit::runner::render_running_file_header "$test_file" true
   fi
 
   if [[ -z "$hook_output" ]]; then
