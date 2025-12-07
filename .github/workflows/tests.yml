@@ -120,4 +120,4 @@ jobs:
 
       - name: Run Tests with strict mode
         run: |
-          ./bashunit --no-parallel --simple --strict tests/
+          ./bashunit --parallel --simple --strict tests/
