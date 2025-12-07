@@ -75,6 +75,9 @@ function bashunit::main::cmd_test() {
       --strict)
         export BASHUNIT_STRICT_MODE=true
         ;;
+      -R|--run-all)
+        export BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
+        ;;
       *)
         raw_args+=("$1")
         ;;

@@ -5,6 +5,8 @@
 ### Added
 - Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests (fixes #540)
 - Add `BASHUNIT_STRICT_MODE` configuration option (default: `false`)
+- Add `-R, --run-all` flag to run all assertions even when one fails (fixes #536)
+- Add `BASHUNIT_STOP_ON_ASSERTION_FAILURE` configuration option (default: `true`)
 
 ### Changed
 - Build script now outputs to `bin/` by default

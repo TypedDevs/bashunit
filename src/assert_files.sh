@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
 function assert_file_exists() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -f "$expected" ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
     return
   fi
@@ -16,13 +18,15 @@ function assert_file_exists() {
 }
 
 function assert_file_not_exists() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ -f "$expected" ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
     return
   fi
@@ -31,13 +35,15 @@ function assert_file_not_exists() {
 }
 
 function assert_is_file() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -f "$expected" ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
     return
   fi
@@ -46,13 +52,15 @@ function assert_is_file() {
 }
 
 function assert_is_file_empty() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ -s "$expected" ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
     return
   fi
@@ -61,6 +69,8 @@ function assert_is_file_empty() {
 }
 
 function assert_files_equals() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local actual="$2"
 
@@ -69,7 +79,7 @@ function assert_files_equals() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
         "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
@@ -80,6 +90,8 @@ function assert_files_equals() {
 }
 
 function assert_files_not_equals() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local actual="$2"
 
@@ -88,7 +100,7 @@ function assert_files_not_equals() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
         "Diff" "Files are equals"
@@ -99,6 +111,8 @@ function assert_files_not_equals() {
 }
 
 function assert_file_contains() {
+  bashunit::assert::should_skip && return 0
+
   local file="$1"
   local string="$2"
 
@@ -107,7 +121,7 @@ function assert_file_contains() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${file}" "to contain" "${string}"
     return
@@ -117,6 +131,8 @@ function assert_file_contains() {
 }
 
 function assert_file_not_contains() {
+  bashunit::assert::should_skip && return 0
+
   local file="$1"
   local string="$2"
 
@@ -125,7 +141,7 @@ function assert_file_not_contains() {
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
     return
