@@ -210,7 +210,11 @@ function bashunit::main::cmd_bench() {
   # shellcheck disable=SC1090
   [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
 
-  set +eu
+  if bashunit::env::is_strict_mode_enabled; then
+    set -euo pipefail
+  else
+    set +euo pipefail
+  fi
 
   bashunit::main::exec_benchmarks "$filter" "${args[@]}"
 }
