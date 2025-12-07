@@ -165,7 +165,7 @@ function build::generate_checksum() {
 ######### MAIN #########
 ########################
 
-DIR="${TMPDIR:-/tmp}/bashunit/build"
+DIR="bin"
 SHOULD_VERIFY_BUILD=false
 SHOULD_CLEANUP=false
 

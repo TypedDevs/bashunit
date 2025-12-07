@@ -10,9 +10,9 @@ function set_up() {
 }
 
 function test_parallel_enabled_on_windows() {
-  bashunit::mock check_os::is_windows mock_true
-  bashunit::mock check_os::is_macos mock_false
-  bashunit::mock check_os::is_ubuntu mock_false
+  bashunit::mock bashunit::check_os::is_windows mock_true
+  bashunit::mock bashunit::check_os::is_macos mock_false
+  bashunit::mock bashunit::check_os::is_ubuntu mock_false
 
-  assert_successful_code "$(parallel::is_enabled)"
+  assert_successful_code "$(bashunit::parallel::is_enabled)"
 }

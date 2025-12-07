@@ -2,17 +2,17 @@
 # shellcheck disable=SC2155
 
 # Pre-compiled regex pattern for parsing test result assertions
-if [[ -z ${RUNNER_PARSE_RESULT_REGEX+x} ]]; then
-  declare -r RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
+if [[ -z ${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x} ]]; then
+  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
 'ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##'\
 'TEST_EXIT_CODE=([0-9]*)'
 fi
 
-function runner::restore_workdir() {
+function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
-function runner::load_test_files() {
+function bashunit::runner::load_test_files() {
   local filter=$1
   shift
   local files=("${@}")
@@ -23,55 +23,55 @@ function runner::load_test_files() {
       continue
     fi
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${test_file}")"
     scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
     bashunit::internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
     # Update function cache after sourcing new test file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
-    runner::run_set_up_before_script "$test_file"
+    bashunit::runner::run_set_up_before_script "$test_file"
     local setup_before_script_status=$?
     if [[ $setup_before_script_status -ne 0 ]]; then
       # Count the test functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
-          state::add_tests_failed
+          bashunit::state::add_tests_failed
         done
       fi
-      runner::clean_set_up_and_tear_down_after_script
-      if ! parallel::is_enabled; then
+      bashunit::runner::clean_set_up_and_tear_down_after_script
+      if ! bashunit::parallel::is_enabled; then
         bashunit::cleanup_script_temp_files
       fi
-      runner::restore_workdir
+      bashunit::runner::restore_workdir
       continue
     fi
-    if parallel::is_enabled; then
-      runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
+    if bashunit::parallel::is_enabled; then
+      bashunit::runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
     else
-      runner::call_test_functions "$test_file" "$filter"
+      bashunit::runner::call_test_functions "$test_file" "$filter"
     fi
-    runner::run_tear_down_after_script "$test_file"
-    runner::clean_set_up_and_tear_down_after_script
-    if ! parallel::is_enabled; then
+    bashunit::runner::run_tear_down_after_script "$test_file"
+    bashunit::runner::clean_set_up_and_tear_down_after_script
+    if ! bashunit::parallel::is_enabled; then
       bashunit::cleanup_script_temp_files
     fi
     bashunit::internal_log "Finished file" "$test_file"
-    runner::restore_workdir
+    bashunit::runner::restore_workdir
   done
 
-  if parallel::is_enabled; then
+  if bashunit::parallel::is_enabled; then
     wait
-    runner::spinner &
+    bashunit::runner::spinner &
     local spinner_pid=$!
-    parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r  \r" # Clear the spinner output
@@ -82,7 +82,7 @@ function runner::load_test_files() {
   fi
 }
 
-function runner::load_bench_files() {
+function bashunit::runner::load_bench_files() {
   local filter=$1
   shift
   local files=("${@}")
@@ -90,41 +90,41 @@ function runner::load_bench_files() {
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
-    CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
-    runner::run_set_up_before_script "$bench_file"
+    bashunit::runner::run_set_up_before_script "$bench_file"
     local setup_before_script_status=$?
     if [[ $setup_before_script_status -ne 0 ]]; then
       # Count the bench functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(bashunit::helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
-          state::add_tests_failed
+          bashunit::state::add_tests_failed
         done
       fi
-      runner::clean_set_up_and_tear_down_after_script
+      bashunit::runner::clean_set_up_and_tear_down_after_script
       bashunit::cleanup_script_temp_files
-      runner::restore_workdir
+      bashunit::runner::restore_workdir
       continue
     fi
-    runner::call_bench_functions "$bench_file" "$filter"
-    runner::run_tear_down_after_script "$bench_file"
-    runner::clean_set_up_and_tear_down_after_script
+    bashunit::runner::call_bench_functions "$bench_file" "$filter"
+    bashunit::runner::run_tear_down_after_script "$bench_file"
+    bashunit::runner::clean_set_up_and_tear_down_after_script
     bashunit::cleanup_script_temp_files
-    runner::restore_workdir
+    bashunit::runner::restore_workdir
   done
 }
 
-function runner::spinner() {
+function bashunit::runner::spinner() {
   # Only show spinner when output is to a terminal
   if [[ ! -t 1 ]]; then
     # Not a terminal, just wait silently
@@ -132,7 +132,7 @@ function runner::spinner() {
     return
   fi
 
-  if env::is_simple_output_enabled; then
+  if bashunit::env::is_simple_output_enabled; then
     printf "\n"
   fi
 
@@ -146,7 +146,7 @@ function runner::spinner() {
   done
 }
 
-function runner::functions_for_script() {
+function bashunit::runner::functions_for_script() {
   local script="$1"
   local all_fn_names="$2"
 
@@ -160,7 +160,7 @@ function runner::functions_for_script() {
   shopt -u extdebug
 }
 
-function runner::parse_data_provider_args() {
+function bashunit::runner::parse_data_provider_args() {
   local input="$1"
   local current_arg=""
   local in_quotes=false
@@ -186,7 +186,7 @@ function runner::parse_data_provider_args() {
     fi
     # Print args and return early
     for arg in "${args[@]}"; do
-      encoded_arg="$(helper::encode_base64 "${arg}")"
+      encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
       printf '%s\n' "$encoded_arg"
     done
     return
@@ -251,40 +251,42 @@ function runner::parse_data_provider_args() {
   done
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]+"${args[@]}"}"; do
-    encoded_arg="$(helper::encode_base64 "${arg}")"
+    encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
     printf '%s\n' "$encoded_arg"
   done
 }
 
-function runner::call_test_functions() {
+function bashunit::runner::call_test_functions() {
   local script="$1"
   local filter="$2"
   local prefix="test"
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
+  local filtered_functions
+  filtered_functions=$(bashunit::helper::get_functions_to_run \
+    "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
-  local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
+  local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -le 0 ]]; then
     return
   fi
 
-  runner::render_running_file_header "$script"
-  helper::check_duplicate_functions "$script" || true
+  bashunit::runner::render_running_file_header "$script"
+  bashunit::helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
-    if parallel::is_enabled && parallel::must_stop_on_failure; then
+    if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
     fi
 
     local provider_data=()
     while IFS=" " read -r line; do
       provider_data+=("$line")
-    done <<< "$(helper::get_provider_data "$fn_name" "$script")"
+    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
     if [[ "${#provider_data[@]}" -eq 0 ]]; then
-      runner::run_test "$script" "$fn_name"
+      bashunit::runner::run_test "$script" "$fn_name"
       unset fn_name
       continue
     fi
@@ -293,70 +295,73 @@ function runner::call_test_functions() {
     for data in "${provider_data[@]}"; do
       local parsed_data=()
       while IFS= read -r line; do
-        parsed_data+=( "$(helper::decode_base64 "${line}")" )
-      done <<< "$(runner::parse_data_provider_args "$data")"
-      runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
+        parsed_data+=( "$(bashunit::helper::decode_base64 "${line}")" )
+      done <<< "$(bashunit::runner::parse_data_provider_args "$data")"
+      bashunit::runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
 
-function runner::call_bench_functions() {
+function bashunit::runner::call_bench_functions() {
   local script="$1"
   local filter="$2"
   local prefix="bench"
 
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$CACHED_ALL_FUNCTIONS")
+  local filtered_functions
+  filtered_functions=$(bashunit::helper::get_functions_to_run \
+    "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
-  local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
+  local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
 
   if [[ "${#functions_to_run[@]}" -le 0 ]]; then
     return
   fi
 
-  if env::is_bench_mode_enabled; then
-    runner::render_running_file_header "$script"
+  if bashunit::env::is_bench_mode_enabled; then
+    bashunit::runner::render_running_file_header "$script"
   fi
 
   for fn_name in "${functions_to_run[@]}"; do
-    read -r revs its max_ms <<< "$(benchmark::parse_annotations "$fn_name" "$script")"
-    benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
+    read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
+    bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset fn_name
   done
 
-  if ! env::is_simple_output_enabled; then
+  if ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
 
-function runner::render_running_file_header() {
+function bashunit::runner::render_running_file_header() {
   local script="$1"
+  local force="${2:-false}"
 
   bashunit::internal_log "Running file" "$script"
 
-  if parallel::is_enabled; then
+  if [[ "$force" != true ]] && bashunit::parallel::is_enabled; then
     return
   fi
 
-  if ! env::is_simple_output_enabled; then
-    if env::is_verbose_enabled; then
-      printf "\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+  if ! bashunit::env::is_simple_output_enabled; then
+    if bashunit::env::is_verbose_enabled; then
+      printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     else
-      printf "${_COLOR_BOLD}%s${_COLOR_DEFAULT}\n" "Running $script"
+      printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     fi
-  elif env::is_verbose_enabled; then
-    printf "\n\n${_COLOR_BOLD}%s${_COLOR_DEFAULT}" "Running $script"
+  elif bashunit::env::is_verbose_enabled; then
+    printf "\n\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}" "Running $script"
   fi
 }
 
-function runner::run_test() {
+function bashunit::runner::run_test() {
   local start_time
-  start_time=$(clock::now)
+  start_time=$(bashunit::clock::now)
 
   local test_file="$1"
   shift
@@ -367,20 +372,20 @@ function runner::run_test() {
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
-  export BASHUNIT_CURRENT_TEST_ID="$(helper::generate_id "$fn_name")"
+  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
 
-  state::reset_test_title
+  bashunit::state::reset_test_title
 
-  local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
+  local interpolated_fn_name="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
   if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
-    state::set_current_test_interpolated_function_name "$interpolated_fn_name"
+    bashunit::state::set_current_test_interpolated_function_name "$interpolated_fn_name"
   else
-    state::reset_current_test_interpolated_function_name
+    bashunit::state::reset_current_test_interpolated_function_name
   fi
-  local current_assertions_failed="$(state::get_assertions_failed)"
-  local current_assertions_snapshot="$(state::get_assertions_snapshot)"
-  local current_assertions_incomplete="$(state::get_assertions_incomplete)"
-  local current_assertions_skipped="$(state::get_assertions_skipped)"
+  local current_assertions_failed="$(bashunit::state::get_assertions_failed)"
+  local current_assertions_snapshot="$(bashunit::state::get_assertions_snapshot)"
+  local current_assertions_incomplete="$(bashunit::state::get_assertions_incomplete)"
+  local current_assertions_skipped="$(bashunit::state::get_assertions_skipped)"
 
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
@@ -389,12 +394,12 @@ function runner::run_test() {
 
   local test_execution_result=$(
     # shellcheck disable=SC2064
-    trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
-    state::initialize_assertions_count
+    trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
+    bashunit::state::initialize_assertions_count
 
     # Run set_up and capture exit code without || to preserve errexit behavior
     local setup_exit_code=0
-    runner::run_set_up "$test_file"
+    bashunit::runner::run_set_up "$test_file"
     setup_exit_code=$?
     if [[ $setup_exit_code -ne 0 ]]; then
       exit $setup_exit_code
@@ -409,12 +414,12 @@ function runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  local end_time=$(clock::now)
+  local end_time=$(bashunit::clock::now)
   local duration_ns=$((end_time - start_time))
   local duration=$((duration_ns / 1000000))
 
-  if env::is_verbose_enabled; then
-    if env::is_simple_output_enabled; then
+  if bashunit::env::is_verbose_enabled; then
+    if bashunit::env::is_simple_output_enabled; then
       echo ""
     fi
 
@@ -428,10 +433,10 @@ function runner::run_test() {
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
   fi
 
-  local subshell_output=$(runner::decode_subshell_output "$test_execution_result")
+  local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
 
   if [[ -n "$subshell_output" ]]; then
-    # Formatted as "[type]line" @see `state::print_line()`
+    # Formatted as "[type]line" @see `bashunit::state::print_line()`
     local type="${subshell_output%%]*}" # Remove everything after "]"
     type="${type#[}"                    # Remove the leading "["
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
@@ -441,7 +446,7 @@ function runner::run_test() {
     line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
     line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
 
-    state::print_line "$type" "$line"
+    bashunit::state::print_line "$type" "$line"
 
     subshell_output=$line
   fi
@@ -462,16 +467,16 @@ function runner::run_test() {
     fi
   done
 
-  runner::parse_result "$fn_name" "$test_execution_result" "$@"
+  bashunit::runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
-  local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
-  local test_exit_code="$(state::get_test_exit_code)"
+  local total_assertions="$(bashunit::state::calculate_total_assertions "$test_execution_result")"
+  local test_exit_code="$(bashunit::state::get_test_exit_code)"
 
   local encoded_test_title
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
   encoded_test_title="${encoded_test_title%%##*}"
   local test_title=""
-  [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
+  [[ -n "$encoded_test_title" ]] && test_title="$(bashunit::helper::decode_base64 "$encoded_test_title")"
 
   local encoded_hook_failure
   encoded_hook_failure="${test_execution_result##*##TEST_HOOK_FAILURE=}"
@@ -486,47 +491,47 @@ function runner::run_test() {
   encoded_hook_message="${encoded_hook_message%%##*}"
   local hook_message=""
   if [[ -n "$encoded_hook_message" ]]; then
-    hook_message="$(helper::decode_base64 "$encoded_hook_message")"
+    hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
   fi
 
   bashunit::set_test_title "$test_title"
   local label
-  label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
-  state::reset_test_title
-  state::reset_current_test_interpolated_function_name
+  label="$(bashunit::helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  bashunit::state::reset_test_title
+  bashunit::state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"
   if [[ -n "$hook_failure" ]]; then
-    failure_label="$(helper::normalize_test_function_name "$hook_failure")"
+    failure_label="$(bashunit::helper::normalize_test_function_name "$hook_failure")"
     failure_function="$hook_failure"
   fi
 
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
-    state::add_tests_failed
+    bashunit::state::add_tests_failed
     local error_message="$runtime_error"
     if [[ -n "$hook_failure" && -n "$hook_message" ]]; then
       error_message="$hook_message"
     elif [[ -z "$error_message" && -n "$hook_message" ]]; then
       error_message="$hook_message"
     fi
-    console_results::print_error_test "$failure_function" "$error_message"
-    reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
+    bashunit::console_results::print_error_test "$failure_function" "$error_message"
+    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
   fi
 
-  if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
-    state::add_tests_failed
-    reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
-    runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
+  if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
+    bashunit::state::add_tests_failed
+    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
     bashunit::internal_log "Test failed" "$label"
 
-    if env::is_stop_on_failure_enabled; then
-      if parallel::is_enabled; then
-        parallel::mark_stop_on_failure
+    if bashunit::env::is_stop_on_failure_enabled; then
+      if bashunit::parallel::is_enabled; then
+        bashunit::parallel::mark_stop_on_failure
       else
         exit "$EXIT_CODE_STOP_ON_FAILURE"
       fi
@@ -534,83 +539,83 @@ function runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
-    state::add_tests_snapshot
-    console_results::print_snapshot_test "$label"
-    reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
+  if [[ "$current_assertions_snapshot" != "$(bashunit::state::get_assertions_snapshot)" ]]; then
+    bashunit::state::add_tests_snapshot
+    bashunit::console_results::print_snapshot_test "$label"
+    bashunit::reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::internal_log "Test snapshot" "$label"
     return
   fi
 
-  if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
-    state::add_tests_incomplete
-    reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
-    runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
+  if [[ "$current_assertions_incomplete" != "$(bashunit::state::get_assertions_incomplete)" ]]; then
+    bashunit::state::add_tests_incomplete
+    bashunit::reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test incomplete" "$label"
     return
   fi
 
-  if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
-    state::add_tests_skipped
-    reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
-    runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
+  if [[ "$current_assertions_skipped" != "$(bashunit::state::get_assertions_skipped)" ]]; then
+    bashunit::state::add_tests_skipped
+    bashunit::reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test skipped" "$label"
     return
   fi
 
   if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
-    console_results::print_successful_test "${label}" "$duration" "$@"
+    bashunit::console_results::print_successful_test "${label}" "$duration" "$@"
   else
-    console_results::print_successful_test "${label}" "$duration"
+    bashunit::console_results::print_successful_test "${label}" "$duration"
   fi
-  state::add_tests_passed
-  reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
+  bashunit::state::add_tests_passed
+  bashunit::reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   bashunit::internal_log "Test passed" "$label"
 }
 
-function runner::cleanup_on_exit() {
+function bashunit::runner::cleanup_on_exit() {
   local test_file="$1"
   local exit_code="$2"
 
   set +e
   # Don't use || here - it disables ERR trap in the entire call chain
-  runner::run_tear_down "$test_file"
+  bashunit::runner::run_tear_down "$test_file"
   local teardown_status=$?
-  runner::clear_mocks
+  bashunit::runner::clear_mocks
   bashunit::cleanup_testcase_temp_files
 
   if [[ $teardown_status -ne 0 ]]; then
-    state::set_test_exit_code "$teardown_status"
+    bashunit::state::set_test_exit_code "$teardown_status"
   else
-    state::set_test_exit_code "$exit_code"
+    bashunit::state::set_test_exit_code "$exit_code"
   fi
 
-  state::export_subshell_context
+  bashunit::state::export_subshell_context
 }
 
-function runner::decode_subshell_output() {
+function bashunit::runner::decode_subshell_output() {
   local test_execution_result="$1"
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-  helper::decode_base64 "$test_output_base64"
+  bashunit::helper::decode_base64 "$test_output_base64"
 }
 
-function runner::parse_result() {
+function bashunit::runner::parse_result() {
   local fn_name=$1
   shift
   local execution_result=$1
   shift
   local args=("$@")
 
-  if parallel::is_enabled; then
-    runner::parse_result_parallel "$fn_name" "$execution_result" "${args[@]}"
+  if bashunit::parallel::is_enabled; then
+    bashunit::runner::parse_result_parallel "$fn_name" "$execution_result" "${args[@]}"
   else
-    runner::parse_result_sync "$fn_name" "$execution_result"
+    bashunit::runner::parse_result_sync "$fn_name" "$execution_result"
   fi
 }
 
-function runner::parse_result_parallel() {
+function bashunit::runner::parse_result_parallel() {
   local fn_name=$1
   shift
   local execution_result=$1
@@ -640,13 +645,13 @@ function runner::parse_result_parallel() {
 
   bashunit::internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 
-  runner::parse_result_sync "$fn_name" "$execution_result"
+  bashunit::runner::parse_result_sync "$fn_name" "$execution_result"
 
   echo "$execution_result" > "$unique_test_result_file"
 }
 
 # shellcheck disable=SC2295
-function runner::parse_result_sync() {
+function bashunit::runner::parse_result_sync() {
   local fn_name=$1
   local execution_result=$2
 
@@ -661,7 +666,7 @@ function runner::parse_result_sync() {
   local test_exit_code=0
 
   # Use pre-compiled regex constant
-  if [[ $result_line =~ $RUNNER_PARSE_RESULT_REGEX ]]; then
+  if [[ $result_line =~ $_BASHUNIT_RUNNER_PARSE_RESULT_REGEX ]]; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"
@@ -672,12 +677,12 @@ function runner::parse_result_sync() {
 
   bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
-  ((_ASSERTIONS_PASSED += assertions_passed)) || true
-  ((_ASSERTIONS_FAILED += assertions_failed)) || true
-  ((_ASSERTIONS_SKIPPED += assertions_skipped)) || true
-  ((_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
-  ((_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
-  ((_TEST_EXIT_CODE += test_exit_code)) || true
+  ((_BASHUNIT_ASSERTIONS_PASSED += assertions_passed)) || true
+  ((_BASHUNIT_ASSERTIONS_FAILED += assertions_failed)) || true
+  ((_BASHUNIT_ASSERTIONS_SKIPPED += assertions_skipped)) || true
+  ((_BASHUNIT_ASSERTIONS_INCOMPLETE += assertions_incomplete)) || true
+  ((_BASHUNIT_ASSERTIONS_SNAPSHOT += assertions_snapshot)) || true
+  ((_BASHUNIT_TEST_EXIT_CODE += test_exit_code)) || true
 
   bashunit::internal_log "result_summary" \
     "failed:$assertions_failed" \
@@ -688,55 +693,55 @@ function runner::parse_result_sync() {
     "exit_code:$test_exit_code"
 }
 
-function runner::write_failure_result_output() {
+function bashunit::runner::write_failure_result_output() {
   local test_file=$1
   local fn_name=$2
   local error_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_failed)
+  if ! bashunit::parallel::is_enabled; then
+    test_nr=$(bashunit::state::get_tests_failed)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
 }
 
-function runner::write_skipped_result_output() {
+function bashunit::runner::write_skipped_result_output() {
   local test_file=$1
   local fn_name=$2
   local output_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_skipped)
+  if ! bashunit::parallel::is_enabled; then
+    test_nr=$(bashunit::state::get_tests_skipped)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$SKIPPED_OUTPUT_PATH"
 }
 
-function runner::write_incomplete_result_output() {
+function bashunit::runner::write_incomplete_result_output() {
   local test_file=$1
   local fn_name=$2
   local output_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
-  if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_incomplete)
+  if ! bashunit::parallel::is_enabled; then
+    test_nr=$(bashunit::state::get_tests_incomplete)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$INCOMPLETE_OUTPUT_PATH"
 }
 
-function runner::record_file_hook_failure() {
+function bashunit::runner::record_file_hook_failure() {
   local hook_name="$1"
   local test_file="$2"
   local hook_output="$3"
@@ -744,22 +749,22 @@ function runner::record_file_hook_failure() {
   local render_header="${5:-false}"
 
   if [[ "$render_header" == true ]]; then
-    runner::render_running_file_header "$test_file"
+    bashunit::runner::render_running_file_header "$test_file" true
   fi
 
   if [[ -z "$hook_output" ]]; then
     hook_output="Hook '$hook_name' failed with exit code $status"
   fi
 
-  state::add_tests_failed
-  console_results::print_error_test "$hook_name" "$hook_output"
-  reports::add_test_failed "$test_file" "$(helper::normalize_test_function_name "$hook_name")" 0 0
-  runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
+  bashunit::state::add_tests_failed
+  bashunit::console_results::print_error_test "$hook_name" "$hook_output"
+  bashunit::reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
+  bashunit::runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"
 }
 
-function runner::execute_file_hook() {
+function bashunit::runner::execute_file_hook() {
   local hook_name="$1"
   local test_file="$2"
   local render_header="${3:-false}"
@@ -799,7 +804,7 @@ function runner::execute_file_hook() {
   fi
 
   if [[ $status -ne 0 ]]; then
-    runner::record_file_hook_failure "$hook_name" "$test_file" "$hook_output" "$status" "$render_header"
+    bashunit::runner::record_file_hook_failure "$hook_name" "$test_file" "$hook_output" "$status" "$render_header"
     return $status
   fi
 
@@ -810,25 +815,25 @@ function runner::execute_file_hook() {
   return 0
 }
 
-function runner::run_set_up() {
+function bashunit::runner::run_set_up() {
   local _test_file="${1-}"
   bashunit::internal_log "run_set_up"
-  runner::execute_test_hook 'set_up'
+  bashunit::runner::execute_test_hook 'set_up'
 }
 
-function runner::run_set_up_before_script() {
+function bashunit::runner::run_set_up_before_script() {
   local test_file="$1"
   bashunit::internal_log "run_set_up_before_script"
-  runner::execute_file_hook 'set_up_before_script' "$test_file" true
+  bashunit::runner::execute_file_hook 'set_up_before_script' "$test_file" true
 }
 
-function runner::run_tear_down() {
+function bashunit::runner::run_tear_down() {
   local _test_file="${1-}"
   bashunit::internal_log "run_tear_down"
-  runner::execute_test_hook 'tear_down'
+  bashunit::runner::execute_test_hook 'tear_down'
 }
 
-function runner::execute_test_hook() {
+function bashunit::runner::execute_test_hook() {
   local hook_name="$1"
 
   declare -F "$hook_name" >/dev/null 2>&1 || return 0
@@ -873,7 +878,7 @@ function runner::execute_test_hook() {
       message="Hook '$hook_name' failed with exit code $status"
       printf "%s\n" "$message" >&2
     fi
-    runner::record_test_hook_failure "$hook_name" "$message" "$status"
+    bashunit::runner::record_test_hook_failure "$hook_name" "$message" "$status"
     return "$status"
   fi
 
@@ -884,37 +889,37 @@ function runner::execute_test_hook() {
   return 0
 }
 
-function runner::record_test_hook_failure() {
+function bashunit::runner::record_test_hook_failure() {
   local hook_name="$1"
   local hook_message="$2"
   local status="$3"
 
-  if [[ -n "$(state::get_test_hook_failure)" ]]; then
+  if [[ -n "$(bashunit::state::get_test_hook_failure)" ]]; then
     return "$status"
   fi
 
-  state::set_test_hook_failure "$hook_name"
-  state::set_test_hook_message "$hook_message"
+  bashunit::state::set_test_hook_failure "$hook_name"
+  bashunit::state::set_test_hook_message "$hook_message"
 
   return "$status"
 }
 
-function runner::clear_mocks() {
-  for i in "${!MOCKED_FUNCTIONS[@]}"; do
-    bashunit::unmock "${MOCKED_FUNCTIONS[$i]}"
+function bashunit::runner::clear_mocks() {
+  for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
+    bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}"
   done
 }
 
-function runner::run_tear_down_after_script() {
+function bashunit::runner::run_tear_down_after_script() {
   local test_file="$1"
   bashunit::internal_log "run_tear_down_after_script"
-  runner::execute_file_hook 'tear_down_after_script' "$test_file"
+  bashunit::runner::execute_file_hook 'tear_down_after_script' "$test_file"
 }
 
-function runner::clean_set_up_and_tear_down_after_script() {
+function bashunit::runner::clean_set_up_and_tear_down_after_script() {
   bashunit::internal_log "clean_set_up_and_tear_down_after_script"
-  helper::unset_if_exists 'set_up'
-  helper::unset_if_exists 'tear_down'
-  helper::unset_if_exists 'set_up_before_script'
-  helper::unset_if_exists 'tear_down_after_script'
+  bashunit::helper::unset_if_exists 'set_up'
+  bashunit::helper::unset_if_exists 'tear_down'
+  bashunit::helper::unset_if_exists 'set_up_before_script'
+  bashunit::helper::unset_if_exists 'tear_down_after_script'
 }

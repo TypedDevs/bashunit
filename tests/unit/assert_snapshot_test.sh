@@ -12,12 +12,12 @@ function test_successful_assert_match_snapshot() {
 
 function test_creates_a_snapshot() {
   local snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_creates_a_snapshot.snapshot"
-  local expected=$((_ASSERTIONS_SNAPSHOT + 1))
+  local expected=$((_BASHUNIT_ASSERTIONS_SNAPSHOT + 1))
 
   assert_file_not_exists "$snapshot_path"
   assert_match_snapshot "Expected snapshot" "$snapshot_path"
 
-  assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
+  assert_same "$expected" "$_BASHUNIT_ASSERTIONS_SNAPSHOT"
   assert_file_exists "$snapshot_path"
   assert_same "Expected snapshot" "$(cat "$snapshot_path")"
 }
@@ -37,13 +37,13 @@ function test_successful_assert_match_snapshot_ignore_colors() {
 
 function test_creates_a_snapshot_ignore_colors() {
   local snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_creates_a_snapshot_ignore_colors.snapshot"
-  local expected=$((_ASSERTIONS_SNAPSHOT + 1))
+  local expected=$((_BASHUNIT_ASSERTIONS_SNAPSHOT + 1))
 
   assert_file_not_exists "$snapshot_path"
   local colored=$(printf '\e[32mExpected\e[0m snapshot')
   assert_match_snapshot_ignore_colors "$colored" "$snapshot_path"
 
-  assert_same "$expected" "$_ASSERTIONS_SNAPSHOT"
+  assert_same "$expected" "$_BASHUNIT_ASSERTIONS_SNAPSHOT"
   assert_file_exists "$snapshot_path"
   assert_same "Expected snapshot" "$(cat "$snapshot_path")"
 }
@@ -58,7 +58,7 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
 }
 
 function test_assert_match_snapshot_with_placeholder() {
-  if ! dependencies::has_perl; then
+  if ! bashunit::dependencies::has_perl; then
     bashunit::skip "perl not available" && return
   fi
 
@@ -70,7 +70,7 @@ function test_assert_match_snapshot_with_placeholder() {
 }
 
 function test_assert_snapshot_with_custom_placeholder() {
-  if ! dependencies::has_perl; then
+  if ! bashunit::dependencies::has_perl; then
     bashunit::skip "perl not available" && return
   fi
 

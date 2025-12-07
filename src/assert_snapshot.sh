@@ -4,32 +4,32 @@
 function assert_match_snapshot() {
   local actual=$(echo -n "$1" | tr -d '\r')
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local snapshot_file=$(snapshot::resolve_file "${2:-}" "$test_fn")
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
 
   if [[ ! -f "$snapshot_file" ]]; then
-    snapshot::initialize "$snapshot_file" "$actual"
+    bashunit::snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
 
-  snapshot::compare "$actual" "$snapshot_file" "$test_fn"
+  bashunit::snapshot::compare "$actual" "$snapshot_file" "$test_fn"
 }
 
 function assert_match_snapshot_ignore_colors() {
   local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local snapshot_file=$(snapshot::resolve_file "${2:-}" "$test_fn")
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
 
   if [[ ! -f "$snapshot_file" ]]; then
-    snapshot::initialize "$snapshot_file" "$actual"
+    bashunit::snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
 
-  snapshot::compare "$actual" "$snapshot_file" "$test_fn"
+  bashunit::snapshot::compare "$actual" "$snapshot_file" "$test_fn"
 }
 
-function snapshot::match_with_placeholder() {
+function bashunit::snapshot::match_with_placeholder() {
   local actual="$1"
   local snapshot="$2"
   local placeholder="${BASHUNIT_SNAPSHOT_PLACEHOLDER:-::ignore::}"
@@ -52,7 +52,7 @@ function snapshot::match_with_placeholder() {
   fi
 }
 
-function snapshot::resolve_file() {
+function bashunit::snapshot::resolve_file() {
   local file_hint="$1"
   local func_name="$2"
 
@@ -60,21 +60,21 @@ function snapshot::resolve_file() {
     echo "$file_hint"
   else
     local dir="./$(dirname "${BASH_SOURCE[2]}")/snapshots"
-    local test_file="$(helper::normalize_variable_name "$(basename "${BASH_SOURCE[2]}")")"
-    local name="$(helper::normalize_variable_name "$func_name").snapshot"
+    local test_file="$(bashunit::helper::normalize_variable_name "$(basename "${BASH_SOURCE[2]}")")"
+    local name="$(bashunit::helper::normalize_variable_name "$func_name").snapshot"
     echo "${dir}/${test_file}.${name}"
   fi
 }
 
-function snapshot::initialize() {
+function bashunit::snapshot::initialize() {
   local path="$1"
   local content="$2"
   mkdir -p "$(dirname "$path")"
   echo "$content" > "$path"
-  state::add_assertions_snapshot
+  bashunit::state::add_assertions_snapshot
 }
 
-function snapshot::compare() {
+function bashunit::snapshot::compare() {
   local actual="$1"
   local snapshot_path="$2"
   local func_name="$3"
@@ -82,12 +82,12 @@ function snapshot::compare() {
   local snapshot
   snapshot=$(tr -d '\r' < "$snapshot_path")
 
-  if ! snapshot::match_with_placeholder "$actual" "$snapshot"; then
-    local label=$(helper::normalize_test_function_name "$func_name")
-    state::add_assertions_failed
-    console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
+  if ! bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"; then
+    local label=$(bashunit::helper::normalize_test_function_name "$func_name")
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
     return 1
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }

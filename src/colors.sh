@@ -6,7 +6,7 @@
 #   https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # Credit:
 #   https://superuser.com/a/1119396
-sgr() {
+bashunit::sgr() {
   local codes=${1:-0}
   shift
 
@@ -17,17 +17,17 @@ sgr() {
   echo $'\e'"[${codes}m"
 }
 
-_COLOR_BOLD="$(sgr 1)"
-_COLOR_FAINT="$(sgr 2)"
-_COLOR_BLACK="$(sgr 30)"
-_COLOR_FAILED="$(sgr 31)"
-_COLOR_PASSED="$(sgr 32)"
-_COLOR_SKIPPED="$(sgr 33)"
-_COLOR_INCOMPLETE="$(sgr 36)"
-_COLOR_SNAPSHOT="$(sgr 34)"
-_COLOR_RETURN_ERROR="$(sgr 41)$_COLOR_BLACK$_COLOR_BOLD"
-_COLOR_RETURN_SUCCESS="$(sgr 42)$_COLOR_BLACK$_COLOR_BOLD"
-_COLOR_RETURN_SKIPPED="$(sgr 43)$_COLOR_BLACK$_COLOR_BOLD"
-_COLOR_RETURN_INCOMPLETE="$(sgr 46)$_COLOR_BLACK$_COLOR_BOLD"
-_COLOR_RETURN_SNAPSHOT="$(sgr 44)$_COLOR_BLACK$_COLOR_BOLD"
-_COLOR_DEFAULT="$(sgr 0)"
+_BASHUNIT_COLOR_BOLD="$(bashunit::sgr 1)"
+_BASHUNIT_COLOR_FAINT="$(bashunit::sgr 2)"
+_BASHUNIT_COLOR_BLACK="$(bashunit::sgr 30)"
+_BASHUNIT_COLOR_FAILED="$(bashunit::sgr 31)"
+_BASHUNIT_COLOR_PASSED="$(bashunit::sgr 32)"
+_BASHUNIT_COLOR_SKIPPED="$(bashunit::sgr 33)"
+_BASHUNIT_COLOR_INCOMPLETE="$(bashunit::sgr 36)"
+_BASHUNIT_COLOR_SNAPSHOT="$(bashunit::sgr 34)"
+_BASHUNIT_COLOR_RETURN_ERROR="$(bashunit::sgr 41)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+_BASHUNIT_COLOR_RETURN_SUCCESS="$(bashunit::sgr 42)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+_BASHUNIT_COLOR_RETURN_SKIPPED="$(bashunit::sgr 43)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+_BASHUNIT_COLOR_RETURN_INCOMPLETE="$(bashunit::sgr 46)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+_BASHUNIT_COLOR_RETURN_SNAPSHOT="$(bashunit::sgr 44)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+_BASHUNIT_COLOR_DEFAULT="$(bashunit::sgr 0)"

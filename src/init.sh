@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function init::project() {
+function bashunit::init::project() {
   local tests_dir="${1:-$BASHUNIT_DEFAULT_PATH}"
   mkdir -p "$tests_dir"
 
@@ -32,7 +32,7 @@ SH
   local env_line="BASHUNIT_BOOTSTRAP=$bootstrap_file"
   if [[ -f "$env_file" ]]; then
     if grep -q "^BASHUNIT_BOOTSTRAP=" "$env_file"; then
-      if check_os::is_macos; then
+      if bashunit::check_os::is_macos; then
         sed -i '' -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"
       else
         sed -i -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"

@@ -1,42 +1,42 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-function dependencies::has_perl() {
+function bashunit::dependencies::has_perl() {
   command -v perl >/dev/null 2>&1
 }
 
-function dependencies::has_powershell() {
+function bashunit::dependencies::has_powershell() {
   command -v powershell > /dev/null 2>&1
 }
 
-function dependencies::has_adjtimex() {
+function bashunit::dependencies::has_adjtimex() {
   command -v adjtimex >/dev/null 2>&1
 }
 
-function dependencies::has_bc() {
+function bashunit::dependencies::has_bc() {
   command -v bc >/dev/null 2>&1
 }
 
-function dependencies::has_awk() {
+function bashunit::dependencies::has_awk() {
   command -v awk >/dev/null 2>&1
 }
 
-function dependencies::has_git() {
+function bashunit::dependencies::has_git() {
   command -v git >/dev/null 2>&1
 }
 
-function dependencies::has_curl() {
+function bashunit::dependencies::has_curl() {
   command -v curl >/dev/null 2>&1
 }
 
-function dependencies::has_wget() {
+function bashunit::dependencies::has_wget() {
   command -v wget >/dev/null 2>&1
 }
 
-function dependencies::has_python() {
+function bashunit::dependencies::has_python() {
   command -v python >/dev/null 2>&1
 }
 
-function dependencies::has_node() {
+function bashunit::dependencies::has_node() {
   command -v node >/dev/null 2>&1
 }

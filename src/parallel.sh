@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-function parallel::aggregate_test_results() {
+function bashunit::parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
 
   bashunit::internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
@@ -17,7 +17,7 @@ function parallel::aggregate_test_results() {
     shopt -u nullglob
 
     if [ ${#result_files[@]} -eq 0 ]; then
-      printf "%sNo tests found%s" "$_COLOR_SKIPPED" "$_COLOR_DEFAULT"
+      printf "%sNo tests found%s" "$_BASHUNIT_COLOR_SKIPPED" "$_BASHUNIT_COLOR_DEFAULT"
       continue
     fi
 
@@ -51,39 +51,39 @@ function parallel::aggregate_test_results() {
       total_snapshot=$((total_snapshot + snapshot))
 
       if [ "${failed:-0}" -gt 0 ]; then
-        state::add_tests_failed
+        bashunit::state::add_tests_failed
         continue
       fi
 
       if [ "${exit_code:-0}" -ne 0 ]; then
-        state::add_tests_failed
+        bashunit::state::add_tests_failed
         continue
       fi
 
       if [ "${snapshot:-0}" -gt 0 ]; then
-        state::add_tests_snapshot
+        bashunit::state::add_tests_snapshot
         continue
       fi
 
       if [ "${incomplete:-0}" -gt 0 ]; then
-        state::add_tests_incomplete
+        bashunit::state::add_tests_incomplete
         continue
       fi
 
       if [ "${skipped:-0}" -gt 0 ]; then
-        state::add_tests_skipped
+        bashunit::state::add_tests_skipped
         continue
       fi
 
-      state::add_tests_passed
+      bashunit::state::add_tests_passed
     done
   done
 
-  export _ASSERTIONS_FAILED=$total_failed
-  export _ASSERTIONS_PASSED=$total_passed
-  export _ASSERTIONS_SKIPPED=$total_skipped
-  export _ASSERTIONS_INCOMPLETE=$total_incomplete
-  export _ASSERTIONS_SNAPSHOT=$total_snapshot
+  export _BASHUNIT_ASSERTIONS_FAILED=$total_failed
+  export _BASHUNIT_ASSERTIONS_PASSED=$total_passed
+  export _BASHUNIT_ASSERTIONS_SKIPPED=$total_skipped
+  export _BASHUNIT_ASSERTIONS_INCOMPLETE=$total_incomplete
+  export _BASHUNIT_ASSERTIONS_SNAPSHOT=$total_snapshot
 
   bashunit::internal_log "aggregate_totals" \
     "failed:$total_failed" \
@@ -93,29 +93,30 @@ function parallel::aggregate_test_results() {
     "snapshot:$total_snapshot"
 }
 
-function parallel::mark_stop_on_failure() {
+function bashunit::parallel::mark_stop_on_failure() {
   touch "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE"
 }
 
-function parallel::must_stop_on_failure() {
+function bashunit::parallel::must_stop_on_failure() {
   [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
 }
 
-function parallel::cleanup() {
+function bashunit::parallel::cleanup() {
   # shellcheck disable=SC2153
   rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
 }
 
-function parallel::init() {
-  parallel::cleanup
+function bashunit::parallel::init() {
+  bashunit::parallel::cleanup
   mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE"
 }
 
-function parallel::is_enabled() {
-  bashunit::internal_log "parallel::is_enabled" "requested:$BASHUNIT_PARALLEL_RUN" "os:${_OS:-Unknown}"
+function bashunit::parallel::is_enabled() {
+  bashunit::internal_log "bashunit::parallel::is_enabled" \
+    "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
-  if env::is_parallel_run_enabled && \
-    (check_os::is_macos || check_os::is_ubuntu || check_os::is_windows); then
+  if bashunit::env::is_parallel_run_enabled && \
+    (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu || bashunit::check_os::is_windows); then
     return 0
   fi
   return 1

@@ -9,7 +9,7 @@ function test_successful_fail() {
 
 function test_unsuccessful_fail() {
   assert_same\
-    "$(console_results::print_failure_message \
+    "$(bashunit::console_results::print_failure_message \
       "Unsuccessful fail" "Failure message")"\
     "$(bashunit::fail "Failure message")"
 }
@@ -28,7 +28,7 @@ function provider_successful_assert_true() {
 
 function test_unsuccessful_assert_true() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert true" \
       "true or 0" \
       "but got " "false")"\
@@ -41,7 +41,7 @@ function test_successful_assert_true_on_function() {
 
 function test_unsuccessful_assert_true_on_function() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert true on function"\
       "command or function with zero exit code"\
       "but got " "exit code: 2")" \
@@ -62,7 +62,7 @@ function provider_successful_assert_false() {
 
 function test_unsuccessful_assert_false() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert false" \
       "false or 1" \
       "but got " "true")"\
@@ -75,7 +75,7 @@ function test_successful_assert_false_on_function() {
 
 function test_unsuccessful_assert_false_on_function() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert false on function"\
       "command or function with non-zero exit code"\
       "but got " "exit code: 0")" \
@@ -88,7 +88,7 @@ function test_successful_assert_same() {
 
 function test_unsuccessful_assert_same() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert same" "1" "but got " "2")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert same" "1" "but got " "2")"\
     "$(assert_same "1" "2")"
 }
 
@@ -98,7 +98,7 @@ function test_successful_assert_empty() {
 
 function test_unsuccessful_assert_empty() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert empty" "to be empty" "but got " "1")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert empty" "to be empty" "but got " "1")"\
     "$(assert_empty "1")"
 }
 
@@ -108,7 +108,7 @@ function test_successful_assert_not_empty() {
 
 function test_unsuccessful_assert_not_empty() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert not empty" "to not be empty" "but got " "")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert not empty" "to not be empty" "but got " "")"\
     "$(assert_not_empty "")"
 }
 
@@ -118,7 +118,7 @@ function test_successful_assert_not_same() {
 
 function test_unsuccessful_assert_not_same() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert not same" "1" "but got " "1")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert not same" "1" "but got " "1")"\
     "$(assert_not_same "1" "1")"
 }
 
@@ -128,16 +128,16 @@ function test_successful_assert_not_equals() {
 
 function test_unsuccessful_assert_not_equals() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")"\
     "$(assert_not_equals "1" "1")"
 }
 
 function test_unsuccessful_assert_not_equals_with_special_chars() {
-  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+  local str1="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
   local str2="✗ Failed foo"
 
   assert_equals\
-    "$(console_results::print_failed_test \
+    "$(bashunit::console_results::print_failed_test \
       "Unsuccessful assert not equals with special chars" \
       "$str1" "but got " "$str2")"\
     "$(assert_not_equals "$str1" "$str2")"
@@ -148,9 +148,10 @@ function test_successful_assert_contains_ignore_case() {
 }
 
 function test_unsuccessful_assert_contains_ignore_case() {
-  assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"\
-    "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"
+  assert_same "$expected" "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
 }
 
 function test_successful_assert_contains() {
@@ -159,7 +160,7 @@ function test_successful_assert_contains() {
 
 function test_unsuccessful_assert_contains() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert contains" "GNU/Linux" "to contain" "Unix")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert contains" "GNU/Linux" "to contain" "Unix")"\
     "$(assert_contains "Unix" "GNU/Linux")"
 }
 
@@ -168,9 +169,10 @@ function test_successful_assert_not_contains() {
 }
 
 function test_unsuccessful_assert_not_contains() {
-  assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"\
-    "$(assert_not_contains "Linux" "GNU/Linux")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"
+  assert_same "$expected" "$(assert_not_contains "Linux" "GNU/Linux")"
 }
 
 function test_successful_assert_matches() {
@@ -179,7 +181,7 @@ function test_successful_assert_matches() {
 
 function test_unsuccessful_assert_matches() {
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")"\
     "$(assert_matches ".*Pinux*" "GNU/Linux")"
 }
 
@@ -188,9 +190,10 @@ function test_successful_assert_not_matches() {
 }
 
 function test_unsuccessful_assert_not_matches() {
-  assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"\
-    "$(assert_not_matches ".*Linu*" "GNU/Linux")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"
+  assert_same "$expected" "$(assert_not_matches ".*Linu*" "GNU/Linux")"
 }
 
 function test_successful_assert_exit_code() {
@@ -207,7 +210,7 @@ function test_unsuccessful_assert_exit_code() {
   }
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert exit code" "1" "to be" "0")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert exit code" "1" "to be" "0")"\
     "$(assert_exit_code "0" "$(fake_function)")"
 }
 
@@ -243,7 +246,7 @@ function test_unsuccessful_assert_successful_code() {
   }
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert successful code" "2" "to be exactly" "0")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert successful code" "2" "to be exactly" "0")"\
     "$(assert_successful_code "$(fake_function)")"
 }
 
@@ -260,9 +263,10 @@ function test_unsuccessful_assert_unsuccessful_code() {
     return 0
   }
 
-  assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"\
-    "$(assert_unsuccessful_code "$(fake_function)")"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"
+  assert_same "$expected" "$(assert_unsuccessful_code "$(fake_function)")"
 }
 
 function test_successful_assert_general_error() {
@@ -279,7 +283,7 @@ function test_unsuccessful_assert_general_error() {
   }
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert general error" "2" "to be exactly" "1")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert general error" "2" "to be exactly" "1")"\
     "$(assert_general_error "$(fake_function)")"
 }
 
@@ -293,7 +297,7 @@ function test_unsuccessful_assert_command_not_found() {
   }
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert command not found" "0" "to be exactly" "127")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert command not found" "0" "to be exactly" "127")"\
     "$(assert_command_not_found "$(fake_function)")"
 }
 
@@ -320,7 +324,7 @@ function test_unsuccessful_assert_exec() {
   local actual="exit: 0"$'\n'"stdout: out"$'\n'"stderr: err"
 
   assert_same\
-    "$(console_results::print_failed_test "Unsuccessful assert exec" "$expected" "but got " "$actual")"\
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert exec" "$expected" "but got " "$actual")"\
     "$(assert_exec fake_command --exit 1 --stdout "Expected" --stderr "Expected error")"
 }
 
@@ -334,7 +338,7 @@ function test_unsuccessful_assert_array_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assert_same\
-    "$(console_results::print_failed_test \
+    "$(bashunit::console_results::print_failed_test \
       "Unsuccessful assert array contains"\
       "Ubuntu 123 Linux Mint"\
       "to contain"\
@@ -352,7 +356,7 @@ function test_unsuccessful_assert_array_not_contains() {
   local distros=(Ubuntu 123 Linux\ Mint)
 
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert array not contains" "Ubuntu 123 Linux Mint" "to not contain" "123")"\
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
@@ -363,7 +367,7 @@ function test_successful_assert_string_starts_with() {
 
 function test_unsuccessful_assert_string_starts_with() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert string starts with" "pause" "to start with" "hou")"\
     "$(assert_string_starts_with "hou" "pause")"
 }
@@ -374,7 +378,7 @@ function test_successful_assert_string_not_starts_with() {
 
 function test_unsuccessful_assert_string_not_starts_with() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert string not starts with" "house" "to not start with" "ho")"\
     "$(assert_string_not_starts_with "ho" "house")"
 }
@@ -385,7 +389,7 @@ function test_successful_assert_string_ends_with() {
 
 function test_unsuccessful_assert_string_ends_with() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert string ends with" "foobar" "to end with" "foo")"\
     "$(assert_string_ends_with "foo" "foobar")"
 }
@@ -397,7 +401,7 @@ function test_successful_assert_string_not_ends_with() {
 
 function test_unsuccessful_assert_string_not_ends_with() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert string not ends with" "foobar" "to not end with" "bar")"\
     "$(assert_string_not_ends_with "bar" "foobar")"
 }
@@ -409,12 +413,12 @@ function test_assert_string_start_end_with_special_chars() {
 
 function test_assert_string_start_end_with_special_chars_fail() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Assert string start end with special chars fail" "fooX" "to start with" "foo.")"\
     "$(assert_string_starts_with "foo." "fooX")"
 
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Assert string start end with special chars fail" "fooX" "to end with" ".bar")"\
     "$(assert_string_ends_with ".bar" "fooX")"
 }
@@ -425,7 +429,7 @@ function test_successful_assert_less_than() {
 
 function test_unsuccessful_assert_less_than() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert less than" "3" "to be less than" "1")"\
     "$(assert_less_than "1" "3")"
 }
@@ -440,7 +444,7 @@ function test_successful_assert_less_or_equal_than_with_an_equal_number() {
 
 function test_unsuccessful_assert_less_or_equal_than() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert less or equal than" "3" "to be less or equal than" "1")"\
     "$(assert_less_or_equal_than "1" "3")"
 }
@@ -451,7 +455,7 @@ function test_successful_assert_greater_than() {
 
 function test_unsuccessful_assert_greater_than() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert greater than" "1" "to be greater than" "3")"\
     "$(assert_greater_than "3" "1")"
 }
@@ -466,7 +470,7 @@ function test_successful_assert_greater_or_equal_than_with_an_equal_number() {
 
 function test_unsuccessful_assert_greater_or_equal_than() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert greater or equal than" "1" "to be greater or equal than" "3")"\
     "$(assert_greater_or_equal_than "3" "1")"
 }
@@ -474,21 +478,21 @@ function test_unsuccessful_assert_greater_or_equal_than() {
 function test_successful_assert_equals() {
   assert_equals\
     "✗ Failed foo"\
-    "${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+    "${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
 }
 
 function test_successful_assert_equals_with_special_chars() {
-  local string="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} foo"
+  local string="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
 
   assert_equals "$string" "$string"
 }
 
 function test_unsuccessful_assert_equals() {
-  local str1="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str1"
-  local str2="${_COLOR_FAILED}✗ Failed${_COLOR_DEFAULT} str2"
+  local str1="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} str1"
+  local str2="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} str2"
 
   assert_same\
-    "$(console_results::print_failed_test \
+    "$(bashunit::console_results::print_failed_test \
       "Unsuccessful assert equals"\
       "✗ Failed str1"\
       "but got "\
@@ -528,7 +532,7 @@ function test_successful_assert_line_count_multiline_with_new_lines() {
 
 function test_unsuccessful_assert_line_count() {
   assert_same\
-    "$(console_results::print_failed_test\
+    "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert line count" "one_line_string" "to contain number of lines equal to" "10" "but found" "1")"\
     "$(assert_line_count 10 "one_line_string")"
 }

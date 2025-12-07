@@ -12,11 +12,11 @@ function test_add_test_skips_tracking_without_report_output() {
   unset BASHUNIT_LOG_JUNIT
   unset BASHUNIT_REPORT_HTML
 
-  before=${#_REPORTS_TEST_NAMES[@]}
+  before=${#_BASHUNIT_REPORTS_TEST_NAMES[@]}
 
-  reports::add_test "file.sh" "a test" 0 0 passed
+  bashunit::reports::add_test "file.sh" "a test" 0 0 passed
 
-  after=${#_REPORTS_TEST_NAMES[@]}
+  after=${#_BASHUNIT_REPORTS_TEST_NAMES[@]}
 
   assert_same "$before" "$after"
 }

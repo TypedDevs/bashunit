@@ -12,7 +12,7 @@ declare -r LEARN_PROGRESS_FILE="$HOME/.bashunit_learn_progress"
 ##
 # Initialize learning environment
 ##
-function learn::init() {
+function bashunit::learn::init() {
   mkdir -p "$LEARN_TEMP_DIR"
   mkdir -p tests
 }
@@ -20,33 +20,33 @@ function learn::init() {
 ##
 # Cleanup learning environment
 ##
-function learn::cleanup() {
+function bashunit::learn::cleanup() {
   rm -rf "$LEARN_TEMP_DIR"
 }
 
 ##
 # Print the learning menu
 ##
-function learn::print_menu() {
+function bashunit::learn::print_menu() {
   cat <<EOF
-${_COLOR_BOLD}${_COLOR_PASSED}bashunit${_COLOR_DEFAULT} - Interactive Learning
+${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - Interactive Learning
 
 Choose a lesson:
 
-  ${_COLOR_BOLD}1.${_COLOR_DEFAULT} Basics - Your First Test
-  ${_COLOR_BOLD}2.${_COLOR_DEFAULT} Assertions - Testing Different Conditions
-  ${_COLOR_BOLD}3.${_COLOR_DEFAULT} Setup & Teardown - Managing Test Lifecycle
-  ${_COLOR_BOLD}4.${_COLOR_DEFAULT} Testing Functions - Unit Testing Patterns
-  ${_COLOR_BOLD}5.${_COLOR_DEFAULT} Testing Scripts - Integration Testing
-  ${_COLOR_BOLD}6.${_COLOR_DEFAULT} Mocking - Test Doubles and Mocks
-  ${_COLOR_BOLD}7.${_COLOR_DEFAULT} Spies - Verifying Function Calls
-  ${_COLOR_BOLD}8.${_COLOR_DEFAULT} Data Providers - Parameterized Tests
-  ${_COLOR_BOLD}9.${_COLOR_DEFAULT} Exit Codes - Testing Success and Failure
-  ${_COLOR_BOLD}10.${_COLOR_DEFAULT} Complete Challenge - Real World Scenario
+  ${_BASHUNIT_COLOR_BOLD}1.${_BASHUNIT_COLOR_DEFAULT} Basics - Your First Test
+  ${_BASHUNIT_COLOR_BOLD}2.${_BASHUNIT_COLOR_DEFAULT} Assertions - Testing Different Conditions
+  ${_BASHUNIT_COLOR_BOLD}3.${_BASHUNIT_COLOR_DEFAULT} Setup & Teardown - Managing Test Lifecycle
+  ${_BASHUNIT_COLOR_BOLD}4.${_BASHUNIT_COLOR_DEFAULT} Testing Functions - Unit Testing Patterns
+  ${_BASHUNIT_COLOR_BOLD}5.${_BASHUNIT_COLOR_DEFAULT} Testing Scripts - Integration Testing
+  ${_BASHUNIT_COLOR_BOLD}6.${_BASHUNIT_COLOR_DEFAULT} Mocking - Test Doubles and Mocks
+  ${_BASHUNIT_COLOR_BOLD}7.${_BASHUNIT_COLOR_DEFAULT} Spies - Verifying Function Calls
+  ${_BASHUNIT_COLOR_BOLD}8.${_BASHUNIT_COLOR_DEFAULT} Data Providers - Parameterized Tests
+  ${_BASHUNIT_COLOR_BOLD}9.${_BASHUNIT_COLOR_DEFAULT} Exit Codes - Testing Success and Failure
+  ${_BASHUNIT_COLOR_BOLD}10.${_BASHUNIT_COLOR_DEFAULT} Complete Challenge - Real World Scenario
 
-  ${_COLOR_BOLD}p.${_COLOR_DEFAULT} Show Progress
-  ${_COLOR_BOLD}r.${_COLOR_DEFAULT} Reset Progress
-  ${_COLOR_BOLD}q.${_COLOR_DEFAULT} Quit
+  ${_BASHUNIT_COLOR_BOLD}p.${_BASHUNIT_COLOR_DEFAULT} Show Progress
+  ${_BASHUNIT_COLOR_BOLD}r.${_BASHUNIT_COLOR_DEFAULT} Reset Progress
+  ${_BASHUNIT_COLOR_BOLD}q.${_BASHUNIT_COLOR_DEFAULT} Quit
 
 Enter your choice:
 EOF
@@ -55,47 +55,47 @@ EOF
 ##
 # Main learning loop
 ##
-function learn::start() {
-  learn::init
+function bashunit::learn::start() {
+  bashunit::learn::init
 
-  trap 'learn::cleanup' EXIT
+  trap 'bashunit::learn::cleanup' EXIT
 
   while true; do
     echo ""
-    learn::print_menu
+    bashunit::learn::print_menu
     read -r choice
     echo ""
 
     case "$choice" in
-      1) learn::lesson_basics || true ;;
-      2) learn::lesson_assertions || true ;;
-      3) learn::lesson_lifecycle || true ;;
-      4) learn::lesson_functions || true ;;
-      5) learn::lesson_scripts || true ;;
-      6) learn::lesson_mocking || true ;;
-      7) learn::lesson_spies || true ;;
-      8) learn::lesson_data_providers || true ;;
-      9) learn::lesson_exit_codes || true ;;
-      10) learn::lesson_challenge || true ;;
-      p) learn::show_progress ;;
-      r) learn::reset_progress ;;
+      1) bashunit::learn::lesson_basics || true ;;
+      2) bashunit::learn::lesson_assertions || true ;;
+      3) bashunit::learn::lesson_lifecycle || true ;;
+      4) bashunit::learn::lesson_functions || true ;;
+      5) bashunit::learn::lesson_scripts || true ;;
+      6) bashunit::learn::lesson_mocking || true ;;
+      7) bashunit::learn::lesson_spies || true ;;
+      8) bashunit::learn::lesson_data_providers || true ;;
+      9) bashunit::learn::lesson_exit_codes || true ;;
+      10) bashunit::learn::lesson_challenge || true ;;
+      p) bashunit::learn::show_progress ;;
+      r) bashunit::learn::reset_progress ;;
       q)
-        echo "${_COLOR_PASSED}Happy testing!${_COLOR_DEFAULT}"
+        echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
         break
         ;;
       *)
-        echo "${_COLOR_FAILED}Invalid choice. Please try again.${_COLOR_DEFAULT}"
+        echo "${_BASHUNIT_COLOR_FAILED}Invalid choice. Please try again.${_BASHUNIT_COLOR_DEFAULT}"
         ;;
     esac
   done
 
-  learn::cleanup
+  bashunit::learn::cleanup
 }
 
 ##
 # Mark lesson as completed
 ##
-function learn::mark_completed() {
+function bashunit::learn::mark_completed() {
   local lesson=$1
   echo "$lesson" >> "$LEARN_PROGRESS_FILE"
 }
@@ -103,7 +103,7 @@ function learn::mark_completed() {
 ##
 # Check if lesson is completed
 ##
-function learn::is_completed() {
+function bashunit::learn::is_completed() {
   local lesson=$1
   [[ -f "$LEARN_PROGRESS_FILE" ]] && grep -q "^$lesson$" "$LEARN_PROGRESS_FILE"
 }
@@ -111,24 +111,24 @@ function learn::is_completed() {
 ##
 # Show learning progress
 ##
-function learn::show_progress() {
+function bashunit::learn::show_progress() {
   if [[ ! -f "$LEARN_PROGRESS_FILE" ]]; then
-    echo "${_COLOR_INCOMPLETE}No progress yet. Start with lesson 1!${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_INCOMPLETE}No progress yet. Start with lesson 1!${_BASHUNIT_COLOR_DEFAULT}"
     return
   fi
 
-  echo "${_COLOR_BOLD}Your Progress:${_COLOR_DEFAULT}"
+  echo "${_BASHUNIT_COLOR_BOLD}Your Progress:${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
 
   local total_lessons=10
   local completed=0
 
   for i in $(seq 1 $total_lessons); do
-    if learn::is_completed "lesson_$i"; then
-      echo "  ${_COLOR_PASSED}✓${_COLOR_DEFAULT} Lesson $i completed"
+    if bashunit::learn::is_completed "lesson_$i"; then
+      echo "  ${_BASHUNIT_COLOR_PASSED}✓${_BASHUNIT_COLOR_DEFAULT} Lesson $i completed"
       ((completed++))
     else
-      echo "  ${_COLOR_INCOMPLETE}○${_COLOR_DEFAULT} Lesson $i"
+      echo "  ${_BASHUNIT_COLOR_INCOMPLETE}○${_BASHUNIT_COLOR_DEFAULT} Lesson $i"
     fi
   done
 
@@ -137,7 +137,8 @@ function learn::show_progress() {
 
   if [[ $completed -eq $total_lessons ]]; then
     echo ""
-    echo "${_COLOR_PASSED}${_COLOR_BOLD}🎉 Congratulations! You've completed all lessons!${_COLOR_DEFAULT}"
+    printf "%s%s🎉 Congratulations! You've completed all lessons!%s\n" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_DEFAULT"
   fi
 
   read -p "Press Enter to continue..." -r
@@ -146,9 +147,9 @@ function learn::show_progress() {
 ##
 # Reset learning progress
 ##
-function learn::reset_progress() {
+function bashunit::learn::reset_progress() {
   rm -f "$LEARN_PROGRESS_FILE"
-  echo "${_COLOR_PASSED}Progress reset successfully.${_COLOR_DEFAULT}"
+  echo "${_BASHUNIT_COLOR_PASSED}Progress reset successfully.${_BASHUNIT_COLOR_DEFAULT}"
   read -p "Press Enter to continue..." -r
 }
 
@@ -156,15 +157,15 @@ function learn::reset_progress() {
 # Create the example file automatically
 # Arguments: $1 - filename, $2 - file content
 ##
-function learn::create_example_file() {
+function bashunit::learn::create_example_file() {
   local filename=$1
   local content=$2
 
   echo ""
-  echo "Creating example file ${_COLOR_BOLD}$filename${_COLOR_DEFAULT}..."
+  echo "Creating example file ${_BASHUNIT_COLOR_BOLD}$filename${_BASHUNIT_COLOR_DEFAULT}..."
   echo "$content" > "$filename"
   chmod +x "$filename"
-  echo "${_COLOR_PASSED}✓ Created $filename${_COLOR_DEFAULT}"
+  echo "${_BASHUNIT_COLOR_PASSED}✓ Created $filename${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
   echo "File created! Edit it to complete the TODO items, then run this lesson again."
   read -p "Press Enter to continue..." -r
@@ -174,22 +175,23 @@ function learn::create_example_file() {
 ##
 # Run a lesson test and check results
 ##
-function learn::run_lesson_test() {
+function bashunit::learn::run_lesson_test() {
   local test_file=$1
   local lesson_number=$2
 
-  echo "${_COLOR_BOLD}Running your test...${_COLOR_DEFAULT}"
+  echo "${_BASHUNIT_COLOR_BOLD}Running your test...${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
 
   if "$BASHUNIT_ROOT_DIR/bashunit" "$test_file" --simple; then
     echo ""
-    echo "${_COLOR_PASSED}${_COLOR_BOLD}✓ Excellent! Lesson $lesson_number completed!${_COLOR_DEFAULT}"
-    learn::mark_completed "lesson_$lesson_number"
+    printf "%s%s✓ Excellent! Lesson %s completed!%s\n" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$lesson_number" "$_BASHUNIT_COLOR_DEFAULT"
+    bashunit::learn::mark_completed "lesson_$lesson_number"
     read -p "Press Enter to continue..." -r
     return 0
   else
     echo ""
-    echo "${_COLOR_FAILED}Not quite right. Review the requirements and try again.${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Not quite right. Review the requirements and try again.${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
@@ -198,7 +200,7 @@ function learn::run_lesson_test() {
 ##
 # Lesson 1: Basics - Your First Test
 ##
-function learn::lesson_basics() {
+function bashunit::learn::lesson_basics() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -232,7 +234,8 @@ EOF
 
   local default_file="tests/first_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -244,24 +247,24 @@ function test_bashunit_works() {
   # Hint: assert_same "expected" "actual"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   # Check if file contains assert_same
   if ! grep -q "assert_same" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should use assert_same${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should use assert_same${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 1
+  bashunit::learn::run_lesson_test "$test_file" 1
 }
 
 ##
 # Lesson 2: Assertions - Testing Different Conditions
 ##
-function learn::lesson_assertions() {
+function bashunit::learn::lesson_assertions() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -305,7 +308,8 @@ EOF
 
   local default_file="tests/assertions_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -325,25 +329,25 @@ function test_multiple_assertions() {
   # Hint: assert_not_empty "$message"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "assert_contains" "$test_file" || \
       ! grep -q "assert_matches" "$test_file" || \
       ! grep -q "assert_not_empty" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should use all three assertion types${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should use all three assertion types${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 2
+  bashunit::learn::run_lesson_test "$test_file" 2
 }
 
 ##
 # Lesson 3: Setup & Teardown - Managing Test Lifecycle
 ##
-function learn::lesson_lifecycle() {
+function bashunit::learn::lesson_lifecycle() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -391,7 +395,8 @@ EOF
 
   local default_file="tests/lifecycle_test.sh"
   echo ""
-  printf "When ready, enter file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -417,24 +422,24 @@ function test_file_has_content() {
   # TODO: assert_file_contains "test content" "$TEST_FILE"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "function set_up()" "$test_file" || \
       ! grep -q "function tear_down()" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should define set_up and tear_down functions${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should define set_up and tear_down functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 3
+  bashunit::learn::run_lesson_test "$test_file" 3
 }
 
 ##
 # Lesson 4: Testing Functions
 ##
-function learn::lesson_functions() {
+function bashunit::learn::lesson_functions() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -486,7 +491,8 @@ EOF
 
   local default_file="tests/calculator_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -510,23 +516,23 @@ function test_add_negative_numbers() {
   # Hint: assert_same "-5" "$result"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "source" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should source the calculator.sh file${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should source the calculator.sh file${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 4
+  bashunit::learn::run_lesson_test "$test_file" 4
 }
 
 ##
 # Lesson 5: Testing Scripts
 ##
-function learn::lesson_scripts() {
+function bashunit::learn::lesson_scripts() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -576,7 +582,8 @@ EOF
 
   local default_file="tests/greeter_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -599,17 +606,17 @@ function test_custom_greeting() {
   # Hint: assert_contains "Hello, Alice!" "$output"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 5
+  bashunit::learn::run_lesson_test "$test_file" 5
 }
 
 ##
 # Lesson 6: Mocking
 ##
-function learn::lesson_mocking() {
+function bashunit::learn::lesson_mocking() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -667,7 +674,8 @@ EOF
 
   local default_file="tests/system_info_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -697,23 +705,23 @@ function test_system_info_on_macos() {
   # TODO: Assert output contains "OS: Darwin"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "mock" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should use mock${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should use mock${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 6
+  bashunit::learn::run_lesson_test "$test_file" 6
 }
 
 ##
 # Lesson 7: Spies
 ##
-function learn::lesson_spies() {
+function bashunit::learn::lesson_spies() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -780,7 +788,8 @@ EOF
 
   local default_file="deploy_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -813,23 +822,23 @@ function test_deploy_calls_docker_twice() {
   # Hint: assert_have_been_called_times 2 docker
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "spy" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should use spy${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should use spy${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 7
+  bashunit::learn::run_lesson_test "$test_file" 7
 }
 
 ##
 # Lesson 8: Data Providers
 ##
-function learn::lesson_data_providers() {
+function bashunit::learn::lesson_data_providers() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -893,7 +902,8 @@ EOF
 
   local default_file="validator_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -925,23 +935,23 @@ function test_invalid_emails() {
   # Hint: assert_general_error "is_valid_email \"$1\""
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "function data_provider_" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should define data provider functions${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should define data provider functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 8
+  bashunit::learn::run_lesson_test "$test_file" 8
 }
 
 ##
 # Lesson 9: Exit Codes
 ##
-function learn::lesson_exit_codes() {
+function bashunit::learn::lesson_exit_codes() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -1012,7 +1022,8 @@ EOF
 
   local default_file="checker_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -1040,23 +1051,23 @@ function test_missing_file_returns_127() {
   # Hint: assert_exit_code 127 "check_file '\''/nonexistent/file'\''"
 }'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
   if ! grep -q "assert_successful_code\|assert_exit_code\|assert_general_error" "$test_file"; then
-    echo "${_COLOR_FAILED}Your test should use exit code assertions${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Your test should use exit code assertions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  learn::run_lesson_test "$test_file" 9
+  bashunit::learn::run_lesson_test "$test_file" 9
 }
 
 ##
 # Lesson 10: Complete Challenge
 ##
-function learn::lesson_challenge() {
+function bashunit::learn::lesson_challenge() {
   clear
   cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
@@ -1105,7 +1116,8 @@ EOF
 
   local default_file="backup_test.sh"
   echo ""
-  printf "When ready, enter TEST file path %s[%s]%s: " "${_COLOR_FAINT}" "$default_file" "${_COLOR_DEFAULT}"
+  printf "When ready, enter TEST file path %s[%s]%s: " \
+    "${_BASHUNIT_COLOR_FAINT}" "$default_file" "${_BASHUNIT_COLOR_DEFAULT}"
   read -r test_file
   test_file="${test_file:-$default_file}"
 
@@ -1140,7 +1152,7 @@ function test_backup_failure_when_source_missing() {
 # - Test both success and failure scenarios
 # - Mock external commands to avoid side effects'
 
-    learn::create_example_file "$test_file" "$template"
+    bashunit::learn::create_example_file "$test_file" "$template"
     return 1
   fi
 
@@ -1156,15 +1168,15 @@ function test_backup_failure_when_source_missing() {
   fi
 
   if [[ ${#missing_components[@]} -gt 0 ]]; then
-    echo "${_COLOR_FAILED}Missing required components:${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_FAILED}Missing required components:${_BASHUNIT_COLOR_DEFAULT}"
     printf "  - %s\n" "${missing_components[@]}"
     read -p "Press Enter to continue..." -r
     return 1
   fi
 
-  if learn::run_lesson_test "$test_file" 10; then
+  if bashunit::learn::run_lesson_test "$test_file" 10; then
     echo ""
-    echo "${_COLOR_PASSED}${_COLOR_BOLD}"
+    echo "${_BASHUNIT_COLOR_PASSED}${_BASHUNIT_COLOR_BOLD}"
     cat <<'EOF'
 ╔════════════════════════════════════════════════════════════════╗
 ║                   🎉 CONGRATULATIONS! 🎉                       ║
@@ -1187,7 +1199,7 @@ function test_backup_failure_when_source_missing() {
 ║    • Start testing your own bash scripts!                      ║
 ╚════════════════════════════════════════════════════════════════╝
 EOF
-    echo "${_COLOR_DEFAULT}"
+    echo "${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
   fi
 }

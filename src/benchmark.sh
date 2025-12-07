@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-_BENCH_NAMES=()
-_BENCH_REVS=()
-_BENCH_ITS=()
-_BENCH_AVERAGES=()
-_BENCH_MAX_MILLIS=()
+_BASHUNIT_BENCH_NAMES=()
+_BASHUNIT_BENCH_REVS=()
+_BASHUNIT_BENCH_ITS=()
+_BASHUNIT_BENCH_AVERAGES=()
+_BASHUNIT_BENCH_MAX_MILLIS=()
 
-function benchmark::parse_annotations() {
+function bashunit::benchmark::parse_annotations() {
   local fn_name=$1
   local script=$2
   local revs=1
@@ -41,16 +41,16 @@ function benchmark::parse_annotations() {
   fi
 }
 
-function benchmark::add_result() {
-  _BENCH_NAMES+=("$1")
-  _BENCH_REVS+=("$2")
-  _BENCH_ITS+=("$3")
-  _BENCH_AVERAGES+=("$4")
-  _BENCH_MAX_MILLIS+=("$5")
+function bashunit::benchmark::add_result() {
+  _BASHUNIT_BENCH_NAMES+=("$1")
+  _BASHUNIT_BENCH_REVS+=("$2")
+  _BASHUNIT_BENCH_ITS+=("$3")
+  _BASHUNIT_BENCH_AVERAGES+=("$4")
+  _BASHUNIT_BENCH_MAX_MILLIS+=("$5")
 }
 
 # shellcheck disable=SC2155
-function benchmark::run_function() {
+function bashunit::benchmark::run_function() {
   local fn_name=$1
   local revs=$2
   local its=$3
@@ -58,42 +58,42 @@ function benchmark::run_function() {
   local durations=()
 
   for ((i=1; i<=its; i++)); do
-    local start_time=$(clock::now)
+    local start_time=$(bashunit::clock::now)
     (
       for ((r=1; r<=revs; r++)); do
         "$fn_name" >/dev/null 2>&1
       done
     )
-    local end_time=$(clock::now)
-    local dur_ns=$(math::calculate "($end_time - $start_time)")
-    local dur_ms=$(math::calculate "$dur_ns / 1000000")
+    local end_time=$(bashunit::clock::now)
+    local dur_ns=$(bashunit::math::calculate "($end_time - $start_time)")
+    local dur_ms=$(bashunit::math::calculate "$dur_ns / 1000000")
     durations+=("$dur_ms")
 
-    if env::is_bench_mode_enabled; then
-      local label="$(helper::normalize_test_function_name "$fn_name")"
+    if bashunit::env::is_bench_mode_enabled; then
+      local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
       local line="$label [$i/$its] ${dur_ms} ms"
-      state::print_line "successful" "$line"
+      bashunit::state::print_line "successful" "$line"
     fi
   done
 
   local sum=0
   for d in "${durations[@]}"; do
-    sum=$(math::calculate "$sum + $d")
+    sum=$(bashunit::math::calculate "$sum + $d")
   done
-  local avg=$(math::calculate "$sum / ${#durations[@]}")
-  benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
+  local avg=$(bashunit::math::calculate "$sum / ${#durations[@]}")
+  bashunit::benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
 }
 
-function benchmark::print_results() {
-  if ! env::is_bench_mode_enabled; then
+function bashunit::benchmark::print_results() {
+  if ! bashunit::env::is_bench_mode_enabled; then
     return
   fi
 
-  if (( ${#_BENCH_NAMES[@]} == 0 )); then
+  if (( ${#_BASHUNIT_BENCH_NAMES[@]} == 0 )); then
     return
   fi
 
-  if env::is_simple_output_enabled; then
+  if bashunit::env::is_simple_output_enabled; then
     printf "\n"
   fi
 
@@ -102,7 +102,7 @@ function benchmark::print_results() {
   printf "\n"
 
   local has_threshold=false
-  for val in "${_BENCH_MAX_MILLIS[@]}"; do
+  for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]}"; do
     if [[ -n "$val" ]]; then
       has_threshold=true
       break
@@ -115,12 +115,12 @@ function benchmark::print_results() {
     printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
   fi
 
-  for i in "${!_BENCH_NAMES[@]}"; do
-    local name="${_BENCH_NAMES[$i]}"
-    local revs="${_BENCH_REVS[$i]}"
-    local its="${_BENCH_ITS[$i]}"
-    local avg="${_BENCH_AVERAGES[$i]}"
-    local max_ms="${_BENCH_MAX_MILLIS[$i]}"
+  for i in "${!_BASHUNIT_BENCH_NAMES[@]}"; do
+    local name="${_BASHUNIT_BENCH_NAMES[$i]}"
+    local revs="${_BASHUNIT_BENCH_REVS[$i]}"
+    local its="${_BASHUNIT_BENCH_ITS[$i]}"
+    local avg="${_BASHUNIT_BENCH_AVERAGES[$i]}"
+    local max_ms="${_BASHUNIT_BENCH_MAX_MILLIS[$i]}"
 
     if [[ -z "$max_ms" ]]; then
       printf '%-40s %6s %6s %10s\n' "$name" "$revs" "$its" "$avg"
@@ -138,8 +138,8 @@ function benchmark::print_results() {
     printf -v padded "%12s" "$raw"
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
-      "$_COLOR_FAILED" "$padded" "${_COLOR_DEFAULT}"
+      "$_BASHUNIT_COLOR_FAILED" "$padded" "${_BASHUNIT_COLOR_DEFAULT}"
   done
 
-  console_results::print_execution_time
+  bashunit::console_results::print_execution_time
 }

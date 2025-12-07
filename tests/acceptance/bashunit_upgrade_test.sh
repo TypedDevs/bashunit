@@ -9,15 +9,15 @@ HAS_DOWNLOADER=false
 HAS_GIT=false
 
 function set_up_before_script() {
-  if env::active_internet_connection; then
+  if bashunit::env::active_internet_connection; then
     ACTIVE_INTERNET=true
   fi
 
-  if dependencies::has_curl || dependencies::has_wget; then
+  if bashunit::dependencies::has_curl || bashunit::dependencies::has_wget; then
     HAS_DOWNLOADER=true
   fi
 
-  if dependencies::has_git; then
+  if bashunit::dependencies::has_git; then
     HAS_GIT=true
   fi
 }
@@ -29,7 +29,7 @@ function tear_down_after_script() {
 function set_up() {
   ./build.sh "$TMP_DIR" >/dev/null
   if [[ "$ACTIVE_INTERNET" == true ]] && [[ "$HAS_GIT" == true ]]; then
-    LATEST_VERSION="$(helper::get_latest_tag)"
+    LATEST_VERSION="$(bashunit::helper::get_latest_tag)"
   else
     LATEST_VERSION="${BASHUNIT_VERSION}"
   fi
@@ -64,7 +64,7 @@ function test_upgrade_when_a_new_version_found() {
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     "$TMP_BIN"
 
-  if [[ $_OS == "OSX" ]]; then
+  if [[ $_BASHUNIT_OS == "OSX" ]]; then
     rm -f "${TMP_BIN}-e"
   fi
 
@@ -93,7 +93,7 @@ function test_do_not_update_on_consecutive_calls() {
     's/declare -r BASHUNIT_VERSION="[0-9]\{1,\}\.[0-9]\{1,\}\.[0-9]\{1,\}"/declare -r BASHUNIT_VERSION="0.1.0"/' \
     "$TMP_BIN"
 
-  if [[ $_OS == "OSX" ]]; then
+  if [[ $_BASHUNIT_OS == "OSX" ]]; then
     rm -f "${TMP_BIN}-e"
   fi
 
