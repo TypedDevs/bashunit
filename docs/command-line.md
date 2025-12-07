@@ -60,6 +60,7 @@ bashunit test tests/ --parallel --simple
 | `-vvv, --verbose` | Show execution details |
 | `--debug [file]` | Enable shell debug mode |
 | `--no-output` | Suppress all output |
+| `--strict` | Enable strict shell mode |
 
 ### Standalone Assert
 
@@ -172,6 +173,26 @@ bashunit test tests/ --log-junit results.xml
 ```
 ```bash [HTML Report]
 bashunit test tests/ --report-html report.html
+```
+:::
+
+### Strict Mode
+
+> `bashunit test --strict`
+
+Enable strict shell mode (`set -euo pipefail`) for test execution.
+
+By default, tests run in permissive mode which allows:
+- Unset variables without errors
+- Non-zero return codes from commands
+- Pipe failures to be ignored
+
+With `--strict`, your tests run with bash strict mode enabled, catching
+potential issues like uninitialized variables and unchecked command failures.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --strict
 ```
 :::
 

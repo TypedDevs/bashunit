@@ -272,6 +272,24 @@ BASHUNIT_NO_OUTPUT=true
 ```
 :::
 
+## Strict mode
+
+> `BASHUNIT_STRICT_MODE=true|false`
+
+Enable strict shell mode (`set -euo pipefail`) for test execution. `false` by default.
+
+By default, tests run in permissive mode to maximize compatibility with
+different coding styles. Enable strict mode to catch potential issues like
+uninitialized variables and unchecked command failures.
+
+Similar as using `--strict` option on the [command line](/command-line#strict-mode).
+
+::: code-group
+```bash [Example]
+BASHUNIT_STRICT_MODE=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
