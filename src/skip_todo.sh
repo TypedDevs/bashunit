@@ -7,7 +7,7 @@ function bashunit::skip() {
 
   console_results::print_skipped_test "${label}" "${reason}"
 
-  state::add_assertions_skipped
+  bashunit::state::add_assertions_skipped
 }
 
 function bashunit::todo() {
@@ -17,5 +17,5 @@ function bashunit::todo() {
 
   console_results::print_incomplete_test "${label}" "${pending}"
 
-  state::add_assertions_incomplete
+  bashunit::state::add_assertions_incomplete
 }

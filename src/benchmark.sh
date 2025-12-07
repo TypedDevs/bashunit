@@ -72,7 +72,7 @@ function benchmark::run_function() {
     if env::is_bench_mode_enabled; then
       local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
       local line="$label [$i/$its] ${dur_ms} ms"
-      state::print_line "successful" "$line"
+      bashunit::state::print_line "successful" "$line"
     fi
   done
 

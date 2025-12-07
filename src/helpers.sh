@@ -39,7 +39,7 @@ function bashunit::helper::normalize_test_function_name() {
   local interpolated_fn_name="${2-}"
 
   local custom_title
-  custom_title="$(state::get_test_title)"
+  custom_title="$(bashunit::state::get_test_title)"
   if [[ -n "$custom_title" ]]; then
     echo "$custom_title"
     return
@@ -47,7 +47,7 @@ function bashunit::helper::normalize_test_function_name() {
 
   if [[ -z "${interpolated_fn_name-}" && "${original_fn_name}" == *"::"* ]]; then
     local state_interpolated_fn_name
-    state_interpolated_fn_name="$(state::get_current_test_interpolated_function_name)"
+    state_interpolated_fn_name="$(bashunit::state::get_current_test_interpolated_function_name)"
 
     if [[ -n "$state_interpolated_fn_name" ]]; then
       interpolated_fn_name="$state_interpolated_fn_name"
@@ -152,7 +152,7 @@ function bashunit::helper::check_duplicate_functions() {
   local duplicates
   duplicates=$(echo "$function_names" | sort | uniq -d)
   if [ -n "$duplicates" ]; then
-    state::set_duplicated_functions_merged "$script" "$duplicates"
+    bashunit::state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
   fi
   return 0

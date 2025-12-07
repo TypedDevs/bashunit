@@ -47,11 +47,11 @@ function reports::add_test() {
 function reports::generate_junit_xml() {
   local output_file="$1"
 
-  local test_passed=$(state::get_tests_passed)
-  local tests_skipped=$(state::get_tests_skipped)
-  local tests_incomplete=$(state::get_tests_incomplete)
-  local tests_snapshot=$(state::get_tests_snapshot)
-  local tests_failed=$(state::get_tests_failed)
+  local test_passed=$(bashunit::state::get_tests_passed)
+  local tests_skipped=$(bashunit::state::get_tests_skipped)
+  local tests_incomplete=$(bashunit::state::get_tests_incomplete)
+  local tests_snapshot=$(bashunit::state::get_tests_snapshot)
+  local tests_failed=$(bashunit::state::get_tests_failed)
   local time=$(clock::total_runtime_in_milliseconds)
 
   {
@@ -85,11 +85,11 @@ function reports::generate_junit_xml() {
 function reports::generate_report_html() {
   local output_file="$1"
 
-  local test_passed=$(state::get_tests_passed)
-  local tests_skipped=$(state::get_tests_skipped)
-  local tests_incomplete=$(state::get_tests_incomplete)
-  local tests_snapshot=$(state::get_tests_snapshot)
-  local tests_failed=$(state::get_tests_failed)
+  local test_passed=$(bashunit::state::get_tests_passed)
+  local tests_skipped=$(bashunit::state::get_tests_skipped)
+  local tests_incomplete=$(bashunit::state::get_tests_incomplete)
+  local tests_snapshot=$(bashunit::state::get_tests_snapshot)
+  local tests_failed=$(bashunit::state::get_tests_failed)
   local time=$(clock::total_runtime_in_milliseconds)
 
   # Temporary file to store test cases by file

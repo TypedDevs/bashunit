@@ -4,11 +4,11 @@
 _BASHUNIT_TOTAL_TESTS_COUNT=0
 
 function console_results::render_result() {
-  if [[ "$(state::is_duplicated_test_functions_found)" == true ]]; then
+  if [[ "$(bashunit::state::is_duplicated_test_functions_found)" == true ]]; then
     console_results::print_execution_time
     printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
-    printf "File with duplicate functions: %s\n" "$(state::get_file_with_duplicated_function_names)"
-    printf "Duplicate functions: %s\n" "$(state::get_duplicated_function_names)"
+    printf "File with duplicate functions: %s\n" "$(bashunit::state::get_file_with_duplicated_function_names)"
+    printf "Duplicate functions: %s\n" "$(bashunit::state::get_duplicated_function_names)"
     return 1
   fi
 
@@ -160,7 +160,7 @@ function console_results::print_successful_test() {
     full_line="$(printf "%s\n" "$(str::rpad "$line" "$duration ms")")"
   fi
 
-  state::print_line "successful" "$full_line"
+  bashunit::state::print_line "successful" "$full_line"
 }
 
 function console_results::print_failure_message() {
@@ -173,7 +173,7 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n"\
     "${test_name}" "${failure_message}")"
 
-  state::print_line "failure" "$line"
+  bashunit::state::print_line "failure" "$line"
 }
 
 function console_results::print_failed_test() {
@@ -198,7 +198,7 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     "${extra_key}" "${extra_value}")"
   fi
 
-  state::print_line "failed" "$line"
+  bashunit::state::print_line "failed" "$line"
 }
 
 
@@ -224,7 +224,7 @@ function console_results::print_failed_snapshot_test() {
     rm "$actual_file"
   fi
 
-  state::print_line "failed_snapshot" "$line"
+  bashunit::state::print_line "failed_snapshot" "$line"
 }
 
 function console_results::print_skipped_test() {
@@ -238,7 +238,7 @@ function console_results::print_skipped_test() {
     line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
-  state::print_line "skipped" "$line"
+  bashunit::state::print_line "skipped" "$line"
 }
 
 function console_results::print_incomplete_test() {
@@ -252,7 +252,7 @@ function console_results::print_incomplete_test() {
     line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
-  state::print_line "incomplete" "$line"
+  bashunit::state::print_line "incomplete" "$line"
 }
 
 function console_results::print_snapshot_test() {
@@ -263,7 +263,7 @@ function console_results::print_snapshot_test() {
   local line
   line="$(printf "${_BASHUNIT_COLOR_SNAPSHOT}✎ Snapshot${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${test_name}")"
 
-  state::print_line "snapshot" "$line"
+  bashunit::state::print_line "snapshot" "$line"
 }
 
 function console_results::print_error_test() {
@@ -277,13 +277,13 @@ function console_results::print_error_test() {
   line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Error${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
-  state::print_line "error" "$line"
+  bashunit::state::print_line "error" "$line"
 }
 
 function console_results::print_failing_tests_and_reset() {
   if [[ -s "$FAILURES_OUTPUT_PATH" ]]; then
     local total_failed
-    total_failed=$(state::get_tests_failed)
+    total_failed=$(bashunit::state::get_tests_failed)
 
     if env::is_simple_output_enabled; then
       printf "\n\n"
@@ -305,7 +305,7 @@ function console_results::print_failing_tests_and_reset() {
 function console_results::print_skipped_tests_and_reset() {
   if [[ -s "$SKIPPED_OUTPUT_PATH" ]] && env::is_show_skipped_enabled; then
     local total_skipped
-    total_skipped=$(state::get_tests_skipped)
+    total_skipped=$(bashunit::state::get_tests_skipped)
 
     if env::is_simple_output_enabled; then
       printf "\n"
@@ -327,7 +327,7 @@ function console_results::print_skipped_tests_and_reset() {
 function console_results::print_incomplete_tests_and_reset() {
   if [[ -s "$INCOMPLETE_OUTPUT_PATH" ]] && env::is_show_incomplete_enabled; then
     local total_incomplete
-    total_incomplete=$(state::get_tests_incomplete)
+    total_incomplete=$(bashunit::state::get_tests_incomplete)
 
     if env::is_simple_output_enabled; then
       printf "\n"

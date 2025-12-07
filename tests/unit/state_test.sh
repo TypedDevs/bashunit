@@ -7,8 +7,8 @@ function test_add_and_get_tests_passed() {
   tests_passed=$(
     _BASHUNIT_TESTS_PASSED=0
 
-    state::add_tests_passed
-    state::get_tests_passed
+    bashunit::state::add_tests_passed
+    bashunit::state::get_tests_passed
   )
 
   assert_same "1" "$tests_passed"
@@ -19,8 +19,8 @@ function test_add_and_get_tests_failed() {
   tests_failed=$(
     _BASHUNIT_TESTS_FAILED=0
 
-    state::add_tests_failed
-    state::get_tests_failed
+    bashunit::state::add_tests_failed
+    bashunit::state::get_tests_failed
   )
 
   assert_same "1" "$tests_failed"
@@ -31,8 +31,8 @@ function test_add_and_get_tests_skipped() {
   tests_skipped=$(
     _BASHUNIT_TESTS_SKIPPED=0
 
-    state::add_tests_skipped
-    state::get_tests_skipped
+    bashunit::state::add_tests_skipped
+    bashunit::state::get_tests_skipped
   )
 
   assert_same "1" "$tests_skipped"
@@ -43,8 +43,8 @@ function test_add_and_get_tests_incomplete() {
   tests_incomplete=$(
     _BASHUNIT_TESTS_INCOMPLETE=0
 
-    state::add_tests_incomplete
-    state::get_tests_incomplete
+    bashunit::state::add_tests_incomplete
+    bashunit::state::get_tests_incomplete
   )
 
   assert_same "1" "$tests_incomplete"
@@ -55,8 +55,8 @@ function test_add_and_get_tests_snapshot() {
   tests_snapshot=$(
     _BASHUNIT_TESTS_SNAPSHOT=0
 
-    state::add_tests_snapshot
-    state::get_tests_snapshot
+    bashunit::state::add_tests_snapshot
+    bashunit::state::get_tests_snapshot
   )
 
   assert_same "1" "$tests_snapshot"
@@ -67,9 +67,9 @@ function test_add_twice_and_get_tests_snapshot() {
   tests_snapshot=$(
     _BASHUNIT_TESTS_SNAPSHOT=0
 
-    state::add_tests_snapshot
-    state::add_tests_snapshot
-    state::get_tests_snapshot
+    bashunit::state::add_tests_snapshot
+    bashunit::state::add_tests_snapshot
+    bashunit::state::get_tests_snapshot
   )
 
   assert_same "2" "$tests_snapshot"
@@ -80,8 +80,8 @@ function test_add_and_get_assertions_passed() {
   assertions_passed=$(
     _BASHUNIT_ASSERTIONS_PASSED=0
 
-    state::add_assertions_passed
-    state::get_assertions_passed
+    bashunit::state::add_assertions_passed
+    bashunit::state::get_assertions_passed
   )
 
   assert_same "1" "$assertions_passed"
@@ -92,8 +92,8 @@ function test_add_and_get_assertions_failed() {
   assertions_failed=$(
     _BASHUNIT_ASSERTIONS_FAILED=0
 
-    state::add_assertions_failed
-    state::get_assertions_failed
+    bashunit::state::add_assertions_failed
+    bashunit::state::get_assertions_failed
   )
 
   assert_same "1" "$assertions_failed"
@@ -104,8 +104,8 @@ function test_add_and_get_assertions_skipped() {
   assertions_skipped=$(
     _BASHUNIT_ASSERTIONS_FAILED=0
 
-    state::add_assertions_skipped
-    state::get_assertions_skipped
+    bashunit::state::add_assertions_skipped
+    bashunit::state::get_assertions_skipped
   )
 
   assert_same "1" "$assertions_skipped"
@@ -116,8 +116,8 @@ function test_add_and_get_assertions_incomplete() {
   assertions_incomplete=$(
     _BASHUNIT_ASSERTIONS_INCOMPLETE=0
 
-    state::add_assertions_incomplete
-    state::get_assertions_incomplete
+    bashunit::state::add_assertions_incomplete
+    bashunit::state::get_assertions_incomplete
   )
 
   assert_same "1" "$assertions_incomplete"
@@ -128,8 +128,8 @@ function test_add_and_get_assertions_snapshot() {
   assertions_snapshot=$(
     _BASHUNIT_ASSERTIONS_SNAPSHOT=0
 
-    state::add_assertions_snapshot
-    state::get_assertions_snapshot
+    bashunit::state::add_assertions_snapshot
+    bashunit::state::get_assertions_snapshot
   )
 
   assert_same "1" "$assertions_snapshot"
@@ -140,9 +140,9 @@ function test_add_twice_and_get_assertions_snapshot() {
   assertions_snapshot=$(
     _BASHUNIT_ASSERTIONS_SNAPSHOT=0
 
-    state::add_assertions_snapshot
-    state::add_assertions_snapshot
-    state::get_assertions_snapshot
+    bashunit::state::add_assertions_snapshot
+    bashunit::state::add_assertions_snapshot
+    bashunit::state::get_assertions_snapshot
   )
 
   assert_same "2" "$assertions_snapshot"
@@ -153,8 +153,8 @@ function test_set_and_is_duplicated_test_functions_found() {
   duplicated_test_functions_found=$(
     _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-    state::set_duplicated_test_functions_found
-    state::is_duplicated_test_functions_found
+    bashunit::state::set_duplicated_test_functions_found
+    bashunit::state::is_duplicated_test_functions_found
   )
 
   assert_true "$duplicated_test_functions_found"
@@ -165,8 +165,8 @@ function test_set_and_get_file_with_duplicated_function_names() {
   file_with_duplicated_function_names=$(
     _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_file_with_duplicated_function_names "test_path/file_name_test.sh"
-    state::get_file_with_duplicated_function_names
+    bashunit::state::set_file_with_duplicated_function_names "test_path/file_name_test.sh"
+    bashunit::state::get_file_with_duplicated_function_names
   )
 
   assert_same "test_path/file_name_test.sh" "$file_with_duplicated_function_names"
@@ -177,8 +177,8 @@ function test_set_and_get_duplicated_function_names_one_name() {
   duplicated_function_names=$(
     _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_duplicated_function_names "duplicated_test_name"
-    state::get_duplicated_function_names
+    bashunit::state::set_duplicated_function_names "duplicated_test_name"
+    bashunit::state::get_duplicated_function_names
   )
 
   assert_same "duplicated_test_name" "$duplicated_function_names"
@@ -193,8 +193,8 @@ duplicated_test_function3"
   duplicated_function_names=$(
     _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_duplicated_function_names "$test_names"
-    state::get_duplicated_function_names
+    bashunit::state::set_duplicated_function_names "$test_names"
+    bashunit::state::get_duplicated_function_names
   )
 
   assert_same "$test_names" "$duplicated_function_names"
@@ -207,8 +207,8 @@ function test_set_duplicated_functions_merged() {
   duplicated_test_functions_found=$(
     _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
-    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
-    state::is_duplicated_test_functions_found
+    bashunit::state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    bashunit::state::is_duplicated_test_functions_found
   )
 
   assert_true "$duplicated_test_functions_found"
@@ -217,8 +217,8 @@ function test_set_duplicated_functions_merged() {
   duplicated_function_names=$(
     _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
-    state::get_duplicated_function_names
+    bashunit::state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    bashunit::state::get_duplicated_function_names
   )
   assert_same "$test_function_name" "$duplicated_function_names"
 
@@ -226,8 +226,8 @@ function test_set_duplicated_functions_merged() {
   file_with_duplicated_function_names=$(
     _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 
-    state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
-    state::get_file_with_duplicated_function_names
+    bashunit::state::set_duplicated_functions_merged "$test_file_name" "$test_function_name"
+    bashunit::state::get_file_with_duplicated_function_names
   )
 
   assert_same "$test_file_name" "$file_with_duplicated_function_names"
@@ -244,8 +244,8 @@ function test_initialize_assertions_count() {
     _BASHUNIT_ASSERTIONS_INCOMPLETE=12
     _BASHUNIT_ASSERTIONS_SNAPSHOT=33
 
-    state::initialize_assertions_count
-    state::export_subshell_context
+    bashunit::state::initialize_assertions_count
+    bashunit::state::export_subshell_context
   )
 
   assert_same\
@@ -277,7 +277,7 @@ function test_export_assertions_count() {
     _BASHUNIT_TEST_EXIT_CODE=1
     _BASHUNIT_TEST_OUTPUT="something"
 
-    state::export_subshell_context
+    bashunit::state::export_subshell_context
   )
 
   assert_same\
@@ -303,5 +303,5 @@ function test_calculate_total_assertions() {
   ##TEST_EXIT_CODE=0\
   ##TEST_OUTPUT=3zhbEncodedBase64##"
 
-  assert_same 15 "$(state::calculate_total_assertions "$input")"
+  assert_same 15 "$(bashunit::state::calculate_total_assertions "$input")"
 }

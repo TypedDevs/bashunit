@@ -2,8 +2,8 @@
 
 # Helper to mark assertion as failed and set the guard flag
 function assert::mark_failed() {
-  state::add_assertions_failed
-  state::mark_assertion_failed_in_test
+  bashunit::state::add_assertions_failed
+  bashunit::state::mark_assertion_failed_in_test
 }
 
 function bashunit::fail() {
@@ -26,7 +26,7 @@ function assert_true() {
 
   # Check for expected literal values first
   case "$actual" in
-    "true"|"0") state::add_assertions_passed; return ;;
+    "true"|"0") bashunit::state::add_assertions_passed; return ;;
     "false"|"1") bashunit::handle_bool_assertion_failure "true or 0" "$actual"; return ;;
   esac
 
@@ -37,7 +37,7 @@ function assert_true() {
   if [[ $exit_code -ne 0 ]]; then
     bashunit::handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
   else
-    state::add_assertions_passed
+    bashunit::state::add_assertions_passed
   fi
 }
 
@@ -48,7 +48,7 @@ function assert_false() {
 
   # Check for expected literal values first
   case "$actual" in
-    "false"|"1") state::add_assertions_passed; return ;;
+    "false"|"1") bashunit::state::add_assertions_passed; return ;;
     "true"|"0") bashunit::handle_bool_assertion_failure "false or 1" "$actual"; return ;;
   esac
 
@@ -59,7 +59,7 @@ function assert_false() {
   if [[ $exit_code -eq 0 ]]; then
     bashunit::handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
   else
-    state::add_assertions_passed
+    bashunit::state::add_assertions_passed
   fi
 }
 
@@ -104,7 +104,7 @@ function assert_same() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_equals() {
@@ -128,7 +128,7 @@ function assert_equals() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_equals() {
@@ -152,7 +152,7 @@ function assert_not_equals() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_empty() {
@@ -170,7 +170,7 @@ function assert_empty() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_empty() {
@@ -188,7 +188,7 @@ function assert_not_empty() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_same() {
@@ -207,7 +207,7 @@ function assert_not_same() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_contains() {
@@ -228,7 +228,7 @@ function assert_contains() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_contains_ignore_case() {
@@ -251,7 +251,7 @@ function assert_contains_ignore_case() {
   fi
 
   shopt -u nocasematch
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_contains() {
@@ -272,7 +272,7 @@ function assert_not_contains() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_matches() {
@@ -293,7 +293,7 @@ function assert_matches() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_matches() {
@@ -314,7 +314,7 @@ function assert_not_matches() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_exec() {
@@ -399,7 +399,7 @@ function assert_exec() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_exit_code() {
@@ -418,7 +418,7 @@ function assert_exit_code() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_successful_code() {
@@ -437,7 +437,7 @@ function assert_successful_code() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_unsuccessful_code() {
@@ -454,7 +454,7 @@ function assert_unsuccessful_code() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_general_error() {
@@ -473,7 +473,7 @@ function assert_general_error() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_command_not_found() {
@@ -492,7 +492,7 @@ function assert_command_not_found() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_string_starts_with() {
@@ -513,7 +513,7 @@ function assert_string_starts_with() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_string_not_starts_with() {
@@ -532,7 +532,7 @@ function assert_string_not_starts_with() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_string_ends_with() {
@@ -553,7 +553,7 @@ function assert_string_ends_with() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_string_not_ends_with() {
@@ -574,7 +574,7 @@ function assert_string_not_ends_with() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_less_than() {
@@ -593,7 +593,7 @@ function assert_less_than() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_less_or_equal_than() {
@@ -612,7 +612,7 @@ function assert_less_or_equal_than() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_greater_than() {
@@ -631,7 +631,7 @@ function assert_greater_than() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_greater_or_equal_than() {
@@ -650,7 +650,7 @@ function assert_greater_or_equal_than() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_line_count() {
@@ -684,5 +684,5 @@ function assert_line_count() {
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }

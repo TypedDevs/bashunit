@@ -51,31 +51,31 @@ function parallel::aggregate_test_results() {
       total_snapshot=$((total_snapshot + snapshot))
 
       if [ "${failed:-0}" -gt 0 ]; then
-        state::add_tests_failed
+        bashunit::state::add_tests_failed
         continue
       fi
 
       if [ "${exit_code:-0}" -ne 0 ]; then
-        state::add_tests_failed
+        bashunit::state::add_tests_failed
         continue
       fi
 
       if [ "${snapshot:-0}" -gt 0 ]; then
-        state::add_tests_snapshot
+        bashunit::state::add_tests_snapshot
         continue
       fi
 
       if [ "${incomplete:-0}" -gt 0 ]; then
-        state::add_tests_incomplete
+        bashunit::state::add_tests_incomplete
         continue
       fi
 
       if [ "${skipped:-0}" -gt 0 ]; then
-        state::add_tests_skipped
+        bashunit::state::add_tests_skipped
         continue
       fi
 
-      state::add_tests_passed
+      bashunit::state::add_tests_passed
     done
   done
 

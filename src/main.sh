@@ -441,7 +441,7 @@ function main::exec_assert() {
   "$assert_fn" "${args[@]}" 1>&2
   bashunit_exit_code=$?
 
-  if [[ "$(state::get_tests_failed)" -gt 0 ]] || [[ "$(state::get_assertions_failed)" -gt 0 ]]; then
+  if [[ "$(bashunit::state::get_tests_failed)" -gt 0 ]] || [[ "$(bashunit::state::get_assertions_failed)" -gt 0 ]]; then
     return 1
   fi
 

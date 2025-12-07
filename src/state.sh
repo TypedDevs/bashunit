@@ -21,185 +21,185 @@ _BASHUNIT_TEST_HOOK_MESSAGE=""
 _BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME=""
 _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
 
-function state::get_tests_passed() {
+function bashunit::state::get_tests_passed() {
   echo "$_BASHUNIT_TESTS_PASSED"
 }
 
-function state::add_tests_passed() {
+function bashunit::state::add_tests_passed() {
   ((_BASHUNIT_TESTS_PASSED++)) || true
 }
 
-function state::get_tests_failed() {
+function bashunit::state::get_tests_failed() {
   echo "$_BASHUNIT_TESTS_FAILED"
 }
 
-function state::add_tests_failed() {
+function bashunit::state::add_tests_failed() {
   ((_BASHUNIT_TESTS_FAILED++)) || true
 }
 
-function state::get_tests_skipped() {
+function bashunit::state::get_tests_skipped() {
   echo "$_BASHUNIT_TESTS_SKIPPED"
 }
 
-function state::add_tests_skipped() {
+function bashunit::state::add_tests_skipped() {
   ((_BASHUNIT_TESTS_SKIPPED++)) || true
 }
 
-function state::get_tests_incomplete() {
+function bashunit::state::get_tests_incomplete() {
   echo "$_BASHUNIT_TESTS_INCOMPLETE"
 }
 
-function state::add_tests_incomplete() {
+function bashunit::state::add_tests_incomplete() {
   ((_BASHUNIT_TESTS_INCOMPLETE++)) || true
 }
 
-function state::get_tests_snapshot() {
+function bashunit::state::get_tests_snapshot() {
   echo "$_BASHUNIT_TESTS_SNAPSHOT"
 }
 
-function state::add_tests_snapshot() {
+function bashunit::state::add_tests_snapshot() {
   ((_BASHUNIT_TESTS_SNAPSHOT++)) || true
 }
 
-function state::get_assertions_passed() {
+function bashunit::state::get_assertions_passed() {
   echo "$_BASHUNIT_ASSERTIONS_PASSED"
 }
 
-function state::add_assertions_passed() {
+function bashunit::state::add_assertions_passed() {
   ((_BASHUNIT_ASSERTIONS_PASSED++)) || true
 }
 
-function state::get_assertions_failed() {
+function bashunit::state::get_assertions_failed() {
   echo "$_BASHUNIT_ASSERTIONS_FAILED"
 }
 
-function state::add_assertions_failed() {
+function bashunit::state::add_assertions_failed() {
   ((_BASHUNIT_ASSERTIONS_FAILED++)) || true
 }
 
-function state::get_assertions_skipped() {
+function bashunit::state::get_assertions_skipped() {
   echo "$_BASHUNIT_ASSERTIONS_SKIPPED"
 }
 
-function state::add_assertions_skipped() {
+function bashunit::state::add_assertions_skipped() {
   ((_BASHUNIT_ASSERTIONS_SKIPPED++)) || true
 }
 
-function state::get_assertions_incomplete() {
+function bashunit::state::get_assertions_incomplete() {
   echo "$_BASHUNIT_ASSERTIONS_INCOMPLETE"
 }
 
-function state::add_assertions_incomplete() {
+function bashunit::state::add_assertions_incomplete() {
   ((_BASHUNIT_ASSERTIONS_INCOMPLETE++)) || true
 }
 
-function state::get_assertions_snapshot() {
+function bashunit::state::get_assertions_snapshot() {
   echo "$_BASHUNIT_ASSERTIONS_SNAPSHOT"
 }
 
-function state::add_assertions_snapshot() {
+function bashunit::state::add_assertions_snapshot() {
   ((_BASHUNIT_ASSERTIONS_SNAPSHOT++)) || true
 }
 
-function state::is_duplicated_test_functions_found() {
+function bashunit::state::is_duplicated_test_functions_found() {
   echo "$_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND"
 }
 
-function state::set_duplicated_test_functions_found() {
+function bashunit::state::set_duplicated_test_functions_found() {
   _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=true
 }
 
-function state::get_duplicated_function_names() {
+function bashunit::state::get_duplicated_function_names() {
   echo "$_BASHUNIT_DUPLICATED_FUNCTION_NAMES"
 }
 
-function state::set_duplicated_function_names() {
+function bashunit::state::set_duplicated_function_names() {
   _BASHUNIT_DUPLICATED_FUNCTION_NAMES="$1"
 }
 
-function state::get_file_with_duplicated_function_names() {
+function bashunit::state::get_file_with_duplicated_function_names() {
   echo "$_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES"
 }
 
-function state::set_file_with_duplicated_function_names() {
+function bashunit::state::set_file_with_duplicated_function_names() {
   _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES="$1"
 }
 
-function state::add_test_output() {
+function bashunit::state::add_test_output() {
   _BASHUNIT_TEST_OUTPUT+="$1"
 }
 
-function state::get_test_exit_code() {
+function bashunit::state::get_test_exit_code() {
   echo "$_BASHUNIT_TEST_EXIT_CODE"
 }
 
-function state::set_test_exit_code() {
+function bashunit::state::set_test_exit_code() {
   _BASHUNIT_TEST_EXIT_CODE="$1"
 }
 
-function state::get_test_title() {
+function bashunit::state::get_test_title() {
   echo "$_BASHUNIT_TEST_TITLE"
 }
 
-function state::set_test_title() {
+function bashunit::state::set_test_title() {
   _BASHUNIT_TEST_TITLE="$1"
 }
 
-function state::reset_test_title() {
+function bashunit::state::reset_test_title() {
   _BASHUNIT_TEST_TITLE=""
 }
 
-function state::get_current_test_interpolated_function_name() {
+function bashunit::state::get_current_test_interpolated_function_name() {
   echo "$_BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME"
 }
 
-function state::set_current_test_interpolated_function_name() {
+function bashunit::state::set_current_test_interpolated_function_name() {
   _BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME="$1"
 }
 
-function state::reset_current_test_interpolated_function_name() {
+function bashunit::state::reset_current_test_interpolated_function_name() {
   _BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME=""
 }
 
-function state::get_test_hook_failure() {
+function bashunit::state::get_test_hook_failure() {
   echo "$_BASHUNIT_TEST_HOOK_FAILURE"
 }
 
-function state::set_test_hook_failure() {
+function bashunit::state::set_test_hook_failure() {
   _BASHUNIT_TEST_HOOK_FAILURE="$1"
 }
 
-function state::reset_test_hook_failure() {
+function bashunit::state::reset_test_hook_failure() {
   _BASHUNIT_TEST_HOOK_FAILURE=""
 }
 
-function state::get_test_hook_message() {
+function bashunit::state::get_test_hook_message() {
   echo "$_BASHUNIT_TEST_HOOK_MESSAGE"
 }
 
-function state::set_test_hook_message() {
+function bashunit::state::set_test_hook_message() {
   _BASHUNIT_TEST_HOOK_MESSAGE="$1"
 }
 
-function state::reset_test_hook_message() {
+function bashunit::state::reset_test_hook_message() {
   _BASHUNIT_TEST_HOOK_MESSAGE=""
 }
 
-function state::is_assertion_failed_in_test() {
+function bashunit::state::is_assertion_failed_in_test() {
   (( _BASHUNIT_ASSERTION_FAILED_IN_TEST ))
 }
 
-function state::mark_assertion_failed_in_test() {
+function bashunit::state::mark_assertion_failed_in_test() {
   _BASHUNIT_ASSERTION_FAILED_IN_TEST=1
 }
 
-function state::set_duplicated_functions_merged() {
-  state::set_duplicated_test_functions_found
-  state::set_file_with_duplicated_function_names "$1"
-  state::set_duplicated_function_names "$2"
+function bashunit::state::set_duplicated_functions_merged() {
+  bashunit::state::set_duplicated_test_functions_found
+  bashunit::state::set_file_with_duplicated_function_names "$1"
+  bashunit::state::set_duplicated_function_names "$2"
 }
 
-function state::initialize_assertions_count() {
+function bashunit::state::initialize_assertions_count() {
     _BASHUNIT_ASSERTIONS_PASSED=0
     _BASHUNIT_ASSERTIONS_FAILED=0
     _BASHUNIT_ASSERTIONS_SKIPPED=0
@@ -212,7 +212,7 @@ function state::initialize_assertions_count() {
     _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
 }
 
-function state::export_subshell_context() {
+function bashunit::state::export_subshell_context() {
   local encoded_test_output
   local encoded_test_title
 
@@ -245,7 +245,7 @@ function state::export_subshell_context() {
 EOF
 }
 
-function state::calculate_total_assertions() {
+function bashunit::state::calculate_total_assertions() {
   local input="$1"
   local total=0
 
@@ -259,14 +259,14 @@ function state::calculate_total_assertions() {
   echo $total
 }
 
-function state::print_line() {
+function bashunit::state::print_line() {
   # shellcheck disable=SC2034
   local type=$1
   local line=$2
 
   ((_BASHUNIT_TOTAL_TESTS_COUNT++)) || true
 
-  state::add_test_output "[$type]$line"
+  bashunit::state::add_test_output "[$type]$line"
 
   if ! env::is_simple_output_enabled; then
     printf "%s\n" "$line"

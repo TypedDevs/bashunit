@@ -43,7 +43,7 @@ function runner::load_test_files() {
         local functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
-          state::add_tests_failed
+          bashunit::state::add_tests_failed
         done
       fi
       runner::clean_set_up_and_tear_down_after_script
@@ -108,7 +108,7 @@ function runner::load_bench_files() {
         local functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
-          state::add_tests_failed
+          bashunit::state::add_tests_failed
         done
       fi
       runner::clean_set_up_and_tear_down_after_script
@@ -369,18 +369,18 @@ function runner::run_test() {
   # race conditions when running tests in parallel.
   export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
 
-  state::reset_test_title
+  bashunit::state::reset_test_title
 
   local interpolated_fn_name="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
   if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
-    state::set_current_test_interpolated_function_name "$interpolated_fn_name"
+    bashunit::state::set_current_test_interpolated_function_name "$interpolated_fn_name"
   else
-    state::reset_current_test_interpolated_function_name
+    bashunit::state::reset_current_test_interpolated_function_name
   fi
-  local current_assertions_failed="$(state::get_assertions_failed)"
-  local current_assertions_snapshot="$(state::get_assertions_snapshot)"
-  local current_assertions_incomplete="$(state::get_assertions_incomplete)"
-  local current_assertions_skipped="$(state::get_assertions_skipped)"
+  local current_assertions_failed="$(bashunit::state::get_assertions_failed)"
+  local current_assertions_snapshot="$(bashunit::state::get_assertions_snapshot)"
+  local current_assertions_incomplete="$(bashunit::state::get_assertions_incomplete)"
+  local current_assertions_skipped="$(bashunit::state::get_assertions_skipped)"
 
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
@@ -390,7 +390,7 @@ function runner::run_test() {
   local test_execution_result=$(
     # shellcheck disable=SC2064
     trap 'exit_code=$?; runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
-    state::initialize_assertions_count
+    bashunit::state::initialize_assertions_count
 
     # Run set_up and capture exit code without || to preserve errexit behavior
     local setup_exit_code=0
@@ -431,7 +431,7 @@ function runner::run_test() {
   local subshell_output=$(runner::decode_subshell_output "$test_execution_result")
 
   if [[ -n "$subshell_output" ]]; then
-    # Formatted as "[type]line" @see `state::print_line()`
+    # Formatted as "[type]line" @see `bashunit::state::print_line()`
     local type="${subshell_output%%]*}" # Remove everything after "]"
     type="${type#[}"                    # Remove the leading "["
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
@@ -441,7 +441,7 @@ function runner::run_test() {
     line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
     line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
 
-    state::print_line "$type" "$line"
+    bashunit::state::print_line "$type" "$line"
 
     subshell_output=$line
   fi
@@ -464,8 +464,8 @@ function runner::run_test() {
 
   runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
-  local total_assertions="$(state::calculate_total_assertions "$test_execution_result")"
-  local test_exit_code="$(state::get_test_exit_code)"
+  local total_assertions="$(bashunit::state::calculate_total_assertions "$test_execution_result")"
+  local test_exit_code="$(bashunit::state::get_test_exit_code)"
 
   local encoded_test_title
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
@@ -492,8 +492,8 @@ function runner::run_test() {
   bashunit::set_test_title "$test_title"
   local label
   label="$(bashunit::helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
-  state::reset_test_title
-  state::reset_current_test_interpolated_function_name
+  bashunit::state::reset_test_title
+  bashunit::state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"
@@ -503,7 +503,7 @@ function runner::run_test() {
   fi
 
   if [[ -n $runtime_error || $test_exit_code -ne 0 ]]; then
-    state::add_tests_failed
+    bashunit::state::add_tests_failed
     local error_message="$runtime_error"
     if [[ -n "$hook_failure" && -n "$hook_message" ]]; then
       error_message="$hook_message"
@@ -517,8 +517,8 @@ function runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_failed" != "$(state::get_assertions_failed)" ]]; then
-    state::add_tests_failed
+  if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
+    bashunit::state::add_tests_failed
     reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
@@ -534,24 +534,24 @@ function runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_snapshot" != "$(state::get_assertions_snapshot)" ]]; then
-    state::add_tests_snapshot
+  if [[ "$current_assertions_snapshot" != "$(bashunit::state::get_assertions_snapshot)" ]]; then
+    bashunit::state::add_tests_snapshot
     console_results::print_snapshot_test "$label"
     reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::internal_log "Test snapshot" "$label"
     return
   fi
 
-  if [[ "$current_assertions_incomplete" != "$(state::get_assertions_incomplete)" ]]; then
-    state::add_tests_incomplete
+  if [[ "$current_assertions_incomplete" != "$(bashunit::state::get_assertions_incomplete)" ]]; then
+    bashunit::state::add_tests_incomplete
     reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test incomplete" "$label"
     return
   fi
 
-  if [[ "$current_assertions_skipped" != "$(state::get_assertions_skipped)" ]]; then
-    state::add_tests_skipped
+  if [[ "$current_assertions_skipped" != "$(bashunit::state::get_assertions_skipped)" ]]; then
+    bashunit::state::add_tests_skipped
     reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
     runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test skipped" "$label"
@@ -563,7 +563,7 @@ function runner::run_test() {
   else
     console_results::print_successful_test "${label}" "$duration"
   fi
-  state::add_tests_passed
+  bashunit::state::add_tests_passed
   reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   bashunit::internal_log "Test passed" "$label"
 }
@@ -580,12 +580,12 @@ function runner::cleanup_on_exit() {
   bashunit::cleanup_testcase_temp_files
 
   if [[ $teardown_status -ne 0 ]]; then
-    state::set_test_exit_code "$teardown_status"
+    bashunit::state::set_test_exit_code "$teardown_status"
   else
-    state::set_test_exit_code "$exit_code"
+    bashunit::state::set_test_exit_code "$exit_code"
   fi
 
-  state::export_subshell_context
+  bashunit::state::export_subshell_context
 }
 
 function runner::decode_subshell_output() {
@@ -698,7 +698,7 @@ function runner::write_failure_result_output() {
 
   local test_nr="*"
   if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_failed)
+    test_nr=$(bashunit::state::get_tests_failed)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
@@ -714,7 +714,7 @@ function runner::write_skipped_result_output() {
 
   local test_nr="*"
   if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_skipped)
+    test_nr=$(bashunit::state::get_tests_skipped)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$SKIPPED_OUTPUT_PATH"
@@ -730,7 +730,7 @@ function runner::write_incomplete_result_output() {
 
   local test_nr="*"
   if ! parallel::is_enabled; then
-    test_nr=$(state::get_tests_incomplete)
+    test_nr=$(bashunit::state::get_tests_incomplete)
   fi
 
   echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$INCOMPLETE_OUTPUT_PATH"
@@ -751,7 +751,7 @@ function runner::record_file_hook_failure() {
     hook_output="Hook '$hook_name' failed with exit code $status"
   fi
 
-  state::add_tests_failed
+  bashunit::state::add_tests_failed
   console_results::print_error_test "$hook_name" "$hook_output"
   reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
   runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
@@ -889,12 +889,12 @@ function runner::record_test_hook_failure() {
   local hook_message="$2"
   local status="$3"
 
-  if [[ -n "$(state::get_test_hook_failure)" ]]; then
+  if [[ -n "$(bashunit::state::get_test_hook_failure)" ]]; then
     return "$status"
   fi
 
-  state::set_test_hook_failure "$hook_name"
-  state::set_test_hook_message "$hook_message"
+  bashunit::state::set_test_hook_failure "$hook_name"
+  bashunit::state::set_test_hook_message "$hook_message"
 
   return "$status"
 }

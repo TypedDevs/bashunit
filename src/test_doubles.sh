@@ -82,12 +82,12 @@ function assert_have_been_called() {
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $times -eq 0 ]]; then
-    state::add_assertions_failed
+    bashunit::state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_have_been_called_with() {
@@ -118,13 +118,13 @@ function assert_have_been_called_with() {
   IFS=$'\x1e' read -r raw _ <<<"$line"
 
   if [[ "$expected" != "$raw" ]]; then
-    state::add_assertions_failed
+    bashunit::state::add_assertions_failed
     console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
       "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_have_been_called_times() {
@@ -139,14 +139,14 @@ function assert_have_been_called_times() {
   fi
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   if [[ $times -ne $expected_count ]]; then
-    state::add_assertions_failed
+    bashunit::state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" \
       "to have been called" "${expected_count} times" \
       "actual" "${times} times"
     return
   fi
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_not_called() {

@@ -23,5 +23,5 @@ function bashunit::assertion_failed() {
 function bashunit::assertion_passed() {
   (( _BASHUNIT_ASSERTION_FAILED_IN_TEST )) && return 0
 
-  state::add_assertions_passed
+  bashunit::state::add_assertions_passed
 }
