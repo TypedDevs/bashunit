@@ -405,6 +405,11 @@ function bashunit::runner::run_test() {
       exit $setup_exit_code
     fi
 
+    # Apply strict mode setting for test execution
+    if bashunit::env::is_strict_mode_enabled; then
+      set -euo pipefail
+    fi
+
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
     # points to the original std-output.
     "$fn_name" "$@" 2>&1
