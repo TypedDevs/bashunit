@@ -72,6 +72,9 @@ function bashunit::main::cmd_test() {
       --show-incomplete)
         export BASHUNIT_SHOW_INCOMPLETE=true
         ;;
+      --strict)
+        export BASHUNIT_STRICT_MODE=true
+        ;;
       *)
         raw_args+=("$1")
         ;;
