@@ -113,6 +113,7 @@ Options:
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
+  --strict                    Enable strict shell mode (set -euo pipefail)
   -h, --help                  Show this help message
 
 Examples:

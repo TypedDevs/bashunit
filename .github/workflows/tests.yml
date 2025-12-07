@@ -108,3 +108,16 @@ jobs:
       - name: Run Tests
         run: |
           ./bashunit --parallel tests/
+
+  strict-mode:
+    name: "Strict mode"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Tests with strict mode
+        run: |
+          ./bashunit --parallel --simple --strict tests/

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+- Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests (fixes #540)
+- Add `BASHUNIT_STRICT_MODE` configuration option (default: `false`)
+
 ### Changed
 - Build script now outputs to `bin/` by default
 - **BREAKING:** Namespace all internal functions and variables to prevent collisions with user code (fixes #538)

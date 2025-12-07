@@ -70,7 +70,7 @@ function test_not_render_passed_when_no_passed_tests_nor_assertions() {
     _BASHUNIT_TESTS_PASSED=0
     _BASHUNIT_ASSERTIONS_PASSED=0
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_matches "Tests:[^\n]*passed[^\n]*total" "$render_result"
@@ -84,7 +84,7 @@ function test_render_passed_when_passed_tests() {
     set_state_value "bashunit::state::get_tests_passed" "32"
     set_state_value "bashunit::state::get_assertions_passed" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*32 passed[^\n]*32 total" "$render_result"
@@ -98,7 +98,7 @@ function test_render_passed_when_passed_assertions() {
     set_state_value "bashunit::state::get_tests_passed" "0"
     set_state_value "bashunit::state::get_assertions_passed" "24"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*0 passed[^\n]*0 total" "$render_result"
@@ -112,7 +112,7 @@ function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
     set_state_value "bashunit::state::get_tests_skipped" "0"
     set_state_value "bashunit::state::get_assertions_skipped" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_matches "Tests:[^\n]*skipped[^\n]*total" "$render_result"
@@ -126,7 +126,7 @@ function test_render_skipped_when_skipped_tests() {
     set_state_value "bashunit::state::get_tests_skipped" "11"
     set_state_value "bashunit::state::get_assertions_skipped" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*11 skipped[^\n]*11 total" "$render_result"
@@ -140,7 +140,7 @@ function test_render_skipped_when_skipped_assertions() {
     set_state_value "bashunit::state::get_tests_skipped" "0"
     set_state_value "bashunit::state::get_assertions_skipped" "12"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*0 skipped[^\n]*0 total" "$render_result"
@@ -154,7 +154,7 @@ function test_not_render_incomplete_when_no_incomplete_tests_nor_assertions() {
     set_state_value "bashunit::state::get_tests_incomplete" "0"
     set_state_value "bashunit::state::get_assertions_incomplete" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_matches "Tests:[^\n]*incomplete[^\n]*total" "$render_result"
@@ -168,7 +168,7 @@ function test_render_incomplete_when_incomplete_tests() {
     set_state_value "bashunit::state::get_tests_incomplete" "15"
     set_state_value "bashunit::state::get_assertions_incomplete" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*15 incomplete[^\n]*15 total" "$render_result"
@@ -182,7 +182,7 @@ function test_render_incomplete_when_incomplete_assertions() {
     set_state_value "bashunit::state::get_tests_incomplete" "0"
     set_state_value "bashunit::state::get_assertions_incomplete" "20"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*0 incomplete[^\n]*0 total" "$render_result"
@@ -196,7 +196,7 @@ function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
     set_state_value "bashunit::state::get_tests_snapshot" "0"
     set_state_value "bashunit::state::get_assertions_snapshot" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_matches "Tests:[^\n]*snapshot[^\n]*total" "$render_result"
@@ -210,7 +210,7 @@ function test_render_snapshot_when_snapshot_tests() {
     set_state_value "bashunit::state::get_tests_snapshot" "16"
     set_state_value "bashunit::state::get_assertions_snapshot" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*16 snapshot[^\n]*16 total" "$render_result"
@@ -224,7 +224,7 @@ function test_render_snapshot_when_snapshot_assertions() {
     set_state_value "bashunit::state::get_tests_snapshot" "0"
     set_state_value "bashunit::state::get_assertions_snapshot" "17"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*0 snapshot[^\n]*0 total" "$render_result"
@@ -238,7 +238,7 @@ function test_not_render_failed_when_not_failed_tests_nor_assertions() {
     set_state_value "bashunit::state::get_tests_failed" "0"
     set_state_value "bashunit::state::get_assertions_failed" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_matches "Tests:[^\n]*failed[^\n]*total" "$render_result"
@@ -253,7 +253,7 @@ function test_render_failed_when_failed_tests() {
     set_state_value "bashunit::state::get_tests_failed" "42"
     set_state_value "bashunit::state::get_assertions_failed" "0"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*42 failed[^\n]*42 total" "$render_result"
@@ -269,7 +269,7 @@ function test_render_failed_when_failed_assertions() {
     set_state_value "bashunit::state::get_tests_failed" "0"
     set_state_value "bashunit::state::get_assertions_failed" "666"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:[^\n]*0 failed[^\n]*0 total" "$render_result"
@@ -288,7 +288,7 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_snapshot_and_f
     set_state_value "bashunit::state::get_tests_snapshot" "11"
     set_state_value "bashunit::state::get_tests_failed" "2"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:.*29 total.*Assertions:.*0 total" "$render_result"
@@ -306,7 +306,7 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
     set_state_value "bashunit::state::get_assertions_snapshot" "11"
     set_state_value "bashunit::state::get_assertions_failed" "2"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Tests:.*0 total.*Assertions:.*29 total" "$render_result"
@@ -318,7 +318,7 @@ function test_render_execution_time() {
     # shellcheck disable=SC2034
     BASHUNIT_SHOW_EXECUTION_TIME=true
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
   assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
 }
@@ -329,7 +329,7 @@ function test_not_render_execution_time() {
     # shellcheck disable=SC2034
     BASHUNIT_SHOW_EXECUTION_TIME=false
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
   assert_not_matches "Time taken" "$render_result"
 }
@@ -346,7 +346,7 @@ function test_render_execution_time_on_osx_without_perl() {
 
   local render_result
   render_result=$(
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
@@ -367,7 +367,7 @@ function test_render_execution_time_on_osx_with_perl() {
   render_result=$(
   bashunit::mock perl <<< "1726393394574372186";
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
@@ -383,7 +383,7 @@ function test_render_file_with_duplicated_functions_if_found_true() {
     set_state_value "bashunit::state::get_duplicated_function_names" "duplicate_function_name"
     set_state_value "bashunit::state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_contains "Duplicate test functions found" "$render_result"
@@ -401,7 +401,7 @@ function test_not_render_file_with_duplicated_functions_if_found_false() {
     set_state_value "bashunit::state::get_duplicated_function_names" "duplicate_function_name"
     set_state_value "bashunit::state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -422,7 +422,7 @@ function test_only_render_error_result_when_some_duplicated_fails() {
     set_state_value "bashunit::state::get_tests_skipped" "2"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_contains "Duplicate test functions found" "$render_result"
@@ -447,7 +447,7 @@ function test_only_render_error_result_when_some_test_fails() {
     set_state_value "bashunit::state::get_tests_skipped" "2"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -470,7 +470,7 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
     set_state_value "bashunit::state::get_tests_skipped" "2"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -493,7 +493,7 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
     set_state_value "bashunit::state::get_tests_skipped" "2"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -516,7 +516,7 @@ function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_
     set_state_value "bashunit::state::get_tests_skipped" "0"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -539,7 +539,7 @@ function test_only_render_success_result_when_all_tests_passes() {
     set_state_value "bashunit::state::get_tests_skipped" "0"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"
@@ -555,7 +555,7 @@ function test_no_tests_found() {
   local render_result
   render_result=$(
     mock_all_state_getters
-    bashunit::console_results::render_result
+    bashunit::console_results::render_result || true
   )
 
   assert_not_contains "Duplicate test functions found" "$render_result"

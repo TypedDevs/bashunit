@@ -60,7 +60,8 @@ function bashunit::spy() {
     done
     serialized=\${serialized%$'\\x1f'}
     printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
-    local _c=\$(cat '$times_file')
+    local _c
+    _c=\$(cat '$times_file' 2>/dev/null || echo 0)
     _c=\$((_c+1))
     echo \"\$_c\" > '$times_file'
   }"
@@ -77,7 +78,7 @@ function assert_have_been_called() {
   local file_var="${variable}_times_file"
   local times=0
   if [[ -f "${!file_var-}" ]]; then
-    times=$(cat "${!file_var}")
+    times=$(cat "${!file_var}" 2>/dev/null || echo 0)
   fi
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
@@ -108,14 +109,14 @@ function assert_have_been_called_with() {
   local line=""
   if [[ -f "${!file_var-}" ]]; then
     if [[ -n $index ]]; then
-      line=$(sed -n "${index}p" "${!file_var}")
+      line=$(sed -n "${index}p" "${!file_var}" 2>/dev/null || true)
     else
-      line=$(tail -n 1 "${!file_var}")
+      line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
     fi
   fi
 
   local raw
-  IFS=$'\x1e' read -r raw _ <<<"$line"
+  IFS=$'\x1e' read -r raw _ <<<"$line" || true
 
   if [[ "$expected" != "$raw" ]]; then
     bashunit::state::add_assertions_failed
@@ -135,7 +136,7 @@ function assert_have_been_called_times() {
   local file_var="${variable}_times_file"
   local times=0
   if [[ -f "${!file_var-}" ]]; then
-    times=$(cat "${!file_var}")
+    times=$(cat "${!file_var}" 2>/dev/null || echo 0)
   fi
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   if [[ $times -ne $expected_count ]]; then

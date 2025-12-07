@@ -32,6 +32,7 @@ _BASHUNIT_DEFAULT_NO_OUTPUT="false"
 _BASHUNIT_DEFAULT_INTERNAL_LOG="false"
 _BASHUNIT_DEFAULT_SHOW_SKIPPED="false"
 _BASHUNIT_DEFAULT_SHOW_INCOMPLETE="false"
+_BASHUNIT_DEFAULT_STRICT_MODE="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -45,6 +46,7 @@ _BASHUNIT_DEFAULT_SHOW_INCOMPLETE="false"
 : "${BASHUNIT_INTERNAL_LOG:=${INTERNAL_LOG:=$_BASHUNIT_DEFAULT_INTERNAL_LOG}}"
 : "${BASHUNIT_SHOW_SKIPPED:=${SHOW_SKIPPED:=$_BASHUNIT_DEFAULT_SHOW_SKIPPED}}"
 : "${BASHUNIT_SHOW_INCOMPLETE:=${SHOW_INCOMPLETE:=$_BASHUNIT_DEFAULT_SHOW_INCOMPLETE}}"
+: "${BASHUNIT_STRICT_MODE:=${STRICT_MODE:=$_BASHUNIT_DEFAULT_STRICT_MODE}}"
 
 function bashunit::env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -98,6 +100,10 @@ function bashunit::env::is_show_incomplete_enabled() {
   [[ "$BASHUNIT_SHOW_INCOMPLETE" == "true" ]]
 }
 
+function bashunit::env::is_strict_mode_enabled() {
+  [[ "$BASHUNIT_STRICT_MODE" == "true" ]]
+}
+
 function bashunit::env::active_internet_connection() {
   if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
     return 1
@@ -146,6 +152,7 @@ function bashunit::env::print_verbose() {
     "BASHUNIT_STOP_ON_FAILURE"
     "BASHUNIT_SHOW_EXECUTION_TIME"
     "BASHUNIT_VERBOSE"
+    "BASHUNIT_STRICT_MODE"
   )
 
   local max_length=0

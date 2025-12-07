@@ -24,23 +24,26 @@ function test_creates_a_snapshot() {
 
 function test_unsuccessful_assert_match_snapshot() {
   local actual
-  actual="$(assert_match_snapshot "Expected snapshot")"
+  actual="$(assert_match_snapshot "Expected snapshot")" || true
 
   assert_matches "Unsuccessful assert match snapshot" "$actual"
   assert_matches "Expected to match the snapshot" "$actual"
 }
 
 function test_successful_assert_match_snapshot_ignore_colors() {
-  local colored=$(printf '\e[31mHello\e[0m World!')
+  local colored
+  colored=$(printf '\e[31mHello\e[0m World!')
   assert_empty "$(assert_match_snapshot_ignore_colors "$colored")"
 }
 
 function test_creates_a_snapshot_ignore_colors() {
-  local snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_creates_a_snapshot_ignore_colors.snapshot"
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_creates_a_snapshot_ignore_colors.snapshot"
   local expected=$((_BASHUNIT_ASSERTIONS_SNAPSHOT + 1))
 
   assert_file_not_exists "$snapshot_path"
-  local colored=$(printf '\e[32mExpected\e[0m snapshot')
+  local colored
+  colored=$(printf '\e[32mExpected\e[0m snapshot')
   assert_match_snapshot_ignore_colors "$colored" "$snapshot_path"
 
   assert_same "$expected" "$_BASHUNIT_ASSERTIONS_SNAPSHOT"
@@ -51,7 +54,7 @@ function test_creates_a_snapshot_ignore_colors() {
 function test_unsuccessful_assert_match_snapshot_ignore_colors() {
   local colored actual
   colored=$(printf '\e[31mExpected snapshot\e[0m')
-  actual="$(assert_match_snapshot_ignore_colors "$colored")"
+  actual="$(assert_match_snapshot_ignore_colors "$colored")" || true
 
   assert_matches "Unsuccessful assert match snapshot ignore colors" "$actual"
   assert_matches "Expected to match the snapshot" "$actual"

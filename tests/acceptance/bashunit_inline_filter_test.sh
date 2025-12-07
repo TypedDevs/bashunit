@@ -53,7 +53,7 @@ function test_line_number_before_any_test_shows_error() {
 function test_double_colon_syntax_no_match_runs_nothing() {
   local output
   output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" \
-    "tests/acceptance/fixtures/tests_path/a_test.sh::nonexistent_test")
+    "tests/acceptance/fixtures/tests_path/a_test.sh::nonexistent_test" 2>&1) || true
 
   assert_contains "0 total" "$output"
 }

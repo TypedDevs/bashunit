@@ -72,6 +72,9 @@ function bashunit::main::cmd_test() {
       --show-incomplete)
         export BASHUNIT_SHOW_INCOMPLETE=true
         ;;
+      --strict)
+        export BASHUNIT_STRICT_MODE=true
+        ;;
       *)
         raw_args+=("$1")
         ;;
@@ -140,9 +143,11 @@ function bashunit::main::cmd_test() {
     exec >/dev/null 2>&1
   fi
 
-  set +eu
-
-  # Execute
+  # Disable strict mode for test execution to allow:
+  # - Empty array expansion (set +u)
+  # - Non-zero exit codes from failing tests (set +e)
+  # - Pipe failures in test output (set +o pipefail)
+  set +euo pipefail
   if [[ -n "$assert_fn" ]]; then
     bashunit::main::exec_assert "$assert_fn" "${args[@]}"
   else
@@ -206,7 +211,7 @@ function bashunit::main::cmd_bench() {
   # shellcheck disable=SC1090
   [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
 
-  set +eu
+  set +euo pipefail
 
   bashunit::main::exec_benchmarks "$filter" "${args[@]}"
 }
