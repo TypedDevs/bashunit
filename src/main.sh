@@ -143,9 +143,11 @@ function bashunit::main::cmd_test() {
     exec >/dev/null 2>&1
   fi
 
+  # Disable strict mode for test execution to allow:
+  # - Empty array expansion (set +u)
+  # - Non-zero exit codes from failing tests (set +e)
+  # - Pipe failures in test output (set +o pipefail)
   set +euo pipefail
-
-  # Execute
   if [[ -n "$assert_fn" ]]; then
     bashunit::main::exec_assert "$assert_fn" "${args[@]}"
   else
