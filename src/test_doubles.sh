@@ -10,7 +10,7 @@ function bashunit::unmock() {
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
       local variable
-      variable="$(helper::normalize_variable_name "$command")"
+      variable="$(bashunit::helper::normalize_variable_name "$command")"
       local times_file_var="${variable}_times_file"
       local params_file_var="${variable}_params_file"
       [[ -f "${!times_file_var-}" ]] && rm -f "${!times_file_var}"
@@ -40,7 +40,7 @@ function bashunit::mock() {
 function bashunit::spy() {
   local command=$1
   local variable
-  variable="$(helper::normalize_variable_name "$command")"
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
 
   local times_file params_file
   local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
@@ -73,13 +73,13 @@ function bashunit::spy() {
 function assert_have_been_called() {
   local command=$1
   local variable
-  variable="$(helper::normalize_variable_name "$command")"
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_times_file"
   local times=0
   if [[ -f "${!file_var-}" ]]; then
     times=$(cat "${!file_var}")
   fi
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [[ $times -eq 0 ]]; then
     state::add_assertions_failed
@@ -103,7 +103,7 @@ function assert_have_been_called_with() {
   local expected="$*"
 
   local variable
-  variable="$(helper::normalize_variable_name "$command")"
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_params_file"
   local line=""
   if [[ -f "${!file_var-}" ]]; then
@@ -119,7 +119,7 @@ function assert_have_been_called_with() {
 
   if [[ "$expected" != "$raw" ]]; then
     state::add_assertions_failed
-    console_results::print_failed_test "$(helper::normalize_test_function_name \
+    console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
       "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
     return
   fi
@@ -131,13 +131,13 @@ function assert_have_been_called_times() {
   local expected_count=$1
   local command=$2
   local variable
-  variable="$(helper::normalize_variable_name "$command")"
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_times_file"
   local times=0
   if [[ -f "${!file_var-}" ]]; then
     times=$(cat "${!file_var}")
   fi
-  local label="${3:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   if [[ $times -ne $expected_count ]]; then
     state::add_assertions_failed
     console_results::print_failed_test "${label}" "${command}" \
@@ -151,6 +151,6 @@ function assert_have_been_called_times() {
 
 function assert_not_called() {
   local command=$1
-  local label="${2:-$(helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   assert_have_been_called_times 0 "$command" "$label"
 }

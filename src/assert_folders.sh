@@ -3,8 +3,8 @@
 function assert_directory_exists() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
@@ -18,8 +18,8 @@ function assert_directory_exists() {
 function assert_directory_not_exists() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ -d "$expected" ]]; then
     state::add_assertions_failed
@@ -33,8 +33,8 @@ function assert_directory_not_exists() {
 function assert_is_directory() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" ]]; then
     state::add_assertions_failed
@@ -48,8 +48,8 @@ function assert_is_directory() {
 function assert_is_directory_empty() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" || -n "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
@@ -63,8 +63,8 @@ function assert_is_directory_empty() {
 function assert_is_directory_not_empty() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" || -z "$(ls -A "$expected")" ]]; then
     state::add_assertions_failed
@@ -78,8 +78,8 @@ function assert_is_directory_not_empty() {
 function assert_is_directory_readable() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" || ! -r "$expected" || ! -x "$expected" ]]; then
     state::add_assertions_failed
@@ -93,8 +93,8 @@ function assert_is_directory_readable() {
 function assert_is_directory_not_readable() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" ]] || [[ -r "$expected" && -x "$expected" ]]; then
     state::add_assertions_failed
@@ -108,8 +108,8 @@ function assert_is_directory_not_readable() {
 function assert_is_directory_writable() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" || ! -w "$expected" ]]; then
     state::add_assertions_failed
@@ -123,8 +123,8 @@ function assert_is_directory_writable() {
 function assert_is_directory_not_writable() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
-  local label="${2:-$(helper::normalize_test_function_name "$test_fn")}"
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label="${2:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
   if [[ ! -d "$expected" || -w "$expected" ]]; then
     state::add_assertions_failed

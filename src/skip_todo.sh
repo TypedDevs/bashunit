@@ -3,7 +3,7 @@
 function bashunit::skip() {
   local reason=${1-}
   local label
-  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
   console_results::print_skipped_test "${label}" "${reason}"
 
@@ -13,7 +13,7 @@ function bashunit::skip() {
 function bashunit::todo() {
   local pending=${1-}
   local label
-  label="$(helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
   console_results::print_incomplete_test "${label}" "${pending}"
 

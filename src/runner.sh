@@ -23,7 +23,7 @@ function runner::load_test_files() {
       continue
     fi
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${test_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${test_file}")"
     scripts_ids+=("${BASHUNIT_CURRENT_SCRIPT_ID}")
     bashunit::internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
@@ -37,7 +37,7 @@ function runner::load_test_files() {
       # Count the test functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
@@ -90,7 +90,7 @@ function runner::load_bench_files() {
   for bench_file in "${files[@]}"; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(helper::generate_id "${bench_file}")"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${bench_file}")"
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
@@ -102,7 +102,7 @@ function runner::load_bench_files() {
       # Count the bench functions that couldn't run due to set_up_before_script failure
       # and add them as failed (minus 1 since the hook failure already counts as 1)
       local filtered_functions
-      filtered_functions=$(helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+      filtered_functions=$(bashunit::helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
         local functions_to_run=($filtered_functions)
@@ -186,7 +186,7 @@ function runner::parse_data_provider_args() {
     fi
     # Print args and return early
     for arg in "${args[@]}"; do
-      encoded_arg="$(helper::encode_base64 "${arg}")"
+      encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
       printf '%s\n' "$encoded_arg"
     done
     return
@@ -251,7 +251,7 @@ function runner::parse_data_provider_args() {
   done
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
   for arg in "${args[@]+"${args[@]}"}"; do
-    encoded_arg="$(helper::encode_base64 "${arg}")"
+    encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
     printf '%s\n' "$encoded_arg"
   done
 }
@@ -261,7 +261,7 @@ function runner::call_test_functions() {
   local filter="$2"
   local prefix="test"
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+  local filtered_functions=$(bashunit::helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -270,7 +270,7 @@ function runner::call_test_functions() {
   fi
 
   runner::render_running_file_header "$script"
-  helper::check_duplicate_functions "$script" || true
+  bashunit::helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
     if parallel::is_enabled && parallel::must_stop_on_failure; then
@@ -280,7 +280,7 @@ function runner::call_test_functions() {
     local provider_data=()
     while IFS=" " read -r line; do
       provider_data+=("$line")
-    done <<< "$(helper::get_provider_data "$fn_name" "$script")"
+    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
     if [[ "${#provider_data[@]}" -eq 0 ]]; then
@@ -293,7 +293,7 @@ function runner::call_test_functions() {
     for data in "${provider_data[@]}"; do
       local parsed_data=()
       while IFS= read -r line; do
-        parsed_data+=( "$(helper::decode_base64 "${line}")" )
+        parsed_data+=( "$(bashunit::helper::decode_base64 "${line}")" )
       done <<< "$(runner::parse_data_provider_args "$data")"
       runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
     done
@@ -311,7 +311,7 @@ function runner::call_bench_functions() {
   local prefix="bench"
 
   # Use cached function names for better performance
-  local filtered_functions=$(helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+  local filtered_functions=$(bashunit::helper::get_functions_to_run "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   # shellcheck disable=SC2207
   local functions_to_run=($(runner::functions_for_script "$script" "$filtered_functions"))
 
@@ -367,11 +367,11 @@ function runner::run_test() {
   # Export a unique test identifier so that test doubles can
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
-  export BASHUNIT_CURRENT_TEST_ID="$(helper::generate_id "$fn_name")"
+  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
 
   state::reset_test_title
 
-  local interpolated_fn_name="$(helper::interpolate_function_name "$fn_name" "$@")"
+  local interpolated_fn_name="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
   if [[ "$interpolated_fn_name" != "$fn_name" ]]; then
     state::set_current_test_interpolated_function_name "$interpolated_fn_name"
   else
@@ -471,7 +471,7 @@ function runner::run_test() {
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
   encoded_test_title="${encoded_test_title%%##*}"
   local test_title=""
-  [[ -n "$encoded_test_title" ]] && test_title="$(helper::decode_base64 "$encoded_test_title")"
+  [[ -n "$encoded_test_title" ]] && test_title="$(bashunit::helper::decode_base64 "$encoded_test_title")"
 
   local encoded_hook_failure
   encoded_hook_failure="${test_execution_result##*##TEST_HOOK_FAILURE=}"
@@ -486,19 +486,19 @@ function runner::run_test() {
   encoded_hook_message="${encoded_hook_message%%##*}"
   local hook_message=""
   if [[ -n "$encoded_hook_message" ]]; then
-    hook_message="$(helper::decode_base64 "$encoded_hook_message")"
+    hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
   fi
 
   bashunit::set_test_title "$test_title"
   local label
-  label="$(helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  label="$(bashunit::helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
   state::reset_test_title
   state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"
   if [[ -n "$hook_failure" ]]; then
-    failure_label="$(helper::normalize_test_function_name "$hook_failure")"
+    failure_label="$(bashunit::helper::normalize_test_function_name "$hook_failure")"
     failure_function="$hook_failure"
   fi
 
@@ -593,7 +593,7 @@ function runner::decode_subshell_output() {
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-  helper::decode_base64 "$test_output_base64"
+  bashunit::helper::decode_base64 "$test_output_base64"
 }
 
 function runner::parse_result() {
@@ -694,7 +694,7 @@ function runner::write_failure_result_output() {
   local error_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
   if ! parallel::is_enabled; then
@@ -710,7 +710,7 @@ function runner::write_skipped_result_output() {
   local output_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
   if ! parallel::is_enabled; then
@@ -726,7 +726,7 @@ function runner::write_incomplete_result_output() {
   local output_msg=$3
 
   local line_number
-  line_number=$(helper::get_function_line_number "$fn_name")
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
 
   local test_nr="*"
   if ! parallel::is_enabled; then
@@ -753,7 +753,7 @@ function runner::record_file_hook_failure() {
 
   state::add_tests_failed
   console_results::print_error_test "$hook_name" "$hook_output"
-  reports::add_test_failed "$test_file" "$(helper::normalize_test_function_name "$hook_name")" 0 0
+  reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
   runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"
@@ -913,8 +913,8 @@ function runner::run_tear_down_after_script() {
 
 function runner::clean_set_up_and_tear_down_after_script() {
   bashunit::internal_log "clean_set_up_and_tear_down_after_script"
-  helper::unset_if_exists 'set_up'
-  helper::unset_if_exists 'tear_down'
-  helper::unset_if_exists 'set_up_before_script'
-  helper::unset_if_exists 'tear_down_after_script'
+  bashunit::helper::unset_if_exists 'set_up'
+  bashunit::helper::unset_if_exists 'tear_down'
+  bashunit::helper::unset_if_exists 'set_up_before_script'
+  bashunit::helper::unset_if_exists 'tear_down_after_script'
 }

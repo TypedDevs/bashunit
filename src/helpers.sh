@@ -11,7 +11,7 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 #
 # @return string The test function name, or fallback function name
 #
-function helper::find_test_function_name() {
+function bashunit::helper::find_test_function_name() {
   local fallback_depth="${1:-2}"
   local i
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
@@ -23,7 +23,7 @@ function helper::find_test_function_name() {
     fi
   done
   # No test function found, use fallback (caller of the assertion)
-  # FUNCNAME[0] = helper::find_test_function_name
+  # FUNCNAME[0] = bashunit::helper::find_test_function_name
   # FUNCNAME[1] = the assertion function (e.g., assert_same)
   # FUNCNAME[2] = caller of the assertion
   echo "${FUNCNAME[$fallback_depth]:-}"
@@ -34,7 +34,7 @@ function helper::find_test_function_name() {
 #
 # @return string Eg: "Some logic camelCase"
 #
-function helper::normalize_test_function_name() {
+function bashunit::helper::normalize_test_function_name() {
   local original_fn_name="${1-}"
   local interpolated_fn_name="${2-}"
 
@@ -84,13 +84,13 @@ function helper::normalize_test_function_name() {
   echo "$result"
 }
 
-function helper::escape_single_quotes() {
+function bashunit::helper::escape_single_quotes() {
   local value="$1"
   # shellcheck disable=SC1003
   echo "${value//\'/'\'\\''\'}"
 }
 
-function helper::interpolate_function_name() {
+function bashunit::helper::interpolate_function_name() {
   local function_name="$1"
   shift
   local args=("$@")
@@ -99,7 +99,7 @@ function helper::interpolate_function_name() {
   for ((i=0; i<${#args[@]}; i++)); do
     local placeholder="::$((i+1))::"
     # shellcheck disable=SC2155
-    local value="$(helper::escape_single_quotes "${args[$i]}")"
+    local value="$(bashunit::helper::escape_single_quotes "${args[$i]}")"
     value="'$value'"
     result="${result//${placeholder}/${value}}"
   done
@@ -107,7 +107,7 @@ function helper::interpolate_function_name() {
   echo "$result"
 }
 
-function helper::encode_base64() {
+function bashunit::helper::encode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
@@ -117,7 +117,7 @@ function helper::encode_base64() {
   fi
 }
 
-function helper::decode_base64() {
+function bashunit::helper::decode_base64() {
   local value="$1"
 
   if command -v base64 >/dev/null; then
@@ -127,7 +127,7 @@ function helper::decode_base64() {
   fi
 }
 
-function helper::check_duplicate_functions() {
+function bashunit::helper::check_duplicate_functions() {
   local script="$1"
 
   # Handle directory changes in set_up_before_script (issue #529)
@@ -165,7 +165,7 @@ function helper::check_duplicate_functions() {
 #
 # @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
-function helper::get_functions_to_run() {
+function bashunit::helper::get_functions_to_run() {
   local prefix=$1
   local filter=${2/test_/}
   local function_names=$3
@@ -187,7 +187,7 @@ function helper::get_functions_to_run() {
 #
 # @param $1 string Eg: "do_something"
 #
-function helper::execute_function_if_exists() {
+function bashunit::helper::execute_function_if_exists() {
   local fn_name="$1"
 
   if declare -F "$fn_name" >/dev/null 2>&1; then
@@ -201,11 +201,11 @@ function helper::execute_function_if_exists() {
 #
 # @param $1 string Eg: "do_something"
 #
-function helper::unset_if_exists() {
+function bashunit::helper::unset_if_exists() {
   unset "$1" 2>/dev/null
 }
 
-function helper::find_files_recursive() {
+function bashunit::helper::find_files_recursive() {
   ## Remove trailing slash using parameter expansion
   local path="${1%%/}"
   local pattern="${2:-*[tT]est.sh}"
@@ -232,7 +232,7 @@ function helper::find_files_recursive() {
   fi
 }
 
-function helper::normalize_variable_name() {
+function bashunit::helper::normalize_variable_name() {
   local input_string="$1"
   local normalized_string
 
@@ -245,7 +245,7 @@ function helper::normalize_variable_name() {
   echo "$normalized_string"
 }
 
-function helper::get_provider_data() {
+function bashunit::helper::get_provider_data() {
   local function_name="$1"
   local script="$2"
 
@@ -267,11 +267,11 @@ function helper::get_provider_data() {
   )
 
   if [[ -n "$data_provider_function" ]]; then
-    helper::execute_function_if_exists "$data_provider_function"
+    bashunit::helper::execute_function_if_exists "$data_provider_function"
   fi
 }
 
-function helper::trim() {
+function bashunit::helper::trim() {
   local input_string="$1"
   local trimmed_string
 
@@ -281,7 +281,7 @@ function helper::trim() {
   echo "$trimmed_string"
 }
 
-function helper::get_latest_tag() {
+function bashunit::helper::get_latest_tag() {
   if ! dependencies::has_git; then
     return 1
   fi
@@ -293,7 +293,7 @@ function helper::get_latest_tag() {
     head -n 1
 }
 
-function helper::find_total_tests() {
+function bashunit::helper::find_total_tests() {
     local filter=${1:-}
     local files=("${@:2}")
 
@@ -317,7 +317,7 @@ function helper::find_total_tests() {
             local all_fn_names
             all_fn_names=$(declare -F | awk '{print $3}')
             local filtered_functions
-            filtered_functions=$(helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
+            filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 
             local count=0
             if [[ -n "$filtered_functions" ]]; then
@@ -328,7 +328,7 @@ function helper::find_total_tests() {
                     local provider_data=()
                     while IFS=" " read -r line; do
                         provider_data+=("$line")
-                    done <<< "$(helper::get_provider_data "$fn_name" "$file")"
+                    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
                     if [[ "${#provider_data[@]}" -eq 0 ]]; then
                         count=$((count + 1))
@@ -347,7 +347,7 @@ function helper::find_total_tests() {
     echo "$total_count"
 }
 
-function helper::load_test_files() {
+function bashunit::helper::load_test_files() {
   local filter=$1
   local files=("${@:2}")
 
@@ -357,7 +357,7 @@ function helper::load_test_files() {
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
         test_files+=("$line")
-      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
     fi
   else
     test_files=("${files[@]}")
@@ -366,7 +366,7 @@ function helper::load_test_files() {
   printf "%s\n" "${test_files[@]}"
 }
 
-function helper::load_bench_files() {
+function bashunit::helper::load_bench_files() {
   local filter=$1
   local files=("${@:2}")
 
@@ -376,7 +376,7 @@ function helper::load_bench_files() {
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
         bench_files+=("$line")
-      done < <(helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
+      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
     fi
   else
     bench_files=("${files[@]}")
@@ -389,7 +389,7 @@ function helper::load_bench_files() {
 # @param $1 string function name
 # @return number line number of the function in the source file
 #
-function helper::get_function_line_number() {
+function bashunit::helper::get_function_line_number() {
   local fn_name=$1
 
   shopt -s extdebug
@@ -400,10 +400,10 @@ function helper::get_function_line_number() {
   echo "$line_number"
 }
 
-function helper::generate_id() {
+function bashunit::helper::generate_id() {
   local basename="$1"
   local sanitized_basename
-  sanitized_basename="$(helper::normalize_variable_name "$basename")"
+  sanitized_basename="$(bashunit::helper::normalize_variable_name "$basename")"
   if env::is_parallel_run_enabled; then
     echo "${sanitized_basename}_$$_$(bashunit::random_str 6)"
   else
@@ -421,7 +421,7 @@ function helper::generate_id() {
 #
 # @return string Two lines: first is file path, second is filter (or empty)
 #
-function helper::parse_file_path_filter() {
+function bashunit::helper::parse_file_path_filter() {
   local input="$1"
   local file_path=""
   local filter=""
@@ -452,7 +452,7 @@ function helper::parse_file_path_filter() {
 #
 # @return string The function name, or empty if not found
 #
-function helper::find_function_at_line() {
+function bashunit::helper::find_function_at_line() {
   local file="$1"
   local target_line="$2"
 

@@ -107,17 +107,17 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
 }
 
 function test_helper_find_test_function_name_finds_test() {
-  # Test that helper::find_test_function_name correctly finds the test function
+  # Test that bashunit::helper::find_test_function_name correctly finds the test function
   local found_name
-  found_name="$(helper::find_test_function_name)"
+  found_name="$(bashunit::helper::find_test_function_name)"
 
   assert_same "test_helper_find_test_function_name_finds_test" "$found_name"
 }
 
 function test_helper_find_test_function_name_from_nested_function() {
-  # Test that helper::find_test_function_name works from nested functions
+  # Test that bashunit::helper::find_test_function_name works from nested functions
   _inner_function() {
-    helper::find_test_function_name
+    bashunit::helper::find_test_function_name
   }
 
   local found_name
@@ -129,7 +129,7 @@ function test_helper_find_test_function_name_from_nested_function() {
 function test_helper_find_test_function_name_from_deeply_nested() {
   # Test from deeply nested functions
   _level3() {
-    helper::find_test_function_name
+    bashunit::helper::find_test_function_name
   }
 
   _level2() {

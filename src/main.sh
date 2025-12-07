@@ -94,7 +94,7 @@ function main::cmd_test() {
         {
           read -r parsed_path
           read -r parsed_filter
-        } < <(helper::parse_file_path_filter "$arg")
+        } < <(bashunit::helper::parse_file_path_filter "$arg")
 
         # If an inline filter was found, store it
         if [[ -n "$parsed_filter" ]]; then
@@ -104,7 +104,7 @@ function main::cmd_test() {
 
         while IFS= read -r file; do
           args+=("$file")
-        done < <(helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
+        done < <(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
       done
 
       # Resolve line number filter to function name
@@ -117,7 +117,7 @@ function main::cmd_test() {
           resolved_file="${args[0]}"
         fi
 
-        inline_filter=$(helper::find_function_at_line "$resolved_file" "$line_number")
+        inline_filter=$(bashunit::helper::find_function_at_line "$resolved_file" "$line_number")
         if [[ -z "$inline_filter" ]]; then
           printf "%sError: No test function found at line %s in %s%s\n" \
             "${_BASHUNIT_COLOR_FAILED}" "$line_number" "$resolved_file" "${_BASHUNIT_COLOR_DEFAULT}"
@@ -198,7 +198,7 @@ function main::cmd_bench() {
     for arg in "${raw_args[@]}"; do
       while IFS= read -r file; do
         args+=("$file")
-      done < <(helper::find_files_recursive "$arg" '*[bB]ench.sh')
+      done < <(bashunit::helper::find_files_recursive "$arg" '*[bB]ench.sh')
     done
   fi
 
@@ -273,7 +273,7 @@ function main::exec_tests() {
   local test_files=()
   while IFS= read -r line; do
     test_files+=("$line")
-  done < <(helper::load_test_files "$filter" "${files[@]}")
+  done < <(bashunit::helper::load_test_files "$filter" "${files[@]}")
 
   bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
 
@@ -353,7 +353,7 @@ function main::exec_benchmarks() {
   local bench_files=()
   while IFS= read -r line; do
     bench_files+=("$line")
-  done < <(helper::load_bench_files "$filter" "${files[@]}")
+  done < <(bashunit::helper::load_bench_files "$filter" "${files[@]}")
 
   bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
 

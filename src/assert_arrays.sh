@@ -3,9 +3,9 @@
 function assert_array_contains() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
+  test_fn="$(bashunit::helper::find_test_function_name)"
   local label
-  label="$(helper::normalize_test_function_name "$test_fn")"
+  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
   shift
 
   local actual=("${@}")
@@ -22,9 +22,9 @@ function assert_array_contains() {
 function assert_array_not_contains() {
   local expected="$1"
   local test_fn
-  test_fn="$(helper::find_test_function_name)"
+  test_fn="$(bashunit::helper::find_test_function_name)"
   local label
-  label="$(helper::normalize_test_function_name "$test_fn")"
+  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
   shift
   local actual=("$@")
 

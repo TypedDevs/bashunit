@@ -258,7 +258,7 @@ function console_results::print_incomplete_test() {
 function console_results::print_snapshot_test() {
   local function_name=$1
   local test_name
-  test_name=$(helper::normalize_test_function_name "$function_name")
+  test_name=$(bashunit::helper::normalize_test_function_name "$function_name")
 
   local line
   line="$(printf "${_BASHUNIT_COLOR_SNAPSHOT}✎ Snapshot${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${test_name}")"
@@ -271,7 +271,7 @@ function console_results::print_error_test() {
   local error="$2"
 
   local test_name
-  test_name=$(helper::normalize_test_function_name "$function_name")
+  test_name=$(bashunit::helper::normalize_test_function_name "$function_name")
 
   local line
   line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Error${_BASHUNIT_COLOR_DEFAULT}: %s
