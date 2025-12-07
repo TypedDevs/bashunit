@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
 function assert_array_contains() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
@@ -11,7 +13,7 @@ function assert_array_contains() {
   local actual=("${@}")
 
   if ! [[ "${actual[*]}" == *"$expected"* ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
     return
   fi
@@ -20,6 +22,8 @@ function assert_array_contains() {
 }
 
 function assert_array_not_contains() {
+  bashunit::assert::should_skip && return 0
+
   local expected="$1"
   local test_fn
   test_fn="$(bashunit::helper::find_test_function_name)"
@@ -29,7 +33,7 @@ function assert_array_not_contains() {
   local actual=("$@")
 
   if [[ "${actual[*]}" == *"$expected"* ]]; then
-    bashunit::state::add_assertions_failed
+    bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
   fi

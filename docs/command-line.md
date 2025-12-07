@@ -52,6 +52,7 @@ bashunit test tests/ --parallel --simple
 | `-p, --parallel` | Run tests in parallel (default) |
 | `--no-parallel` | Run tests sequentially |
 | `-r, --report-html <file>` | Write HTML report |
+| `-R, --run-all` | Run all assertions (don't stop on first failure) |
 | `-s, --simple` | Simple output (dots) |
 | `--detailed` | Detailed output (default) |
 | `-S, --stop-on-failure` | Stop on first failure |

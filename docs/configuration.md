@@ -86,9 +86,29 @@ Force to stop the runner right after encountering one failing test. `false` by d
 Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#stop-on-failure).
 
 ::: tip Assertion behavior
-When an assertion fails within a test, subsequent assertions in the same test are automatically skipped. This matches popular testing libraries default behavior and prevents misleading failures caused by earlier assertion failures.
+By default, when an assertion fails within a test, subsequent assertions in the same test are skipped. Use `-R, --run-all` or set `BASHUNIT_STOP_ON_ASSERTION_FAILURE=false` to run all assertions even when one fails.
 
-The `--stop-on-failure` flag is separate – it stops the entire test runner after a failing **test**, while assertion-level stopping happens automatically within each test.
+The `--stop-on-failure` flag is separate – it stops the entire test runner after a failing **test**, while assertion-level stopping happens within each test.
+:::
+
+## Stop on assertion failure
+
+> `BASHUNIT_STOP_ON_ASSERTION_FAILURE=true|false`
+
+Controls whether to stop at the first failed assertion within a test. `true` by default.
+
+When enabled (default), subsequent assertions in the same test are skipped after a failure.
+When disabled, all assertions in the test run, showing all failures at once.
+
+Similar as using `-R|--run-all` option on the [command line](/command-line).
+
+::: code-group
+```bash [Run all assertions]
+BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
+```
+```bash [Stop on first failure (default)]
+BASHUNIT_STOP_ON_ASSERTION_FAILURE=true
+```
 :::
 
 ## Show header
