@@ -20,6 +20,7 @@
     - All `assert_*` functions remain unchanged (public API)
 
 ### Fixed
+- Improve `assert` command output: show `assert <fn>` instead of internal function name in failure messages
 - Custom assertions now display the correct test function name in failure messages
 - Data providers now work when `set_up_before_script` changes directory
 - Subsequent test files now run when `set_up_before_script` changes directory

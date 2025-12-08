@@ -496,6 +496,9 @@ function bashunit::main::exec_assert() {
     assert_fn="assert_same"
   fi
 
+  # Set a friendly test title for CLI assert command output
+  bashunit::state::set_test_title "assert ${original_assert_fn#assert_}"
+
   # Run the assertion function and write into stderr
   "$assert_fn" "${args[@]}" 1>&2
   bashunit_exit_code=$?
