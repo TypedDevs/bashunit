@@ -237,6 +237,33 @@ BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
+## Bootstrap arguments
+
+> `BASHUNIT_BOOTSTRAP_ARGS=arguments`
+
+Pass arguments to the bootstrap file. Arguments are space-separated and available
+as positional parameters (`$1`, `$2`, etc.) in your bootstrap script.
+
+::: code-group
+```bash [.env]
+BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
+BASHUNIT_BOOTSTRAP_ARGS="staging verbose"
+```
+```bash [bootstrap.sh]
+#!/usr/bin/env bash
+ENVIRONMENT="${1:-production}"
+VERBOSE="${2:-false}"
+
+export API_URL="https://${ENVIRONMENT}.api.example.com"
+```
+:::
+
+You can also pass arguments inline via the [--env](/command-line#environment) option:
+
+```bash
+bashunit --env "tests/bootstrap.sh staging verbose" tests/
+```
+
 ## Dev log
 
 > `BASHUNIT_DEV_LOG=file`
@@ -307,6 +334,46 @@ Similar as using `--strict` option on the [command line](/command-line#strict-mo
 ::: code-group
 ```bash [Example]
 BASHUNIT_STRICT_MODE=true
+```
+:::
+
+## Preserve environment
+
+> `BASHUNIT_PRESERVE_ENV=true|false`
+
+Skip loading the `.env` file and use the current shell environment only. `false` by default.
+
+By default, bashunit loads variables from `.env` which can override environment
+variables set in your shell. Enable this option when running in CI/CD pipelines
+or when you want shell environment variables to take precedence.
+
+Similar as using `--preserve-env` option on the [command line](/command-line#preserve-environment).
+
+::: code-group
+```bash [Example]
+BASHUNIT_PRESERVE_ENV=true ./bashunit tests/
+```
+:::
+
+## Login shell
+
+> `BASHUNIT_LOGIN_SHELL=true|false`
+
+Run tests in a login shell context by sourcing profile files. `false` by default.
+
+When enabled, bashunit sources the following files (if they exist) before each test:
+- `/etc/profile`
+- `~/.bash_profile`
+- `~/.bash_login`
+- `~/.profile`
+
+Use this when your tests depend on environment setup from login shell profiles.
+
+Similar as using `-l|--login` option on the [command line](/command-line#login-shell).
+
+::: code-group
+```bash [Example]
+BASHUNIT_LOGIN_SHELL=true
 ```
 :::
 

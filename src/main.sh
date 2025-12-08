@@ -44,11 +44,17 @@ function bashunit::main::cmd_test() {
         export BASHUNIT_PARALLEL_RUN=false
         ;;
       -e|--env|--boot)
-        # shellcheck disable=SC1090
-        source "$2"
+        # Support: --env "bootstrap.sh arg1 arg2"
+        local boot_file="${2%% *}"
+        local boot_args="${2#* }"
+        if [[ "$boot_args" != "$2" ]]; then
+          export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        fi
+        # shellcheck disable=SC1090,SC2086
+        source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
         shift
         ;;
-      -l|--log-junit)
+      --log-junit)
         export BASHUNIT_LOG_JUNIT="$2"
         shift
         ;;
@@ -77,6 +83,12 @@ function bashunit::main::cmd_test() {
         ;;
       -R|--run-all)
         export BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
+        ;;
+      --preserve-env)
+        export BASHUNIT_PRESERVE_ENV=true
+        ;;
+      -l|--login)
+        export BASHUNIT_LOGIN_SHELL=true
         ;;
       *)
         raw_args+=("$1")
@@ -139,8 +151,8 @@ function bashunit::main::cmd_test() {
   fi
 
   # Optional bootstrap
-  # shellcheck disable=SC1090
-  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
+  # shellcheck disable=SC1090,SC2086
+  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
 
   if [[ "${BASHUNIT_NO_OUTPUT:-false}" == true ]]; then
     exec >/dev/null 2>&1
@@ -183,12 +195,24 @@ function bashunit::main::cmd_bench() {
         export BASHUNIT_SIMPLE_OUTPUT=false
         ;;
       -e|--env|--boot)
-        # shellcheck disable=SC1090
-        source "$2"
+        # Support: --env "bootstrap.sh arg1 arg2"
+        local boot_file="${2%% *}"
+        local boot_args="${2#* }"
+        if [[ "$boot_args" != "$2" ]]; then
+          export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        fi
+        # shellcheck disable=SC1090,SC2086
+        source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
         shift
         ;;
       -vvv|--verbose)
         export BASHUNIT_VERBOSE=true
+        ;;
+      --preserve-env)
+        export BASHUNIT_PRESERVE_ENV=true
+        ;;
+      -l|--login)
+        export BASHUNIT_LOGIN_SHELL=true
         ;;
       -h|--help)
         bashunit::console_header::print_bench_help
@@ -211,8 +235,8 @@ function bashunit::main::cmd_bench() {
   fi
 
   # Optional bootstrap
-  # shellcheck disable=SC1090
-  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP"
+  # shellcheck disable=SC1090,SC2086
+  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
 
   set +euo pipefail
 

@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- Add bootstrap argument passing support via `--env "file.sh arg1 arg2"` or `BASHUNIT_BOOTSTRAP_ARGS` (fixes #546)
+- Add `--preserve-env` flag to skip `.env` loading and use shell environment only (fixes #546)
+- Add `-l, --login` flag to run tests in login shell context (fixes #546)
 - Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests (fixes #540)
 - Add `BASHUNIT_STRICT_MODE` configuration option (default: `false`)
 - Add `-R, --run-all` flag to run all assertions even when one fails (fixes #536)
@@ -281,7 +284,7 @@
 - Enable display execution time on macOS with `SHOW_EXECUTION_TIME`
 - Support for displaying the clock without `perl` (for non-macOS)
 - Enable strict mode
-- Add `-l|--log-junit <log.xml>` option
+- Add `--log-junit <log.xml>` option
 - Add `-r|--report-html <report.html>` option
 - Add `--debug` option
 - Add `dump` and `dd` functions for local debugging

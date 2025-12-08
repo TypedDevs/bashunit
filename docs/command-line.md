@@ -46,9 +46,9 @@ bashunit test tests/ --parallel --simple
 | Option | Description |
 |--------|-------------|
 | `-a, --assert <fn> <args>` | Run a standalone assert function |
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args) |
 | `-f, --filter <name>` | Only run tests matching name |
-| `-l, --log-junit <file>` | Write JUnit XML report |
+| `--log-junit <file>` | Write JUnit XML report |
 | `-p, --parallel` | Run tests in parallel (default) |
 | `--no-parallel` | Run tests sequentially |
 | `-r, --report-html <file>` | Write HTML report |
@@ -62,6 +62,8 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]` | Enable shell debug mode |
 | `--no-output` | Suppress all output |
 | `--strict` | Enable strict shell mode |
+| `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `-l, --login` | Run tests in login shell context |
 
 ### Standalone Assert
 
@@ -91,6 +93,42 @@ Run only tests matching the given name.
 bashunit test tests/ --filter "user_login"
 ```
 :::
+
+### Environment / Bootstrap
+
+> `bashunit test -e|--env|--boot <file>`
+> `bashunit test --env "file arg1 arg2"`
+
+Load a custom environment or bootstrap file before running tests.
+
+::: code-group
+```bash [Basic usage]
+bashunit test --env tests/bootstrap.sh tests/
+```
+```bash [With arguments]
+# Pass arguments to the bootstrap file
+bashunit test --env "tests/bootstrap.sh staging verbose" tests/
+```
+:::
+
+Arguments are available as positional parameters (`$1`, `$2`, etc.) in your bootstrap script:
+
+```bash
+#!/usr/bin/env bash
+# tests/bootstrap.sh
+ENVIRONMENT="${1:-production}"
+VERBOSE="${2:-false}"
+
+export API_URL="https://${ENVIRONMENT}.api.example.com"
+```
+
+You can also set arguments via environment variable:
+
+```bash
+BASHUNIT_BOOTSTRAP_ARGS="staging verbose" bashunit test tests/
+```
+
+See [Configuration: Bootstrap](/configuration#bootstrap) for more details.
 
 ### Inline Filter Syntax
 
@@ -197,6 +235,47 @@ bashunit test tests/ --strict
 ```
 :::
 
+### Preserve Environment
+
+> `bashunit test --preserve-env`
+
+Skip loading the `.env` file and use the current shell environment only.
+
+By default, bashunit loads variables from `.env` which can override environment
+variables set in your shell. Use `--preserve-env` when you want to:
+- Run in CI/CD where environment is pre-configured
+- Override `.env` values with shell environment variables
+- Avoid `.env` interfering with your current settings
+
+::: code-group
+```bash [Example]
+BASHUNIT_SIMPLE_OUTPUT=true ./bashunit test tests/ --preserve-env
+```
+:::
+
+### Login Shell
+
+> `bashunit test -l|--login`
+
+Run tests in a login shell context by sourcing profile files.
+
+When enabled, bashunit sources the following files (if they exist) before each test:
+- `/etc/profile`
+- `~/.bash_profile`
+- `~/.bash_login`
+- `~/.profile`
+
+Use this when your tests depend on environment setup from login shell profiles, such as:
+- PATH modifications
+- Shell functions defined in `.bash_profile`
+- Environment variables set during login
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --login
+```
+:::
+
 ## bench
 
 > `bashunit bench [path] [options]`
@@ -220,11 +299,13 @@ bashunit bench --filter "parse"
 
 | Option | Description |
 |--------|-------------|
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args) |
 | `-f, --filter <name>` | Only run benchmarks matching name |
 | `-s, --simple` | Simple output |
 | `--detailed` | Detailed output (default) |
 | `-vvv, --verbose` | Show execution details |
+| `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `-l, --login` | Run in login shell context |
 
 ## doc
 

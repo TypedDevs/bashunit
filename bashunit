@@ -38,6 +38,18 @@ export BASHUNIT_ROOT_DIR
 declare -r BASHUNIT_WORKING_DIR="$PWD"
 export BASHUNIT_WORKING_DIR
 
+# Early scan for flags that must be set before loading env.sh
+for arg in "$@"; do
+  case "$arg" in
+    --preserve-env)
+      export BASHUNIT_PRESERVE_ENV=true
+      ;;
+    -l|--login)
+      export BASHUNIT_LOGIN_SHELL=true
+      ;;
+  esac
+done
+
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"
