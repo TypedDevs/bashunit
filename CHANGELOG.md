@@ -1,19 +1,18 @@
 # Changelog
 
-## Unreleased
+## [0.29.0](https://github.com/TypedDevs/bashunit/compare/0.28.0...0.29.0) - 2025-12-08
 
 ### Added
-- Add bootstrap argument passing support via `--env "file.sh arg1 arg2"` or `BASHUNIT_BOOTSTRAP_ARGS` (fixes #546)
-- Add `--preserve-env` flag to skip `.env` loading and use shell environment only (fixes #546)
-- Add `-l, --login` flag to run tests in login shell context (fixes #546)
-- Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests (fixes #540)
+- Add bootstrap argument passing support via `--env "file.sh arg1 arg2"` or `BASHUNIT_BOOTSTRAP_ARGS`
+- Add `--preserve-env` flag to skip `.env` loading and use shell environment only
+- Add `-l, --login` flag to run tests in login shell context
+- Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests
 - Add `BASHUNIT_STRICT_MODE` configuration option (default: `false`)
-- Add `-R, --run-all` flag to run all assertions even when one fails (fixes #536)
+- Add `-R, --run-all` flag to run all assertions even when one fails
 - Add `BASHUNIT_STOP_ON_ASSERTION_FAILURE` configuration option (default: `true`)
 
 ### Changed
-- Build script now outputs to `bin/` by default
-- **BREAKING:** Namespace all internal functions and variables to prevent collisions with user code (fixes #538)
+- **BREAKING:** Namespace all internal functions and variables to prevent collisions with user code
     - All helper functions now use `bashunit::` prefix (e.g., `skip` → `bashunit::skip`)
     - All internal functions now use `bashunit::` prefix (e.g., `helper::trim` → `bashunit::helper::trim`)
     - All internal variables now use `_BASHUNIT_` prefix (e.g., `_TESTS_PASSED` → `_BASHUNIT_TESTS_PASSED`)
