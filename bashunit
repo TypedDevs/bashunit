@@ -71,7 +71,7 @@ bashunit::clock::init
 _SUBCOMMAND=""
 
 case "${1:-}" in
-  test|bench|doc|init|learn|upgrade)
+  test|bench|doc|init|learn|upgrade|assert)
     _SUBCOMMAND="$1"
     shift
     ;;
@@ -105,4 +105,5 @@ case "$_SUBCOMMAND" in
   init)    bashunit::main::cmd_init "$@" ;;
   learn)   bashunit::main::cmd_learn "$@" ;;
   upgrade) bashunit::main::cmd_upgrade "$@" ;;
+  assert)  bashunit::main::cmd_assert "$@" ;;
 esac
