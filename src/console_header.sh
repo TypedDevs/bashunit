@@ -103,7 +103,7 @@ Options:
   -a, --assert <fn> <args>    Run a standalone assert function
   -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
   -f, --filter <name>         Only run tests matching the name
-  -l, --log-junit <file>      Write JUnit XML report
+  --log-junit <file>          Write JUnit XML report
   -p, --parallel              Run tests in parallel (default)
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
@@ -116,6 +116,7 @@ Options:
   --no-output                 Suppress all output
   --strict                    Enable strict shell mode (set -euo pipefail)
   --preserve-env              Skip .env loading, use shell environment only
+  -l, --login                 Run tests in login shell context
   -h, --help                  Show this help message
 
 Examples:
@@ -142,6 +143,7 @@ Options:
   --detailed                  Detailed output (default)
   -vvv, --verbose             Show execution details
   --preserve-env              Skip .env loading, use shell environment only
+  -l, --login                 Run in login shell context
   -h, --help                  Show this help message
 
 Examples:

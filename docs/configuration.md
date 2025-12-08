@@ -328,6 +328,28 @@ BASHUNIT_PRESERVE_ENV=true ./bashunit tests/
 ```
 :::
 
+## Login shell
+
+> `BASHUNIT_LOGIN_SHELL=true|false`
+
+Run tests in a login shell context by sourcing profile files. `false` by default.
+
+When enabled, bashunit sources the following files (if they exist) before each test:
+- `/etc/profile`
+- `~/.bash_profile`
+- `~/.bash_login`
+- `~/.profile`
+
+Use this when your tests depend on environment setup from login shell profiles.
+
+Similar as using `-l|--login` option on the [command line](/command-line#login-shell).
+
+::: code-group
+```bash [Example]
+BASHUNIT_LOGIN_SHELL=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
