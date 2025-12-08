@@ -101,7 +101,7 @@ Arguments:
 
 Options:
   -a, --assert <fn> <args>    Run a standalone assert function
-  -e, --env, --boot <file>    Load a custom env/bootstrap file
+  -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
   -f, --filter <name>         Only run tests matching the name
   -l, --log-junit <file>      Write JUnit XML report
   -p, --parallel              Run tests in parallel (default)
@@ -135,7 +135,7 @@ Arguments:
   path                        File or directory containing benchmarks
 
 Options:
-  -e, --env, --boot <file>    Load a custom env/bootstrap file
+  -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
   -f, --filter <name>         Only run benchmarks matching the name
   -s, --simple                Simple output
   --detailed                  Detailed output (default)
