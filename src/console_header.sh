@@ -115,6 +115,7 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --strict                    Enable strict shell mode (set -euo pipefail)
+  --preserve-env              Skip .env loading, use shell environment only
   -h, --help                  Show this help message
 
 Examples:
@@ -140,6 +141,7 @@ Options:
   -s, --simple                Simple output
   --detailed                  Detailed output (default)
   -vvv, --verbose             Show execution details
+  --preserve-env              Skip .env loading, use shell environment only
   -h, --help                  Show this help message
 
 Examples:

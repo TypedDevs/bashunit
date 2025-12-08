@@ -62,6 +62,7 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]` | Enable shell debug mode |
 | `--no-output` | Suppress all output |
 | `--strict` | Enable strict shell mode |
+| `--preserve-env` | Skip `.env` loading, use shell environment only |
 
 ### Standalone Assert
 
@@ -194,6 +195,24 @@ potential issues like uninitialized variables and unchecked command failures.
 ::: code-group
 ```bash [Example]
 bashunit test tests/ --strict
+```
+:::
+
+### Preserve Environment
+
+> `bashunit test --preserve-env`
+
+Skip loading the `.env` file and use the current shell environment only.
+
+By default, bashunit loads variables from `.env` which can override environment
+variables set in your shell. Use `--preserve-env` when you want to:
+- Run in CI/CD where environment is pre-configured
+- Override `.env` values with shell environment variables
+- Avoid `.env` interfering with your current settings
+
+::: code-group
+```bash [Example]
+BASHUNIT_SIMPLE_OUTPUT=true ./bashunit test tests/ --preserve-env
 ```
 :::
 

@@ -38,6 +38,14 @@ export BASHUNIT_ROOT_DIR
 declare -r BASHUNIT_WORKING_DIR="$PWD"
 export BASHUNIT_WORKING_DIR
 
+# Early scan for --preserve-env before loading env.sh
+for arg in "$@"; do
+  if [[ "$arg" == "--preserve-env" ]]; then
+    export BASHUNIT_PRESERVE_ENV=true
+    break
+  fi
+done
+
 source "$BASHUNIT_ROOT_DIR/src/dev/debug.sh"
 source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
 source "$BASHUNIT_ROOT_DIR/src/str.sh"

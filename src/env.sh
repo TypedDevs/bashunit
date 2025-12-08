@@ -2,10 +2,13 @@
 
 # shellcheck disable=SC2034
 
-set -o allexport
-# shellcheck source=/dev/null
-[[ -f ".env" ]] && source .env
-set +o allexport
+# Load .env file (skip if --preserve-env is used to keep shell environment intact)
+if [[ "${BASHUNIT_PRESERVE_ENV:-false}" != "true" ]]; then
+  set -o allexport
+  # shellcheck source=/dev/null
+  [[ -f ".env" ]] && source .env
+  set +o allexport
+fi
 
 _BASHUNIT_DEFAULT_DEFAULT_PATH="tests"
 _BASHUNIT_DEFAULT_BOOTSTRAP="tests/bootstrap.sh"
@@ -35,6 +38,7 @@ _BASHUNIT_DEFAULT_SHOW_SKIPPED="false"
 _BASHUNIT_DEFAULT_SHOW_INCOMPLETE="false"
 _BASHUNIT_DEFAULT_STRICT_MODE="false"
 _BASHUNIT_DEFAULT_STOP_ON_ASSERTION_FAILURE="true"
+_BASHUNIT_DEFAULT_PRESERVE_ENV="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -50,6 +54,7 @@ _BASHUNIT_DEFAULT_STOP_ON_ASSERTION_FAILURE="true"
 : "${BASHUNIT_SHOW_INCOMPLETE:=${SHOW_INCOMPLETE:=$_BASHUNIT_DEFAULT_SHOW_INCOMPLETE}}"
 : "${BASHUNIT_STRICT_MODE:=${STRICT_MODE:=$_BASHUNIT_DEFAULT_STRICT_MODE}}"
 : "${BASHUNIT_STOP_ON_ASSERTION_FAILURE:=${STOP_ON_ASSERTION_FAILURE:=$_BASHUNIT_DEFAULT_STOP_ON_ASSERTION_FAILURE}}"
+: "${BASHUNIT_PRESERVE_ENV:=${PRESERVE_ENV:=$_BASHUNIT_DEFAULT_PRESERVE_ENV}}"
 
 function bashunit::env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -111,6 +116,10 @@ function bashunit::env::is_stop_on_assertion_failure_enabled() {
   [[ "$BASHUNIT_STOP_ON_ASSERTION_FAILURE" == "true" ]]
 }
 
+function bashunit::env::is_preserve_env_enabled() {
+  [[ "$BASHUNIT_PRESERVE_ENV" == "true" ]]
+}
+
 function bashunit::env::active_internet_connection() {
   if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
     return 1
@@ -162,6 +171,7 @@ function bashunit::env::print_verbose() {
     "BASHUNIT_VERBOSE"
     "BASHUNIT_STRICT_MODE"
     "BASHUNIT_STOP_ON_ASSERTION_FAILURE"
+    "BASHUNIT_PRESERVE_ENV"
   )
 
   local max_length=0
