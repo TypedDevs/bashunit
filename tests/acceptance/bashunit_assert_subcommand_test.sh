@@ -52,29 +52,36 @@ function test_bashunit_assert_subcommand_help_long() {
 # Test error cases
 function test_bashunit_assert_subcommand_no_function() {
   local output
-  output=$(./bashunit assert 2>&1)
+  local exit_code
+  output=$(./bashunit assert 2>&1) && exit_code=$? || exit_code=$?
 
   assert_contains "Error: Assert function name is required" "$output"
-  assert_general_error "$(./bashunit assert)"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_assert_subcommand_non_existing_function() {
-  assert_command_not_found "$(./bashunit assert non_existing_function)"
+  local exit_code
+  ./bashunit assert non_existing_function 2>&1 && exit_code=$? || exit_code=$?
+  assert_command_not_found "" "" "$exit_code"
 }
 
 function test_bashunit_assert_subcommand_failure() {
-  assert_general_error "$(./bashunit --no-parallel assert equals "foo" "bar")"
+  local exit_code
+  ./bashunit --no-parallel assert equals "foo" "bar" 2>&1 && exit_code=$? || exit_code=$?
+  assert_general_error "" "" "$exit_code"
 }
 
 # Test backward compatibility with --assert option
 function test_bashunit_old_assert_option_still_works() {
-  ./bashunit -a equals "foo" "foo"
-  assert_successful_code
+  local output
+  output=$(./bashunit -a equals "foo" "foo" 2>&1)
+  assert_successful_code "$output"
 }
 
 function test_bashunit_old_assert_option_long_form() {
-  ./bashunit --assert equals "foo" "foo"
-  assert_successful_code
+  local output
+  output=$(./bashunit --assert equals "foo" "foo" 2>&1)
+  assert_successful_code "$output"
 }
 
 # Test deprecation notice in help
