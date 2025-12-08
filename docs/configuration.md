@@ -310,6 +310,24 @@ BASHUNIT_STRICT_MODE=true
 ```
 :::
 
+## Preserve environment
+
+> `BASHUNIT_PRESERVE_ENV=true|false`
+
+Skip loading the `.env` file and use the current shell environment only. `false` by default.
+
+By default, bashunit loads variables from `.env` which can override environment
+variables set in your shell. Enable this option when running in CI/CD pipelines
+or when you want shell environment variables to take precedence.
+
+Similar as using `--preserve-env` option on the [command line](/command-line#preserve-environment).
+
+::: code-group
+```bash [Example]
+BASHUNIT_PRESERVE_ENV=true ./bashunit tests/
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>
