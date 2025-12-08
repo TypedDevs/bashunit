@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Add bootstrap argument passing support via `--env "file.sh arg1 arg2"` or `BASHUNIT_BOOTSTRAP_ARGS` (fixes #546)
 - Add `--strict` flag to enable strict shell mode (`set -euo pipefail`) for tests (fixes #540)
 - Add `BASHUNIT_STRICT_MODE` configuration option (default: `false`)
 - Add `-R, --run-all` flag to run all assertions even when one fails (fixes #536)
