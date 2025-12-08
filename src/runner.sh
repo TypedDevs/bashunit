@@ -397,6 +397,18 @@ function bashunit::runner::run_test() {
     trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
     bashunit::state::initialize_assertions_count
 
+    # Source login shell profiles if enabled
+    if bashunit::env::is_login_shell_enabled; then
+      # shellcheck disable=SC1091
+      [[ -f /etc/profile ]] && source /etc/profile 2>/dev/null || true
+      # shellcheck disable=SC1090
+      [[ -f ~/.bash_profile ]] && source ~/.bash_profile 2>/dev/null || true
+      # shellcheck disable=SC1090
+      [[ -f ~/.bash_login ]] && source ~/.bash_login 2>/dev/null || true
+      # shellcheck disable=SC1090
+      [[ -f ~/.profile ]] && source ~/.profile 2>/dev/null || true
+    fi
+
     # Run set_up and capture exit code without || to preserve errexit behavior
     local setup_exit_code=0
     bashunit::runner::run_set_up "$test_file"

@@ -48,7 +48,7 @@ bashunit test tests/ --parallel --simple
 | `-a, --assert <fn> <args>` | Run a standalone assert function |
 | `-e, --env, --boot <file>` | Load custom env/bootstrap file |
 | `-f, --filter <name>` | Only run tests matching name |
-| `-l, --log-junit <file>` | Write JUnit XML report |
+| `--log-junit <file>` | Write JUnit XML report |
 | `-p, --parallel` | Run tests in parallel (default) |
 | `--no-parallel` | Run tests sequentially |
 | `-r, --report-html <file>` | Write HTML report |
@@ -63,6 +63,7 @@ bashunit test tests/ --parallel --simple
 | `--no-output` | Suppress all output |
 | `--strict` | Enable strict shell mode |
 | `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `-l, --login` | Run tests in login shell context |
 
 ### Standalone Assert
 
@@ -216,6 +217,29 @@ BASHUNIT_SIMPLE_OUTPUT=true ./bashunit test tests/ --preserve-env
 ```
 :::
 
+### Login Shell
+
+> `bashunit test -l|--login`
+
+Run tests in a login shell context by sourcing profile files.
+
+When enabled, bashunit sources the following files (if they exist) before each test:
+- `/etc/profile`
+- `~/.bash_profile`
+- `~/.bash_login`
+- `~/.profile`
+
+Use this when your tests depend on environment setup from login shell profiles, such as:
+- PATH modifications
+- Shell functions defined in `.bash_profile`
+- Environment variables set during login
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --login
+```
+:::
+
 ## bench
 
 > `bashunit bench [path] [options]`
@@ -244,6 +268,8 @@ bashunit bench --filter "parse"
 | `-s, --simple` | Simple output |
 | `--detailed` | Detailed output (default) |
 | `-vvv, --verbose` | Show execution details |
+| `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `-l, --login` | Run in login shell context |
 
 ## doc
 

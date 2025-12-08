@@ -54,7 +54,7 @@ function bashunit::main::cmd_test() {
         source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
         shift
         ;;
-      -l|--log-junit)
+      --log-junit)
         export BASHUNIT_LOG_JUNIT="$2"
         shift
         ;;
@@ -86,6 +86,9 @@ function bashunit::main::cmd_test() {
         ;;
       --preserve-env)
         export BASHUNIT_PRESERVE_ENV=true
+        ;;
+      -l|--login)
+        export BASHUNIT_LOGIN_SHELL=true
         ;;
       *)
         raw_args+=("$1")
@@ -207,6 +210,9 @@ function bashunit::main::cmd_bench() {
         ;;
       --preserve-env)
         export BASHUNIT_PRESERVE_ENV=true
+        ;;
+      -l|--login)
+        export BASHUNIT_LOGIN_SHELL=true
         ;;
       -h|--help)
         bashunit::console_header::print_bench_help
