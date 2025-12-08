@@ -660,6 +660,52 @@ export DB_NAME=test_db
 ```
 :::
 
+### Bootstrap Files with Arguments
+
+Pass configuration to your bootstrap file for different test scenarios:
+
+::: code-group
+```bash [tests/bootstrap.sh]
+#!/usr/bin/env bash
+
+# Receive arguments passed to bootstrap
+ENVIRONMENT="${1:-production}"
+VERBOSE="${2:-false}"
+
+# Configure based on environment
+case "$ENVIRONMENT" in
+  staging)
+    export API_URL="https://staging.api.example.com"
+    export DB_NAME="test_staging_db"
+    ;;
+  ci)
+    export API_URL="https://ci.api.example.com"
+    export DB_NAME="test_ci_db"
+    ;;
+  *)
+    export API_URL="https://api.example.com"
+    export DB_NAME="test_db"
+    ;;
+esac
+
+[[ "$VERBOSE" == "true" ]] && export LOG_LEVEL=debug
+```
+
+```bash [Run with arguments]
+# Pass arguments inline with --env
+./bashunit --env "tests/bootstrap.sh staging true" tests/
+
+# Or via environment variable
+BASHUNIT_BOOTSTRAP_ARGS="staging true" ./bashunit tests/
+```
+:::
+
+::: tip
+Use bootstrap arguments to avoid duplicating bootstrap files for different
+environments. A single bootstrap file can configure staging, CI, or local
+development based on the arguments passed.
+:::
+
 ## Testing Private Functions
 
 When you need to test functions that aren't exported:
