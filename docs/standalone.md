@@ -37,7 +37,7 @@ The prefix `assert_` is optional.
 ./bashunit -a not_equals "foo" "foo"
 ```
 ```[Output]
-✗ Failed: Main::exec not_equals
+✗ Failed: assert not_equals
     Expected 'foo'
     but got  'foo'
 ```
@@ -88,7 +88,7 @@ This way you can control the FD and redirect the output as you need.
 Testing.php:3:Method Testing::bar() has no return type specified.
 ```
 ```[/tmp/error.log]
-✗ Failed: Main::exec assert
+✗ Failed: assert exit_code
     Expected '0'
     but got  '1'
 ```
