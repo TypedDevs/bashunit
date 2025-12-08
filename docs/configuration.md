@@ -237,6 +237,33 @@ BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
+## Bootstrap arguments
+
+> `BASHUNIT_BOOTSTRAP_ARGS=arguments`
+
+Pass arguments to the bootstrap file. Arguments are space-separated and available
+as positional parameters (`$1`, `$2`, etc.) in your bootstrap script.
+
+::: code-group
+```bash [.env]
+BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
+BASHUNIT_BOOTSTRAP_ARGS="staging verbose"
+```
+```bash [bootstrap.sh]
+#!/usr/bin/env bash
+ENVIRONMENT="${1:-production}"
+VERBOSE="${2:-false}"
+
+export API_URL="https://${ENVIRONMENT}.api.example.com"
+```
+:::
+
+You can also pass arguments inline via the [--env](/command-line#environment) option:
+
+```bash
+bashunit --env "tests/bootstrap.sh staging verbose" tests/
+```
+
 ## Dev log
 
 > `BASHUNIT_DEV_LOG=file`

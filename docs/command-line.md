@@ -46,7 +46,7 @@ bashunit test tests/ --parallel --simple
 | Option | Description |
 |--------|-------------|
 | `-a, --assert <fn> <args>` | Run a standalone assert function |
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args) |
 | `-f, --filter <name>` | Only run tests matching name |
 | `--log-junit <file>` | Write JUnit XML report |
 | `-p, --parallel` | Run tests in parallel (default) |
@@ -93,6 +93,42 @@ Run only tests matching the given name.
 bashunit test tests/ --filter "user_login"
 ```
 :::
+
+### Environment / Bootstrap
+
+> `bashunit test -e|--env|--boot <file>`
+> `bashunit test --env "file arg1 arg2"`
+
+Load a custom environment or bootstrap file before running tests.
+
+::: code-group
+```bash [Basic usage]
+bashunit test --env tests/bootstrap.sh tests/
+```
+```bash [With arguments]
+# Pass arguments to the bootstrap file
+bashunit test --env "tests/bootstrap.sh staging verbose" tests/
+```
+:::
+
+Arguments are available as positional parameters (`$1`, `$2`, etc.) in your bootstrap script:
+
+```bash
+#!/usr/bin/env bash
+# tests/bootstrap.sh
+ENVIRONMENT="${1:-production}"
+VERBOSE="${2:-false}"
+
+export API_URL="https://${ENVIRONMENT}.api.example.com"
+```
+
+You can also set arguments via environment variable:
+
+```bash
+BASHUNIT_BOOTSTRAP_ARGS="staging verbose" bashunit test tests/
+```
+
+See [Configuration: Bootstrap](/configuration#bootstrap) for more details.
 
 ### Inline Filter Syntax
 
@@ -263,7 +299,7 @@ bashunit bench --filter "parse"
 
 | Option | Description |
 |--------|-------------|
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args) |
 | `-f, --filter <name>` | Only run benchmarks matching name |
 | `-s, --simple` | Simple output |
 | `--detailed` | Detailed output (default) |
