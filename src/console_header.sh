@@ -63,12 +63,13 @@ function bashunit::console_header::print_help() {
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
-  test [path]       Run tests (default command)
-  bench [path]      Run benchmarks
-  doc [filter]      Display assertion documentation
-  init [dir]        Initialize a new test directory
-  learn             Start interactive tutorial
-  upgrade           Upgrade bashunit to latest version
+  test [path]         Run tests (default command)
+  bench [path]        Run benchmarks
+  assert <fn> <args>  Run standalone assertion
+  doc [filter]        Display assertion documentation
+  init [dir]          Initialize a new test directory
+  learn               Start interactive tutorial
+  upgrade             Upgrade bashunit to latest version
 
 Global Options:
   -h, --help        Show this help message
@@ -77,11 +78,12 @@ Global Options:
 Run 'bashunit <command> --help' for command-specific options.
 
 Examples:
-  bashunit test tests/              Run all tests in directory
-  bashunit tests/                   Run all tests (shorthand)
-  bashunit bench                    Run all benchmarks
-  bashunit doc contains             Show docs for 'contains' assertions
-  bashunit init                     Initialize test directory
+  bashunit test tests/                Run all tests in directory
+  bashunit tests/                     Run all tests (shorthand)
+  bashunit bench                      Run all benchmarks
+  bashunit assert equals "foo" "foo"  Run standalone assertion
+  bashunit doc contains               Show docs for 'contains' assertions
+  bashunit init                       Initialize test directory
 
 More info: https://bashunit.typeddevs.com/command-line
 EOF
@@ -100,8 +102,8 @@ Arguments:
                               - Wildcards: supported to match multiple files
 
 Options:
-  -a, --assert <fn> <args>    Run a standalone assert function
-  -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
+  -a, --assert <fn> <args>    Run a standalone assert function (deprecated: use 'bashunit assert')
+  -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
   --log-junit <file>          Write JUnit XML report
   -p, --parallel              Run tests in parallel (default)
@@ -217,5 +219,28 @@ Usage: bashunit upgrade
 Upgrade bashunit to the latest version.
 
 Downloads and installs the newest release from GitHub.
+EOF
+}
+
+function bashunit::console_header::print_assert_help() {
+    cat <<EOF
+Usage: bashunit assert <function> [args...]
+
+Run a standalone assertion function without creating a test file.
+
+Arguments:
+  function                    Assertion function name (with or without 'assert_' prefix)
+  args...                     Arguments to pass to the assertion function
+
+Examples:
+  bashunit assert equals "foo" "foo"
+  bashunit assert same "1" "1"
+  bashunit assert contains "hello world" "world"
+  bashunit assert exit_code 0 "echo 'success'"
+
+Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
+      The 'bashunit assert' subcommand is the recommended approach.
+
+More info: https://bashunit.typeddevs.com/command-line
 EOF
 }

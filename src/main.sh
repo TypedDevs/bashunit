@@ -296,6 +296,32 @@ function bashunit::main::cmd_upgrade() {
 }
 
 #############################
+# Subcommand: assert
+#############################
+function bashunit::main::cmd_assert() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    bashunit::console_header::print_assert_help
+    exit 0
+  fi
+
+  local assert_fn="${1:-}"
+  if [[ -z "$assert_fn" ]]; then
+    printf "%sError: Assert function name is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
+    bashunit::console_header::print_assert_help
+    exit 1
+  fi
+
+  shift
+  local args=("$@")
+
+  # Disable strict mode for assert execution
+  set +euo pipefail
+
+  bashunit::main::exec_assert "$assert_fn" "${args[@]}"
+  exit $?
+}
+
+#############################
 # Test execution
 #############################
 function bashunit::main::exec_tests() {

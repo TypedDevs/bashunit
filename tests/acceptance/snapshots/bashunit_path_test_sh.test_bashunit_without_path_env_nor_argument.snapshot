@@ -2,12 +2,13 @@
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
-  test [path]       Run tests (default command)
-  bench [path]      Run benchmarks
-  doc [filter]      Display assertion documentation
-  init [dir]        Initialize a new test directory
-  learn             Start interactive tutorial
-  upgrade           Upgrade bashunit to latest version
+  test [path]         Run tests (default command)
+  bench [path]        Run benchmarks
+  assert <fn> <args>  Run standalone assertion
+  doc [filter]        Display assertion documentation
+  init [dir]          Initialize a new test directory
+  learn               Start interactive tutorial
+  upgrade             Upgrade bashunit to latest version
 
 Global Options:
   -h, --help        Show this help message
@@ -16,10 +17,11 @@ Global Options:
 Run 'bashunit <command> --help' for command-specific options.
 
 Examples:
-  bashunit test tests/              Run all tests in directory
-  bashunit tests/                   Run all tests (shorthand)
-  bashunit bench                    Run all benchmarks
-  bashunit doc contains             Show docs for 'contains' assertions
-  bashunit init                     Initialize test directory
+  bashunit test tests/                Run all tests in directory
+  bashunit tests/                     Run all tests (shorthand)
+  bashunit bench                      Run all benchmarks
+  bashunit assert equals "foo" "foo"  Run standalone assertion
+  bashunit doc contains               Show docs for 'contains' assertions
+  bashunit init                       Initialize test directory
 
 More info: https://bashunit.typeddevs.com/command-line
