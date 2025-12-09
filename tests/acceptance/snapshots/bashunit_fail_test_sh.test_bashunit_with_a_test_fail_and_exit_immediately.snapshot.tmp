@@ -1,0 +1,10 @@
+[1mRunning ./tests/acceptance/fixtures/test_bashunit_when_exit_immediately_after_execution_error.sh[0m
+
+[1mThere was 1 failure:[0m
+
+|1) ./tests/acceptance/fixtures/test_bashunit_when_exit_immediately_after_execution_error.sh:3
+
+[2mTests:     [0m [31m1 failed[0m, 1 total
+[2mAssertions:[0m [31m0 failed[0m, 0 total
+
+[41m[30m[1m Some tests failed [0m

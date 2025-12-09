@@ -4,6 +4,8 @@
 
 ### Added
 - Display execution time in minutes format when tests run over 60 seconds (e.g., "2m 1s")
+- Add `--no-progress` flag to hide real-time test progress and show only final results
+- Add `BASHUNIT_SHOW_PROGRESS` configuration option (default: `true`)
 
 ### Fixed
 - Internal flaky tests when running `--strict`

@@ -111,6 +111,8 @@ Options:
   -r, --report-html <file>    Write HTML report
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
+  --progress                  Show test progress (default)
+  --no-progress               Hide test progress, show only final results
   -R, --run-all               Run all assertions (don't stop on first failure)
   -S, --stop-on-failure       Stop on first failure
   -vvv, --verbose             Show execution details

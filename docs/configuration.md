@@ -382,6 +382,31 @@ BASHUNIT_LOGIN_SHELL=true
 ```
 :::
 
+## Show progress
+
+> `BASHUNIT_SHOW_PROGRESS=true|false`
+
+Display real-time test progress during execution. `true` by default.
+
+When enabled (default), test progress is shown as tests run (dots in simple mode,
+full lines in detailed mode). When disabled, only the final summary is displayed.
+
+Disabling progress is useful for:
+- CI/CD pipelines where intermediate output is not needed
+- Large test suites where you only care about the final result
+- Log files where you want a cleaner output
+
+Similar as using `--progress|--no-progress` option on the [command line](/command-line#progress).
+
+::: code-group
+```bash [Hide progress]
+BASHUNIT_SHOW_PROGRESS=false
+```
+```bash [Show progress (default)]
+BASHUNIT_SHOW_PROGRESS=true
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>

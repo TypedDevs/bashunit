@@ -1,0 +1,15 @@
+
+
+[1mThere was 1 failure:[0m
+
+|1) ./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh:12
+|[31m✗ Failed[0m: Assert failing
+|    [2mExpected[0m [1m'1'[0m
+|    [2mbut got [0m [1m'0'[0m
+
+
+
+[2mTests:     [0m [32m4 passed[0m, [31m1 failed[0m, 5 total
+[2mAssertions:[0m [32m6 passed[0m, [31m1 failed[0m, 7 total
+
+[41m[30m[1m Some tests failed [0m

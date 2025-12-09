@@ -40,6 +40,7 @@ _BASHUNIT_DEFAULT_STRICT_MODE="false"
 _BASHUNIT_DEFAULT_STOP_ON_ASSERTION_FAILURE="true"
 _BASHUNIT_DEFAULT_PRESERVE_ENV="false"
 _BASHUNIT_DEFAULT_LOGIN_SHELL="false"
+_BASHUNIT_DEFAULT_SHOW_PROGRESS="true"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -57,6 +58,7 @@ _BASHUNIT_DEFAULT_LOGIN_SHELL="false"
 : "${BASHUNIT_STOP_ON_ASSERTION_FAILURE:=${STOP_ON_ASSERTION_FAILURE:=$_BASHUNIT_DEFAULT_STOP_ON_ASSERTION_FAILURE}}"
 : "${BASHUNIT_PRESERVE_ENV:=${PRESERVE_ENV:=$_BASHUNIT_DEFAULT_PRESERVE_ENV}}"
 : "${BASHUNIT_LOGIN_SHELL:=${LOGIN_SHELL:=$_BASHUNIT_DEFAULT_LOGIN_SHELL}}"
+: "${BASHUNIT_SHOW_PROGRESS:=${SHOW_PROGRESS:=$_BASHUNIT_DEFAULT_SHOW_PROGRESS}}"
 
 function bashunit::env::is_parallel_run_enabled() {
   [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
@@ -126,6 +128,10 @@ function bashunit::env::is_login_shell_enabled() {
   [[ "$BASHUNIT_LOGIN_SHELL" == "true" ]]
 }
 
+function bashunit::env::is_show_progress_enabled() {
+  [[ "$BASHUNIT_SHOW_PROGRESS" == "true" ]]
+}
+
 function bashunit::env::active_internet_connection() {
   if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
     return 1
@@ -179,6 +185,7 @@ function bashunit::env::print_verbose() {
     "BASHUNIT_STOP_ON_ASSERTION_FAILURE"
     "BASHUNIT_PRESERVE_ENV"
     "BASHUNIT_LOGIN_SHELL"
+    "BASHUNIT_SHOW_PROGRESS"
   )
 
   local max_length=0

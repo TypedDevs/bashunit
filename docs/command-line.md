@@ -55,6 +55,8 @@ bashunit test tests/ --parallel --simple
 | `-R, --run-all` | Run all assertions (don't stop on first failure) |
 | `-s, --simple` | Simple output (dots) |
 | `--detailed` | Detailed output (default) |
+| `--progress` | Show test progress (default) |
+| `--no-progress` | Hide test progress, show only final results |
 | `-S, --stop-on-failure` | Stop on first failure |
 | `--show-skipped` | Show skipped tests summary at end |
 | `--show-incomplete` | Show incomplete tests summary at end |
@@ -199,6 +201,44 @@ bashunit test tests/ --detailed
 Running tests/unit/example_test.sh
 ✓ Passed: Should validate input
 ✓ Passed: Should handle errors
+```
+:::
+
+### Progress
+
+> `bashunit test --progress`
+> `bashunit test --no-progress`
+
+Control whether real-time test progress is displayed during execution.
+
+By default, test progress is shown (dots in simple mode, full lines in detailed mode).
+Use `--no-progress` to suppress progress output and only show the final summary.
+
+This is useful for:
+- CI/CD pipelines where intermediate output is not needed
+- Large test suites where you only care about the final result
+- Log files where you want a cleaner output
+
+::: code-group
+```bash [With progress (default)]
+bashunit test tests/ --simple
+```
+```[Output]
+bashunit - 0.18.0 | Tests: 50
+..............F.....S.............................
+
+Tests:      50, Passed:   48, Skipped:  1, Failed:  1
+```
+:::
+
+::: code-group
+```bash [Without progress]
+bashunit test tests/ --simple --no-progress
+```
+```[Output]
+bashunit - 0.18.0 | Tests: 50
+
+Tests:      50, Passed:   48, Skipped:  1, Failed:  1
 ```
 :::
 

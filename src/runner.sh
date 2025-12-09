@@ -302,7 +302,7 @@ function bashunit::runner::call_test_functions() {
     unset fn_name
   done
 
-  if ! bashunit::env::is_simple_output_enabled; then
+  if bashunit::env::is_show_progress_enabled && ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
@@ -333,7 +333,7 @@ function bashunit::runner::call_bench_functions() {
     unset fn_name
   done
 
-  if ! bashunit::env::is_simple_output_enabled; then
+  if bashunit::env::is_show_progress_enabled && ! bashunit::env::is_simple_output_enabled; then
     echo ""
   fi
 }
@@ -343,6 +343,10 @@ function bashunit::runner::render_running_file_header() {
   local force="${2:-false}"
 
   bashunit::internal_log "Running file" "$script"
+
+  if ! bashunit::env::is_show_progress_enabled; then
+    return
+  fi
 
   if [[ "$force" != true ]] && bashunit::parallel::is_enabled; then
     return

@@ -12,7 +12,7 @@ function bashunit::console_results::render_result() {
     return 1
   fi
 
-  if bashunit::env::is_simple_output_enabled; then
+  if bashunit::env::is_simple_output_enabled && bashunit::env::is_show_progress_enabled; then
     printf "\n\n"
   fi
 

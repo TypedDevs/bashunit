@@ -68,6 +68,12 @@ function bashunit::main::cmd_test() {
       -vvv|--verbose)
         export BASHUNIT_VERBOSE=true
         ;;
+      --progress)
+        export BASHUNIT_SHOW_PROGRESS=true
+        ;;
+      --no-progress)
+        export BASHUNIT_SHOW_PROGRESS=false
+        ;;
       -h|--help)
         bashunit::console_header::print_test_help
         exit 0

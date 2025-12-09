@@ -1,0 +1,13 @@
+[1mRunning ./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh[0m
+
+[1mThere was 1 failure:[0m
+
+|1) ./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh:7
+|[31m✗ Failed[0m: Assert failing
+|    [2mExpected[0m [1m'1'[0m
+|    [2mbut got [0m [1m'2'[0m
+
+[2mTests:     [0m [32m1 passed[0m, [33m0 skipped[0m, [36m2 incomplete[0m, [31m1 failed[0m, 4 total
+[2mAssertions:[0m [32m1 passed[0m, [33m2 skipped[0m, [36m2 incomplete[0m, [31m1 failed[0m, 6 total
+
+[41m[30m[1m Some tests failed [0m
