@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fix internal flaky tests when running `--strict`
+
 ## [0.29.0](https://github.com/TypedDevs/bashunit/compare/0.28.0...0.29.0) - 2025-12-08
 
 ### Added
