@@ -597,7 +597,7 @@ function test_print_successful_test_output_no_args() {
   local test_name="a custom test"
 
   assert_matches \
-    "✓ Passed.*$test_name.*12 ms" \
+    "✓ Passed.*$test_name.*12ms" \
     "$(bashunit::console_results::print_successful_test "$test_name" "12")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
@@ -612,8 +612,50 @@ function test_print_successful_test_output_with_args() {
   local data="foo"
 
   assert_matches \
-    "✓ Passed.*$test_name \('$data'\).*12 ms" \
+    "✓ Passed.*$test_name \('$data'\).*12ms" \
     "$(bashunit::console_results::print_successful_test "$test_name" "12" "$data")"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_successful_test_output_in_seconds() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
+
+  local test_name="a test taking seconds"
+
+  assert_matches \
+    "✓ Passed.*$test_name.*5s" \
+    "$(bashunit::console_results::print_successful_test "$test_name" "5000")"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_successful_test_output_in_minutes() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
+
+  local test_name="a test taking minutes"
+
+  assert_matches \
+    "✓ Passed.*$test_name.*1m 3s" \
+    "$(bashunit::console_results::print_successful_test "$test_name" "63000")"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_successful_test_output_in_minutes_exact() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=120
+
+  local test_name="a test taking exact minutes"
+
+  assert_matches \
+    "✓ Passed.*$test_name.*2m 0s" \
+    "$(bashunit::console_results::print_successful_test "$test_name" "120000")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }

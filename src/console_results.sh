@@ -167,7 +167,21 @@ function bashunit::console_results::print_successful_test() {
 
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
-    full_line="$(printf "%s\n" "$(bashunit::str::rpad "$line" "$duration ms")")"
+    local time_display
+    if [[ "$duration" -ge 60000 ]]; then
+      local time_in_seconds=$(( duration / 1000 ))
+      local minutes=$(( time_in_seconds / 60 ))
+      local seconds=$(( time_in_seconds % 60 ))
+      time_display="${minutes}m ${seconds}s"
+    elif [[ "$duration" -ge 1000 ]]; then
+      local time_in_seconds=$(( duration / 1000 ))
+      local remainder_ms=$(( duration % 1000 ))
+      local formatted_seconds=$(echo "$time_in_seconds.$remainder_ms" | awk '{printf "%.0f", $1}')
+      time_display="${formatted_seconds}s"
+    else
+      time_display="${duration}ms"
+    fi
+    full_line="$(printf "%s\n" "$(bashunit::str::rpad "$line" "$time_display")")"
   fi
 
   bashunit::state::print_line "successful" "$full_line"
