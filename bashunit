@@ -41,8 +41,8 @@ export BASHUNIT_WORKING_DIR
 # Early scan for flags that must be set before loading env.sh
 for arg in "$@"; do
   case "$arg" in
-    --preserve-env)
-      export BASHUNIT_PRESERVE_ENV=true
+    --skip-env-file)
+      export BASHUNIT_SKIP_ENV_FILE=true
       ;;
     -l|--login)
       export BASHUNIT_LOGIN_SHELL=true

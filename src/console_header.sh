@@ -106,7 +106,7 @@ Options:
   -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
   --log-junit <file>          Write JUnit XML report
-  -p, --parallel              Run tests in parallel (default)
+  -p, --parallel              Run tests in parallel
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
   -s, --simple                Simple output (dots)
@@ -117,7 +117,7 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --strict                    Enable strict shell mode (set -euo pipefail)
-  --preserve-env              Skip .env loading, use shell environment only
+  --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run tests in login shell context
   -h, --help                  Show this help message
 
@@ -144,7 +144,7 @@ Options:
   -s, --simple                Simple output
   --detailed                  Detailed output (default)
   -vvv, --verbose             Show execution details
-  --preserve-env              Skip .env loading, use shell environment only
+  --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run in login shell context
   -h, --help                  Show this help message
 

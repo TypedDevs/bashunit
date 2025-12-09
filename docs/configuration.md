@@ -227,6 +227,12 @@ BASHUNIT_REPORT_HTML=report.html
 Specifies an additional file to be loaded for all tests cases.
 Useful to set up global variables or functions accessible in all your tests.
 
+::: tip Using functions in tests
+If you need shell functions available in your tests, define them in a bootstrap
+file and use `export -f function_name` to make them available in test subshells.
+This is the recommended pattern for sharing functions across tests.
+:::
+
 Similarly, you can use load an additional file via the [command line](/command-line#environment).
 
 ::: code-group
@@ -242,7 +248,7 @@ BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"
 ```
 :::
 
-## Bootstrap arguments
+### Bootstrap arguments
 
 > `BASHUNIT_BOOTSTRAP_ARGS=arguments`
 
@@ -342,9 +348,9 @@ BASHUNIT_STRICT_MODE=true
 ```
 :::
 
-## Preserve environment
+## Skip env file
 
-> `BASHUNIT_PRESERVE_ENV=true|false`
+> `BASHUNIT_SKIP_ENV_FILE=true|false`
 
 Skip loading the `.env` file and use the current shell environment only. `false` by default.
 
@@ -352,11 +358,17 @@ By default, bashunit loads variables from `.env` which can override environment
 variables set in your shell. Enable this option when running in CI/CD pipelines
 or when you want shell environment variables to take precedence.
 
-Similar as using `--preserve-env` option on the [command line](/command-line#preserve-environment).
+::: warning Important
+Only environment variables are inherited from the parent shell. Shell functions
+and aliases are NOT available in tests due to bashunit's subshell architecture.
+Use a [bootstrap file](#bootstrap) to define functions needed by your tests.
+:::
+
+Similar as using `--skip-env-file` option on the [command line](/command-line#skip-env-file).
 
 ::: code-group
 ```bash [Example]
-BASHUNIT_PRESERVE_ENV=true ./bashunit tests/
+BASHUNIT_SKIP_ENV_FILE=true ./bashunit tests/
 ```
 :::
 
