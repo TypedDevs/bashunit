@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fix internal flaky tests when running `--strict`
+- Fix `set_up_before_script` and `tear_down_after_script` stdout/stderr being visible during normal execution (now only shown with `-vvv`)
 
 ## [0.29.0](https://github.com/TypedDevs/bashunit/compare/0.28.0...0.29.0) - 2025-12-08
 

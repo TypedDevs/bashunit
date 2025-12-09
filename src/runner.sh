@@ -827,7 +827,7 @@ function bashunit::runner::execute_file_hook() {
     return $status
   fi
 
-  if [[ -n "$hook_output" ]]; then
+  if [[ -n "$hook_output" ]] && bashunit::env::is_verbose_enabled; then
     printf "%s\n" "$hook_output"
   fi
 
