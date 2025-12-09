@@ -106,7 +106,7 @@ Options:
   -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
   --log-junit <file>          Write JUnit XML report
-  -p, --parallel              Run tests in parallel (default)
+  -p, --parallel              Run tests in parallel
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
   -s, --simple                Simple output (dots)

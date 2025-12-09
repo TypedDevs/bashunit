@@ -43,27 +43,27 @@ bashunit test tests/ --parallel --simple
 
 ### Test Options
 
-| Option | Description |
-|--------|-------------|
-| `-a, --assert <fn> <args>` | Run a standalone assert function |
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args) |
-| `-f, --filter <name>` | Only run tests matching name |
-| `--log-junit <file>` | Write JUnit XML report |
-| `-p, --parallel` | Run tests in parallel (default) |
-| `--no-parallel` | Run tests sequentially |
-| `-r, --report-html <file>` | Write HTML report |
-| `-R, --run-all` | Run all assertions (don't stop on first failure) |
-| `-s, --simple` | Simple output (dots) |
-| `--detailed` | Detailed output (default) |
-| `-S, --stop-on-failure` | Stop on first failure |
-| `--show-skipped` | Show skipped tests summary at end |
-| `--show-incomplete` | Show incomplete tests summary at end |
-| `-vvv, --verbose` | Show execution details |
-| `--debug [file]` | Enable shell debug mode |
-| `--no-output` | Suppress all output |
-| `--strict` | Enable strict shell mode |
-| `--skip-env-file` | Skip `.env` loading, use shell environment only |
-| `-l, --login` | Run tests in login shell context |
+| Option                     | Description                                      |
+|----------------------------|--------------------------------------------------|
+| `-a, --assert <fn> <args>` | Run a standalone assert function                 |
+| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args)   |
+| `-f, --filter <name>`      | Only run tests matching name                     |
+| `--log-junit <file>`       | Write JUnit XML report                           |
+| `-p, --parallel`           | Run tests in parallel                            |
+| `--no-parallel`            | Run tests sequentially                           |
+| `-r, --report-html <file>` | Write HTML report                                |
+| `-R, --run-all`            | Run all assertions (don't stop on first failure) |
+| `-s, --simple`             | Simple output (dots)                             |
+| `--detailed`               | Detailed output (default)                        |
+| `-S, --stop-on-failure`    | Stop on first failure                            |
+| `--show-skipped`           | Show skipped tests summary at end                |
+| `--show-incomplete`        | Show incomplete tests summary at end             |
+| `-vvv, --verbose`          | Show execution details                           |
+| `--debug [file]`           | Enable shell debug mode                          |
+| `--no-output`              | Suppress all output                              |
+| `--strict`                 | Enable strict shell mode                         |
+| `--skip-env-file`          | Skip `.env` loading, use shell environment only  |
+| `-l, --login`              | Run tests in login shell context                 |
 
 ### Standalone Assert
 
@@ -167,7 +167,7 @@ The line number syntax finds the test function that contains the specified line.
 > `bashunit test -p|--parallel`
 > `bashunit test --no-parallel`
 
-Run tests in parallel (default) or sequentially.
+Run tests in parallel or sequentially. Sequential is the default.
 
 ::: warning
 Parallel mode is supported on **macOS**, **Ubuntu**, and **Windows**. On other
@@ -246,6 +246,12 @@ variables set in your shell. Use `--skip-env-file` when you want to:
 - Run in CI/CD where environment is pre-configured
 - Override `.env` values with shell environment variables
 - Avoid `.env` interfering with your current settings
+
+::: warning Important
+Only environment variables are inherited from the parent shell. Shell functions
+and aliases are NOT available in tests due to bashunit's subshell architecture.
+Use a [bootstrap file](/configuration#bootstrap) to define functions needed by your tests.
+:::
 
 ::: code-group
 ```bash [Example]
