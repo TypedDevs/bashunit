@@ -5,11 +5,6 @@ ROOT_DIR="$(bashunit::current_dir)"
 
 SCRIPT="$ROOT_DIR/logic.sh"
 
-function test_dummy() {
-  sleep 63
-  assert_equals "foo" "foo"
-}
-
 function test_text_should_be_equal() {
   assert_same "expected 123" "$($SCRIPT "123")"
 }
