@@ -320,7 +320,7 @@ function test_render_execution_time() {
 
     bashunit::console_results::render_result || true
   )
-  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
+  assert_matches "Time taken: ([[:digit:]]+(\.[[:digit:]]+)? (ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
 function test_not_render_execution_time() {
@@ -349,7 +349,7 @@ function test_render_execution_time_on_osx_without_perl() {
     bashunit::console_results::render_result || true
   )
 
-  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? (ms|s)" "$render_result"
+  assert_matches "Time taken: ([[:digit:]]+(\.[[:digit:]]+)? (ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
 function test_render_execution_time_on_osx_with_perl() {
@@ -371,6 +371,28 @@ function test_render_execution_time_on_osx_with_perl() {
   )
 
   assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
+}
+
+function test_render_execution_time_in_minutes() {
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    BASHUNIT_SHOW_EXECUTION_TIME=true
+    bashunit::mock bashunit::clock::total_runtime_in_milliseconds echo "121000"
+    bashunit::console_results::print_execution_time
+  )
+  assert_matches "Time taken: 2m 1s" "$render_result"
+}
+
+function test_render_execution_time_in_minutes_exact_minute() {
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    BASHUNIT_SHOW_EXECUTION_TIME=true
+    bashunit::mock bashunit::clock::total_runtime_in_milliseconds echo "120000"
+    bashunit::console_results::print_execution_time
+  )
+  assert_matches "Time taken: 2m 0s" "$render_result"
 }
 
 function test_render_file_with_duplicated_functions_if_found_true() {

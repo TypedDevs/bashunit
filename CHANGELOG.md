@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Display execution time in minutes format when tests run over 60 seconds (e.g., "2m 1s")
+
 ### Fixed
 - Internal flaky tests when running `--strict`
 - Visible stdout/stderr during normal execution `set_up_before_script` and `tear_down_after_script`

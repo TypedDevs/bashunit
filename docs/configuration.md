@@ -164,6 +164,11 @@ BASHUNIT_HEADER_ASCII_ART=true
 
 Specify if you want to display the execution time after running **bashunit**. `true` by default.
 
+The time format adapts based on duration:
+- Under 1 second: displayed in milliseconds (e.g., `14 ms`)
+- 1-59 seconds: displayed in seconds (e.g., `5 s`)
+- 60+ seconds: displayed in minutes and seconds (e.g., `2m 1s`)
+
 ::: code-group
 ```-vue [With execution time]
 ✓ Passed: foo bar
