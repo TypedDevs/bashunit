@@ -62,7 +62,7 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]` | Enable shell debug mode |
 | `--no-output` | Suppress all output |
 | `--strict` | Enable strict shell mode |
-| `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `--skip-env-file` | Skip `.env` loading, use shell environment only |
 | `-l, --login` | Run tests in login shell context |
 
 ### Standalone Assert
@@ -235,21 +235,21 @@ bashunit test tests/ --strict
 ```
 :::
 
-### Preserve Environment
+### Skip Env File
 
-> `bashunit test --preserve-env`
+> `bashunit test --skip-env-file`
 
 Skip loading the `.env` file and use the current shell environment only.
 
 By default, bashunit loads variables from `.env` which can override environment
-variables set in your shell. Use `--preserve-env` when you want to:
+variables set in your shell. Use `--skip-env-file` when you want to:
 - Run in CI/CD where environment is pre-configured
 - Override `.env` values with shell environment variables
 - Avoid `.env` interfering with your current settings
 
 ::: code-group
 ```bash [Example]
-BASHUNIT_SIMPLE_OUTPUT=true ./bashunit test tests/ --preserve-env
+BASHUNIT_SIMPLE_OUTPUT=true ./bashunit test tests/ --skip-env-file
 ```
 :::
 
@@ -304,7 +304,7 @@ bashunit bench --filter "parse"
 | `-s, --simple` | Simple output |
 | `--detailed` | Detailed output (default) |
 | `-vvv, --verbose` | Show execution details |
-| `--preserve-env` | Skip `.env` loading, use shell environment only |
+| `--skip-env-file` | Skip `.env` loading, use shell environment only |
 | `-l, --login` | Run in login shell context |
 
 ## doc

@@ -84,8 +84,8 @@ function bashunit::main::cmd_test() {
       -R|--run-all)
         export BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
         ;;
-      --preserve-env)
-        export BASHUNIT_PRESERVE_ENV=true
+      --skip-env-file)
+        export BASHUNIT_SKIP_ENV_FILE=true
         ;;
       -l|--login)
         export BASHUNIT_LOGIN_SHELL=true
@@ -208,8 +208,8 @@ function bashunit::main::cmd_bench() {
       -vvv|--verbose)
         export BASHUNIT_VERBOSE=true
         ;;
-      --preserve-env)
-        export BASHUNIT_PRESERVE_ENV=true
+      --skip-env-file)
+        export BASHUNIT_SKIP_ENV_FILE=true
         ;;
       -l|--login)
         export BASHUNIT_LOGIN_SHELL=true

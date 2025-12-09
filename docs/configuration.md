@@ -342,9 +342,9 @@ BASHUNIT_STRICT_MODE=true
 ```
 :::
 
-## Preserve environment
+## Skip env file
 
-> `BASHUNIT_PRESERVE_ENV=true|false`
+> `BASHUNIT_SKIP_ENV_FILE=true|false`
 
 Skip loading the `.env` file and use the current shell environment only. `false` by default.
 
@@ -352,11 +352,11 @@ By default, bashunit loads variables from `.env` which can override environment
 variables set in your shell. Enable this option when running in CI/CD pipelines
 or when you want shell environment variables to take precedence.
 
-Similar as using `--preserve-env` option on the [command line](/command-line#preserve-environment).
+Similar as using `--skip-env-file` option on the [command line](/command-line#skip-env-file).
 
 ::: code-group
 ```bash [Example]
-BASHUNIT_PRESERVE_ENV=true ./bashunit tests/
+BASHUNIT_SKIP_ENV_FILE=true ./bashunit tests/
 ```
 :::
 

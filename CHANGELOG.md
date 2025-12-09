@@ -6,6 +6,10 @@
 - Display execution time in minutes format when tests run over 60 seconds (e.g., "2m 1s")
 - Display individual test duration in human-readable format (ms, s, or m s) instead of always milliseconds
 
+### Changed
+- **BREAKING:** Rename `--preserve-env` flag to `--skip-env-file` for clearer semantics
+- **BREAKING:** Rename `BASHUNIT_PRESERVE_ENV` environment variable to `BASHUNIT_SKIP_ENV_FILE`
+
 ### Fixed
 - Internal flaky tests when running `--strict`
 - Visible stdout/stderr during normal execution `set_up_before_script` and `tear_down_after_script`
