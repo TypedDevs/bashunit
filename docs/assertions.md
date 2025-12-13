@@ -327,33 +327,37 @@ function test_failure() {
 :::
 
 ## assert_exit_code
-> `assert_exit_code "expected" ["callable"]`
+> `assert_exit_code "expected"`
 
-Reports an error if the exit code of `callable` is not equal to `expected`.
+Reports an error if the exit code of the last executed command is not equal to `expected`.
 
-If `callable` is not provided, it takes the last executed command or function instead.
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a second parameter.
+
+::: tip
+Use [assert_exec](#assert-exec) if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 0`
+:::
 
 - [assert_successful_code](#assert-successful-code), [assert_unsuccessful_code](#assert-unsuccessful-code), [assert_general_error](#assert-general-error) and [assert_command_not_found](#assert-command-not-found)
 are more semantic versions of this assertion, for which you don't need to specify an exit code.
 
 ::: code-group
 ```bash [Example]
-function test_success_with_callable() {
+function test_success_checking_previous_command() {
   function foo() {
     return 1
   }
 
-  assert_exit_code "1" "$(foo)"
-}
-
-function test_success_without_callable() {
-  function foo() {
-    return 1
-  }
-
-  foo # function took instead `callable`
+  foo
 
   assert_exit_code "1"
+}
+
+function test_success_with_external_command() {
+  touch /tmp/myfile
+
+  assert_exit_code "0"
 }
 
 function test_failure() {
@@ -361,7 +365,9 @@ function test_failure() {
     return 1
   }
 
-  assert_exit_code "0" "$(foo)"
+  foo
+
+  assert_exit_code "0"
 }
 ```
 :::
@@ -415,30 +421,34 @@ function test_failure() {
 :::
 
 ## assert_successful_code
-> `assert_successful_code ["callable"]`
+> `assert_successful_code`
 
-Reports an error if the exit code of `callable` is not successful (`0`).
+Reports an error if the exit code of the last executed command is not successful (`0`).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use [assert_exec](#assert-exec) if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command"` (defaults to expecting exit code 0)
+:::
 
 - [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
-function test_success_with_callable() {
+function test_success_with_function() {
   function foo() {
     return 0
   }
 
-  assert_successful_code "$(foo)"
+  foo
+
+  assert_successful_code
 }
 
-function test_success_without_callable() {
-  function foo() {
-    return 0
-  }
-
-  foo # function took instead `callable`
+function test_success_with_external_command() {
+  touch /tmp/myfile
 
   assert_successful_code
 }
@@ -448,36 +458,42 @@ function test_failure() {
     return 1
   }
 
-  assert_successful_code "$(foo)"
+  foo
+
+  assert_successful_code
 }
 ```
 :::
 
 ## assert_unsuccessful_code
-> `assert_unsuccessful_code ["callable"]`
+> `assert_unsuccessful_code`
 
-Reports an error if the exit code of `callable` is not unsuccessful (non-zero).
+Reports an error if the exit code of the last executed command is not unsuccessful (non-zero).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
 
-[assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
+::: tip
+Use [assert_exec](#assert-exec) if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 1`
+:::
+
+- [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
-function test_success_with_callable() {
+function test_success_with_function() {
   function foo() {
     return 1
   }
 
-  assert_unsuccessful_code "$(foo)"
+  foo
+
+  assert_unsuccessful_code
 }
 
-function test_success_without_callable() {
-  function foo() {
-    return 2
-  }
-
-  foo # function took instead `callable`
+function test_success_with_failing_command() {
+  ls /nonexistent_path 2>/dev/null
 
   assert_unsuccessful_code
 }
@@ -487,36 +503,42 @@ function test_failure() {
     return 0
   }
 
-  assert_unsuccessful_code "$(foo)"
+  foo
+
+  assert_unsuccessful_code
 }
 ```
 :::
 
 ## assert_general_error
-> `assert_general_error ["callable"]`
+> `assert_general_error`
 
-Reports an error if the exit code of `callable` is not a general error (`1`).
+Reports an error if the exit code of the last executed command is not a general error (`1`).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use [assert_exec](#assert-exec) if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 1`
+:::
 
 - [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
-function test_success_with_callable() {
+function test_success_with_function() {
   function foo() {
     return 1
   }
 
-  assert_general_error "$(foo)"
+  foo
+
+  assert_general_error
 }
 
-function test_success_without_callable() {
-  function foo() {
-    return 1
-  }
-
-  foo # function took instead `callable`
+function test_success_with_external_command() {
+  grep "nonexistent" /dev/null
 
   assert_general_error
 }
@@ -526,35 +548,40 @@ function test_failure() {
     return 0
   }
 
-  assert_general_error "$(foo)"
+  foo
+
+  assert_general_error
 }
 ```
 :::
 
 ## assert_command_not_found
-> `assert_general_error ["callable"]`
+> `assert_command_not_found`
 
-Reports an error if `callable` exists.
-In other words, if executing `callable` does not return a command not found exit code (`127`).
+Reports an error if the last executed command did not return a "command not found" exit code (`127`).
 
-If `callable` is not provided, it takes the last executed command or function instead.
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use [assert_exec](#assert-exec) if you want to pass a command as a string and check its exit code:
+`assert_exec "nonexistent_command" --exit 127`
+:::
 
 - [assert_exit_code](#assert-exit-code) is the full version of this assertion where you can specify the expected exit code.
 
 ::: code-group
 ```bash [Example]
-function test_success_with_callable() {
-  assert_command_not_found "$(foo > /dev/null 2>&1)"
-}
-
-function test_success_without_callable() {
-  foo > /dev/null 2>&1
+function test_success_with_nonexistent_command() {
+  nonexistent_command 2>/dev/null
 
   assert_command_not_found
 }
 
-function test_failure() {
-  assert_command_not_found "$(ls > /dev/null 2>&1)"
+function test_failure_with_existing_command() {
+  ls > /dev/null 2>&1
+
+  assert_command_not_found
 }
 ```
 :::

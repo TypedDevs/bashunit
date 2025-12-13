@@ -12,6 +12,7 @@
 - **BREAKING:** Rename `BASHUNIT_PRESERVE_ENV` environment variable to `BASHUNIT_SKIP_ENV_FILE`
 - Improve documentation for `--skip-env-file` clarifying that shell functions are not inherited
 - Add tip to Bootstrap documentation promoting it as the solution for function availability in tests
+- Clarify that exit code assertions check $? instead of executing commands
 
 ### Fixed
 - Internal flaky tests when running `--strict`
