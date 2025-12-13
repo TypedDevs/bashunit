@@ -348,6 +348,11 @@ function bashunit::runner::render_running_file_header() {
     return
   fi
 
+  # Suppress file headers in failures-only mode
+  if bashunit::env::is_failures_only_enabled; then
+    return
+  fi
+
   if ! bashunit::env::is_simple_output_enabled; then
     if bashunit::env::is_verbose_enabled; then
       printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
@@ -465,7 +470,9 @@ function bashunit::runner::run_test() {
     line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
     line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
 
-    bashunit::state::print_line "$type" "$line"
+    if ! bashunit::env::is_failures_only_enabled; then
+      bashunit::state::print_line "$type" "$line"
+    fi
 
     subshell_output=$line
   fi
@@ -560,7 +567,10 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_snapshot" != "$(bashunit::state::get_assertions_snapshot)" ]]; then
     bashunit::state::add_tests_snapshot
-    bashunit::console_results::print_snapshot_test "$label"
+    # In failures-only mode, suppress snapshot test output
+    if ! bashunit::env::is_failures_only_enabled; then
+      bashunit::console_results::print_snapshot_test "$label"
+    fi
     bashunit::reports::add_test_snapshot "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::internal_log "Test snapshot" "$label"
     return
@@ -582,10 +592,13 @@ function bashunit::runner::run_test() {
     return
   fi
 
-  if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
-    bashunit::console_results::print_successful_test "${label}" "$duration" "$@"
-  else
-    bashunit::console_results::print_successful_test "${label}" "$duration"
+  # In failures-only mode, suppress successful test output
+  if ! bashunit::env::is_failures_only_enabled; then
+    if [[ "$fn_name" == "$interpolated_fn_name" ]]; then
+      bashunit::console_results::print_successful_test "${label}" "$duration" "$@"
+    else
+      bashunit::console_results::print_successful_test "${label}" "$duration"
+    fi
   fi
   bashunit::state::add_tests_passed
   bashunit::reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"

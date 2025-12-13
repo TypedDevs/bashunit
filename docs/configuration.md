@@ -330,6 +330,23 @@ BASHUNIT_NO_OUTPUT=true
 ```
 :::
 
+## Failures only
+
+> `BASHUNIT_FAILURES_ONLY=true|false`
+
+Only show failures, suppressing passed, skipped, and incomplete tests. `false` by default.
+
+When enabled, progress output is suppressed and only failing tests are displayed.
+The final summary still shows all counts (passed/failed/skipped/incomplete).
+
+Similar as using `--failures-only` option on the [command line](/command-line#failures-only).
+
+::: code-group
+```bash [Example]
+BASHUNIT_FAILURES_ONLY=true
+```
+:::
+
 ## Strict mode
 
 > `BASHUNIT_STRICT_MODE=true|false`

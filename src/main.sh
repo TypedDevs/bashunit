@@ -78,6 +78,9 @@ function bashunit::main::cmd_test() {
       --show-incomplete)
         export BASHUNIT_SHOW_INCOMPLETE=true
         ;;
+      --failures-only)
+        export BASHUNIT_FAILURES_ONLY=true
+        ;;
       --strict)
         export BASHUNIT_STRICT_MODE=true
         ;;

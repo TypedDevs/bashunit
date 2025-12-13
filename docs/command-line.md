@@ -61,6 +61,7 @@ bashunit test tests/ --parallel --simple
 | `-vvv, --verbose`          | Show execution details                           |
 | `--debug [file]`           | Enable shell debug mode                          |
 | `--no-output`              | Suppress all output                              |
+| `--failures-only`          | Only show failures                               |
 | `--strict`                 | Enable strict shell mode                         |
 | `--skip-env-file`          | Skip `.env` loading, use shell environment only  |
 | `-l, --login`              | Run tests in login shell context                 |
