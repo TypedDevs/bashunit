@@ -5,6 +5,7 @@
 ### Added
 - Display execution time in minutes format when tests run over 60 seconds (e.g., "2m 1s")
 - Display individual test duration in human-readable format (ms, s, or m s) instead of always milliseconds
+- Add `--failures-only` flag to suppress passed/skipped/incomplete tests and show only failures
 
 ### Changed
 - **BREAKING:** Rename `--preserve-env` flag to `--skip-env-file` for clearer semantics
