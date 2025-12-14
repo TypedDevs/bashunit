@@ -120,6 +120,7 @@ Options:
   --strict                    Enable strict shell mode (set -euo pipefail)
   --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run tests in login shell context
+  --no-color                  Disable colored output (honors NO_COLOR env var)
   -h, --help                  Show this help message
 
 Examples:
@@ -147,6 +148,7 @@ Options:
   -vvv, --verbose             Show execution details
   --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run in login shell context
+  --no-color                  Disable colored output (honors NO_COLOR env var)
   -h, --help                  Show this help message
 
 Examples:

@@ -347,6 +347,22 @@ BASHUNIT_FAILURES_ONLY=true
 ```
 :::
 
+## Color output
+
+> `NO_COLOR=1`
+
+Disables ANSI color codes in output. Follows the [no-color.org](https://no-color.org) standard.
+
+When set to any value, bashunit will output plain text without color formatting.
+
+Similar as using `--no-color` option on the [command line](/command-line).
+
+::: code-group
+```bash [Example]
+NO_COLOR=1
+```
+:::
+
 ## Strict mode
 
 > `BASHUNIT_STRICT_MODE=true|false`

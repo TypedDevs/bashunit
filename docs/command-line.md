@@ -65,6 +65,7 @@ bashunit test tests/ --parallel --simple
 | `--strict`                 | Enable strict shell mode                         |
 | `--skip-env-file`          | Skip `.env` loading, use shell environment only  |
 | `-l, --login`              | Run tests in login shell context                 |
+| `--no-color`               | Disable colored output                           |
 
 ### Standalone Assert
 
