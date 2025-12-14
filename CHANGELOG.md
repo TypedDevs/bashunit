@@ -8,6 +8,7 @@
 - Add `--failures-only` flag to suppress passed/skipped/incomplete tests and show only failures
 - Add `--no-color` flag to disable ANSI color output (also supports `NO_COLOR` env var per no-color.org standard)
 - Add multiple assertions support in standalone mode: `bashunit assert "cmd" exit_code "1" contains "error"`
+- Add `release.sh` script to automate the release process with dry-run support
 
 ### Changed
 - **BREAKING:** Rename `--preserve-env` flag to `--skip-env-file` for clearer semantics

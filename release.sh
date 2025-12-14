@@ -14,7 +14,7 @@ NC='\033[0m' # No Color
 DRY_RUN=false
 VERSION=""
 
-function show_usage() {
+function release::show_usage() {
   cat <<EOF
 Usage: ./release.sh <version> [options]
 
@@ -31,40 +31,40 @@ Example:
 EOF
 }
 
-function log_info() {
+function release::log_info() {
   echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-function log_success() {
+function release::log_success() {
   echo -e "${GREEN}[OK]${NC} $1"
 }
 
-function log_warning() {
+function release::log_warning() {
   echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-function log_error() {
+function release::log_error() {
   echo -e "${RED}[ERROR]${NC} $1" >&2
 }
 
-function log_dry_run() {
+function release::log_dry_run() {
   echo -e "${YELLOW}[DRY-RUN]${NC} $1"
 }
 
-function validate_semver() {
+function release::validate_semver() {
   local version=$1
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    log_error "Invalid version format: $version"
-    log_error "Version must be in semver format (e.g., 0.30.0)"
+    release::log_error "Invalid version format: $version"
+    release::log_error "Version must be in semver format (e.g., 0.30.0)"
     exit 1
   fi
 }
 
-function get_current_version() {
+function release::get_current_version() {
   grep -o 'BASHUNIT_VERSION="[^"]*"' bashunit | cut -d'"' -f2
 }
 
-function version_gt() {
+function release::version_gt() {
   # Returns 0 if $1 > $2
   local v1=$1
   local v2=$2
@@ -73,10 +73,11 @@ function version_gt() {
     return 1
   fi
 
-  local IFS=.
   local i
-  local ver1=($v1)
-  local ver2=($v2)
+  local ver1
+  local ver2
+  IFS=. read -ra ver1 <<< "$v1"
+  IFS=. read -ra ver2 <<< "$v2"
 
   for ((i=0; i<3; i++)); do
     if ((ver1[i] > ver2[i])); then
@@ -89,49 +90,49 @@ function version_gt() {
   return 1
 }
 
-function update_bashunit_version() {
+function release::update_bashunit_version() {
   local new_version=$1
   local file="bashunit"
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update BASHUNIT_VERSION in $file to $new_version"
+    release::log_dry_run "Would update BASHUNIT_VERSION in $file to $new_version"
     return
   fi
 
   sed -i.bak "s/BASHUNIT_VERSION=\"[^\"]*\"/BASHUNIT_VERSION=\"$new_version\"/" "$file"
   rm -f "$file.bak"
-  log_success "Updated BASHUNIT_VERSION in $file"
+  release::log_success "Updated BASHUNIT_VERSION in $file"
 }
 
-function update_install_version() {
+function release::update_install_version() {
   local new_version=$1
   local file="install.sh"
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update LATEST_BASHUNIT_VERSION in $file to $new_version"
+    release::log_dry_run "Would update LATEST_BASHUNIT_VERSION in $file to $new_version"
     return
   fi
 
   sed -i.bak "s/LATEST_BASHUNIT_VERSION=\"[^\"]*\"/LATEST_BASHUNIT_VERSION=\"$new_version\"/" "$file"
   rm -f "$file.bak"
-  log_success "Updated LATEST_BASHUNIT_VERSION in $file"
+  release::log_success "Updated LATEST_BASHUNIT_VERSION in $file"
 }
 
-function update_package_json_version() {
+function release::update_package_json_version() {
   local new_version=$1
   local file="package.json"
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update version in $file to $new_version"
+    release::log_dry_run "Would update version in $file to $new_version"
     return
   fi
 
   sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$new_version\"/" "$file"
   rm -f "$file.bak"
-  log_success "Updated version in $file"
+  release::log_success "Updated version in $file"
 }
 
-function update_changelog() {
+function release::update_changelog() {
   local new_version=$1
   local current_version=$2
   local file="CHANGELOG.md"
@@ -140,9 +141,9 @@ function update_changelog() {
   local compare_url="https://github.com/TypedDevs/bashunit/compare/${current_version}...${new_version}"
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update $file:"
-    log_dry_run "  - Add new '## Unreleased' section"
-    log_dry_run "  - Convert current Unreleased to ## [$new_version]($compare_url) - $today"
+    release::log_dry_run "Would update $file:"
+    release::log_dry_run "  - Add new '## Unreleased' section"
+    release::log_dry_run "  - Convert current Unreleased to ## [$new_version]($compare_url) - $today"
     return
   fi
 
@@ -152,21 +153,21 @@ function update_changelog() {
   # Replace "## Unreleased" with new Unreleased + version header
   sed -i.bak "s/^## Unreleased$/## Unreleased\n\n$new_header/" "$file"
   rm -f "$file.bak"
-  log_success "Updated $file with version $new_version"
+  release::log_success "Updated $file with version $new_version"
 }
 
-function build_project() {
+function release::build_project() {
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would run: ./build.sh bin"
+    release::log_dry_run "Would run: ./build.sh bin"
     return
   fi
 
-  log_info "Building project..."
+  release::log_info "Building project..."
   ./build.sh bin
-  log_success "Build completed"
+  release::log_success "Build completed"
 }
 
-function get_checksum() {
+function release::get_checksum() {
   if [[ -f "bin/checksum" ]]; then
     awk '{print $1}' bin/checksum
   else
@@ -174,7 +175,7 @@ function get_checksum() {
   fi
 }
 
-function get_contributors() {
+function release::get_contributors() {
   local prev_version=$1
 
   # Get GitHub handles of commit authors since previous version
@@ -183,7 +184,7 @@ function get_contributors() {
     --jq '.commits[].author.login' 2>/dev/null | sort -u | grep -v '^$' || true
 }
 
-function generate_release_notes() {
+function release::generate_release_notes() {
   local new_version=$1
   local prev_version=$2
   local checksum=$3
@@ -198,7 +199,7 @@ function generate_release_notes() {
 
   # Add contributors section
   local contributors
-  contributors=$(get_contributors "$prev_version")
+  contributors=$(release::get_contributors "$prev_version")
   if [[ -n "$contributors" ]]; then
     echo ""
     echo "## 👥 Contributors"
@@ -212,68 +213,70 @@ function generate_release_notes() {
   echo "## Checksum"
   echo "SHA256: \`$checksum\`"
   echo ""
-  echo "**Full Changelog:** [$prev_version...$new_version](https://github.com/TypedDevs/bashunit/compare/$prev_version...$new_version)"
+  local compare_url="https://github.com/TypedDevs/bashunit/compare/$prev_version...$new_version"
+  echo "**Full Changelog:** [$prev_version...$new_version]($compare_url)"
 }
 
-function create_github_release() {
+function release::create_github_release() {
   local version=$1
   local notes_file=$2
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would create GitHub release $version with assets:"
-    log_dry_run "  - bin/bashunit"
-    log_dry_run "  - bin/checksum"
+    release::log_dry_run "Would create GitHub release $version with assets:"
+    release::log_dry_run "  - bin/bashunit"
+    release::log_dry_run "  - bin/checksum"
     return
   fi
 
-  if ! confirm_action "Do you want to create the GitHub release now?"; then
-    log_warning "Skipping GitHub release creation"
+  if ! release::confirm_action "Do you want to create the GitHub release now?"; then
+    release::log_warning "Skipping GitHub release creation"
     echo ""
     echo "To create the release manually, run:"
-    echo -e "  ${BLUE}gh release create $version bin/bashunit bin/checksum --title \"$version\" --notes-file \"$notes_file\"${NC}"
+    echo -e "  ${BLUE}gh release create $version bin/bashunit bin/checksum \\"
+    echo -e "    --title \"$version\" --notes-file \"$notes_file\"${NC}"
     return
   fi
 
-  log_info "Creating GitHub release..."
+  release::log_info "Creating GitHub release..."
   gh release create "$version" \
     bin/bashunit \
     bin/checksum \
     --title "$version" \
     --notes-file "$notes_file"
 
-  log_success "GitHub release $version created with assets"
+  release::log_success "GitHub release $version created with assets"
 }
 
-function update_checksum() {
+function release::update_checksum() {
   local file="package.json"
   local checksum
-  checksum=$(get_checksum)
+  checksum=$(release::get_checksum)
 
   if [[ -z "$checksum" ]]; then
-    log_error "Could not read checksum from bin/checksum"
+    release::log_error "Could not read checksum from bin/checksum"
     exit 1
   fi
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update checksum in $file to $checksum"
+    release::log_dry_run "Would update checksum in $file to $checksum"
     return
   fi
 
   sed -i.bak "s/\"checksum\": \"[^\"]*\"/\"checksum\": \"$checksum\"/" "$file"
   rm -f "$file.bak"
-  log_success "Updated checksum in $file"
+  release::log_success "Updated checksum in $file"
 }
 
-function show_diff() {
+function release::show_diff() {
   echo ""
-  log_info "Changes to be committed:"
+  release::log_info "Changes to be committed:"
   echo "----------------------------------------"
   git diff --color=always
   echo "----------------------------------------"
   echo ""
 }
 
-function confirm_action() {
+function release::confirm_action() {
   local prompt=$1
   local response
 
@@ -287,68 +290,69 @@ function confirm_action() {
   fi
 }
 
-function git_commit_and_tag() {
+function release::git_commit_and_tag() {
   local new_version=$1
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would create commit: chore: release $new_version"
-    log_dry_run "Would create tag: $new_version"
-    log_dry_run "Would push commit and tag to origin"
+    release::log_dry_run "Would create commit: release: $new_version"
+    release::log_dry_run "Would create tag: $new_version"
+    release::log_dry_run "Would push commit and tag to origin"
     return
   fi
 
-  show_diff
+  release::show_diff
 
-  if ! confirm_action "Do you want to commit these changes?"; then
-    log_warning "Skipping git commit"
+  if ! release::confirm_action "Do you want to commit these changes?"; then
+    release::log_warning "Skipping git commit"
     return
   fi
 
   git add bashunit install.sh package.json CHANGELOG.md bin/bashunit bin/checksum
-  git commit -m "chore: release $new_version"
-  log_success "Created commit"
+  git commit -m "release: $new_version"
+  release::log_success "Created commit"
 
   git tag "$new_version"
-  log_success "Created tag $new_version"
+  release::log_success "Created tag $new_version"
 
-  if confirm_action "Do you want to push commit and tag to origin?"; then
+  if release::confirm_action "Do you want to push commit and tag to origin?"; then
     git push origin main
     git push origin "$new_version"
-    log_success "Pushed to origin"
+    release::log_success "Pushed to origin"
   else
-    log_warning "Skipping push (run manually: git push origin main && git push origin $new_version)"
+    release::log_warning "Skipping push (run manually: git push origin main && git push origin $new_version)"
   fi
 }
 
-function update_latest_branch() {
+function release::update_latest_branch() {
   local new_version=$1
 
   if [[ "$DRY_RUN" == true ]]; then
-    log_dry_run "Would update 'latest' branch:"
-    log_dry_run "  git checkout latest"
-    log_dry_run "  git rebase $new_version"
-    log_dry_run "  git push origin latest --force"
-    log_dry_run "  git checkout main"
+    release::log_dry_run "Would update 'latest' branch:"
+    release::log_dry_run "  git checkout latest"
+    release::log_dry_run "  git rebase $new_version"
+    release::log_dry_run "  git push origin latest --force"
+    release::log_dry_run "  git checkout main"
     return
   fi
 
-  if ! confirm_action "Do you want to update 'latest' branch to trigger docs deployment?"; then
-    log_warning "Skipping 'latest' branch update"
+  if ! release::confirm_action "Do you want to update 'latest' branch to trigger docs deployment?"; then
+    release::log_warning "Skipping 'latest' branch update"
     echo ""
     echo "To update manually, run:"
-    echo -e "  ${BLUE}git checkout latest && git rebase $new_version && git push origin latest --force && git checkout main${NC}"
+    echo -e "  ${BLUE}git checkout latest && git rebase $new_version \\"
+    echo -e "    && git push origin latest --force && git checkout main${NC}"
     return
   fi
 
-  log_info "Updating 'latest' branch..."
+  release::log_info "Updating 'latest' branch..."
   git checkout latest
   git rebase "$new_version"
   git push origin latest --force
   git checkout main
-  log_success "Updated 'latest' branch - docs deployment triggered"
+  release::log_success "Updated 'latest' branch - docs deployment triggered"
 }
 
-function print_release_complete() {
+function release::print_release_complete() {
   local new_version=$1
 
   echo ""
@@ -362,94 +366,101 @@ function print_release_complete() {
 ######### MAIN ##########
 #########################
 
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --dry-run)
-      DRY_RUN=true
-      shift
-      ;;
-    -h|--help)
-      show_usage
-      exit 0
-      ;;
-    *)
-      if [[ -z "$VERSION" ]]; then
-        VERSION=$1
-      else
-        log_error "Unknown argument: $1"
-        show_usage
-        exit 1
-      fi
-      shift
-      ;;
-  esac
-done
+function release::main() {
+  # Parse arguments
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --dry-run)
+        DRY_RUN=true
+        shift
+        ;;
+      -h|--help)
+        release::show_usage
+        exit 0
+        ;;
+      *)
+        if [[ -z "$VERSION" ]]; then
+          VERSION=$1
+        else
+          release::log_error "Unknown argument: $1"
+          release::show_usage
+          exit 1
+        fi
+        shift
+        ;;
+    esac
+  done
 
-# Validate version argument
-if [[ -z "$VERSION" ]]; then
-  log_error "Version argument is required"
-  show_usage
-  exit 1
-fi
+  # Validate version argument
+  if [[ -z "$VERSION" ]]; then
+    release::log_error "Version argument is required"
+    release::show_usage
+    exit 1
+  fi
 
-validate_semver "$VERSION"
+  release::validate_semver "$VERSION"
 
-# Get current version
-CURRENT_VERSION=$(get_current_version)
-log_info "Current version: $CURRENT_VERSION"
-log_info "New version: $VERSION"
+  # Get current version
+  CURRENT_VERSION=$(release::get_current_version)
+  release::log_info "Current version: $CURRENT_VERSION"
+  release::log_info "New version: $VERSION"
 
-# Validate new version is greater
-if ! version_gt "$VERSION" "$CURRENT_VERSION"; then
-  log_error "New version ($VERSION) must be greater than current version ($CURRENT_VERSION)"
-  exit 1
-fi
+  # Validate new version is greater
+  if ! release::version_gt "$VERSION" "$CURRENT_VERSION"; then
+    release::log_error "New version ($VERSION) must be greater than current version ($CURRENT_VERSION)"
+    exit 1
+  fi
 
-if [[ "$DRY_RUN" == true ]]; then
+  if [[ "$DRY_RUN" == true ]]; then
+    echo ""
+    release::log_warning "DRY-RUN MODE - No files will be modified"
+    echo ""
+  fi
+
+  # Execute release steps
+  release::log_info "Starting release process..."
   echo ""
-  log_warning "DRY-RUN MODE - No files will be modified"
+
+  release::update_bashunit_version "$VERSION"
+  release::update_install_version "$VERSION"
+  release::update_package_json_version "$VERSION"
+  release::update_changelog "$VERSION" "$CURRENT_VERSION"
+
   echo ""
+  release::build_project
+
+  echo ""
+  release::update_checksum
+
+  echo ""
+  release::git_commit_and_tag "$VERSION"
+
+  # Generate formatted release notes
+  RELEASE_NOTES_FILE="/tmp/bashunit-release-notes-${VERSION}.md"
+  CHECKSUM=$(release::get_checksum)
+
+  echo ""
+  if [[ "$DRY_RUN" == true ]]; then
+    release::log_dry_run "Would save release notes to $RELEASE_NOTES_FILE"
+    release::log_dry_run "Release notes content:"
+    echo "----------------------------------------"
+    release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM"
+    echo "----------------------------------------"
+  else
+    release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" > "$RELEASE_NOTES_FILE"
+    release::log_success "Saved release notes to $RELEASE_NOTES_FILE"
+  fi
+
+  echo ""
+  release::create_github_release "$VERSION" "$RELEASE_NOTES_FILE"
+
+  echo ""
+  release::update_latest_branch "$VERSION"
+
+  release::print_release_complete "$VERSION"
+}
+
+# Only run main when script is executed directly (not sourced)
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+  release::main "$@"
 fi
-
-# Execute release steps
-log_info "Starting release process..."
-echo ""
-
-update_bashunit_version "$VERSION"
-update_install_version "$VERSION"
-update_package_json_version "$VERSION"
-update_changelog "$VERSION" "$CURRENT_VERSION"
-
-echo ""
-build_project
-
-echo ""
-update_checksum
-
-echo ""
-git_commit_and_tag "$VERSION"
-
-# Generate formatted release notes
-RELEASE_NOTES_FILE="/tmp/bashunit-release-notes-${VERSION}.md"
-CHECKSUM=$(get_checksum)
-
-echo ""
-if [[ "$DRY_RUN" == true ]]; then
-  log_dry_run "Would save release notes to $RELEASE_NOTES_FILE"
-  log_dry_run "Release notes content:"
-  echo "----------------------------------------"
-  generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM"
-  echo "----------------------------------------"
-else
-  generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" > "$RELEASE_NOTES_FILE"
-  log_success "Saved release notes to $RELEASE_NOTES_FILE"
-fi
-
-echo ""
-create_github_release "$VERSION" "$RELEASE_NOTES_FILE"
-
-echo ""
-update_latest_branch "$VERSION"
-
-print_release_complete "$VERSION"
