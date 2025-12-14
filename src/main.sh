@@ -309,26 +309,57 @@ function bashunit::main::cmd_upgrade() {
 #############################
 # Subcommand: assert
 #############################
+
+# Check if a name corresponds to an assertion function (not a file or command)
+function bashunit::main::is_assertion_function() {
+  local name="$1"
+  declare -F "assert_$name" &>/dev/null || declare -F "$name" &>/dev/null
+}
+
+# Check if assertion operates on exit codes
+function bashunit::main::is_exit_code_assertion() {
+  local name="$1"
+  case "$name" in
+    exit_code|successful_code|unsuccessful_code|general_error|command_not_found)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 function bashunit::main::cmd_assert() {
   if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
     bashunit::console_header::print_assert_help
     exit 0
   fi
 
-  local assert_fn="${1:-}"
-  if [[ -z "$assert_fn" ]]; then
-    printf "%sError: Assert function name is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  local first_arg="${1:-}"
+  if [[ -z "$first_arg" ]]; then
+    printf "%sError: Assert function name or command is required.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_assert_help
     exit 1
   fi
 
-  shift
-  local args=("$@")
-
   # Disable strict mode for assert execution
   set +euo pipefail
 
-  bashunit::main::exec_assert "$assert_fn" "${args[@]}"
+  # Route to appropriate handler based on first argument
+  if bashunit::main::is_assertion_function "$first_arg"; then
+    # Old single-assertion syntax: bashunit assert <fn> <args...>
+    local assert_fn="$first_arg"
+    shift
+    bashunit::main::exec_assert "$assert_fn" "$@"
+  elif [[ $# -ge 2 ]] && bashunit::main::is_assertion_function "$2"; then
+    # New multi-assertion syntax: bashunit assert "<cmd>" <assertion1> <arg1> ...
+    # Detected by: first arg is not assertion, but second arg is an assertion name
+    bashunit::main::exec_multi_assert "$@"
+  else
+    # Fallback: try as single assertion (may fail with function not found)
+    bashunit::main::exec_assert "$@"
+  fi
   exit $?
 }
 
@@ -543,4 +574,82 @@ function bashunit::main::handle_assert_exit_code() {
     echo "Command not found: $cmd" 1>&2
     return 127
   fi
+}
+
+# Execute multiple assertions on a single command output
+# Usage: exec_multi_assert "command" assertion1 arg1 [assertion2 arg2 ...]
+function bashunit::main::exec_multi_assert() {
+  local cmd="$1"
+  shift
+
+  # Require at least one assertion
+  if [[ $# -lt 1 ]]; then
+    printf "%sError: Multi-assertion mode requires at least one assertion.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
+    printf "Usage: bashunit assert \"<command>\" <assertion1> <arg1> [<assertion2> <arg2>...]\n" 1>&2
+    return 1
+  fi
+
+  # Check that assertions come in pairs (assertion + arg)
+  if [[ $# -lt 2 ]] || [[ $(($# % 2)) -ne 0 ]]; then
+    local assertion_name="${1:-}"
+    printf "%sError: Missing argument for assertion '%s'.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "$assertion_name" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
+    return 1
+  fi
+
+  # Execute command and capture output + exit code
+  local stdout
+  local cmd_exit_code
+  stdout=$(eval "$cmd" 2>&1)
+  cmd_exit_code=$?
+
+  # Print stdout for user visibility
+  if [[ -n "$stdout" ]]; then
+    echo "$stdout" 1>&1
+  fi
+
+  # Parse and execute assertions in pairs
+  local overall_result=0
+  while [[ $# -gt 0 ]]; do
+    local assertion_name="$1"
+    local assertion_arg="${2:-}"
+
+    if [[ -z "$assertion_arg" ]]; then
+      printf "%sError: Missing argument for assertion '%s'.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$assertion_name" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
+      return 1
+    fi
+
+    shift 2
+
+    # Resolve assertion function name
+    local assert_fn="$assertion_name"
+    if ! type "$assert_fn" &>/dev/null; then
+      assert_fn="assert_$assertion_name"
+      if ! type "$assert_fn" &>/dev/null; then
+        printf "%sError: Unknown assertion '%s'.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED}" "$assertion_name" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
+        return 1
+      fi
+    fi
+
+    # Set test title for this assertion
+    bashunit::state::set_test_title "assert ${assertion_name#assert_}"
+
+    # Execute assertion with appropriate argument
+    if bashunit::main::is_exit_code_assertion "$assertion_name"; then
+      # Exit code assertion: pass expected value and captured exit code
+      "$assert_fn" "$assertion_arg" "" "$cmd_exit_code" 1>&2
+    else
+      # Output assertion: pass expected value and captured stdout
+      "$assert_fn" "$assertion_arg" "$stdout" 1>&2
+    fi
+
+    if [[ "$(bashunit::state::get_assertions_failed)" -gt 0 ]]; then
+      overall_result=1
+    fi
+  done
+
+  return $overall_result
 }

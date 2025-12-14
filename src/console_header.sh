@@ -228,22 +228,29 @@ EOF
 function bashunit::console_header::print_assert_help() {
     cat <<EOF
 Usage: bashunit assert <function> [args...]
+       bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
 
-Run a standalone assertion function without creating a test file.
+Run standalone assertion(s) without creating a test file.
+
+Single assertion:
+  bashunit assert equals "foo" "foo"
+  bashunit assert same "1" "1"
+  bashunit assert contains "world" "hello world"
+  bashunit assert exit_code 0 "echo 'success'"
+
+Multiple assertions on command output:
+  bashunit assert "echo 'error' && exit 1" exit_code "1" contains "error"
+  bashunit assert "./my_script.sh" exit_code "0" contains "success" not_contains "error"
 
 Arguments:
   function                    Assertion function name (with or without 'assert_' prefix)
-  args...                     Arguments to pass to the assertion function
-
-Examples:
-  bashunit assert equals "foo" "foo"
-  bashunit assert same "1" "1"
-  bashunit assert contains "hello world" "world"
-  bashunit assert exit_code 0 "echo 'success'"
+  command                     Command to execute (for multi-assertion mode)
+  assertion                   Assertion name (exit_code, contains, equals, etc.)
+  arg                         Expected value for the assertion
 
 Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
       The 'bashunit assert' subcommand is the recommended approach.
 
-More info: https://bashunit.typeddevs.com/command-line
+More info: https://bashunit.typeddevs.com/standalone
 EOF
 }
