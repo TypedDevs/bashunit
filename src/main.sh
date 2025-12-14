@@ -94,6 +94,7 @@ function bashunit::main::cmd_test() {
         export BASHUNIT_LOGIN_SHELL=true
         ;;
       --no-color)
+        # shellcheck disable=SC2034
         BASHUNIT_NO_COLOR=true
         ;;
       *)
@@ -221,6 +222,7 @@ function bashunit::main::cmd_bench() {
         export BASHUNIT_LOGIN_SHELL=true
         ;;
       --no-color)
+        # shellcheck disable=SC2034
         BASHUNIT_NO_COLOR=true
         ;;
       -h|--help)

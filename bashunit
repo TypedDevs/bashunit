@@ -48,6 +48,7 @@ for arg in "$@"; do
       export BASHUNIT_LOGIN_SHELL=true
       ;;
     --no-color)
+      # shellcheck disable=SC2034
       BASHUNIT_NO_COLOR=true
       ;;
   esac
