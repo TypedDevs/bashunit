@@ -279,7 +279,8 @@ function release::show_diff() {
   echo ""
   release::log_info "Changes to be committed:"
   echo "----------------------------------------"
-  git diff --color=always
+  git status --short
+  git diff HEAD --color=always
   echo "----------------------------------------"
   echo ""
 }
@@ -315,8 +316,8 @@ function release::git_commit_and_tag() {
     return
   fi
 
-  git add bashunit install.sh package.json CHANGELOG.md bin/bashunit bin/checksum
-  git commit -m "release: $new_version"
+  git add bashunit install.sh package.json CHANGELOG.md
+  git commit -m "release: $new_version" -n
   release::log_success "Created commit"
 
   git tag "$new_version"
