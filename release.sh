@@ -12,6 +12,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 DRY_RUN=false
+WITH_GH_RELEASE=false
 VERSION=""
 
 function release::show_usage() {
@@ -22,12 +23,14 @@ Arguments:
   version     The new version number (e.g., 0.30.0)
 
 Options:
-  --dry-run   Preview changes without modifying any files
-  -h, --help  Show this help message
+  --dry-run         Preview changes without modifying any files
+  --with-gh-release Create the GitHub release (default: print manual instructions)
+  -h, --help        Show this help message
 
 Example:
   ./release.sh 0.30.0
   ./release.sh 0.30.0 --dry-run
+  ./release.sh 0.30.0 --with-gh-release
 EOF
 }
 
@@ -151,7 +154,7 @@ function release::update_changelog() {
   local new_header="## [$new_version]($compare_url) - $today"
 
   # Replace "## Unreleased" with new Unreleased + version header
-  sed -i.bak "s/^## Unreleased$/## Unreleased\n\n$new_header/" "$file"
+  sed -i.bak "s|^## Unreleased$|## Unreleased\n\n$new_header|" "$file"
   rm -f "$file.bak"
   release::log_success "Updated $file with version $new_version"
 }
@@ -228,12 +231,17 @@ function release::create_github_release() {
     return
   fi
 
-  if ! release::confirm_action "Do you want to create the GitHub release now?"; then
-    release::log_warning "Skipping GitHub release creation"
-    echo ""
-    echo "To create the release manually, run:"
+  if [[ "$WITH_GH_RELEASE" != true ]]; then
+    release::log_info "To create the GitHub release, run:"
     echo -e "  ${BLUE}gh release create $version bin/bashunit bin/checksum \\"
     echo -e "    --title \"$version\" --notes-file \"$notes_file\"${NC}"
+    echo ""
+    release::log_info "Or re-run with --with-gh-release flag"
+    return
+  fi
+
+  if ! release::confirm_action "Do you want to create the GitHub release now?"; then
+    release::log_warning "Skipping GitHub release creation"
     return
   fi
 
@@ -372,6 +380,10 @@ function release::main() {
     case $1 in
       --dry-run)
         DRY_RUN=true
+        shift
+        ;;
+      --with-gh-release)
+        WITH_GH_RELEASE=true
         shift
         ;;
       -h|--help)
