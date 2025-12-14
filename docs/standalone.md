@@ -93,3 +93,43 @@ Testing.php:3:Method Testing::bar() has no return type specified.
     but got  '1'
 ```
 :::
+
+## Multiple assertions
+
+You can chain multiple assertions on a single command output using the `assert` subcommand:
+
+::: code-group
+```bash [Example]
+./bashunit assert "echo 'error message' && exit 1" exit_code "1" contains "error"
+```
+```[Output]
+error message
+# Exit code 0 (all assertions passed)
+```
+:::
+
+This is equivalent to running each assertion separately:
+
+```bash
+OUTPUT=$(./bashunit -a exit_code "1" "echo 'error message' && exit 1")
+./bashunit -a contains "error" "$OUTPUT"
+```
+
+You can chain as many assertions as needed:
+
+::: code-group
+```bash [Example]
+./bashunit assert "my_script.sh" \
+  exit_code "0" \
+  contains "success" \
+  not_contains "error"
+```
+```[Output]
+# Script output here
+# Exit code 0 (all assertions passed)
+```
+:::
+
+::: info
+Exit code assertions (`exit_code`, `successful_code`, `general_error`, etc.) receive the command's exit code. All other assertions (`contains`, `equals`, `matches`, etc.) receive the command's stdout output.
+:::
