@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fix `helper::get_latest_tag` returning version with `^{}` suffix from annotated git tags
+
 ## [0.30.0](https://github.com/TypedDevs/bashunit/compare/0.29.0...0.30.0) - 2025-12-14
 
 ### Added

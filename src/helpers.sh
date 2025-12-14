@@ -289,6 +289,7 @@ function bashunit::helper::get_latest_tag() {
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
     sed 's|^refs/tags/||' |
+    grep -v '\^{}' |
     sort -Vr |
     head -n 1
 }
