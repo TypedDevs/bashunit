@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.30.0](https://github.com/TypedDevs/bashunit/compare/0.29.0...0.30.0) - 2025-12-14
+
 ### Added
 - Display execution time in minutes format when tests run over 60 seconds (e.g., "2m 1s")
 - Display individual test duration in human-readable format (ms, s, or m s) instead of always milliseconds
