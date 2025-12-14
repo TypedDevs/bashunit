@@ -47,6 +47,9 @@ for arg in "$@"; do
     -l|--login)
       export BASHUNIT_LOGIN_SHELL=true
       ;;
+    --no-color)
+      BASHUNIT_NO_COLOR=true
+      ;;
   esac
 done
 

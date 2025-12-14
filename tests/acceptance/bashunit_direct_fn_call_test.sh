@@ -100,8 +100,10 @@ function test_bashunit_assert_exit_code_successful_with_inner_func() {
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_error_with_inner_func() {
   local temp=$(mktemp)
-  # shellcheck disable=SC2116
-  local output="$(./bashunit --no-parallel -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
+  local no_color_flag=""
+  bashunit::env::is_no_color_enabled && no_color_flag="--no-color"
+  # shellcheck disable=SC2116,SC2086
+  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
 
   assert_empty "$output"
 
@@ -122,7 +124,10 @@ function test_bashunit_assert_exit_code_str_general_error() {
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
   local temp=$(mktemp)
-  local output="$(./bashunit --no-parallel -a exit_code "1" "echo something to stdout" 2> "$temp")"
+  local no_color_flag=""
+  bashunit::env::is_no_color_enabled && no_color_flag="--no-color"
+  # shellcheck disable=SC2086
+  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "echo something to stdout" 2> "$temp")"
 
   assert_same "something to stdout" "$output"
 
