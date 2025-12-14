@@ -164,6 +164,8 @@ function test_server_returns_json() {
 
 ## Testing Exit Codes
 
+Use `assert_exec` to run a command and check its exit code, stdout, or stderr in one step. Alternatively, run the command first and then use `assert_successful_code` or `assert_exit_code` to check the result of the previous command.
+
 ### Testing Successful Execution
 
 ::: code-group
@@ -171,11 +173,23 @@ function test_server_returns_json() {
 #!/usr/bin/env bash
 
 function test_valid_email_returns_success() {
-  assert_successful_code "./src/validate_email.sh user@example.com"
+  assert_exec "./src/validate_email.sh user@example.com"
+}
+
+function test_valid_email_returns_success_alternative() {
+  ./src/validate_email.sh user@example.com
+
+  assert_successful_code
 }
 
 function test_backup_succeeds() {
-  assert_exit_code 0 "./src/backup.sh --dry-run"
+  assert_exec "./src/backup.sh --dry-run" --exit 0
+}
+
+function test_backup_succeeds_alternative() {
+  ./src/backup.sh --dry-run
+
+  assert_exit_code "0"
 }
 ```
 :::
@@ -187,11 +201,23 @@ function test_backup_succeeds() {
 #!/usr/bin/env bash
 
 function test_invalid_email_returns_error() {
-  assert_general_error "./src/validate_email.sh invalid-email"
+  assert_exec "./src/validate_email.sh invalid-email" --exit 1
+}
+
+function test_invalid_email_returns_error_alternative() {
+  ./src/validate_email.sh invalid-email
+
+  assert_general_error
 }
 
 function test_missing_file_returns_specific_code() {
-  assert_exit_code 127 "./src/process_file.sh /nonexistent/file.txt"
+  assert_exec "./src/process_file.sh /nonexistent/file.txt" --exit 127
+}
+
+function test_missing_file_returns_specific_code_alternative() {
+  ./src/process_file.sh /nonexistent/file.txt
+
+  assert_exit_code "127"
 }
 ```
 :::
