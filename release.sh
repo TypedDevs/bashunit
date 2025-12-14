@@ -192,9 +192,9 @@ function release::generate_release_notes() {
   local prev_version=$2
   local checksum=$3
 
-  # Extract content between "## Unreleased" and next version header
+  # Extract content from the latest version header (first ## [) until the next version header
   # Transform changelog sections to release format with emojis
-  awk '/^## Unreleased$/{found=1; next} /^## \[/{found=0} found' CHANGELOG.md | \
+  awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md | \
     sed 's/^### Added$/## ✨ Improvements/' | \
     sed 's/^### Changed$/## 🛠️ Changes/' | \
     sed 's/^### Fixed$/## 🐛 Bug Fixes/' | \

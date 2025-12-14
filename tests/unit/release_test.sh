@@ -255,3 +255,25 @@ function test_generate_release_notes_includes_contributors() {
   assert_contains "## 👥 Contributors" "$result"
   assert_contains "@Contributor1" "$result"
 }
+
+function test_generate_release_notes_extracts_from_first_version_header() {
+  bashunit::mock gh echo "TestUser"
+
+  local result
+  result=$(cd "$FIXTURES_DIR" && release::generate_release_notes "0.30.0" "0.29.0" "abc123")
+
+  # Should include content from first version header (0.30.0)
+  assert_contains "New feature one" "$result"
+  assert_contains "Changed behavior" "$result"
+  assert_contains "Bug fix one" "$result"
+}
+
+function test_generate_release_notes_excludes_older_version_content() {
+  bashunit::mock gh echo "TestUser"
+
+  local result
+  result=$(cd "$FIXTURES_DIR" && release::generate_release_notes "0.30.0" "0.29.0" "abc123")
+
+  # Should NOT include content from older versions (0.29.0)
+  assert_not_contains "Previous feature" "$result"
+}
