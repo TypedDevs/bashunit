@@ -240,7 +240,7 @@ Single assertion:
 
 Multiple assertions on command output:
   bashunit assert "echo 'error' && exit 1" exit_code "1" contains "error"
-  bashunit assert "my_script.sh" exit_code "0" contains "success" not_contains "error"
+  bashunit assert "./my_script.sh" exit_code "0" contains "success" not_contains "error"
 
 Arguments:
   function                    Assertion function name (with or without 'assert_' prefix)

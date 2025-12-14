@@ -119,7 +119,7 @@ You can chain as many assertions as needed:
 
 ::: code-group
 ```bash [Example]
-./bashunit assert "my_script.sh" \
+./bashunit assert "./my_script.sh" \
   exit_code "0" \
   contains "success" \
   not_contains "error"

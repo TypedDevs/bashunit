@@ -310,10 +310,10 @@ function bashunit::main::cmd_upgrade() {
 # Subcommand: assert
 #############################
 
-# Check if a name corresponds to an assertion function
+# Check if a name corresponds to an assertion function (not a file or command)
 function bashunit::main::is_assertion_function() {
   local name="$1"
-  type "assert_$name" &>/dev/null || type "$name" &>/dev/null
+  declare -F "assert_$name" &>/dev/null || declare -F "$name" &>/dev/null
 }
 
 # Check if assertion operates on exit codes
