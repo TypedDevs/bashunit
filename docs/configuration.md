@@ -427,6 +427,105 @@ BASHUNIT_LOGIN_SHELL=true
 ```
 :::
 
+## Coverage
+
+### Enable coverage
+
+> `BASHUNIT_COVERAGE=true|false`
+
+Enable code coverage tracking. `false` by default.
+
+When enabled, bashunit tracks which lines of your source code are executed during tests
+and generates a coverage report.
+
+Similar as using `--coverage` option on the [command line](/command-line#coverage).
+
+::: code-group
+```bash [.env]
+BASHUNIT_COVERAGE=true
+```
+:::
+
+### Coverage paths
+
+> `BASHUNIT_COVERAGE_PATHS=paths`
+
+Comma-separated list of paths to track for coverage. `src/` by default.
+
+::: code-group
+```bash [.env]
+# Single path
+BASHUNIT_COVERAGE_PATHS=src/
+
+# Multiple paths
+BASHUNIT_COVERAGE_PATHS=src/,lib/,bin/
+```
+:::
+
+### Coverage exclude
+
+> `BASHUNIT_COVERAGE_EXCLUDE=patterns`
+
+Comma-separated list of patterns to exclude from coverage tracking.
+Default: `tests/*,vendor/*,*_test.sh,*Test.sh`
+
+::: code-group
+```bash [.env]
+BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh,*_mock.sh
+```
+:::
+
+### Coverage report
+
+> `BASHUNIT_COVERAGE_REPORT=file`
+
+Path for the LCOV format coverage report. `coverage/lcov.info` by default.
+
+Set to empty string to disable file generation (console report only).
+
+::: code-group
+```bash [.env]
+# Custom path
+BASHUNIT_COVERAGE_REPORT=reports/coverage.lcov
+
+# Disable file output
+BASHUNIT_COVERAGE_REPORT=
+```
+:::
+
+### Coverage minimum
+
+> `BASHUNIT_COVERAGE_MIN=percent`
+
+Minimum coverage percentage required. Empty by default (no minimum).
+
+When set, bashunit will exit with a failure code if coverage falls below this threshold.
+
+::: code-group
+```bash [.env]
+BASHUNIT_COVERAGE_MIN=80
+```
+:::
+
+### Coverage thresholds
+
+> `BASHUNIT_COVERAGE_THRESHOLD_LOW=percent`
+>
+> `BASHUNIT_COVERAGE_THRESHOLD_HIGH=percent`
+
+Thresholds for color-coding the coverage output. Defaults: `50` and `80`.
+
+- Below `THRESHOLD_LOW`: Red
+- Between thresholds: Yellow
+- Above `THRESHOLD_HIGH`: Green
+
+::: code-group
+```bash [.env]
+BASHUNIT_COVERAGE_THRESHOLD_LOW=60
+BASHUNIT_COVERAGE_THRESHOLD_HIGH=90
+```
+:::
+
 <script setup>
 import pkg from '../package.json'
 </script>

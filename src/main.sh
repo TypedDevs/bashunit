@@ -98,26 +98,27 @@ function bashunit::main::cmd_test() {
         BASHUNIT_NO_COLOR=true
         ;;
       --coverage)
-        export BASHUNIT_COVERAGE=true
+        # Don't export - prevents nested bashunit runs from inheriting coverage
+        BASHUNIT_COVERAGE=true
         ;;
       --coverage-paths)
-        export BASHUNIT_COVERAGE_PATHS="$2"
+        BASHUNIT_COVERAGE_PATHS="$2"
         shift
         ;;
       --coverage-exclude)
-        export BASHUNIT_COVERAGE_EXCLUDE="$2"
+        BASHUNIT_COVERAGE_EXCLUDE="$2"
         shift
         ;;
       --coverage-report)
-        export BASHUNIT_COVERAGE_REPORT="$2"
+        BASHUNIT_COVERAGE_REPORT="$2"
         shift
         ;;
       --coverage-min)
-        export BASHUNIT_COVERAGE_MIN="$2"
+        BASHUNIT_COVERAGE_MIN="$2"
         shift
         ;;
       --no-coverage-report)
-        export BASHUNIT_COVERAGE_REPORT=""
+        BASHUNIT_COVERAGE_REPORT=""
         ;;
       *)
         raw_args+=("$1")
@@ -462,6 +463,11 @@ function bashunit::main::exec_tests() {
 
   # Generate coverage report if enabled
   if bashunit::env::is_coverage_enabled; then
+    # Aggregate per-process coverage data from parallel runs
+    if bashunit::parallel::is_enabled; then
+      bashunit::coverage::aggregate_parallel
+    fi
+
     bashunit::coverage::report_text
 
     if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then

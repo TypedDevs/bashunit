@@ -82,6 +82,9 @@ export default defineConfig({
         text: 'Benchmarks',
         link: '/benchmarks'
       }, {
+        text: 'Coverage',
+        link: '/coverage'
+      }, {
         text: 'Globals',
         link: '/globals'
       }, {

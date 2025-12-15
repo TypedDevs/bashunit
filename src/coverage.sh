@@ -34,8 +34,9 @@ function bashunit::coverage::enable_trap() {
   set -T
 
   # Set DEBUG trap to record line execution
+  # Use ${VAR:-} to handle unset variables when set -u is active (in subshells)
   # shellcheck disable=SC2154
-  trap 'bashunit::coverage::record_line "$BASH_SOURCE" "$LINENO"' DEBUG
+  trap 'bashunit::coverage::record_line "${BASH_SOURCE:-}" "${LINENO:-}"' DEBUG
 }
 
 function bashunit::coverage::disable_trap() {
@@ -50,11 +51,20 @@ function bashunit::coverage::record_line() {
   # Skip if no file or line
   [[ -z "$file" || -z "$lineno" ]] && return 0
 
+  # Skip if coverage data file doesn't exist (trap inherited by child process)
+  [[ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ]] && return 0
+
   # Skip if not tracking this file
   bashunit::coverage::should_track "$file" || return 0
 
-  # Record the hit
-  echo "${file}:${lineno}" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  # In parallel mode, use a per-process file to avoid race conditions
+  local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
+  if bashunit::parallel::is_enabled; then
+    data_file="${_BASHUNIT_COVERAGE_DATA_FILE}.$$"
+  fi
+
+  # Record the hit (only if parent directory exists)
+  [[ -d "$(dirname "$data_file")" ]] && echo "${file}:${lineno}" >> "$data_file"
 }
 
 function bashunit::coverage::should_track() {
@@ -62,6 +72,9 @@ function bashunit::coverage::should_track() {
 
   # Skip empty paths
   [[ -z "$file" ]] && return 1
+
+  # Skip if tracked files list doesn't exist (trap inherited by child process)
+  [[ -z "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]] && return 1
 
   # Normalize path
   local normalized_file
@@ -71,22 +84,32 @@ function bashunit::coverage::should_track() {
     normalized_file="$file"
   fi
 
-  # Skip bashunit's own source files
-  if [[ "$normalized_file" == *"/bashunit/src/"* ]]; then
-    return 1
+  # Skip bashunit's own source files (use actual path, not pattern)
+  # Normalize BASHUNIT_ROOT_DIR to absolute path for comparison
+  # Use ${VAR:-} to handle unset variable when set -u is active
+  if [[ -n "${BASHUNIT_ROOT_DIR:-}" ]]; then
+    local abs_root_dir
+    abs_root_dir=$(cd "$BASHUNIT_ROOT_DIR" 2>/dev/null && pwd) || abs_root_dir="$BASHUNIT_ROOT_DIR"
+    if [[ "$normalized_file" == "$abs_root_dir/src/"* ]]; then
+      return 1
+    fi
   fi
 
   # Check exclusion patterns
-  local IFS=','
+  # Save and restore IFS to avoid corrupting caller's environment
+  local old_ifs="$IFS"
+  IFS=','
+  local pattern
   for pattern in $BASHUNIT_COVERAGE_EXCLUDE; do
     # shellcheck disable=SC2254
     case "$normalized_file" in
-      *$pattern*) return 1 ;;
+      *$pattern*) IFS="$old_ifs"; return 1 ;;
     esac
   done
 
   # Check inclusion paths
   local matched=false
+  local path
   for path in $BASHUNIT_COVERAGE_PATHS; do
     # Resolve relative paths
     local resolved_path
@@ -101,26 +124,53 @@ function bashunit::coverage::should_track() {
       break
     fi
   done
+  IFS="$old_ifs"
 
   if [[ "$matched" == "false" ]]; then
     return 1
   fi
 
   # Track this file for later reporting
-  if ! grep -q "^${normalized_file}$" "$_BASHUNIT_COVERAGE_TRACKED_FILES" 2>/dev/null; then
-    echo "$normalized_file" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  # In parallel mode, use a per-process file to avoid race conditions
+  local tracked_file="$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  if bashunit::parallel::is_enabled; then
+    tracked_file="${_BASHUNIT_COVERAGE_TRACKED_FILES}.$$"
+  fi
+
+  # Only write if parent directory exists (avoid errors in inherited trap context)
+  if [[ -d "$(dirname "$tracked_file")" ]]; then
+    if ! grep -q "^${normalized_file}$" "$tracked_file" 2>/dev/null; then
+      echo "$normalized_file" >> "$tracked_file"
+    fi
   fi
 
   return 0
 }
 
-function bashunit::coverage::aggregate() {
-  local parallel_dir="${1:-}"
+function bashunit::coverage::aggregate_parallel() {
+  # Aggregate per-process coverage files created during parallel execution
+  local base_file="$_BASHUNIT_COVERAGE_DATA_FILE"
+  local tracked_base="$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
-  if [[ -n "$parallel_dir" && -d "$parallel_dir" ]]; then
-    # Merge all coverage data from parallel runs
-    find "$parallel_dir" -name "hits.dat" -exec cat {} \; >> "$_BASHUNIT_COVERAGE_DATA_FILE"
-    find "$parallel_dir" -name "files.dat" -exec cat {} \; | sort -u >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  # Find and merge all per-process coverage data files
+  for pid_file in "${base_file}."*; do
+    if [[ -f "$pid_file" ]]; then
+      cat "$pid_file" >> "$base_file"
+      rm -f "$pid_file"
+    fi
+  done
+
+  # Find and merge all per-process tracked files lists
+  for pid_file in "${tracked_base}."*; do
+    if [[ -f "$pid_file" ]]; then
+      cat "$pid_file" >> "$tracked_base"
+      rm -f "$pid_file"
+    fi
+  done
+
+  # Deduplicate tracked files
+  if [[ -f "$tracked_base" ]]; then
+    sort -u "$tracked_base" -o "$tracked_base"
   fi
 }
 
@@ -140,8 +190,9 @@ function bashunit::coverage::get_executable_lines() {
       continue
     fi
 
-    # Skip function declaration lines
-    [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\) ]] && continue
+    # Skip function declaration lines (but not single-line functions with body)
+    # Only skip if line ends with () or () { (multi-line function start)
+    [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$ ]] && continue
 
     # Skip lines with only braces
     [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && continue
@@ -183,6 +234,12 @@ function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
 
+  # Check if tracked files exist
+  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+    echo "0"
+    return
+  fi
+
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
 
@@ -215,6 +272,13 @@ function bashunit::coverage::report_text() {
   echo ""
   echo "Coverage Report"
   echo "---------------"
+
+  # Check if tracked files exist
+  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+    echo "---------------"
+    echo "Total: 0/0 (0%)"
+    return 0
+  fi
 
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
@@ -298,6 +362,12 @@ function bashunit::coverage::report_lcov() {
   output_dir=$(dirname "$output_file")
   mkdir -p "$output_dir"
 
+  # Check if tracked files exist - if not, write empty LCOV file
+  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+    echo "TN:" > "$output_file"
+    return 0
+  fi
+
   # Generate LCOV format
   {
     echo "TN:"
@@ -314,7 +384,8 @@ function bashunit::coverage::report_lcov() {
         # Skip non-executable lines
         [[ -z "${line// }" ]] && continue
         [[ "$line" =~ ^[[:space:]]*# ]] && [[ $lineno -ne 1 ]] && continue
-        [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\) ]] && continue
+        # Skip function declaration lines (but not single-line functions with body)
+        [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$ ]] && continue
         [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && continue
 
         # Get hit count for this line
