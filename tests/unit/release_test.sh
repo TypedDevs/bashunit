@@ -327,7 +327,7 @@ function test_backup_init_creates_directory() {
   temp_dir=$(mktemp -d)
 
   (
-    cd "$temp_dir"
+    cd "$temp_dir" || return
     release::backup::init
     [[ -d "$BACKUP_DIR" ]] && echo "exists"
   ) > /tmp/backup_test_result 2>&1
@@ -343,7 +343,7 @@ function test_backup_save_file_copies_file() {
 
   local result
   result=$(
-    cd "$temp_dir"
+    cd "$temp_dir" || return
     echo "test content" > testfile.txt
     release::backup::init
     release::backup::save_file "testfile.txt"
@@ -360,7 +360,7 @@ function test_rollback_restore_files_restores_backup() {
 
   local result
   result=$(
-    cd "$temp_dir"
+    cd "$temp_dir" || return
     echo "original content" > testfile.txt
     release::backup::init
     release::backup::save_file "testfile.txt"
@@ -408,10 +408,15 @@ function test_json_summary_generates_valid_json() {
 }
 
 function test_json_summary_handles_empty_steps() {
+  # shellcheck disable=SC2034 # Variables used by release::json::summary
   VERSION="0.31.0"
+  # shellcheck disable=SC2034
   CURRENT_VERSION="0.30.0"
+  # shellcheck disable=SC2034
   SANDBOX_MODE=false
+  # shellcheck disable=SC2034
   DRY_RUN=false
+  # shellcheck disable=SC2034
   FORCE_MODE=false
   COMPLETED_STEPS=()
 
@@ -427,6 +432,7 @@ function test_json_summary_handles_empty_steps() {
 
 function test_state_record_step_adds_to_completed_steps() {
   COMPLETED_STEPS=()
+  # shellcheck disable=SC2034 # Used by release::state::record_step
   VERBOSE_MODE=false
 
   release::state::record_step "test_step"

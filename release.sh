@@ -7,6 +7,7 @@ cd "$SCRIPT_DIR"
 # Exit codes
 declare -r EXIT_SUCCESS=0
 declare -r EXIT_VALIDATION_ERROR=1
+# shellcheck disable=SC2034 # Reserved for future use
 declare -r EXIT_EXECUTION_ERROR=2
 
 # Colors
@@ -320,7 +321,7 @@ function release::rollback::manual() {
   fi
 
   local latest_backup
-  latest_backup=$(ls -td .release-state/backup-* 2>/dev/null | head -1)
+  latest_backup=$(find .release-state -maxdepth 1 -type d -name 'backup-*' 2>/dev/null | sort -r | head -1)
 
   if [[ -z "$latest_backup" ]]; then
     release::log_error "No backup found in .release-state"
