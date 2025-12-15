@@ -32,12 +32,17 @@ function test_coverage_disabled_by_default() {
 
 function test_is_coverage_enabled_returns_false_when_disabled() {
   BASHUNIT_COVERAGE="false"
-  assert_false "bashunit::env::is_coverage_enabled"
+  # Use subshell to capture exit code without triggering errexit
+  local result
+  result=$(bashunit::env::is_coverage_enabled && echo "true" || echo "false")
+  assert_equals "false" "$result"
 }
 
 function test_is_coverage_enabled_returns_true_when_enabled() {
   BASHUNIT_COVERAGE="true"
-  assert_true "bashunit::env::is_coverage_enabled"
+  local result
+  result=$(bashunit::env::is_coverage_enabled && echo "true" || echo "false")
+  assert_equals "true" "$result"
 }
 
 function test_coverage_init_creates_temp_files() {
@@ -63,7 +68,10 @@ function test_coverage_should_track_excludes_test_files() {
   BASHUNIT_COVERAGE_EXCLUDE="*_test.sh"
   bashunit::coverage::init
 
-  assert_false "bashunit::coverage::should_track '/path/to/my_test.sh'"
+  # Use subshell to capture exit code without triggering errexit
+  local result
+  result=$(bashunit::coverage::should_track '/path/to/my_test.sh' && echo "tracked" || echo "excluded")
+  assert_equals "excluded" "$result"
 }
 
 function test_coverage_should_track_excludes_vendor() {
@@ -72,14 +80,18 @@ function test_coverage_should_track_excludes_vendor() {
   BASHUNIT_COVERAGE_EXCLUDE="vendor/*"
   bashunit::coverage::init
 
-  assert_false "bashunit::coverage::should_track '/project/vendor/lib.sh'"
+  local result
+  result=$(bashunit::coverage::should_track '/project/vendor/lib.sh' && echo "tracked" || echo "excluded")
+  assert_equals "excluded" "$result"
 }
 
 function test_coverage_should_track_excludes_bashunit_src() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init
 
-  assert_false "bashunit::coverage::should_track '/path/to/bashunit/src/runner.sh'"
+  local result
+  result=$(bashunit::coverage::should_track '/path/to/bashunit/src/runner.sh' && echo "tracked" || echo "excluded")
+  assert_equals "excluded" "$result"
 }
 
 function test_coverage_get_executable_lines_counts_correctly() {
@@ -127,8 +139,14 @@ function test_coverage_record_line_writes_to_file() {
   bashunit::coverage::record_line "$test_file" "20"
   bashunit::coverage::record_line "$test_file" "10"
 
+  # In parallel mode, data is written to a per-process file
+  local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
+  if bashunit::parallel::is_enabled; then
+    data_file="${_BASHUNIT_COVERAGE_DATA_FILE}.$$"
+  fi
+
   local content
-  content=$(cat "$_BASHUNIT_COVERAGE_DATA_FILE")
+  content=$(cat "$data_file")
 
   assert_contains "$test_file:10" "$content"
   assert_contains "$test_file:20" "$content"
