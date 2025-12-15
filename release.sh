@@ -10,6 +10,11 @@ declare -r EXIT_VALIDATION_ERROR=1
 # shellcheck disable=SC2034 # Reserved for future use
 declare -r EXIT_EXECUTION_ERROR=2
 
+# Constants
+GITHUB_REPO_PATH="TypedDevs/bashunit"
+GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
+RELEASE_FILES=("bashunit" "install.sh" "package.json" "CHANGELOG.md")
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -103,6 +108,26 @@ function release::error_with_suggestion() {
   echo -e "  ${YELLOW}Suggestion:${NC} $suggestion" >&2
 }
 
+function release::blank_line() {
+  echo "" >&2
+}
+
+function release::update_file_pattern() {
+  local file=$1
+  local pattern=$2
+  local replacement=$3
+  local description=$4
+
+  if [[ "$DRY_RUN" == true ]]; then
+    release::log_dry_run "Would update $description in $file"
+    return
+  fi
+
+  sed -i.bak "s|$pattern|$replacement|" "$file"
+  rm -f "$file.bak"
+  release::log_success "Updated $description in $file"
+}
+
 #########################
 ### PRE-FLIGHT CHECKS ###
 #########################
@@ -171,7 +196,7 @@ function release::preflight::check_network() {
 
 function release::preflight::check_required_files() {
   release::log_verbose "Checking required files..."
-  local required_files=("bashunit" "install.sh" "package.json" "CHANGELOG.md" "build.sh")
+  local required_files=("${RELEASE_FILES[@]}" "build.sh")
   local missing=()
 
   for file in "${required_files[@]}"; do
@@ -214,36 +239,23 @@ function release::preflight::check_changelog_unreleased() {
 
 function release::preflight::check_all() {
   local checks_passed=true
+  local preflight_checks=(
+    "release::preflight::check_gh_installed"
+    "release::preflight::check_gh_auth"
+    "release::preflight::check_git_clean"
+    "release::preflight::check_branch_main"
+    "release::preflight::check_network"
+    "release::preflight::check_required_files"
+    "release::preflight::check_changelog_unreleased"
+  )
 
   release::log_info "Running pre-flight checks..."
 
-  if ! release::preflight::check_gh_installed; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_gh_auth; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_git_clean; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_branch_main; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_network; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_required_files; then
-    checks_passed=false
-  fi
-
-  if ! release::preflight::check_changelog_unreleased; then
-    checks_passed=false
-  fi
+  for check in "${preflight_checks[@]}"; do
+    if ! "$check"; then
+      checks_passed=false
+    fi
+  done
 
   if [[ "$checks_passed" == true ]]; then
     release::log_success "All pre-flight checks passed"
@@ -275,10 +287,9 @@ function release::backup::save_file() {
 
 function release::backup::save_all() {
   release::log_verbose "Backing up files before modification..."
-  release::backup::save_file "bashunit"
-  release::backup::save_file "install.sh"
-  release::backup::save_file "package.json"
-  release::backup::save_file "CHANGELOG.md"
+  for file in "${RELEASE_FILES[@]}"; do
+    release::backup::save_file "$file"
+  done
   release::log_verbose "All files backed up to $BACKUP_DIR"
 }
 
@@ -399,7 +410,7 @@ function release::sandbox::mock_gh() {
 function release::sandbox::mock_git_push() {
   # Override git push to prevent actual pushes
   local original_git
-  original_git=$(which git)
+  original_git=$(command -v git)
 
   git() {
     if [[ "$1" == "push" ]]; then
@@ -412,17 +423,17 @@ function release::sandbox::mock_git_push() {
 }
 
 function release::sandbox::show_results() {
-  echo "" >&2
+  release::blank_line
   release::log_info "=== SANDBOX RESULTS ==="
-  echo "" >&2
+  release::blank_line
 
   release::log_info "Files changed:"
   git diff HEAD~1 --stat 2>/dev/null || true
-  echo "" >&2
+  release::blank_line
 
   release::log_info "Commits made:"
   git log --oneline HEAD~1..HEAD 2>/dev/null || git log --oneline -1 2>/dev/null
-  echo "" >&2
+  release::blank_line
 
   if [[ -f "/tmp/bashunit-release-notes-${VERSION}.md" ]]; then
     release::log_info "Release notes preview:"
@@ -434,7 +445,7 @@ function release::sandbox::show_results() {
 
 function release::sandbox::cleanup() {
   local response
-  echo "" >&2
+  release::blank_line
   echo -en "${YELLOW}Keep sandbox for inspection? [y/N]: ${NC}" >&2
   read -r response
 
@@ -449,7 +460,7 @@ function release::sandbox::cleanup() {
 
 function release::sandbox::run() {
   release::log_warning "SANDBOX MODE - Running in isolated environment"
-  echo "" >&2
+  release::blank_line
 
   # Limited pre-flight checks for sandbox (only file checks, not git/gh)
   if ! release::preflight::check_required_files; then
@@ -463,7 +474,7 @@ function release::sandbox::run() {
   release::sandbox::mock_git_push
 
   release::log_info "Starting sandbox release simulation..."
-  echo "" >&2
+  release::blank_line
 
   # Run release steps in sandbox (cd already done in setup_git)
   release::update_bashunit_version "$VERSION"
@@ -471,16 +482,16 @@ function release::sandbox::run() {
   release::update_package_json_version "$VERSION"
   release::update_changelog "$VERSION" "$CURRENT_VERSION"
 
-  echo "" >&2
+  release::blank_line
   release::build_project
 
-  echo "" >&2
+  release::blank_line
   release::update_checksum
 
-  echo "" >&2
+  release::blank_line
   # Commit changes (confirmations skipped in sandbox)
   release::log_info "Creating release commit..."
-  git add bashunit install.sh package.json CHANGELOG.md
+  git add "${RELEASE_FILES[@]}"
   git commit -m "release: $VERSION" -n
   release::log_success "Created commit"
   git tag "$VERSION"
@@ -501,11 +512,11 @@ function release::sandbox::run() {
   # Show results
   release::sandbox::show_results
 
-  echo "" >&2
+  release::blank_line
   echo "========================================" >&2
   echo -e "${GREEN}Sandbox release simulation complete!${NC}" >&2
   echo "========================================" >&2
-  echo "" >&2
+  release::blank_line
 
   # Go back to original directory before cleanup prompt
   cd "$SCRIPT_DIR"
@@ -517,7 +528,7 @@ function release::validate_semver() {
   if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     release::log_error "Invalid version format: $version"
     release::log_error "Version must be in semver format (e.g., 0.30.0)"
-    exit 1
+    exit $EXIT_VALIDATION_ERROR
   fi
 }
 
@@ -553,44 +564,29 @@ function release::version_gt() {
 
 function release::update_bashunit_version() {
   local new_version=$1
-  local file="bashunit"
-
-  if [[ "$DRY_RUN" == true ]]; then
-    release::log_dry_run "Would update BASHUNIT_VERSION in $file to $new_version"
-    return
-  fi
-
-  sed -i.bak "s/BASHUNIT_VERSION=\"[^\"]*\"/BASHUNIT_VERSION=\"$new_version\"/" "$file"
-  rm -f "$file.bak"
-  release::log_success "Updated BASHUNIT_VERSION in $file"
+  release::update_file_pattern \
+    "bashunit" \
+    "BASHUNIT_VERSION=\"[^\"]*\"" \
+    "BASHUNIT_VERSION=\"$new_version\"" \
+    "BASHUNIT_VERSION"
 }
 
 function release::update_install_version() {
   local new_version=$1
-  local file="install.sh"
-
-  if [[ "$DRY_RUN" == true ]]; then
-    release::log_dry_run "Would update LATEST_BASHUNIT_VERSION in $file to $new_version"
-    return
-  fi
-
-  sed -i.bak "s/LATEST_BASHUNIT_VERSION=\"[^\"]*\"/LATEST_BASHUNIT_VERSION=\"$new_version\"/" "$file"
-  rm -f "$file.bak"
-  release::log_success "Updated LATEST_BASHUNIT_VERSION in $file"
+  release::update_file_pattern \
+    "install.sh" \
+    "LATEST_BASHUNIT_VERSION=\"[^\"]*\"" \
+    "LATEST_BASHUNIT_VERSION=\"$new_version\"" \
+    "LATEST_BASHUNIT_VERSION"
 }
 
 function release::update_package_json_version() {
   local new_version=$1
-  local file="package.json"
-
-  if [[ "$DRY_RUN" == true ]]; then
-    release::log_dry_run "Would update version in $file to $new_version"
-    return
-  fi
-
-  sed -i.bak "s/\"version\": \"[^\"]*\"/\"version\": \"$new_version\"/" "$file"
-  rm -f "$file.bak"
-  release::log_success "Updated version in $file"
+  release::update_file_pattern \
+    "package.json" \
+    "\"version\": \"[^\"]*\"" \
+    "\"version\": \"$new_version\"" \
+    "version"
 }
 
 function release::update_changelog() {
@@ -599,7 +595,7 @@ function release::update_changelog() {
   local file="CHANGELOG.md"
   local today
   today=$(date +%Y-%m-%d)
-  local compare_url="https://github.com/TypedDevs/bashunit/compare/${current_version}...${new_version}"
+  local compare_url="${GITHUB_REPO_URL}/compare/${current_version}...${new_version}"
 
   if [[ "$DRY_RUN" == true ]]; then
     release::log_dry_run "Would update $file:"
@@ -641,7 +637,7 @@ function release::get_contributors() {
 
   # Get GitHub handles of commit authors since previous version
   # Uses HEAD since the new version tag doesn't exist yet
-  gh api "/repos/TypedDevs/bashunit/compare/${prev_version}...HEAD" \
+  gh api "/repos/${GITHUB_REPO_PATH}/compare/${prev_version}...HEAD" \
     --jq '.commits[].author.login' 2>/dev/null | sort -u | grep -v '^$' || true
 }
 
@@ -674,7 +670,7 @@ function release::generate_release_notes() {
   echo "## Checksum"
   echo "SHA256: \`$checksum\`"
   echo ""
-  local compare_url="https://github.com/TypedDevs/bashunit/compare/$prev_version...$new_version"
+  local compare_url="${GITHUB_REPO_URL}/compare/$prev_version...$new_version"
   echo "**Full Changelog:** [$prev_version...$new_version]($compare_url)"
 }
 
@@ -720,7 +716,7 @@ function release::update_checksum() {
 
   if [[ -z "$checksum" ]]; then
     release::log_error "Could not read checksum from bin/checksum"
-    exit 1
+    exit $EXIT_VALIDATION_ERROR
   fi
 
   if [[ "$DRY_RUN" == true ]]; then
@@ -807,7 +803,7 @@ function release::git_commit_and_tag() {
     return
   fi
 
-  git add bashunit install.sh package.json CHANGELOG.md
+  git add "${RELEASE_FILES[@]}"
   git commit -m "release: $new_version" -n
   release::log_success "Created commit"
 
@@ -855,11 +851,11 @@ function release::update_latest_branch() {
 function release::print_release_complete() {
   local new_version=$1
 
-  echo "" >&2
+  release::blank_line
   echo "========================================" >&2
   echo -e "${GREEN}Release $new_version complete!${NC}" >&2
   echo "========================================" >&2
-  echo "" >&2
+  release::blank_line
 }
 
 #########################
@@ -947,9 +943,9 @@ function release::main() {
   fi
 
   if [[ "$DRY_RUN" == true ]]; then
-    echo "" >&2
+    release::blank_line
     release::log_warning "DRY-RUN MODE - No files will be modified"
-    echo "" >&2
+    release::blank_line
   else
     # Run pre-flight checks for real releases
     if ! release::preflight::check_all; then
@@ -967,7 +963,7 @@ function release::main() {
 
   # Execute release steps
   release::log_info "Starting release process..."
-  echo "" >&2
+  release::blank_line
 
   release::update_bashunit_version "$VERSION"
   release::state::record_step "update_bashunit_version"
@@ -981,15 +977,15 @@ function release::main() {
   release::update_changelog "$VERSION" "$CURRENT_VERSION"
   release::state::record_step "update_changelog"
 
-  echo "" >&2
+  release::blank_line
   release::build_project
   release::state::record_step "build_project"
 
-  echo "" >&2
+  release::blank_line
   release::update_checksum
   release::state::record_step "update_checksum"
 
-  echo "" >&2
+  release::blank_line
   release::git_commit_and_tag "$VERSION"
   release::state::record_step "git_commit_and_tag"
 
@@ -997,7 +993,7 @@ function release::main() {
   RELEASE_NOTES_FILE="/tmp/bashunit-release-notes-${VERSION}.md"
   CHECKSUM=$(release::get_checksum)
 
-  echo "" >&2
+  release::blank_line
   if [[ "$DRY_RUN" == true ]]; then
     release::log_dry_run "Would save release notes to $RELEASE_NOTES_FILE"
     release::log_dry_run "Release notes content:"
@@ -1010,11 +1006,11 @@ function release::main() {
   fi
   release::state::record_step "generate_release_notes"
 
-  echo "" >&2
+  release::blank_line
   release::create_github_release "$VERSION" "$RELEASE_NOTES_FILE"
   release::state::record_step "create_github_release"
 
-  echo "" >&2
+  release::blank_line
   release::update_latest_branch "$VERSION"
   release::state::record_step "update_latest_branch"
 
