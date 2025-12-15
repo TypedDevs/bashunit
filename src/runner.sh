@@ -18,6 +18,11 @@ function bashunit::runner::load_test_files() {
   local files=("${@}")
   local scripts_ids=()
 
+  # Initialize coverage tracking if enabled
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::init
+  fi
+
   for test_file in "${files[@]}"; do
     if [[ ! -f $test_file ]]; then
       continue
@@ -427,6 +432,11 @@ function bashunit::runner::run_test() {
       set -euo pipefail
     else
       set +euo pipefail
+    fi
+
+    # Enable coverage tracking if enabled
+    if bashunit::env::is_coverage_enabled; then
+      bashunit::coverage::enable_trap
     fi
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).

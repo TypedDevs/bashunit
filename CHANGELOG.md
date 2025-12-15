@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Added
+- Add code coverage tracking with `--coverage` flag (Issue #190)
+  - Tracks line coverage using Bash DEBUG trap
+  - Configurable source paths via `--coverage-paths` (default: `src/`)
+  - Configurable exclusions via `--coverage-exclude` (default: `tests/*,vendor/*,*_test.sh,*Test.sh`)
+  - LCOV format output via `--coverage-report` (default: `coverage/lcov.info`)
+  - Minimum coverage threshold via `--coverage-min` (fails if below)
+  - Color-coded output with configurable thresholds (50%/80%)
+  - Console-only mode with `--no-coverage-report`
+
 ### Fixed
 - Fix `helper::get_latest_tag` returning version with `^{}` suffix from annotated git tags
 
