@@ -277,3 +277,178 @@ function test_generate_release_notes_excludes_older_version_content() {
   # Should NOT include content from older versions (0.29.0)
   assert_not_contains "Previous feature" "$result"
 }
+
+##########################
+# Pre-flight check tests
+##########################
+
+function test_preflight_check_required_files_passes_when_all_exist() {
+  # Run in the project root where all files exist
+  local result
+  result=$(cd "$RELEASE_SCRIPT_DIR" && release::preflight::check_required_files 2>&1)
+  assert_successful_code
+}
+
+function test_preflight_check_required_files_fails_when_file_missing() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local result
+  result=$(cd "$temp_dir" && release::preflight::check_required_files 2>&1) || true
+
+  assert_contains "Required files missing" "$result"
+  rm -rf "$temp_dir"
+}
+
+function test_preflight_check_changelog_unreleased_passes_with_content() {
+  local result
+  result=$(cd "$FIXTURES_DIR" && release::preflight::check_changelog_unreleased 2>&1)
+  assert_successful_code
+}
+
+function test_preflight_check_changelog_unreleased_fails_when_missing() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  echo "# Changelog" > "$temp_dir/CHANGELOG.md"
+
+  local result
+  result=$(cd "$temp_dir" && release::preflight::check_changelog_unreleased 2>&1) || true
+
+  assert_contains "missing '## Unreleased' section" "$result"
+  rm -rf "$temp_dir"
+}
+
+##########################
+# Backup and rollback tests
+##########################
+
+function test_backup_init_creates_directory() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  (
+    cd "$temp_dir" || return
+    release::backup::init
+    [[ -d "$BACKUP_DIR" ]] && echo "exists"
+  ) > /tmp/backup_test_result 2>&1
+
+  assert_contains "exists" "$(cat /tmp/backup_test_result)" || true
+  rm -rf "$temp_dir" /tmp/backup_test_result
+  assert_successful_code
+}
+
+function test_backup_save_file_copies_file() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local result
+  result=$(
+    cd "$temp_dir" || return
+    echo "test content" > testfile.txt
+    release::backup::init
+    release::backup::save_file "testfile.txt"
+    cat "$BACKUP_DIR/testfile.txt"
+  )
+
+  assert_same "test content" "$result"
+  rm -rf "$temp_dir"
+}
+
+function test_rollback_restore_files_restores_backup() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local result
+  result=$(
+    cd "$temp_dir" || return
+    echo "original content" > testfile.txt
+    release::backup::init
+    release::backup::save_file "testfile.txt"
+    echo "modified content" > testfile.txt
+    release::rollback::restore_files 2>/dev/null
+    cat testfile.txt
+  )
+
+  assert_same "original content" "$result"
+  rm -rf "$temp_dir"
+}
+
+##########################
+# Force mode tests
+##########################
+
+function test_confirm_action_auto_confirms_in_force_mode() {
+  FORCE_MODE=true
+  local result
+  result=$(release::confirm_action "Test prompt" 2>&1)
+  local exit_code=$?
+  FORCE_MODE=false
+  assert_same 0 "$exit_code"
+}
+
+##########################
+# JSON output tests
+##########################
+
+function test_json_summary_generates_valid_json() {
+  VERSION="0.31.0"
+  CURRENT_VERSION="0.30.0"
+  SANDBOX_MODE=false
+  DRY_RUN=false
+  FORCE_MODE=false
+  COMPLETED_STEPS=("step1" "step2")
+
+  local result
+  result=$(release::json::summary "success")
+
+  assert_contains '"status": "success"' "$result"
+  assert_contains '"version": "0.31.0"' "$result"
+  assert_contains '"current_version": "0.30.0"' "$result"
+  assert_contains '"completed_steps": ["step1","step2"]' "$result"
+}
+
+function test_json_summary_handles_empty_steps() {
+  # shellcheck disable=SC2034 # Variables used by release::json::summary
+  VERSION="0.31.0"
+  # shellcheck disable=SC2034
+  CURRENT_VERSION="0.30.0"
+  # shellcheck disable=SC2034
+  SANDBOX_MODE=false
+  # shellcheck disable=SC2034
+  DRY_RUN=false
+  # shellcheck disable=SC2034
+  FORCE_MODE=false
+  COMPLETED_STEPS=()
+
+  local result
+  result=$(release::json::summary "success")
+
+  assert_contains '"completed_steps": []' "$result"
+}
+
+##########################
+# State tracking tests
+##########################
+
+function test_state_record_step_adds_to_completed_steps() {
+  COMPLETED_STEPS=()
+  # shellcheck disable=SC2034 # Used by release::state::record_step
+  VERBOSE_MODE=false
+
+  release::state::record_step "test_step"
+
+  assert_same "test_step" "${COMPLETED_STEPS[0]}"
+}
+
+##########################
+# Error with suggestion tests
+##########################
+
+function test_error_with_suggestion_shows_both_messages() {
+  local result
+  result=$(release::error_with_suggestion "Test error" "Test suggestion" 2>&1)
+
+  assert_contains "Test error" "$result"
+  assert_contains "Suggestion:" "$result"
+  assert_contains "Test suggestion" "$result"
+}

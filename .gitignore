@@ -20,6 +20,7 @@ report.html
 local/
 tmp/
 dev.log
+.release-state/
 
 # ai
 .tasks/
