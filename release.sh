@@ -409,15 +409,15 @@ function release::sandbox::mock_gh() {
 
 function release::sandbox::mock_git_push() {
   # Override git push to prevent actual pushes
-  local original_git
-  original_git=$(command -v git)
+  ORIGINAL_GIT=$(command -v git)
+  export ORIGINAL_GIT
 
   git() {
     if [[ "$1" == "push" ]]; then
       release::log_sandbox "Would execute: git $*"
       return 0
     fi
-    "$original_git" "$@"
+    "$ORIGINAL_GIT" "$@"
   }
   export -f git
 }
@@ -446,6 +446,7 @@ function release::sandbox::show_results() {
 function release::sandbox::cleanup() {
   local response
   release::blank_line
+  release::log_info "Sandbox location: $SANDBOX_DIR"
   echo -en "${YELLOW}Keep sandbox for inspection? [y/N]: ${NC}" >&2
   read -r response
 
