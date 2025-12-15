@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Upcoming feature
+
 ## [0.30.0](https://github.com/TypedDevs/bashunit/compare/0.29.0...0.30.0) - 2025-12-14
 
 ### Added
