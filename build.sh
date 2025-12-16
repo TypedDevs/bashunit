@@ -109,6 +109,7 @@ function build::dependencies() {
     "src/assertions.sh"
     "src/reports.sh"
     "src/runner.sh"
+    "src/benchmark.sh"
     "src/init.sh"
     "src/learn.sh"
     "src/doc.sh"

@@ -215,7 +215,6 @@ function bashunit::main::cmd_bench() {
   local args=()
 
   export BASHUNIT_BENCH_MODE=true
-  source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
 
   # Parse bench-specific options
   while [[ $# -gt 0 ]]; do
