@@ -99,25 +99,31 @@ function bashunit::main::cmd_test() {
         ;;
       --coverage)
         # Don't export - prevents nested bashunit runs from inheriting coverage
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE=true
         ;;
       --coverage-paths)
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_PATHS="$2"
         shift
         ;;
       --coverage-exclude)
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_EXCLUDE="$2"
         shift
         ;;
       --coverage-report)
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_REPORT="$2"
         shift
         ;;
       --coverage-min)
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_MIN="$2"
         shift
         ;;
       --no-coverage-report)
+        # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_REPORT=""
         ;;
       *)

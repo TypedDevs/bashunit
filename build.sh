@@ -97,6 +97,7 @@ function build::dependencies() {
     "src/math.sh"
     "src/parallel.sh"
     "src/env.sh"
+    "src/coverage.sh"
     "src/clock.sh"
     "src/state.sh"
     "src/colors.sh"

@@ -20,7 +20,7 @@ bashunit - 0.30.0 | Tests: 5
 Tests:      5 passed, 5 total
 Assertions: 12 passed, 12 total
 
- All tests passed
+All tests passed
 Time taken: 1 s
 
 Coverage Report
@@ -303,14 +303,6 @@ These lines are not counted toward coverage:
 - Lines with only braces (`{` or `}`)
 
 ## Limitations
-
-### bashunit's Own Code
-
-bashunit automatically excludes its own source files from coverage tracking. When running bashunit's internal tests, coverage shows 0/0 because the test framework's code is excluded.
-
-::: warning
-Coverage is designed to track **your application code**, not the test framework itself.
-:::
 
 ### External Commands
 

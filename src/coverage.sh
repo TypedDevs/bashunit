@@ -57,6 +57,14 @@ function bashunit::coverage::record_line() {
   # Skip if not tracking this file
   bashunit::coverage::should_track "$file" || return 0
 
+  # Normalize file path to absolute (must match tracked_files for hit counting)
+  local normalized_file
+  if [[ -f "$file" ]]; then
+    normalized_file=$(cd "$(dirname "$file")" && pwd)/$(basename "$file")
+  else
+    normalized_file="$file"
+  fi
+
   # In parallel mode, use a per-process file to avoid race conditions
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
   if bashunit::parallel::is_enabled; then
@@ -64,7 +72,7 @@ function bashunit::coverage::record_line() {
   fi
 
   # Record the hit (only if parent directory exists)
-  [[ -d "$(dirname "$data_file")" ]] && echo "${file}:${lineno}" >> "$data_file"
+  [[ -d "$(dirname "$data_file")" ]] && echo "${normalized_file}:${lineno}" >> "$data_file"
 }
 
 function bashunit::coverage::should_track() {
@@ -82,17 +90,6 @@ function bashunit::coverage::should_track() {
     normalized_file=$(cd "$(dirname "$file")" && pwd)/$(basename "$file")
   else
     normalized_file="$file"
-  fi
-
-  # Skip bashunit's own source files (use actual path, not pattern)
-  # Normalize BASHUNIT_ROOT_DIR to absolute path for comparison
-  # Use ${VAR:-} to handle unset variable when set -u is active
-  if [[ -n "${BASHUNIT_ROOT_DIR:-}" ]]; then
-    local abs_root_dir
-    abs_root_dir=$(cd "$BASHUNIT_ROOT_DIR" 2>/dev/null && pwd) || abs_root_dir="$BASHUNIT_ROOT_DIR"
-    if [[ "$normalized_file" == "$abs_root_dir/src/"* ]]; then
-      return 1
-    fi
   fi
 
   # Check exclusion patterns
@@ -192,7 +189,9 @@ function bashunit::coverage::get_executable_lines() {
 
     # Skip function declaration lines (but not single-line functions with body)
     # Only skip if line ends with () or () { (multi-line function start)
-    [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$ ]] && continue
+    local func_pattern='^[[:space:]]*(function[[:space:]]+)?'
+    func_pattern+='[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
+    [[ "$line" =~ $func_pattern ]] && continue
 
     # Skip lines with only braces
     [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && continue
@@ -313,7 +312,7 @@ function bashunit::coverage::report_text() {
 
     # Display relative path
     local display_file
-    display_file="${file#$(pwd)/}"
+    display_file="${file#"$(pwd)"/}"
 
     printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
       "$color" "$display_file" "$hit" "$executable" "$pct" "$reset"
@@ -378,6 +377,7 @@ function bashunit::coverage::report_lcov() {
       echo "SF:$file"
 
       local lineno=0
+      # shellcheck disable=SC2094
       while IFS= read -r line || [[ -n "$line" ]]; do
         ((lineno++))
 
@@ -385,7 +385,9 @@ function bashunit::coverage::report_lcov() {
         [[ -z "${line// }" ]] && continue
         [[ "$line" =~ ^[[:space:]]*# ]] && [[ $lineno -ne 1 ]] && continue
         # Skip function declaration lines (but not single-line functions with body)
-        [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$ ]] && continue
+        local func_pat='^[[:space:]]*(function[[:space:]]+)?'
+        func_pat+='[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
+        [[ "$line" =~ $func_pat ]] && continue
         [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && continue
 
         # Get hit count for this line
