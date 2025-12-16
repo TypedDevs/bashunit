@@ -285,6 +285,23 @@ function bashunit::coverage::get_line_hits() {
   echo "$count"
 }
 
+# Get all line hits for a file in one pass (performance optimization)
+# Output format: one "lineno:count" per line
+function bashunit::coverage::get_all_line_hits() {
+  local file="$1"
+
+  if [[ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+    return
+  fi
+
+  # Extract all lines for this file, count occurrences of each line number
+  grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null | \
+    cut -d: -f2 | sort | uniq -c | \
+    while read -r count lineno; do
+      echo "${lineno}:${count}"
+    done
+}
+
 function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
@@ -718,6 +735,13 @@ function bashunit::coverage::generate_file_html() {
     class="medium"
   fi
 
+  # Pre-load all line hits into indexed array (performance optimization)
+  local -a hits_by_line=()
+  local _ln _cnt
+  while IFS=: read -r _ln _cnt; do
+    hits_by_line[_ln]=$_cnt
+  done < <(bashunit::coverage::get_all_line_hits "$file")
+
   {
     cat << 'EOF'
 <!DOCTYPE html>
@@ -824,8 +848,8 @@ EOF
       local hits_display=""
 
       if bashunit::coverage::is_executable_line "$line" "$lineno"; then
-        local hits
-        hits=$(bashunit::coverage::get_line_hits "$file" "$lineno")
+        # O(1) lookup from pre-loaded array
+        local hits=${hits_by_line[$lineno]:-0}
         hits_display="$hits"
 
         if [[ $hits -gt 0 ]]; then
