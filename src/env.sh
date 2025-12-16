@@ -19,7 +19,8 @@ _BASHUNIT_DEFAULT_REPORT_HTML=""
 # Coverage defaults (following kcov, bashcov, SimpleCov conventions)
 _BASHUNIT_DEFAULT_COVERAGE="false"
 _BASHUNIT_DEFAULT_COVERAGE_PATHS="src/"
-_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh"
+# Default exclusions: tests, vendor, test files, and bashunit internal source
+_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh,*/bashunit/src/*"
 _BASHUNIT_DEFAULT_COVERAGE_REPORT="coverage/lcov.info"
 _BASHUNIT_DEFAULT_COVERAGE_MIN=""
 _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW="50"

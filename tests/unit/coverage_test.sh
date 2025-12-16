@@ -5,9 +5,10 @@ function set_up() {
   # Reset coverage state
   _BASHUNIT_COVERAGE_DATA_FILE=""
   _BASHUNIT_COVERAGE_TRACKED_FILES=""
+  _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE=""
   export BASHUNIT_COVERAGE="false"
   export BASHUNIT_COVERAGE_PATHS="src/"
-  export BASHUNIT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh"
+  export BASHUNIT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh,*/bashunit/src/*"
   export BASHUNIT_COVERAGE_REPORT=""
   export BASHUNIT_COVERAGE_MIN=""
 }
@@ -188,4 +189,143 @@ function test_coverage_default_threshold_low_is_50() {
 
 function test_coverage_default_threshold_high_is_80() {
   assert_equals "80" "$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH"
+}
+
+function test_coverage_is_executable_line_returns_true_for_commands() {
+  local result
+  result=$(bashunit::coverage::is_executable_line 'echo "hello"' 2 && echo "yes" || echo "no")
+  assert_equals "yes" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_comments() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '# this is a comment' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_true_for_shebang() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '#!/usr/bin/env bash' 1 && echo "yes" || echo "no")
+  assert_equals "yes" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_function_declaration() {
+  local result
+  result=$(bashunit::coverage::is_executable_line 'function my_func() {' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_empty_line() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '   ' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_brace_only() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '}' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_check_threshold_fails_when_below_minimum() {
+  BASHUNIT_COVERAGE="true"
+  BASHUNIT_COVERAGE_MIN="80"
+  bashunit::coverage::init
+
+  # Create a tracked file with some executable lines but no hits
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  # Capture only the exit code, suppress output
+  local result
+  if bashunit::coverage::check_threshold >/dev/null 2>&1; then
+    result="passed"
+  else
+    result="failed"
+  fi
+
+  assert_equals "failed" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_lcov_generates_valid_format() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  # Create a test source file
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  # Simulate some hits
+  echo "${temp_file}:2" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  # Generate report to temp file
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "TN:" "$content"
+  assert_contains "SF:${temp_file}" "$content"
+  assert_contains "DA:1," "$content"
+  assert_contains "DA:2," "$content"
+  assert_contains "LF:3" "$content"
+  assert_contains "end_of_record" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_normalize_path_returns_absolute_path() {
+  local temp_file
+  temp_file=$(mktemp)
+
+  local result
+  result=$(bashunit::coverage::normalize_path "$temp_file")
+
+  # Result should be an absolute path starting with /
+  assert_matches "^/" "$result"
+
+  # Result should contain the actual temp file name
+  assert_contains "$(basename "$temp_file")" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_should_track_caches_decisions() {
+  BASHUNIT_COVERAGE="true"
+  BASHUNIT_COVERAGE_PATHS="/"
+  BASHUNIT_COVERAGE_EXCLUDE=""
+  bashunit::coverage::init
+
+  local test_file="/some/path/script.sh"
+
+  # First call should cache the decision
+  bashunit::coverage::should_track "$test_file"
+
+  # Verify cache file contains the decision
+  local cache_content
+  cache_content=$(cat "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE")
+
+  assert_contains "${test_file}:" "$cache_content"
+}
+
+function test_coverage_default_excludes_bashunit_src() {
+  assert_contains "*/bashunit/src/*" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
 }
