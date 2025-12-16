@@ -66,6 +66,12 @@ bashunit test tests/ --parallel --simple
 | `--skip-env-file`          | Skip `.env` loading, use shell environment only  |
 | `-l, --login`              | Run tests in login shell context                 |
 | `--no-color`               | Disable colored output                           |
+| `--coverage`               | Enable code coverage tracking                    |
+| `--coverage-paths <paths>` | Paths to track (default: `src/`)                 |
+| `--coverage-exclude <pat>` | Exclusion patterns                               |
+| `--coverage-report <file>` | LCOV output path (default: `coverage/lcov.info`) |
+| `--coverage-min <percent>` | Minimum coverage threshold                       |
+| `--no-coverage-report`     | Console output only, no LCOV file                |
 
 ### Standalone Assert
 
@@ -282,6 +288,36 @@ Use this when your tests depend on environment setup from login shell profiles, 
 ```bash [Example]
 bashunit test tests/ --login
 ```
+:::
+
+### Coverage
+
+> `bashunit test --coverage`
+
+Enable code coverage tracking for your tests. See the [Coverage](/coverage) documentation for comprehensive details.
+
+::: code-group
+```bash [Basic usage]
+bashunit test tests/ --coverage
+```
+```bash [With options]
+bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
+```
+:::
+
+**Coverage options:**
+
+| Option | Description |
+|--------|-------------|
+| `--coverage` | Enable coverage tracking |
+| `--coverage-paths <paths>` | Comma-separated paths to track (default: `src/`) |
+| `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh`) |
+| `--coverage-report <file>` | LCOV output file path (default: `coverage/lcov.info`) |
+| `--coverage-min <percent>` | Minimum coverage percentage; fails if below |
+| `--no-coverage-report` | Show console report only, don't generate LCOV file |
+
+::: tip
+Coverage works with parallel execution (`-p`). Each worker tracks coverage independently, and results are aggregated before reporting.
 :::
 
 ## bench

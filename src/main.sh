@@ -97,6 +97,35 @@ function bashunit::main::cmd_test() {
         # shellcheck disable=SC2034
         BASHUNIT_NO_COLOR=true
         ;;
+      --coverage)
+        # Don't export - prevents nested bashunit runs from inheriting coverage
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE=true
+        ;;
+      --coverage-paths)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_PATHS="$2"
+        shift
+        ;;
+      --coverage-exclude)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_EXCLUDE="$2"
+        shift
+        ;;
+      --coverage-report)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_REPORT="$2"
+        shift
+        ;;
+      --coverage-min)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_MIN="$2"
+        shift
+        ;;
+      --no-coverage-report)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_REPORT=""
+        ;;
       *)
         raw_args+=("$1")
         ;;
@@ -186,7 +215,6 @@ function bashunit::main::cmd_bench() {
   local args=()
 
   export BASHUNIT_BENCH_MODE=true
-  source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
 
   # Parse bench-specific options
   while [[ $# -gt 0 ]]; do
@@ -436,6 +464,27 @@ function bashunit::main::exec_tests() {
 
   if [[ -n "$BASHUNIT_REPORT_HTML" ]]; then
     bashunit::reports::generate_report_html "$BASHUNIT_REPORT_HTML"
+  fi
+
+  # Generate coverage report if enabled
+  if bashunit::env::is_coverage_enabled; then
+    # Aggregate per-process coverage data from parallel runs
+    if bashunit::parallel::is_enabled; then
+      bashunit::coverage::aggregate_parallel
+    fi
+
+    bashunit::coverage::report_text
+
+    if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then
+      bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
+    fi
+
+    # Check minimum threshold
+    if ! bashunit::coverage::check_threshold; then
+      exit_code=1
+    fi
+
+    bashunit::coverage::cleanup
   fi
 
   if bashunit::parallel::is_enabled; then

@@ -2,7 +2,18 @@
 
 ## Unreleased
 
+### Added
+- Add code coverage tracking with `--coverage` flag (Issue #190)
+    - Tracks line coverage using Bash DEBUG trap mechanism
+    - Configurable source paths via `--coverage-paths` (default: `src/`)
+    - Configurable exclusions via `--coverage-exclude` (default: `tests/*,vendor/*,*_test.sh,*Test.sh`)
+    - LCOV format output via `--coverage-report` (default: `coverage/lcov.info`)
+    - Minimum coverage threshold via `--coverage-min` (fails if below)
+    - Console-only mode with `--no-coverage-report`
+    - Color-coded console output with configurable thresholds (50%/80%)
+
 ### Fixed
+- Fix `bench` command not working in standalone/installed bashunit (missing `benchmark.sh` in build)
 - Fix `helper::get_latest_tag` returning version with `^{}` suffix from annotated git tags
 
 ## [0.30.0](https://github.com/TypedDevs/bashunit/compare/0.29.0...0.30.0) - 2025-12-14

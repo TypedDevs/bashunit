@@ -1,91 +1,102 @@
 # Standalone
 
-You can use all bashunit assertions outside any tests if you would like to use them in integration or end-to-end tests, for entire applications or executables.
+Use bashunit assertions outside of test files for integration testing, end-to-end testing, or validating entire applications and executables.
 
-## Executing an assertion
+## Quick Start
 
-If you want to use the nice assertions syntax of bashunit - without the tests context/functions, but to end-to-end tests executables, you can use the `-a|--assert` option when running `./bashunit` and call the assertion directly from there.
-
-The return exit code will be:
-- `0` success assertion
-- `1` failed assertion
-- `127` non-existing function
-
-::: info
-The prefix `assert_` is optional.
-:::
+Execute assertions directly from the command line using the `assert` command:
 
 ::: code-group
-```bash [Example]
-# with `assert_` prefix
-./bashunit -a assert_same "foo" "foo"
-
-# or without prefix
-./bashunit -a equals "foo" "foo"
+```bash [Command]
+./bashunit assert equals "expected" "expected"
 ```
 ```[Output]
 # No output - exit code 0 (success)
 ```
 :::
 
-::: code-group
-```bash [Example]
-# with `assert_` prefix
-./bashunit -a assert_not_equals "foo" "foo"
+## Exit Codes
 
-# or without prefix
-./bashunit -a not_equals "foo" "foo"
+| Exit Code | Description |
+|-----------|-------------|
+| `0` | Assertion passed |
+| `1` | Assertion failed |
+| `127` | Non-existing function |
+
+## Basic Usage
+
+### With or Without Prefix
+
+The `assert_` prefix is optional when calling assertions:
+
+::: code-group
+```bash [With prefix]
+./bashunit assert assert_same "foo" "foo"
+./bashunit assert assert_not_equals "foo" "bar"
 ```
-```[Output]
-✗ Failed: assert not_equals
-    Expected 'foo'
-    but got  'foo'
+```bash [Without prefix]
+./bashunit assert same "foo" "foo"
+./bashunit assert not_equals "foo" "bar"
 ```
 :::
 
-## Lazy evaluations
-
-You can evaluate the `exit_code` for your scripts using the command to call as raw-string instead of
-executing them with `$(...)` to avoid interrupting the CI when encountering a potential error (anything but `0`).
+### Success and Failure
 
 ::: code-group
-```bash [Example]
-./bashunit -a exit_code "1" "$PHPSTAN_PATH analyze \
+```bash [Success]
+./bashunit assert equals "hello" "hello"
+# Exit code: 0
+```
+```bash [Failure]
+./bashunit assert equals "hello" "world"
+```
+```[Failure Output]
+✗ Failed: assert equals
+    Expected 'hello'
+    but got  'world'
+```
+:::
+
+## Lazy Evaluation
+
+Evaluate exit codes without executing commands directly with `$(...)`. This prevents CI interruption when commands return non-zero exit codes:
+
+::: code-group
+```bash [Command]
+./bashunit assert exit_code "1" "grep -q 'pattern' /nonexistent/file"
+```
+```bash [PHPStan example]
+./bashunit assert exit_code "1" "$PHPSTAN_PATH analyze \
   --no-progress --level 8 \
   --error-format raw ./"
 ```
-```[Output]
-Testing.php:3:Method Testing::bar() has no return type specified.
-```
 :::
 
-This is useful to get control over the output of your "callable":
+::: tip
+Pass the command as a raw string instead of executing it. bashunit will run the command and capture its exit code.
+:::
+
+### Capturing Output
+
+Capture command output for further assertions:
 
 ::: code-group
 ```bash [Example]
-OUTPUT=$(./bashunit -a exit_code "1" "$PHPSTAN_PATH analyze \
-  --no-progress --level 8 \
-  --error-format raw ./")
-./bashunit -a line_count 1 "$OUTPUT"
-```
-```[Output]
-# No output
+OUTPUT=$(./bashunit assert exit_code "1" "grep -q 'pattern' ./file.txt")
+./bashunit assert line_count 1 "$OUTPUT"
 ```
 :::
 
-### Full control over the stdout and stderr
+### Stdout and Stderr Separation
 
-The stdout will be used for the callable result, while bashunit output will be on stderr.
-This way you can control the FD and redirect the output as you need.
+Command output goes to stdout, bashunit messages go to stderr. Use this to redirect outputs independently:
 
 ::: code-group
-```bash [Example]
-./bashunit -a exit_code "0" "$PHPSTAN_PATH analyze \
-  --no-progress --level 8 \
-  --error-format raw ./" 2> /tmp/error.log
+```bash [Command]
+./bashunit assert exit_code "0" "some_command" 2> /tmp/error.log
 ```
-```[Output]
-Testing.php:3:Method Testing::bar() has no return type specified.
+```[stdout]
+# Command output appears here
 ```
 ```[/tmp/error.log]
 ✗ Failed: assert exit_code
@@ -94,13 +105,18 @@ Testing.php:3:Method Testing::bar() has no return type specified.
 ```
 :::
 
-## Multiple assertions
+## Multiple Assertions
 
-You can chain multiple assertions on a single command output using the `assert` subcommand:
+Chain multiple assertions on a single command using the `assert` subcommand:
 
 ::: code-group
+```bash [Syntax]
+./bashunit assert "command" assertion1 args... assertion2 args...
+```
 ```bash [Example]
-./bashunit assert "echo 'error message' && exit 1" exit_code "1" contains "error"
+./bashunit assert "echo 'error message' && exit 1" \
+  exit_code "1" \
+  contains "error"
 ```
 ```[Output]
 error message
@@ -108,28 +124,78 @@ error message
 ```
 :::
 
-This is equivalent to running each assertion separately:
-
-```bash
-OUTPUT=$(./bashunit -a exit_code "1" "echo 'error message' && exit 1")
-./bashunit -a contains "error" "$OUTPUT"
-```
-
-You can chain as many assertions as needed:
+### Chaining Multiple Assertions
 
 ::: code-group
 ```bash [Example]
 ./bashunit assert "./my_script.sh" \
   exit_code "0" \
   contains "success" \
-  not_contains "error"
-```
-```[Output]
-# Script output here
-# Exit code 0 (all assertions passed)
+  not_contains "error" \
+  line_count "5"
 ```
 :::
+
+This is equivalent to running assertions separately:
+
+```bash
+OUTPUT=$(./bashunit assert exit_code "0" "./my_script.sh")
+./bashunit assert contains "success" "$OUTPUT"
+./bashunit assert not_contains "error" "$OUTPUT"
+./bashunit assert line_count "5" "$OUTPUT"
+```
 
 ::: info
 Exit code assertions (`exit_code`, `successful_code`, `general_error`, etc.) receive the command's exit code. All other assertions (`contains`, `equals`, `matches`, etc.) receive the command's stdout output.
 :::
+
+## Practical Examples
+
+### Validating Script Output
+
+::: code-group
+```bash [Example]
+./bashunit assert "./build.sh" \
+  exit_code "0" \
+  contains "Build successful" \
+  not_contains "ERROR"
+```
+:::
+
+### Testing API Responses
+
+::: code-group
+```bash [Example]
+./bashunit assert "curl -s http://localhost:8080/health" \
+  exit_code "0" \
+  contains '"status":"healthy"'
+```
+:::
+
+### Checking File Operations
+
+::: code-group
+```bash [Example]
+./bashunit assert "./deploy.sh --env staging" \
+  exit_code "0" \
+  contains "Deployed to staging"
+
+./bashunit assert file_exists "/var/www/staging/index.html"
+```
+:::
+
+## Available Assertions
+
+All standard bashunit [assertions](/assertions) are available in standalone mode. Common ones include:
+
+| Assertion | Description |
+|-----------|-------------|
+| `equals` | Check string equality |
+| `contains` | Check substring presence |
+| `matches` | Match against regex pattern |
+| `exit_code` | Check command exit code |
+| `successful_code` | Check for exit code 0 |
+| `file_exists` | Check file existence |
+| `line_count` | Check number of lines |
+
+See the full [assertions reference](/assertions) for all available options.
