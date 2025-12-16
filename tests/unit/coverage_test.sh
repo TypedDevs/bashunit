@@ -112,19 +112,19 @@ my_func
 EOF
 
   # Expected executable lines:
-  # Line 1: shebang (counted)
+  # Line 1: shebang (not counted - it's a comment)
   # Line 3: comment (not counted)
   # Line 4: function declaration (not counted)
   # Line 5: echo "hello" (counted)
   # Line 6: echo "world" (counted)
   # Line 7: } (not counted)
   # Line 9: my_func (counted)
-  # Total: 4 executable lines
+  # Total: 3 executable lines
 
   local count
   count=$(bashunit::coverage::get_executable_lines "$temp_file")
 
-  assert_equals "4" "$count"
+  assert_equals "3" "$count"
 
   rm -f "$temp_file"
 }
@@ -203,10 +203,11 @@ function test_coverage_is_executable_line_returns_false_for_comments() {
   assert_equals "no" "$result"
 }
 
-function test_coverage_is_executable_line_returns_true_for_shebang() {
+function test_coverage_is_executable_line_returns_false_for_shebang() {
+  # Shebang is a comment line, not executable (only runs when script invoked directly)
   local result
   result=$(bashunit::coverage::is_executable_line '#!/usr/bin/env bash' 1 && echo "yes" || echo "no")
-  assert_equals "yes" "$result"
+  assert_equals "no" "$result"
 }
 
 function test_coverage_is_executable_line_returns_false_for_function_declaration() {
@@ -282,11 +283,12 @@ EOF
   local content
   content=$(cat "$report_file")
 
+  # Line 1 (shebang) is not counted - only lines 2 and 3 are executable
   assert_contains "TN:" "$content"
   assert_contains "SF:${temp_file}" "$content"
-  assert_contains "DA:1," "$content"
   assert_contains "DA:2," "$content"
-  assert_contains "LF:3" "$content"
+  assert_contains "DA:3," "$content"
+  assert_contains "LF:2" "$content"
   assert_contains "end_of_record" "$content"
 
   rm -f "$temp_file" "$report_file"

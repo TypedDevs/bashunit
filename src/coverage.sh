@@ -227,13 +227,14 @@ function bashunit::coverage::is_executable_line() {
   local line="$1"
   local lineno="$2"
 
+  # Unused but kept for API compatibility
+  : "$lineno"
+
   # Skip empty lines (line with only whitespace)
   [[ -z "${line// }" ]] && return 1
 
-  # Skip comment-only lines (but not shebang on line 1)
-  if [[ "$line" =~ ^[[:space:]]*# ]] && [[ $lineno -ne 1 ]]; then
-    return 1
-  fi
+  # Skip comment-only lines (including shebang)
+  [[ "$line" =~ ^[[:space:]]*# ]] && return 1
 
   # Skip function declaration lines (but not single-line functions with body)
   [[ "$line" =~ $_BASHUNIT_COVERAGE_FUNC_PATTERN ]] && return 1

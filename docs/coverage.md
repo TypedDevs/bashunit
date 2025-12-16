@@ -242,11 +242,10 @@ The `coverage/lcov.info` file uses the industry-standard LCOV format, compatible
 ```
 TN:
 SF:/path/to/source/file.sh
-DA:1,0
 DA:2,5
-DA:3,5
-LF:3
-LH:2
+DA:3,0
+LF:2
+LH:1
 end_of_record
 ```
 
@@ -266,7 +265,7 @@ end_of_record
 Given this source file `src/math.sh`:
 
 ```bash
-#!/usr/bin/env bash           # Line 1 - executable (shebang)
+#!/usr/bin/env bash           # Line 1 - not executable (comment/shebang)
 function add() {              # Line 2 - not executable (function declaration)
   echo $(($1 + $2))           # Line 3 - executable
 }                             # Line 4 - not executable (closing brace)
@@ -280,19 +279,17 @@ If tests call `add` twice but never call `multiply`, the LCOV output would be:
 ```
 TN:
 SF:/path/to/src/math.sh
-DA:1,0
 DA:3,2
 DA:6,0
-LF:3
+LF:2
 LH:1
 end_of_record
 ```
 
 **Interpretation:**
-- Line 1 (shebang): 0 hits (only executed when script is run directly)
 - Line 3 (`add` body): 2 hits
 - Line 6 (`multiply` body): 0 hits
-- 3 executable lines found, 1 line was hit (33% coverage)
+- 2 executable lines found, 1 line was hit (50% coverage)
 
 ## Parallel Execution
 
@@ -318,7 +315,6 @@ Coverage percentages should be identical whether running in parallel or sequenti
 ### Executable Lines
 
 bashunit counts these as executable lines:
-- Shebang line (`#!/usr/bin/env bash`)
 - Commands and statements
 - Single-line function bodies (`function foo() { echo "hi"; }`)
 
@@ -326,7 +322,7 @@ bashunit counts these as executable lines:
 
 These lines are not counted toward coverage:
 - Empty lines
-- Comment-only lines (except shebang)
+- Comment lines (including shebang `#!/usr/bin/env bash`)
 - Function declaration lines (`function foo() {`)
 - Lines with only braces (`{` or `}`)
 
