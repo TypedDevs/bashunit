@@ -8,6 +8,7 @@
     - Configurable source paths via `--coverage-paths` (default: `src/`)
     - Configurable exclusions via `--coverage-exclude` (default: `tests/*,vendor/*,*_test.sh,*Test.sh`)
     - LCOV format output via `--coverage-report` (default: `coverage/lcov.info`)
+    - HTML coverage report via `--coverage-report-html <dir>` with line-by-line highlighting
     - Minimum coverage threshold via `--coverage-min` (fails if below)
     - Console-only mode with `--no-coverage-report`
     - Color-coded console output with configurable thresholds (50%/80%)

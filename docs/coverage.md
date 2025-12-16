@@ -11,7 +11,7 @@ Enable coverage tracking with the `--coverage` flag:
 bashunit tests/ --coverage
 ```
 ```bash [With custom paths]
-bashunit tests/ --coverage --coverage-paths src/
+bashunit tests/ --coverage-paths src/
 ```
 ```bash [Output]
 bashunit - 0.30.0 | Tests: 5
@@ -57,8 +57,13 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 | `--coverage-paths <paths>` | Comma-separated paths to track (default: `src/`) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
 | `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
+| `--coverage-report-html <dir>` | Generate HTML coverage report with line-by-line details |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
 | `--no-coverage-report` | Disable LCOV file generation (console only) |
+
+::: tip Auto-enable
+Coverage is automatically enabled when using `--coverage-report`, `--coverage-report-html`, or `--coverage-min`. You don't need to specify `--coverage` explicitly with these options.
+:::
 
 ### Environment Variables
 
@@ -76,6 +81,9 @@ BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh
 
 # LCOV report output path
 BASHUNIT_COVERAGE_REPORT=coverage/lcov.info
+
+# HTML report output directory (generates line-by-line coverage view)
+BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
 
 # Minimum coverage percentage (optional)
 BASHUNIT_COVERAGE_MIN=80
@@ -129,7 +137,7 @@ Fail the test run if coverage drops below a threshold:
 
 ::: code-group
 ```bash [Command]
-bashunit tests/ --coverage --coverage-min 80
+bashunit tests/ --coverage-min 80
 ```
 ```[Output - Passing]
 Coverage Report
@@ -159,6 +167,30 @@ bashunit tests/ --coverage --no-coverage-report
 ```
 :::
 
+### HTML Coverage Report
+
+Generate a detailed HTML report showing line-by-line coverage:
+
+::: code-group
+```bash [Command]
+bashunit tests/ --coverage-report-html coverage/html
+```
+```bash [.env]
+BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
+```
+:::
+
+This creates a directory with:
+- `index.html` - Summary page with per-file coverage percentages
+- `files/*.html` - Individual source file views with line highlighting
+
+**Line highlighting:**
+- **Green background**: Lines executed during tests (covered)
+- **Red background**: Executable lines not executed (uncovered)
+- **No background**: Non-executable lines (comments, function declarations, etc.)
+
+Each line also shows the number of times it was executed, helping identify hot paths and dead code.
+
 ### CI/CD Integration
 
 Generate coverage for CI tools like Codecov or Coveralls:
@@ -166,7 +198,7 @@ Generate coverage for CI tools like Codecov or Coveralls:
 ::: code-group
 ```yaml [GitHub Actions]
 - name: Run tests with coverage
-  run: bashunit tests/ --coverage --coverage-min 80
+  run: bashunit tests/ --coverage-min 80
 
 - name: Upload coverage to Codecov
   uses: codecov/codecov-action@v4
@@ -214,11 +246,10 @@ The `coverage/lcov.info` file uses the industry-standard LCOV format, compatible
 ```
 TN:
 SF:/path/to/source/file.sh
-DA:1,0
 DA:2,5
-DA:3,5
-LF:3
-LH:2
+DA:3,0
+LF:2
+LH:1
 end_of_record
 ```
 
@@ -238,7 +269,7 @@ end_of_record
 Given this source file `src/math.sh`:
 
 ```bash
-#!/usr/bin/env bash           # Line 1 - executable (shebang)
+#!/usr/bin/env bash           # Line 1 - not executable (comment/shebang)
 function add() {              # Line 2 - not executable (function declaration)
   echo $(($1 + $2))           # Line 3 - executable
 }                             # Line 4 - not executable (closing brace)
@@ -252,19 +283,17 @@ If tests call `add` twice but never call `multiply`, the LCOV output would be:
 ```
 TN:
 SF:/path/to/src/math.sh
-DA:1,0
 DA:3,2
 DA:6,0
-LF:3
+LF:2
 LH:1
 end_of_record
 ```
 
 **Interpretation:**
-- Line 1 (shebang): 0 hits (only executed when script is run directly)
 - Line 3 (`add` body): 2 hits
 - Line 6 (`multiply` body): 0 hits
-- 3 executable lines found, 1 line was hit (33% coverage)
+- 2 executable lines found, 1 line was hit (50% coverage)
 
 ## Parallel Execution
 
@@ -290,7 +319,6 @@ Coverage percentages should be identical whether running in parallel or sequenti
 ### Executable Lines
 
 bashunit counts these as executable lines:
-- Shebang line (`#!/usr/bin/env bash`)
 - Commands and statements
 - Single-line function bodies (`function foo() { echo "hi"; }`)
 
@@ -298,7 +326,7 @@ bashunit counts these as executable lines:
 
 These lines are not counted toward coverage:
 - Empty lines
-- Comment-only lines (except shebang)
+- Comment lines (including shebang `#!/usr/bin/env bash`)
 - Function declaration lines (`function foo() {`)
 - Lines with only braces (`{` or `}`)
 

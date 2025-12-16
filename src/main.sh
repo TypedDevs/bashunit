@@ -8,6 +8,7 @@ function bashunit::main::cmd_test() {
   local raw_args=()
   local args=()
   local assert_fn=""
+  local _bashunit_coverage_opt_set=false
 
   # Parse test-specific options
   while [[ $# -gt 0 ]]; do
@@ -115,16 +116,24 @@ function bashunit::main::cmd_test() {
       --coverage-report)
         # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_REPORT="$2"
+        _bashunit_coverage_opt_set=true
         shift
         ;;
       --coverage-min)
         # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_MIN="$2"
+        _bashunit_coverage_opt_set=true
         shift
         ;;
       --no-coverage-report)
         # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_REPORT=""
+        ;;
+      --coverage-report-html)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_REPORT_HTML="$2"
+        _bashunit_coverage_opt_set=true
+        shift
         ;;
       *)
         raw_args+=("$1")
@@ -132,6 +141,12 @@ function bashunit::main::cmd_test() {
     esac
     shift
   done
+
+  # Auto-enable coverage when any coverage output option is specified
+  if [[ "$_bashunit_coverage_opt_set" == true ]]; then
+    # shellcheck disable=SC2034
+    BASHUNIT_COVERAGE=true
+  fi
 
   # Expand positional arguments and extract inline filters
   # Skip filter parsing for assert mode - args are not file paths
@@ -477,6 +492,10 @@ function bashunit::main::exec_tests() {
 
     if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then
       bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
+    fi
+
+    if [[ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]]; then
+      bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
     fi
 
     # Check minimum threshold
