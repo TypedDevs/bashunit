@@ -57,6 +57,7 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 | `--coverage-paths <paths>` | Comma-separated paths to track (default: `src/`) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
 | `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
+| `--coverage-report-html <dir>` | Generate HTML coverage report with line-by-line details |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
 | `--no-coverage-report` | Disable LCOV file generation (console only) |
 
@@ -76,6 +77,9 @@ BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh
 
 # LCOV report output path
 BASHUNIT_COVERAGE_REPORT=coverage/lcov.info
+
+# HTML report output directory (generates line-by-line coverage view)
+BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
 
 # Minimum coverage percentage (optional)
 BASHUNIT_COVERAGE_MIN=80
@@ -158,6 +162,30 @@ Skip generating the LCOV file:
 bashunit tests/ --coverage --no-coverage-report
 ```
 :::
+
+### HTML Coverage Report
+
+Generate a detailed HTML report showing line-by-line coverage:
+
+::: code-group
+```bash [Command]
+bashunit tests/ --coverage --coverage-report-html coverage/html
+```
+```bash [.env]
+BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
+```
+:::
+
+This creates a directory with:
+- `index.html` - Summary page with per-file coverage percentages
+- `files/*.html` - Individual source file views with line highlighting
+
+**Line highlighting:**
+- **Green background**: Lines executed during tests (covered)
+- **Red background**: Executable lines not executed (uncovered)
+- **No background**: Non-executable lines (comments, function declarations, etc.)
+
+Each line also shows the number of times it was executed, helping identify hot paths and dead code.
 
 ### CI/CD Integration
 

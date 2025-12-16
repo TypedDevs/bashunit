@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2094
 
 # Coverage data storage
 _BASHUNIT_COVERAGE_DATA_FILE=""
@@ -479,6 +480,379 @@ function bashunit::coverage::check_threshold() {
   fi
 
   return 0
+}
+
+# Escape HTML special characters
+function bashunit::coverage::html_escape() {
+  local text="$1"
+  text="${text//&/&amp;}"
+  text="${text//</&lt;}"
+  text="${text//>/&gt;}"
+  echo "$text"
+}
+
+# Convert file path to safe filename for HTML
+function bashunit::coverage::path_to_filename() {
+  local file="$1"
+  local display_file="${file#"$(pwd)"/}"
+  # Replace / with _ and . with _
+  local safe_name="${display_file//\//_}"
+  echo "${safe_name//./_}"
+}
+
+function bashunit::coverage::report_html() {
+  local output_dir="${1:-coverage/html}"
+
+  if [[ -z "$output_dir" ]]; then
+    return 0
+  fi
+
+  # Check if tracked files exist
+  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+    return 0
+  fi
+
+  # Create output directory structure
+  mkdir -p "$output_dir/files"
+
+  # Collect file data for index
+  local total_executable=0
+  local total_hit=0
+  local file_data=()
+
+  while IFS= read -r file; do
+    [[ -z "$file" || ! -f "$file" ]] && continue
+
+    local executable
+    executable=$(bashunit::coverage::get_executable_lines "$file")
+    local hit
+    hit=$(bashunit::coverage::get_hit_lines "$file")
+
+    ((total_executable += executable))
+    ((total_hit += hit))
+
+    local pct=0
+    if [[ $executable -gt 0 ]]; then
+      pct=$((hit * 100 / executable))
+    fi
+
+    local display_file="${file#"$(pwd)"/}"
+    local safe_filename
+    safe_filename=$(bashunit::coverage::path_to_filename "$file")
+
+    file_data+=("$display_file|$hit|$executable|$pct|$safe_filename")
+
+    # Generate individual file HTML
+    bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html"
+  done < "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  # Calculate total percentage
+  local total_pct=0
+  if [[ $total_executable -gt 0 ]]; then
+    total_pct=$((total_hit * 100 / total_executable))
+  fi
+
+  # Generate index.html
+  bashunit::coverage::generate_index_html \
+    "$output_dir/index.html" "$total_hit" "$total_executable" "$total_pct" "${file_data[@]}"
+
+  echo "Coverage HTML report written to: $output_dir/index.html"
+}
+
+function bashunit::coverage::generate_index_html() {
+  local output_file="$1"
+  local total_hit="$2"
+  local total_executable="$3"
+  local total_pct="$4"
+  shift 4
+  local file_data=("$@")
+
+  # Determine total color class
+  local total_class="low"
+  if [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+    total_class="high"
+  elif [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+    total_class="medium"
+  fi
+
+  {
+    cat << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coverage Report</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { color: #333; margin-bottom: 20px; }
+    .summary {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .summary-title { font-size: 1.2em; margin-bottom: 10px; color: #666; }
+    .summary-pct { font-size: 2.5em; font-weight: bold; }
+    .summary-pct.high { color: #28a745; }
+    .summary-pct.medium { color: #ffc107; }
+    .summary-pct.low { color: #dc3545; }
+    .summary-detail { color: #666; margin-top: 5px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    th, td { padding: 12px 15px; text-align: left; }
+    th { background: #f8f9fa; font-weight: 600; color: #333; border-bottom: 2px solid #dee2e6; }
+    td { border-bottom: 1px solid #dee2e6; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover { background: #f8f9fa; }
+    .file-link { color: #007bff; text-decoration: none; }
+    .file-link:hover { text-decoration: underline; }
+    .pct { font-weight: 600; }
+    .pct.high { color: #28a745; }
+    .pct.medium { color: #ffc107; }
+    .pct.low { color: #dc3545; }
+    .progress-bar {
+      width: 100px;
+      height: 8px;
+      background: #e9ecef;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill { height: 100%; border-radius: 4px; }
+    .progress-fill.high { background: #28a745; }
+    .progress-fill.medium { background: #ffc107; }
+    .progress-fill.low { background: #dc3545; }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .footer { margin-top: 20px; color: #666; font-size: 0.9em; text-align: center; }
+    .footer a { color: #007bff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Coverage Report</h1>
+    <div class="summary">
+      <div class="summary-title">Total Coverage</div>
+EOF
+    echo "      <div class=\"summary-pct $total_class\">${total_pct}%</div>"
+    echo "      <div class=\"summary-detail\">${total_hit} of ${total_executable} lines covered</div>"
+    cat << 'EOF'
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th class="text-right">Lines</th>
+          <th class="text-center">Coverage</th>
+          <th style="width: 120px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+EOF
+
+    for data in "${file_data[@]}"; do
+      IFS='|' read -r display_file hit executable pct safe_filename <<< "$data"
+
+      local class="low"
+      if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+        class="high"
+      elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+        class="medium"
+      fi
+
+      echo "        <tr>"
+      echo "          <td><a class=\"file-link\" href=\"files/${safe_filename}.html\">$display_file</a></td>"
+      echo "          <td class=\"text-right\">${hit}/${executable}</td>"
+      echo "          <td class=\"text-center pct $class\">${pct}%</td>"
+      echo "          <td><div class=\"progress-bar\">"
+      echo "<div class=\"progress-fill $class\" style=\"width: ${pct}%;\"></div></div></td>"
+      echo "        </tr>"
+    done
+
+    cat << 'EOF'
+      </tbody>
+    </table>
+    <div class="footer">
+      Generated by <a href="https://bashunit.typeddevs.com">bashunit</a>
+    </div>
+  </div>
+</body>
+</html>
+EOF
+  } > "$output_file"
+}
+
+function bashunit::coverage::generate_file_html() {
+  local file="$1"
+  local output_file="$2"
+
+  local display_file="${file#"$(pwd)"/}"
+  local executable
+  executable=$(bashunit::coverage::get_executable_lines "$file")
+  local hit
+  hit=$(bashunit::coverage::get_hit_lines "$file")
+
+  local pct=0
+  if [[ $executable -gt 0 ]]; then
+    pct=$((hit * 100 / executable))
+  fi
+
+  local class="low"
+  if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+    class="high"
+  elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+    class="medium"
+  fi
+
+  {
+    cat << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+EOF
+    echo "  <title>Coverage: $display_file</title>"
+    cat << 'EOF'
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; }
+    .breadcrumb { margin-bottom: 20px; }
+    .breadcrumb a { color: #007bff; text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .summary {
+      background: white;
+      border-radius: 8px;
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    .summary-pct { font-size: 1.8em; font-weight: bold; }
+    .summary-pct.high { color: #28a745; }
+    .summary-pct.medium { color: #ffc107; }
+    .summary-pct.low { color: #dc3545; }
+    .summary-detail { color: #666; }
+    .code-container {
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    tr { line-height: 1.4; }
+    tr:hover { background: rgba(0,0,0,0.02); }
+    .line-num {
+      width: 50px;
+      text-align: right;
+      padding: 0 10px;
+      color: #999;
+      background: #f8f9fa;
+      border-right: 1px solid #e9ecef;
+      user-select: none;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .hits {
+      width: 50px;
+      text-align: center;
+      padding: 0 8px;
+      color: #666;
+      background: #f8f9fa;
+      border-right: 1px solid #e9ecef;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 12px;
+    }
+    .code {
+      padding: 0 15px;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre;
+      overflow-x: auto;
+    }
+    .covered { background-color: #d4edda; }
+    .covered .line-num, .covered .hits { background-color: #c3e6cb; }
+    .uncovered { background-color: #f8d7da; }
+    .uncovered .line-num, .uncovered .hits { background-color: #f5c6cb; }
+    .footer { margin-top: 20px; color: #666; font-size: 0.9em; text-align: center; }
+    .footer a { color: #007bff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="breadcrumb"><a href="../index.html">&larr; Back to Index</a></div>
+EOF
+    echo "    <h1>$display_file</h1>"
+    echo "    <div class=\"summary\">"
+    echo "      <div class=\"summary-pct $class\">${pct}%</div>"
+    echo "      <div class=\"summary-detail\">${hit} of ${executable} lines covered</div>"
+    echo "    </div>"
+    echo "    <div class=\"code-container\">"
+    echo "      <table>"
+
+    local lineno=0
+    while IFS= read -r line || [[ -n "$line" ]]; do
+      ((lineno++))
+
+      local escaped_line
+      escaped_line=$(bashunit::coverage::html_escape "$line")
+
+      local row_class=""
+      local hits_display=""
+
+      if bashunit::coverage::is_executable_line "$line" "$lineno"; then
+        local hits
+        hits=$(bashunit::coverage::get_line_hits "$file" "$lineno")
+        hits_display="$hits"
+
+        if [[ $hits -gt 0 ]]; then
+          row_class="covered"
+        else
+          row_class="uncovered"
+        fi
+      fi
+
+      echo "        <tr class=\"$row_class\">"
+      echo "          <td class=\"line-num\">$lineno</td>"
+      echo "          <td class=\"hits\">$hits_display</td>"
+      echo "          <td class=\"code\">$escaped_line</td>"
+      echo "        </tr>"
+    done < "$file"
+
+    cat << 'EOF'
+      </table>
+    </div>
+    <div class="footer">
+      Generated by <a href="https://bashunit.typeddevs.com">bashunit</a>
+    </div>
+  </div>
+</body>
+</html>
+EOF
+  } > "$output_file"
 }
 
 function bashunit::coverage::cleanup() {

@@ -126,6 +126,11 @@ function bashunit::main::cmd_test() {
         # shellcheck disable=SC2034
         BASHUNIT_COVERAGE_REPORT=""
         ;;
+      --coverage-report-html)
+        # shellcheck disable=SC2034
+        BASHUNIT_COVERAGE_REPORT_HTML="$2"
+        shift
+        ;;
       *)
         raw_args+=("$1")
         ;;
@@ -477,6 +482,10 @@ function bashunit::main::exec_tests() {
 
     if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then
       bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
+    fi
+
+    if [[ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]]; then
+      bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
     fi
 
     # Check minimum threshold

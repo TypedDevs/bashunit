@@ -43,35 +43,36 @@ bashunit test tests/ --parallel --simple
 
 ### Test Options
 
-| Option                     | Description                                      |
-|----------------------------|--------------------------------------------------|
-| `-a, --assert <fn> <args>` | Run a standalone assert function                 |
-| `-e, --env, --boot <file>` | Load custom env/bootstrap file (supports args)   |
-| `-f, --filter <name>`      | Only run tests matching name                     |
-| `--log-junit <file>`       | Write JUnit XML report                           |
-| `-p, --parallel`           | Run tests in parallel                            |
-| `--no-parallel`            | Run tests sequentially                           |
-| `-r, --report-html <file>` | Write HTML report                                |
-| `-R, --run-all`            | Run all assertions (don't stop on first failure) |
-| `-s, --simple`             | Simple output (dots)                             |
-| `--detailed`               | Detailed output (default)                        |
-| `-S, --stop-on-failure`    | Stop on first failure                            |
-| `--show-skipped`           | Show skipped tests summary at end                |
-| `--show-incomplete`        | Show incomplete tests summary at end             |
-| `-vvv, --verbose`          | Show execution details                           |
-| `--debug [file]`           | Enable shell debug mode                          |
-| `--no-output`              | Suppress all output                              |
-| `--failures-only`          | Only show failures                               |
-| `--strict`                 | Enable strict shell mode                         |
-| `--skip-env-file`          | Skip `.env` loading, use shell environment only  |
-| `-l, --login`              | Run tests in login shell context                 |
-| `--no-color`               | Disable colored output                           |
-| `--coverage`               | Enable code coverage tracking                    |
-| `--coverage-paths <paths>` | Paths to track (default: `src/`)                 |
-| `--coverage-exclude <pat>` | Exclusion patterns                               |
-| `--coverage-report <file>` | LCOV output path (default: `coverage/lcov.info`) |
-| `--coverage-min <percent>` | Minimum coverage threshold                       |
-| `--no-coverage-report`     | Console output only, no LCOV file                |
+| Option                         | Description                                      |
+|--------------------------------|--------------------------------------------------|
+| `-a, --assert <fn> <args>`     | Run a standalone assert function                 |
+| `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
+| `-f, --filter <name>`          | Only run tests matching name                     |
+| `--log-junit <file>`           | Write JUnit XML report                           |
+| `-p, --parallel`               | Run tests in parallel                            |
+| `--no-parallel`                | Run tests sequentially                           |
+| `-r, --report-html <file>`     | Write HTML report                                |
+| `-R, --run-all`                | Run all assertions (don't stop on first failure) |
+| `-s, --simple`                 | Simple output (dots)                             |
+| `--detailed`                   | Detailed output (default)                        |
+| `-S, --stop-on-failure`        | Stop on first failure                            |
+| `--show-skipped`               | Show skipped tests summary at end                |
+| `--show-incomplete`            | Show incomplete tests summary at end             |
+| `-vvv, --verbose`              | Show execution details                           |
+| `--debug [file]`               | Enable shell debug mode                          |
+| `--no-output`                  | Suppress all output                              |
+| `--failures-only`              | Only show failures                               |
+| `--strict`                     | Enable strict shell mode                         |
+| `--skip-env-file`              | Skip `.env` loading, use shell environment only  |
+| `-l, --login`                  | Run tests in login shell context                 |
+| `--no-color`                   | Disable colored output                           |
+| `--coverage`                   | Enable code coverage tracking                    |
+| `--coverage-paths <paths>`     | Paths to track (default: `src/`)                 |
+| `--coverage-exclude <pat>`     | Exclusion patterns                               |
+| `--coverage-report <file>`     | LCOV output path (default: `coverage/lcov.info`) |
+| `--coverage-report-html <dir>` | Generate HTML report with line highlighting      |
+| `--coverage-min <percent>`     | Minimum coverage threshold                       |
+| `--no-coverage-report`         | Console output only, no LCOV file                |
 
 ### Standalone Assert
 
@@ -307,14 +308,15 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 
 **Coverage options:**
 
-| Option | Description |
-|--------|-------------|
-| `--coverage` | Enable coverage tracking |
-| `--coverage-paths <paths>` | Comma-separated paths to track (default: `src/`) |
+| Option                          | Description                                                                 |
+|---------------------------------|-----------------------------------------------------------------------------|
+| `--coverage`                    | Enable coverage tracking                                                    |
+| `--coverage-paths <paths>`      | Comma-separated paths to track (default: `src/`)                            |
 | `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh`) |
-| `--coverage-report <file>` | LCOV output file path (default: `coverage/lcov.info`) |
-| `--coverage-min <percent>` | Minimum coverage percentage; fails if below |
-| `--no-coverage-report` | Show console report only, don't generate LCOV file |
+| `--coverage-report <file>`      | LCOV output file path (default: `coverage/lcov.info`)                       |
+| `--coverage-report-html <dir>`  | Generate HTML coverage report with line-by-line highlighting                |
+| `--coverage-min <percent>`      | Minimum coverage percentage; fails if below                                 |
+| `--no-coverage-report`          | Show console report only, don't generate LCOV file                          |
 
 ::: tip
 Coverage works with parallel execution (`-p`). Each worker tracks coverage independently, and results are aggregated before reporting.
