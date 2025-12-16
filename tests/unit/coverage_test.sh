@@ -8,7 +8,7 @@ function set_up() {
   _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE=""
   export BASHUNIT_COVERAGE="false"
   export BASHUNIT_COVERAGE_PATHS="src/"
-  export BASHUNIT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh,*/bashunit/src/*"
+  export BASHUNIT_COVERAGE_EXCLUDE="tests/*,vendor/*,*_test.sh,*Test.sh"
   export BASHUNIT_COVERAGE_REPORT=""
   export BASHUNIT_COVERAGE_MIN=""
 }
@@ -326,6 +326,7 @@ function test_coverage_should_track_caches_decisions() {
   assert_contains "${test_file}:" "$cache_content"
 }
 
-function test_coverage_default_excludes_bashunit_src() {
-  assert_contains "*/bashunit/src/*" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
+function test_coverage_default_excludes_test_files() {
+  assert_contains "*_test.sh" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
+  assert_contains "*Test.sh" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
 }

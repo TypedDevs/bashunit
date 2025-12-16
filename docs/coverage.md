@@ -72,7 +72,6 @@ BASHUNIT_COVERAGE=true
 BASHUNIT_COVERAGE_PATHS=src/,lib/
 
 # Patterns to exclude (comma-separated)
-# Default: tests/*,vendor/*,*_test.sh,*Test.sh,*/bashunit/src/*
 BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh
 
 # LCOV report output path
