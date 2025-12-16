@@ -11,7 +11,7 @@ Enable coverage tracking with the `--coverage` flag:
 bashunit tests/ --coverage
 ```
 ```bash [With custom paths]
-bashunit tests/ --coverage --coverage-paths src/
+bashunit tests/ --coverage-paths src/
 ```
 ```bash [Output]
 bashunit - 0.30.0 | Tests: 5
@@ -60,6 +60,10 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 | `--coverage-report-html <dir>` | Generate HTML coverage report with line-by-line details |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
 | `--no-coverage-report` | Disable LCOV file generation (console only) |
+
+::: tip Auto-enable
+Coverage is automatically enabled when using `--coverage-report`, `--coverage-report-html`, or `--coverage-min`. You don't need to specify `--coverage` explicitly with these options.
+:::
 
 ### Environment Variables
 
@@ -133,7 +137,7 @@ Fail the test run if coverage drops below a threshold:
 
 ::: code-group
 ```bash [Command]
-bashunit tests/ --coverage --coverage-min 80
+bashunit tests/ --coverage-min 80
 ```
 ```[Output - Passing]
 Coverage Report
@@ -169,7 +173,7 @@ Generate a detailed HTML report showing line-by-line coverage:
 
 ::: code-group
 ```bash [Command]
-bashunit tests/ --coverage --coverage-report-html coverage/html
+bashunit tests/ --coverage-report-html coverage/html
 ```
 ```bash [.env]
 BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
@@ -194,7 +198,7 @@ Generate coverage for CI tools like Codecov or Coveralls:
 ::: code-group
 ```yaml [GitHub Actions]
 - name: Run tests with coverage
-  run: bashunit tests/ --coverage --coverage-min 80
+  run: bashunit tests/ --coverage-min 80
 
 - name: Upload coverage to Codecov
   uses: codecov/codecov-action@v4
