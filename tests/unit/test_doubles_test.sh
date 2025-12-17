@@ -168,6 +168,13 @@ function test_spy_unsuccessful_not_called() {
 }
 
 function test_spy_with_pipe_in_arguments() {
+  # Skip when coverage is enabled because coverage uses grep internally,
+  # which interferes with spying on grep
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::skip "Cannot spy on grep when coverage is enabled"
+    return
+  fi
+
   bashunit::spy grep
 
   grep -E 'foo|bar'

@@ -2,15 +2,29 @@
 # shellcheck disable=SC2094
 
 # Coverage data storage
-_BASHUNIT_COVERAGE_DATA_FILE=""
-_BASHUNIT_COVERAGE_TRACKED_FILES=""
+# Use :- to preserve inherited values from parent bashunit processes
+_BASHUNIT_COVERAGE_DATA_FILE="${_BASHUNIT_COVERAGE_DATA_FILE:-}"
+_BASHUNIT_COVERAGE_TRACKED_FILES="${_BASHUNIT_COVERAGE_TRACKED_FILES:-}"
 
 # Simple file-based cache for tracked files (Bash 3.2 compatible)
 # The tracked cache file stores files that have already been processed
-_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE=""
+_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="${_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE:-}"
+
+# Store the subshell level when coverage trap is enabled
+# Used to skip recording in nested subshells (command substitution)
+# Uses $BASH_SUBSHELL which is Bash 3.2 compatible (unlike $BASHPID)
+_BASHUNIT_COVERAGE_SUBSHELL_LEVEL="${_BASHUNIT_COVERAGE_SUBSHELL_LEVEL:-}"
 
 function bashunit::coverage::init() {
   if ! bashunit::env::is_coverage_enabled; then
+    return 0
+  fi
+
+  # Skip coverage init if we're a subprocess of another coverage-enabled bashunit
+  # This prevents nested bashunit calls (e.g., in acceptance tests) from
+  # interfering with the parent's coverage tracking
+  if [[ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ]]; then
+    export BASHUNIT_COVERAGE=false
     return 0
   fi
 
@@ -37,6 +51,11 @@ function bashunit::coverage::enable_trap() {
   if ! bashunit::env::is_coverage_enabled; then
     return 0
   fi
+
+  # Store the subshell level for nested subshell detection
+  # $BASH_SUBSHELL increments in each nested subshell (Bash 3.2 compatible)
+  _BASHUNIT_COVERAGE_SUBSHELL_LEVEL="$BASH_SUBSHELL"
+  export _BASHUNIT_COVERAGE_SUBSHELL_LEVEL
 
   # Enable trap inheritance into functions
   set -T
@@ -74,6 +93,11 @@ function bashunit::coverage::record_line() {
   # Skip if coverage data file doesn't exist (trap inherited by child process)
   [[ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ]] && return 0
 
+  # Skip recording in nested subshells (command substitution like $(...))
+  # $BASH_SUBSHELL increments in each nested subshell
+  # This prevents interference with tests that capture output
+  [[ -n "$_BASHUNIT_COVERAGE_SUBSHELL_LEVEL" && "$BASH_SUBSHELL" -gt "$_BASHUNIT_COVERAGE_SUBSHELL_LEVEL" ]] && return 0
+
   # Skip if not tracking this file (uses cache internally)
   bashunit::coverage::should_track "$file" || return 0
 
@@ -102,10 +126,17 @@ function bashunit::coverage::should_track() {
 
   # Check file-based cache for previous decision (Bash 3.2 compatible)
   # Cache format: "file:0" for excluded, "file:1" for tracked
-  if [[ -n "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" && -f "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" ]]; then
+  # In parallel mode, use per-process cache to avoid race conditions
+  local cache_file="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+  if bashunit::parallel::is_enabled && [[ -n "$cache_file" ]]; then
+    cache_file="${cache_file}.$$"
+    # Initialize per-process cache if needed
+    [[ ! -f "$cache_file" ]] && [[ -d "$(dirname "$cache_file")" ]] && : > "$cache_file"
+  fi
+  if [[ -n "$cache_file" && -f "$cache_file" ]]; then
     local cached_decision
     # Use || true to prevent exit in strict mode when grep finds no match
-    cached_decision=$(grep "^${file}:" "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" 2>/dev/null | head -1) || true
+    cached_decision=$(grep "^${file}:" "$cache_file" 2>/dev/null | head -1) || true
     if [[ -n "$cached_decision" ]]; then
       [[ "${cached_decision##*:}" == "1" ]] && return 0 || return 1
     fi
@@ -125,9 +156,8 @@ function bashunit::coverage::should_track() {
     case "$normalized_file" in
       *$pattern*)
         IFS="$old_ifs"
-        # Cache exclusion decision
-        [[ -n "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" ]] && \
-          echo "${file}:0" >> "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+        # Cache exclusion decision (use per-process cache in parallel mode)
+        [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:0" >> "$cache_file"
         return 1
         ;;
     esac
@@ -153,15 +183,13 @@ function bashunit::coverage::should_track() {
   IFS="$old_ifs"
 
   if [[ "$matched" == "false" ]]; then
-    # Cache exclusion decision
-    [[ -n "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" ]] && \
-      echo "${file}:0" >> "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+    # Cache exclusion decision (use per-process cache in parallel mode)
+    [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:0" >> "$cache_file"
     return 1
   fi
 
-  # Cache tracking decision
-  [[ -n "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE" ]] && \
-    echo "${file}:1" >> "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+  # Cache tracking decision (use per-process cache in parallel mode)
+  [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:1" >> "$cache_file"
 
   # Track this file for later reporting
   # In parallel mode, use a per-process file to avoid race conditions
@@ -266,10 +294,29 @@ function bashunit::coverage::get_hit_lines() {
     return
   fi
 
-  # Count unique lines hit for this file
-  # Use subshell with || echo 0 to handle no matches gracefully in strict mode
-  (grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null || true) | \
-    cut -d: -f2 | sort -u | wc -l | tr -d ' '
+  # Get unique hit line numbers
+  local hit_lines
+  hit_lines=$( (grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null || true) | \
+    cut -d: -f2 | sort -u)
+
+  if [[ -z "$hit_lines" ]]; then
+    echo "0"
+    return
+  fi
+
+  # Only count hits that correspond to executable lines
+  # This prevents >100% coverage when DEBUG trap fires on non-executable lines
+  local count=0
+  local line_num
+  for line_num in $hit_lines; do
+    local line_content
+    line_content=$(sed -n "${line_num}p" "$file" 2>/dev/null) || continue
+    if bashunit::coverage::is_executable_line "$line_content" "$line_num"; then
+      ((count++))
+    fi
+  done
+
+  echo "$count"
 }
 
 function bashunit::coverage::get_line_hits() {

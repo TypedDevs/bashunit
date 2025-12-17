@@ -619,6 +619,11 @@ function bashunit::runner::cleanup_on_exit() {
   local test_file="$1"
   local exit_code="$2"
 
+  # Disable coverage trap before cleanup to avoid interference
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::disable_trap
+  fi
+
   set +e
   # Don't use || here - it disables ERR trap in the entire call chain
   bashunit::runner::run_tear_down "$test_file"

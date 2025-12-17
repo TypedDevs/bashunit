@@ -1,8 +1,28 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2317
 
+# Save original coverage state to restore after tests
+_ORIG_COVERAGE_DATA_FILE=""
+_ORIG_COVERAGE_TRACKED_FILES=""
+_ORIG_COVERAGE_TRACKED_CACHE_FILE=""
+_ORIG_COVERAGE=""
+_ORIG_COVERAGE_PATHS=""
+_ORIG_COVERAGE_EXCLUDE=""
+_ORIG_COVERAGE_REPORT=""
+_ORIG_COVERAGE_MIN=""
+
 function set_up() {
-  # Reset coverage state
+  # Save original coverage state
+  _ORIG_COVERAGE_DATA_FILE="$_BASHUNIT_COVERAGE_DATA_FILE"
+  _ORIG_COVERAGE_TRACKED_FILES="$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  _ORIG_COVERAGE_TRACKED_CACHE_FILE="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+  _ORIG_COVERAGE="${BASHUNIT_COVERAGE:-}"
+  _ORIG_COVERAGE_PATHS="${BASHUNIT_COVERAGE_PATHS:-}"
+  _ORIG_COVERAGE_EXCLUDE="${BASHUNIT_COVERAGE_EXCLUDE:-}"
+  _ORIG_COVERAGE_REPORT="${BASHUNIT_COVERAGE_REPORT:-}"
+  _ORIG_COVERAGE_MIN="${BASHUNIT_COVERAGE_MIN:-}"
+
+  # Reset coverage state for testing
   _BASHUNIT_COVERAGE_DATA_FILE=""
   _BASHUNIT_COVERAGE_TRACKED_FILES=""
   _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE=""
@@ -14,17 +34,42 @@ function set_up() {
 }
 
 function tear_down() {
-  # Clean up any coverage temp files
-  if [[ -n "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+  # Clean up any coverage temp files created by tests
+  if [[ -n "$_BASHUNIT_COVERAGE_DATA_FILE" && "$_BASHUNIT_COVERAGE_DATA_FILE" != "$_ORIG_COVERAGE_DATA_FILE" ]]; then
     local coverage_dir
     coverage_dir=$(dirname "$_BASHUNIT_COVERAGE_DATA_FILE")
     rm -rf "$coverage_dir" 2>/dev/null || true
   fi
-  unset BASHUNIT_COVERAGE
-  unset BASHUNIT_COVERAGE_PATHS
-  unset BASHUNIT_COVERAGE_EXCLUDE
-  unset BASHUNIT_COVERAGE_REPORT
-  unset BASHUNIT_COVERAGE_MIN
+
+  # Restore original coverage state
+  _BASHUNIT_COVERAGE_DATA_FILE="$_ORIG_COVERAGE_DATA_FILE"
+  _BASHUNIT_COVERAGE_TRACKED_FILES="$_ORIG_COVERAGE_TRACKED_FILES"
+  _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="$_ORIG_COVERAGE_TRACKED_CACHE_FILE"
+  if [[ -n "$_ORIG_COVERAGE" ]]; then
+    export BASHUNIT_COVERAGE="$_ORIG_COVERAGE"
+  else
+    unset BASHUNIT_COVERAGE
+  fi
+  if [[ -n "$_ORIG_COVERAGE_PATHS" ]]; then
+    export BASHUNIT_COVERAGE_PATHS="$_ORIG_COVERAGE_PATHS"
+  else
+    unset BASHUNIT_COVERAGE_PATHS
+  fi
+  if [[ -n "$_ORIG_COVERAGE_EXCLUDE" ]]; then
+    export BASHUNIT_COVERAGE_EXCLUDE="$_ORIG_COVERAGE_EXCLUDE"
+  else
+    unset BASHUNIT_COVERAGE_EXCLUDE
+  fi
+  if [[ -n "$_ORIG_COVERAGE_REPORT" ]]; then
+    export BASHUNIT_COVERAGE_REPORT="$_ORIG_COVERAGE_REPORT"
+  else
+    unset BASHUNIT_COVERAGE_REPORT
+  fi
+  if [[ -n "$_ORIG_COVERAGE_MIN" ]]; then
+    export BASHUNIT_COVERAGE_MIN="$_ORIG_COVERAGE_MIN"
+  else
+    unset BASHUNIT_COVERAGE_MIN
+  fi
 }
 
 function test_coverage_disabled_by_default() {
@@ -322,8 +367,14 @@ function test_coverage_should_track_caches_decisions() {
   bashunit::coverage::should_track "$test_file"
 
   # Verify cache file contains the decision
+  # In parallel mode, cache is written to per-process file
+  local cache_file="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
+  if bashunit::parallel::is_enabled; then
+    cache_file="${cache_file}.$$"
+  fi
+
   local cache_content
-  cache_content=$(cat "$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE")
+  cache_content=$(cat "$cache_file")
 
   assert_contains "${test_file}:" "$cache_content"
 }

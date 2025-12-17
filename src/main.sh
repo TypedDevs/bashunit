@@ -215,6 +215,10 @@ function bashunit::main::cmd_test() {
   # - Pipe failures in test output (set +o pipefail)
   set +euo pipefail
   if [[ -n "$assert_fn" ]]; then
+    # Disable coverage for assert mode - it's meant for running single assertions,
+    # not tracking code coverage. This also prevents issues when parent bashunit
+    # runs with coverage and calls subprocess bashunit with -a flag.
+    export BASHUNIT_COVERAGE=false
     bashunit::main::exec_assert "$assert_fn" "${args[@]}"
   else
     bashunit::main::exec_tests "$filter" "${args[@]}"
