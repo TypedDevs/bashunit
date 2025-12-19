@@ -122,7 +122,7 @@ function bashunit::console_results::print_execution_time() {
 
   if [[ "$time" -lt 1000 ]]; then
     printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
-      "Time taken: $time ms"
+      "Time taken: ${time}ms"
     return
   fi
 
@@ -136,11 +136,70 @@ function bashunit::console_results::print_execution_time() {
     return
   fi
 
-  local remainder_ms=$(( time % 1000 ))
-  local formatted_seconds=$(echo "$time_in_seconds.$remainder_ms" | awk '{printf "%.0f", $1}')
+  local formatted_seconds
+  formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $time / 1000}")
 
   printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
-    "Time taken: $formatted_seconds s"
+    "Time taken: ${formatted_seconds}s"
+}
+
+function bashunit::console_results::format_duration() {
+  local duration_ms="$1"
+
+  if [[ "$duration_ms" -ge 60000 ]]; then
+    local time_in_seconds=$(( duration_ms / 1000 ))
+    local minutes=$(( time_in_seconds / 60 ))
+    local seconds=$(( time_in_seconds % 60 ))
+    echo "${minutes}m ${seconds}s"
+  elif [[ "$duration_ms" -ge 1000 ]]; then
+    local formatted_seconds
+    formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $duration_ms / 1000}")
+    echo "${formatted_seconds}s"
+  else
+    echo "${duration_ms}ms"
+  fi
+}
+
+function bashunit::console_results::print_hook_running() {
+  local hook_name="$1"
+
+  if bashunit::env::is_simple_output_enabled; then
+    return
+  fi
+
+  if bashunit::env::is_failures_only_enabled; then
+    return
+  fi
+
+  if bashunit::parallel::is_enabled; then
+    return
+  fi
+
+  printf "  ${_BASHUNIT_COLOR_FAINT}Running %s...${_BASHUNIT_COLOR_DEFAULT}" "$hook_name"
+}
+
+function bashunit::console_results::print_hook_completed() {
+  local hook_name="$1"
+  local duration_ms="$2"
+
+  if bashunit::env::is_simple_output_enabled; then
+    return
+  fi
+
+  if bashunit::env::is_failures_only_enabled; then
+    return
+  fi
+
+  if bashunit::parallel::is_enabled; then
+    return
+  fi
+
+  local time_display
+  time_display=$(bashunit::console_results::format_duration "$duration_ms")
+
+  printf " %sdone%s %s(%s)%s\n" \
+    "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" \
+    "$_BASHUNIT_COLOR_FAINT" "$time_display" "$_BASHUNIT_COLOR_DEFAULT"
 }
 
 function bashunit::console_results::print_successful_test() {
@@ -174,9 +233,8 @@ function bashunit::console_results::print_successful_test() {
       local seconds=$(( time_in_seconds % 60 ))
       time_display="${minutes}m ${seconds}s"
     elif [[ "$duration" -ge 1000 ]]; then
-      local time_in_seconds=$(( duration / 1000 ))
-      local remainder_ms=$(( duration % 1000 ))
-      local formatted_seconds=$(echo "$time_in_seconds.$remainder_ms" | awk '{printf "%.0f", $1}')
+      local formatted_seconds
+      formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $duration / 1000}")
       time_display="${formatted_seconds}s"
     else
       time_display="${duration}ms"

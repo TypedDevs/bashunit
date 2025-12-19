@@ -3,6 +3,10 @@
 ## Unreleased
 
 ### Added
+- Display `set_up_before_script` and `tear_down_after_script` execution with duration
+    - Shows "Running hook_name... done (Xs)" during test runs
+    - Helps identify slow setup/teardown operations
+    - Suppressed in failures-only and parallel modes
 - Add code coverage tracking with `--coverage` flag (Issue #190)
     - Tracks line coverage using Bash DEBUG trap mechanism
     - Configurable source paths via `--coverage-paths` (default: `src/`)

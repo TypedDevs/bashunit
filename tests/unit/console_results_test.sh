@@ -320,7 +320,7 @@ function test_render_execution_time() {
 
     bashunit::console_results::render_result || true
   )
-  assert_matches "Time taken: ([[:digit:]]+(\.[[:digit:]]+)? (ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
+  assert_matches "Time taken: ([[:digit:]]+(\\.[[:digit:]]+)?(ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
 function test_not_render_execution_time() {
@@ -349,7 +349,7 @@ function test_render_execution_time_on_osx_without_perl() {
     bashunit::console_results::render_result || true
   )
 
-  assert_matches "Time taken: ([[:digit:]]+(\.[[:digit:]]+)? (ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
+  assert_matches "Time taken: ([[:digit:]]+(\\.[[:digit:]]+)?(ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
 function test_render_execution_time_on_osx_with_perl() {
@@ -370,7 +370,7 @@ function test_render_execution_time_on_osx_with_perl() {
     bashunit::console_results::render_result || true
   )
 
-  assert_matches "Time taken: [[:digit:]]+(\.[[:digit:]]+)? ms" "$render_result"
+  assert_matches "Time taken: [[:digit:]]+(\\.[[:digit:]]+)?ms" "$render_result"
 }
 
 function test_render_execution_time_in_minutes() {
@@ -626,8 +626,8 @@ function test_print_successful_test_output_in_seconds() {
   local test_name="a test taking seconds"
 
   assert_matches \
-    "✓ Passed.*$test_name.*5s" \
-    "$(bashunit::console_results::print_successful_test "$test_name" "5000")"
+    "✓ Passed.*$test_name.*5.12s" \
+    "$(bashunit::console_results::print_successful_test "$test_name" "5123")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
