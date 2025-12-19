@@ -163,6 +163,10 @@ function bashunit::console_results::format_duration() {
 function bashunit::console_results::print_hook_running() {
   local hook_name="$1"
 
+  if bashunit::env::is_simple_output_enabled; then
+    return
+  fi
+
   if bashunit::env::is_failures_only_enabled; then
     return
   fi
@@ -171,16 +175,16 @@ function bashunit::console_results::print_hook_running() {
     return
   fi
 
-  if bashunit::env::is_simple_output_enabled; then
-    printf "${_BASHUNIT_COLOR_FAINT}[%s...${_BASHUNIT_COLOR_DEFAULT}" "$hook_name"
-  else
-    printf "  ${_BASHUNIT_COLOR_FAINT}Running %s...${_BASHUNIT_COLOR_DEFAULT}" "$hook_name"
-  fi
+  printf "  ${_BASHUNIT_COLOR_FAINT}Running %s...${_BASHUNIT_COLOR_DEFAULT}" "$hook_name"
 }
 
 function bashunit::console_results::print_hook_completed() {
   local hook_name="$1"
   local duration_ms="$2"
+
+  if bashunit::env::is_simple_output_enabled; then
+    return
+  fi
 
   if bashunit::env::is_failures_only_enabled; then
     return
@@ -193,13 +197,9 @@ function bashunit::console_results::print_hook_completed() {
   local time_display
   time_display=$(bashunit::console_results::format_duration "$duration_ms")
 
-  if bashunit::env::is_simple_output_enabled; then
-    printf " %s] " "$time_display"
-  else
-    printf " %sdone%s %s(%s)%s\n" \
-      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" \
-      "$_BASHUNIT_COLOR_FAINT" "$time_display" "$_BASHUNIT_COLOR_DEFAULT"
-  fi
+  printf " %sdone%s %s(%s)%s\n" \
+    "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" \
+    "$_BASHUNIT_COLOR_FAINT" "$time_display" "$_BASHUNIT_COLOR_DEFAULT"
 }
 
 function bashunit::console_results::print_successful_test() {

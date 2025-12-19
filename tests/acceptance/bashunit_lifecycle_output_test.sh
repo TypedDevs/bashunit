@@ -154,7 +154,7 @@ EOF
   assert_not_contains "Running tear_down_after_script" "$output"
 }
 
-function test_hook_visibility_abbreviated_in_simple_mode() {
+function test_hook_visibility_suppressed_in_simple_mode() {
   local test_file="$TEST_DIR/test_hook_visibility_simple.sh"
   cat > "$test_file" << 'EOF'
 #!/usr/bin/env bash
@@ -176,9 +176,8 @@ EOF
   # Explicitly set simple mode and disable parallel to test simple output format
   output=$(BASHUNIT_SIMPLE_OUTPUT=true BASHUNIT_PARALLEL_RUN=false ./bashunit --simple "$test_file" 2>&1)
 
-  assert_contains "[set_up_before_script..." "$output"
-  assert_contains "[tear_down_after_script..." "$output"
-  assert_not_contains "Running set_up_before_script..." "$output"
+  assert_not_contains "set_up_before_script" "$output"
+  assert_not_contains "tear_down_after_script" "$output"
 }
 
 function test_hook_visibility_not_shown_when_hooks_not_defined() {
