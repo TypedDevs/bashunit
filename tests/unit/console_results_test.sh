@@ -626,8 +626,8 @@ function test_print_successful_test_output_in_seconds() {
   local test_name="a test taking seconds"
 
   assert_matches \
-    "✓ Passed.*$test_name.*5.00s" \
-    "$(bashunit::console_results::print_successful_test "$test_name" "5000")"
+    "✓ Passed.*$test_name.*5.12s" \
+    "$(bashunit::console_results::print_successful_test "$test_name" "5123")"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }

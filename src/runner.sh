@@ -35,6 +35,16 @@ function bashunit::runner::load_test_files() {
     source "$test_file"
     # Update function cache after sourcing new test file
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    # Check if any tests match the filter before rendering header or running hooks
+    local filtered_functions
+    filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+    local functions_for_script
+    functions_for_script=$(bashunit::runner::functions_for_script "$test_file" "$filtered_functions")
+    if [[ -z "$functions_for_script" ]]; then
+      bashunit::runner::clean_set_up_and_tear_down_after_script
+      bashunit::runner::restore_workdir
+      continue
+    fi
     # Render header BEFORE set_up_before_script so user sees activity immediately
     bashunit::runner::render_running_file_header "$test_file"
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
@@ -278,7 +288,6 @@ function bashunit::runner::call_test_functions() {
     return
   fi
 
-  # Header is now rendered in load_test_files() before set_up_before_script
   bashunit::helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
