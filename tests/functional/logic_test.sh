@@ -5,6 +5,14 @@ ROOT_DIR="$(bashunit::current_dir)"
 
 SCRIPT="$ROOT_DIR/logic.sh"
 
+function set_up_before_script() {
+  ((1 + 1))
+}
+
+function tear_down_after_script() {
+  ((1 + 1))
+}
+
 function test_text_should_be_equal() {
   assert_same "expected 123" "$($SCRIPT "123")"
 }

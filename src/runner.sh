@@ -35,6 +35,8 @@ function bashunit::runner::load_test_files() {
     source "$test_file"
     # Update function cache after sourcing new test file
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    # Render header BEFORE set_up_before_script so user sees activity immediately
+    bashunit::runner::render_running_file_header "$test_file"
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
     bashunit::runner::run_set_up_before_script "$test_file"
     local setup_before_script_status=$?
@@ -276,7 +278,7 @@ function bashunit::runner::call_test_functions() {
     return
   fi
 
-  bashunit::runner::render_running_file_header "$script"
+  # Header is now rendered in load_test_files() before set_up_before_script
   bashunit::helper::check_duplicate_functions "$script" || true
 
   for fn_name in "${functions_to_run[@]}"; do
@@ -306,10 +308,6 @@ function bashunit::runner::call_test_functions() {
     done
     unset fn_name
   done
-
-  if ! bashunit::env::is_simple_output_enabled; then
-    echo ""
-  fi
 }
 
 function bashunit::runner::call_bench_functions() {
@@ -871,7 +869,33 @@ function bashunit::runner::run_set_up() {
 function bashunit::runner::run_set_up_before_script() {
   local test_file="$1"
   bashunit::internal_log "run_set_up_before_script"
-  bashunit::runner::execute_file_hook 'set_up_before_script' "$test_file" true
+
+  # Check if hook exists first
+  if ! declare -F "set_up_before_script" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  # Print "Running..." message
+  bashunit::console_results::print_hook_running "set_up_before_script"
+
+  local start_time
+  start_time=$(bashunit::clock::now)
+
+  # Execute the hook (render_header=false since header is already rendered)
+  bashunit::runner::execute_file_hook 'set_up_before_script' "$test_file" false
+  local status=$?
+
+  local end_time
+  end_time=$(bashunit::clock::now)
+  local duration_ns=$((end_time - start_time))
+  local duration_ms=$((duration_ns / 1000000))
+
+  # Print completion message only if hook succeeded
+  if [[ $status -eq 0 ]]; then
+    bashunit::console_results::print_hook_completed "set_up_before_script" "$duration_ms"
+  fi
+
+  return $status
 }
 
 function bashunit::runner::run_tear_down() {
@@ -960,7 +984,46 @@ function bashunit::runner::clear_mocks() {
 function bashunit::runner::run_tear_down_after_script() {
   local test_file="$1"
   bashunit::internal_log "run_tear_down_after_script"
+
+  # Check if hook exists first
+  if ! declare -F "tear_down_after_script" >/dev/null 2>&1; then
+    # Add blank line after tests if no tear_down hook
+    if ! bashunit::env::is_simple_output_enabled && \
+       ! bashunit::env::is_failures_only_enabled && \
+       ! bashunit::parallel::is_enabled; then
+      echo ""
+    fi
+    return 0
+  fi
+
+  # Print "Running..." message
+  bashunit::console_results::print_hook_running "tear_down_after_script"
+
+  local start_time
+  start_time=$(bashunit::clock::now)
+
+  # Execute the hook
   bashunit::runner::execute_file_hook 'tear_down_after_script' "$test_file"
+  local status=$?
+
+  local end_time
+  end_time=$(bashunit::clock::now)
+  local duration_ns=$((end_time - start_time))
+  local duration_ms=$((duration_ns / 1000000))
+
+  # Print completion message only if hook succeeded
+  if [[ $status -eq 0 ]]; then
+    bashunit::console_results::print_hook_completed "tear_down_after_script" "$duration_ms"
+  fi
+
+  # Add blank line after tear_down output
+  if ! bashunit::env::is_simple_output_enabled && \
+     ! bashunit::env::is_failures_only_enabled && \
+     ! bashunit::parallel::is_enabled; then
+    echo ""
+  fi
+
+  return $status
 }
 
 function bashunit::runner::clean_set_up_and_tear_down_after_script() {
