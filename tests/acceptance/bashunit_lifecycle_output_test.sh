@@ -121,7 +121,8 @@ function test_dummy() {
 EOF
 
   local output
-  output=$(./bashunit "$test_file" 2>&1)
+  # Explicitly disable simple/parallel modes to ensure normal output
+  output=$(BASHUNIT_SIMPLE_OUTPUT=false BASHUNIT_PARALLEL_RUN=false ./bashunit "$test_file" 2>&1)
 
   assert_contains "Running set_up_before_script..." "$output"
   assert_contains "done" "$output"
@@ -172,7 +173,8 @@ function test_dummy() {
 EOF
 
   local output
-  output=$(./bashunit --simple "$test_file" 2>&1)
+  # Explicitly set simple mode and disable parallel to test simple output format
+  output=$(BASHUNIT_SIMPLE_OUTPUT=true BASHUNIT_PARALLEL_RUN=false ./bashunit --simple "$test_file" 2>&1)
 
   assert_contains "[set_up_before_script..." "$output"
   assert_contains "[tear_down_after_script..." "$output"
