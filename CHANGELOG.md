@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.31.0](https://github.com/TypedDevs/bashunit/compare/0.30.0...0.31.0) - 2025-12-19
+
 ### Added
 - Display `set_up_before_script` and `tear_down_after_script` execution with duration
     - Shows "Running hook_name... done (Xs)" during test runs
