@@ -989,8 +989,8 @@ function bashunit::runner::run_tear_down_after_script() {
   if ! declare -F "tear_down_after_script" >/dev/null 2>&1; then
     # Add blank line after tests if no tear_down hook
     if ! bashunit::env::is_simple_output_enabled && \
-       ! bashunit::env::is_failures_only_enabled && \
-       ! bashunit::parallel::is_enabled; then
+        ! bashunit::env::is_failures_only_enabled && \
+        ! bashunit::parallel::is_enabled; then
       echo ""
     fi
     return 0
@@ -1018,8 +1018,8 @@ function bashunit::runner::run_tear_down_after_script() {
 
   # Add blank line after tear_down output
   if ! bashunit::env::is_simple_output_enabled && \
-     ! bashunit::env::is_failures_only_enabled && \
-     ! bashunit::parallel::is_enabled; then
+      ! bashunit::env::is_failures_only_enabled && \
+      ! bashunit::parallel::is_enabled; then
     echo ""
   fi
 

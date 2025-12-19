@@ -196,7 +196,9 @@ function bashunit::console_results::print_hook_completed() {
   if bashunit::env::is_simple_output_enabled; then
     printf " %s] " "$time_display"
   else
-    printf " ${_BASHUNIT_COLOR_PASSED}done${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_FAINT}(%s)${_BASHUNIT_COLOR_DEFAULT}\n" "$time_display"
+    printf " %sdone%s %s(%s)%s\n" \
+      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" \
+      "$_BASHUNIT_COLOR_FAINT" "$time_display" "$_BASHUNIT_COLOR_DEFAULT"
   fi
 }
 

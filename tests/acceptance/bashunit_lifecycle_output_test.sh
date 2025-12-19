@@ -103,7 +103,7 @@ EOF
 }
 
 function test_hook_visibility_shows_running_message_in_normal_mode() {
-  local test_file="$TEST_DIR/test_hook_visibility.sh"
+  local test_file="$TEST_DIR/test_hook_visibility_normal.sh"
   cat > "$test_file" << 'EOF'
 #!/usr/bin/env bash
 
@@ -115,7 +115,7 @@ function tear_down_after_script() {
   true
 }
 
-function test_dummy() {
+function test_hook_normal_mode() {
   assert_same "foo" "foo"
 }
 EOF
@@ -130,7 +130,7 @@ EOF
 }
 
 function test_hook_visibility_suppressed_in_failures_only_mode() {
-  local test_file="$TEST_DIR/test_hook_visibility.sh"
+  local test_file="$TEST_DIR/test_hook_visibility_failures.sh"
   cat > "$test_file" << 'EOF'
 #!/usr/bin/env bash
 
@@ -142,7 +142,7 @@ function tear_down_after_script() {
   true
 }
 
-function test_dummy() {
+function test_hook_failures_only() {
   assert_same "foo" "foo"
 }
 EOF
@@ -155,7 +155,7 @@ EOF
 }
 
 function test_hook_visibility_abbreviated_in_simple_mode() {
-  local test_file="$TEST_DIR/test_hook_visibility.sh"
+  local test_file="$TEST_DIR/test_hook_visibility_simple.sh"
   cat > "$test_file" << 'EOF'
 #!/usr/bin/env bash
 
@@ -167,7 +167,7 @@ function tear_down_after_script() {
   true
 }
 
-function test_dummy() {
+function test_hook_simple_mode() {
   assert_same "foo" "foo"
 }
 EOF
@@ -186,13 +186,13 @@ function test_hook_visibility_not_shown_when_hooks_not_defined() {
   cat > "$test_file" << 'EOF'
 #!/usr/bin/env bash
 
-function test_dummy() {
+function test_no_hooks_defined() {
   assert_same "foo" "foo"
 }
 EOF
 
   local output
-  output=$(./bashunit "$test_file" 2>&1)
+  output=$(BASHUNIT_SIMPLE_OUTPUT=false BASHUNIT_PARALLEL_RUN=false ./bashunit "$test_file" 2>&1)
 
   assert_not_contains "Running set_up_before_script" "$output"
   assert_not_contains "Running tear_down_after_script" "$output"
