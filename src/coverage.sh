@@ -18,6 +18,41 @@ _BASHUNIT_COVERAGE_TEST_HITS_FILE="${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}"
 # Uses $BASH_SUBSHELL which is Bash 3.2 compatible (unlike $BASHPID)
 _BASHUNIT_COVERAGE_SUBSHELL_LEVEL="${_BASHUNIT_COVERAGE_SUBSHELL_LEVEL:-}"
 
+# Auto-discover coverage paths from test file names
+# When no explicit coverage paths are set, find source files matching test file base names
+# Example: tests/unit/assert_test.sh -> finds src/assert.sh, src/assert_*.sh
+function bashunit::coverage::auto_discover_paths() {
+  local project_root
+  project_root="$(pwd)"
+  local -a discovered_paths=()
+
+  for test_file in "$@"; do
+    # Extract base name: tests/unit/assert_test.sh -> assert_test.sh
+    local file_basename
+    file_basename=$(basename "$test_file")
+
+    # Remove test suffixes to get source name: assert_test.sh -> assert
+    local source_name="${file_basename%_test.sh}"
+    [[ "$source_name" == "$file_basename" ]] && source_name="${file_basename%Test.sh}"
+    [[ "$source_name" == "$file_basename" ]] && continue  # Not a test file pattern
+
+    # Find matching source files recursively
+    while IFS= read -r -d '' found_file; do
+      # Skip test files and vendor directories
+      [[ "$found_file" == *test* ]] && continue
+      [[ "$found_file" == *Test* ]] && continue
+      [[ "$found_file" == *vendor* ]] && continue
+      [[ "$found_file" == *node_modules* ]] && continue
+      discovered_paths+=("$found_file")
+    done < <(find "$project_root" -name "${source_name}*.sh" -type f -print0 2>/dev/null)
+  done
+
+  # Return unique paths, comma-separated
+  if [[ ${#discovered_paths[@]} -gt 0 ]]; then
+    printf '%s\n' "${discovered_paths[@]}" | sort -u | tr '\n' ',' | sed 's/,$//'
+  fi
+}
+
 function bashunit::coverage::init() {
   if ! bashunit::env::is_coverage_enabled; then
     return 0

@@ -220,8 +220,8 @@ function test_coverage_cleanup_removes_temp_files() {
   assert_directory_not_exists "$coverage_dir"
 }
 
-function test_coverage_default_paths_is_src() {
-  assert_equals "src/" "$_BASHUNIT_DEFAULT_COVERAGE_PATHS"
+function test_coverage_default_paths_is_empty_for_auto_discovery() {
+  assert_equals "" "$_BASHUNIT_DEFAULT_COVERAGE_PATHS"
 }
 
 function test_coverage_default_report_is_lcov() {
