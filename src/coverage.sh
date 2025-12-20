@@ -1047,14 +1047,14 @@ function bashunit::coverage::generate_file_html() {
     [[ -z "$_line_and_test" ]] && continue
     local _tln="${_line_and_test%%|*}"
     local _tinfo="${_line_and_test#*|}"
-    if [[ -n "${tests_by_line[$_tln]:-}" ]]; then
+    if [[ -n "${tests_by_line[_tln]:-}" ]]; then
       # Append only if not already present (avoid duplicates)
       # Use newline boundaries to prevent false positives (e.g., test_foo matching test_foo_bar)
-      if [[ $'\n'"${tests_by_line[$_tln]}"$'\n' != *$'\n'"$_tinfo"$'\n'* ]]; then
-        tests_by_line[$_tln]="${tests_by_line[$_tln]}"$'\n'"${_tinfo}"
+      if [[ $'\n'"${tests_by_line[_tln]}"$'\n' != *$'\n'"$_tinfo"$'\n'* ]]; then
+        tests_by_line[_tln]="${tests_by_line[_tln]}"$'\n'"${_tinfo}"
       fi
     else
-      tests_by_line[$_tln]="$_tinfo"
+      tests_by_line[_tln]="$_tinfo"
     fi
   done < <(bashunit::coverage::get_all_line_tests "$file")
 
