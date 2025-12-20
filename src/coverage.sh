@@ -632,13 +632,12 @@ function bashunit::coverage::generate_index_html() {
   shift 4
   local file_data=("$@")
 
-  # Determine total color class
-  local total_class="low"
-  if [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-    total_class="high"
-  elif [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-    total_class="medium"
-  fi
+  # Calculate uncovered lines and file count
+  local total_uncovered=$((total_executable - total_hit))
+  local file_count=${#file_data[@]}
+
+  # Calculate gauge stroke offset (440 is full circle circumference)
+  local gauge_offset=$((440 - (440 * total_pct / 100)))
 
   {
     cat << 'EOF'
@@ -647,86 +646,274 @@ function bashunit::coverage::generate_index_html() {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Coverage Report</title>
+  <title>Coverage Report | bashunit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
+    :root {
+      --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
+      --success: #10b981; --success-light: #34d399;
+      --warning: #f59e0b; --warning-light: #fbbf24;
+      --danger: #ef4444; --danger-light: #f87171;
+      --bg-dark: #0f172a; --bg-card: #1e293b; --bg-hover: #334155;
+      --text-primary: #f8fafc; --text-secondary: #94a3b8; --text-muted: #64748b;
+      --border: #334155;
     }
-    .container { max-width: 1200px; margin: 0 auto; }
-    h1 { color: #333; margin-bottom: 20px; }
-    .summary {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0; position: relative; overflow: hidden; }
+    .header::before { content: ''; position: absolute; inset: 0; background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); opacity: 0.5; }
+    .header-content { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; backdrop-filter: blur(10px); }
+    .logo-text { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-text span { opacity: 0.7; font-weight: 400; }
+    .header-badge { background: rgba(255,255,255,0.2); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; backdrop-filter: blur(10px); }
+    .header-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -1px; }
+    .header-subtitle { font-size: 1.1rem; opacity: 0.9; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 20px; max-width: 1400px; margin: -50px auto 0; padding: 0 30px; position: relative; z-index: 10; }
+    .stat-card { background: var(--bg-card); border-radius: 16px; padding: 24px; border: 1px solid var(--border); transition: all 0.3s ease; position: relative; overflow: hidden; animation: fadeInUp 0.5s ease-out forwards; opacity: 0; }
+    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; }
+    .stat-card.coverage::before { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-card.lines::before { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .stat-card.covered::before { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
+    .stat-card.uncovered::before { background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%); }
+    .stat-card.files::before { background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%); }
+    .stat-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+    .stat-card:nth-child(1) { animation-delay: 0.1s; } .stat-card:nth-child(2) { animation-delay: 0.2s; } .stat-card:nth-child(3) { animation-delay: 0.3s; } .stat-card:nth-child(4) { animation-delay: 0.4s; } .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin-bottom: 16px; }
+    .stat-card.coverage .stat-icon { background: rgba(99, 102, 241, 0.2); }
+    .stat-card.lines .stat-icon { background: rgba(79, 209, 254, 0.2); }
+    .stat-card.covered .stat-icon { background: rgba(16, 185, 129, 0.2); }
+    .stat-card.uncovered .stat-icon { background: rgba(239, 68, 68, 0.2); }
+    .stat-card.files .stat-icon { background: rgba(245, 158, 11, 0.2); }
+    .stat-value { font-size: 2.5rem; font-weight: 800; letter-spacing: -1px; margin-bottom: 4px; }
+    .stat-card.coverage .stat-value { color: var(--primary-light); }
+    .stat-card.lines .stat-value { color: #4facfe; }
+    .stat-card.covered .stat-value { color: var(--success); }
+    .stat-card.uncovered .stat-value { color: var(--danger); }
+    .stat-card.files .stat-value { color: var(--warning); }
+    .stat-label { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
+    .main { max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
+    .gauge-section { background: var(--bg-card); border-radius: 20px; padding: 40px; margin-bottom: 30px; border: 1px solid var(--border); display: flex; align-items: center; gap: 60px; }
+    .gauge-container { position: relative; width: 200px; height: 200px; flex-shrink: 0; }
+    .gauge-bg { fill: none; stroke: var(--bg-hover); stroke-width: 20; }
+    .gauge-fill { fill: none; stroke: url(#gaugeGradient); stroke-width: 20; stroke-linecap: round; transform: rotate(-90deg); transform-origin: center; animation: gaugeAnimation 1.5s ease-out forwards; }
+    @keyframes gaugeAnimation { from { stroke-dashoffset: 440; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .gauge-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
+    .gauge-info { flex: 1; }
+    .gauge-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
+    .gauge-description { color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 24px; line-height: 1.7; }
+    .gauge-breakdown { display: flex; gap: 30px; flex-wrap: wrap; }
+    .breakdown-item { display: flex; align-items: center; gap: 10px; }
+    .breakdown-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .breakdown-dot.covered { background: var(--success); }
+    .breakdown-dot.uncovered { background: var(--danger); }
+    .breakdown-dot.ignored { background: var(--text-muted); }
+    .breakdown-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .breakdown-value { font-weight: 600; color: var(--text-primary); }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+    .section-title { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 12px; }
+    .section-title::before { content: ''; width: 4px; height: 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 2px; }
+    .legend { display: flex; gap: 20px; background: var(--bg-hover); padding: 12px 20px; border-radius: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: var(--text-secondary); }
+    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+    .legend-color.high { background: var(--success); }
+    .legend-color.medium { background: var(--warning); }
+    .legend-color.low { background: var(--danger); }
+    .files-table { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+    .files-table table { width: 100%; border-collapse: collapse; }
+    .files-table th { background: var(--bg-hover); padding: 16px 24px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+    .files-table td { padding: 20px 24px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .files-table tr:last-child td { border-bottom: none; }
+    .files-table tbody tr { transition: all 0.2s ease; animation: fadeInUp 0.5s ease-out forwards; opacity: 0; }
+    .files-table tbody tr:nth-child(1) { animation-delay: 0.6s; } .files-table tbody tr:nth-child(2) { animation-delay: 0.7s; } .files-table tbody tr:nth-child(3) { animation-delay: 0.8s; } .files-table tbody tr:nth-child(4) { animation-delay: 0.9s; } .files-table tbody tr:nth-child(5) { animation-delay: 1.0s; }
+    .files-table tbody tr:hover { background: var(--bg-hover); }
+    .file-info { display: flex; align-items: center; gap: 16px; }
+    .file-icon { width: 44px; height: 44px; background: var(--bg-hover); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+    .file-name { font-weight: 600; color: var(--text-primary); text-decoration: none; font-size: 1rem; transition: color 0.2s; }
+    .file-name:hover { color: var(--primary-light); }
+    .file-path { color: var(--text-muted); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+    .lines-info { text-align: center; }
+    .lines-covered { font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
+    .lines-total { color: var(--text-muted); font-size: 0.85rem; }
+    .coverage-cell { width: 200px; }
+    .coverage-bar-container { display: flex; align-items: center; gap: 16px; }
+    .coverage-bar { flex: 1; height: 10px; background: var(--bg-hover); border-radius: 5px; overflow: hidden; }
+    .coverage-bar-fill { height: 100%; border-radius: 5px; transition: width 1s ease-out; }
+    .coverage-bar-fill.high { background: linear-gradient(90deg, var(--success) 0%, var(--success-light) 100%); }
+    .coverage-bar-fill.medium { background: linear-gradient(90deg, var(--warning) 0%, var(--warning-light) 100%); }
+    .coverage-bar-fill.low { background: linear-gradient(90deg, var(--danger) 0%, var(--danger-light) 100%); }
+    .coverage-percent { font-weight: 700; font-size: 1rem; min-width: 50px; text-align: right; }
+    .coverage-percent.high { color: var(--success); }
+    .coverage-percent.medium { color: var(--warning); }
+    .coverage-percent.low { color: var(--danger); }
+    .view-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+    .view-btn:hover { background: var(--primary); border-color: var(--primary); transform: translateX(4px); }
+    .footer { max-width: 1400px; margin: 0 auto; padding: 40px 30px; text-align: center; border-top: 1px solid var(--border); }
+    .footer-content { display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .footer-text { color: var(--text-muted); font-size: 0.9rem; }
+    .footer-link { color: var(--primary-light); text-decoration: none; font-weight: 500; transition: color 0.2s; }
+    .footer-link:hover { color: var(--primary); }
+    .footer-divider { width: 4px; height: 4px; background: var(--text-muted); border-radius: 50%; }
+    @media (max-width: 768px) {
+      .header-content { padding: 30px 20px; } .header-title { font-size: 1.8rem; }
+      .stats-grid { padding: 0 20px; gap: 15px; margin-top: -30px; }
+      .stat-card { padding: 20px; } .stat-value { font-size: 2rem; }
+      .main { padding: 30px 20px; }
+      .gauge-section { flex-direction: column; padding: 30px; gap: 30px; }
+      .gauge-container { width: 160px; height: 160px; } .gauge-percent { font-size: 2.5rem; }
+      .gauge-breakdown { flex-direction: column; gap: 15px; }
+      .files-table th, .files-table td { padding: 15px; }
+      .coverage-cell { width: auto; }
+      .coverage-bar-container { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .coverage-bar { width: 100%; }
     }
-    .summary-title { font-size: 1.2em; margin-bottom: 10px; color: #666; }
-    .summary-pct { font-size: 2.5em; font-weight: bold; }
-    .summary-pct.high { color: #28a745; }
-    .summary-pct.medium { color: #ffc107; }
-    .summary-pct.low { color: #dc3545; }
-    .summary-detail { color: #666; margin-top: 5px; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    th, td { padding: 12px 15px; text-align: left; }
-    th { background: #f8f9fa; font-weight: 600; color: #333; border-bottom: 2px solid #dee2e6; }
-    td { border-bottom: 1px solid #dee2e6; }
-    tr:last-child td { border-bottom: none; }
-    tr:hover { background: #f8f9fa; }
-    .file-link { color: #007bff; text-decoration: none; }
-    .file-link:hover { text-decoration: underline; }
-    .pct { font-weight: 600; }
-    .pct.high { color: #28a745; }
-    .pct.medium { color: #ffc107; }
-    .pct.low { color: #dc3545; }
-    .progress-bar {
-      width: 100px;
-      height: 8px;
-      background: #e9ecef;
-      border-radius: 4px;
-      overflow: hidden;
-    }
-    .progress-fill { height: 100%; border-radius: 4px; }
-    .progress-fill.high { background: #28a745; }
-    .progress-fill.medium { background: #ffc107; }
-    .progress-fill.low { background: #dc3545; }
-    .text-right { text-align: right; }
-    .text-center { text-align: center; }
-    .footer { margin-top: 20px; color: #666; font-size: 0.9em; text-align: center; }
-    .footer a { color: #007bff; text-decoration: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Coverage Report</h1>
-    <div class="summary">
-      <div class="summary-title">Total Coverage</div>
+  <header class="header">
+    <div class="header-content">
+      <div class="header-top">
+        <div class="logo">
+          <div class="logo-icon">🧪</div>
+          <div class="logo-text">bashunit <span>coverage</span></div>
+        </div>
 EOF
-    echo "      <div class=\"summary-pct $total_class\">${total_pct}%</div>"
-    echo "      <div class=\"summary-detail\">${total_hit} of ${total_executable} lines covered</div>"
+    echo "        <div class=\"header-badge\">v${BASHUNIT_VERSION:-0.0.0}</div>"
     cat << 'EOF'
+      </div>
+      <h1 class="header-title">Code Coverage Report</h1>
+      <p class="header-subtitle">Comprehensive line-by-line coverage analysis for your bash scripts</p>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>File</th>
-          <th class="text-right">Lines</th>
-          <th class="text-center">Coverage</th>
-          <th style="width: 120px;"></th>
-        </tr>
-      </thead>
-      <tbody>
+  </header>
+  <div class="stats-grid">
+    <div class="stat-card coverage">
+      <div class="stat-icon">📊</div>
+EOF
+    echo "      <div class=\"stat-value\">${total_pct}%</div>"
+    cat << 'EOF'
+      <div class="stat-label">Total Coverage</div>
+    </div>
+    <div class="stat-card lines">
+      <div class="stat-icon">📝</div>
+EOF
+    echo "      <div class=\"stat-value\">${total_executable}</div>"
+    cat << 'EOF'
+      <div class="stat-label">Total Lines</div>
+    </div>
+    <div class="stat-card covered">
+      <div class="stat-icon">✅</div>
+EOF
+    echo "      <div class=\"stat-value\">${total_hit}</div>"
+    cat << 'EOF'
+      <div class="stat-label">Lines Covered</div>
+    </div>
+    <div class="stat-card uncovered">
+      <div class="stat-icon">❌</div>
+EOF
+    echo "      <div class=\"stat-value\">${total_uncovered}</div>"
+    cat << 'EOF'
+      <div class="stat-label">Lines Uncovered</div>
+    </div>
+    <div class="stat-card files">
+      <div class="stat-icon">📁</div>
+EOF
+    echo "      <div class=\"stat-value\">${file_count}</div>"
+    cat << 'EOF'
+      <div class="stat-label">Source Files</div>
+    </div>
+  </div>
+  <main class="main">
+    <section class="gauge-section">
+      <div class="gauge-container">
+        <svg viewBox="0 0 160 160" width="200" height="200">
+          <defs>
+            <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#667eea"/>
+              <stop offset="100%" style="stop-color:#764ba2"/>
+            </linearGradient>
+          </defs>
+          <circle class="gauge-bg" cx="80" cy="80" r="70"/>
+EOF
+    echo "          <circle class=\"gauge-fill\" cx=\"80\" cy=\"80\" r=\"70\" stroke-dasharray=\"440\" stroke-dashoffset=\"${gauge_offset}\"/>"
+    cat << 'EOF'
+        </svg>
+        <div class="gauge-text">
+EOF
+    echo "          <div class=\"gauge-percent\">${total_pct}%</div>"
+    cat << 'EOF'
+          <div class="gauge-label">Coverage</div>
+        </div>
+      </div>
+      <div class="gauge-info">
+        <h2 class="gauge-title">Overall Code Coverage</h2>
+EOF
+    echo "        <p class=\"gauge-description\">Your test suite executes <strong>${total_hit} out of ${total_executable}</strong> executable lines across ${file_count} source files. Coverage measures which lines of your source code are executed when running tests, helping identify untested code paths.</p>"
+    cat << 'EOF'
+        <div class="gauge-breakdown">
+          <div class="breakdown-item">
+            <span class="breakdown-dot covered"></span>
+            <span class="breakdown-label">Covered:</span>
+EOF
+    echo "            <span class=\"breakdown-value\">${total_hit} lines</span>"
+    cat << 'EOF'
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-dot uncovered"></span>
+            <span class="breakdown-label">Uncovered:</span>
+EOF
+    echo "            <span class=\"breakdown-value\">${total_uncovered} lines</span>"
+    cat << 'EOF'
+          </div>
+          <div class="breakdown-item">
+            <span class="breakdown-dot ignored"></span>
+            <span class="breakdown-label">Non-executable:</span>
+            <span class="breakdown-value">comments, declarations</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section>
+      <div class="section-header">
+        <h2 class="section-title">File Coverage Details</h2>
+        <div class="legend">
+          <div class="legend-item">
+            <span class="legend-color high"></span>
+EOF
+    echo "            <span>≥${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}% High</span>"
+    cat << 'EOF'
+          </div>
+          <div class="legend-item">
+            <span class="legend-color medium"></span>
+EOF
+    echo "            <span>${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}-${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}% Medium</span>"
+    cat << 'EOF'
+          </div>
+          <div class="legend-item">
+            <span class="legend-color low"></span>
+EOF
+    echo "            <span>&lt;${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}% Low</span>"
+    cat << 'EOF'
+          </div>
+        </div>
+      </div>
+      <div class="files-table">
+        <table>
+          <thead>
+            <tr>
+              <th>File</th>
+              <th style="text-align: center;">Lines</th>
+              <th>Coverage</th>
+              <th style="width: 120px;"></th>
+            </tr>
+          </thead>
+          <tbody>
 EOF
 
     for data in "${file_data[@]}"; do
@@ -739,22 +926,51 @@ EOF
         class="medium"
       fi
 
-      echo "        <tr>"
-      echo "          <td><a class=\"file-link\" href=\"files/${safe_filename}.html\">$display_file</a></td>"
-      echo "          <td class=\"text-right\">${hit}/${executable}</td>"
-      echo "          <td class=\"text-center pct $class\">${pct}%</td>"
-      echo "          <td><div class=\"progress-bar\">"
-      echo "<div class=\"progress-fill $class\" style=\"width: ${pct}%;\"></div></div></td>"
-      echo "        </tr>"
+      echo "            <tr>"
+      echo "              <td>"
+      echo "                <div class=\"file-info\">"
+      echo "                  <div class=\"file-icon\">📄</div>"
+      echo "                  <div>"
+      echo "                    <a href=\"files/${safe_filename}.html\" class=\"file-name\">$(basename "$display_file")</a>"
+      echo "                    <div class=\"file-path\">./${display_file}</div>"
+      echo "                  </div>"
+      echo "                </div>"
+      echo "              </td>"
+      echo "              <td>"
+      echo "                <div class=\"lines-info\">"
+      echo "                  <div class=\"lines-covered\">${hit}</div>"
+      echo "                  <div class=\"lines-total\">of ${executable} lines</div>"
+      echo "                </div>"
+      echo "              </td>"
+      echo "              <td class=\"coverage-cell\">"
+      echo "                <div class=\"coverage-bar-container\">"
+      echo "                  <div class=\"coverage-bar\">"
+      echo "                    <div class=\"coverage-bar-fill $class\" style=\"width: ${pct}%;\"></div>"
+      echo "                  </div>"
+      echo "                  <span class=\"coverage-percent $class\">${pct}%</span>"
+      echo "                </div>"
+      echo "              </td>"
+      echo "              <td>"
+      echo "                <a href=\"files/${safe_filename}.html\" class=\"view-btn\">View →</a>"
+      echo "              </td>"
+      echo "            </tr>"
     done
 
     cat << 'EOF'
-      </tbody>
-    </table>
-    <div class="footer">
-      Generated by <a href="https://bashunit.typeddevs.com">bashunit</a>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="footer-content">
+      <span class="footer-text">Generated by</span>
+      <a href="https://bashunit.typeddevs.com" class="footer-link" target="_blank">bashunit</a>
+      <span class="footer-divider"></span>
+      <span class="footer-text">Documentation at</span>
+      <a href="https://bashunit.typeddevs.com/coverage" class="footer-link" target="_blank">bashunit.typeddevs.com/coverage</a>
     </div>
-  </div>
+  </footer>
 </body>
 </html>
 EOF
@@ -770,6 +986,7 @@ function bashunit::coverage::generate_file_html() {
   executable=$(bashunit::coverage::get_executable_lines "$file")
   local hit
   hit=$(bashunit::coverage::get_hit_lines "$file")
+  local uncovered=$((executable - hit))
 
   local pct=0
   if [[ $executable -gt 0 ]]; then
@@ -790,6 +1007,11 @@ function bashunit::coverage::generate_file_html() {
     hits_by_line[_ln]=$_cnt
   done < <(bashunit::coverage::get_all_line_hits "$file")
 
+  # Count total lines and functions
+  local total_lines
+  total_lines=$(wc -l < "$file" | tr -d ' ')
+  local non_executable=$((total_lines - executable))
+
   {
     cat << 'EOF'
 <!DOCTYPE html>
@@ -798,92 +1020,170 @@ function bashunit::coverage::generate_file_html() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 EOF
-    echo "  <title>Coverage: $display_file</title>"
+    echo "  <title>$(basename "$display_file") | Coverage Report</title>"
     cat << 'EOF'
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: #f5f5f5;
+    :root {
+      --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
+      --success: #10b981; --success-bg: rgba(16, 185, 129, 0.15); --success-border: rgba(16, 185, 129, 0.3);
+      --warning: #f59e0b;
+      --danger: #ef4444; --danger-bg: rgba(239, 68, 68, 0.15); --danger-border: rgba(239, 68, 68, 0.3);
+      --bg-dark: #0f172a; --bg-card: #1e293b; --bg-hover: #334155; --bg-code: #0d1117;
+      --text-primary: #f8fafc; --text-secondary: #94a3b8; --text-muted: #64748b;
+      --border: #334155; --line-number-bg: #161b22;
     }
-    .container { max-width: 1400px; margin: 0 auto; }
-    h1 { color: #333; margin-bottom: 5px; font-size: 1.5em; }
-    .breadcrumb { margin-bottom: 20px; }
-    .breadcrumb a { color: #007bff; text-decoration: none; }
-    .breadcrumb a:hover { text-decoration: underline; }
-    .summary {
-      background: white;
-      border-radius: 8px;
-      padding: 15px 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-      display: flex;
-      align-items: center;
-      gap: 20px;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-dark); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+    .header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 20px 30px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
+    .header-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
+    .nav-section { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; }
+    .back-btn:hover { background: var(--primary); border-color: var(--primary); transform: translateX(-4px); }
+    .file-title { display: flex; align-items: center; gap: 12px; }
+    .file-icon { width: 40px; height: 40px; background: var(--bg-hover); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .file-name { font-size: 1.3rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .stats-section { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
+    .stat-item { display: flex; align-items: center; gap: 10px; }
+    .stat-badge { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
+    .stat-badge.coverage.high { background: linear-gradient(135deg, var(--success) 0%, #34d399 100%); color: #000; }
+    .stat-badge.coverage.medium { background: linear-gradient(135deg, var(--warning) 0%, #fbbf24 100%); color: #000; }
+    .stat-badge.coverage.low { background: linear-gradient(135deg, var(--danger) 0%, #f87171 100%); color: #fff; }
+    .stat-badge.lines { background: var(--bg-hover); color: var(--text-primary); }
+    .stat-label { color: var(--text-secondary); font-size: 0.85rem; }
+    .summary-bar { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 20px 30px; }
+    .summary-content { max-width: 1600px; margin: 0 auto; display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+    .progress-section { flex: 1; min-width: 300px; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .progress-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .progress-percent { font-weight: 700; }
+    .progress-percent.high { color: var(--success); }
+    .progress-percent.medium { color: var(--warning); }
+    .progress-percent.low { color: var(--danger); }
+    .progress-bar { height: 12px; background: var(--bg-hover); border-radius: 6px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 6px; transition: width 1s ease-out; }
+    .progress-fill.high { background: linear-gradient(90deg, var(--success) 0%, #34d399 100%); }
+    .progress-fill.medium { background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%); }
+    .progress-fill.low { background: linear-gradient(90deg, var(--danger) 0%, #f87171 100%); }
+    .legend { display: flex; gap: 24px; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: var(--text-secondary); }
+    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+    .legend-color.covered { background: var(--success); }
+    .legend-color.uncovered { background: var(--danger); }
+    .legend-color.neutral { background: var(--text-muted); }
+    .code-container { max-width: 1600px; margin: 30px auto; padding: 0 30px; }
+    .code-wrapper { background: var(--bg-code); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3); }
+    .code-header { background: var(--line-number-bg); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
+    .code-path { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-secondary); }
+    .code-stats { display: flex; gap: 16px; font-size: 0.85rem; }
+    .code-stats span { padding: 4px 12px; background: var(--bg-hover); border-radius: 4px; color: var(--text-secondary); }
+    .code-body { overflow-x: auto; }
+    .code-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; }
+    .code-table tr { transition: background 0.15s; }
+    .code-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+    .line-num { width: 60px; padding: 2px 16px; text-align: right; color: var(--text-muted); background: var(--line-number-bg); border-right: 1px solid var(--border); user-select: none; vertical-align: top; }
+    .hits { width: 60px; padding: 2px 12px; text-align: center; color: var(--text-muted); background: var(--line-number-bg); border-right: 1px solid var(--border); font-size: 0.85em; vertical-align: top; }
+    .hits-badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; font-weight: 600; }
+    .covered .hits-badge { background: var(--success-bg); color: var(--success); }
+    .uncovered .hits-badge { background: var(--danger-bg); color: var(--danger); }
+    .code { padding: 2px 20px; white-space: pre; vertical-align: top; }
+    .covered { background: var(--success-bg); }
+    .covered .line-num, .covered .hits { background: rgba(16, 185, 129, 0.1); border-color: var(--success-border); }
+    .uncovered { background: var(--danger-bg); }
+    .uncovered .line-num, .uncovered .hits { background: rgba(239, 68, 68, 0.1); border-color: var(--danger-border); }
+    .footer { max-width: 1600px; margin: 0 auto; padding: 40px 30px; text-align: center; }
+    .footer-text { color: var(--text-muted); font-size: 0.9rem; }
+    .footer-link { color: var(--primary-light); text-decoration: none; font-weight: 500; }
+    .footer-link:hover { color: var(--primary); }
+    @media (max-width: 768px) {
+      .header { padding: 15px 20px; } .header-content { gap: 15px; }
+      .stats-section { gap: 15px; } .summary-bar { padding: 15px 20px; }
+      .summary-content { gap: 20px; } .code-container { padding: 0 15px; margin: 20px auto; }
+      .code-header { padding: 12px 16px; } .line-num, .hits { padding: 2px 8px; }
+      .code { padding: 2px 12px; }
     }
-    .summary-pct { font-size: 1.8em; font-weight: bold; }
-    .summary-pct.high { color: #28a745; }
-    .summary-pct.medium { color: #ffc107; }
-    .summary-pct.low { color: #dc3545; }
-    .summary-detail { color: #666; }
-    .code-container {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    table { width: 100%; border-collapse: collapse; }
-    tr { line-height: 1.4; }
-    tr:hover { background: rgba(0,0,0,0.02); }
-    .line-num {
-      width: 50px;
-      text-align: right;
-      padding: 0 10px;
-      color: #999;
-      background: #f8f9fa;
-      border-right: 1px solid #e9ecef;
-      user-select: none;
-      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-      font-size: 12px;
-    }
-    .hits {
-      width: 50px;
-      text-align: center;
-      padding: 0 8px;
-      color: #666;
-      background: #f8f9fa;
-      border-right: 1px solid #e9ecef;
-      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-      font-size: 12px;
-    }
-    .code {
-      padding: 0 15px;
-      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
-      font-size: 13px;
-      white-space: pre;
-      overflow-x: auto;
-    }
-    .covered { background-color: #d4edda; }
-    .covered .line-num, .covered .hits { background-color: #c3e6cb; }
-    .uncovered { background-color: #f8d7da; }
-    .uncovered .line-num, .uncovered .hits { background-color: #f5c6cb; }
-    .footer { margin-top: 20px; color: #666; font-size: 0.9em; text-align: center; }
-    .footer a { color: #007bff; text-decoration: none; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="breadcrumb"><a href="../index.html">&larr; Back to Index</a></div>
+  <header class="header">
+    <div class="header-content">
+      <div class="nav-section">
+        <a href="../index.html" class="back-btn">← Back to Overview</a>
+        <div class="file-title">
+          <div class="file-icon">📄</div>
 EOF
-    echo "    <h1>$display_file</h1>"
-    echo "    <div class=\"summary\">"
-    echo "      <div class=\"summary-pct $class\">${pct}%</div>"
-    echo "      <div class=\"summary-detail\">${hit} of ${executable} lines covered</div>"
-    echo "    </div>"
-    echo "    <div class=\"code-container\">"
-    echo "      <table>"
+    echo "          <span class=\"file-name\">$(basename "$display_file")</span>"
+    cat << 'EOF'
+        </div>
+      </div>
+      <div class="stats-section">
+        <div class="stat-item">
+EOF
+    echo "          <span class=\"stat-badge coverage $class\">${pct}%</span>"
+    cat << 'EOF'
+          <span class="stat-label">Coverage</span>
+        </div>
+        <div class="stat-item">
+EOF
+    echo "          <span class=\"stat-badge lines\">${hit}/${executable}</span>"
+    cat << 'EOF'
+          <span class="stat-label">Lines</span>
+        </div>
+      </div>
+    </div>
+  </header>
+  <div class="summary-bar">
+    <div class="summary-content">
+      <div class="progress-section">
+        <div class="progress-header">
+          <span class="progress-label">Line Coverage Progress</span>
+EOF
+    echo "          <span class=\"progress-percent $class\">${pct}%</span>"
+    cat << 'EOF'
+        </div>
+        <div class="progress-bar">
+EOF
+    echo "          <div class=\"progress-fill $class\" style=\"width: ${pct}%;\"></div>"
+    cat << 'EOF'
+        </div>
+      </div>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-color covered"></span>
+EOF
+    echo "          <span>${hit} lines covered</span>"
+    cat << 'EOF'
+        </div>
+        <div class="legend-item">
+          <span class="legend-color uncovered"></span>
+EOF
+    echo "          <span>${uncovered} lines uncovered</span>"
+    cat << 'EOF'
+        </div>
+        <div class="legend-item">
+          <span class="legend-color neutral"></span>
+EOF
+    echo "          <span>${non_executable} non-executable</span>"
+    cat << 'EOF'
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="code-container">
+    <div class="code-wrapper">
+      <div class="code-header">
+EOF
+    echo "        <span class=\"code-path\">./${display_file}</span>"
+    echo "        <div class=\"code-stats\">"
+    echo "          <span>${total_lines} total lines</span>"
+    echo "        </div>"
+    cat << 'EOF'
+      </div>
+      <div class="code-body">
+        <table class="code-table">
+EOF
 
     local lineno=0
     while IFS= read -r line || [[ -n "$line" ]]; do
@@ -898,7 +1198,7 @@ EOF
       if bashunit::coverage::is_executable_line "$line" "$lineno"; then
         # O(1) lookup from pre-loaded array
         local hits=${hits_by_line[$lineno]:-0}
-        hits_display="$hits"
+        hits_display="<span class=\"hits-badge\">${hits}×</span>"
 
         if [[ $hits -gt 0 ]]; then
           row_class="covered"
@@ -907,20 +1207,23 @@ EOF
         fi
       fi
 
-      echo "        <tr class=\"$row_class\">"
-      echo "          <td class=\"line-num\">$lineno</td>"
-      echo "          <td class=\"hits\">$hits_display</td>"
-      echo "          <td class=\"code\">$escaped_line</td>"
-      echo "        </tr>"
+      echo "          <tr class=\"$row_class\">"
+      echo "            <td class=\"line-num\">$lineno</td>"
+      echo "            <td class=\"hits\">$hits_display</td>"
+      echo "            <td class=\"code\">$escaped_line</td>"
+      echo "          </tr>"
     done < "$file"
 
     cat << 'EOF'
-      </table>
-    </div>
-    <div class="footer">
-      Generated by <a href="https://bashunit.typeddevs.com">bashunit</a>
+        </table>
+      </div>
     </div>
   </div>
+  <footer class="footer">
+    <p class="footer-text">
+      Generated by <a href="https://bashunit.typeddevs.com" class="footer-link" target="_blank">bashunit</a>
+    </p>
+  </footer>
 </body>
 </html>
 EOF
