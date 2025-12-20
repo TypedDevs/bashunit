@@ -871,7 +871,7 @@ EOF
 EOF
     echo "        <p class=\"gauge-description\"><strong>${total_hit} of ${total_executable}</strong> executable lines covered across <strong>${file_count} files</strong>.</p>"
     cat << 'EOF'
-        
+
         <div class="compact-metrics">
           <div class="metrics-group coverage-group">
             <div class="metrics-group-title">Coverage Metrics</div>

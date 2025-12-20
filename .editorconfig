@@ -28,3 +28,6 @@ indent_style = tab
 
 [{tests/acceptance/**.sh,src/console_header.sh,docs/command-line.md}]
 indent_size = unset
+
+[src/coverage.sh]
+max_line_length = unset
