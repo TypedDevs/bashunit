@@ -390,6 +390,9 @@ function bashunit::runner::run_test() {
   # create temporary files scoped per test run. This prevents
   # race conditions when running tests in parallel.
   export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
+  # Export current test file and function for coverage tracking
+  export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
+  export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
 
   bashunit::state::reset_test_title
 
