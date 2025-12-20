@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Better code coverage HTML report
+
 ## [0.31.0](https://github.com/TypedDevs/bashunit/compare/0.30.0...0.31.0) - 2025-12-19
 
 ### Added
