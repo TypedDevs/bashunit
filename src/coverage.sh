@@ -379,21 +379,6 @@ function bashunit::coverage::get_all_line_hits() {
     done
 }
 
-# Get the tests that hit a specific line
-# Output format: list of "test_file:test_function" (unique, sorted)
-function bashunit::coverage::get_line_tests() {
-  local file="$1"
-  local lineno="$2"
-
-  if [[ ! -f "${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}" ]]; then
-    return
-  fi
-
-  # Format in file: source_file:line|test_file:test_function
-  grep "^${file}:${lineno}|" "$_BASHUNIT_COVERAGE_TEST_HITS_FILE" 2>/dev/null | \
-    cut -d'|' -f2 | sort -u
-}
-
 # Get all test hits for a file in one pass (performance optimization)
 # Output format: lineno|test_file:test_function (may have duplicates, one per hit)
 function bashunit::coverage::get_all_line_tests() {
@@ -715,9 +700,6 @@ function bashunit::coverage::generate_index_html() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Coverage Report | bashunit</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
@@ -729,7 +711,7 @@ function bashunit::coverage::generate_index_html() {
       --border: #e2e8f0;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-light); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: var(--bg-light); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
     .header { background: var(--bg-card); padding: 0; position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
     .header-content { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 40px 30px; }
     .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
@@ -789,7 +771,7 @@ function bashunit::coverage::generate_index_html() {
     .file-info { display: flex; flex-direction: column; gap: 4px; }
     .file-name { font-weight: 600; color: var(--text-primary); text-decoration: none; font-size: 1rem; transition: color 0.2s; }
     .file-name:hover { color: var(--primary-light); }
-    .file-path { color: var(--text-muted); font-size: 0.85rem; font-family: 'JetBrains Mono', monospace; }
+    .file-path { color: var(--text-muted); font-size: 0.85rem; font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; }
     .lines-info { text-align: center; }
     .lines-covered { font-weight: 700; font-size: 1.1rem; color: var(--text-primary); }
     .lines-total { color: var(--text-muted); font-size: 0.85rem; }
@@ -1056,9 +1038,10 @@ function bashunit::coverage::generate_file_html() {
     hits_by_line[_ln]=$_cnt
   done < <(bashunit::coverage::get_all_line_hits "$file")
 
-  # Pre-load test hits data into associative array (for tooltips)
-  # Key: line number, Value: newline-separated list of "test_file:test_function"
-  declare -A tests_by_line
+  # Pre-load test hits data into indexed array (for tooltips)
+  # Index: line number, Value: newline-separated list of "test_file:test_function"
+  # Using indexed array for Bash 3.2 compatibility (no associative arrays)
+  local -a tests_by_line=()
   local _line_and_test
   while IFS= read -r _line_and_test; do
     [[ -z "$_line_and_test" ]] && continue
@@ -1066,7 +1049,8 @@ function bashunit::coverage::generate_file_html() {
     local _tinfo="${_line_and_test#*|}"
     if [[ -n "${tests_by_line[$_tln]:-}" ]]; then
       # Append only if not already present (avoid duplicates)
-      if [[ "${tests_by_line[$_tln]}" != *"$_tinfo"* ]]; then
+      # Use newline boundaries to prevent false positives (e.g., test_foo matching test_foo_bar)
+      if [[ $'\n'"${tests_by_line[$_tln]}"$'\n' != *$'\n'"$_tinfo"$'\n'* ]]; then
         tests_by_line[$_tln]="${tests_by_line[$_tln]}"$'\n'"${_tinfo}"
       fi
     else
@@ -1089,9 +1073,6 @@ function bashunit::coverage::generate_file_html() {
 EOF
     echo "  <title>$(basename "$display_file") | Coverage Report</title>"
     cat << 'EOF'
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
@@ -1103,14 +1084,14 @@ EOF
       --border: #e2e8f0; --line-number-bg: #f8fafc;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-light); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: var(--bg-light); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
     .header { background: var(--bg-card); border-bottom: 1px solid var(--border); padding: 20px 30px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .header-content { max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; }
     .nav-section { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
     .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #475569; border: 2px solid #475569; border-radius: 8px; color: #ffffff; text-decoration: none; font-size: 1rem; font-weight: 600; transition: all 0.2s; box-shadow: 0 2px 4px rgba(71, 85, 105, 0.2); }
     .back-btn:hover { background: #334155; border-color: #334155; box-shadow: 0 4px 12px rgba(51, 65, 85, 0.3); }
     .file-title { display: flex; align-items: center; gap: 12px; }
-    .file-name { font-size: 1.3rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .file-name { font-size: 1.3rem; font-weight: 700; font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; }
     .stats-section { display: flex; align-items: center; gap: 30px; flex-wrap: wrap; }
     .stat-item { display: flex; align-items: center; gap: 10px; }
     .stat-badge { padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
@@ -1142,11 +1123,11 @@ EOF
     .code-container { max-width: 1600px; margin: 30px auto; padding: 0 30px; }
     .code-wrapper { background: var(--bg-code); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); }
     .code-header { background: var(--line-number-bg); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px; }
-    .code-path { font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-secondary); }
+    .code-path { font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; font-size: 0.9rem; color: var(--text-secondary); }
     .code-stats { display: flex; gap: 16px; font-size: 0.85rem; }
     .code-stats span { padding: 4px 12px; background: #e5e7eb; border-radius: 4px; color: var(--text-secondary); }
     .code-body { overflow-x: auto; }
-    .code-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.6; }
+    .code-table { width: 100%; border-collapse: collapse; font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; font-size: 13px; line-height: 1.6; }
     .code-table tr { transition: background 0.15s; }
     .line-num { width: 60px; padding: 2px 16px; text-align: right; color: #9ca3af; background: var(--line-number-bg); border-right: 1px solid var(--border); user-select: none; vertical-align: top; }
     .hits { width: 60px; padding: 2px 12px; text-align: center; color: #9ca3af; background: var(--line-number-bg); border-right: 1px solid var(--border); font-size: 0.85em; vertical-align: top; }
@@ -1159,7 +1140,7 @@ EOF
     .hits-badge:hover .hits-tooltip { display: block; }
     .hits-tooltip-title { font-weight: 600; margin-bottom: 6px; color: #94a3b8; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
     .hits-tooltip-list { margin: 0; padding: 0; list-style: none; }
-    .hits-tooltip-list li { padding: 3px 0; border-bottom: 1px solid #334155; font-family: 'JetBrains Mono', monospace; }
+    .hits-tooltip-list li { padding: 3px 0; border-bottom: 1px solid #334155; font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; }
     .hits-tooltip-list li:last-child { border-bottom: none; }
     .hits-tooltip-file { color: #60a5fa; }
     .hits-tooltip-fn { color: #a5b4fc; }
