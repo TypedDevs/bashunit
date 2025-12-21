@@ -51,9 +51,3 @@ You are welcome to contribute reporting issues, sharing ideas,
 or with your pull requests.
 
 Make sure to read our [contribution guide](.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this framework.
-
-## Contributors
-
-<p align="center">
-    <img src="https://contributors.nn.ci/api?repo=TypedDevs/bashunit" alt="Contributors list" />
-</p>
