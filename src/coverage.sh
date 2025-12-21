@@ -13,10 +13,40 @@ _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="${_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE:-
 # File to store which tests hit each line (for detailed coverage tooltips)
 _BASHUNIT_COVERAGE_TEST_HITS_FILE="${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}"
 
-# Store the subshell level when coverage trap is enabled
-# Used to skip recording in nested subshells (command substitution)
-# Uses $BASH_SUBSHELL which is Bash 3.2 compatible (unlike $BASHPID)
-_BASHUNIT_COVERAGE_SUBSHELL_LEVEL="${_BASHUNIT_COVERAGE_SUBSHELL_LEVEL:-}"
+# Auto-discover coverage paths from test file names
+# When no explicit coverage paths are set, find source files matching test file base names
+# Example: tests/unit/assert_test.sh -> finds src/assert.sh, src/assert_*.sh
+function bashunit::coverage::auto_discover_paths() {
+  local project_root
+  project_root="$(pwd)"
+  local -a discovered_paths=()
+
+  for test_file in "$@"; do
+    # Extract base name: tests/unit/assert_test.sh -> assert_test.sh
+    local file_basename
+    file_basename=$(basename "$test_file")
+
+    # Remove test suffixes to get source name: assert_test.sh -> assert
+    local source_name="${file_basename%_test.sh}"
+    [[ "$source_name" == "$file_basename" ]] && source_name="${file_basename%Test.sh}"
+    [[ "$source_name" == "$file_basename" ]] && continue  # Not a test file pattern
+
+    # Find matching source files recursively
+    while IFS= read -r -d '' found_file; do
+      # Skip test files and vendor directories
+      [[ "$found_file" == *test* ]] && continue
+      [[ "$found_file" == *Test* ]] && continue
+      [[ "$found_file" == *vendor* ]] && continue
+      [[ "$found_file" == *node_modules* ]] && continue
+      discovered_paths+=("$found_file")
+    done < <(find "$project_root" -name "${source_name}*.sh" -type f -print0 2>/dev/null)
+  done
+
+  # Return unique paths, comma-separated
+  if [[ ${#discovered_paths[@]} -gt 0 ]]; then
+    printf '%s\n' "${discovered_paths[@]}" | sort -u | tr '\n' ',' | sed 's/,$//'
+  fi
+}
 
 function bashunit::coverage::init() {
   if ! bashunit::env::is_coverage_enabled; then
@@ -58,11 +88,6 @@ function bashunit::coverage::enable_trap() {
     return 0
   fi
 
-  # Store the subshell level for nested subshell detection
-  # $BASH_SUBSHELL increments in each nested subshell (Bash 3.2 compatible)
-  _BASHUNIT_COVERAGE_SUBSHELL_LEVEL="$BASH_SUBSHELL"
-  export _BASHUNIT_COVERAGE_SUBSHELL_LEVEL
-
   # Enable trap inheritance into functions
   set -T
 
@@ -98,11 +123,6 @@ function bashunit::coverage::record_line() {
 
   # Skip if coverage data file doesn't exist (trap inherited by child process)
   [[ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ]] && return 0
-
-  # Skip recording in nested subshells (command substitution like $(...))
-  # $BASH_SUBSHELL increments in each nested subshell
-  # This prevents interference with tests that capture output
-  [[ -n "$_BASHUNIT_COVERAGE_SUBSHELL_LEVEL" && "$BASH_SUBSHELL" -gt "$_BASHUNIT_COVERAGE_SUBSHELL_LEVEL" ]] && return 0
 
   # Skip if not tracking this file (uses cache internally)
   bashunit::coverage::should_track "$file" || return 0
@@ -298,6 +318,15 @@ function bashunit::coverage::is_executable_line() {
 
   # Skip lines with only braces
   [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && return 1
+
+  # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
+  [[ "$line" =~ ^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$ ]] && return 1
+
+  # Skip case patterns like "--option)" or "*)"
+  [[ "$line" =~ ^[[:space:]]*[^\)]+\)[[:space:]]*$ ]] && return 1
+
+  # Skip standalone ) for arrays/subshells
+  [[ "$line" =~ ^[[:space:]]*\)[[:space:]]*(#.*)?$ ]] && return 1
 
   return 0
 }
@@ -775,7 +804,7 @@ function bashunit::coverage::report_html() {
   # Generate index.html
   bashunit::coverage::generate_index_html \
     "$output_dir/index.html" "$total_hit" "$total_executable" "$total_pct" \
-    "$tests_total" "$tests_passed" "$tests_failed" "${file_data[@]}"
+    "$tests_total" "$tests_passed" "$tests_failed" ${file_data[@]+"${file_data[@]}"}
 
   echo "Coverage HTML report written to: $output_dir/index.html"
 }
@@ -789,11 +818,13 @@ function bashunit::coverage::generate_index_html() {
   local tests_passed="$6"
   local tests_failed="$7"
   shift 7
-  local file_data=("$@")
+  local file_data=()
+  [[ $# -gt 0 ]] && file_data=("$@")
 
   # Calculate uncovered lines and file count
   local total_uncovered=$((total_executable - total_hit))
-  local file_count=${#file_data[@]}
+  local file_count=0
+  [[ ${#file_data[@]} -gt 0 ]] && file_count=${#file_data[@]}
 
   # Calculate gauge stroke offset (440 is full circle circumference)
   local gauge_offset=$((440 - (440 * total_pct / 100)))
@@ -1082,7 +1113,7 @@ EOF
           <tbody>
 EOF
 
-    for data in "${file_data[@]}"; do
+    for data in ${file_data[@]+"${file_data[@]}"}; do
       IFS='|' read -r display_file hit executable pct safe_filename <<< "$data"
 
       local class="low"

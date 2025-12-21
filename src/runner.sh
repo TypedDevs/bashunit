@@ -20,6 +20,10 @@ function bashunit::runner::load_test_files() {
 
   # Initialize coverage tracking if enabled
   if bashunit::env::is_coverage_enabled; then
+    # Auto-discover coverage paths if not explicitly set
+    if [[ -z "$BASHUNIT_COVERAGE_PATHS" ]]; then
+      BASHUNIT_COVERAGE_PATHS=$(bashunit::coverage::auto_discover_paths "${files[@]}")
+    fi
     bashunit::coverage::init
   fi
 

@@ -220,8 +220,8 @@ function test_coverage_cleanup_removes_temp_files() {
   assert_directory_not_exists "$coverage_dir"
 }
 
-function test_coverage_default_paths_is_src() {
-  assert_equals "src/" "$_BASHUNIT_DEFAULT_COVERAGE_PATHS"
+function test_coverage_default_paths_is_empty_for_auto_discovery() {
+  assert_equals "" "$_BASHUNIT_DEFAULT_COVERAGE_PATHS"
 }
 
 function test_coverage_default_report_is_lcov() {
@@ -270,6 +270,84 @@ function test_coverage_is_executable_line_returns_false_for_empty_line() {
 function test_coverage_is_executable_line_returns_false_for_brace_only() {
   local result
   result=$(bashunit::coverage::is_executable_line '}' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_then() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  then' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_else() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  else' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_fi() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  fi' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_do() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  do' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_esac() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  esac' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_case_terminator() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '      ;;' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_case_pattern() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '    --exit)' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_wildcard_case() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '    *)' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_case_fallthrough() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '      ;&' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_case_continue() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '      ;;&' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_in_keyword() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  in' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_standalone_paren() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  )' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
 }
 

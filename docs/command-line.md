@@ -67,7 +67,7 @@ bashunit test tests/ --parallel --simple
 | `-l, --login`                  | Run tests in login shell context                 |
 | `--no-color`                   | Disable colored output                           |
 | `--coverage`                   | Enable code coverage tracking                    |
-| `--coverage-paths <paths>`     | Paths to track (default: `src/`)                 |
+| `--coverage-paths <paths>`     | Paths to track (default: auto-discover)          |
 | `--coverage-exclude <pat>`     | Exclusion patterns                               |
 | `--coverage-report <file>`     | LCOV output path (default: `coverage/lcov.info`) |
 | `--coverage-report-html <dir>` | Generate HTML report with line highlighting      |
@@ -311,7 +311,7 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 | Option                          | Description                                                                 |
 |---------------------------------|-----------------------------------------------------------------------------|
 | `--coverage`                    | Enable coverage tracking                                                    |
-| `--coverage-paths <paths>`      | Comma-separated paths to track (default: `src/`)                            |
+| `--coverage-paths <paths>`      | Comma-separated paths to track (default: auto-discover from test files)     |
 | `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh`) |
 | `--coverage-report <file>`      | LCOV output file path (default: `coverage/lcov.info`)                       |
 | `--coverage-report-html <dir>`  | Generate HTML coverage report with line-by-line highlighting                |
