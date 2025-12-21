@@ -127,7 +127,7 @@ Coverage:
   --coverage                   Enable code coverage tracking
   --coverage-paths <paths>     Source paths to track (default: auto-discover)
   --coverage-exclude <pats>    Patterns to exclude (comma-separated)
-  --coverage-report <file>     Output file (default: coverage/lcov.info)
+  --coverage-report [file]     Output file (default: coverage/lcov.info)
   --coverage-report-html [dir] HTML report (default: coverage/html)
   --coverage-min <pct>         Fail if coverage below percentage
   --no-coverage-report         Disable file output, console only
