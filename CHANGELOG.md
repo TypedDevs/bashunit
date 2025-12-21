@@ -10,6 +10,7 @@
 
 ### Fixed
 - Coverage now excludes control flow keywords (`then`, `else`, `fi`, `do`, `done`, `esac`, `;;`, case patterns) from line tracking
+- Coverage HTML report now correctly handles namespaced functions with colons (e.g., `bashunit::assert::equals`)
 
 ## [0.31.0](https://github.com/TypedDevs/bashunit/compare/0.30.0...0.31.0) - 2025-12-19
 

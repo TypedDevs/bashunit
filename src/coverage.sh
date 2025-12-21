@@ -479,7 +479,7 @@ function bashunit::coverage::extract_functions() {
 
       # Function ended
       if [[ $brace_count -le 0 ]]; then
-        echo "${current_fn}:${fn_start}:${lineno}"
+        echo "${current_fn}|${fn_start}|${lineno}"
         in_function=0
         current_fn=""
         brace_count=0
@@ -489,7 +489,7 @@ function bashunit::coverage::extract_functions() {
 
   # Handle unclosed function (shouldn't happen in valid code)
   if [[ $in_function -eq 1 && -n "$current_fn" ]]; then
-    echo "${current_fn}:${fn_start}:${lineno}"
+    echo "${current_fn}|${fn_start}|${lineno}"
   fi
 }
 
@@ -1450,10 +1450,10 @@ EOF
       while IFS= read -r fn_entry; do
         [[ -z "$fn_entry" ]] && continue
         local fn_name fn_start fn_end
-        fn_name="${fn_entry%%:*}"
-        local rest="${fn_entry#*:}"
-        fn_start="${rest%%:*}"
-        fn_end="${rest#*:}"
+        fn_name="${fn_entry%%|*}"
+        local rest="${fn_entry#*|}"
+        fn_start="${rest%%|*}"
+        fn_end="${rest#*|}"
 
         # Calculate function coverage using pre-loaded hits data
         local fn_executable=0
