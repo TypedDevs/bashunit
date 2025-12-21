@@ -450,14 +450,16 @@ BASHUNIT_COVERAGE=true
 
 > `BASHUNIT_COVERAGE_PATHS=paths`
 
-Comma-separated list of paths to track for coverage. `src/` by default.
+Comma-separated list of paths to track for coverage.
+
+By default, paths are auto-discovered from test file names (e.g., `tests/unit/assert_test.sh` discovers `src/assert.sh`).
 
 ::: code-group
 ```bash [.env]
-# Single path
+# Single path (explicit)
 BASHUNIT_COVERAGE_PATHS=src/
 
-# Multiple paths
+# Multiple paths (explicit)
 BASHUNIT_COVERAGE_PATHS=src/,lib/,bin/
 ```
 :::
