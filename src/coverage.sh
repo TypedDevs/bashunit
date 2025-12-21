@@ -423,6 +423,112 @@ function bashunit::coverage::get_all_line_tests() {
     sed "s|^${file}:||" | sort -u
 }
 
+# Extract function definitions from a bash file
+# Output format: function_name:start_line:end_line (one per function)
+function bashunit::coverage::extract_functions() {
+  local file="$1"
+
+  local lineno=0
+  local in_function=0
+  local brace_count=0
+  local current_fn=""
+  local fn_start=0
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    ((lineno++))
+
+    # Check for function definition patterns
+    # Pattern 1: function name() { or function name {
+    # Pattern 2: name() { or name () {
+    if [[ $in_function -eq 0 ]]; then
+      local fn_name=""
+
+      # Match: function name() or function name {
+      if [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$ ]]; then
+        fn_name="${BASH_REMATCH[2]}"
+      elif [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$ ]]; then
+        fn_name="${BASH_REMATCH[2]}"
+      fi
+
+      if [[ -n "$fn_name" ]]; then
+        in_function=1
+        current_fn="$fn_name"
+        fn_start=$lineno
+        brace_count=0
+
+        # Count opening braces on this line
+        local open_braces="${line//[^\{]/}"
+        local close_braces="${line//[^\}]/}"
+        brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
+
+        # Single-line function
+        if [[ $brace_count -eq 0 && "$line" =~ \{ && "$line" =~ \} ]]; then
+          echo "${current_fn}:${fn_start}:${lineno}"
+          in_function=0
+          current_fn=""
+        fi
+        continue
+      fi
+    fi
+
+    # Track braces inside function
+    if [[ $in_function -eq 1 ]]; then
+      local open_braces="${line//[^\{]/}"
+      local close_braces="${line//[^\}]/}"
+      brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
+
+      # Function ended
+      if [[ $brace_count -le 0 ]]; then
+        echo "${current_fn}:${fn_start}:${lineno}"
+        in_function=0
+        current_fn=""
+        brace_count=0
+      fi
+    fi
+  done < "$file"
+
+  # Handle unclosed function (shouldn't happen in valid code)
+  if [[ $in_function -eq 1 && -n "$current_fn" ]]; then
+    echo "${current_fn}:${fn_start}:${lineno}"
+  fi
+}
+
+# Calculate coverage for a specific function in a file
+# Returns: hit_lines:executable_lines:percentage
+function bashunit::coverage::get_function_coverage() {
+  local file="$1"
+  local fn_start="$2"
+  local fn_end="$3"
+  shift 3
+
+  # Accept hits_by_line array as nameref (Bash 4.3+) or fall back to counting
+  local -n _hits_ref=$1 2>/dev/null || true
+
+  local executable=0
+  local hit=0
+  local lineno
+
+  for ((lineno = fn_start; lineno <= fn_end; lineno++)); do
+    local line_content
+    line_content=$(sed -n "${lineno}p" "$file" 2>/dev/null) || continue
+
+    if bashunit::coverage::is_executable_line "$line_content" "$lineno"; then
+      ((executable++))
+      local line_hits=${_hits_ref[$lineno]:-0}
+      if [[ $line_hits -gt 0 ]]; then
+        ((hit++))
+      fi
+    fi
+  done
+
+  local pct=0
+  if [[ $executable -gt 0 ]]; then
+    pct=$((hit * 100 / executable))
+  fi
+
+  echo "${hit}:${executable}:${pct}"
+}
+
 function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
@@ -723,6 +829,25 @@ function bashunit::coverage::generate_index_html() {
   # Calculate gauge stroke offset (440 is full circle circumference)
   local gauge_offset=$((440 - (440 * total_pct / 100)))
 
+  # Determine coverage level and colors for gauge
+  local gauge_color_start gauge_color_end gauge_text_gradient
+  if [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+    # High coverage - green
+    gauge_color_start="#10b981"
+    gauge_color_end="#34d399"
+    gauge_text_gradient="linear-gradient(135deg, #10b981 0%, #34d399 100%)"
+  elif [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+    # Medium coverage - yellow/orange
+    gauge_color_start="#f59e0b"
+    gauge_color_end="#fbbf24"
+    gauge_text_gradient="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)"
+  else
+    # Low coverage - red
+    gauge_color_start="#ef4444"
+    gauge_color_end="#f87171"
+    gauge_text_gradient="linear-gradient(135deg, #ef4444 0%, #f87171 100%)"
+  fi
+
   {
     cat << 'EOF'
 <!DOCTYPE html>
@@ -761,7 +886,9 @@ function bashunit::coverage::generate_index_html() {
     @keyframes gaugeAnimation { from { stroke-dashoffset: 440; } }
     @keyframes fadeInUp { from { opacity: 0; } to { opacity: 1 } }
     .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
-    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin: 0; display: block; }
+EOF
+    echo "    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: ${gauge_text_gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin: 0; display: block; }"
+    cat << 'EOF'
     .gauge-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin: 0; display: block; }
     .gauge-info { flex: 1; }
     .gauge-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
@@ -863,8 +990,10 @@ EOF
         <svg viewBox="0 0 160 160" width="200" height="200">
           <defs>
             <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#667eea"/>
-              <stop offset="100%" style="stop-color:#764ba2"/>
+EOF
+    echo "              <stop offset=\"0%\" style=\"stop-color:${gauge_color_start}\"/>"
+    echo "              <stop offset=\"100%\" style=\"stop-color:${gauge_color_end}\"/>"
+    cat << 'EOF'
             </linearGradient>
           </defs>
           <circle class="gauge-bg" cx="80" cy="80" r="70"/>
@@ -1184,6 +1313,43 @@ EOF
     .uncovered .line-num, .uncovered .hits { background: #fecaca; border-color: var(--danger-border); }
     .uncovered:hover { background: #fef2f2; }
     .uncovered:hover .line-num, .uncovered:hover .hits { background: #fee2e2; }
+    .function-summary { max-width: 1600px; margin: 30px auto; padding: 0 30px; }
+    .function-table { background: var(--bg-card); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); width: 100%; border-collapse: collapse; }
+    .function-table th { background: #f1f5f9; padding: 14px 20px; text-align: left; font-weight: 600; color: var(--text-secondary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border); }
+    .function-table th:first-child { width: 40%; }
+    .function-table th:nth-child(2), .function-table th:nth-child(3) { text-align: center; }
+    .function-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    .function-table tr:last-child td { border-bottom: none; }
+    .function-table tbody tr { transition: background 0.15s; }
+    .function-table tbody tr:hover { background: var(--bg-hover); }
+    .function-table tbody tr.fn-covered { background: #f0fdf4; }
+    .function-table tbody tr.fn-covered:hover { background: #dcfce7; }
+    .function-table tbody tr.fn-partial { background: #fffbeb; }
+    .function-table tbody tr.fn-partial:hover { background: #fef3c7; }
+    .function-table tbody tr.fn-uncovered { background: #fef2f2; }
+    .function-table tbody tr.fn-uncovered:hover { background: #fee2e2; }
+    .fn-name { font-weight: 600; color: var(--primary); cursor: pointer; text-decoration: none; font-family: 'SF Mono', 'Consolas', 'Liberation Mono', Menlo, monospace; font-size: 0.95rem; }
+    .fn-name:hover { color: var(--primary-dark); text-decoration: underline; }
+    .fn-lines { text-align: center; color: var(--text-secondary); font-size: 0.9rem; }
+    .fn-coverage-cell { text-align: center; }
+    .fn-coverage-bar { display: flex; align-items: center; gap: 12px; justify-content: center; }
+    .fn-progress { width: 100px; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden; }
+    .fn-progress-fill { height: 100%; border-radius: 4px; }
+    .fn-progress-fill.high { background: var(--success); }
+    .fn-progress-fill.medium { background: var(--warning); }
+    .fn-progress-fill.low { background: var(--danger); }
+    .fn-pct { font-weight: 600; font-size: 0.9rem; min-width: 50px; text-align: right; }
+    .fn-pct.high { color: var(--success); }
+    .fn-pct.medium { color: var(--warning); }
+    .fn-pct.low { color: var(--danger); }
+    .line-anchor { scroll-margin-top: 200px; }
+    .line-anchor:target { animation: highlightFade 4s ease-out forwards; }
+    .line-anchor:target .line-num, .line-anchor:target .hits { animation: highlightFade 4s ease-out forwards; }
+    @keyframes highlightFade {
+      0% { background: #93c5fd; }
+      70% { background: #dbeafe; }
+      100% { background: transparent; }
+    }
     .footer { max-width: 1600px; margin: 0 auto; padding: 40px 30px; text-align: center; }
     .footer-text { color: var(--text-muted); font-size: 0.9rem; }
     .footer-link { color: var(--primary-light); text-decoration: none; font-weight: 500; }
@@ -1261,6 +1427,85 @@ EOF
       </div>
     </div>
   </div>
+EOF
+
+    # Extract functions and generate summary table
+    local functions_data
+    functions_data=$(bashunit::coverage::extract_functions "$file")
+
+    if [[ -n "$functions_data" ]]; then
+      cat << 'EOF'
+  <div class="function-summary">
+    <table class="function-table">
+      <thead>
+        <tr>
+          <th>Function</th>
+          <th>Lines</th>
+          <th>Coverage</th>
+        </tr>
+      </thead>
+      <tbody>
+EOF
+      local fn_entry
+      while IFS= read -r fn_entry; do
+        [[ -z "$fn_entry" ]] && continue
+        local fn_name fn_start fn_end
+        fn_name="${fn_entry%%:*}"
+        local rest="${fn_entry#*:}"
+        fn_start="${rest%%:*}"
+        fn_end="${rest#*:}"
+
+        # Calculate function coverage using pre-loaded hits data
+        local fn_executable=0
+        local fn_hit=0
+        local ln
+        for ((ln = fn_start; ln <= fn_end; ln++)); do
+          local ln_content
+          ln_content=$(sed -n "${ln}p" "$file" 2>/dev/null) || continue
+          if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
+            ((fn_executable++))
+            local ln_hits=${hits_by_line[$ln]:-0}
+            if [[ $ln_hits -gt 0 ]]; then
+              ((fn_hit++))
+            fi
+          fi
+        done
+
+        local fn_pct=0
+        if [[ $fn_executable -gt 0 ]]; then
+          fn_pct=$((fn_hit * 100 / fn_executable))
+        fi
+
+        local fn_class="low"
+        local row_class="fn-uncovered"
+        if [[ $fn_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+          fn_class="high"
+          row_class="fn-covered"
+        elif [[ $fn_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+          fn_class="medium"
+          row_class="fn-partial"
+        fi
+
+        echo "        <tr class=\"$row_class\">"
+        echo "          <td><a href=\"#line-${fn_start}\" class=\"fn-name\">${fn_name}</a></td>"
+        echo "          <td class=\"fn-lines\">${fn_hit} / ${fn_executable}</td>"
+        echo "          <td class=\"fn-coverage-cell\">"
+        echo "            <div class=\"fn-coverage-bar\">"
+        echo "              <div class=\"fn-progress\"><div class=\"fn-progress-fill ${fn_class}\" style=\"width: ${fn_pct}%;\"></div></div>"
+        echo "              <span class=\"fn-pct ${fn_class}\">${fn_pct}%</span>"
+        echo "            </div>"
+        echo "          </td>"
+        echo "        </tr>"
+      done <<< "$functions_data"
+
+      cat << 'EOF'
+      </tbody>
+    </table>
+  </div>
+EOF
+    fi
+
+    cat << 'EOF'
   <div class="code-container">
     <div class="code-wrapper">
       <div class="code-header">
@@ -1314,7 +1559,7 @@ EOF
         fi
       fi
 
-      echo "          <tr class=\"$row_class\">"
+      echo "          <tr id=\"line-${lineno}\" class=\"$row_class line-anchor\">"
       echo "            <td class=\"line-num\">$lineno</td>"
       echo "            <td class=\"hits\">$hits_display</td>"
       echo "            <td class=\"code\">$escaped_line</td>"
