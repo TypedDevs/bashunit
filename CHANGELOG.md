@@ -4,6 +4,12 @@
 
 ### Added
 - Better code coverage HTML report
+- Auto-discover coverage paths from test file names when `BASHUNIT_COVERAGE_PATHS` is not set
+    - `tests/unit/assert_test.sh` automatically tracks `src/assert.sh`
+    - Removes need for manual `--coverage-paths` configuration in most cases
+
+### Fixed
+- Coverage now excludes control flow keywords (`then`, `else`, `fi`, `do`, `done`, `esac`, `;;`, case patterns) from line tracking
 
 ## [0.31.0](https://github.com/TypedDevs/bashunit/compare/0.30.0...0.31.0) - 2025-12-19
 

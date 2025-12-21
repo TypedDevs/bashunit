@@ -54,7 +54,7 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 | Option | Description |
 |--------|-------------|
 | `--coverage` | Enable code coverage tracking |
-| `--coverage-paths <paths>` | Comma-separated paths to track (default: `src/`) |
+| `--coverage-paths <paths>` | Comma-separated paths to track (default: auto-discover from test files) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
 | `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
 | `--coverage-report-html <dir>` | Generate HTML coverage report with line-by-line details |
@@ -63,6 +63,21 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 
 ::: tip Auto-enable
 Coverage is automatically enabled when using `--coverage-report`, `--coverage-report-html`, or `--coverage-min`. You don't need to specify `--coverage` explicitly with these options.
+:::
+
+### Auto-Discovery
+
+When `BASHUNIT_COVERAGE_PATHS` is not set, bashunit automatically discovers source files based on your test file names:
+
+| Test File | Discovers |
+|-----------|-----------|
+| `tests/unit/assert_test.sh` | `src/assert.sh`, `src/assert_*.sh` |
+| `tests/unit/helperTest.sh` | `src/helper.sh`, `src/helper*.sh` |
+
+This convention follows the common pattern of naming test files after their source files with a `_test.sh` or `Test.sh` suffix.
+
+::: tip Zero Configuration
+For most projects following standard naming conventions, you can simply run `bashunit tests/ --coverage` without any path configuration.
 :::
 
 ### Environment Variables
@@ -329,6 +344,8 @@ These lines are not counted toward coverage:
 - Comment lines (including shebang `#!/usr/bin/env bash`)
 - Function declaration lines (`function foo() {`)
 - Lines with only braces (`{` or `}`)
+- Control flow keywords (`then`, `else`, `fi`, `do`, `done`, `esac`, `in`)
+- Case statement patterns (`--option)`, `*)`) and terminators (`;;`, `;&`, `;;&`)
 
 ## Limitations
 
