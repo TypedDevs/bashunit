@@ -692,6 +692,25 @@ function bashunit::coverage::generate_index_html() {
   # Calculate gauge stroke offset (440 is full circle circumference)
   local gauge_offset=$((440 - (440 * total_pct / 100)))
 
+  # Determine coverage level and colors for gauge
+  local gauge_color_start gauge_color_end gauge_text_gradient
+  if [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+    # High coverage - green
+    gauge_color_start="#10b981"
+    gauge_color_end="#34d399"
+    gauge_text_gradient="linear-gradient(135deg, #10b981 0%, #34d399 100%)"
+  elif [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+    # Medium coverage - yellow/orange
+    gauge_color_start="#f59e0b"
+    gauge_color_end="#fbbf24"
+    gauge_text_gradient="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)"
+  else
+    # Low coverage - red
+    gauge_color_start="#ef4444"
+    gauge_color_end="#f87171"
+    gauge_text_gradient="linear-gradient(135deg, #ef4444 0%, #f87171 100%)"
+  fi
+
   {
     cat << 'EOF'
 <!DOCTYPE html>
@@ -730,7 +749,9 @@ function bashunit::coverage::generate_index_html() {
     @keyframes gaugeAnimation { from { stroke-dashoffset: 440; } }
     @keyframes fadeInUp { from { opacity: 0; } to { opacity: 1 } }
     .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
-    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin: 0; display: block; }
+EOF
+    echo "    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: ${gauge_text_gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin: 0; display: block; }"
+    cat << 'EOF'
     .gauge-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin: 0; display: block; }
     .gauge-info { flex: 1; }
     .gauge-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
@@ -832,8 +853,10 @@ EOF
         <svg viewBox="0 0 160 160" width="200" height="200">
           <defs>
             <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" style="stop-color:#667eea"/>
-              <stop offset="100%" style="stop-color:#764ba2"/>
+EOF
+    echo "              <stop offset=\"0%\" style=\"stop-color:${gauge_color_start}\"/>"
+    echo "              <stop offset=\"100%\" style=\"stop-color:${gauge_color_end}\"/>"
+    cat << 'EOF'
             </linearGradient>
           </defs>
           <circle class="gauge-bg" cx="80" cy="80" r="70"/>
