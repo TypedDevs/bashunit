@@ -15,6 +15,13 @@ bashunit --help                   # Show help
 bashunit --version                # Show version
 ```
 
+## Argument Notation
+
+| Syntax   | Meaning                                  |
+|----------|------------------------------------------|
+| `<arg>`  | Required - must be provided              |
+| `[arg]`  | Optional - can be omitted (uses default) |
+
 ## test
 
 > `bashunit test [path] [options]`
@@ -69,8 +76,8 @@ bashunit test tests/ --parallel --simple
 | `--coverage`                   | Enable code coverage tracking                    |
 | `--coverage-paths <paths>`     | Paths to track (default: auto-discover)          |
 | `--coverage-exclude <pat>`     | Exclusion patterns                               |
-| `--coverage-report <file>`     | LCOV output path (default: `coverage/lcov.info`) |
-| `--coverage-report-html <dir>` | Generate HTML report with line highlighting      |
+| `--coverage-report [file]`     | LCOV output path (default: `coverage/lcov.info`) |
+| `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`)  |
 | `--coverage-min <percent>`     | Minimum coverage threshold                       |
 | `--no-coverage-report`         | Console output only, no LCOV file                |
 
@@ -313,8 +320,8 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 | `--coverage`                    | Enable coverage tracking                                                    |
 | `--coverage-paths <paths>`      | Comma-separated paths to track (default: auto-discover from test files)     |
 | `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh`) |
-| `--coverage-report <file>`      | LCOV output file path (default: `coverage/lcov.info`)                       |
-| `--coverage-report-html <dir>`  | Generate HTML coverage report with line-by-line highlighting                |
+| `--coverage-report [file]`      | LCOV output file path (default: `coverage/lcov.info`)                       |
+| `--coverage-report-html [dir]`  | Generate HTML report (default: `coverage/html`)                             |
 | `--coverage-min <percent>`      | Minimum coverage percentage; fails if below                                 |
 | `--no-coverage-report`          | Show console report only, don't generate LCOV file                          |
 

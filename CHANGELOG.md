@@ -7,6 +7,7 @@
 - Auto-discover coverage paths from test file names when `BASHUNIT_COVERAGE_PATHS` is not set
     - `tests/unit/assert_test.sh` automatically tracks `src/assert.sh`
     - Removes need for manual `--coverage-paths` configuration in most cases
+- `--coverage-report-html` now defaults to `coverage/html` when no directory is specified
 
 ### Fixed
 - Coverage now excludes control flow keywords (`then`, `else`, `fi`, `do`, `done`, `esac`, `;;`, case patterns) from line tracking

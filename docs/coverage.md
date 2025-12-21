@@ -57,7 +57,7 @@ The DEBUG trap adds overhead to test execution. For large test suites, consider 
 | `--coverage-paths <paths>` | Comma-separated paths to track (default: auto-discover from test files) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
 | `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
-| `--coverage-report-html <dir>` | Generate HTML coverage report with line-by-line details |
+| `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`) |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
 | `--no-coverage-report` | Disable LCOV file generation (console only) |
 

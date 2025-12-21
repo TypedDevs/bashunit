@@ -131,9 +131,14 @@ function bashunit::main::cmd_test() {
         ;;
       --coverage-report-html)
         # shellcheck disable=SC2034
-        BASHUNIT_COVERAGE_REPORT_HTML="$2"
+        # Use default if no value provided or next arg is a flag
+        if [[ -z "${2:-}" || "${2:-}" == -* ]]; then
+          BASHUNIT_COVERAGE_REPORT_HTML="coverage/html"
+        else
+          BASHUNIT_COVERAGE_REPORT_HTML="$2"
+          shift
+        fi
         _bashunit_coverage_opt_set=true
-        shift
         ;;
       *)
         raw_args+=("$1")

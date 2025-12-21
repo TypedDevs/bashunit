@@ -124,13 +124,13 @@ Options:
   -h, --help                  Show this help message
 
 Coverage:
-  --coverage                  Enable code coverage tracking
-  --coverage-paths <paths>    Source paths to track (comma-separated, default: src/)
-  --coverage-exclude <pats>   Patterns to exclude (comma-separated)
-  --coverage-report <file>    Output file (default: coverage/lcov.info)
-  --coverage-report-html <dir> Generate HTML coverage report
-  --coverage-min <pct>        Fail if coverage below percentage
-  --no-coverage-report        Disable file output, console only
+  --coverage                   Enable code coverage tracking
+  --coverage-paths <paths>     Source paths to track (default: auto-discover)
+  --coverage-exclude <pats>    Patterns to exclude (comma-separated)
+  --coverage-report [file]     Output file (default: coverage/lcov.info)
+  --coverage-report-html [dir] HTML report (default: coverage/html)
+  --coverage-min <pct>         Fail if coverage below percentage
+  --no-coverage-report         Disable file output, console only
 
 Examples:
   bashunit test tests/
@@ -139,7 +139,7 @@ Examples:
   bashunit test -a equals "foo" "foo"
   bashunit test tests/ --coverage
   bashunit test tests/ --coverage --coverage-min 80
-  bashunit test tests/ --coverage --coverage-report-html coverage/html
+  bashunit test tests/ --coverage-report-html
 EOF
 }
 
