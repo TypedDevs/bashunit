@@ -461,3 +461,248 @@ function test_coverage_default_excludes_test_files() {
   assert_contains "*_test.sh" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
   assert_contains "*Test.sh" "$_BASHUNIT_DEFAULT_COVERAGE_EXCLUDE"
 }
+
+# === Helper function tests ===
+
+function test_coverage_get_coverage_class_returns_high() {
+  local result
+  result=$(bashunit::coverage::get_coverage_class 85)
+  assert_equals "high" "$result"
+}
+
+function test_coverage_get_coverage_class_returns_medium() {
+  local result
+  result=$(bashunit::coverage::get_coverage_class 65)
+  assert_equals "medium" "$result"
+}
+
+function test_coverage_get_coverage_class_returns_low() {
+  local result
+  result=$(bashunit::coverage::get_coverage_class 30)
+  assert_equals "low" "$result"
+}
+
+function test_coverage_get_coverage_class_boundary_high() {
+  local result
+  result=$(bashunit::coverage::get_coverage_class 80)
+  assert_equals "high" "$result"
+}
+
+function test_coverage_get_coverage_class_boundary_low() {
+  local result
+  result=$(bashunit::coverage::get_coverage_class 50)
+  assert_equals "medium" "$result"
+}
+
+function test_coverage_calculate_percentage_basic() {
+  local result
+  result=$(bashunit::coverage::calculate_percentage 5 10)
+  assert_equals "50" "$result"
+}
+
+function test_coverage_calculate_percentage_full_coverage() {
+  local result
+  result=$(bashunit::coverage::calculate_percentage 100 100)
+  assert_equals "100" "$result"
+}
+
+function test_coverage_calculate_percentage_zero_hits() {
+  local result
+  result=$(bashunit::coverage::calculate_percentage 0 50)
+  assert_equals "0" "$result"
+}
+
+function test_coverage_calculate_percentage_zero_executable() {
+  local result
+  result=$(bashunit::coverage::calculate_percentage 0 0)
+  assert_equals "0" "$result"
+}
+
+function test_coverage_html_escape_ampersand() {
+  local result
+  result=$(bashunit::coverage::html_escape 'foo & bar')
+  assert_equals 'foo &amp; bar' "$result"
+}
+
+function test_coverage_html_escape_less_than() {
+  local result
+  result=$(bashunit::coverage::html_escape 'x < y')
+  assert_equals 'x &lt; y' "$result"
+}
+
+function test_coverage_html_escape_greater_than() {
+  local result
+  result=$(bashunit::coverage::html_escape 'x > y')
+  assert_equals 'x &gt; y' "$result"
+}
+
+function test_coverage_html_escape_combined() {
+  local result
+  result=$(bashunit::coverage::html_escape 'if [[ $a < $b && $c > $d ]]; then')
+  assert_equals 'if [[ $a &lt; $b &amp;&amp; $c &gt; $d ]]; then' "$result"
+}
+
+function test_coverage_path_to_filename_converts_slashes() {
+  cd /tmp
+  local result
+  result=$(bashunit::coverage::path_to_filename '/tmp/src/lib/utils.sh')
+  assert_equals 'src_lib_utils_sh' "$result"
+}
+
+function test_coverage_path_to_filename_handles_dots() {
+  cd /tmp
+  local result
+  result=$(bashunit::coverage::path_to_filename '/tmp/test.spec.sh')
+  assert_equals 'test_spec_sh' "$result"
+}
+
+function test_coverage_get_tracked_files_returns_empty_when_no_file() {
+  _BASHUNIT_COVERAGE_TRACKED_FILES=""
+
+  local result
+  result=$(bashunit::coverage::get_tracked_files)
+
+  assert_empty "$result"
+}
+
+function test_coverage_get_tracked_files_returns_sorted_unique() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  echo "/path/to/b.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "/path/to/a.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "/path/to/b.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local result
+  result=$(bashunit::coverage::get_tracked_files | tr '\n' ' ')
+
+  # Should be sorted and unique
+  assert_equals "/path/to/a.sh /path/to/b.sh " "$result"
+}
+
+function test_coverage_get_file_stats_returns_formatted_string() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  # Create a test file with known content
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  # No hits recorded, so 0% coverage
+  local result
+  result=$(bashunit::coverage::get_file_stats "$temp_file")
+
+  # Format: executable:hit:pct:class
+  assert_matches "^2:0:0:low$" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_extract_functions_finds_basic_function() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+function my_func() {
+  echo "hello"
+}
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_contains "my_func" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_extract_functions_finds_namespaced_function() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+function bashunit::helper::do_thing() {
+  echo "hello"
+}
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_contains "bashunit::helper::do_thing" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_extract_functions_finds_multiple_functions() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat > "$temp_file" << 'EOF'
+#!/usr/bin/env bash
+function func_one() {
+  echo "one"
+}
+function func_two() {
+  echo "two"
+}
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_contains "func_one" "$result"
+  assert_contains "func_two" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_get_line_hits_returns_zero_when_no_file() {
+  _BASHUNIT_COVERAGE_DATA_FILE=""
+
+  local result
+  result=$(bashunit::coverage::get_line_hits "/path/to/file.sh" 10)
+
+  assert_equals "0" "$result"
+}
+
+function test_coverage_get_line_hits_counts_correctly() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local test_file="/test/script.sh"
+  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::get_line_hits "$test_file" 5)
+
+  assert_equals "3" "$result"
+}
+
+function test_coverage_get_hit_lines_returns_zero_when_no_data() {
+  _BASHUNIT_COVERAGE_DATA_FILE=""
+
+  local result
+  result=$(bashunit::coverage::get_hit_lines "/path/to/file.sh")
+
+  assert_equals "0" "$result"
+}
+
+function test_coverage_report_text_shows_no_files_message() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  # Empty tracked files
+  : > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_contains "Total: 0/0 (0%)" "$output"
+}
