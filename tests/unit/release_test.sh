@@ -452,3 +452,484 @@ function test_error_with_suggestion_shows_both_messages() {
   assert_contains "Suggestion:" "$result"
   assert_contains "Test suggestion" "$result"
 }
+
+##########################
+# Sandbox mode tests
+##########################
+
+function test_sandbox_create_creates_temp_directory() {
+  release::sandbox::create 2>/dev/null
+  assert_not_empty "$SANDBOX_DIR"
+  assert_directory_exists "$SANDBOX_DIR"
+  rm -rf "$SANDBOX_DIR"
+}
+
+function test_sandbox_create_copies_project_files() {
+  local original_dir
+  original_dir=$(pwd)
+
+  cd "$RELEASE_SCRIPT_DIR" || return
+  release::sandbox::create 2>/dev/null
+
+  # Check that key files were copied
+  assert_file_exists "$SANDBOX_DIR/bashunit"
+  assert_file_exists "$SANDBOX_DIR/build.sh"
+  assert_file_exists "$SANDBOX_DIR/CHANGELOG.md"
+
+  rm -rf "$SANDBOX_DIR"
+  cd "$original_dir" || return
+}
+
+function test_sandbox_create_excludes_git_directory() {
+  local original_dir
+  original_dir=$(pwd)
+
+  cd "$RELEASE_SCRIPT_DIR" || return
+  release::sandbox::create 2>/dev/null
+
+  # .git should NOT be copied
+  assert_directory_not_exists "$SANDBOX_DIR/.git"
+
+  rm -rf "$SANDBOX_DIR"
+  cd "$original_dir" || return
+}
+
+function test_sandbox_create_excludes_release_state() {
+  local original_dir
+  original_dir=$(pwd)
+
+  cd "$RELEASE_SCRIPT_DIR" || return
+
+  # Create a .release-state directory to test exclusion
+  mkdir -p .release-state/test
+  release::sandbox::create 2>/dev/null
+
+  # .release-state should NOT be copied
+  assert_directory_not_exists "$SANDBOX_DIR/.release-state"
+
+  rm -rf "$SANDBOX_DIR" .release-state
+  cd "$original_dir" || return
+}
+
+function test_sandbox_setup_git_initializes_repo() {
+  local original_dir
+  original_dir=$(pwd)
+
+  cd "$RELEASE_SCRIPT_DIR" || return
+  release::sandbox::create 2>/dev/null
+  release::sandbox::setup_git 2>/dev/null
+
+  # Should have a .git directory now
+  assert_directory_exists "$SANDBOX_DIR/.git"
+
+  rm -rf "$SANDBOX_DIR"
+  cd "$original_dir" || return
+}
+
+function test_sandbox_setup_git_creates_initial_commit() {
+  local original_dir
+  original_dir=$(pwd)
+
+  cd "$RELEASE_SCRIPT_DIR" || return
+  release::sandbox::create 2>/dev/null
+  release::sandbox::setup_git 2>/dev/null
+
+  # Should have at least one commit
+  local commit_count
+  commit_count=$(git -C "$SANDBOX_DIR" rev-list --count HEAD 2>/dev/null || echo "0")
+  assert_equals "1" "$commit_count"
+
+  rm -rf "$SANDBOX_DIR"
+  cd "$original_dir" || return
+}
+
+function test_sandbox_mock_gh_handles_release_command() {
+  release::sandbox::mock_gh 2>/dev/null
+
+  local result
+  result=$(gh release create "1.0.0" 2>&1)
+  assert_contains "SANDBOX" "$result"
+
+  # Unset the mock
+  unset -f gh
+}
+
+function test_sandbox_mock_gh_handles_api_command() {
+  release::sandbox::mock_gh 2>/dev/null
+
+  local result
+  result=$(gh api /repos/test 2>&1)
+
+  # Should return empty (not fail)
+  assert_successful_code
+
+  unset -f gh
+}
+
+function test_sandbox_mock_gh_handles_auth_command() {
+  release::sandbox::mock_gh 2>/dev/null
+
+  # Should succeed (return 0)
+  gh auth status 2>/dev/null
+  assert_successful_code
+
+  unset -f gh
+}
+
+function test_sandbox_mock_git_push_prevents_actual_push() {
+  release::sandbox::mock_git_push 2>/dev/null
+
+  local result
+  result=$(git push origin main 2>&1)
+  assert_contains "SANDBOX" "$result"
+
+  # Unset the mock
+  unset -f git
+}
+
+function test_sandbox_mock_git_push_allows_other_git_commands() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  (
+    cd "$temp_dir" || return
+    git init --quiet
+    git config user.email "test@test.com"
+    git config user.name "Test"
+    echo "test" > file.txt
+    git add file.txt
+
+    release::sandbox::mock_git_push 2>/dev/null
+
+    # Non-push commands should work
+    git commit -m "test" --quiet
+    git status --short
+  ) 2>/dev/null
+
+  assert_successful_code
+  rm -rf "$temp_dir"
+  unset -f git 2>/dev/null || true
+}
+
+##########################
+# Update function tests
+##########################
+
+function test_update_file_pattern_modifies_file() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  echo 'VERSION="1.0.0"' > "$temp_dir/test.txt"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_file_pattern "test.txt" 'VERSION="[^"]*"' 'VERSION="2.0.0"' "version" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/test.txt")
+  assert_contains 'VERSION="2.0.0"' "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_file_pattern_logs_dry_run() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  echo 'VERSION="1.0.0"' > "$temp_dir/test.txt"
+
+  DRY_RUN=true
+  local output
+  output=$(
+    cd "$temp_dir" || return
+    release::update_file_pattern "test.txt" 'VERSION="[^"]*"' 'VERSION="2.0.0"' "version" 2>&1
+  )
+  DRY_RUN=false
+
+  # File should NOT be modified
+  local result
+  result=$(cat "$temp_dir/test.txt")
+  assert_contains 'VERSION="1.0.0"' "$result"
+  assert_contains "DRY-RUN" "$output"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_bashunit_version_changes_version_string() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_bashunit" "$temp_dir/bashunit"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_bashunit_version "0.31.0" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/bashunit")
+  assert_contains 'BASHUNIT_VERSION="0.31.0"' "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_install_version_changes_version_string() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_install.sh" "$temp_dir/install.sh"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_install_version "0.31.0" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/install.sh")
+  assert_contains 'LATEST_BASHUNIT_VERSION="0.31.0"' "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_package_json_version_changes_version_string() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_package_json_version "0.31.0" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/package.json")
+  assert_contains '"version": "0.31.0"' "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_changelog_adds_new_unreleased_section() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/CHANGELOG.md" "$temp_dir/CHANGELOG.md"
+
+  DRY_RUN=false
+  GITHUB_REPO_URL="https://github.com/TypedDevs/bashunit"
+  (
+    cd "$temp_dir" || return
+    release::update_changelog "0.31.0" "0.30.0" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/CHANGELOG.md")
+  # Should have a new Unreleased section at the top
+  assert_contains "## Unreleased" "$result"
+  # Should have the new version header
+  assert_contains "[0.31.0]" "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_changelog_dry_run_does_not_modify() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/CHANGELOG.md" "$temp_dir/CHANGELOG.md"
+  local original
+  original=$(cat "$temp_dir/CHANGELOG.md")
+
+  DRY_RUN=true
+  GITHUB_REPO_URL="https://github.com/TypedDevs/bashunit"
+  (
+    cd "$temp_dir" || return
+    release::update_changelog "0.31.0" "0.30.0" 2>/dev/null
+  )
+  DRY_RUN=false
+
+  local result
+  result=$(cat "$temp_dir/CHANGELOG.md")
+  assert_equals "$original" "$result"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_checksum_updates_package_json() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+  mkdir -p "$temp_dir/bin"
+  echo "newchecksum123  bin/bashunit" > "$temp_dir/bin/checksum"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_checksum 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/package.json")
+  assert_contains '"checksum": "newchecksum123"' "$result"
+
+  rm -rf "$temp_dir"
+}
+
+##########################
+# Dry-run mode tests
+##########################
+
+function test_dry_run_does_not_modify_any_files() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  # Copy all fixture files
+  cp "$FIXTURES_DIR/mock_bashunit" "$temp_dir/bashunit"
+  cp "$FIXTURES_DIR/mock_install.sh" "$temp_dir/install.sh"
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+  cp "$FIXTURES_DIR/CHANGELOG.md" "$temp_dir/CHANGELOG.md"
+
+  # Save originals
+  local orig_bashunit orig_install orig_package orig_changelog
+  orig_bashunit=$(cat "$temp_dir/bashunit")
+  orig_install=$(cat "$temp_dir/install.sh")
+  orig_package=$(cat "$temp_dir/package.json")
+  orig_changelog=$(cat "$temp_dir/CHANGELOG.md")
+
+  DRY_RUN=true
+  GITHUB_REPO_URL="https://github.com/TypedDevs/bashunit"
+  (
+    cd "$temp_dir" || return
+    release::update_bashunit_version "0.31.0" 2>/dev/null
+    release::update_install_version "0.31.0" 2>/dev/null
+    release::update_package_json_version "0.31.0" 2>/dev/null
+    release::update_changelog "0.31.0" "0.30.0" 2>/dev/null
+  )
+  DRY_RUN=false
+
+  # All files should be unchanged
+  assert_equals "$orig_bashunit" "$(cat "$temp_dir/bashunit")"
+  assert_equals "$orig_install" "$(cat "$temp_dir/install.sh")"
+  assert_equals "$orig_package" "$(cat "$temp_dir/package.json")"
+  assert_equals "$orig_changelog" "$(cat "$temp_dir/CHANGELOG.md")"
+
+  rm -rf "$temp_dir"
+}
+
+function test_dry_run_logs_what_would_happen() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_bashunit" "$temp_dir/bashunit"
+
+  DRY_RUN=true
+  local output
+  output=$(
+    cd "$temp_dir" || return
+    release::update_bashunit_version "0.31.0" 2>&1
+  )
+  DRY_RUN=false
+
+  assert_contains "DRY-RUN" "$output"
+  assert_contains "Would update" "$output"
+
+  rm -rf "$temp_dir"
+}
+
+##########################
+# Logging function tests
+##########################
+
+function test_log_info_outputs_blue_prefix() {
+  local result
+  result=$(release::log_info "Test message" 2>&1)
+  assert_contains "[INFO]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_success_outputs_green_prefix() {
+  local result
+  result=$(release::log_success "Test message" 2>&1)
+  assert_contains "[OK]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_warning_outputs_yellow_prefix() {
+  local result
+  result=$(release::log_warning "Test message" 2>&1)
+  assert_contains "[WARN]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_error_outputs_red_prefix() {
+  local result
+  result=$(release::log_error "Test message" 2>&1)
+  assert_contains "[ERROR]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_dry_run_outputs_dry_run_prefix() {
+  local result
+  result=$(release::log_dry_run "Test message" 2>&1)
+  assert_contains "[DRY-RUN]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_sandbox_outputs_sandbox_prefix() {
+  local result
+  result=$(release::log_sandbox "Test message" 2>&1)
+  assert_contains "[SANDBOX]" "$result"
+  assert_contains "Test message" "$result"
+}
+
+function test_log_verbose_only_outputs_when_enabled() {
+  VERBOSE_MODE=false
+  local result_disabled
+  result_disabled=$(release::log_verbose "Test message" 2>&1)
+  assert_empty "$result_disabled"
+
+  VERBOSE_MODE=true
+  local result_enabled
+  result_enabled=$(release::log_verbose "Test message" 2>&1)
+  assert_contains "[VERBOSE]" "$result_enabled"
+  assert_contains "Test message" "$result_enabled"
+  VERBOSE_MODE=false
+}
+
+##########################
+# Get current version test
+##########################
+
+function test_get_current_version_extracts_from_bashunit() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_bashunit" "$temp_dir/bashunit"
+
+  local result
+  result=$(cd "$temp_dir" && release::get_current_version)
+
+  assert_equals "0.29.0" "$result"
+
+  rm -rf "$temp_dir"
+}
+
+##########################
+# Build project test
+##########################
+
+function test_build_project_dry_run_does_not_execute() {
+  DRY_RUN=true
+  local result
+  result=$(release::build_project 2>&1)
+  DRY_RUN=false
+
+  assert_contains "DRY-RUN" "$result"
+  assert_contains "Would run" "$result"
+}
