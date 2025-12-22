@@ -115,6 +115,48 @@ function bashunit::coverage::normalize_path() {
   fi
 }
 
+# Get deduplicated list of tracked files
+function bashunit::coverage::get_tracked_files() {
+  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+    return
+  fi
+  sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+}
+
+# Get coverage class (high/medium/low) based on percentage
+function bashunit::coverage::get_coverage_class() {
+  local pct="$1"
+  if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+    echo "high"
+  elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+    echo "medium"
+  else
+    echo "low"
+  fi
+}
+
+# Calculate percentage from hit and executable counts
+function bashunit::coverage::calculate_percentage() {
+  local hit="$1"
+  local executable="$2"
+  if [[ $executable -gt 0 ]]; then
+    echo $((hit * 100 / executable))
+  else
+    echo "0"
+  fi
+}
+
+# Get file coverage stats as "executable:hit:pct:class"
+function bashunit::coverage::get_file_stats() {
+  local file="$1"
+  local executable hit pct class
+  executable=$(bashunit::coverage::get_executable_lines "$file")
+  hit=$(bashunit::coverage::get_hit_lines "$file")
+  pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+  class=$(bashunit::coverage::get_coverage_class "$pct")
+  echo "${executable}:${hit}:${pct}:${class}"
+}
+
 function bashunit::coverage::record_line() {
   local file="$1"
   local lineno="$2"
@@ -534,31 +576,18 @@ function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
 
-  # Check if tracked files exist
-  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
-    echo "0"
-    return
-  fi
-
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
 
-    local executable
+    local executable hit
     executable=$(bashunit::coverage::get_executable_lines "$file")
-    local hit
     hit=$(bashunit::coverage::get_hit_lines "$file")
 
     ((total_executable += executable))
     ((total_hit += hit))
-  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
+  done < <(bashunit::coverage::get_tracked_files)
 
-  if [[ $total_executable -eq 0 ]]; then
-    echo "0"
-    return
-  fi
-
-  # Calculate percentage (integer)
-  echo $((total_hit * 100 / total_executable))
+  bashunit::coverage::calculate_percentage "$total_hit" "$total_executable"
 }
 
 function bashunit::coverage::report_text() {
@@ -568,76 +597,63 @@ function bashunit::coverage::report_text() {
 
   local total_executable=0
   local total_hit=0
+  local has_files=false
 
   echo ""
   echo "Coverage Report"
   echo "---------------"
 
-  # Check if tracked files exist
-  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+  while IFS= read -r file; do
+    [[ -z "$file" || ! -f "$file" ]] && continue
+    has_files=true
+
+    local executable hit pct class
+    executable=$(bashunit::coverage::get_executable_lines "$file")
+    hit=$(bashunit::coverage::get_hit_lines "$file")
+    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+    class=$(bashunit::coverage::get_coverage_class "$pct")
+
+    ((total_executable += executable))
+    ((total_hit += hit))
+
+    # Determine color based on class
+    local color="" reset=""
+    if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
+      reset=$'\033[0m'
+      case "$class" in
+        high)   color=$'\033[32m' ;;  # Green
+        medium) color=$'\033[33m' ;;  # Yellow
+        low)    color=$'\033[31m' ;;  # Red
+      esac
+    fi
+
+    # Display relative path
+    local display_file="${file#"$(pwd)"/}"
+    printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
+      "$color" "$display_file" "$hit" "$executable" "$pct" "$reset"
+  done < <(bashunit::coverage::get_tracked_files)
+
+  if [[ "$has_files" != "true" ]]; then
     echo "---------------"
     echo "Total: 0/0 (0%)"
     return 0
   fi
 
-  while IFS= read -r file; do
-    [[ -z "$file" || ! -f "$file" ]] && continue
-
-    local executable
-    executable=$(bashunit::coverage::get_executable_lines "$file")
-    local hit
-    hit=$(bashunit::coverage::get_hit_lines "$file")
-
-    ((total_executable += executable))
-    ((total_hit += hit))
-
-    # Calculate percentage
-    local pct=0
-    if [[ $executable -gt 0 ]]; then
-      pct=$((hit * 100 / executable))
-    fi
-
-    # Determine color based on thresholds
-    local color=""
-    local reset=""
-    if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
-      reset=$'\033[0m'
-      if [[ $pct -lt ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-        color=$'\033[31m'  # Red
-      elif [[ $pct -lt ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-        color=$'\033[33m'  # Yellow
-      else
-        color=$'\033[32m'  # Green
-      fi
-    fi
-
-    # Display relative path
-    local display_file
-    display_file="${file#"$(pwd)"/}"
-
-    printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
-      "$color" "$display_file" "$hit" "$executable" "$pct" "$reset"
-  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
-
   echo "---------------"
 
   # Total
-  local total_pct=0
-  if [[ $total_executable -gt 0 ]]; then
-    total_pct=$((total_hit * 100 / total_executable))
-  fi
+  local total_pct total_class
+  total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
+  total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
 
-  local color=""
-  local reset=""
+  local color="" reset=""
   if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
     reset=$'\033[0m'
-    if [[ $total_pct -lt ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-      color=$'\033[31m'
-    elif [[ $total_pct -lt ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-      color=$'\033[33m'
-    else
-      color=$'\033[32m'
-    fi
+    case "$total_class" in
+      high)   color=$'\033[32m' ;;
+      medium) color=$'\033[33m' ;;
+      low)    color=$'\033[31m' ;;
+    esac
   fi
 
   printf "%sTotal: %d/%d (%d%%)%s\n" \
@@ -658,15 +674,7 @@ function bashunit::coverage::report_lcov() {
   fi
 
   # Create output directory if needed
-  local output_dir
-  output_dir=$(dirname "$output_file")
-  mkdir -p "$output_dir"
-
-  # Check if tracked files exist - if not, write empty LCOV file
-  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
-    echo "TN:" > "$output_file"
-    return 0
-  fi
+  mkdir -p "$(dirname "$output_file")"
 
   # Generate LCOV format
   {
@@ -681,26 +689,18 @@ function bashunit::coverage::report_lcov() {
       # shellcheck disable=SC2094
       while IFS= read -r line || [[ -n "$line" ]]; do
         ((lineno++))
-
-        # Skip non-executable lines (use shared helper)
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-
-        # Get hit count for this line
-        local hits
-        hits=$(bashunit::coverage::get_line_hits "$file" "$lineno")
-
-        echo "DA:${lineno},${hits}"
+        echo "DA:${lineno},$(bashunit::coverage::get_line_hits "$file" "$lineno")"
       done < "$file"
 
-      local executable
+      local executable hit
       executable=$(bashunit::coverage::get_executable_lines "$file")
-      local hit
       hit=$(bashunit::coverage::get_hit_lines "$file")
 
       echo "LF:$executable"
       echo "LH:$hit"
       echo "end_of_record"
-    done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
+    done < <(bashunit::coverage::get_tracked_files)
   } > "$output_file"
 }
 
@@ -752,11 +752,6 @@ function bashunit::coverage::report_html() {
     return 0
   fi
 
-  # Check if tracked files exist
-  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
-    return 0
-  fi
-
   # Create output directory structure
   mkdir -p "$output_dir/files"
 
@@ -768,18 +763,13 @@ function bashunit::coverage::report_html() {
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
 
-    local executable
+    local executable hit pct
     executable=$(bashunit::coverage::get_executable_lines "$file")
-    local hit
     hit=$(bashunit::coverage::get_hit_lines "$file")
+    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
 
     ((total_executable += executable))
     ((total_hit += hit))
-
-    local pct=0
-    if [[ $executable -gt 0 ]]; then
-      pct=$((hit * 100 / executable))
-    fi
 
     local display_file="${file#"$(pwd)"/}"
     local safe_filename
@@ -789,13 +779,11 @@ function bashunit::coverage::report_html() {
 
     # Generate individual file HTML
     bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html"
-  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
+  done < <(bashunit::coverage::get_tracked_files)
 
   # Calculate total percentage
-  local total_pct=0
-  if [[ $total_executable -gt 0 ]]; then
-    total_pct=$((total_hit * 100 / total_executable))
-  fi
+  local total_pct
+  total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
 
   # Get test results
   local tests_passed=$(bashunit::state::get_tests_passed)
@@ -831,23 +819,19 @@ function bashunit::coverage::generate_index_html() {
   local gauge_offset=$((440 - (440 * total_pct / 100)))
 
   # Determine coverage level and colors for gauge
-  local gauge_color_start gauge_color_end gauge_text_gradient
-  if [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-    # High coverage - green
-    gauge_color_start="#10b981"
-    gauge_color_end="#34d399"
-    gauge_text_gradient="linear-gradient(135deg, #10b981 0%, #34d399 100%)"
-  elif [[ $total_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-    # Medium coverage - yellow/orange
-    gauge_color_start="#f59e0b"
-    gauge_color_end="#fbbf24"
-    gauge_text_gradient="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)"
-  else
-    # Low coverage - red
-    gauge_color_start="#ef4444"
-    gauge_color_end="#f87171"
-    gauge_text_gradient="linear-gradient(135deg, #ef4444 0%, #f87171 100%)"
-  fi
+  local total_class gauge_color_start gauge_color_end gauge_text_gradient
+  total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
+  case "$total_class" in
+    high)
+      gauge_color_start="#10b981"; gauge_color_end="#34d399"
+      gauge_text_gradient="linear-gradient(135deg, #10b981 0%, #34d399 100%)" ;;
+    medium)
+      gauge_color_start="#f59e0b"; gauge_color_end="#fbbf24"
+      gauge_text_gradient="linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)" ;;
+    low)
+      gauge_color_start="#ef4444"; gauge_color_end="#f87171"
+      gauge_text_gradient="linear-gradient(135deg, #ef4444 0%, #f87171 100%)" ;;
+  esac
 
   {
     cat << 'EOF'
@@ -1117,12 +1101,8 @@ EOF
     for data in ${file_data[@]+"${file_data[@]}"}; do
       IFS='|' read -r display_file hit executable pct safe_filename <<< "$data"
 
-      local class="low"
-      if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-        class="high"
-      elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-        class="medium"
-      fi
+      local class
+      class=$(bashunit::coverage::get_coverage_class "$pct")
 
       echo "            <tr onclick=\"window.location='files/${safe_filename}.html'\">"
       echo "              <td>"
@@ -1174,23 +1154,12 @@ function bashunit::coverage::generate_file_html() {
   local output_file="$2"
 
   local display_file="${file#"$(pwd)"/}"
-  local executable
+  local executable hit pct class
   executable=$(bashunit::coverage::get_executable_lines "$file")
-  local hit
   hit=$(bashunit::coverage::get_hit_lines "$file")
+  pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+  class=$(bashunit::coverage::get_coverage_class "$pct")
   local uncovered=$((executable - hit))
-
-  local pct=0
-  if [[ $executable -gt 0 ]]; then
-    pct=$((hit * 100 / executable))
-  fi
-
-  local class="low"
-  if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-    class="high"
-  elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-    class="medium"
-  fi
 
   # Pre-load all line hits into indexed array (performance optimization)
   local -a hits_by_line=()
@@ -1472,20 +1441,14 @@ EOF
           fi
         done
 
-        local fn_pct=0
-        if [[ $fn_executable -gt 0 ]]; then
-          fn_pct=$((fn_hit * 100 / fn_executable))
-        fi
-
-        local fn_class="low"
-        local row_class="fn-uncovered"
-        if [[ $fn_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
-          fn_class="high"
-          row_class="fn-covered"
-        elif [[ $fn_pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
-          fn_class="medium"
-          row_class="fn-partial"
-        fi
+        local fn_pct fn_class row_class
+        fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
+        fn_class=$(bashunit::coverage::get_coverage_class "$fn_pct")
+        case "$fn_class" in
+          high)   row_class="fn-covered" ;;
+          medium) row_class="fn-partial" ;;
+          low)    row_class="fn-uncovered" ;;
+        esac
 
         echo "        <tr class=\"$row_class\">"
         echo "          <td><a href=\"#line-${fn_start}\" class=\"fn-name\">${fn_name}</a></td>"
