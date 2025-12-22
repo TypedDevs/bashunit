@@ -61,9 +61,10 @@ function bashunit::coverage::init() {
     return 0
   fi
 
-  # Create coverage data directory
+  # Create coverage data directory with unique name
+  # Use $$ (PID) + $RANDOM to avoid conflicts when tests call coverage::init
   local coverage_dir
-  coverage_dir="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit-coverage-$$"
+  coverage_dir="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit-coverage-$$-$RANDOM"
   mkdir -p "$coverage_dir"
 
   _BASHUNIT_COVERAGE_DATA_FILE="${coverage_dir}/hits.dat"
@@ -549,7 +550,7 @@ function bashunit::coverage::get_percentage() {
 
     ((total_executable += executable))
     ((total_hit += hit))
-  done < "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
 
   if [[ $total_executable -eq 0 ]]; then
     echo "0"
@@ -616,7 +617,7 @@ function bashunit::coverage::report_text() {
 
     printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
       "$color" "$display_file" "$hit" "$executable" "$pct" "$reset"
-  done < "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
 
   echo "---------------"
 
@@ -699,7 +700,7 @@ function bashunit::coverage::report_lcov() {
       echo "LF:$executable"
       echo "LH:$hit"
       echo "end_of_record"
-    done < "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+    done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
   } > "$output_file"
 }
 
@@ -788,7 +789,7 @@ function bashunit::coverage::report_html() {
 
     # Generate individual file HTML
     bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html"
-  done < "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  done < <(sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES")
 
   # Calculate total percentage
   local total_pct=0
