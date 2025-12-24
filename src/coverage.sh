@@ -728,12 +728,10 @@ function bashunit::coverage::check_threshold() {
 }
 
 # Escape HTML special characters
+# Uses sed for cross-version bash compatibility (bash 3.2 vs 4.4+ handle & differently in replacement strings)
 function bashunit::coverage::html_escape() {
   local text="$1"
-  text="${text//&/&amp;}"
-  text="${text//</&lt;}"
-  text="${text//>/&gt;}"
-  echo "$text"
+  printf "%s" "$text" | sed "s/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g"
 }
 
 # Convert file path to safe filename for HTML
