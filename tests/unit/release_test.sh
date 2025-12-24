@@ -803,6 +803,7 @@ function test_dry_run_does_not_modify_any_files() {
   orig_changelog=$(cat "$temp_dir/CHANGELOG.md")
 
   DRY_RUN=true
+  # shellcheck disable=SC2034 # Used by release:: functions
   GITHUB_REPO_URL="https://github.com/TypedDevs/bashunit"
   (
     cd "$temp_dir" || return
@@ -899,6 +900,7 @@ function test_log_verbose_only_outputs_when_enabled() {
   result_enabled=$(release::log_verbose "Test message" 2>&1)
   assert_contains "[VERBOSE]" "$result_enabled"
   assert_contains "Test message" "$result_enabled"
+  # shellcheck disable=SC2034 # Used by release::log_verbose
   VERBOSE_MODE=false
 }
 
@@ -928,6 +930,7 @@ function test_build_project_dry_run_does_not_execute() {
   DRY_RUN=true
   local result
   result=$(release::build_project 2>&1)
+  # shellcheck disable=SC2034 # Used by release:: functions
   DRY_RUN=false
 
   assert_contains "DRY-RUN" "$result"

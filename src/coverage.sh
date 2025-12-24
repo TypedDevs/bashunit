@@ -784,9 +784,10 @@ function bashunit::coverage::report_html() {
   total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
 
   # Get test results
-  local tests_passed=$(bashunit::state::get_tests_passed)
-  local tests_failed=$(bashunit::state::get_tests_failed)
-  local tests_total=$((tests_passed + tests_failed))
+  local tests_passed tests_failed tests_total
+  tests_passed=$(bashunit::state::get_tests_passed)
+  tests_failed=$(bashunit::state::get_tests_failed)
+  tests_total=$((tests_passed + tests_failed))
 
   # Generate index.html
   bashunit::coverage::generate_index_html \

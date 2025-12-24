@@ -538,19 +538,21 @@ function test_coverage_html_escape_greater_than() {
 
 function test_coverage_html_escape_combined() {
   local result
+  # shellcheck disable=SC2016 # Single quotes intentional - testing literal string escaping
   result=$(bashunit::coverage::html_escape 'if [[ $a < $b && $c > $d ]]; then')
+  # shellcheck disable=SC2016
   assert_equals 'if [[ $a &lt; $b &amp;&amp; $c &gt; $d ]]; then' "$result"
 }
 
 function test_coverage_path_to_filename_converts_slashes() {
-  cd /tmp
+  cd /tmp || return
   local result
   result=$(bashunit::coverage::path_to_filename '/tmp/src/lib/utils.sh')
   assert_equals 'src_lib_utils_sh' "$result"
 }
 
 function test_coverage_path_to_filename_handles_dots() {
-  cd /tmp
+  cd /tmp || return
   local result
   result=$(bashunit::coverage::path_to_filename '/tmp/test.spec.sh')
   assert_equals 'test_spec_sh' "$result"
@@ -569,9 +571,11 @@ function test_coverage_get_tracked_files_returns_sorted_unique() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init
 
-  echo "/path/to/b.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
-  echo "/path/to/a.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
-  echo "/path/to/b.sh" >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  {
+    echo "/path/to/b.sh"
+    echo "/path/to/a.sh"
+    echo "/path/to/b.sh"
+  } >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
   local result
   result=$(bashunit::coverage::get_tracked_files | tr '\n' ' ')
@@ -675,9 +679,11 @@ function test_coverage_get_line_hits_counts_correctly() {
   bashunit::coverage::init
 
   local test_file="/test/script.sh"
-  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
-  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
-  echo "${test_file}:5" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  {
+    echo "${test_file}:5"
+    echo "${test_file}:5"
+    echo "${test_file}:5"
+  } >> "$_BASHUNIT_COVERAGE_DATA_FILE"
 
   local result
   result=$(bashunit::coverage::get_line_hits "$test_file" 5)

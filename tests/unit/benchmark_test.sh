@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2329 # Mock functions are invoked indirectly by tested code
 
 function set_up_before_script() {
   source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"

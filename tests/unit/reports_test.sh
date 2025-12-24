@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC2034
+# shellcheck disable=SC2034,SC2329 # Mock functions are invoked indirectly
 
 function set_up_before_script() {
   _TEMP_OUTPUT_FILE=""
