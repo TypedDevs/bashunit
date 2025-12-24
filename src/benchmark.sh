@@ -127,7 +127,7 @@ function bashunit::benchmark::print_results() {
       continue
     fi
 
-    if (( $(echo "$avg <= $max_ms" | bc -l) )); then
+    if [[ "$avg" -le "$max_ms" ]]; then
       local raw="≤ ${max_ms}"
       printf -v padded "%14s" "$raw"
       printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"

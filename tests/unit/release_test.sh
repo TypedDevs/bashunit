@@ -512,6 +512,10 @@ function test_sandbox_create_excludes_release_state() {
 }
 
 function test_sandbox_setup_git_initializes_repo() {
+  if ! command -v git >/dev/null 2>&1; then
+    bashunit::skip "git not available" && return
+  fi
+
   local original_dir
   original_dir=$(pwd)
 
@@ -527,6 +531,10 @@ function test_sandbox_setup_git_initializes_repo() {
 }
 
 function test_sandbox_setup_git_creates_initial_commit() {
+  if ! command -v git >/dev/null 2>&1; then
+    bashunit::skip "git not available" && return
+  fi
+
   local original_dir
   original_dir=$(pwd)
 
@@ -577,6 +585,10 @@ function test_sandbox_mock_gh_handles_auth_command() {
 }
 
 function test_sandbox_mock_git_push_prevents_actual_push() {
+  if ! command -v git >/dev/null 2>&1; then
+    bashunit::skip "git not available" && return
+  fi
+
   release::sandbox::mock_git_push 2>/dev/null
 
   local result
@@ -588,6 +600,10 @@ function test_sandbox_mock_git_push_prevents_actual_push() {
 }
 
 function test_sandbox_mock_git_push_allows_other_git_commands() {
+  if ! command -v git >/dev/null 2>&1; then
+    bashunit::skip "git not available" && return
+  fi
+
   local temp_dir
   temp_dir=$(mktemp -d)
 

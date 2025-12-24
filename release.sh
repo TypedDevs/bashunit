@@ -365,11 +365,14 @@ function release::clear_rollback_trap() {
 #########################
 
 function release::sandbox::create() {
-  SANDBOX_DIR=$(mktemp -d "/tmp/bashunit-release-sandbox-XXXX")
+  # Use -p for portability (works on both GNU coreutils and BusyBox)
+  SANDBOX_DIR=$(mktemp -d -p /tmp bashunit-release-sandbox.XXXXXX)
   release::log_info "Creating sandbox at: $SANDBOX_DIR"
 
-  # Copy repo content excluding .git
-  rsync -a --exclude='.git' --exclude='.release-state' --exclude='node_modules' . "$SANDBOX_DIR/"
+  # Copy repo content excluding .git, .release-state, node_modules
+  # Using cp + rm for portability (rsync not available on all systems)
+  cp -r . "$SANDBOX_DIR/"
+  rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" "$SANDBOX_DIR/node_modules"
   release::log_verbose "Copied project files to sandbox"
 }
 
