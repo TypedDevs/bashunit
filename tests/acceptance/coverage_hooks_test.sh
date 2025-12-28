@@ -7,6 +7,12 @@ function set_up_before_script() {
 }
 
 function test_coverage_includes_src_hits_from_setup_hook() {
+    # Skip in parallel mode - coverage state is not shared across workers
+    if bashunit::env::is_parallel_run_enabled; then
+        bashunit::skip "Coverage tests require sequential execution"
+        return
+    fi
+
     # Enable coverage in-process and exercise code in a hook-like context
     BASHUNIT_COVERAGE=true
     BASHUNIT_COVERAGE_PATHS="src/"
