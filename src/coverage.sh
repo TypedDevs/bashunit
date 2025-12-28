@@ -82,12 +82,6 @@ function bashunit::coverage::init() {
   export _BASHUNIT_COVERAGE_TRACKED_FILES
   export _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE
   export _BASHUNIT_COVERAGE_TEST_HITS_FILE
-
-  # Ensure we have inclusion paths; if none provided or auto-discovered,
-  # default to tracking the src/ folder to avoid empty reports
-  if [[ -z "${BASHUNIT_COVERAGE_PATHS:-}" ]]; then
-    BASHUNIT_COVERAGE_PATHS="src/"
-  fi
 }
 
 function bashunit::coverage::enable_trap() {
