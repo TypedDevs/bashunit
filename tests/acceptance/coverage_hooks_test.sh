@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2034
 
 function set_up_before_script() {
     TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
@@ -8,7 +9,7 @@ function set_up_before_script() {
 function test_coverage_includes_src_hits_from_setup_hook() {
     # Enable coverage in-process and exercise code in a hook-like context
     BASHUNIT_COVERAGE=true
-    BASHUNIT_COVERAGE_PATHS="" # force auto-discovery / fallback
+    BASHUNIT_COVERAGE_PATHS="src/"
     bashunit::coverage::init
 
     # Simulate hook execution with coverage trap enabled
