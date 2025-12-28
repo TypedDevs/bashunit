@@ -5,7 +5,7 @@
 function set_up() {
     # Invoke src functions to generate attributable coverage hits
     local f
-    f="$(bashunit::temp_file \"cov-hooks\")"
+    f="$(bashunit::temp_file "cov-hooks")"
     [[ -n "${f:-}" ]] && echo "tmp created" > /dev/null
 }
 
