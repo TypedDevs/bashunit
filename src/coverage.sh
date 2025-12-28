@@ -95,18 +95,7 @@ function bashunit::coverage::enable_trap() {
   # Set DEBUG trap to record line execution
   # Use ${VAR:-} to handle unset variables when set -u is active (in subshells)
   # shellcheck disable=SC2154
-  trap '
-    # Prefer immediate callee frame; fall back to caller when current file is excluded
-    local __cov_file="${BASH_SOURCE[0]:-}"
-    local __cov_line="${LINENO:-}"
-    if [[ -n "$__cov_file" ]] && ! bashunit::coverage::should_track "$__cov_file"; then
-      # Try next stack frame if available (e.g., called function from a tracked src file)
-      if [[ -n "${BASH_SOURCE[1]:-}" ]]; then
-        __cov_file="${BASH_SOURCE[1]}"
-      fi
-    fi
-    bashunit::coverage::record_line "$__cov_file" "$__cov_line"
-  ' DEBUG
+  trap 'bashunit::coverage::record_line "${BASH_SOURCE[0]:-}" "${LINENO:-}"' DEBUG
 }
 
 function bashunit::coverage::disable_trap() {
