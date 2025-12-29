@@ -23,10 +23,6 @@ function bashunit::runner::load_test_files() {
     # Auto-discover coverage paths if not explicitly set
     if [[ -z "$BASHUNIT_COVERAGE_PATHS" ]]; then
       BASHUNIT_COVERAGE_PATHS=$(bashunit::coverage::auto_discover_paths "${files[@]}")
-      # Fallback: if auto-discovery yields no paths, track the src/ folder
-      if [[ -z "$BASHUNIT_COVERAGE_PATHS" ]]; then
-        BASHUNIT_COVERAGE_PATHS="src/"
-      fi
     fi
     bashunit::coverage::init
   fi
@@ -854,16 +850,8 @@ function bashunit::runner::execute_file_hook() {
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
-    # Enable coverage trap inside hooks to attribute lines executed during setup/teardown
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
-    fi
     "$hook_name"
   } >"$hook_output_file" 2>&1
-  # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
-    bashunit::coverage::disable_trap
-  fi
 
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS
@@ -955,16 +943,8 @@ function bashunit::runner::execute_test_hook() {
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
-    # Enable coverage trap inside test-level hooks
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
-    fi
     "$hook_name"
   } >"$hook_output_file" 2>&1
-  # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
-    bashunit::coverage::disable_trap
-  fi
 
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS

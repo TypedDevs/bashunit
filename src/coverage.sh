@@ -95,7 +95,7 @@ function bashunit::coverage::enable_trap() {
   # Set DEBUG trap to record line execution
   # Use ${VAR:-} to handle unset variables when set -u is active (in subshells)
   # shellcheck disable=SC2154
-  trap 'bashunit::coverage::record_line "${BASH_SOURCE[0]:-}" "${LINENO:-}"' DEBUG
+  trap 'bashunit::coverage::record_line "${BASH_SOURCE:-}" "${LINENO:-}"' DEBUG
 }
 
 function bashunit::coverage::disable_trap() {
