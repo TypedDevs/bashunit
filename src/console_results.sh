@@ -160,11 +160,6 @@ function bashunit::console_results::format_duration() {
   fi
 }
 
-function bashunit::console_results::print_hook_running() {
-  # No output during running phase - full line printed on completion
-  :
-}
-
 function bashunit::console_results::print_hook_completed() {
   local hook_name="$1"
   local duration_ms="$2"

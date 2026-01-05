@@ -660,13 +660,6 @@ function test_print_successful_test_output_in_minutes_exact() {
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
 
-function test_print_hook_running_produces_no_output() {
-  local output
-  output=$(bashunit::console_results::print_hook_running "set_up_before_script")
-
-  assert_empty "$output"
-}
-
 function test_print_hook_completed_output_milliseconds() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
   local original_parallel_run=$BASHUNIT_PARALLEL_RUN

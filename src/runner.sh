@@ -893,9 +893,6 @@ function bashunit::runner::run_set_up_before_script() {
     return 0
   fi
 
-  # Print "Running..." message
-  bashunit::console_results::print_hook_running "set_up_before_script"
-
   local start_time
   start_time=$(bashunit::clock::now)
 
@@ -1013,9 +1010,6 @@ function bashunit::runner::run_tear_down_after_script() {
     fi
     return 0
   fi
-
-  # Print "Running..." message
-  bashunit::console_results::print_hook_running "tear_down_after_script"
 
   local start_time
   start_time=$(bashunit::clock::now)
