@@ -2,11 +2,14 @@
 
 ## Unreleased
 
+### Changed
+- Hook output now displays with right-aligned timing and bullet prefix (`● set_up_before_script  2.03s`)
+
 ### Added
 - Better code coverage HTML report
 - Auto-discover coverage paths from test file names when `BASHUNIT_COVERAGE_PATHS` is not set
     - `tests/unit/assert_test.sh` automatically tracks `src/assert.sh`
-    - Removes need for manual `--coverage-paths` configuration in most cases
+    - Removes the need for manual `--coverage-paths` configuration in most cases
 - `--coverage-report-html` now defaults to `coverage/html` when no directory is specified
 
 ### Fixed

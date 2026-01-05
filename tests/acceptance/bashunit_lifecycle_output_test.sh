@@ -124,9 +124,8 @@ EOF
   # Explicitly disable simple/parallel modes to ensure normal output
   output=$(BASHUNIT_SIMPLE_OUTPUT=false BASHUNIT_PARALLEL_RUN=false ./bashunit "$test_file" 2>&1)
 
-  assert_contains "Running set_up_before_script..." "$output"
-  assert_contains "done" "$output"
-  assert_contains "Running tear_down_after_script..." "$output"
+  assert_contains "● set_up_before_script" "$output"
+  assert_contains "● tear_down_after_script" "$output"
 }
 
 function test_hook_visibility_suppressed_in_failures_only_mode() {
@@ -150,8 +149,8 @@ EOF
   local output
   output=$(./bashunit --failures-only "$test_file" 2>&1)
 
-  assert_not_contains "Running set_up_before_script" "$output"
-  assert_not_contains "Running tear_down_after_script" "$output"
+  assert_not_contains "● set_up_before_script" "$output"
+  assert_not_contains "● tear_down_after_script" "$output"
 }
 
 function test_hook_visibility_suppressed_in_simple_mode() {
@@ -193,6 +192,6 @@ EOF
   local output
   output=$(BASHUNIT_SIMPLE_OUTPUT=false BASHUNIT_PARALLEL_RUN=false ./bashunit "$test_file" 2>&1)
 
-  assert_not_contains "Running set_up_before_script" "$output"
-  assert_not_contains "Running tear_down_after_script" "$output"
+  assert_not_contains "● set_up_before_script" "$output"
+  assert_not_contains "● tear_down_after_script" "$output"
 }
