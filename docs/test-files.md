@@ -85,12 +85,12 @@ function tear_down() {
 The `set_up_before_script` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
 This is useful for global setup that applies to all test functions in the script, such as loading shared resources.
 
-During test execution, bashunit displays the hook execution with its duration:
+During test execution, bashunit displays the hook execution with its duration, right-aligned to match test output:
 
 ```
 Running tests/example_test.sh
-  Running set_up_before_script... done (2.03s)
-✓ Passed: test_example
+● set_up_before_script                                               2.03s
+✓ Passed: test_example                                                 12ms
 ```
 
 This visibility helps identify slow setup operations that may impact test run time.
@@ -114,8 +114,8 @@ It provides a hook for any cleanup that should occur after all tests have run, s
 Like `set_up_before_script`, the execution is displayed with its duration:
 
 ```
-✓ Passed: test_example
-  Running tear_down_after_script... done (1.05s)
+✓ Passed: test_example                                                 12ms
+● tear_down_after_script                                             1.05s
 
 Tests:      1 passed, 1 total
 ```
