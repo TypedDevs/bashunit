@@ -659,3 +659,61 @@ function test_print_successful_test_output_in_minutes_exact() {
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
+
+function test_print_hook_running_produces_no_output() {
+  local output
+  output=$(bashunit::console_results::print_hook_running "set_up_before_script")
+
+  assert_empty "$output"
+}
+
+function test_print_hook_completed_output_milliseconds() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "12")
+
+  assert_matches "✓ set_up_before_script.*12ms" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_hook_completed_output_seconds() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "2340")
+
+  assert_matches "✓ set_up_before_script.*2.34s" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_hook_completed_output_minutes() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "tear_down_after_script" "125000")
+
+  assert_matches "✓ tear_down_after_script.*2m 5s" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_hook_completed_suppressed_in_simple_mode() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=true
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "12")
+
+  assert_empty "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
