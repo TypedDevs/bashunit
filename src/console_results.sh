@@ -182,7 +182,7 @@ function bashunit::console_results::print_hook_completed() {
   fi
 
   local line
-  line=$(printf "%s✓ %s%s" \
+  line=$(printf "%s● %s%s" \
     "$_BASHUNIT_COLOR_PASSED" "$hook_name" "$_BASHUNIT_COLOR_DEFAULT")
 
   local time_display

@@ -675,7 +675,7 @@ function test_print_hook_completed_output_milliseconds() {
   local output
   output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "12")
 
-  assert_matches "✓ set_up_before_script.*12ms" "$output"
+  assert_matches "● set_up_before_script.*12ms" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
@@ -688,7 +688,7 @@ function test_print_hook_completed_output_seconds() {
   local output
   output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "2340")
 
-  assert_matches "✓ set_up_before_script.*2.34s" "$output"
+  assert_matches "● set_up_before_script.*2.34s" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
@@ -701,7 +701,7 @@ function test_print_hook_completed_output_minutes() {
   local output
   output=$(bashunit::console_results::print_hook_completed "tear_down_after_script" "125000")
 
-  assert_matches "✓ tear_down_after_script.*2m 5s" "$output"
+  assert_matches "● tear_down_after_script.*2m 5s" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
