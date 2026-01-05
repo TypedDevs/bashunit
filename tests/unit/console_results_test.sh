@@ -669,7 +669,9 @@ function test_print_hook_running_produces_no_output() {
 
 function test_print_hook_completed_output_milliseconds() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
   export TERMINAL_WIDTH=80
 
   local output
@@ -678,11 +680,14 @@ function test_print_hook_completed_output_milliseconds() {
   assert_matches "● set_up_before_script.*12ms" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
 }
 
 function test_print_hook_completed_output_seconds() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
   export TERMINAL_WIDTH=80
 
   local output
@@ -691,11 +696,14 @@ function test_print_hook_completed_output_seconds() {
   assert_matches "● set_up_before_script.*2.34s" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
 }
 
 function test_print_hook_completed_output_minutes() {
   local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
   export TERMINAL_WIDTH=80
 
   local output
@@ -704,6 +712,7 @@ function test_print_hook_completed_output_minutes() {
   assert_matches "● tear_down_after_script.*2m 5s" "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
 }
 
 function test_print_hook_completed_suppressed_in_simple_mode() {
