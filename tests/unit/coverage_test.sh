@@ -466,30 +466,40 @@ function test_coverage_default_excludes_test_files() {
 
 function test_coverage_get_coverage_class_returns_high() {
   local result
+  export BASHUNIT_COVERAGE_THRESHOLD_HIGH=80
+  export BASHUNIT_COVERAGE_THRESHOLD_LOW=50
   result=$(bashunit::coverage::get_coverage_class 85)
   assert_equals "high" "$result"
 }
 
 function test_coverage_get_coverage_class_returns_medium() {
   local result
+  export BASHUNIT_COVERAGE_THRESHOLD_HIGH=80
+  export BASHUNIT_COVERAGE_THRESHOLD_LOW=50
   result=$(bashunit::coverage::get_coverage_class 65)
   assert_equals "medium" "$result"
 }
 
 function test_coverage_get_coverage_class_returns_low() {
   local result
+  export BASHUNIT_COVERAGE_THRESHOLD_HIGH=80
+  export BASHUNIT_COVERAGE_THRESHOLD_LOW=50
   result=$(bashunit::coverage::get_coverage_class 30)
   assert_equals "low" "$result"
 }
 
 function test_coverage_get_coverage_class_boundary_high() {
   local result
+  export BASHUNIT_COVERAGE_THRESHOLD_HIGH=80
+  export BASHUNIT_COVERAGE_THRESHOLD_LOW=50
   result=$(bashunit::coverage::get_coverage_class 80)
   assert_equals "high" "$result"
 }
 
 function test_coverage_get_coverage_class_boundary_low() {
   local result
+  export BASHUNIT_COVERAGE_THRESHOLD_HIGH=80
+  export BASHUNIT_COVERAGE_THRESHOLD_LOW=50
   result=$(bashunit::coverage::get_coverage_class 50)
   assert_equals "medium" "$result"
 }
