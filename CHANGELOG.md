@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
+
 ### Changed
 - Hook output now displays with right-aligned timing and bullet prefix (`● set_up_before_script  2.03s`)
 
