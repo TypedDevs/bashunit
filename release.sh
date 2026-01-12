@@ -28,7 +28,7 @@ SANDBOX_MODE=false
 FORCE_MODE=false
 VERBOSE_MODE=false
 JSON_OUTPUT=false
-WITH_GH_RELEASE=false
+WITH_GH_RELEASE=true
 
 # State tracking
 RELEASE_STATE_DIR=""
@@ -53,7 +53,7 @@ Options:
   --force           Skip all interactive confirmations (for CI)
   --verbose         Enable detailed logging
   --json            Output machine-readable JSON summary
-  --with-gh-release Create the GitHub release automatically
+  --without-gh-release  Skip creating the GitHub release
   --rollback        Restore files from most recent backup
   -h, --help        Show this help message
 
@@ -682,19 +682,15 @@ function release::create_github_release() {
   local version=$1
   local notes_file=$2
 
+  if [[ "$WITH_GH_RELEASE" != true ]]; then
+    release::log_info "Skipping GitHub release (--without-gh-release specified)"
+    return
+  fi
+
   if [[ "$DRY_RUN" == true ]]; then
     release::log_dry_run "Would create GitHub release $version with assets:"
     release::log_dry_run "  - bin/bashunit"
     release::log_dry_run "  - bin/checksum"
-    return
-  fi
-
-  if [[ "$WITH_GH_RELEASE" != true ]]; then
-    release::log_info "To create the GitHub release, run:"
-    echo -e "  ${BLUE}gh release create $version bin/bashunit bin/checksum \\"
-    echo -e "    --title \"$version\" --notes-file \"$notes_file\"${NC}"
-    echo ""
-    release::log_info "Or re-run with --with-gh-release flag"
     return
   fi
 
@@ -890,8 +886,8 @@ function release::main() {
         JSON_OUTPUT=true
         shift
         ;;
-      --with-gh-release)
-        WITH_GH_RELEASE=true
+      --without-gh-release)
+        WITH_GH_RELEASE=false
         shift
         ;;
       --rollback)
