@@ -345,7 +345,7 @@ function bashunit::console_results::print_error_test() {
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
   if [[ -n "$raw_output" ]] && bashunit::env::is_show_output_on_failure_enabled; then
-    line+="$(printf "    ${_BASHUNIT_COLOR_FAINT}Output:${_BASHUNIT_COLOR_DEFAULT}\n")"
+    line+="$(printf "    %sOutput:%s\n" "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}")"
     while IFS= read -r output_line; do
       line+="$(printf "      %s\n" "$output_line")"
     done <<< "$raw_output"
