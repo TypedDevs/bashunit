@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Display test output (stdout/stderr) on failure for runtime errors
+    - Shows captured output in an "Output:" section when tests fail with runtime errors
+    - Helps debug test failures without manually capturing output
+    - Enabled by default; use `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false` to disable
+    - New CLI options: `--show-output`, `--no-output-on-failure`
+
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 
 ### Changed

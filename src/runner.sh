@@ -567,9 +567,9 @@ function bashunit::runner::run_test() {
     elif [[ -z "$error_message" && -n "$hook_message" ]]; then
       error_message="$hook_message"
     fi
-    bashunit::console_results::print_error_test "$failure_function" "$error_message"
+    bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"
     bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
-    bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message"
+    bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
   fi
@@ -760,6 +760,7 @@ function bashunit::runner::write_failure_result_output() {
   local test_file=$1
   local fn_name=$2
   local error_msg=$3
+  local raw_output="${4:-}"
 
   local line_number
   line_number=$(bashunit::helper::get_function_line_number "$fn_name")
@@ -769,7 +770,12 @@ function bashunit::runner::write_failure_result_output() {
     test_nr=$(bashunit::state::get_tests_failed)
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$error_msg" >> "$FAILURES_OUTPUT_PATH"
+  local output_section=""
+  if [[ -n "$raw_output" ]] && bashunit::env::is_show_output_on_failure_enabled; then
+    output_section="\n    Output:\n$raw_output"
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section" >> "$FAILURES_OUTPUT_PATH"
 }
 
 function bashunit::runner::write_skipped_result_output() {
