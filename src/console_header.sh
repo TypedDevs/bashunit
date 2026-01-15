@@ -117,6 +117,8 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --failures-only             Only show failures (suppress passed/skipped/incomplete)
+  --show-output               Show test output on failure (default: enabled)
+  --no-output-on-failure      Hide test output on failure
   --strict                    Enable strict shell mode (set -euo pipefail)
   --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run tests in login shell context

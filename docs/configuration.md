@@ -347,6 +347,30 @@ BASHUNIT_FAILURES_ONLY=true
 ```
 :::
 
+## Show output on failure
+
+> `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true|false`
+
+Display captured stdout/stderr output when tests fail with runtime errors. `true` by default.
+
+When a test fails due to a runtime error (command not found, unbound variable, etc.),
+bashunit displays the test's output in an "Output:" section to help debug the failure.
+
+Similar as using `--show-output` or `--no-output-on-failure` options on the [command line](/command-line#show-output-on-failure).
+
+::: code-group
+```[Output example]
+✗ Error: My test function
+    command not found
+    Output:
+      Debug: Setting up test
+      Running command: my_command
+```
+```bash [.env to disable]
+BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
+```
+:::
+
 ## Color output
 
 > `NO_COLOR=1`

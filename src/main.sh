@@ -82,6 +82,12 @@ function bashunit::main::cmd_test() {
       --failures-only)
         export BASHUNIT_FAILURES_ONLY=true
         ;;
+      --show-output)
+        export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true
+        ;;
+      --no-output-on-failure)
+        export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
+        ;;
       --strict)
         export BASHUNIT_STRICT_MODE=true
         ;;

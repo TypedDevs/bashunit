@@ -62,6 +62,7 @@ _BASHUNIT_DEFAULT_SKIP_ENV_FILE="false"
 _BASHUNIT_DEFAULT_LOGIN_SHELL="false"
 _BASHUNIT_DEFAULT_FAILURES_ONLY="false"
 _BASHUNIT_DEFAULT_NO_COLOR="false"
+_BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -80,6 +81,7 @@ _BASHUNIT_DEFAULT_NO_COLOR="false"
 : "${BASHUNIT_SKIP_ENV_FILE:=${SKIP_ENV_FILE:=$_BASHUNIT_DEFAULT_SKIP_ENV_FILE}}"
 : "${BASHUNIT_LOGIN_SHELL:=${LOGIN_SHELL:=$_BASHUNIT_DEFAULT_LOGIN_SHELL}}"
 : "${BASHUNIT_FAILURES_ONLY:=${FAILURES_ONLY:=$_BASHUNIT_DEFAULT_FAILURES_ONLY}}"
+: "${BASHUNIT_SHOW_OUTPUT_ON_FAILURE:=${SHOW_OUTPUT_ON_FAILURE:=$_BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE}}"
 # Support NO_COLOR standard (https://no-color.org)
 if [[ -n "${NO_COLOR:-}" ]]; then
   BASHUNIT_NO_COLOR="true"
@@ -157,6 +159,10 @@ function bashunit::env::is_login_shell_enabled() {
 
 function bashunit::env::is_failures_only_enabled() {
   [[ "$BASHUNIT_FAILURES_ONLY" == "true" ]]
+}
+
+function bashunit::env::is_show_output_on_failure_enabled() {
+  [[ "$BASHUNIT_SHOW_OUTPUT_ON_FAILURE" == "true" ]]
 }
 
 function bashunit::env::is_no_color_enabled() {

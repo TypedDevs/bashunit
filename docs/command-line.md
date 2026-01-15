@@ -69,6 +69,8 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]`               | Enable shell debug mode                          |
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
+| `--show-output`                | Show test output on failure (default)            |
+| `--no-output-on-failure`       | Hide test output on failure                      |
 | `--strict`                     | Enable strict shell mode                         |
 | `--skip-env-file`              | Skip `.env` loading, use shell environment only  |
 | `-l, --login`                  | Run tests in login shell context                 |
@@ -228,6 +230,33 @@ bashunit test tests/ --log-junit results.xml
 ```
 ```bash [HTML Report]
 bashunit test tests/ --report-html report.html
+```
+:::
+
+### Show Output on Failure
+
+> `bashunit test --show-output`
+> `bashunit test --no-output-on-failure`
+
+Control whether test output (stdout/stderr) is displayed when tests fail with runtime errors.
+
+By default (`--show-output`), when a test fails due to a runtime error (command not found,
+unbound variable, permission denied, etc.), bashunit displays the captured output in an
+"Output:" section to help debug the failure.
+
+Use `--no-output-on-failure` to suppress this output.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --no-output-on-failure
+```
+```[Output with --show-output (default)]
+✗ Error: My test function
+    command not found
+    Output:
+      Debug: Setting up test
+      Running command: my_command
+      /path/to/test.sh: line 5: my_command: command not found
 ```
 :::
 

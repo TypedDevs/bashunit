@@ -335,6 +335,7 @@ function bashunit::console_results::print_snapshot_test() {
 function bashunit::console_results::print_error_test() {
   local function_name=$1
   local error="$2"
+  local raw_output="${3:-}"
 
   local test_name
   test_name=$(bashunit::helper::normalize_test_function_name "$function_name")
@@ -342,6 +343,13 @@ function bashunit::console_results::print_error_test() {
   local line
   line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Error${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
+
+  if [[ -n "$raw_output" ]] && bashunit::env::is_show_output_on_failure_enabled; then
+    line+="$(printf "    %sOutput:%s\n" "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}")"
+    while IFS= read -r output_line; do
+      line+="$(printf "      %s\n" "$output_line")"
+    done <<< "$raw_output"
+  fi
 
   bashunit::state::print_line "error" "$line"
 }
