@@ -8,6 +8,11 @@
     - Helps debug test failures without manually capturing output
     - Enabled by default; use `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false` to disable
     - New CLI options: `--show-output`, `--no-output-on-failure`
+- Add `--no-progress` flag to suppress real-time progress display (Issue #503)
+    - Hides per-test output, file headers, hook messages, and spinner during execution
+    - Shows only the final test summary
+    - Useful for CI/CD pipelines or log-restricted environments
+    - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
 
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 

@@ -172,6 +172,10 @@ function bashunit::console_results::print_hook_completed() {
     return
   fi
 
+  if bashunit::env::is_no_progress_enabled; then
+    return
+  fi
+
   if bashunit::parallel::is_enabled; then
     return
   fi
