@@ -88,6 +88,9 @@ function bashunit::main::cmd_test() {
       --no-output-on-failure)
         export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
         ;;
+      --no-progress)
+        export BASHUNIT_NO_PROGRESS=true
+        ;;
       --strict)
         export BASHUNIT_STRICT_MODE=true
         ;;

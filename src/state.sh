@@ -268,6 +268,10 @@ function bashunit::state::print_line() {
 
   bashunit::state::add_test_output "[$type]$line"
 
+  if bashunit::env::is_no_progress_enabled; then
+    return
+  fi
+
   if ! bashunit::env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return

@@ -153,6 +153,12 @@ function bashunit::runner::spinner() {
     return
   fi
 
+  # Don't show spinner in no-progress mode
+  if bashunit::env::is_no_progress_enabled; then
+    while true; do sleep 1; done
+    return
+  fi
+
   if bashunit::env::is_simple_output_enabled; then
     printf "\n"
   fi
@@ -366,6 +372,11 @@ function bashunit::runner::render_running_file_header() {
 
   # Suppress file headers in failures-only mode
   if bashunit::env::is_failures_only_enabled; then
+    return
+  fi
+
+  # Suppress file headers in no-progress mode
+  if bashunit::env::is_no_progress_enabled; then
     return
   fi
 
@@ -1011,6 +1022,7 @@ function bashunit::runner::run_tear_down_after_script() {
     # Add blank line after tests if no tear_down hook
     if ! bashunit::env::is_simple_output_enabled && \
         ! bashunit::env::is_failures_only_enabled && \
+        ! bashunit::env::is_no_progress_enabled && \
         ! bashunit::parallel::is_enabled; then
       echo ""
     fi
@@ -1037,6 +1049,7 @@ function bashunit::runner::run_tear_down_after_script() {
   # Add blank line after tear_down output
   if ! bashunit::env::is_simple_output_enabled && \
       ! bashunit::env::is_failures_only_enabled && \
+      ! bashunit::env::is_no_progress_enabled && \
       ! bashunit::parallel::is_enabled; then
     echo ""
   fi

@@ -63,6 +63,7 @@ _BASHUNIT_DEFAULT_LOGIN_SHELL="false"
 _BASHUNIT_DEFAULT_FAILURES_ONLY="false"
 _BASHUNIT_DEFAULT_NO_COLOR="false"
 _BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
+_BASHUNIT_DEFAULT_NO_PROGRESS="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -82,6 +83,7 @@ _BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
 : "${BASHUNIT_LOGIN_SHELL:=${LOGIN_SHELL:=$_BASHUNIT_DEFAULT_LOGIN_SHELL}}"
 : "${BASHUNIT_FAILURES_ONLY:=${FAILURES_ONLY:=$_BASHUNIT_DEFAULT_FAILURES_ONLY}}"
 : "${BASHUNIT_SHOW_OUTPUT_ON_FAILURE:=${SHOW_OUTPUT_ON_FAILURE:=$_BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE}}"
+: "${BASHUNIT_NO_PROGRESS:=${NO_PROGRESS:=$_BASHUNIT_DEFAULT_NO_PROGRESS}}"
 # Support NO_COLOR standard (https://no-color.org)
 if [[ -n "${NO_COLOR:-}" ]]; then
   BASHUNIT_NO_COLOR="true"
@@ -163,6 +165,10 @@ function bashunit::env::is_failures_only_enabled() {
 
 function bashunit::env::is_show_output_on_failure_enabled() {
   [[ "$BASHUNIT_SHOW_OUTPUT_ON_FAILURE" == "true" ]]
+}
+
+function bashunit::env::is_no_progress_enabled() {
+  [[ "$BASHUNIT_NO_PROGRESS" == "true" ]]
 }
 
 function bashunit::env::is_no_color_enabled() {

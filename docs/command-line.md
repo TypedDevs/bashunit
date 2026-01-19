@@ -69,6 +69,7 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]`               | Enable shell debug mode                          |
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
+| `--no-progress`                | Suppress real-time progress, show only summary   |
 | `--show-output`                | Show test output on failure (default)            |
 | `--no-output-on-failure`       | Hide test output on failure                      |
 | `--strict`                     | Enable strict shell mode                         |
@@ -257,6 +258,39 @@ bashunit test tests/ --no-output-on-failure
       Debug: Setting up test
       Running command: my_command
       /path/to/test.sh: line 5: my_command: command not found
+```
+:::
+
+### No Progress
+
+> `bashunit test --no-progress`
+
+Suppress real-time progress display during test execution, showing only the final summary.
+
+When enabled, bashunit hides:
+- Per-test output (pass/fail messages or dots)
+- File headers ("Running tests/...")
+- Hook completion messages
+- Spinner during parallel execution
+
+The final summary with test counts and results is still displayed.
+
+This is useful for:
+- CI/CD pipelines where streaming output causes issues
+- Log-restricted environments
+- Reducing output noise when only the final result matters
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --no-progress
+```
+```[Output]
+bashunit - 0.32.0 | Tests: 10
+Tests:      10 passed, 10 total
+Assertions: 25 passed, 25 total
+
+ All tests passed
+Time taken: 1.23s
 ```
 :::
 

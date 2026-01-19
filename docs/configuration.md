@@ -347,6 +347,23 @@ BASHUNIT_FAILURES_ONLY=true
 ```
 :::
 
+## No progress
+
+> `BASHUNIT_NO_PROGRESS=true|false`
+
+Suppress real-time progress display during test execution. `false` by default.
+
+When enabled, bashunit hides per-test output, file headers, hook messages, and spinners,
+showing only the final summary. Useful for CI/CD pipelines or log-restricted environments.
+
+Similar as using `--no-progress` option on the [command line](/command-line#no-progress).
+
+::: code-group
+```bash [Example]
+BASHUNIT_NO_PROGRESS=true
+```
+:::
+
 ## Show output on failure
 
 > `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true|false`
