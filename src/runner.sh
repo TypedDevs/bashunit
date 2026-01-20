@@ -428,26 +428,15 @@ function bashunit::runner::run_test() {
 
   if bashunit::env::is_no_fork_enabled; then
     # No-fork mode: run test in current shell context (faster, less isolation)
-    # We avoid using $(...) here as that would create a subshell, defeating the purpose
+    # Tests may affect each other's state - this is the documented trade-off.
+    # We skip all serialization/deserialization overhead for maximum performance.
 
-    # Save current assertion counts before initializing (to preserve accumulation)
-    local saved_assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
-    local saved_assertions_failed=$_BASHUNIT_ASSERTIONS_FAILED
-    local saved_assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
-    local saved_assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
-    local saved_assertions_snapshot=$_BASHUNIT_ASSERTIONS_SNAPSHOT
-    # Save start time in case test modifies it
-    local saved_start_time=$_BASHUNIT_START_TIME
-    # Save bashunit function definitions in case tests override them
-    local fn_snapshot_file
-    fn_snapshot_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_fn_snapshot_$$_${RANDOM}"
-    bashunit::runner::snapshot_functions "$fn_snapshot_file"
-    # Save BASHUNIT_* environment variables in case tests modify them
-    local env_snapshot_file
-    env_snapshot_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_env_snapshot_$$_${RANDOM}"
-    bashunit::runner::snapshot_env_vars "$env_snapshot_file"
-
-    bashunit::state::initialize_assertions_count
+    # Save assertion counts before test to compute delta afterwards
+    local nf_prev_passed=$_BASHUNIT_ASSERTIONS_PASSED
+    local nf_prev_failed=$_BASHUNIT_ASSERTIONS_FAILED
+    local nf_prev_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
+    local nf_prev_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
+    local nf_prev_snapshot=$_BASHUNIT_ASSERTIONS_SNAPSHOT
 
     # Source login shell profiles if enabled
     if bashunit::env::is_login_shell_enabled; then
@@ -461,34 +450,17 @@ function bashunit::runner::run_test() {
       [[ -f ~/.profile ]] && source ~/.profile 2>/dev/null || true
     fi
 
-    # Run set_up and capture exit code
+    # Run set_up
     local setup_exit_code=0
     bashunit::runner::run_set_up "$test_file"
     setup_exit_code=$?
+
     if [[ $setup_exit_code -ne 0 ]]; then
       bashunit::state::set_test_exit_code "$setup_exit_code"
-      test_execution_result=$(bashunit::state::export_subshell_context)
-      # Restore saved assertion counts so parse_result_sync can accumulate properly
-      _BASHUNIT_ASSERTIONS_PASSED=$saved_assertions_passed
-      _BASHUNIT_ASSERTIONS_FAILED=$saved_assertions_failed
-      _BASHUNIT_ASSERTIONS_SKIPPED=$saved_assertions_skipped
-      _BASHUNIT_ASSERTIONS_INCOMPLETE=$saved_assertions_incomplete
-      _BASHUNIT_ASSERTIONS_SNAPSHOT=$saved_assertions_snapshot
-      _BASHUNIT_START_TIME=$saved_start_time
-      # Restore bashunit function definitions
-      bashunit::runner::restore_functions "$fn_snapshot_file"
-      rm -f "$fn_snapshot_file" 2>/dev/null || true
-      # Restore environment variables
-      bashunit::runner::restore_env_vars "$env_snapshot_file"
-      rm -f "$env_snapshot_file" 2>/dev/null || true
     else
       # Apply shell mode setting for test execution
-      local original_options
-      original_options=$(set +o)
       if bashunit::env::is_strict_mode_enabled; then
         set -euo pipefail
-      else
-        set +euo pipefail
       fi
 
       # Enable coverage tracking if enabled
@@ -496,26 +468,17 @@ function bashunit::runner::run_test() {
         bashunit::coverage::enable_trap
       fi
 
-      # Execute the test function directly and capture output to temp file
-      local output_file
-      output_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_nofork_$$_${RANDOM}"
+      # Execute the test function directly
       local test_exit_code=0
-
-      # Run test with output redirected to file - this runs in current shell
-      "$fn_name" "$@" > "$output_file" 2>&1 || test_exit_code=$?
-
-      # Read captured output
-      local test_output=""
-      [[ -f "$output_file" ]] && test_output=$(<"$output_file")
-      rm -f "$output_file" 2>/dev/null || true
+      "$fn_name" "$@" 2>&1 || test_exit_code=$?
 
       # Disable coverage trap before cleanup
       if bashunit::env::is_coverage_enabled; then
         bashunit::coverage::disable_trap
       fi
 
-      # Restore original shell options
-      eval "$original_options" 2>/dev/null || true
+      # Restore shell options
+      set +euo pipefail 2>/dev/null || true
 
       # Run tear_down
       set +e
@@ -529,24 +492,27 @@ function bashunit::runner::run_test() {
       else
         bashunit::state::set_test_exit_code "$test_exit_code"
       fi
-
-      # Construct result in same format as export_subshell_context
-      test_execution_result="${test_output}$(bashunit::state::export_subshell_context)"
-
-      # Restore saved assertion counts so parse_result_sync can accumulate properly
-      _BASHUNIT_ASSERTIONS_PASSED=$saved_assertions_passed
-      _BASHUNIT_ASSERTIONS_FAILED=$saved_assertions_failed
-      _BASHUNIT_ASSERTIONS_SKIPPED=$saved_assertions_skipped
-      _BASHUNIT_ASSERTIONS_INCOMPLETE=$saved_assertions_incomplete
-      _BASHUNIT_ASSERTIONS_SNAPSHOT=$saved_assertions_snapshot
-      _BASHUNIT_START_TIME=$saved_start_time
-      # Restore bashunit function definitions
-      bashunit::runner::restore_functions "$fn_snapshot_file"
-      rm -f "$fn_snapshot_file" 2>/dev/null || true
-      # Restore environment variables
-      bashunit::runner::restore_env_vars "$env_snapshot_file"
-      rm -f "$env_snapshot_file" 2>/dev/null || true
     fi
+
+    # Compute delta (what this test contributed) for result string
+    # parse_result_sync will add these to counters, but counters already have new values,
+    # so we put zeros to avoid double-counting. calculate_total_assertions uses these for reporting.
+    local nf_delta_passed=$((_BASHUNIT_ASSERTIONS_PASSED - nf_prev_passed))
+    local nf_delta_failed=$((_BASHUNIT_ASSERTIONS_FAILED - nf_prev_failed))
+    local nf_delta_skipped=$((_BASHUNIT_ASSERTIONS_SKIPPED - nf_prev_skipped))
+    local nf_delta_incomplete=$((_BASHUNIT_ASSERTIONS_INCOMPLETE - nf_prev_incomplete))
+    local nf_delta_snapshot=$((_BASHUNIT_ASSERTIONS_SNAPSHOT - nf_prev_snapshot))
+
+    # Restore counters to pre-test values; parse_result_sync will add the deltas
+    _BASHUNIT_ASSERTIONS_PASSED=$nf_prev_passed
+    _BASHUNIT_ASSERTIONS_FAILED=$nf_prev_failed
+    _BASHUNIT_ASSERTIONS_SKIPPED=$nf_prev_skipped
+    _BASHUNIT_ASSERTIONS_INCOMPLETE=$nf_prev_incomplete
+    _BASHUNIT_ASSERTIONS_SNAPSHOT=$nf_prev_snapshot
+
+    # Build result string with deltas (no base64 encoding needed)
+    test_execution_result="##ASSERTIONS_FAILED=$nf_delta_failed##ASSERTIONS_PASSED=$nf_delta_passed##ASSERTIONS_SKIPPED=$nf_delta_skipped##ASSERTIONS_INCOMPLETE=$nf_delta_incomplete##ASSERTIONS_SNAPSHOT=$nf_delta_snapshot##TEST_EXIT_CODE=$_BASHUNIT_TEST_EXIT_CODE##TEST_HOOK_FAILURE=$_BASHUNIT_TEST_HOOK_FAILURE##TEST_HOOK_MESSAGE=##TEST_TITLE=##TEST_OUTPUT=##"
+
   else
     # Default mode: run test in subshell for isolation
     # (FD = File Descriptor)
@@ -1137,58 +1103,6 @@ function bashunit::runner::clear_mocks() {
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
     bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}"
   done
-}
-
-# Save all bashunit:: function definitions to a temp file for no-fork mode restoration
-function bashunit::runner::snapshot_functions() {
-  local snapshot_file="$1"
-  # Get all function names starting with bashunit:: and save their definitions
-  local fn_name
-  while IFS= read -r fn_name; do
-    declare -f "$fn_name"
-  done < <(declare -F | awk '{print $3}' | grep '^bashunit::') > "$snapshot_file" 2>/dev/null || true
-}
-
-# Restore bashunit:: function definitions from a snapshot file for no-fork mode
-function bashunit::runner::restore_functions() {
-  local snapshot_file="$1"
-  if [[ -f "$snapshot_file" && -s "$snapshot_file" ]]; then
-    # shellcheck disable=SC1090
-    source "$snapshot_file"
-  fi
-}
-
-# Save BASHUNIT_* environment variables to a temp file for no-fork mode restoration
-function bashunit::runner::snapshot_env_vars() {
-  local snapshot_file="$1"
-  # Save all BASHUNIT_* variables in a format that works across bash versions
-  # Use compgen to list variable names, then manually format them
-  # Skip readonly variables as they cannot be restored
-  local varname
-  while IFS= read -r varname; do
-    # Check if variable is readonly
-    if [[ $(declare -p "$varname" 2>/dev/null) == *"declare -r"* ]]; then
-      continue
-    fi
-    # Use printf %q to properly escape the value
-    printf '%s=%q\n' "$varname" "${!varname}"
-  done < <(compgen -v BASHUNIT_) > "$snapshot_file" 2>/dev/null || true
-}
-
-# Restore BASHUNIT_* environment variables from a snapshot file for no-fork mode
-function bashunit::runner::restore_env_vars() {
-  local snapshot_file="$1"
-  if [[ -f "$snapshot_file" && -s "$snapshot_file" ]]; then
-    # First, unset any BASHUNIT_ vars that might have been modified (skip readonly)
-    while IFS= read -r varname; do
-      if [[ $(declare -p "$varname" 2>/dev/null) != *"declare -r"* ]]; then
-        unset "$varname" 2>/dev/null || true
-      fi
-    done < <(compgen -v BASHUNIT_)
-    # Then restore from snapshot (readonly variables were excluded from snapshot)
-    # shellcheck disable=SC1090
-    source "$snapshot_file"
-  fi
 }
 
 function bashunit::runner::run_tear_down_after_script() {
