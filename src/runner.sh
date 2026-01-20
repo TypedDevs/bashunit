@@ -468,9 +468,9 @@ function bashunit::runner::run_test() {
         bashunit::coverage::enable_trap
       fi
 
-      # Execute the test function directly
+      # Execute the test function directly (output suppressed for clean display)
       local test_exit_code=0
-      "$fn_name" "$@" 2>&1 || test_exit_code=$?
+      "$fn_name" "$@" >/dev/null 2>&1 || test_exit_code=$?
 
       # Disable coverage trap before cleanup
       if bashunit::env::is_coverage_enabled; then
