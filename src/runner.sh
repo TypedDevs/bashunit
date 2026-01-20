@@ -438,6 +438,10 @@ function bashunit::runner::run_test() {
     local nf_prev_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
     local nf_prev_snapshot=$_BASHUNIT_ASSERTIONS_SNAPSHOT
 
+    # Save critical display settings that tests might modify
+    local nf_saved_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+    local nf_saved_verbose=$BASHUNIT_VERBOSE
+
     # Source login shell profiles if enabled
     if bashunit::env::is_login_shell_enabled; then
       # shellcheck disable=SC1091
@@ -509,6 +513,10 @@ function bashunit::runner::run_test() {
     _BASHUNIT_ASSERTIONS_SKIPPED=$nf_prev_skipped
     _BASHUNIT_ASSERTIONS_INCOMPLETE=$nf_prev_incomplete
     _BASHUNIT_ASSERTIONS_SNAPSHOT=$nf_prev_snapshot
+
+    # Restore critical display settings
+    BASHUNIT_SIMPLE_OUTPUT=$nf_saved_simple_output
+    BASHUNIT_VERBOSE=$nf_saved_verbose
 
     # Build result string with deltas (no base64 encoding needed)
     test_execution_result="##ASSERTIONS_FAILED=$nf_delta_failed##ASSERTIONS_PASSED=$nf_delta_passed##ASSERTIONS_SKIPPED=$nf_delta_skipped##ASSERTIONS_INCOMPLETE=$nf_delta_incomplete##ASSERTIONS_SNAPSHOT=$nf_delta_snapshot##TEST_EXIT_CODE=$_BASHUNIT_TEST_EXIT_CODE##TEST_HOOK_FAILURE=$_BASHUNIT_TEST_HOOK_FAILURE##TEST_HOOK_MESSAGE=##TEST_TITLE=##TEST_OUTPUT=##"
