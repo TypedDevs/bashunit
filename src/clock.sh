@@ -6,36 +6,16 @@ function bashunit::clock::_choose_impl() {
   local shell_time
   local attempts=()
 
-  # 1. Try Perl with Time::HiRes
-  attempts+=("Perl")
-  if bashunit::dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
-    _BASHUNIT_CLOCK_NOW_IMPL="perl"
+  # 1. Try using native shell EPOCHREALTIME first (Bash 5+) - fastest, no external process
+  attempts+=("EPOCHREALTIME")
+  if bashunit::clock::shell_time &>/dev/null; then
+    _BASHUNIT_CLOCK_NOW_IMPL="shell"
     return 0
   fi
 
-  # 2. Try Python 3 with time module
-  attempts+=("Python")
-  if bashunit::dependencies::has_python; then
-    _BASHUNIT_CLOCK_NOW_IMPL="python"
-    return 0
-  fi
-
-  # 3. Try Node.js
-  attempts+=("Node")
-  if bashunit::dependencies::has_node; then
-    _BASHUNIT_CLOCK_NOW_IMPL="node"
-    return 0
-  fi
-  # 4. Windows fallback with PowerShell
-  attempts+=("PowerShell")
-  if bashunit::check_os::is_windows && bashunit::dependencies::has_powershell; then
-    _BASHUNIT_CLOCK_NOW_IMPL="powershell"
-    return 0
-  fi
-
-  # 5. Unix fallback using `date +%s%N` (if not macOS or Alpine)
+  # 2. Unix fallback using `date +%s%N` (if not macOS, Alpine, or Windows) - fast, single process
   attempts+=("date")
-  if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine; then
+  if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine && ! bashunit::check_os::is_windows; then
     local result
     result=$(date +%s%N 2>/dev/null)
     if [[ "$result" != *N && "$result" =~ ^[0-9]+$ ]]; then
@@ -44,10 +24,31 @@ function bashunit::clock::_choose_impl() {
     fi
   fi
 
-  # 6. Try using native shell EPOCHREALTIME (if available)
-  attempts+=("EPOCHREALTIME")
-  if shell_time="$(bashunit::clock::shell_time)"; then
-    _BASHUNIT_CLOCK_NOW_IMPL="shell"
+  # 3. Try Perl with Time::HiRes
+  attempts+=("Perl")
+  if bashunit::dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
+    _BASHUNIT_CLOCK_NOW_IMPL="perl"
+    return 0
+  fi
+
+  # 4. Try Python 3 with time module
+  attempts+=("Python")
+  if bashunit::dependencies::has_python; then
+    _BASHUNIT_CLOCK_NOW_IMPL="python"
+    return 0
+  fi
+
+  # 5. Try Node.js
+  attempts+=("Node")
+  if bashunit::dependencies::has_node; then
+    _BASHUNIT_CLOCK_NOW_IMPL="node"
+    return 0
+  fi
+
+  # 6. Windows fallback with PowerShell
+  attempts+=("PowerShell")
+  if bashunit::check_os::is_windows && bashunit::dependencies::has_powershell; then
+    _BASHUNIT_CLOCK_NOW_IMPL="powershell"
     return 0
   fi
 
@@ -100,11 +101,16 @@ EOF
       bashunit::math::calculate "$seconds * 1000000000"
       ;;
     shell)
-      # shellcheck disable=SC2155
-      local shell_time="$(bashunit::clock::shell_time)"
+      # Use EPOCHREALTIME with pure bash arithmetic (no external process)
+      # EPOCHREALTIME format: "seconds.microseconds" (6 decimal places)
+      local shell_time
+      shell_time="$(bashunit::clock::shell_time)"
       local seconds="${shell_time%%.*}"
       local microseconds="${shell_time#*.}"
-      bashunit::math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+      # Pad microseconds to 6 digits if needed (handles edge cases)
+      while [[ ${#microseconds} -lt 6 ]]; do microseconds="${microseconds}0"; done
+      # Convert to nanoseconds using pure bash arithmetic
+      echo "$(( seconds * 1000000000 + microseconds * 1000 ))"
       ;;
     *)
       bashunit::clock::_choose_impl || return 1
