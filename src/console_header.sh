@@ -118,6 +118,7 @@ Options:
   --no-output                 Suppress all output
   --failures-only             Only show failures (suppress passed/skipped/incomplete)
   --no-progress               Suppress real-time progress, show only final results
+  --no-fork                   Run tests without subshell isolation (faster, less isolation)
   --show-output               Show test output on failure (default: enabled)
   --no-output-on-failure      Hide test output on failure
   --strict                    Enable strict shell mode (set -euo pipefail)

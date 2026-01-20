@@ -424,14 +424,29 @@ function bashunit::runner::run_test() {
   local current_assertions_incomplete="$(bashunit::state::get_assertions_incomplete)"
   local current_assertions_skipped="$(bashunit::state::get_assertions_skipped)"
 
-  # (FD = File Descriptor)
-  # Duplicate the current std-output (FD 1) and assigns it to FD 3.
-  # This means that FD 3 now points to wherever the std-output was pointing.
-  exec 3>&1
+  local test_execution_result
 
-  local test_execution_result=$(
-    # shellcheck disable=SC2064
-    trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
+  if bashunit::env::is_no_fork_enabled; then
+    # No-fork mode: run test in current shell context (faster, less isolation)
+    # We avoid using $(...) here as that would create a subshell, defeating the purpose
+
+    # Save current assertion counts before initializing (to preserve accumulation)
+    local saved_assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
+    local saved_assertions_failed=$_BASHUNIT_ASSERTIONS_FAILED
+    local saved_assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
+    local saved_assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
+    local saved_assertions_snapshot=$_BASHUNIT_ASSERTIONS_SNAPSHOT
+    # Save start time in case test modifies it
+    local saved_start_time=$_BASHUNIT_START_TIME
+    # Save bashunit function definitions in case tests override them
+    local fn_snapshot_file
+    fn_snapshot_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_fn_snapshot_$$_${RANDOM}"
+    bashunit::runner::snapshot_functions "$fn_snapshot_file"
+    # Save BASHUNIT_* environment variables in case tests modify them
+    local env_snapshot_file
+    env_snapshot_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_env_snapshot_$$_${RANDOM}"
+    bashunit::runner::snapshot_env_vars "$env_snapshot_file"
+
     bashunit::state::initialize_assertions_count
 
     # Source login shell profiles if enabled
@@ -446,34 +461,145 @@ function bashunit::runner::run_test() {
       [[ -f ~/.profile ]] && source ~/.profile 2>/dev/null || true
     fi
 
-    # Run set_up and capture exit code without || to preserve errexit behavior
+    # Run set_up and capture exit code
     local setup_exit_code=0
     bashunit::runner::run_set_up "$test_file"
     setup_exit_code=$?
     if [[ $setup_exit_code -ne 0 ]]; then
-      exit $setup_exit_code
-    fi
-
-    # Apply shell mode setting for test execution
-    if bashunit::env::is_strict_mode_enabled; then
-      set -euo pipefail
+      bashunit::state::set_test_exit_code "$setup_exit_code"
+      test_execution_result=$(bashunit::state::export_subshell_context)
+      # Restore saved assertion counts so parse_result_sync can accumulate properly
+      _BASHUNIT_ASSERTIONS_PASSED=$saved_assertions_passed
+      _BASHUNIT_ASSERTIONS_FAILED=$saved_assertions_failed
+      _BASHUNIT_ASSERTIONS_SKIPPED=$saved_assertions_skipped
+      _BASHUNIT_ASSERTIONS_INCOMPLETE=$saved_assertions_incomplete
+      _BASHUNIT_ASSERTIONS_SNAPSHOT=$saved_assertions_snapshot
+      _BASHUNIT_START_TIME=$saved_start_time
+      # Restore bashunit function definitions
+      bashunit::runner::restore_functions "$fn_snapshot_file"
+      rm -f "$fn_snapshot_file" 2>/dev/null || true
+      # Restore environment variables
+      bashunit::runner::restore_env_vars "$env_snapshot_file"
+      rm -f "$env_snapshot_file" 2>/dev/null || true
     else
-      set +euo pipefail
+      # Apply shell mode setting for test execution
+      local original_options
+      original_options=$(set +o)
+      if bashunit::env::is_strict_mode_enabled; then
+        set -euo pipefail
+      else
+        set +euo pipefail
+      fi
+
+      # Enable coverage tracking if enabled
+      if bashunit::env::is_coverage_enabled; then
+        bashunit::coverage::enable_trap
+      fi
+
+      # Execute the test function directly and capture output to temp file
+      local output_file
+      output_file="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit_nofork_$$_${RANDOM}"
+      local test_exit_code=0
+
+      # Run test with output redirected to file - this runs in current shell
+      "$fn_name" "$@" > "$output_file" 2>&1 || test_exit_code=$?
+
+      # Read captured output
+      local test_output=""
+      [[ -f "$output_file" ]] && test_output=$(<"$output_file")
+      rm -f "$output_file" 2>/dev/null || true
+
+      # Disable coverage trap before cleanup
+      if bashunit::env::is_coverage_enabled; then
+        bashunit::coverage::disable_trap
+      fi
+
+      # Restore original shell options
+      eval "$original_options" 2>/dev/null || true
+
+      # Run tear_down
+      set +e
+      bashunit::runner::run_tear_down "$test_file"
+      local teardown_status=$?
+      bashunit::runner::clear_mocks
+      bashunit::cleanup_testcase_temp_files
+
+      if [[ $teardown_status -ne 0 ]]; then
+        bashunit::state::set_test_exit_code "$teardown_status"
+      else
+        bashunit::state::set_test_exit_code "$test_exit_code"
+      fi
+
+      # Construct result in same format as export_subshell_context
+      test_execution_result="${test_output}$(bashunit::state::export_subshell_context)"
+
+      # Restore saved assertion counts so parse_result_sync can accumulate properly
+      _BASHUNIT_ASSERTIONS_PASSED=$saved_assertions_passed
+      _BASHUNIT_ASSERTIONS_FAILED=$saved_assertions_failed
+      _BASHUNIT_ASSERTIONS_SKIPPED=$saved_assertions_skipped
+      _BASHUNIT_ASSERTIONS_INCOMPLETE=$saved_assertions_incomplete
+      _BASHUNIT_ASSERTIONS_SNAPSHOT=$saved_assertions_snapshot
+      _BASHUNIT_START_TIME=$saved_start_time
+      # Restore bashunit function definitions
+      bashunit::runner::restore_functions "$fn_snapshot_file"
+      rm -f "$fn_snapshot_file" 2>/dev/null || true
+      # Restore environment variables
+      bashunit::runner::restore_env_vars "$env_snapshot_file"
+      rm -f "$env_snapshot_file" 2>/dev/null || true
     fi
+  else
+    # Default mode: run test in subshell for isolation
+    # (FD = File Descriptor)
+    # Duplicate the current std-output (FD 1) and assigns it to FD 3.
+    # This means that FD 3 now points to wherever the std-output was pointing.
+    exec 3>&1
 
-    # Enable coverage tracking if enabled
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
-    fi
+    test_execution_result=$(
+      # shellcheck disable=SC2064
+      trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
+      bashunit::state::initialize_assertions_count
 
-    # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
-    # points to the original std-output.
-    "$fn_name" "$@" 2>&1
+      # Source login shell profiles if enabled
+      if bashunit::env::is_login_shell_enabled; then
+        # shellcheck disable=SC1091
+        [[ -f /etc/profile ]] && source /etc/profile 2>/dev/null || true
+        # shellcheck disable=SC1090
+        [[ -f ~/.bash_profile ]] && source ~/.bash_profile 2>/dev/null || true
+        # shellcheck disable=SC1090
+        [[ -f ~/.bash_login ]] && source ~/.bash_login 2>/dev/null || true
+        # shellcheck disable=SC1090
+        [[ -f ~/.profile ]] && source ~/.profile 2>/dev/null || true
+      fi
 
-  )
+      # Run set_up and capture exit code without || to preserve errexit behavior
+      local setup_exit_code=0
+      bashunit::runner::run_set_up "$test_file"
+      setup_exit_code=$?
+      if [[ $setup_exit_code -ne 0 ]]; then
+        exit $setup_exit_code
+      fi
 
-  # Closes FD 3, which was used temporarily to hold the original stdout.
-  exec 3>&-
+      # Apply shell mode setting for test execution
+      if bashunit::env::is_strict_mode_enabled; then
+        set -euo pipefail
+      else
+        set +euo pipefail
+      fi
+
+      # Enable coverage tracking if enabled
+      if bashunit::env::is_coverage_enabled; then
+        bashunit::coverage::enable_trap
+      fi
+
+      # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
+      # points to the original std-output.
+      "$fn_name" "$@" 2>&1
+
+    )
+
+    # Closes FD 3, which was used temporarily to hold the original stdout.
+    exec 3>&-
+  fi
 
   local end_time=$(bashunit::clock::now)
   local duration_ns=$((end_time - start_time))
@@ -1011,6 +1137,58 @@ function bashunit::runner::clear_mocks() {
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
     bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}"
   done
+}
+
+# Save all bashunit:: function definitions to a temp file for no-fork mode restoration
+function bashunit::runner::snapshot_functions() {
+  local snapshot_file="$1"
+  # Get all function names starting with bashunit:: and save their definitions
+  local fn_name
+  while IFS= read -r fn_name; do
+    declare -f "$fn_name"
+  done < <(declare -F | awk '{print $3}' | grep '^bashunit::') > "$snapshot_file" 2>/dev/null || true
+}
+
+# Restore bashunit:: function definitions from a snapshot file for no-fork mode
+function bashunit::runner::restore_functions() {
+  local snapshot_file="$1"
+  if [[ -f "$snapshot_file" && -s "$snapshot_file" ]]; then
+    # shellcheck disable=SC1090
+    source "$snapshot_file"
+  fi
+}
+
+# Save BASHUNIT_* environment variables to a temp file for no-fork mode restoration
+function bashunit::runner::snapshot_env_vars() {
+  local snapshot_file="$1"
+  # Save all BASHUNIT_* variables in a format that works across bash versions
+  # Use compgen to list variable names, then manually format them
+  # Skip readonly variables as they cannot be restored
+  local varname
+  while IFS= read -r varname; do
+    # Check if variable is readonly
+    if [[ $(declare -p "$varname" 2>/dev/null) == *"declare -r"* ]]; then
+      continue
+    fi
+    # Use printf %q to properly escape the value
+    printf '%s=%q\n' "$varname" "${!varname}"
+  done < <(compgen -v BASHUNIT_) > "$snapshot_file" 2>/dev/null || true
+}
+
+# Restore BASHUNIT_* environment variables from a snapshot file for no-fork mode
+function bashunit::runner::restore_env_vars() {
+  local snapshot_file="$1"
+  if [[ -f "$snapshot_file" && -s "$snapshot_file" ]]; then
+    # First, unset any BASHUNIT_ vars that might have been modified (skip readonly)
+    while IFS= read -r varname; do
+      if [[ $(declare -p "$varname" 2>/dev/null) != *"declare -r"* ]]; then
+        unset "$varname" 2>/dev/null || true
+      fi
+    done < <(compgen -v BASHUNIT_)
+    # Then restore from snapshot (readonly variables were excluded from snapshot)
+    # shellcheck disable=SC1090
+    source "$snapshot_file"
+  fi
 }
 
 function bashunit::runner::run_tear_down_after_script() {

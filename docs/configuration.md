@@ -364,6 +364,29 @@ BASHUNIT_NO_PROGRESS=true
 ```
 :::
 
+## No fork
+
+> `BASHUNIT_NO_FORK=true|false`
+
+Run tests without subshell isolation. `false` by default.
+
+By default, bashunit runs each test in a subshell to ensure complete isolation between tests.
+When enabled, tests run directly in the main shell context, which can reduce process creation
+overhead but means tests may affect each other's state.
+
+::: warning
+Use this option only when your tests are designed to be independent without relying on
+process isolation. A warning is displayed when this mode is active.
+:::
+
+Similar as using `--no-fork` option on the [command line](/command-line#no-fork).
+
+::: code-group
+```bash [Example]
+BASHUNIT_NO_FORK=true
+```
+:::
+
 ## Show output on failure
 
 > `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true|false`

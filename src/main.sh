@@ -66,6 +66,9 @@ function bashunit::main::cmd_test() {
       --no-output)
         export BASHUNIT_NO_OUTPUT=true
         ;;
+      --no-fork)
+        export BASHUNIT_NO_FORK=true
+        ;;
       -vvv|--verbose)
         export BASHUNIT_VERBOSE=true
         ;;
@@ -453,6 +456,11 @@ function bashunit::main::exec_tests() {
     printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"
     printf "particularly involving race conditions.%s " "${_BASHUNIT_COLOR_DEFAULT}"
     printf "%sFallback using --no-parallel%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  fi
+
+  if bashunit::env::is_no_fork_enabled; then
+    printf "%sWarning: --no-fork mode enabled. Tests run without subshell isolation.\n" "${_BASHUNIT_COLOR_INCOMPLETE}"
+    printf "This improves performance but tests may affect each other's state.%s\n" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
   if bashunit::parallel::is_enabled; then

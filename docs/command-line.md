@@ -70,6 +70,7 @@ bashunit test tests/ --parallel --simple
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
 | `--no-progress`                | Suppress real-time progress, show only summary   |
+| `--no-fork`                    | Run tests without subshell isolation (faster)    |
 | `--show-output`                | Show test output on failure (default)            |
 | `--no-output-on-failure`       | Hide test output on failure                      |
 | `--strict`                     | Enable strict shell mode                         |
@@ -291,6 +292,42 @@ Assertions: 25 passed, 25 total
 
  All tests passed
 Time taken: 1.23s
+```
+:::
+
+### No Fork
+
+> `bashunit test --no-fork`
+
+Run tests without subshell isolation for potentially faster execution.
+
+By default, bashunit runs each test in a subshell to ensure complete isolation between tests.
+The `--no-fork` option disables this, running tests directly in the main shell context.
+
+**Benefits:**
+- Reduced process creation overhead
+- Potentially faster test execution for simple tests
+
+**Trade-offs:**
+- Tests may affect each other's state (global variables, shell options)
+- Less isolation between tests
+- Not recommended for tests that modify global state
+
+::: warning
+When using `--no-fork`, a warning is displayed to remind you that tests run without
+subshell isolation. Use this option when you understand the implications and your
+tests are designed to be independent without relying on process isolation.
+:::
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --no-fork
+```
+```[Output]
+Warning: --no-fork mode enabled. Tests run without subshell isolation.
+This improves performance but tests may affect each other's state.
+bashunit - 0.32.0 | Tests: 10
+...
 ```
 :::
 

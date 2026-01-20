@@ -9,8 +9,18 @@ function bashunit::unmock() {
     if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
+
+      # Restore original function if it was saved (for no-fork mode)
       local variable
       variable="$(bashunit::helper::normalize_variable_name "$command")"
+      local original_file_var="${variable}_original_file"
+      if [[ -f "${!original_file_var-}" ]]; then
+        # shellcheck disable=SC1090
+        source "${!original_file_var}"
+        rm -f "${!original_file_var}"
+        unset "$original_file_var"
+      fi
+
       local times_file_var="${variable}_times_file"
       local params_file_var="${variable}_params_file"
       [[ -f "${!times_file_var-}" ]] && rm -f "${!times_file_var}"
@@ -25,6 +35,21 @@ function bashunit::unmock() {
 function bashunit::mock() {
   local command=$1
   shift
+
+  # Save original function definition if it exists (for no-fork mode restoration)
+  if declare -F "$command" >/dev/null 2>&1; then
+    local variable
+    variable="$(bashunit::helper::normalize_variable_name "$command")"
+    local original_file_var="${variable}_original_file"
+    # Only save if not already saved (first mock wins)
+    if [[ -z "${!original_file_var-}" ]]; then
+      local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
+      local original_file
+      original_file=$(bashunit::temp_file "${test_id}_${variable}_original")
+      declare -f "$command" > "$original_file"
+      export "${original_file_var}"="$original_file"
+    fi
+  fi
 
   if [[ $# -gt 0 ]]; then
     eval "function $command() { $* \"\$@\"; }"

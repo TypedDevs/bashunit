@@ -31,6 +31,11 @@ function test_globals_current_filename() {
 }
 
 function test_globals_caller_filename() {
+  # Skip in no-fork mode: call stack is different without subprocess isolation
+  if bashunit::env::is_no_fork_enabled; then
+    bashunit::skip
+    return
+  fi
   assert_same "./src" "$(bashunit::caller_filename)"
 }
 

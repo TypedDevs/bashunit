@@ -8,6 +8,11 @@ function tear_down() {
 }
 
 function test_redirect_error_with_log() {
+  # Skip in no-fork mode: fd manipulation conflicts with output capture
+  if bashunit::env::is_no_fork_enabled; then
+    bashunit::skip
+    return
+  fi
   exec 2>&3 2>$_ERROR_LOG
 
   local exit_code=0
