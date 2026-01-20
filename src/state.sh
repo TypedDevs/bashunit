@@ -272,7 +272,16 @@ function bashunit::state::print_line() {
     return
   fi
 
-  if ! bashunit::env::is_simple_output_enabled; then
+  # Check simple output - in no-fork mode, also check env var directly
+  # in case a test overrode the function
+  local is_simple=false
+  if bashunit::env::is_simple_output_enabled; then
+    is_simple=true
+  elif [[ "${BASHUNIT_SIMPLE_OUTPUT:-}" == "true" ]]; then
+    is_simple=true
+  fi
+
+  if [[ "$is_simple" != "true" ]]; then
     printf "%s\n" "$line"
     return
   fi
