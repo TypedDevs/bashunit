@@ -3,6 +3,11 @@
 # Strip ANSI escape codes and control characters
 function bashunit::str::strip_ansi() {
   local input="$1"
+  # Fast path: if no escape character present, return as-is (avoids subshell)
+  if [[ "$input" != *$'\x1B'* ]]; then
+    printf '%s' "$input"
+    return
+  fi
   echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g'
 }
 
