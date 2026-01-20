@@ -118,10 +118,15 @@ function assert_equals() {
   local expected="$1"
   local actual="$2"
 
-  local actual_cleaned
-  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
-  local expected_cleaned
-  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  # Fast path: avoid subshell if no ANSI codes present
+  local actual_cleaned="$actual"
+  local expected_cleaned="$expected"
+  if [[ "$actual" == *$'\x1B'* ]]; then
+    actual_cleaned=$(bashunit::str::strip_ansi "$actual")
+  fi
+  if [[ "$expected" == *$'\x1B'* ]]; then
+    expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  fi
 
   if [[ "$expected_cleaned" != "$actual_cleaned" ]]; then
     local test_fn
@@ -142,10 +147,15 @@ function assert_not_equals() {
   local expected="$1"
   local actual="$2"
 
-  local actual_cleaned
-  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
-  local expected_cleaned
-  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  # Fast path: avoid subshell if no ANSI codes present
+  local actual_cleaned="$actual"
+  local expected_cleaned="$expected"
+  if [[ "$actual" == *$'\x1B'* ]]; then
+    actual_cleaned=$(bashunit::str::strip_ansi "$actual")
+  fi
+  if [[ "$expected" == *$'\x1B'* ]]; then
+    expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  fi
 
   if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
     local test_fn
