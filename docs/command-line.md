@@ -304,21 +304,6 @@ Run tests without subshell isolation for potentially faster execution.
 By default, bashunit runs each test in a subshell to ensure complete isolation between tests.
 The `--no-fork` option disables this, running tests directly in the main shell context.
 
-**Benefits:**
-- Reduced process creation overhead
-- Potentially faster test execution for simple tests
-
-**Trade-offs:**
-- Tests may affect each other's state (global variables, shell options)
-- Less isolation between tests
-- Not recommended for tests that modify global state
-
-::: warning
-When using `--no-fork`, a warning is displayed to remind you that tests run without
-subshell isolation. Use this option when you understand the implications and your
-tests are designed to be independent without relying on process isolation.
-:::
-
 ::: code-group
 ```bash [Example]
 bashunit test tests/ --no-fork
@@ -329,6 +314,62 @@ This improves performance but tests may affect each other's state.
 bashunit - 0.32.0 | Tests: 10
 ...
 ```
+:::
+
+#### How it works
+
+**Normal mode (default):** Each test function forks a new subshell process, executes the test
+in isolation, then exits. Results are serialized and passed back to the parent process.
+This ensures complete isolation but incurs process creation overhead for every test.
+
+**No-fork mode:** Tests run directly in the main shell context without spawning subshells.
+State is carefully saved before each test and restored afterward, providing a lightweight
+form of isolation without the process overhead.
+
+#### Performance
+
+No-fork mode typically provides **12-14% faster execution** compared to normal mode,
+with the improvement varying based on test complexity and system characteristics.
+
+**Platform optimizations:**
+- **Bash 5.0+**: Uses `EPOCHREALTIME` for timing, eliminating external process calls entirely
+- **Older Bash**: Falls back to `date` command for timing
+
+The performance gain is most noticeable in test suites with many small, fast-running tests
+where process creation overhead dominates actual test execution time.
+
+#### When to use
+
+**Good candidates for no-fork mode:**
+- Unit tests that don't modify global state
+- CI/CD pipelines where execution speed matters
+- Large test suites with many small tests
+- Tests that are already designed to be independent
+
+**Avoid no-fork mode when:**
+- Tests intentionally modify global variables or shell options
+- Tests use `set -euo pipefail` (strict mode) internally
+- Tests rely on process isolation for cleanup
+- You're debugging test interactions or flaky tests
+
+#### Technical details
+
+::: details How state is preserved
+Bashunit saves and restores the following around each test in no-fork mode:
+
+- **Shell options**: All `set` and `shopt` options are captured and restored
+- **Working directory**: `cd` changes are reverted after each test
+- **Traps**: Signal handlers are saved and restored
+- **errexit handling**: Temporarily disabled during test execution to handle command substitutions properly
+
+The `BASHUNIT_NO_FORK` environment variable is automatically unset during test execution to prevent
+nested bashunit calls from inheriting the no-fork setting unexpectedly.
+:::
+
+::: warning
+When using `--no-fork`, a warning is displayed to remind you that tests run without
+subshell isolation. Use this option when you understand the implications and your
+tests are designed to be independent without relying on process isolation.
 :::
 
 ### Strict Mode

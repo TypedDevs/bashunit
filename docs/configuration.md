@@ -379,7 +379,10 @@ Use this option only when your tests are designed to be independent without rely
 process isolation. A warning is displayed when this mode is active.
 :::
 
-Similar as using `--no-fork` option on the [command line](/command-line#no-fork).
+::: tip Learn more
+For detailed information about how no-fork mode works, performance benchmarks, and guidance on
+when to use it, see the [No Fork section in Command Line](/command-line#no-fork).
+:::
 
 ::: code-group
 ```bash [Example]
