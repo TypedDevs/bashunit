@@ -37,6 +37,9 @@ function bashunit::runner::load_test_files() {
     bashunit::internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
+    # Disable errexit after sourcing - test files may have set -euo pipefail
+    # which would cause failures in command substitutions returning non-zero
+    set +e 2>/dev/null || true
     # Update function cache after sourcing new test file
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Check if any tests match the filter before rendering header or running hooks
@@ -463,18 +466,31 @@ function bashunit::runner::run_test() {
       bashunit::state::set_test_exit_code "$setup_exit_code"
     else
       # Apply shell mode setting for test execution
-      if bashunit::env::is_strict_mode_enabled; then
-        set -euo pipefail
-      fi
+      # Note: In no-fork mode, we intentionally DON'T enable errexit even if strict mode
+      # is set, because command substitutions in tests (e.g., $(./bashunit ...)) that
+      # return non-zero would cause immediate exit. Tests need to handle their own
+      # exit codes via assertions like assert_general_error.
+      # The strict mode is only applied in forked mode where isolation is provided.
 
       # Enable coverage tracking if enabled
       if bashunit::env::is_coverage_enabled; then
         bashunit::coverage::enable_trap
       fi
 
+      # Ensure errexit is off - test files may have set it via set -euo pipefail
+      set +e 2>/dev/null || true
+
+      # Temporarily unset BASHUNIT_NO_FORK so child processes (like nested ./bashunit
+      # calls in acceptance tests) don't inherit it and produce different output
+      local nf_saved_no_fork="${BASHUNIT_NO_FORK:-}"
+      unset BASHUNIT_NO_FORK
+
       # Execute the test function directly (output suppressed for clean display)
       local test_exit_code=0
       "$fn_name" "$@" >/dev/null 2>&1 || test_exit_code=$?
+
+      # Restore BASHUNIT_NO_FORK
+      export BASHUNIT_NO_FORK="$nf_saved_no_fork"
 
       # Disable coverage trap before cleanup
       if bashunit::env::is_coverage_enabled; then
