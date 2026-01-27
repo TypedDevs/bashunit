@@ -14,6 +14,10 @@
     - Useful for CI/CD pipelines or log-restricted environments
     - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
 
+### Fixed
+- Self-test `tests/acceptance/install_test.sh` now passes when no network tools are available (Issue #582)
+    - Tests skip gracefully with `BASHUNIT_NO_NETWORK=true` or in sandboxed environments
+
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 
 ### Changed
