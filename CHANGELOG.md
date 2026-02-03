@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Lower minimum Bash version requirement from 3.2 to 3.0
+
 ### Added
 - Display test output (stdout/stderr) on failure for runtime errors
     - Shows captured output in an "Output:" section when tests fail with runtime errors

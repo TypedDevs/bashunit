@@ -2,13 +2,15 @@
 
 function bashunit::console_header::print_version_with_env() {
   local filter=${1:-}
-  local files=("${@:2}")
+  # Bash 3.0 compatible: check argument count before array access
+  local files
+  [[ $# -gt 1 ]] && files=("${@:2}")
 
   if ! bashunit::env::is_show_header_enabled; then
     return
   fi
 
-  bashunit::console_header::print_version "$filter" "${files[@]}"
+  bashunit::console_header::print_version "$filter" ${files+"${files[@]}"}
 
   if bashunit::env::is_dev_mode_enabled; then
     printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
@@ -21,9 +23,12 @@ function bashunit::console_header::print_version() {
    shift
   fi
 
-  local files=("$@")
+  # Bash 3.0 compatible: check argument count before array access
+  local files
+  local files_count=$#
+  [[ $# -gt 0 ]] && files=("$@")
   local total_tests
-  if [[ ${#files[@]} -eq 0 ]]; then
+  if [[ "$files_count" -eq 0 ]]; then
     total_tests=0
   elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
     # Skip counting in parallel+simple mode for faster startup

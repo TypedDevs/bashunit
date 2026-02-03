@@ -69,7 +69,7 @@ Examples must mirror **real** patterns from `./tests/**` exactly:
 
 ## Path-Scoped Guidance
 
-- `./src/**`: small, portable functions, namespaced; maintain Bash 3.2+ compatibility
+- `./src/**`: small, portable functions, namespaced; maintain Bash 3.0+ compatibility
 - `./tests/**`: behavior-focused tests using official assertions/doubles; avoid networks/unverified tools
 - `./.tasks/**`: one file per change (`YYYY-MM-DD-slug.md`); keep AC, test inventory, current red bar, and timestamped Logbook updated
 - `./adrs/**`: read first; when adding, use template and match existing ADR style

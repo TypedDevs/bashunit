@@ -5,8 +5,11 @@
 #############################
 function bashunit::main::cmd_test() {
   local filter=""
-  local raw_args=()
-  local args=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local raw_args
+  local raw_args_count=0
+  local args
+  local args_count=0
   local assert_fn=""
   local _bashunit_coverage_opt_set=false
 
@@ -150,7 +153,7 @@ function bashunit::main::cmd_test() {
         _bashunit_coverage_opt_set=true
         ;;
       *)
-        raw_args+=("$1")
+        raw_args[raw_args_count]="$1"; raw_args_count=$((raw_args_count + 1))
         ;;
     esac
     shift
@@ -166,10 +169,11 @@ function bashunit::main::cmd_test() {
   # Skip filter parsing for assert mode - args are not file paths
   local inline_filter=""
   local inline_filter_file=""
-  if [[ ${#raw_args[@]} -gt 0 ]]; then
+  if [[ "$raw_args_count" -gt 0 ]]; then
     if [[ -n "$assert_fn" ]]; then
       # Assert mode: pass args as-is without file path processing
       args=("${raw_args[@]}")
+      args_count="$raw_args_count"
     else
       # Test mode: process file paths and extract inline filters
       for arg in "${raw_args[@]}"; do
@@ -186,7 +190,7 @@ function bashunit::main::cmd_test() {
         fi
 
         while IFS= read -r file; do
-          args+=("$file")
+          args[args_count]="$file"; args_count=$((args_count + 1))
         done < <(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
       done
 
@@ -196,7 +200,7 @@ function bashunit::main::cmd_test() {
         local resolved_file="${inline_filter_file}"
 
         # If the file path was a pattern, use the first resolved file
-        if [[ ${#args[@]} -gt 0 ]]; then
+        if [[ "$args_count" -gt 0 ]]; then
           resolved_file="${args[0]}"
         fi
 
@@ -244,8 +248,11 @@ function bashunit::main::cmd_test() {
 #############################
 function bashunit::main::cmd_bench() {
   local filter=""
-  local raw_args=()
-  local args=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local raw_args
+  local raw_args_count=0
+  local args
+  local args_count=0
 
   export BASHUNIT_BENCH_MODE=true
 
@@ -291,17 +298,17 @@ function bashunit::main::cmd_bench() {
         exit 0
         ;;
       *)
-        raw_args+=("$1")
+        raw_args[raw_args_count]="$1"; raw_args_count=$((raw_args_count + 1))
         ;;
     esac
     shift
   done
 
   # Expand positional arguments
-  if [[ ${#raw_args[@]} -gt 0 ]]; then
+  if [[ "$raw_args_count" -gt 0 ]]; then
     for arg in "${raw_args[@]}"; do
       while IFS= read -r file; do
-        args+=("$file")
+        args[args_count]="$file"; args_count=$((args_count + 1))
       done < <(bashunit::helper::find_files_recursive "$arg" '*[bB]ench.sh')
     done
   fi
@@ -429,16 +436,20 @@ function bashunit::main::cmd_assert() {
 #############################
 function bashunit::main::exec_tests() {
   local filter=$1
-  local files=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local files
+  [[ $# -gt 1 ]] && files=("${@:2}")
 
-  local test_files=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local test_files
+  local test_files_count=0
   while IFS= read -r line; do
-    test_files+=("$line")
-  done < <(bashunit::helper::load_test_files "$filter" "${files[@]}")
+    test_files[test_files_count]="$line"; test_files_count=$((test_files_count + 1))
+  done < <(bashunit::helper::load_test_files "$filter" ${files+"${files[@]}"})
 
-  bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]}"
+  bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]:-}"
 
-  if [[ ${#test_files[@]} -eq 0 || -z "${test_files[0]}" ]]; then
+  if [[ "$test_files_count" -eq 0 || -z "${test_files[0]:-}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
@@ -534,16 +545,20 @@ function bashunit::main::exec_tests() {
 
 function bashunit::main::exec_benchmarks() {
   local filter=$1
-  local files=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local files
+  [[ $# -gt 1 ]] && files=("${@:2}")
 
-  local bench_files=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local bench_files
+  local bench_files_count=0
   while IFS= read -r line; do
-    bench_files+=("$line")
-  done < <(bashunit::helper::load_bench_files "$filter" "${files[@]}")
+    bench_files[bench_files_count]="$line"; bench_files_count=$((bench_files_count + 1))
+  done < <(bashunit::helper::load_bench_files "$filter" ${files+"${files[@]}"})
 
-  bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]}"
+  bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]:-}"
 
-  if [[ ${#bench_files[@]} -eq 0 || -z "${bench_files[0]}" ]]; then
+  if [[ "$bench_files_count" -eq 0 || -z "${bench_files[0]:-}" ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
@@ -585,7 +600,10 @@ function bashunit::main::handle_stop_on_failure_sync() {
 
 function bashunit::main::exec_assert() {
   local original_assert_fn=$1
-  local args=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local args
+  local args_count=$(($# - 1))
+  [[ $# -gt 1 ]] && args=("${@:2}")
 
   local assert_fn=$original_assert_fn
 
@@ -599,7 +617,7 @@ function bashunit::main::exec_assert() {
   fi
 
   # Get the last argument safely by calculating the array length
-  local last_index=$((${#args[@]} - 1))
+  local last_index=$((args_count - 1))
   local last_arg="${args[$last_index]}"
   local output=""
   local inner_exit_code=0
@@ -612,7 +630,7 @@ function bashunit::main::exec_assert() {
       inner_exit_code=$?
       # Remove the last argument and append the exit code
       args=("${args[@]:0:last_index}")
-      args+=("$inner_exit_code")
+      args[last_index]="$inner_exit_code"
       ;;
     *)
       # Add more cases here for other assert_* handlers if needed

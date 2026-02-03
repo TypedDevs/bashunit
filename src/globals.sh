@@ -32,7 +32,7 @@ function bashunit::random_str() {
   local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   local str=''
   for (( i=0; i<length; i++ )); do
-    str+="${chars:RANDOM%${#chars}:1}"
+    str="$str${chars:RANDOM%${#chars}:1}"
   done
   echo "$str"
 }

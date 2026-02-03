@@ -29,18 +29,18 @@ function bashunit::console_results::render_result() {
   local assertions_failed=$_BASHUNIT_ASSERTIONS_FAILED
 
   local total_tests=0
-  ((total_tests += tests_passed)) || true
-  ((total_tests += tests_skipped)) || true
-  ((total_tests += tests_incomplete)) || true
-  ((total_tests += tests_snapshot)) || true
-  ((total_tests += tests_failed)) || true
+  total_tests=$((total_tests + tests_passed))
+  total_tests=$((total_tests + tests_skipped))
+  total_tests=$((total_tests + tests_incomplete))
+  total_tests=$((total_tests + tests_snapshot))
+  total_tests=$((total_tests + tests_failed))
 
   local total_assertions=0
-  ((total_assertions += assertions_passed)) || true
-  ((total_assertions += assertions_skipped)) || true
-  ((total_assertions += assertions_incomplete)) || true
-  ((total_assertions += assertions_snapshot)) || true
-  ((total_assertions += assertions_failed)) || true
+  total_assertions=$((total_assertions + assertions_passed))
+  total_assertions=$((total_assertions + assertions_skipped))
+  total_assertions=$((total_assertions + assertions_incomplete))
+  total_assertions=$((total_assertions + assertions_snapshot))
+  total_assertions=$((total_assertions + assertions_failed))
 
   printf "%sTests:     %s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
   if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
@@ -262,7 +262,7 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     "${function_name}" "${expected}" "${failure_condition_message}" "${actual}")"
 
   if [ -n "$extra_key" ]; then
-    line+="$(printf "\
+    line="$line$(printf "\
 
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${extra_key}" "${extra_value}")"
@@ -290,7 +290,7 @@ function bashunit::console_results::print_failed_snapshot_test() {
       "$snapshot_file" "$actual_file" 2>/dev/null \
         | tail -n +6 | sed "s/^/    /")"
 
-    line+="$git_diff_output"
+    line="$line$git_diff_output"
     rm "$actual_file"
   fi
 
@@ -305,7 +305,7 @@ function bashunit::console_results::print_skipped_test() {
   line="$(printf "${_BASHUNIT_COLOR_SKIPPED}↷ Skipped${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$reason" ]]; then
-    line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${reason}")"
+    line="$line$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
   bashunit::state::print_line "skipped" "$line"
@@ -319,7 +319,7 @@ function bashunit::console_results::print_incomplete_test() {
   line="$(printf "${_BASHUNIT_COLOR_INCOMPLETE}✒ Incomplete${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
   if [[ -n "$pending" ]]; then
-    line+="$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${pending}")"
+    line="$line$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
   bashunit::state::print_line "incomplete" "$line"
@@ -349,9 +349,9 @@ function bashunit::console_results::print_error_test() {
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
   if [[ -n "$raw_output" ]] && bashunit::env::is_show_output_on_failure_enabled; then
-    line+="$(printf "    %sOutput:%s\n" "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}")"
+    line="$line$(printf "    %sOutput:%s\n" "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}")"
     while IFS= read -r output_line; do
-      line+="$(printf "      %s\n" "$output_line")"
+      line="$line$(printf "      %s\n" "$output_line")"
     done <<< "$raw_output"
   fi
 

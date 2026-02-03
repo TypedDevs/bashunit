@@ -34,7 +34,7 @@ function bashunit::mock() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function bashunit::spy() {
@@ -56,7 +56,7 @@ function bashunit::spy() {
     local serialized=\"\"
     local arg
     for arg in \"\$@\"; do
-      serialized+=\"\$(printf '%q' \"\$arg\")$'\\x1f'\"
+      serialized=\"\$serialized\$(printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
     printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
@@ -68,7 +68,7 @@ function bashunit::spy() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function assert_have_been_called() {

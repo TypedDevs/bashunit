@@ -219,7 +219,7 @@ function assert_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -263,7 +263,7 @@ function assert_not_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -284,7 +284,7 @@ function assert_matches() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -305,7 +305,7 @@ function assert_not_matches() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -379,16 +379,16 @@ function assert_exec() {
   fi
 
   if $check_stdout; then
-    expected_desc+=$'\n'"stdout: $expected_stdout"
-    actual_desc+=$'\n'"stdout: $stdout"
+    expected_desc="$expected_desc"$'\n'"stdout: $expected_stdout"
+    actual_desc="$actual_desc"$'\n'"stdout: $stdout"
     if [[ "$stdout" != "$expected_stdout" ]]; then
       failed=1
     fi
   fi
 
   if $check_stderr; then
-    expected_desc+=$'\n'"stderr: $expected_stderr"
-    actual_desc+=$'\n'"stderr: $stderr"
+    expected_desc="$expected_desc"$'\n'"stderr: $expected_stderr"
+    actual_desc="$actual_desc"$'\n'"stderr: $stderr"
     if [[ "$stderr" != "$expected_stderr" ]]; then
       failed=1
     fi
@@ -507,7 +507,7 @@ function assert_string_starts_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -547,7 +547,7 @@ function assert_string_ends_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -568,7 +568,7 @@ function assert_string_not_ends_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local actual_arr; [[ $# -gt 1 ]] && actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -665,9 +665,10 @@ function assert_line_count() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local input_arr=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local input_arr; [[ $# -gt 1 ]] && input_arr=("${@:2}")
   local input_str
-  input_str=$(printf '%s\n' "${input_arr[@]}")
+  input_str=$(printf '%s\n' ${input_arr+"${input_arr[@]}"})
 
   if [ -z "$input_str" ]; then
     local actual=0
@@ -676,7 +677,7 @@ function assert_line_count() {
     actual=$(echo "$input_str" | wc -l | tr -d '[:blank:]')
     local additional_new_lines
     additional_new_lines=$(grep -o '\\n' <<< "$input_str" | wc -l | tr -d '[:blank:]')
-    ((actual+=additional_new_lines))
+    actual=$((actual + additional_new_lines))
   fi
 
   if [[ "$expected" != "$actual" ]]; then

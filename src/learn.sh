@@ -1157,17 +1157,19 @@ function test_backup_failure_when_source_missing() {
   fi
 
   # Verify the test has key components
-  local missing_components=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local missing_components
+  local missing_components_count=0
 
   if ! grep -q "function set_up()" "$test_file"; then
-    missing_components+=("set_up function")
+    missing_components[missing_components_count]="set_up function"; missing_components_count=$((missing_components_count + 1))
   fi
 
   if ! grep -q "function tear_down()" "$test_file"; then
-    missing_components+=("tear_down function")
+    missing_components[missing_components_count]="tear_down function"; missing_components_count=$((missing_components_count + 1))
   fi
 
-  if [[ ${#missing_components[@]} -gt 0 ]]; then
+  if [[ "$missing_components_count" -gt 0 ]]; then
     echo "${_BASHUNIT_COLOR_FAILED}Missing required components:${_BASHUNIT_COLOR_DEFAULT}"
     printf "  - %s\n" "${missing_components[@]}"
     read -p "Press Enter to continue..." -r

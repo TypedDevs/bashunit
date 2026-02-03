@@ -126,7 +126,7 @@ function bashunit::state::set_file_with_duplicated_function_names() {
 }
 
 function bashunit::state::add_test_output() {
-  _BASHUNIT_TEST_OUTPUT+="$1"
+  _BASHUNIT_TEST_OUTPUT="$_BASHUNIT_TEST_OUTPUT$1"
 }
 
 function bashunit::state::get_test_exit_code() {
@@ -253,7 +253,7 @@ function bashunit::state::calculate_total_assertions() {
   numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
 
   for number in $numbers; do
-    ((total += number))
+    total=$((total + number))
   done
 
   echo $total

@@ -16,21 +16,28 @@ function bashunit::benchmark::parse_annotations() {
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
-  if [[ $annotation =~ @revs=([0-9]+) ]]; then
+  # Patterns stored in variables for Bash 3.0 compatibility
+  local _revs_pattern='@revs=([0-9]+)'
+  local _revolutions_pattern='@revolutions=([0-9]+)'
+  local _its_pattern='@its=([0-9]+)'
+  local _iterations_pattern='@iterations=([0-9]+)'
+  local _max_ms_pattern='@max_ms=([0-9.]+)'
+
+  if [[ $annotation =~ $_revs_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @revolutions=([0-9]+) ]]; then
+  elif [[ $annotation =~ $_revolutions_pattern ]]; then
     revs="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @its=([0-9]+) ]]; then
+  if [[ $annotation =~ $_its_pattern ]]; then
     its="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @iterations=([0-9]+) ]]; then
+  elif [[ $annotation =~ $_iterations_pattern ]]; then
     its="${BASH_REMATCH[1]}"
   fi
 
-  if [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  if [[ $annotation =~ $_max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
-  elif [[ $annotation =~ @max_ms=([0-9.]+) ]]; then
+  elif [[ $annotation =~ $_max_ms_pattern ]]; then
     max_ms="${BASH_REMATCH[1]}"
   fi
 
@@ -42,11 +49,11 @@ function bashunit::benchmark::parse_annotations() {
 }
 
 function bashunit::benchmark::add_result() {
-  _BASHUNIT_BENCH_NAMES+=("$1")
-  _BASHUNIT_BENCH_REVS+=("$2")
-  _BASHUNIT_BENCH_ITS+=("$3")
-  _BASHUNIT_BENCH_AVERAGES+=("$4")
-  _BASHUNIT_BENCH_MAX_MILLIS+=("$5")
+  _BASHUNIT_BENCH_NAMES[${#_BASHUNIT_BENCH_NAMES[@]}]="$1"
+  _BASHUNIT_BENCH_REVS[${#_BASHUNIT_BENCH_REVS[@]}]="$2"
+  _BASHUNIT_BENCH_ITS[${#_BASHUNIT_BENCH_ITS[@]}]="$3"
+  _BASHUNIT_BENCH_AVERAGES[${#_BASHUNIT_BENCH_AVERAGES[@]}]="$4"
+  _BASHUNIT_BENCH_MAX_MILLIS[${#_BASHUNIT_BENCH_MAX_MILLIS[@]}]="$5"
 }
 
 # shellcheck disable=SC2155
@@ -55,7 +62,9 @@ function bashunit::benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
-  local durations=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local durations
+  local durations_count=0
 
   for ((i=1; i<=its; i++)); do
     local start_time=$(bashunit::clock::now)
@@ -67,7 +76,7 @@ function bashunit::benchmark::run_function() {
     local end_time=$(bashunit::clock::now)
     local dur_ns=$(bashunit::math::calculate "($end_time - $start_time)")
     local dur_ms=$(bashunit::math::calculate "$dur_ns / 1000000")
-    durations+=("$dur_ms")
+    durations[durations_count]="$dur_ms"; durations_count=$((durations_count + 1))
 
     if bashunit::env::is_bench_mode_enabled; then
       local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
@@ -129,13 +138,15 @@ function bashunit::benchmark::print_results() {
 
     if [[ "$avg" -le "$max_ms" ]]; then
       local raw="≤ ${max_ms}"
-      printf -v padded "%14s" "$raw"
+      local padded
+      padded=$(printf "%14s" "$raw")
       printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"
       continue
     fi
 
     local raw="> ${max_ms}"
-    printf -v padded "%12s" "$raw"
+    local padded
+    padded=$(printf "%12s" "$raw")
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
       "$_BASHUNIT_COLOR_FAILED" "$padded" "${_BASHUNIT_COLOR_DEFAULT}"

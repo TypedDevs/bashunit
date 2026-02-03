@@ -16,8 +16,10 @@ function bashunit::doc::print_asserts() {
   local fn=""
   local should_print=0
 
+  # Pattern stored in variable for Bash 3.0 compatibility
+  local _doc_pattern='^## ([A-Za-z0-9_]+)'
   while IFS='' read -r line || [[ -n "$line" ]]; do
-    if [[ $line =~ ^##\ ([A-Za-z0-9_]+) ]]; then
+    if [[ $line =~ $_doc_pattern ]]; then
       fn="${BASH_REMATCH[1]}"
       if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
         should_print=1
@@ -42,7 +44,7 @@ function bashunit::doc::print_asserts() {
       # Remove markdown link brackets and anchor tags
       line="${line//[\[\]]/}"
       line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<< "$line")"
-      docstring+="$line"$'\n'
+      docstring="$docstring$line"$'\n'
     fi
   done <<< "$(bashunit::doc::get_embedded_docs)"
 }

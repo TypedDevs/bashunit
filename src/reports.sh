@@ -37,11 +37,11 @@ function bashunit::reports::add_test() {
   local assertions="$4"
   local status="$5"
 
-  _BASHUNIT_REPORTS_TEST_FILES+=("$file")
-  _BASHUNIT_REPORTS_TEST_NAMES+=("$test_name")
-  _BASHUNIT_REPORTS_TEST_STATUSES+=("$status")
-  _BASHUNIT_REPORTS_TEST_ASSERTIONS+=("$assertions")
-  _BASHUNIT_REPORTS_TEST_DURATIONS+=("$duration")
+  _BASHUNIT_REPORTS_TEST_FILES[${#_BASHUNIT_REPORTS_TEST_FILES[@]}]="$file"
+  _BASHUNIT_REPORTS_TEST_NAMES[${#_BASHUNIT_REPORTS_TEST_NAMES[@]}]="$test_name"
+  _BASHUNIT_REPORTS_TEST_STATUSES[${#_BASHUNIT_REPORTS_TEST_STATUSES[@]}]="$status"
+  _BASHUNIT_REPORTS_TEST_ASSERTIONS[${#_BASHUNIT_REPORTS_TEST_ASSERTIONS[@]}]="$assertions"
+  _BASHUNIT_REPORTS_TEST_DURATIONS[${#_BASHUNIT_REPORTS_TEST_DURATIONS[@]}]="$duration"
 }
 
 function bashunit::reports::generate_junit_xml() {

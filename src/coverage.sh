@@ -6,7 +6,7 @@
 _BASHUNIT_COVERAGE_DATA_FILE="${_BASHUNIT_COVERAGE_DATA_FILE:-}"
 _BASHUNIT_COVERAGE_TRACKED_FILES="${_BASHUNIT_COVERAGE_TRACKED_FILES:-}"
 
-# Simple file-based cache for tracked files (Bash 3.2 compatible)
+# Simple file-based cache for tracked files (Bash 3.0 compatible)
 # The tracked cache file stores files that have already been processed
 _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="${_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE:-}"
 
@@ -19,7 +19,9 @@ _BASHUNIT_COVERAGE_TEST_HITS_FILE="${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}"
 function bashunit::coverage::auto_discover_paths() {
   local project_root
   project_root="$(pwd)"
-  local -a discovered_paths=()
+  # Bash 3.0 compatible array initialization
+  local discovered_paths
+  local discovered_paths_count=0
 
   for test_file in "$@"; do
     # Extract base name: tests/unit/assert_test.sh -> assert_test.sh
@@ -38,12 +40,12 @@ function bashunit::coverage::auto_discover_paths() {
       [[ "$found_file" == *Test* ]] && continue
       [[ "$found_file" == *vendor* ]] && continue
       [[ "$found_file" == *node_modules* ]] && continue
-      discovered_paths+=("$found_file")
+      discovered_paths[discovered_paths_count]="$found_file"; discovered_paths_count=$((discovered_paths_count + 1))
     done < <(find "$project_root" -name "${source_name}*.sh" -type f -print0 2>/dev/null)
   done
 
   # Return unique paths, comma-separated
-  if [[ ${#discovered_paths[@]} -gt 0 ]]; then
+  if [[ "$discovered_paths_count" -gt 0 ]]; then
     printf '%s\n' "${discovered_paths[@]}" | sort -u | tr '\n' ',' | sed 's/,$//'
   fi
 }
@@ -203,7 +205,7 @@ function bashunit::coverage::should_track() {
   # Skip if tracked files list doesn't exist (trap inherited by child process)
   [[ -z "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]] && return 1
 
-  # Check file-based cache for previous decision (Bash 3.2 compatible)
+  # Check file-based cache for previous decision (Bash 3.0 compatible)
   # Cache format: "file:0" for excluded, "file:1" for tracked
   # In parallel mode, use per-process cache to avoid race conditions
   local cache_file="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
@@ -338,7 +340,7 @@ function bashunit::coverage::aggregate_parallel() {
 # Matches: function foo() { OR foo() { OR function foo() OR foo()
 # Does NOT match single-line functions with body: function foo() { echo "hi"; }
 _BASHUNIT_COVERAGE_FUNC_PATTERN='^[[:space:]]*(function[[:space:]]+)?'
-_BASHUNIT_COVERAGE_FUNC_PATTERN+='[a-zA-Z_][a-zA-Z0-9_:]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
+_BASHUNIT_COVERAGE_FUNC_PATTERN="${_BASHUNIT_COVERAGE_FUNC_PATTERN}"'[a-zA-Z_][a-zA-Z0-9_:]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
 
 # Check if a line is executable (used by get_executable_lines and report_lcov)
 # Arguments: line content, line number
@@ -363,13 +365,17 @@ function bashunit::coverage::is_executable_line() {
   [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && return 1
 
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
-  [[ "$line" =~ ^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$ ]] && return 1
+  # Pattern stored in variable for Bash 3.0 compatibility
+  local _ctrl_pattern='^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$'
+  [[ "$line" =~ $_ctrl_pattern ]] && return 1
 
   # Skip case patterns like "--option)" or "*)"
-  [[ "$line" =~ ^[[:space:]]*[^\)]+\)[[:space:]]*$ ]] && return 1
+  local _case_pattern='^[[:space:]]*[^\)]+\)[[:space:]]*$'
+  [[ "$line" =~ $_case_pattern ]] && return 1
 
   # Skip standalone ) for arrays/subshells
-  [[ "$line" =~ ^[[:space:]]*\)[[:space:]]*(#.*)?$ ]] && return 1
+  local _paren_pattern='^[[:space:]]*\)[[:space:]]*(#.*)?$'
+  [[ "$line" =~ $_paren_pattern ]] && return 1
 
   return 0
 }
@@ -487,9 +493,12 @@ function bashunit::coverage::extract_functions() {
       local fn_name=""
 
       # Match: function name() or function name {
-      if [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$ ]]; then
+      # Patterns stored in variables for Bash 3.0 compatibility
+      local _fn_pattern1='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
+      local _fn_pattern2='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
+      if [[ "$line" =~ $_fn_pattern1 ]]; then
         fn_name="${BASH_REMATCH[2]}"
-      elif [[ "$line" =~ ^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$ ]]; then
+      elif [[ "$line" =~ $_fn_pattern2 ]]; then
         fn_name="${BASH_REMATCH[2]}"
       fi
 
@@ -583,8 +592,8 @@ function bashunit::coverage::get_percentage() {
     executable=$(bashunit::coverage::get_executable_lines "$file")
     hit=$(bashunit::coverage::get_hit_lines "$file")
 
-    ((total_executable += executable))
-    ((total_hit += hit))
+    total_executable=$((total_executable + executable))
+    total_hit=$((total_hit + hit))
   done < <(bashunit::coverage::get_tracked_files)
 
   bashunit::coverage::calculate_percentage "$total_hit" "$total_executable"
@@ -613,8 +622,8 @@ function bashunit::coverage::report_text() {
     pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
     class=$(bashunit::coverage::get_coverage_class "$pct")
 
-    ((total_executable += executable))
-    ((total_hit += hit))
+    total_executable=$((total_executable + executable))
+    total_hit=$((total_hit + hit))
 
     # Determine color based on class
     local color="" reset=""
@@ -756,7 +765,9 @@ function bashunit::coverage::report_html() {
   # Collect file data for index
   local total_executable=0
   local total_hit=0
-  local file_data=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local file_data
+  local file_data_count=0
 
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
@@ -766,14 +777,14 @@ function bashunit::coverage::report_html() {
     hit=$(bashunit::coverage::get_hit_lines "$file")
     pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
 
-    ((total_executable += executable))
-    ((total_hit += hit))
+    total_executable=$((total_executable + executable))
+    total_hit=$((total_hit + hit))
 
     local display_file="${file#"$(pwd)"/}"
     local safe_filename
     safe_filename=$(bashunit::coverage::path_to_filename "$file")
 
-    file_data+=("$display_file|$hit|$executable|$pct|$safe_filename")
+    file_data[file_data_count]="$display_file|$hit|$executable|$pct|$safe_filename"; file_data_count=$((file_data_count + 1))
 
     # Generate individual file HTML
     bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html"
@@ -806,13 +817,16 @@ function bashunit::coverage::generate_index_html() {
   local tests_passed="$6"
   local tests_failed="$7"
   shift 7
-  local file_data=()
-  [[ $# -gt 0 ]] && file_data=("$@")
+  # Handle array passed as arguments - Bash 3.0 compatible
+  local file_data
+  local file_count=0
+  if [[ $# -gt 0 ]]; then
+    file_data=("$@")
+    file_count=$#
+  fi
 
   # Calculate uncovered lines and file count
   local total_uncovered=$((total_executable - total_hit))
-  local file_count=0
-  [[ ${#file_data[@]} -gt 0 ]] && file_count=${#file_data[@]}
 
   # Calculate gauge stroke offset (440 is full circle circumference)
   local gauge_offset=$((440 - (440 * total_pct / 100)))
@@ -1161,7 +1175,8 @@ function bashunit::coverage::generate_file_html() {
   local uncovered=$((executable - hit))
 
   # Pre-load all line hits into indexed array (performance optimization)
-  local -a hits_by_line=()
+  # Bash 3.0 compatible: declare without =()
+  local hits_by_line
   local _ln _cnt
   while IFS=: read -r _ln _cnt; do
     hits_by_line[_ln]=$_cnt
@@ -1169,8 +1184,9 @@ function bashunit::coverage::generate_file_html() {
 
   # Pre-load test hits data into indexed array (for tooltips)
   # Index: line number, Value: newline-separated list of "test_file:test_function"
-  # Using indexed array for Bash 3.2 compatibility (no associative arrays)
-  local -a tests_by_line=()
+  # Using indexed array for Bash 3.0 compatibility (no associative arrays)
+  # Bash 3.0 compatible: declare without =()
+  local tests_by_line
   local _line_and_test
   while IFS= read -r _line_and_test; do
     [[ -z "$_line_and_test" ]] && continue
@@ -1509,9 +1525,9 @@ EOF
               [[ -z "$test_file" ]] && continue
               local short_file
               short_file=$(basename "$test_file")
-              tooltip_html+="<li><span class=\"hits-tooltip-file\">${short_file}</span>:<span class=\"hits-tooltip-fn\">${test_fn}</span></li>"
+              tooltip_html="$tooltip_html<li><span class=\"hits-tooltip-file\">${short_file}</span>:<span class=\"hits-tooltip-fn\">${test_fn}</span></li>"
             done <<< "$test_info"
-            tooltip_html+="</ul></div>"
+            tooltip_html="$tooltip_html</ul></div>"
             hits_display="<span class=\"hits-badge has-tooltip\">${hits}×${tooltip_html}</span>"
           else
             hits_display="<span class=\"hits-badge\">${hits}×</span>"

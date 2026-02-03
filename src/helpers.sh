@@ -68,7 +68,7 @@ function bashunit::helper::normalize_test_function_name() {
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Capitalize the first letter (bash 3.2 compatible, no subprocess)
+  # Capitalize the first letter (bash 3.0 compatible, no subprocess)
   local first_char="${result:0:1}"
   case "$first_char" in
     a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
@@ -93,10 +93,13 @@ function bashunit::helper::escape_single_quotes() {
 function bashunit::helper::interpolate_function_name() {
   local function_name="$1"
   shift
-  local args=("$@")
+  # Bash 3.0 compatible array initialization
+  local args
+  local args_count=$#
+  [[ $# -gt 0 ]] && args=("$@")
   local result="$function_name"
 
-  for ((i=0; i<${#args[@]}; i++)); do
+  for ((i=0; i<args_count; i++)); do
     local placeholder="::$((i+1))::"
     # shellcheck disable=SC2155
     local value="$(bashunit::helper::escape_single_quotes "${args[$i]}")"
@@ -177,7 +180,7 @@ function bashunit::helper::get_functions_to_run() {
       if [[ $filtered_functions == *" $fn"* ]]; then
         return 1
       fi
-      filtered_functions+=" $fn"
+      filtered_functions="$filtered_functions $fn"
     fi
   done
 
@@ -296,9 +299,12 @@ function bashunit::helper::get_latest_tag() {
 
 function bashunit::helper::find_total_tests() {
     local filter=${1:-}
-    local files=("${@:2}")
+    # Bash 3.0 compatible array initialization
+    local files
+    local files_count=$(($# - 1))
+    [[ $# -gt 1 ]] && files=("${@:2}")
 
-    if [[ ${#files[@]} -eq 0 ]]; then
+    if [[ "$files_count" -le 0 ]]; then
         echo 0
         return
     fi
@@ -326,15 +332,17 @@ function bashunit::helper::find_total_tests() {
                 # shellcheck disable=SC2207
                 local functions_to_run=($filtered_functions)
                 for fn_name in "${functions_to_run[@]}"; do
-                    local provider_data=()
+                    # Declare without =() for Bash 3.0 compatibility with set -u
+                    local provider_data
+                    local provider_data_count=0
                     while IFS=" " read -r line; do
-                        provider_data+=("$line")
+                        provider_data[provider_data_count]="$line"; provider_data_count=$((provider_data_count + 1))
                     done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
-                    if [[ "${#provider_data[@]}" -eq 0 ]]; then
+                    if [[ "$provider_data_count" -eq 0 ]]; then
                         count=$((count + 1))
                     else
-                        count=$((count + ${#provider_data[@]}))
+                        count=$((count + provider_data_count))
                     fi
                 done
             fi
@@ -350,40 +358,56 @@ function bashunit::helper::find_total_tests() {
 
 function bashunit::helper::load_test_files() {
   local filter=$1
-  local files=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local files
+  local files_count=$(($# - 1))
+  [[ $# -gt 1 ]] && files=("${@:2}")
 
-  local test_files=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local test_files
+  local test_files_count=0
 
-  if [[ "${#files[@]}" -eq 0 ]]; then
+  if [[ "$files_count" -le 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        test_files+=("$line")
+        test_files[test_files_count]="$line"; test_files_count=$((test_files_count + 1))
       done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
     fi
   else
     test_files=("${files[@]}")
+    test_files_count="$files_count"
   fi
 
-  printf "%s\n" "${test_files[@]}"
+  if [[ "$test_files_count" -gt 0 ]]; then
+    printf "%s\n" "${test_files[@]}"
+  fi
 }
 
 function bashunit::helper::load_bench_files() {
   local filter=$1
-  local files=("${@:2}")
+  # Bash 3.0 compatible array initialization
+  local files
+  local files_count=$(($# - 1))
+  [[ $# -gt 1 ]] && files=("${@:2}")
 
-  local bench_files=()
+  # Declare without =() for Bash 3.0 compatibility with set -u
+  local bench_files
+  local bench_files_count=0
 
-  if [[ "${#files[@]}" -eq 0 ]]; then
+  if [[ "$files_count" -le 0 ]]; then
     if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
       while IFS='' read -r line; do
-        bench_files+=("$line")
+        bench_files[bench_files_count]="$line"; bench_files_count=$((bench_files_count + 1))
       done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
     fi
   else
     bench_files=("${files[@]}")
+    bench_files_count="$files_count"
   fi
 
-  printf "%s\n" "${bench_files[@]}"
+  if [[ "$bench_files_count" -gt 0 ]]; then
+    printf "%s\n" "${bench_files[@]}"
+  fi
 }
 
 #
@@ -432,13 +456,17 @@ function bashunit::helper::parse_file_path_filter() {
     file_path="${input%%::*}"
     filter="${input#*::}"
   # Check for :number syntax (line number filter)
-  elif [[ "$input" =~ ^(.+):([0-9]+)$ ]]; then
-    file_path="${BASH_REMATCH[1]}"
-    local line_number="${BASH_REMATCH[2]}"
-    # Line number will be resolved to function name later
-    filter="__line__:${line_number}"
+  # Pattern stored in variable for Bash 3.0 compatibility
   else
-    file_path="$input"
+    local _line_pattern='^(.+):([0-9]+)$'
+    if [[ "$input" =~ $_line_pattern ]]; then
+      file_path="${BASH_REMATCH[1]}"
+      local line_number="${BASH_REMATCH[2]}"
+      # Line number will be resolved to function name later
+      filter="__line__:${line_number}"
+    else
+      file_path="$input"
+    fi
   fi
 
   echo "$file_path"
@@ -467,8 +495,10 @@ function bashunit::helper::find_function_at_line() {
 
   while IFS=: read -r line_num content; do
     # Extract function name from the line
+    # Pattern stored in variable for Bash 3.0 compatibility
     local fn_name=""
-    if [[ "$content" =~ ^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\) ]]; then
+    local _test_fn_pattern='^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\)'
+    if [[ "$content" =~ $_test_fn_pattern ]]; then
       fn_name="${BASH_REMATCH[2]}"
     fi
 
