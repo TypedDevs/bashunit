@@ -16,8 +16,8 @@ function _check_bash_version() {
     current_version="$(bash --version | head -n1 | cut -d' ' -f4 | cut -d. -f1,2)"
   fi
 
-  local major minor
-  IFS=. read -r major minor _ <<< "$current_version"
+  local major
+  IFS=. read -r major _ <<< "$current_version"
 
   if (( major < 3 )); then
     printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
