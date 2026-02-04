@@ -113,6 +113,12 @@ function bashunit::helper::interpolate_function_name() {
 function bashunit::helper::encode_base64() {
   local value="$1"
 
+  # Handle empty string specially - base64 of "" is "", which gets lost in line parsing
+  if [[ -z "$value" ]]; then
+    printf '%s' "_BASHUNIT_EMPTY_"
+    return
+  fi
+
   if command -v base64 >/dev/null; then
     printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
   else
@@ -122,6 +128,12 @@ function bashunit::helper::encode_base64() {
 
 function bashunit::helper::decode_base64() {
   local value="$1"
+
+  # Handle empty string marker
+  if [[ "$value" == "_BASHUNIT_EMPTY_" ]]; then
+    printf ''
+    return
+  fi
 
   if command -v base64 >/dev/null; then
     printf '%s' "$value" | base64 -d
@@ -213,8 +225,10 @@ function bashunit::helper::find_files_recursive() {
   local path="${1%%/}"
   local pattern="${2:-*[tT]est.sh}"
 
+  # Bash 3.0 compatible: store regex in variable for =~ operator
+  local test_regex='\[tT\]est\.sh$'
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+  if [[ $pattern == *test.sh ]] || [[ $pattern =~ $test_regex ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -299,12 +313,9 @@ function bashunit::helper::get_latest_tag() {
 
 function bashunit::helper::find_total_tests() {
     local filter=${1:-}
-    # Bash 3.0 compatible array initialization
-    local files
-    local files_count=$(($# - 1))
-    [[ $# -gt 1 ]] && files=("${@:2}")
+    shift || true
 
-    if [[ "$files_count" -le 0 ]]; then
+    if [[ $# -eq 0 ]]; then
         echo 0
         return
     fi
@@ -312,7 +323,7 @@ function bashunit::helper::find_total_tests() {
     local total_count=0
     local file
 
-    for file in "${files[@]}"; do
+    for file in "$@"; do
         if [[ ! -f "$file" ]]; then
             continue
         fi
@@ -330,13 +341,17 @@ function bashunit::helper::find_total_tests() {
             if [[ -n "$filtered_functions" ]]; then
                 # shellcheck disable=SC2206
                 # shellcheck disable=SC2207
-                local functions_to_run=($filtered_functions)
+                # Bash 3.0 compatible: separate declaration and assignment for arrays
+                local functions_to_run
+                functions_to_run=($filtered_functions)
                 for fn_name in "${functions_to_run[@]}"; do
                     # Declare without =() for Bash 3.0 compatibility with set -u
                     local provider_data
                     local provider_data_count=0
                     while IFS=" " read -r line; do
-                        provider_data[provider_data_count]="$line"; provider_data_count=$((provider_data_count + 1))
+                        [[ -z "$line" ]] && continue
+                        provider_data[provider_data_count]="$line"
+                        provider_data_count=$((provider_data_count + 1))
                     done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
                     if [[ "$provider_data_count" -eq 0 ]]; then
@@ -357,56 +372,32 @@ function bashunit::helper::find_total_tests() {
 }
 
 function bashunit::helper::load_test_files() {
-  local filter=$1
-  # Bash 3.0 compatible array initialization
-  local files
-  local files_count=$(($# - 1))
-  [[ $# -gt 1 ]] && files=("${@:2}")
+  local filter="${1:-}"
+  shift || true
+  # Bash 3.0 compatible: use $# after shift to check for files
+  local has_files=$#
 
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local test_files
-  local test_files_count=0
-
-  if [[ "$files_count" -le 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
-      while IFS='' read -r line; do
-        test_files[test_files_count]="$line"; test_files_count=$((test_files_count + 1))
-      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+  if [[ "$has_files" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+      bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH"
     fi
   else
-    test_files=("${files[@]}")
-    test_files_count="$files_count"
-  fi
-
-  if [[ "$test_files_count" -gt 0 ]]; then
-    printf "%s\n" "${test_files[@]}"
+    printf "%s\n" "$@"
   fi
 }
 
 function bashunit::helper::load_bench_files() {
-  local filter=$1
-  # Bash 3.0 compatible array initialization
-  local files
-  local files_count=$(($# - 1))
-  [[ $# -gt 1 ]] && files=("${@:2}")
+  local filter="${1:-}"
+  shift || true
+  # Bash 3.0 compatible: use $# after shift to check for files
+  local has_files=$#
 
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local bench_files
-  local bench_files_count=0
-
-  if [[ "$files_count" -le 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
-      while IFS='' read -r line; do
-        bench_files[bench_files_count]="$line"; bench_files_count=$((bench_files_count + 1))
-      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
+  if [[ "$has_files" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+      bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh'
     fi
   else
-    bench_files=("${files[@]}")
-    bench_files_count="$files_count"
-  fi
-
-  if [[ "$bench_files_count" -gt 0 ]]; then
-    printf "%s\n" "${bench_files[@]}"
+    printf "%s\n" "$@"
   fi
 }
 

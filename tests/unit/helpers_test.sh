@@ -53,7 +53,9 @@ function test_normalize_test_function_name_uses_current_interpolated_name_from_s
 }
 
 function test_get_functions_to_run_no_filter_should_return_all_functions() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
   assert_same\
     "prefix_function1 prefix_function2 prefix_function3"\
@@ -61,19 +63,22 @@ function test_get_functions_to_run_no_filter_should_return_all_functions() {
 }
 
 function test_get_functions_to_run_with_filter_should_return_matching_functions() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
   assert_same "prefix_function1" "$(bashunit::helper::get_functions_to_run "prefix" "function1" "${functions[*]}")"
 }
 
 function test_get_functions_to_run_filter_no_matching_functions_should_return_empty() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
   assert_same "" "$(bashunit::helper::get_functions_to_run "prefix" "nonexistent" "${functions[*]}")"
 }
 
 function test_get_functions_to_run_fail_when_duplicates() {
-  local functions=("prefix_function1" "prefix_function1")
+  local functions
+  functions=("prefix_function1" "prefix_function1")
 
   assert_general_error "$(bashunit::helper::get_functions_to_run "prefix" "" "${functions[*]}")"
 }
@@ -154,7 +159,8 @@ function test_get_provider_data() {
 }
 
 function fake_provider_data_array() {
-  local data=("one" "two" "three")
+  local data
+  data=("one" "two" "three")
   bashunit::data_set "${data[@]}"
 }
 
@@ -249,7 +255,8 @@ EOF
 }
 
 function test_to_run_with_filter_matching_string_in_function_name() {
-  local functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
+  local functions
+  functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
 
   assert_same "test_your_awesome_function" \
     "$(bashunit::helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"

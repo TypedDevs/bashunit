@@ -2,15 +2,13 @@
 
 function bashunit::console_header::print_version_with_env() {
   local filter=${1:-}
-  # Bash 3.0 compatible: check argument count before array access
-  local files
-  [[ $# -gt 1 ]] && files=("${@:2}")
+  shift || true
 
   if ! bashunit::env::is_show_header_enabled; then
     return
   fi
 
-  bashunit::console_header::print_version "$filter" ${files+"${files[@]}"}
+  bashunit::console_header::print_version "$filter" "$@"
 
   if bashunit::env::is_dev_mode_enabled; then
     printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
@@ -19,14 +17,10 @@ function bashunit::console_header::print_version_with_env() {
 
 function bashunit::console_header::print_version() {
   local filter=${1:-}
-  if [[ -n "$filter" ]]; then
-   shift
-  fi
+  shift || true
 
-  # Bash 3.0 compatible: check argument count before array access
-  local files
+  # Bash 3.0 compatible: check argument count after shift
   local files_count=$#
-  [[ $# -gt 0 ]] && files=("$@")
   local total_tests
   if [[ "$files_count" -eq 0 ]]; then
     total_tests=0
@@ -34,7 +28,7 @@ function bashunit::console_header::print_version() {
     # Skip counting in parallel+simple mode for faster startup
     total_tests=0
   else
-    total_tests=$(bashunit::helper::find_total_tests "$filter" "${files[@]}")
+    total_tests=$(bashunit::helper::find_total_tests "$filter" "$@")
   fi
 
   if bashunit::env::is_header_ascii_art_enabled; then

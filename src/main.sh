@@ -54,8 +54,12 @@ function bashunit::main::cmd_test() {
         if [[ "$boot_args" != "$2" ]]; then
           export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
         fi
+        # Export all variables from the env file so they're available in subshells
+        # (e.g., process substitution used in load_test_files)
+        set -o allexport
         # shellcheck disable=SC1090,SC2086
         source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+        set +o allexport
         shift
         ;;
       --log-junit)
@@ -237,9 +241,15 @@ function bashunit::main::cmd_test() {
     # not tracking code coverage. This also prevents issues when parent bashunit
     # runs with coverage and calls subprocess bashunit with -a flag.
     export BASHUNIT_COVERAGE=false
-    bashunit::main::exec_assert "$assert_fn" "${args[@]}"
+    bashunit::main::exec_assert "$assert_fn" ${args+"${args[@]}"}
   else
-    bashunit::main::exec_tests "$filter" "${args[@]}"
+    # Bash 3.0 compatible: only pass args if we have files
+    # (local args without =() creates a scalar, not an empty array)
+    if [[ "$args_count" -gt 0 ]]; then
+      bashunit::main::exec_tests "$filter" "${args[@]}"
+    else
+      bashunit::main::exec_tests "$filter"
+    fi
   fi
 }
 
@@ -276,8 +286,12 @@ function bashunit::main::cmd_bench() {
         if [[ "$boot_args" != "$2" ]]; then
           export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
         fi
+        # Export all variables from the env file so they're available in subshells
+        # (e.g., process substitution used in load_test_files)
+        set -o allexport
         # shellcheck disable=SC1090,SC2086
         source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+        set +o allexport
         shift
         ;;
       -vvv|--verbose)
@@ -319,7 +333,12 @@ function bashunit::main::cmd_bench() {
 
   set +euo pipefail
 
-  bashunit::main::exec_benchmarks "$filter" "${args[@]}"
+  # Bash 3.0 compatible: only pass args if we have files
+  if [[ "$args_count" -gt 0 ]]; then
+    bashunit::main::exec_benchmarks "$filter" "${args[@]}"
+  else
+    bashunit::main::exec_benchmarks "$filter"
+  fi
 }
 
 #############################
@@ -436,20 +455,21 @@ function bashunit::main::cmd_assert() {
 #############################
 function bashunit::main::exec_tests() {
   local filter=$1
-  # Bash 3.0 compatible array initialization
-  local files
-  [[ $# -gt 1 ]] && files=("${@:2}")
+  shift
 
-  # Declare without =() for Bash 3.0 compatibility with set -u
+  # Bash 3.0 compatible: collect files into array
   local test_files
   local test_files_count=0
-  while IFS= read -r line; do
-    test_files[test_files_count]="$line"; test_files_count=$((test_files_count + 1))
-  done < <(bashunit::helper::load_test_files "$filter" ${files+"${files[@]}"})
+  local _line
+  while IFS= read -r _line; do
+    [[ -z "$_line" ]] && continue
+    test_files[test_files_count]="$_line"
+    test_files_count=$((test_files_count + 1))
+  done < <(bashunit::helper::load_test_files "$filter" "$@")
 
   bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]:-}"
 
-  if [[ "$test_files_count" -eq 0 || -z "${test_files[0]:-}" ]]; then
+  if [[ "$test_files_count" -eq 0 ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
@@ -545,20 +565,21 @@ function bashunit::main::exec_tests() {
 
 function bashunit::main::exec_benchmarks() {
   local filter=$1
-  # Bash 3.0 compatible array initialization
-  local files
-  [[ $# -gt 1 ]] && files=("${@:2}")
+  shift
 
-  # Declare without =() for Bash 3.0 compatibility with set -u
+  # Bash 3.0 compatible: collect files into array
   local bench_files
   local bench_files_count=0
-  while IFS= read -r line; do
-    bench_files[bench_files_count]="$line"; bench_files_count=$((bench_files_count + 1))
-  done < <(bashunit::helper::load_bench_files "$filter" ${files+"${files[@]}"})
+  local _line
+  while IFS= read -r _line; do
+    [[ -z "$_line" ]] && continue
+    bench_files[bench_files_count]="$_line"
+    bench_files_count=$((bench_files_count + 1))
+  done < <(bashunit::helper::load_bench_files "$filter" "$@")
 
   bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]:-}"
 
-  if [[ "$bench_files_count" -eq 0 || -z "${bench_files[0]:-}" ]]; then
+  if [[ "$bench_files_count" -eq 0 ]]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1

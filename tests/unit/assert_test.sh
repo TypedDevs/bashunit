@@ -329,13 +329,15 @@ function test_unsuccessful_assert_exec() {
 }
 
 function test_successful_assert_array_contains() {
-  local distros=(Ubuntu 123 Linux\ Mint)
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
 
   assert_empty "$(assert_array_contains "123" "${distros[@]}")"
 }
 
 function test_unsuccessful_assert_array_contains() {
-  local distros=(Ubuntu 123 Linux\ Mint)
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
 
   assert_same\
     "$(bashunit::console_results::print_failed_test \
@@ -347,13 +349,15 @@ function test_unsuccessful_assert_array_contains() {
 }
 
 function test_successful_assert_array_not_contains() {
-  local distros=(Ubuntu 123 Linux\ Mint)
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
 
   assert_empty "$(assert_array_not_contains "a_non_existing_element" "${distros[@]}")"
 }
 
 function test_unsuccessful_assert_array_not_contains() {
-  local distros=(Ubuntu 123 Linux\ Mint)
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
 
   assert_same\
     "$(bashunit::console_results::print_failed_test\

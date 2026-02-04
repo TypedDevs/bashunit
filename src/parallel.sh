@@ -13,7 +13,9 @@ function bashunit::parallel::aggregate_test_results() {
 
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
     shopt -s nullglob
-    local result_files=("$script_dir"/*.result)
+    # Bash 3.0 compatible: separate declaration and assignment for arrays
+    local result_files
+    result_files=("$script_dir"/*.result)
     shopt -u nullglob
 
     if [ ${#result_files[@]} -eq 0 ]; then

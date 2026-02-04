@@ -65,7 +65,9 @@ function bashunit::runner::load_test_files() {
       filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
-        local functions_to_run=($filtered_functions)
+        # Bash 3.0 compatible: separate declaration and assignment for arrays
+        local functions_to_run
+        functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
           bashunit::state::add_tests_failed
@@ -132,7 +134,9 @@ function bashunit::runner::load_bench_files() {
       filtered_functions=$(bashunit::helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
         # shellcheck disable=SC2206
-        local functions_to_run=($filtered_functions)
+        # Bash 3.0 compatible: separate declaration and assignment for arrays
+        local functions_to_run
+        functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
           bashunit::state::add_tests_failed
@@ -197,6 +201,7 @@ function bashunit::runner::parse_data_provider_args() {
   local input="$1"
   local current_arg=""
   local in_quotes=false
+  local had_quotes=false  # Track if arg was quoted (to preserve empty quoted strings)
   local quote_char=""
   local escaped=false
   local i
@@ -250,6 +255,7 @@ function bashunit::runner::parse_data_provider_args() {
           # Handle $'...' syntax
           if [[ "${input:$i:2}" == "$'" ]]; then
             in_quotes=true
+            had_quotes=true
             quote_char="'"
             # Skip the $
             i=$((i + 1))
@@ -259,14 +265,16 @@ function bashunit::runner::parse_data_provider_args() {
           ;;
         "'" | '"')
           in_quotes=true
+          had_quotes=true
           quote_char="$char"
           ;;
         " " | $'\t')
-          # Only add non-empty arguments to avoid duplicates from consecutive separators
-          if [[ -n "$current_arg" ]]; then
+          # Add if non-empty OR if was quoted (to preserve empty quoted strings like '')
+          if [[ -n "$current_arg" || "$had_quotes" == true ]]; then
             args[args_count]="$current_arg"; args_count=$((args_count + 1))
           fi
           current_arg=""
+          had_quotes=false
           ;;
         *)
           current_arg="$current_arg$char"
@@ -305,10 +313,17 @@ function bashunit::runner::call_test_functions() {
   local filtered_functions
   filtered_functions=$(bashunit::helper::get_functions_to_run \
     "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-  # shellcheck disable=SC2207
-  local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
+  # Bash 3.0 compatible array initialization
+  local functions_to_run
+  local functions_to_run_count=0
+  local _fn
+  while IFS= read -r _fn; do
+    [[ -z "$_fn" ]] && continue
+    functions_to_run[functions_to_run_count]="$_fn"
+    functions_to_run_count=$((functions_to_run_count + 1))
+  done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
 
-  if [[ "${#functions_to_run[@]}" -le 0 ]]; then
+  if [[ "$functions_to_run_count" -le 0 ]]; then
     return
   fi
 
@@ -319,11 +334,14 @@ function bashunit::runner::call_test_functions() {
       break
     fi
 
-    # Declare without =() for Bash 3.0 compatibility with set -u
+    # Bash 3.0 compatible: unset before redeclaring to clear previous iteration's data
+    unset provider_data
     local provider_data
     local provider_data_count=0
     while IFS=" " read -r line; do
-      provider_data[provider_data_count]="$line"; provider_data_count=$((provider_data_count + 1))
+      [[ -z "$line" ]] && continue
+      provider_data[provider_data_count]="$line"
+      provider_data_count=$((provider_data_count + 1))
     done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
@@ -335,13 +353,16 @@ function bashunit::runner::call_test_functions() {
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      # Declare without =() for Bash 3.0 compatibility with set -u
+      # Bash 3.0 compatible: unset before redeclaring to clear previous iteration's data
+      unset parsed_data
       local parsed_data
       local parsed_data_count=0
       while IFS= read -r line; do
-        parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"; parsed_data_count=$((parsed_data_count + 1))
+        [[ -z "$line" ]] && continue
+        parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
+        parsed_data_count=$((parsed_data_count + 1))
       done <<< "$(bashunit::runner::parse_data_provider_args "$data")"
-      bashunit::runner::run_test "$script" "$fn_name" "${parsed_data[@]}"
+      bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
     done
     unset fn_name
   done
@@ -356,10 +377,17 @@ function bashunit::runner::call_bench_functions() {
   local filtered_functions
   filtered_functions=$(bashunit::helper::get_functions_to_run \
     "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-  # shellcheck disable=SC2207
-  local functions_to_run=($(bashunit::runner::functions_for_script "$script" "$filtered_functions"))
+  # Bash 3.0 compatible array initialization
+  local functions_to_run
+  local functions_to_run_count=0
+  local _fn
+  while IFS= read -r _fn; do
+    [[ -z "$_fn" ]] && continue
+    functions_to_run[functions_to_run_count]="$_fn"
+    functions_to_run_count=$((functions_to_run_count + 1))
+  done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
 
-  if [[ "${#functions_to_run[@]}" -le 0 ]]; then
+  if [[ "$functions_to_run_count" -le 0 ]]; then
     return
   fi
 

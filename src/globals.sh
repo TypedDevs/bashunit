@@ -118,11 +118,21 @@ function bashunit::data_set() {
 
   for arg in "$@"; do
     if [ "$first" = true ]; then
-      printf '%q' "$arg"
+      # Bash 3.0 compatible: printf '%q' "" produces nothing in Bash 3.0
+      if [[ -z "$arg" ]]; then
+        printf "''"
+      else
+        printf '%q' "$arg"
+      fi
       first=false
     else
-      printf ' %q' "$arg"
+      if [[ -z "$arg" ]]; then
+        printf " ''"
+      else
+        printf ' %q' "$arg"
+      fi
     fi
   done
-  printf ' %q\n' ""
+  # Sentinel empty string at end
+  printf " ''\n"
 }
