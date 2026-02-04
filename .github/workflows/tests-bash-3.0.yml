@@ -7,8 +7,8 @@ on:
       - main
 
 jobs:
-  bash-3-0:
-    name: "Bash 3.0 - Simple Parallel"
+  build-image:
+    name: "Build Bash 3.0 Image"
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -27,6 +27,7 @@ jobs:
               curl \
               ca-certificates \
               bison \
+              git \
               && rm -rf /var/lib/apt/lists/*
 
           WORKDIR /tmp
@@ -45,14 +46,55 @@ jobs:
           CMD ["/opt/bash-3.0/bin/bash", "--version"]
           EOF
 
-      - name: Verify Bash 3.0 version
-        run: |
-          docker run --rm bashunit-bash3 /opt/bash-3.0/bin/bash --version
+      - name: Save Docker image
+        run: docker save bashunit-bash3 -o /tmp/bashunit-bash3.tar
 
-      - name: Run tests with Bash 3.0 (simple parallel)
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bashunit-bash3-image
+          path: /tmp/bashunit-bash3.tar
+          retention-days: 1
+
+  test:
+    name: "Bash 3.0 - ${{ matrix.name }}"
+    runs-on: ubuntu-latest
+    needs: build-image
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Sequential"
+            flags: ""
+          - name: "Parallel"
+            flags: "--parallel"
+          - name: "Simple"
+            flags: "--simple"
+          - name: "Simple Parallel"
+            flags: "--simple --parallel"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bashunit-bash3-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: docker load --input /tmp/bashunit-bash3.tar
+
+      - name: Verify Bash 3.0 version
+        run: docker run --rm bashunit-bash3 /opt/bash-3.0/bin/bash --version
+
+      - name: Run tests with Bash 3.0 (${{ matrix.name }})
         run: |
           docker run --rm \
             -v "$(pwd)":/bashunit:ro \
             -w /bashunit \
             bashunit-bash3 \
-            /opt/bash-3.0/bin/bash ./bashunit --simple --parallel tests/
+            /opt/bash-3.0/bin/bash ./bashunit ${{ matrix.flags }} tests/
