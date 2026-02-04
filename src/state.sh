@@ -252,6 +252,7 @@ function bashunit::state::calculate_total_assertions() {
   local numbers
   numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
 
+  local number
   for number in $numbers; do
     total=$((total + number))
   done

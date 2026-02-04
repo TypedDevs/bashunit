@@ -93,8 +93,7 @@ function bashunit::helper::escape_single_quotes() {
 function bashunit::helper::interpolate_function_name() {
   local function_name="$1"
   shift
-  # Bash 3.0 compatible array initialization
-  local args
+  local -a args=()
   local args_count=$#
   [[ $# -gt 0 ]] && args=("$@")
   local result="$function_name"
@@ -339,15 +338,15 @@ function bashunit::helper::find_total_tests() {
 
             local count=0
             if [[ -n "$filtered_functions" ]]; then
-                # Bash 3.0 compatible: separate declaration and assignment for arrays
-                local functions_to_run
+                local -a functions_to_run=()
                 # shellcheck disable=SC2206
                 functions_to_run=($filtered_functions)
+                # shellcheck disable=SC2034
+                local -a provider_data=()
+                local provider_data_count=0
                 for fn_name in "${functions_to_run[@]}"; do
-                    # Declare without =() for Bash 3.0 compatibility with set -u
-                    # shellcheck disable=SC2034
-                    local provider_data
-                    local provider_data_count=0
+                    provider_data=()
+                    provider_data_count=0
                     while IFS=" " read -r line; do
                         [[ -z "$line" ]] && continue
                         # shellcheck disable=SC2034

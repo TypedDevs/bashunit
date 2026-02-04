@@ -10,8 +10,7 @@ function assert_array_contains() {
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
   shift
 
-  # Bash 3.0 compatible array initialization
-  local actual; [[ $# -gt 0 ]] && actual=("$@")
+  local -a actual=(); [[ $# -gt 0 ]] && actual=("$@")
 
   if ! [[ "${actual[*]:-}" == *"$expected"* ]]; then
     bashunit::assert::mark_failed
@@ -31,8 +30,7 @@ function assert_array_not_contains() {
   local label
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
   shift
-  # Bash 3.0 compatible array initialization
-  local actual; [[ $# -gt 0 ]] && actual=("$@")
+  local -a actual=(); [[ $# -gt 0 ]] && actual=("$@")
 
   if [[ "${actual[*]:-}" == *"$expected"* ]]; then
     bashunit::assert::mark_failed

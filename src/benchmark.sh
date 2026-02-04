@@ -62,8 +62,7 @@ function bashunit::benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local durations
+  local -a durations=()
   local durations_count=0
 
   for ((i=1; i<=its; i++)); do

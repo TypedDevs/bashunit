@@ -5,10 +5,9 @@
 #############################
 function bashunit::main::cmd_test() {
   local filter=""
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local raw_args
+  local -a raw_args=()
   local raw_args_count=0
-  local args
+  local -a args=()
   local args_count=0
   local assert_fn=""
   local _bashunit_coverage_opt_set=false
@@ -258,10 +257,9 @@ function bashunit::main::cmd_test() {
 #############################
 function bashunit::main::cmd_bench() {
   local filter=""
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local raw_args
+  local -a raw_args=()
   local raw_args_count=0
-  local args
+  local -a args=()
   local args_count=0
 
   export BASHUNIT_BENCH_MODE=true
@@ -621,8 +619,7 @@ function bashunit::main::handle_stop_on_failure_sync() {
 
 function bashunit::main::exec_assert() {
   local original_assert_fn=$1
-  # Bash 3.0 compatible array initialization
-  local args
+  local -a args=()
   local args_count=$(($# - 1))
   [[ $# -gt 1 ]] && args=("${@:2}")
 

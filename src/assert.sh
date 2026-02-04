@@ -668,8 +668,7 @@ function assert_line_count() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  # Bash 3.0 compatible array initialization
-  local input_arr; [[ $# -gt 1 ]] && input_arr=("${@:2}")
+  local -a input_arr=(); [[ $# -gt 1 ]] && input_arr=("${@:2}")
   local input_str
   input_str=$(printf '%s\n' ${input_arr+"${input_arr[@]}"})
 

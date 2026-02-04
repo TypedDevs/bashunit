@@ -15,11 +15,9 @@ function bashunit::runner::restore_workdir() {
 function bashunit::runner::load_test_files() {
   local filter=$1
   shift
-  # Bash 3.0 compatible array initialization
-  local files
+  local -a files=()
   [[ $# -gt 0 ]] && files=("$@")
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local scripts_ids
+  local -a scripts_ids=()
   local scripts_ids_count=0
 
   # Initialize coverage tracking if enabled
@@ -112,8 +110,7 @@ function bashunit::runner::load_test_files() {
 function bashunit::runner::load_bench_files() {
   local filter=$1
   shift
-  # Bash 3.0 compatible array initialization
-  local files
+  local -a files=()
   [[ $# -gt 0 ]] && files=("$@")
 
   for bench_file in ${files+"${files[@]}"}; do
@@ -207,8 +204,7 @@ function bashunit::runner::parse_data_provider_args() {
   local i
   local arg
   local encoded_arg
-  # Bash 3.0 compatible array initialization
-  local args
+  local -a args=()
   local args_count=0
 
   # Check for shell metacharacters that would break eval or cause globbing
@@ -313,8 +309,7 @@ function bashunit::runner::call_test_functions() {
   local filtered_functions
   filtered_functions=$(bashunit::helper::get_functions_to_run \
     "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-  # Bash 3.0 compatible array initialization
-  local functions_to_run
+  local -a functions_to_run=()
   local functions_to_run_count=0
   local _fn
   while IFS= read -r _fn; do
@@ -329,15 +324,18 @@ function bashunit::runner::call_test_functions() {
 
   bashunit::helper::check_duplicate_functions "$script" || true
 
+  local -a provider_data=()
+  local provider_data_count=0
+  local -a parsed_data=()
+  local parsed_data_count=0
+
   for fn_name in "${functions_to_run[@]}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
     fi
 
-    # Bash 3.0 compatible: unset before redeclaring to clear previous iteration's data
-    unset provider_data
-    local provider_data
-    local provider_data_count=0
+    provider_data=()
+    provider_data_count=0
     while IFS=" " read -r line; do
       [[ -z "$line" ]] && continue
       provider_data[provider_data_count]="$line"
@@ -347,16 +345,14 @@ function bashunit::runner::call_test_functions() {
     # No data provider found
     if [[ "$provider_data_count" -eq 0 ]]; then
       bashunit::runner::run_test "$script" "$fn_name"
-      unset fn_name
+      unset -v fn_name
       continue
     fi
 
     # Execute the test function for each line of data
     for data in "${provider_data[@]}"; do
-      # Bash 3.0 compatible: unset before redeclaring to clear previous iteration's data
-      unset parsed_data
-      local parsed_data
-      local parsed_data_count=0
+      parsed_data=()
+      parsed_data_count=0
       while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
@@ -364,7 +360,7 @@ function bashunit::runner::call_test_functions() {
       done <<< "$(bashunit::runner::parse_data_provider_args "$data")"
       bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
     done
-    unset fn_name
+    unset -v fn_name
   done
 }
 
@@ -377,8 +373,7 @@ function bashunit::runner::call_bench_functions() {
   local filtered_functions
   filtered_functions=$(bashunit::helper::get_functions_to_run \
     "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-  # Bash 3.0 compatible array initialization
-  local functions_to_run
+  local -a functions_to_run=()
   local functions_to_run_count=0
   local _fn
   while IFS= read -r _fn; do
@@ -398,7 +393,7 @@ function bashunit::runner::call_bench_functions() {
   for fn_name in "${functions_to_run[@]}"; do
     read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
-    unset fn_name
+    unset -v fn_name
   done
 
   if ! bashunit::env::is_simple_output_enabled; then
@@ -726,8 +721,7 @@ function bashunit::runner::parse_result() {
   shift
   local execution_result=$1
   shift
-  # Bash 3.0 compatible array initialization
-  local args
+  local -a args=()
   [[ $# -gt 0 ]] && args=("$@")
 
   if bashunit::parallel::is_enabled; then
@@ -742,8 +736,7 @@ function bashunit::runner::parse_result_parallel() {
   shift
   local execution_result=$1
   shift
-  # Bash 3.0 compatible array initialization
-  local args
+  local -a args=()
   [[ $# -gt 0 ]] && args=("$@")
 
   local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"

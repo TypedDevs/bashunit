@@ -19,8 +19,7 @@ _BASHUNIT_COVERAGE_TEST_HITS_FILE="${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}"
 function bashunit::coverage::auto_discover_paths() {
   local project_root
   project_root="$(pwd)"
-  # Bash 3.0 compatible array initialization
-  local discovered_paths
+  local -a discovered_paths=()
   local discovered_paths_count=0
 
   for test_file in "$@"; do
@@ -765,8 +764,7 @@ function bashunit::coverage::report_html() {
   # Collect file data for index
   local total_executable=0
   local total_hit=0
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local file_data
+  local -a file_data=()
   local file_data_count=0
 
   while IFS= read -r file; do
@@ -818,7 +816,7 @@ function bashunit::coverage::generate_index_html() {
   local tests_failed="$7"
   shift 7
   # Handle array passed as arguments - Bash 3.0 compatible
-  local file_data
+  local -a file_data=()
   local file_count=0
   if [[ $# -gt 0 ]]; then
     file_data=("$@")
@@ -1175,8 +1173,7 @@ function bashunit::coverage::generate_file_html() {
   local uncovered=$((executable - hit))
 
   # Pre-load all line hits into indexed array (performance optimization)
-  # Bash 3.0 compatible: declare without =()
-  local hits_by_line
+  local -a hits_by_line=()
   local _ln _cnt
   while IFS=: read -r _ln _cnt; do
     hits_by_line[_ln]=$_cnt
@@ -1185,8 +1182,7 @@ function bashunit::coverage::generate_file_html() {
   # Pre-load test hits data into indexed array (for tooltips)
   # Index: line number, Value: newline-separated list of "test_file:test_function"
   # Using indexed array for Bash 3.0 compatibility (no associative arrays)
-  # Bash 3.0 compatible: declare without =()
-  local tests_by_line
+  local -a tests_by_line=()
   local _line_and_test
   while IFS= read -r _line_and_test; do
     [[ -z "$_line_and_test" ]] && continue

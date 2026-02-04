@@ -1157,8 +1157,7 @@ function test_backup_failure_when_source_missing() {
   fi
 
   # Verify the test has key components
-  # Declare without =() for Bash 3.0 compatibility with set -u
-  local missing_components
+  local -a missing_components=()
   local missing_components_count=0
 
   if ! grep -q "function set_up()" "$test_file"; then
