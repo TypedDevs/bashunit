@@ -130,6 +130,11 @@ function test_install_downloads_the_given_version_without_dir() {
 }
 
 function test_install_downloads_the_non_stable_beta_version() {
+  # Skip on Bash 3.0 - mocks don't work for external scripts
+  if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
+    bashunit::skip "Mocks don't work for external scripts in Bash 3.0"
+    return
+  fi
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     bashunit::skip "no internet connection" && return
   fi
