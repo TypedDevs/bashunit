@@ -242,20 +242,23 @@ function assert_contains_ignore_case() {
   local expected="$1"
   local actual="$2"
 
-  shopt -s nocasematch
+  # Bash 3.0 compatible: use tr for case-insensitive comparison
+  # (shopt nocasematch was introduced in Bash 3.1)
+  local expected_lower
+  local actual_lower
+  expected_lower=$(printf '%s' "$expected" | tr '[:upper:]' '[:lower:]')
+  actual_lower=$(printf '%s' "$actual" | tr '[:upper:]' '[:lower:]')
 
-  if ! [[ $actual =~ $expected ]]; then
+  if [[ "$actual_lower" != *"$expected_lower"* ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
-    shopt -u nocasematch
     return
   fi
 
-  shopt -u nocasematch
   bashunit::state::add_assertions_passed
 }
 

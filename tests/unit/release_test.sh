@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# release.sh requires Bash 3.1+ (uses += array syntax)
+# Skip this entire test file on Bash 3.0
+if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
+  # shellcheck disable=SC2317
+  return 0 2>/dev/null || exit 0
+fi
+
 RELEASE_SCRIPT_DIR=""
 FIXTURES_DIR=""
 

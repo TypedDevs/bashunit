@@ -64,9 +64,9 @@ function bashunit::runner::load_test_files() {
       local filtered_functions
       filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
-        # shellcheck disable=SC2206
         # Bash 3.0 compatible: separate declaration and assignment for arrays
         local functions_to_run
+        # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
@@ -133,9 +133,9 @@ function bashunit::runner::load_bench_files() {
       local filtered_functions
       filtered_functions=$(bashunit::helper::get_functions_to_run "bench" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
       if [[ -n "$filtered_functions" ]]; then
-        # shellcheck disable=SC2206
         # Bash 3.0 compatible: separate declaration and assignment for arrays
         local functions_to_run
+        # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         for ((i = 0; i < additional_failures; i++)); do
