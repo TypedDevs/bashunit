@@ -94,7 +94,7 @@ jobs:
       - name: Run tests with Bash 3.0 (${{ matrix.name }})
         run: |
           docker run --rm \
-            -v "$(pwd)":/bashunit:ro \
+            -v "$(pwd)":/bashunit \
             -w /bashunit \
             bashunit-bash3 \
             /opt/bash-3.0/bin/bash ./bashunit ${{ matrix.flags }} tests/
