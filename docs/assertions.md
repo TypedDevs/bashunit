@@ -326,6 +326,108 @@ function test_failure() {
 ```
 :::
 
+## assert_date_equals
+> `assert_date_equals "expected" "actual"`
+
+Reports an error if the two epoch timestamps `expected` and `actual` are not equal.
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+
+  assert_date_equals "$now" "$now"
+}
+
+function test_failure() {
+  assert_date_equals "1700000000" "1600000000"
+}
+```
+:::
+
+## assert_date_before
+> `assert_date_before "expected" "actual"`
+
+Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_before "1700000000" "1600000000"
+}
+
+function test_failure() {
+  assert_date_before "1700000000" "1800000000"
+}
+```
+:::
+
+## assert_date_after
+> `assert_date_after "expected" "actual"`
+
+Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_after "1600000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_after "1600000000" "1500000000"
+}
+```
+:::
+
+## assert_date_within_range
+> `assert_date_within_range "from" "to" "actual"`
+
+Reports an error if `actual` does not fall between `from` and `to` (inclusive).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_within_range "1600000000" "1800000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_within_range "1600000000" "1800000000" "1900000000"
+}
+```
+:::
+
+## assert_date_within_delta
+> `assert_date_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` seconds of `expected`.
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+  local five_seconds_later=$(( now + 5 ))
+
+  assert_date_within_delta "$now" "$five_seconds_later" "10"
+}
+
+function test_failure() {
+  assert_date_within_delta "1700000000" "1700000020" "5"
+}
+```
+:::
+
 ## assert_exit_code
 > `assert_exit_code "expected"`
 
