@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
+    - All inputs are epoch seconds (integers), generated via `date +%s`
+    - Fully portable across GNU and BSD systems
 - Display test output (stdout/stderr) on failure for runtime errors
     - Shows captured output in an "Output:" section when tests fail with runtime errors
     - Helps debug test failures without manually capturing output
