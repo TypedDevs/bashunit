@@ -1,179 +1,500 @@
 ## assert_true
 --------------
-::ignore::
+> `assert_true bool|function|command`
+
+Reports an error if the argument result in a truthy value: `true` or `0`.
+
+- assert_false is similar but different.
+
 
 ## assert_false
 --------------
-::ignore::
+> `assert_false bool|function|command`
+
+Reports an error if the argument result in a falsy value: `false` or `1`.
+
+- assert_true is similar but different.
+
 
 ## assert_same
 --------------
-::ignore::
+> `assert_same "expected" "actual"`
+
+Reports an error if the `expected` and `actual` are not the same - including special chars.
+
+- assert_not_same is the inverse of this assertion and takes the same arguments.
+- assert_equals is similar but ignoring the special chars.
+
 
 ## assert_equals
 --------------
-::ignore::
+> `assert_equals "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
+
+- assert_same is similar but including special chars.
+
 
 ## assert_contains
 --------------
-::ignore::
+> `assert_contains "needle" "haystack"`
+
+Reports an error if `needle` is not a substring of `haystack`.
+
+- assert_not_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_contains_ignore_case
 --------------
-::ignore::
+> `assert_contains_ignore_case "needle" "haystack"`
+
+Reports an error if `needle` is not a substring of `haystack`.
+Differences in casing are ignored when needle is searched for in haystack.
+
 
 ## assert_empty
 --------------
-::ignore::
+> `assert_empty "actual"`
+
+Reports an error if `actual` is not empty.
+
+- assert_not_empty is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_matches
 --------------
-::ignore::
+> `assert_matches "pattern" "value"`
+
+Reports an error if `value` does not match the regular expression `pattern`.
+
+- assert_not_matches is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_string_starts_with
 --------------
-::ignore::
+> `assert_string_starts_with "needle" "haystack"`
+
+Reports an error if `haystack` does not starts with `needle`.
+
+- assert_string_not_starts_with is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_string_ends_with
 --------------
-::ignore::
+> `assert_string_ends_with "needle" "haystack"`
+
+Reports an error if `haystack` does not ends with `needle`.
+
+- assert_string_not_ends_with is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_line_count
 --------------
-::ignore::
+> `assert_line_count "count" "haystack"`
+
+Reports an error if `haystack` does not contain `count` lines.
+
 
 ## assert_less_than
 --------------
-::ignore::
+> `assert_less_than "expected" "actual"`
+
+Reports an error if `actual` is not less than `expected`.
+
+- assert_greater_than is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_less_or_equal_than
 --------------
-::ignore::
+> `assert_less_or_equal_than "expected" "actual"`
+
+Reports an error if `actual` is not less than or equal to `expected`.
+
+- assert_greater_than is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_greater_than
 --------------
-::ignore::
+> `assert_greater_than "expected" "actual"`
+
+Reports an error if `actual` is not greater than `expected`.
+
+- assert_less_than is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_greater_or_equal_than
 --------------
-::ignore::
+> `assert_greater_or_equal_than "expected" "actual"`
+
+Reports an error if `actual` is not greater than or equal to `expected`.
+
+- assert_less_or_equal_than is the inverse of this assertion and takes the same arguments.
+
+
+## assert_date_equals
+--------------
+> `assert_date_equals "expected" "actual"`
+
+Reports an error if the two epoch timestamps `expected` and `actual` are not equal.
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+
+## assert_date_before
+--------------
+> `assert_date_before "expected" "actual"`
+
+Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+
+## assert_date_after
+--------------
+> `assert_date_after "expected" "actual"`
+
+Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+
+## assert_date_within_range
+--------------
+> `assert_date_within_range "from" "to" "actual"`
+
+Reports an error if `actual` does not fall between `from` and `to` (inclusive).
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+
+## assert_date_within_delta
+--------------
+> `assert_date_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` seconds of `expected`.
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
 
 ## assert_exit_code
 --------------
-::ignore::
+> `assert_exit_code "expected"`
+
+Reports an error if the exit code of the last executed command is not equal to `expected`.
+
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a second parameter.
+
+::: tip
+Use assert_exec if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 0`
+:::
+
+- assert_successful_code, assert_unsuccessful_code, assert_general_error and assert_command_not_found
+are more semantic versions of this assertion, for which you don't need to specify an exit code.
+
+
+## assert_exec
+--------------
+> `assert_exec "command" --exit <code> --stdout "text" --stderr "text"`
+
+Runs `command` capturing its exit status, standard output and standard error and
+checks all provided expectations. When `--exit` is omitted the expected exit
+status defaults to `0`.
+
 
 ## assert_array_contains
 --------------
-::ignore::
+> `assert_array_contains "needle" "haystack"`
+
+Reports an error if `needle` is not an element of `haystack`.
+
+- assert_array_not_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_successful_code
 --------------
-::ignore::
+> `assert_successful_code`
+
+Reports an error if the exit code of the last executed command is not successful (`0`).
+
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use assert_exec if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command"` (defaults to expecting exit code 0)
+:::
+
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
+
+
+## assert_unsuccessful_code
+--------------
+> `assert_unsuccessful_code`
+
+Reports an error if the exit code of the last executed command is not unsuccessful (non-zero).
+
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use assert_exec if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 1`
+:::
+
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
+
 
 ## assert_general_error
 --------------
-::ignore::
+> `assert_general_error`
+
+Reports an error if the exit code of the last executed command is not a general error (`1`).
+
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use assert_exec if you want to pass a command as a string and check its exit code:
+`assert_exec "your_command" --exit 1`
+:::
+
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
+
 
 ## assert_command_not_found
 --------------
-::ignore::
+> `assert_command_not_found`
+
+Reports an error if the last executed command did not return a "command not found" exit code (`127`).
+
+This assertion captures `$?` from the command executed **before** calling the assertion.
+It does **not** execute a string command passed as a parameter.
+
+::: tip
+Use assert_exec if you want to pass a command as a string and check its exit code:
+`assert_exec "nonexistent_command" --exit 127`
+:::
+
+- assert_exit_code is the full version of this assertion where you can specify the expected exit code.
+
 
 ## assert_file_exists
 --------------
-::ignore::
+> `assert_file_exists "file"`
+
+Reports an error if `file` does not exists, or it is a directory.
+
+- assert_file_not_exists is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_file_contains
 --------------
-::ignore::
+> `assert_file_contains "file" "search"`
+
+Reports an error if `file` does not contains the search string.
+
+- assert_file_not_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_file
 --------------
-::ignore::
+> `assert_is_file "file"`
+
+Reports an error if `file` is not a file.
+
 
 ## assert_is_file_empty
 --------------
-::ignore::
+> `assert_is_file_empty "file"`
+
+Reports an error if `file` is not empty.
+
 
 ## assert_directory_exists
 --------------
-::ignore::
+> `assert_directory_exists "directory"`
+
+Reports an error if `directory` does not exist.
+
+- assert_directory_not_exists is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory
 --------------
-::ignore::
+> `assert_is_directory "directory"`
+
+Reports an error if `directory` is not a directory.
+
 
 ## assert_is_directory_empty
 --------------
-::ignore::
+> `assert_is_directory_empty "directory"`
+
+Reports an error if `directory` is not an empty directory.
+
+- assert_is_directory_not_empty is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory_readable
 --------------
-::ignore::
+> `assert_is_directory_readable "directory"`
+
+Reports an error if `directory` is not a readable directory.
+
+- assert_is_directory_not_readable is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory_writable
 --------------
-::ignore::
+> `assert_is_directory_writable "directory"`
+
+Reports an error if `directory` is not a writable directory.
+
+- assert_is_directory_not_writable is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_files_equals
 --------------
-::ignore::
+> `assert_files_equals "expected" "actual"`
+
+Reports an error if `expected` and `actual` are not equals.
+
+- assert_files_not_equals is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_not_same
 --------------
-::ignore::
+> `assert_not_same "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are the same value.
+
+- assert_same is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_not_contains
 --------------
-::ignore::
+> `assert_not_contains "needle" "haystack"`
+
+Reports an error if `needle` is a substring of `haystack`.
+
+- assert_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_string_not_starts_with
 --------------
-::ignore::
+> `assert_string_not_starts_with "needle" "haystack"`
+
+Reports an error if `haystack` does starts with `needle`.
+
+- assert_string_starts_with is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_string_not_ends_with
 --------------
-::ignore::
+> `assert_string_not_ends_with "needle" "haystack"`
+
+Reports an error if `haystack` does ends with `needle`.
+
+- assert_string_ends_with is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_not_empty
 --------------
-::ignore::
+> `assert_not_empty "actual"`
+
+Reports an error if `actual` is empty.
+
+- assert_empty is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_not_matches
 --------------
-::ignore::
+> `assert_not_matches "pattern" "value"`
+
+Reports an error if `value` matches the regular expression `pattern`.
+
+- assert_matches is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_array_not_contains
 --------------
-::ignore::
+> `assert_array_not_contains "needle" "haystack"`
+
+Reports an error if `needle` is an element of `haystack`.
+
+- assert_array_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_file_not_exists
 --------------
-::ignore::
+> `assert_file_not_exists "file"`
+
+Reports an error if `file` does exists.
+
+- assert_file_exists is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_file_not_contains
 --------------
-::ignore::
+> `assert_file_not_contains "file" "search"`
+
+Reports an error if `file` contains the search string.
+
+- assert_file_contains is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_directory_not_exists
 --------------
-::ignore::
+> `assert_directory_not_exists "directory"`
+
+Reports an error if `directory` exists.
+
+- assert_directory_exists is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory_not_empty
 --------------
-::ignore::
+> `assert_is_directory_not_empty "directory"`
+
+Reports an error if `directory` is empty.
+
+- assert_is_directory_empty is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory_not_readable
 --------------
-::ignore::
+> `assert_is_directory_not_readable "directory"`
+
+Reports an error if `directory` is readable.
+
+- assert_is_directory_readable is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_is_directory_not_writable
 --------------
-::ignore::
+> `assert_is_directory_not_writable "directory"`
+
+Reports an error if `directory` is writable.
+
+- assert_is_directory_writable is the inverse of this assertion and takes the same arguments.
+
 
 ## assert_files_not_equals
 --------------
-::ignore::
+> `assert_files_not_equals "expected" "actual"`
+
+Reports an error if `expected` and `actual` are not equals.
+
+- assert_files_equals is the inverse of this assertion and takes the same arguments.
+
 
 ## bashunit::fail
 --------------
-::ignore::
+> `bashunit::fail "failure message"`
+
+Unambiguously reports an error message. Useful for reporting specific message
+when testing situations not covered by any `assert_*` functions.
+
+

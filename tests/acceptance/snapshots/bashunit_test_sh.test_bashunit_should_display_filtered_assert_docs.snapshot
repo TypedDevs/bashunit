@@ -7,6 +7,15 @@ Reports an error if the two variables `expected` and `actual` are not equal igno
 - assert_same is similar but including special chars.
 
 
+## assert_date_equals
+--------------
+> `assert_date_equals "expected" "actual"`
+
+Reports an error if the two epoch timestamps `expected` and `actual` are not equal.
+
+All inputs are **epoch seconds** (integers), generated via `date +%s`.
+
+
 ## assert_files_equals
 --------------
 > `assert_files_equals "expected" "actual"`
@@ -23,3 +32,5 @@ Reports an error if `expected` and `actual` are not equals.
 Reports an error if `expected` and `actual` are not equals.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
+
+
