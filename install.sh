@@ -2,6 +2,11 @@
 # shellcheck disable=SC2155
 # shellcheck disable=SC2164
 
+# Helper function for regex matching (Bash 3.0+ compatible)
+function regex_match() {
+  [[ $1 =~ $2 ]]
+}
+
 function is_git_installed() {
   command -v git > /dev/null 2>&1
 }
@@ -58,7 +63,7 @@ DIR="lib"
 VERSION="latest"
 
 function is_version() {
-  [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || "$1" == "latest" || "$1" == "beta" ]]
+  regex_match "$1" '^[0-9]+\.[0-9]+\.[0-9]+$' || [[ "$1" == "latest" || "$1" == "beta" ]]
 }
 
 # Parse arguments flexibly

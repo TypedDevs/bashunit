@@ -544,9 +544,9 @@ function bashunit::runner::run_test() {
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
     # Replace [type] with a newline to split the messages
-    line="${line//\[failed\]/$'\n'}"       # Replace [failed] with newline
-    line="${line//\[skipped\]/$'\n'}"      # Replace [skipped] with newline
-    line="${line//\[incomplete\]/$'\n'}"   # Replace [incomplete] with newline
+    line=${line//\[failed\]/$'\n'}       # Replace [failed] with newline
+    line=${line//\[skipped\]/$'\n'}      # Replace [skipped] with newline
+    line=${line//\[incomplete\]/$'\n'}   # Replace [incomplete] with newline
 
     if ! bashunit::env::is_failures_only_enabled; then
       bashunit::state::print_line "$type" "$line"

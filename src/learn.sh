@@ -858,7 +858,8 @@ File: validator.sh
 #!/usr/bin/env bash
 
 function is_valid_email() {
-  [[ $1 =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+  local email_pattern='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+  [[ $1 =~ $email_pattern ]]
 }
 ───────────────────────────────────────────────────────────────
 

@@ -15,6 +15,11 @@ GITHUB_REPO_PATH="TypedDevs/bashunit"
 GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
 RELEASE_FILES=("bashunit" "install.sh" "package.json" "CHANGELOG.md")
 
+# Helper function for regex matching (Bash 3.0+ compatible)
+function regex_match() {
+  [[ $1 =~ $2 ]]
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -529,7 +534,7 @@ function release::sandbox::run() {
 
 function release::validate_semver() {
   local version=$1
-  if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  if ! regex_match "$version" '^[0-9]+\.[0-9]+\.[0-9]+$'; then
     release::log_error "Invalid version format: $version"
     release::log_error "Version must be in semver format (e.g., 0.30.0)"
     exit $EXIT_VALIDATION_ERROR

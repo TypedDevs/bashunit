@@ -513,7 +513,7 @@ function bashunit::coverage::extract_functions() {
         brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
 
         # Single-line function
-        if [[ $brace_count -eq 0 && "$line" =~ \{ && "$line" =~ \} ]]; then
+        if [[ $brace_count -eq 0 ]] && bashunit::regex_match "$line" '\{' && bashunit::regex_match "$line" '\}'; then
           echo "${current_fn}:${fn_start}:${lineno}"
           in_function=0
           current_fn=""
