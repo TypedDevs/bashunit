@@ -361,7 +361,7 @@ function bashunit::helper::find_total_tests() {
                 local -a provider_data=()
                 local provider_data_count=0
                 local fn_name line
-                for fn_name in "${functions_to_run[@]}"; do
+                for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
                     provider_data=()
                     provider_data_count=0
                     while IFS=" " read -r line; do

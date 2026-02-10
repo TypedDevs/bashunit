@@ -87,7 +87,7 @@ function bashunit::benchmark::run_function() {
 
   local sum=0
   local d
-  for d in "${durations[@]}"; do
+  for d in "${durations[@]+"${durations[@]}"}"; do
     sum=$(bashunit::math::calculate "$sum + $d")
   done
   local avg=$(bashunit::math::calculate "$sum / ${#durations[@]}")
@@ -113,7 +113,7 @@ function bashunit::benchmark::print_results() {
 
   local has_threshold=false
   local val
-  for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]}"; do
+  for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]+"${_BASHUNIT_BENCH_MAX_MILLIS[@]}"}"; do
     if [[ -n "$val" ]]; then
       has_threshold=true
       break
@@ -126,13 +126,17 @@ function bashunit::benchmark::print_results() {
     printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
   fi
 
-  local i=0
+  if [ "${#_BASHUNIT_BENCH_NAMES[@]}" -eq 0 ]; then
+    return
+  fi
+
+  local i
   for i in "${!_BASHUNIT_BENCH_NAMES[@]}"; do
-    local name="${_BASHUNIT_BENCH_NAMES[$i]}"
-    local revs="${_BASHUNIT_BENCH_REVS[$i]}"
-    local its="${_BASHUNIT_BENCH_ITS[$i]}"
-    local avg="${_BASHUNIT_BENCH_AVERAGES[$i]}"
-    local max_ms="${_BASHUNIT_BENCH_MAX_MILLIS[$i]}"
+    local name="${_BASHUNIT_BENCH_NAMES[$i]:-}"
+    local revs="${_BASHUNIT_BENCH_REVS[$i]:-}"
+    local its="${_BASHUNIT_BENCH_ITS[$i]:-}"
+    local avg="${_BASHUNIT_BENCH_AVERAGES[$i]:-}"
+    local max_ms="${_BASHUNIT_BENCH_MAX_MILLIS[$i]:-}"
 
     if [[ -z "$max_ms" ]]; then
       printf '%-40s %6s %6s %10s\n' "$name" "$revs" "$its" "$avg"

@@ -180,7 +180,7 @@ function bashunit::main::cmd_test() {
     else
       # Test mode: process file paths and extract inline filters
       local arg=""
-      for arg in "${raw_args[@]}"; do
+      for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
         local parsed_path parsed_filter
         {
           read -r parsed_path
@@ -321,7 +321,7 @@ function bashunit::main::cmd_bench() {
   # Expand positional arguments
   if [[ "$raw_args_count" -gt 0 ]]; then
     local arg file
-    for arg in "${raw_args[@]}"; do
+    for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
       while IFS= read -r file; do
         args[args_count]="$file"; args_count=$((args_count + 1))
       done < <(bashunit::helper::find_files_recursive "$arg" '*[bB]ench.sh')

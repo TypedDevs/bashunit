@@ -30,7 +30,7 @@ function bashunit::runner::load_test_files() {
   fi
 
   local test_file=""
-  for test_file in "${files[@]}"; do
+  for test_file in "${files[@]+"${files[@]}"}"; do
     if [[ ! -f $test_file ]]; then
       continue
     fi
@@ -103,7 +103,7 @@ function bashunit::runner::load_test_files() {
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r  \r" # Clear the spinner output
     local script_id=""
-    for script_id in "${scripts_ids[@]}"; do
+    for script_id in "${scripts_ids[@]+"${scripts_ids[@]}"}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
       bashunit::cleanup_script_temp_files
     done
@@ -232,7 +232,7 @@ function bashunit::runner::parse_data_provider_args() {
         unset 'args[$last_idx]'
       fi
       # Print args and return early
-      for arg in "${args[@]}"; do
+      for arg in "${args[@]+"${args[@]}"}"; do
         encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
         printf '%s\n' "$encoded_arg"
       done
@@ -338,7 +338,7 @@ function bashunit::runner::call_test_functions() {
   local -a parsed_data=()
   local parsed_data_count=0
 
-  for fn_name in "${functions_to_run[@]}"; do
+  for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
     fi
@@ -361,7 +361,7 @@ function bashunit::runner::call_test_functions() {
 
     # Execute the test function for each line of data
     local data=""
-    for data in "${provider_data[@]}"; do
+    for data in "${provider_data[@]+"${provider_data[@]}"}"; do
       parsed_data=()
       parsed_data_count=0
       local line=""
@@ -403,7 +403,7 @@ function bashunit::runner::call_bench_functions() {
   fi
 
   local fn_name=""
-  for fn_name in "${functions_to_run[@]}"; do
+  for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset -v fn_name
@@ -1067,9 +1067,13 @@ function bashunit::runner::record_test_hook_failure() {
 }
 
 function bashunit::runner::clear_mocks() {
-  local i=0
+  if [ "${#_BASHUNIT_MOCKED_FUNCTIONS[@]}" -eq 0 ]; then
+    return
+  fi
+
+  local i
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
-    bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}"
+    bashunit::unmock "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}"
   done
 }
 

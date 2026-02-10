@@ -245,13 +245,13 @@ function bashunit::env::print_verbose() {
   local max_length=0
 
   local key=""
-  for key in "${keys[@]}"; do
+  for key in "${keys[@]+"${keys[@]}"}"; do
     if (( ${#key} > max_length )); then
       max_length=${#key}
     fi
   done
 
-  for key in "${keys[@]}"; do
+  for key in "${keys[@]+"${keys[@]}"}"; do
     bashunit::internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done
