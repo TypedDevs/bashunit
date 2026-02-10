@@ -201,6 +201,7 @@ function bashunit::console_results::print_successful_test() {
     line=$(printf "%s✓ Passed%s: %s" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name")
   else
     local quoted_args=""
+    local arg
     for arg in "$@"; do
       if [[ -z "$quoted_args" ]]; then
         quoted_args="'$arg'"

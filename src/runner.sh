@@ -336,6 +336,7 @@ function bashunit::runner::call_test_functions() {
 
     provider_data=()
     provider_data_count=0
+    local line
     while IFS=" " read -r line; do
       [[ -z "$line" ]] && continue
       provider_data[provider_data_count]="$line"
@@ -350,9 +351,11 @@ function bashunit::runner::call_test_functions() {
     fi
 
     # Execute the test function for each line of data
+    local data
     for data in "${provider_data[@]}"; do
       parsed_data=()
       parsed_data_count=0
+      local line
       while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"

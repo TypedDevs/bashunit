@@ -64,6 +64,7 @@ function bashunit::benchmark::run_function() {
   local max_ms=$4
   local -a durations=()
   local durations_count=0
+  local i r
 
   for ((i=1; i<=its; i++)); do
     local start_time=$(bashunit::clock::now)
@@ -85,6 +86,7 @@ function bashunit::benchmark::run_function() {
   done
 
   local sum=0
+  local d
   for d in "${durations[@]}"; do
     sum=$(bashunit::math::calculate "$sum + $d")
   done
@@ -110,6 +112,7 @@ function bashunit::benchmark::print_results() {
   printf "\n"
 
   local has_threshold=false
+  local val
   for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]}"; do
     if [[ -n "$val" ]]; then
       has_threshold=true
@@ -123,6 +126,7 @@ function bashunit::benchmark::print_results() {
     printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
   fi
 
+  local i
   for i in "${!_BASHUNIT_BENCH_NAMES[@]}"; do
     local name="${_BASHUNIT_BENCH_NAMES[$i]}"
     local revs="${_BASHUNIT_BENCH_REVS[$i]}"

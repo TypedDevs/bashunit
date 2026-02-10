@@ -179,6 +179,7 @@ function bashunit::main::cmd_test() {
       args_count="$raw_args_count"
     else
       # Test mode: process file paths and extract inline filters
+      local arg
       for arg in "${raw_args[@]}"; do
         local parsed_path parsed_filter
         {

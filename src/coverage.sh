@@ -21,6 +21,7 @@ function bashunit::coverage::auto_discover_paths() {
   project_root="$(pwd)"
   local -a discovered_paths=()
   local discovered_paths_count=0
+  local test_file
 
   for test_file in "$@"; do
     # Extract base name: tests/unit/assert_test.sh -> assert_test.sh
@@ -33,6 +34,7 @@ function bashunit::coverage::auto_discover_paths() {
     [[ "$source_name" == "$file_basename" ]] && continue  # Not a test file pattern
 
     # Find matching source files recursively
+    local found_file
     while IFS= read -r -d '' found_file; do
       # Skip test files and vendor directories
       [[ "$found_file" == *test* ]] && continue
@@ -297,7 +299,7 @@ function bashunit::coverage::aggregate_parallel() {
 
   # Find and merge all per-process coverage data files
   # Use nullglob to handle case when no files match
-  local pid_files
+  local pid_files pid_file
   pid_files=$(ls -1 "${base_file}."* 2>/dev/null) || true
   if [[ -n "$pid_files" ]]; then
     while IFS= read -r pid_file; do
@@ -383,6 +385,7 @@ function bashunit::coverage::get_executable_lines() {
   local file="$1"
   local count=0
   local lineno=0
+  local line
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     ((lineno++))
@@ -449,6 +452,7 @@ function bashunit::coverage::get_all_line_hits() {
   fi
 
   # Extract all lines for this file, count occurrences of each line number
+  local count lineno
   grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null | \
     cut -d: -f2 | sort | uniq -c | \
     while read -r count lineno; do
@@ -481,6 +485,7 @@ function bashunit::coverage::extract_functions() {
   local brace_count=0
   local current_fn=""
   local fn_start=0
+  local line
 
   while IFS= read -r line || [[ -n "$line" ]]; do
     ((lineno++))
@@ -694,6 +699,7 @@ function bashunit::coverage::report_lcov() {
       echo "SF:$file"
 
       local lineno=0
+      local line
       # shellcheck disable=SC2094
       while IFS= read -r line || [[ -n "$line" ]]; do
         ((lineno++))
@@ -766,6 +772,7 @@ function bashunit::coverage::report_html() {
   local total_hit=0
   local -a file_data=()
   local file_data_count=0
+  local file
 
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
@@ -1109,6 +1116,7 @@ EOF
           <tbody>
 EOF
 
+    local data display_file hit executable pct safe_filename
     for data in ${file_data[@]+"${file_data[@]}"}; do
       IFS='|' read -r display_file hit executable pct safe_filename <<< "$data"
 
@@ -1496,6 +1504,7 @@ EOF
 EOF
 
     local lineno=0
+    local line
     while IFS= read -r line || [[ -n "$line" ]]; do
       ((lineno++))
 
@@ -1517,6 +1526,7 @@ EOF
           if [[ -n "$test_info" ]]; then
             # Build tooltip with test information
             local tooltip_html="<div class=\"hits-tooltip\"><div class=\"hits-tooltip-title\">Tests hitting this line</div><ul class=\"hits-tooltip-list\">"
+            local test_file test_fn
             while IFS=':' read -r test_file test_fn; do
               [[ -z "$test_file" ]] && continue
               local short_file
