@@ -112,6 +112,7 @@ function bashunit::helper::interpolate_function_name() {
   [[ $# -gt 0 ]] && args=("$@")
   local result="$function_name"
 
+  local i
   for ((i=0; i<args_count; i++)); do
     local placeholder="::$((i+1))::"
     # shellcheck disable=SC2155
@@ -200,6 +201,7 @@ function bashunit::helper::get_functions_to_run() {
 
   local filtered_functions=""
 
+  local fn
   for fn in $function_names; do
     if [[ $fn == ${prefix}_*${filter}* ]]; then
       if [[ $filtered_functions == *" $fn"* ]]; then
@@ -358,6 +360,7 @@ function bashunit::helper::find_total_tests() {
                 # shellcheck disable=SC2034
                 local -a provider_data=()
                 local provider_data_count=0
+                local fn_name line
                 for fn_name in "${functions_to_run[@]}"; do
                     provider_data=()
                     provider_data_count=0
@@ -498,6 +501,7 @@ function bashunit::helper::find_function_at_line() {
   local best_match=""
   local best_line=0
 
+  local line_num content
   while IFS=: read -r line_num content; do
     # Extract function name from the line
     # Pattern stored in variable for Bash 3.0 compatibility

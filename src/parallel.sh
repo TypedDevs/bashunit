@@ -11,6 +11,7 @@ function bashunit::parallel::aggregate_test_results() {
   local total_incomplete=0
   local total_snapshot=0
 
+  local script_dir
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
     shopt -s nullglob
     # Bash 3.0 compatible: separate declaration and assignment for arrays
@@ -23,6 +24,7 @@ function bashunit::parallel::aggregate_test_results() {
       continue
     fi
 
+    local result_file
     for result_file in "${result_files[@]}"; do
       local result_line
       result_line=$(tail -n 1 < "$result_file")

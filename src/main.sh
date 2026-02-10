@@ -193,6 +193,7 @@ function bashunit::main::cmd_test() {
           inline_filter_file="$parsed_path"
         fi
 
+        local file
         while IFS= read -r file; do
           args[args_count]="$file"; args_count=$((args_count + 1))
         done < <(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
@@ -319,6 +320,7 @@ function bashunit::main::cmd_bench() {
 
   # Expand positional arguments
   if [[ "$raw_args_count" -gt 0 ]]; then
+    local arg file
     for arg in "${raw_args[@]}"; do
       while IFS= read -r file; do
         args[args_count]="$file"; args_count=$((args_count + 1))

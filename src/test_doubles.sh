@@ -5,6 +5,7 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 function bashunit::unmock() {
   local command=$1
 
+  local i
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
     if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"

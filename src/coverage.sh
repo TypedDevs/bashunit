@@ -616,6 +616,7 @@ function bashunit::coverage::report_text() {
   echo "Coverage Report"
   echo "---------------"
 
+  local file
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
     has_files=true

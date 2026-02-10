@@ -31,6 +31,7 @@ function bashunit::random_str() {
   local length=${1:-6}
   local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   local str=''
+  local i
   for (( i=0; i<length; i++ )); do
     str="$str${chars:RANDOM%${#chars}:1}"
   done
