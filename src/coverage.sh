@@ -384,7 +384,7 @@ function bashunit::coverage::is_executable_line() {
 function bashunit::coverage::get_executable_lines() {
   local file="$1"
   local count=0
-  local lineno=0
+  local lineno
   local line
 
   while IFS= read -r line || [[ -n "$line" ]]; do
@@ -416,7 +416,7 @@ function bashunit::coverage::get_hit_lines() {
   # Only count hits that correspond to executable lines
   # This prevents >100% coverage when DEBUG trap fires on non-executable lines
   local count=0
-  local line_num=0
+  local line_num
   for line_num in $hit_lines; do
     local line_content
     line_content=$(sed -n "${line_num}p" "$file" 2>/dev/null) || continue
@@ -616,7 +616,7 @@ function bashunit::coverage::report_text() {
   echo "Coverage Report"
   echo "---------------"
 
-  local file=""
+  local file
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
     has_files=true
@@ -788,7 +788,7 @@ function bashunit::coverage::report_html() {
     total_hit=$((total_hit + hit))
 
     local display_file="${file#"$(pwd)"/}"
-    local safe_filename=""
+    local safe_filename
     safe_filename=$(bashunit::coverage::path_to_filename "$file")
 
     file_data[file_data_count]="$display_file|$hit|$executable|$pct|$safe_filename"; file_data_count=$((file_data_count + 1))
@@ -1194,7 +1194,7 @@ function bashunit::coverage::generate_file_html() {
   # Index: line number, Value: newline-separated list of "test_file:test_function"
   # Using indexed array for Bash 3.0 compatibility (no associative arrays)
   local -a tests_by_line=()
-  local _line_and_test=""
+  local _line_and_test
   while IFS= read -r _line_and_test; do
     [[ -z "$_line_and_test" ]] && continue
     local _tln="${_line_and_test%%|*}"

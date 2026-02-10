@@ -18,7 +18,7 @@ function bashunit::doc::print_asserts() {
 
   # Pattern stored in variable for Bash 3.0 compatibility
   local _doc_pattern='^## ([A-Za-z0-9_]+)'
-  local line=""
+  local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
     if [[ $line =~ $_doc_pattern ]]; then
       fn="${BASH_REMATCH[1]}"

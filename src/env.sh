@@ -245,7 +245,7 @@ function bashunit::env::print_verbose() {
 
   local max_length=0
 
-  local key=""
+  local key
   for key in "${keys[@]+"${keys[@]}"}"; do
     if (( ${#key} > max_length )); then
       max_length=${#key}

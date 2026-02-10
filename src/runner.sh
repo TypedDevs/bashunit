@@ -30,7 +30,7 @@ function bashunit::runner::load_test_files() {
     bashunit::coverage::init
   fi
 
-  local test_file=""
+  local test_file
   for test_file in "${files[@]+"${files[@]}"}"; do
     if [[ ! -f $test_file ]]; then
       continue
@@ -69,7 +69,7 @@ function bashunit::runner::load_test_files() {
         # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
-        local i=0
+        local i
         for ((i = 0; i < additional_failures; i++)); do
           bashunit::state::add_tests_failed
         done
@@ -103,7 +103,7 @@ function bashunit::runner::load_test_files() {
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
     printf "\r  \r" # Clear the spinner output
-    local script_id=""
+    local script_id
     for script_id in "${scripts_ids[@]+"${scripts_ids[@]}"}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
       bashunit::cleanup_script_temp_files
@@ -117,7 +117,7 @@ function bashunit::runner::load_bench_files() {
   local -a files=()
   [[ $# -gt 0 ]] && files=("$@")
 
-  local bench_file=""
+  local bench_file
   for bench_file in ${files+"${files[@]}"}; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
@@ -140,7 +140,7 @@ function bashunit::runner::load_bench_files() {
         # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
         local additional_failures=$((${#functions_to_run[@]} - 1))
-        local i=0
+        local i
         for ((i = 0; i < additional_failures; i++)); do
           bashunit::state::add_tests_failed
         done
@@ -179,7 +179,7 @@ function bashunit::runner::spinner() {
   local delay=0.1
   local spin_chars="|/-\\"
   while true; do
-    local i=0
+    local i
     for ((i=0; i<${#spin_chars}; i++)); do
       printf "\r%s" "${spin_chars:$i:1}"
       sleep "$delay"
@@ -243,7 +243,7 @@ function bashunit::runner::parse_data_provider_args() {
   fi
 
   # Fallback: parse args from the input string into an array, respecting quotes and escapes
-  local i=0
+  local i
   for ((i=0; i<${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then
@@ -348,7 +348,7 @@ function bashunit::runner::call_test_functions() {
 
     provider_data=()
     provider_data_count=0
-    local line=""
+    local line
     while IFS=" " read -r line; do
       [[ -z "$line" ]] && continue
       provider_data[provider_data_count]="$line"
@@ -363,11 +363,11 @@ function bashunit::runner::call_test_functions() {
     fi
 
     # Execute the test function for each line of data
-    local data=""
+    local data
     for data in "${provider_data[@]+"${provider_data[@]}"}"; do
       parsed_data=()
       parsed_data_count=0
-      local line=""
+      local line
       while IFS= read -r line; do
         [[ -z "$line" ]] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
@@ -406,7 +406,7 @@ function bashunit::runner::call_bench_functions() {
     bashunit::runner::render_running_file_header "$script"
   fi
 
-  local fn_name=""
+  local fn_name
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
@@ -938,7 +938,7 @@ function bashunit::runner::execute_file_hook() {
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""
-    local line=""
+    local line
     while IFS= read -r line; do
       [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
     done < "$hook_output_file"
@@ -1029,7 +1029,7 @@ function bashunit::runner::execute_test_hook() {
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""
-    local line=""
+    local line
     while IFS= read -r line; do
       [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
     done < "$hook_output_file"
