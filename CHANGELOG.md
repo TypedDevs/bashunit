@@ -4,7 +4,9 @@
 
 ### Added
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
-    - All inputs are epoch seconds (integers), generated via `date +%s`
+    - Accepts epoch seconds (integers) or ISO 8601 dates (`2023-11-14`, `2023-11-14T12:00:00`)
+    - Auto-detects format and converts ISO 8601 to epoch via `bashunit::date::to_epoch`
+    - Mixed formats supported (one epoch, one ISO) in the same assertion call
     - Fully portable across GNU and BSD systems
 - Add Claude Code configuration with custom skills, agents, and rules
     - Custom skills for TDD workflow, test fixes, assertions, coverage, and releases
