@@ -10,7 +10,7 @@ bashunit::sgr() {
   local codes=${1:-0}
   shift
 
-  local c
+  local c=""
   for c in "$@"; do
     codes="$codes;$c"
   done

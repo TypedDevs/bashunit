@@ -27,7 +27,7 @@ function bashunit::regex_match() {
 #
 function bashunit::helper::find_test_function_name() {
   local fallback_depth="${1:-2}"
-  local i
+  local i=0
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
@@ -112,7 +112,7 @@ function bashunit::helper::interpolate_function_name() {
   [[ $# -gt 0 ]] && args=("$@")
   local result="$function_name"
 
-  local i
+  local i=0
   for ((i=0; i<args_count; i++)); do
     local placeholder="::$((i+1))::"
     # shellcheck disable=SC2155

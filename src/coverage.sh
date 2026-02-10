@@ -416,7 +416,7 @@ function bashunit::coverage::get_hit_lines() {
   # Only count hits that correspond to executable lines
   # This prevents >100% coverage when DEBUG trap fires on non-executable lines
   local count=0
-  local line_num
+  local line_num=0
   for line_num in $hit_lines; do
     local line_content
     line_content=$(sed -n "${line_num}p" "$file" 2>/dev/null) || continue
@@ -437,7 +437,7 @@ function bashunit::coverage::get_line_hits() {
     return
   fi
 
-  local count
+  local count=0
   count=$(grep -c "^${file}:${lineno}$" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null) || count=0
   echo "$count"
 }
@@ -562,7 +562,7 @@ function bashunit::coverage::get_function_coverage() {
 
   local executable=0
   local hit=0
-  local lineno
+  local lineno=0
 
   for ((lineno = fn_start; lineno <= fn_end; lineno++)); do
     local line_content
@@ -616,7 +616,7 @@ function bashunit::coverage::report_text() {
   echo "Coverage Report"
   echo "---------------"
 
-  local file
+  local file=""
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
     has_files=true
@@ -773,7 +773,7 @@ function bashunit::coverage::report_html() {
   local total_hit=0
   local -a file_data=()
   local file_data_count=0
-  local file
+  local file=""
 
   while IFS= read -r file; do
     [[ -z "$file" || ! -f "$file" ]] && continue
@@ -787,7 +787,7 @@ function bashunit::coverage::report_html() {
     total_hit=$((total_hit + hit))
 
     local display_file="${file#"$(pwd)"/}"
-    local safe_filename
+    local safe_filename=""
     safe_filename=$(bashunit::coverage::path_to_filename "$file")
 
     file_data[file_data_count]="$display_file|$hit|$executable|$pct|$safe_filename"; file_data_count=$((file_data_count + 1))
@@ -1192,7 +1192,7 @@ function bashunit::coverage::generate_file_html() {
   # Index: line number, Value: newline-separated list of "test_file:test_function"
   # Using indexed array for Bash 3.0 compatibility (no associative arrays)
   local -a tests_by_line=()
-  local _line_and_test
+  local _line_and_test=""
   while IFS= read -r _line_and_test; do
     [[ -z "$_line_and_test" ]] && continue
     local _tln="${_line_and_test%%|*}"

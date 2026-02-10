@@ -179,7 +179,7 @@ function bashunit::main::cmd_test() {
       args_count="$raw_args_count"
     else
       # Test mode: process file paths and extract inline filters
-      local arg
+      local arg=""
       for arg in "${raw_args[@]}"; do
         local parsed_path parsed_filter
         {
@@ -193,7 +193,7 @@ function bashunit::main::cmd_test() {
           inline_filter_file="$parsed_path"
         fi
 
-        local file
+        local file=""
         while IFS= read -r file; do
           args[args_count]="$file"; args_count=$((args_count + 1))
         done < <(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
