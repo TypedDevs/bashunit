@@ -126,10 +126,6 @@ function bashunit::benchmark::print_results() {
     printf '%-40s %6s %6s %10s\n' "Name" "Revs" "Its" "Avg(ms)"
   fi
 
-  if [ "${#_BASHUNIT_BENCH_NAMES[@]}" -eq 0 ]; then
-    return
-  fi
-
   local i
   for i in "${!_BASHUNIT_BENCH_NAMES[@]}"; do
     local name="${_BASHUNIT_BENCH_NAMES[$i]:-}"
