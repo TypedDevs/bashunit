@@ -485,7 +485,7 @@ function bashunit::runner::run_test() {
 
   local test_execution_result=$(
     # shellcheck disable=SC2064
-    trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$test_file" "$exit_code"' EXIT
+    trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
     bashunit::state::initialize_assertions_count
 
     # Source login shell profiles if enabled
