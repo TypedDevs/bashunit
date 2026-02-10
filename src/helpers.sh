@@ -353,6 +353,7 @@ function bashunit::helper::find_total_tests() {
             filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 
             local count=0
+            local IFS=$' \t\n'
             if [[ -n "$filtered_functions" ]]; then
                 local -a functions_to_run=()
                 # shellcheck disable=SC2206

@@ -214,6 +214,7 @@ function bashunit::env::find_terminal_width() {
 
 function bashunit::env::print_verbose() {
   bashunit::internal_log "Printing verbose environment variables"
+  local IFS=$' \t\n'
   # Bash 3.0 compatible: separate declaration and assignment for arrays
   local keys
   keys=(

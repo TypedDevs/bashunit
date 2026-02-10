@@ -458,7 +458,7 @@ function release::sandbox::cleanup() {
   echo -en "${YELLOW}Keep sandbox for inspection? [y/N]: ${NC}" >&2
   read -r response
 
-  if [[ "$response" =~ ^[Yy]$ ]]; then
+  if regex_match "$response" '^[Yy]$'; then
     release::log_info "Sandbox preserved at: $SANDBOX_DIR"
     release::log_info "To clean up later: rm -rf $SANDBOX_DIR"
   else
@@ -757,7 +757,7 @@ function release::confirm_action() {
   echo -en "${YELLOW}$prompt [y/N]: ${NC}" >&2
   read -r response
 
-  if [[ "$response" =~ ^[Yy]$ ]]; then
+  if regex_match "$response" '^[Yy]$'; then
     return 0
   else
     return 1

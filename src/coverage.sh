@@ -769,6 +769,7 @@ function bashunit::coverage::report_html() {
   mkdir -p "$output_dir/files"
 
   # Collect file data for index
+  local IFS=$' \t\n'
   local total_executable=0
   local total_hit=0
   local -a file_data=()
@@ -824,6 +825,7 @@ function bashunit::coverage::generate_index_html() {
   local tests_failed="$7"
   shift 7
   # Handle array passed as arguments - Bash 3.0 compatible
+  local IFS=$' \t\n'
   local -a file_data=()
   local file_count=0
   if [[ $# -gt 0 ]]; then

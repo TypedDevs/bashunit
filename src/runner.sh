@@ -15,6 +15,7 @@ function bashunit::runner::restore_workdir() {
 function bashunit::runner::load_test_files() {
   local filter=$1
   shift
+  local IFS=$' \t\n'
   local -a files=()
   [[ $# -gt 0 ]] && files=("$@")
   local -a scripts_ids=()
@@ -207,6 +208,7 @@ function bashunit::runner::parse_data_provider_args() {
   local had_quotes=false  # Track if arg was quoted (to preserve empty quoted strings)
   local quote_char=""
   local escaped=false
+  local IFS=$' \t\n'
   local i=0
   local arg=""
   local encoded_arg
@@ -313,6 +315,7 @@ function bashunit::runner::parse_data_provider_args() {
 function bashunit::runner::call_test_functions() {
   local script="$1"
   local filter="$2"
+  local IFS=$' \t\n'
   local prefix="test"
   # Use cached function names for better performance
   local filtered_functions
@@ -379,6 +382,7 @@ function bashunit::runner::call_test_functions() {
 function bashunit::runner::call_bench_functions() {
   local script="$1"
   local filter="$2"
+  local IFS=$' \t\n'
   local prefix="bench"
 
   # Use cached function names for better performance
@@ -580,7 +584,7 @@ function bashunit::runner::run_test() {
       "cannot execute binary file" "invalid arithmetic operator"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
       runtime_error="${runtime_output#*: }"      # Remove everything up to and including ": "
-      runtime_error="${runtime_error//$'\n'/}"   # Remove all newlines using parameter expansion
+      runtime_error=${runtime_error//$'\n'/}   # Remove all newlines using parameter expansion
       break
     fi
   done

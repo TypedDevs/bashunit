@@ -5,6 +5,7 @@
 #############################
 function bashunit::main::cmd_test() {
   local filter=""
+  local IFS=$' \t\n'
   local -a raw_args=()
   local raw_args_count=0
   local -a args=()
@@ -259,6 +260,7 @@ function bashunit::main::cmd_test() {
 #############################
 function bashunit::main::cmd_bench() {
   local filter=""
+  local IFS=$' \t\n'
   local -a raw_args=()
   local raw_args_count=0
   local -a args=()

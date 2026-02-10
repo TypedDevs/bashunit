@@ -62,6 +62,7 @@ function bashunit::benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
+  local IFS=$' \t\n'
   local -a durations=()
   local durations_count=0
   local i r
@@ -111,6 +112,7 @@ function bashunit::benchmark::print_results() {
   bashunit::print_line 80 "="
   printf "\n"
 
+  local IFS=$' \t\n'
   local has_threshold=false
   local val
   for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]+"${_BASHUNIT_BENCH_MAX_MILLIS[@]}"}"; do

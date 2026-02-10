@@ -2,6 +2,7 @@
 
 function bashunit::parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
+  local IFS=$' \t\n'
 
   bashunit::internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
 
