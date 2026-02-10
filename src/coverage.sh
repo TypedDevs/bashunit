@@ -384,7 +384,7 @@ function bashunit::coverage::is_executable_line() {
 function bashunit::coverage::get_executable_lines() {
   local file="$1"
   local count=0
-  local lineno
+  local lineno=0
   local line
 
   while IFS= read -r line || [[ -n "$line" ]]; do
