@@ -21,6 +21,7 @@ jobs:
 
       - name: Check Contributor Report
         uses: jdiegosierra/contributor-report@v1
+        continue-on-error: true
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           threshold-pr-merge-rate: '0.3'
