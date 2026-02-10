@@ -25,6 +25,13 @@ function test_unsuccessful_assert_date_before() {
     "$(assert_date_before "1700000000" "1800000000")"
 }
 
+function test_unsuccessful_assert_date_before_when_equal() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Unsuccessful assert date before when equal" "1700000000" "to be before" "1700000000")"\
+    "$(assert_date_before "1700000000" "1700000000")"
+}
+
 function test_successful_assert_date_after() {
   assert_empty "$(assert_date_after "1600000000" "1700000000")"
 }
@@ -34,6 +41,13 @@ function test_unsuccessful_assert_date_after() {
     "$(bashunit::console_results::print_failed_test\
       "Unsuccessful assert date after" "1500000000" "to be after" "1600000000")"\
     "$(assert_date_after "1600000000" "1500000000")"
+}
+
+function test_unsuccessful_assert_date_after_when_equal() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Unsuccessful assert date after when equal" "1600000000" "to be after" "1600000000")"\
+    "$(assert_date_after "1600000000" "1600000000")"
 }
 
 function test_successful_assert_date_within_range() {
@@ -48,11 +62,18 @@ function test_successful_assert_date_within_range_at_upper_bound() {
   assert_empty "$(assert_date_within_range "1600000000" "1800000000" "1800000000")"
 }
 
-function test_unsuccessful_assert_date_within_range() {
+function test_unsuccessful_assert_date_within_range_above() {
   assert_same\
     "$(bashunit::console_results::print_failed_test\
-      "Unsuccessful assert date within range" "1900000000" "to be between" "1600000000 and 1800000000")"\
+      "Unsuccessful assert date within range above" "1900000000" "to be between" "1600000000 and 1800000000")"\
     "$(assert_date_within_range "1600000000" "1800000000" "1900000000")"
+}
+
+function test_unsuccessful_assert_date_within_range_below() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Unsuccessful assert date within range below" "1500000000" "to be between" "1600000000 and 1800000000")"\
+    "$(assert_date_within_range "1600000000" "1800000000" "1500000000")"
 }
 
 function test_successful_assert_date_within_delta() {
@@ -61,6 +82,10 @@ function test_successful_assert_date_within_delta() {
 
 function test_successful_assert_date_within_delta_exact() {
   assert_empty "$(assert_date_within_delta "1700000000" "1700000010" "10")"
+}
+
+function test_successful_assert_date_within_delta_negative_direction() {
+  assert_empty "$(assert_date_within_delta "1700000010" "1700000000" "10")"
 }
 
 function test_unsuccessful_assert_date_within_delta() {
