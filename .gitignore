@@ -25,4 +25,5 @@ dev.log
 
 # ai
 .tasks/
-.claude/
+.claude/settings.local.json
+.claude/plans/

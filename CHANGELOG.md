@@ -6,6 +6,11 @@
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
     - All inputs are epoch seconds (integers), generated via `date +%s`
     - Fully portable across GNU and BSD systems
+- Add Claude Code configuration with custom skills, agents, and rules
+    - Custom skills for TDD workflow, test fixes, assertions, coverage, and releases
+    - Expert agents for Bash 3.2+ compatibility, code review, TDD coaching, test architecture, and performance
+    - GitHub issue → PR workflow command
+    - Consolidated AI developer tool instructions into `.claude/CLAUDE.md`
 - Display test output (stdout/stderr) on failure for runtime errors
     - Shows captured output in an "Output:" section when tests fail with runtime errors
     - Helps debug test failures without manually capturing output
