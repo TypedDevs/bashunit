@@ -6,6 +6,11 @@
 - Lower minimum Bash version requirement from 3.2 to 3.0
 
 ### Added
+- Add Claude Code configuration with custom skills, agents, and rules
+    - Custom skills for TDD workflow, test fixes, assertions, coverage, and releases
+    - Expert agents for Bash 3.2+ compatibility, code review, TDD coaching, test architecture, and performance
+    - GitHub issue → PR workflow command
+    - Consolidated AI developer tool instructions into `.claude/CLAUDE.md`
 - Display test output (stdout/stderr) on failure for runtime errors
     - Shows captured output in an "Output:" section when tests fail with runtime errors
     - Helps debug test failures without manually capturing output
@@ -18,6 +23,10 @@
     - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
 
 ### Fixed
+- Data providers now work without the `function` keyword on test functions (Issue #586)
+    - Previously, data provider detection required at least the first test using a provider to have the `function` keyword
+    - Now all test functions work consistently regardless of whether they use the `function` keyword
+    - Fixes regex in `bashunit::helper::get_provider_data()` to make the `function` keyword optional
 - Self-test `tests/acceptance/install_test.sh` now passes when no network tools are available (Issue #582)
     - Tests skip gracefully with `BASHUNIT_NO_NETWORK=true` or in sandboxed environments
 
