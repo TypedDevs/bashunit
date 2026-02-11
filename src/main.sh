@@ -195,7 +195,7 @@ function bashunit::main::cmd_test() {
           inline_filter_file="$parsed_path"
         fi
 
-        local file=""
+        local file
         while IFS= read -r file; do
           args[args_count]="$file"
           args_count=$((args_count + 1))
