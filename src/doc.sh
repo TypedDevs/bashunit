@@ -15,11 +15,9 @@ function bashunit::doc::print_asserts() {
   local fn=""
   local should_print=0
 
-  # Patterns stored in variable for Bash 3.0 compatibility
-  local _doc_pattern='^## ([A-Za-z0-9_]+)'
   local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
-    if [[ $line =~ $_doc_pattern ]]; then
+    if bashunit::regex_match "$line" '^## ([A-Za-z0-9_]+)'; then
       fn="${BASH_REMATCH[1]}"
       if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
         should_print=1

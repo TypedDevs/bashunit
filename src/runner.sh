@@ -16,8 +16,8 @@ function bashunit::runner::load_test_files() {
   local filter=$1
   shift
   local IFS=$' \t\n'
-  local -a files=()
-  [[ $# -gt 0 ]] && files=("$@")
+  local -a files
+  files=("$@")
   local -a scripts_ids=()
   local scripts_ids_count=0
 
@@ -115,8 +115,9 @@ function bashunit::runner::load_test_files() {
 function bashunit::runner::load_bench_files() {
   local filter=$1
   shift
-  local -a files=()
-  [[ $# -gt 0 ]] && files=("$@")
+  local IFS=$' \t\n'
+  local -a files
+  files=("$@")
 
   local bench_file
   for bench_file in ${files+"${files[@]}"}; do
@@ -217,11 +218,8 @@ function bashunit::runner::parse_data_provider_args() {
   local args_count=0
 
   # Check for shell metacharacters that would break eval or cause globbing
-  # Patterns stored in variable for Bash 3.0 compatibility
-  local _metachar_mid_pattern='[^\\][\|\&\;\*]'
-  local _metachar_start_pattern='^[\|\&\;\*]'
   local has_metachar=false
-  if [[ "$input" =~ $_metachar_mid_pattern ]] || [[ "$input" =~ $_metachar_start_pattern ]]; then
+  if bashunit::regex_match "$input" '[^\\][\|\&\;\*]' || bashunit::regex_match "$input" '^[\|\&\;\*]'; then
     has_metachar=true
   fi
 
@@ -745,8 +743,9 @@ function bashunit::runner::parse_result() {
   shift
   local execution_result=$1
   shift
-  local -a args=()
-  [[ $# -gt 0 ]] && args=("$@")
+  local IFS=$' \t\n'
+  local -a args
+  args=("$@")
 
   if bashunit::parallel::is_enabled; then
     bashunit::runner::parse_result_parallel "$fn_name" "$execution_result" ${args+"${args[@]}"}
@@ -760,8 +759,9 @@ function bashunit::runner::parse_result_parallel() {
   shift
   local execution_result=$1
   shift
-  local -a args=()
-  [[ $# -gt 0 ]] && args=("$@")
+  local IFS=$' \t\n'
+  local -a args
+  args=("$@")
 
   local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
   mkdir -p "$test_suite_dir"
@@ -807,7 +807,7 @@ function bashunit::runner::parse_result_sync() {
   local test_exit_code=0
 
   # Use pre-compiled regex constant
-  if [[ $result_line =~ $_BASHUNIT_RUNNER_PARSE_RESULT_REGEX ]]; then
+  if bashunit::regex_match "$result_line" "$_BASHUNIT_RUNNER_PARSE_RESULT_REGEX"; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"

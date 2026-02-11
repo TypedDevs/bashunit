@@ -358,28 +358,22 @@ function bashunit::coverage::is_executable_line() {
   [[ -z "${line// /}" ]] && return 1
 
   # Skip comment-only lines (including shebang)
-  local _comment_pattern='^[[:space:]]*#'
-  [[ "$line" =~ $_comment_pattern ]] && return 1
+  bashunit::regex_match "$line" '^[[:space:]]*#' && return 1
 
   # Skip function declaration lines (but not single-line functions with body)
-  [[ "$line" =~ $_BASHUNIT_COVERAGE_FUNC_PATTERN ]] && return 1
+  bashunit::regex_match "$line" "$_BASHUNIT_COVERAGE_FUNC_PATTERN" && return 1
 
   # Skip lines with only braces
-  local _braces_only_pattern='^[[:space:]]*[\{\}][[:space:]]*$'
-  [[ "$line" =~ $_braces_only_pattern ]] && return 1
+  bashunit::regex_match "$line" '^[[:space:]]*[\{\}][[:space:]]*$' && return 1
 
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
-  # Pattern stored in variable for Bash 3.0 compatibility
-  local _ctrl_pattern='^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$'
-  [[ "$line" =~ $_ctrl_pattern ]] && return 1
+  bashunit::regex_match "$line" '^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$' && return 1
 
   # Skip case patterns like "--option)" or "*)"
-  local _case_pattern='^[[:space:]]*[^\)]+\)[[:space:]]*$'
-  [[ "$line" =~ $_case_pattern ]] && return 1
+  bashunit::regex_match "$line" '^[[:space:]]*[^\)]+\)[[:space:]]*$' && return 1
 
   # Skip standalone ) for arrays/subshells
-  local _paren_pattern='^[[:space:]]*\)[[:space:]]*(#.*)?$'
-  [[ "$line" =~ $_paren_pattern ]] && return 1
+  bashunit::regex_match "$line" '^[[:space:]]*\)[[:space:]]*(#.*)?$' && return 1
 
   return 0
 }
@@ -500,12 +494,9 @@ function bashunit::coverage::extract_functions() {
       local fn_name=""
 
       # Match: function name() or function name {
-      # Patterns stored in variables for Bash 3.0 compatibility
-      local _fn_pattern1='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
-      local _fn_pattern2='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
-      if [[ "$line" =~ $_fn_pattern1 ]]; then
+      if bashunit::regex_match "$line" '^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'; then
         fn_name="${BASH_REMATCH[2]}"
-      elif [[ "$line" =~ $_fn_pattern2 ]]; then
+      elif bashunit::regex_match "$line" '^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'; then
         fn_name="${BASH_REMATCH[2]}"
       fi
 

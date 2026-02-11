@@ -83,12 +83,9 @@ function assert_false() {
 function bashunit::run_command_or_eval() {
   local cmd="$1"
 
-  # Patterns stored in variable for Bash 3.0 compatibility
-  local _eval_pattern='^eval'
-  local _alias_pattern='^alias'
-  if [[ "$cmd" =~ $_eval_pattern ]]; then
+  if bashunit::regex_match "$cmd" '^eval'; then
     eval "${cmd#eval }" &>/dev/null
-  elif [[ "$(command -v "$cmd")" =~ $_alias_pattern ]]; then
+  elif bashunit::regex_match "$(command -v "$cmd")" '^alias'; then
     eval "$cmd" &>/dev/null
   else
     "$cmd" &>/dev/null
@@ -234,7 +231,7 @@ function assert_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
@@ -282,7 +279,7 @@ function assert_not_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
@@ -304,12 +301,12 @@ function assert_matches() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ $actual =~ $expected ]]; then
+  if ! bashunit::regex_match "$actual" "$expected"; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -326,12 +323,12 @@ function assert_not_matches() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual =~ $expected ]]; then
+  if bashunit::regex_match "$actual" "$expected"; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -529,7 +526,7 @@ function assert_string_starts_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
@@ -570,7 +567,7 @@ function assert_string_ends_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
@@ -592,7 +589,7 @@ function assert_string_not_ends_with() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local -a actual_arr=()
+  local -a actual_arr
   actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
@@ -688,9 +685,10 @@ function assert_greater_or_equal_than() {
 
 function assert_line_count() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local -a input_arr=()
+  local -a input_arr
   input_arr=("${@:2}")
   local input_str
   input_str=$(printf '%s\n' ${input_arr+"${input_arr[@]}"})

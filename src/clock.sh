@@ -45,9 +45,7 @@ function bashunit::clock::_choose_impl() {
   if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine; then
     local result
     result=$(date +%s%N 2>/dev/null)
-    # Pattern stored in variable for Bash 3.0 compatibility
-    local _digit_pattern='^[0-9]+$'
-    if [[ "$result" != *N && "$result" =~ $_digit_pattern ]]; then
+    if [[ "$result" != *N ]] && bashunit::regex_match "$result" '^[0-9]+$'; then
       _BASHUNIT_CLOCK_NOW_IMPL="date"
       return 0
     fi
