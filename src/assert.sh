@@ -83,9 +83,12 @@ function assert_false() {
 function bashunit::run_command_or_eval() {
   local cmd="$1"
 
-  if bashunit::regex_match "$cmd" '^eval'; then
+  local _re='^eval'
+  if [[ "$cmd" =~ $_re ]]; then
     eval "${cmd#eval }" &>/dev/null
-  elif bashunit::regex_match "$(command -v "$cmd")" '^alias'; then
+  else
+  _re='^alias'
+  if [[ "$(command -v "$cmd")" =~ $_re ]]; then
     eval "$cmd" &>/dev/null
   else
     "$cmd" &>/dev/null
@@ -306,7 +309,7 @@ function assert_matches() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! bashunit::regex_match "$actual" "$expected"; then
+  if ! [[ "$actual" =~ $expected ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -328,7 +331,7 @@ function assert_not_matches() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if bashunit::regex_match "$actual" "$expected"; then
+  if [[ "$actual" =~ $expected ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label

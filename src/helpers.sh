@@ -10,13 +10,6 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 # @param $1 string The string to match
 # @param $2 string The regex pattern
 #
-# @return boolean True if the pattern matches, false otherwise
-#
-function bashunit::regex_match() {
-  [[ $1 =~ $2 ]]
-}
-
-#
 # Walks up the call stack to find the first function that looks like a test function.
 # A test function is one that starts with "test_" or "test" (camelCase).
 # If no test function is found, falls back to the caller of the assertion function.
@@ -31,7 +24,8 @@ function bashunit::helper::find_test_function_name() {
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
-    if [[ "$fn" == test_* ]] || bashunit::regex_match "$fn" '^test[A-Z]'; then
+    local _re='^test[A-Z]'
+    if [[ "$fn" == test_* ]] || [[ "$fn" =~ $_re ]]; then
       echo "$fn"
       return
     fi
@@ -241,7 +235,8 @@ function bashunit::helper::find_files_recursive() {
   local pattern="${2:-*[tT]est.sh}"
 
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || bashunit::regex_match "$pattern" '\[tT\]est\.sh$'; then
+  local _re='\[tT\]est\.sh$'
+  if [[ $pattern == *test.sh ]] || [[ "$pattern" =~ $_re ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -268,7 +263,8 @@ function bashunit::helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if ! bashunit::regex_match "$normalized_string" '^[a-zA-Z_]'; then
+  local _re='^[a-zA-Z_]'
+  if ! [[ "$normalized_string" =~ $_re ]]; then
     normalized_string="_$normalized_string"
   fi
 
@@ -464,7 +460,8 @@ function bashunit::helper::parse_file_path_filter() {
     filter="${input#*::}"
   # Check for :number syntax (line number filter)
   else
-    if bashunit::regex_match "$input" '^(.+):([0-9]+)$'; then
+    local _re='^(.+):([0-9]+)$'
+    if [[ "$input" =~ $_re ]]; then
       file_path="${BASH_REMATCH[1]}"
       local line_number="${BASH_REMATCH[2]}"
       # Line number will be resolved to function name later
@@ -503,7 +500,7 @@ function bashunit::helper::find_function_at_line() {
     # Extract function name from the line
     local fn_name=""
     local fn_pattern='^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\)'
-    if bashunit::regex_match "$content" "$fn_pattern"; then
+    if [[ "$content" =~ $fn_pattern ]]; then
       fn_name="${BASH_REMATCH[2]}"
     fi
 

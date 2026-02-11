@@ -17,7 +17,8 @@ function bashunit::doc::print_asserts() {
 
   local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
-    if bashunit::regex_match "$line" '^## ([A-Za-z0-9_]+)'; then
+    local _re='^## ([A-Za-z0-9_]+)'
+    if [[ "$line" =~ $_re ]]; then
       fn="${BASH_REMATCH[1]}"
       if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
         should_print=1

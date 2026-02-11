@@ -6,15 +6,15 @@ set -euo pipefail
 # removing the mocks and spies from the first test
 #
 function test_runner_clear_mocks_first() {
-        bashunit::mock ls echo foo
-        assert_same "foo" "$(ls)"
+  bashunit::mock ls echo foo
+  assert_same "foo" "$(ls)"
 
-        bashunit::spy ps
-        ps foo bar
-        assert_have_been_called_times 1 ps
+  bashunit::spy ps
+  ps foo bar
+  assert_have_been_called_times 1 ps
 }
 
 function test_runner_clear_mocks_second() {
-        assert_not_equals "foo" "$(ls)"
-        assert_have_been_called_times 0 ps
+  assert_not_equals "foo" "$(ls)"
+  assert_have_been_called_times 0 ps
 }
