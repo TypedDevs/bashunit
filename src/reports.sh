@@ -62,7 +62,7 @@ function bashunit::reports::generate_junit_xml() {
     echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\""
     echo "             time=\"$time\">"
 
-    local i=0
+    local i
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
       local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
       local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
