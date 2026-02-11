@@ -123,7 +123,7 @@ function bashunit::learn::show_progress() {
   local total_lessons=10
   local completed=0
 
-  local i=0
+  local i
   for i in $(seq 1 $total_lessons); do
     if bashunit::learn::is_completed "lesson_$i"; then
       echo "  ${_BASHUNIT_COLOR_PASSED}✓${_BASHUNIT_COLOR_DEFAULT} Lesson $i completed"
