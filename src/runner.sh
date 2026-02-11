@@ -311,7 +311,7 @@ function bashunit::runner::parse_data_provider_args() {
     fi
   done
   # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
-  local arg=""
+  local arg
   for arg in ${args+"${args[@]}"}; do
     encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
     printf '%s\n' "$encoded_arg"
