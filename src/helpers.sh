@@ -27,7 +27,7 @@ function bashunit::regex_match() {
 #
 function bashunit::helper::find_test_function_name() {
   local fallback_depth="${1:-2}"
-  local i=0
+  local i
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
