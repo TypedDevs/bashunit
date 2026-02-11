@@ -17,7 +17,6 @@ function bashunit::doc::print_asserts() {
 
   # Patterns stored in variable for Bash 3.0 compatibility
   local _doc_pattern='^## ([A-Za-z0-9_]+)'
-  local _code_fence_pattern='^\`\`\`'
   local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
     if [[ $line =~ $_doc_pattern ]]; then
@@ -33,7 +32,9 @@ function bashunit::doc::print_asserts() {
     fi
 
     if ((should_print)); then
-      if [[ "$line" =~ $_code_fence_pattern ]]; then
+      # Check for code fence using pattern matching instead of regex
+      # Avoids backtick escaping issues in Bash 3.0
+      if [[ "$line" == '```'* ]]; then
         echo "--------------"
         echo "$docstring"
         should_print=0

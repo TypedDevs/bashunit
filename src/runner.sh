@@ -3,7 +3,9 @@
 
 # Pre-compiled regex pattern for parsing test result assertions
 if [[ -z ${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x} ]]; then
-  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##''ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##''TEST_EXIT_CODE=([0-9]*)'
+  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##'\
+'ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##'\
+'ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##TEST_EXIT_CODE=([0-9]*)'
 fi
 
 function bashunit::runner::restore_workdir() {

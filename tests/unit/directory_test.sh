@@ -10,7 +10,9 @@ function test_successful_assert_directory_exists() {
 function test_unsuccessful_assert_directory_exists() {
   local a_directory="a_random_directory_that_will_not_exist"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert directory exists" "$a_directory" "to exist but" "do not exist")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert directory exists" "$a_directory" "to exist but" "do not exist")" \
     "$(assert_directory_exists "$a_directory")"
 }
 
@@ -53,7 +55,9 @@ function test_unsuccessful_assert_is_directory() {
 function test_unsuccessful_assert_is_directory_when_a_file_is_given() {
   local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert is directory when a file is given" "$a_file" "to be a directory" "but is not a directory")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert is directory when a file is given" "$a_file" "to be a directory" "but is not a directory")" \
     "$(assert_is_directory "$a_file")"
 }
 
@@ -94,7 +98,8 @@ function test_successful_assert_is_directory_readable() {
 function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
   local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert is directory readable when a file is given" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is directory readable when a file is given" \
     "$a_file" "to be readable" "but is not readable")" \
     "$(assert_is_directory_readable "$a_file")"
 }
@@ -204,7 +209,8 @@ function test_unsuccessful_assert_is_directory_writable() {
 function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
   local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert is directory writable when a file is given" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is directory writable when a file is given" \
     "$a_file" "to be writable" "but is not writable")" \
     "$(assert_is_directory_writable "$a_file")"
 }

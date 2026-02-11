@@ -241,7 +241,8 @@ function bashunit::console_results::print_failure_message() {
   local line
   line="$(printf "\
 ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
-    ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
+    ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} \
+${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${test_name}" "${failure_message}")"
 
   bashunit::state::print_line "failure" "$line"

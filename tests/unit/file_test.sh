@@ -38,7 +38,9 @@ function test_successful_assert_file_not_exists() {
 function test_unsuccessful_assert_file_not_exists() {
   local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert file not exists" "$a_file" "to not exist but" "the file exists")" \
     "$(assert_file_not_exists "$a_file")"
 }
 
@@ -60,7 +62,9 @@ function test_unsuccessful_assert_is_file() {
 function test_unsuccessful_assert_is_file_when_a_folder_is_given() {
   local a_folder="$(bashunit::current_dir)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert is file when a folder is given" "$a_folder" "to be a file" "but is not a file")" \
     "$(assert_is_file "$a_folder")"
 }
 
@@ -76,7 +80,9 @@ function test_successful_assert_is_file_empty() {
 function test_unsuccessful_assert_is_file_empty() {
   local a_file="$(bashunit::current_dir)/$(bashunit::current_filename)"
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert is file empty" "$a_file" "to be empty" "but is not empty")" \
     "$(assert_is_file_empty "$a_file")"
 }
 
@@ -157,7 +163,8 @@ function test_fails_assert_file_contains() {
   echo -e "original content" >"$file"
 
   assert_contains \
-    "$(bashunit::console_results::print_failed_test "Fails assert file contains" "${file}" "to contain" "non-existing-str")" \
+    "$(bashunit::console_results::print_failed_test "Fails assert file contains" \
+    "${file}" "to contain" "non-existing-str")" \
     "$(assert_file_contains "$file" "non-existing-str")"
 
   rm "$file"
@@ -177,7 +184,8 @@ function test_fails_assert_file_not_contains() {
   echo -e "original content" >"$file"
 
   assert_contains \
-    "$(bashunit::console_results::print_failed_test "Fails assert file not contains" "${file}" "to not contain" "original content")" \
+    "$(bashunit::console_results::print_failed_test "Fails assert file not contains" \
+    "${file}" "to not contain" "original content")" \
     "$(assert_file_not_contains "$file" "original content")"
 
   rm "$file"

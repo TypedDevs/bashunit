@@ -6,7 +6,8 @@ function test_skip_output() {
 }
 
 function test_skip_output_with_reason() {
-  assert_same "$(bashunit::console_results::print_skipped_test "Skip output with reason" "Skipped because is skippable")" \
+  assert_same \
+    "$(bashunit::console_results::print_skipped_test "Skip output with reason" "Skipped because is skippable")" \
     "$(bashunit::skip "Skipped because is skippable")"
 }
 

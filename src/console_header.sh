@@ -11,7 +11,8 @@ function bashunit::console_header::print_version_with_env() {
         bashunit::console_header::print_version "$filter" "$@"
 
         if bashunit::env::is_dev_mode_enabled; then
-                printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+                printf "%sDev log:%s %s\n" \
+                        "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
         fi
 }
 
@@ -51,9 +52,9 @@ EOF
                 printf "%s%sbashunit%s - %s\n" \
                         "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$BASHUNIT_VERSION"
         else
-                printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n" \
-                        "$BASHUNIT_VERSION" \
-                        "$total_tests"
+                printf "%s%sbashunit%s - %s | Tests: %s\n" \
+                        "${_BASHUNIT_COLOR_BOLD}" "${_BASHUNIT_COLOR_PASSED}" "${_BASHUNIT_COLOR_DEFAULT}" \
+                        "$BASHUNIT_VERSION" "$total_tests"
         fi
 }
 

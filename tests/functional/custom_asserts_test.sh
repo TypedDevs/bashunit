@@ -20,6 +20,7 @@ function test_assert_positive_number_passed() {
 }
 
 function test_assert_positive_number_failed() {
-  assert_same "$(bashunit::console_results::print_failed_test "Assert positive number failed" "positive number" "got" "0")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Assert positive number failed" "positive number" "got" "0")" \
     "$(assert_positive_number "0")"
 }

@@ -90,8 +90,11 @@ function test_install_downloads_the_given_version() {
 
         output="$(./install.sh lib 0.9.0)"
 
-        assert_same "$(printf "> Downloading a concrete version: '0.9.0'\n> bashunit has been installed in the 'lib' folder")" \
-                "$output"
+        local expected
+        expected="> Downloading a concrete version: '0.9.0'
+> bashunit has been installed in the 'lib' folder"
+
+        assert_same "$expected" "$output"
 
         assert_file_exists "$installed_bashunit"
 
@@ -149,12 +152,16 @@ function test_install_downloads_the_non_stable_beta_version() {
 
         output="$(./install.sh deps beta)"
 
-        assert_contains "$(printf "> Downloading non-stable version: 'beta'\n> bashunit has been installed in the 'deps' folder")" \
-                "$output"
+        local expected
+        expected="> Downloading non-stable version: 'beta'
+> bashunit has been installed in the 'deps' folder"
+
+        assert_contains "$expected" "$output"
 
         assert_file_exists "$installed_bashunit"
 
-        assert_matches "$(printf "\(non-stable\) beta after ([0-9]+\.[0-9]+\.[0-9]+) \[2023-11-13\] 🐍 \#[a-fA-F0-9]{7}")" \
+        assert_matches \
+                "$(printf "\(non-stable\) beta after ([0-9]+\.[0-9]+\.[0-9]+) \[2023-11-13\] 🐍 \#[a-fA-F0-9]{7}")" \
                 "$("$installed_bashunit" --version)"
 
         assert_directory_not_exists "./deps/temp_bashunit"

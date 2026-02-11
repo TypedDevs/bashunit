@@ -41,7 +41,8 @@ function test_successful_spy() {
 function test_unsuccessful_spy_called() {
   bashunit::spy ps
 
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")" \
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")" \
     "$(assert_have_been_called ps)"
 }
 
