@@ -98,7 +98,7 @@ function bashunit::reports::generate_report_html() {
 
   # Collect test cases by file
   : >"$temp_file" # Clear temp file if it exists
-  local i=0
+  local i
   for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
     local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
     local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
