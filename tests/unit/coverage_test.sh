@@ -144,7 +144,7 @@ function test_coverage_get_executable_lines_counts_correctly() {
   local temp_file
   temp_file=$(mktemp)
 
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 
 # This is a comment
@@ -359,13 +359,13 @@ function test_coverage_check_threshold_fails_when_below_minimum() {
   # Create a tracked file with some executable lines but no hits
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 echo "line 1"
 echo "line 2"
 EOF
 
-  echo "$temp_file" > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
   # Capture only the exit code, suppress output
   local result
@@ -387,16 +387,16 @@ function test_coverage_report_lcov_generates_valid_format() {
   # Create a test source file
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 echo "line 1"
 echo "line 2"
 EOF
 
-  echo "$temp_file" > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
   # Simulate some hits
-  echo "${temp_file}:2" >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
 
   # Generate report to temp file
   local report_file
@@ -585,7 +585,7 @@ function test_coverage_get_tracked_files_returns_sorted_unique() {
     echo "/path/to/b.sh"
     echo "/path/to/a.sh"
     echo "/path/to/b.sh"
-  } >> "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  } >>"$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
   local result
   result=$(bashunit::coverage::get_tracked_files | tr '\n' ' ')
@@ -601,7 +601,7 @@ function test_coverage_get_file_stats_returns_formatted_string() {
   # Create a test file with known content
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 echo "line 1"
 echo "line 2"
@@ -620,7 +620,7 @@ EOF
 function test_coverage_extract_functions_finds_basic_function() {
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 function my_func() {
   echo "hello"
@@ -638,7 +638,7 @@ EOF
 function test_coverage_extract_functions_finds_namespaced_function() {
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 function bashunit::helper::do_thing() {
   echo "hello"
@@ -656,7 +656,7 @@ EOF
 function test_coverage_extract_functions_finds_multiple_functions() {
   local temp_file
   temp_file=$(mktemp)
-  cat > "$temp_file" << 'EOF'
+  cat >"$temp_file" <<'EOF'
 #!/usr/bin/env bash
 function func_one() {
   echo "one"
@@ -693,7 +693,7 @@ function test_coverage_get_line_hits_counts_correctly() {
     echo "${test_file}:5"
     echo "${test_file}:5"
     echo "${test_file}:5"
-  } >> "$_BASHUNIT_COVERAGE_DATA_FILE"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
 
   local result
   result=$(bashunit::coverage::get_line_hits "$test_file" 5)
@@ -715,7 +715,7 @@ function test_coverage_report_text_shows_no_files_message() {
   bashunit::coverage::init
 
   # Empty tracked files
-  : > "$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  : >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
 
   local output
   output=$(bashunit::coverage::report_text)

@@ -3,9 +3,7 @@
 
 # Pre-compiled regex pattern for parsing test result assertions
 if [[ -z ${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x} ]]; then
-  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##'\
-'ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##'\
-'TEST_EXIT_CODE=([0-9]*)'
+  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##ASSERTIONS_PASSED=([0-9]*)##''ASSERTIONS_SKIPPED=([0-9]*)##ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##''TEST_EXIT_CODE=([0-9]*)'
 fi
 
 function bashunit::runner::restore_workdir() {
@@ -37,7 +35,8 @@ function bashunit::runner::load_test_files() {
     fi
     unset BASHUNIT_CURRENT_TEST_ID
     export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${test_file}")"
-    scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"; scripts_ids_count=$((scripts_ids_count + 1))
+    scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
+    scripts_ids_count=$((scripts_ids_count + 1))
     bashunit::internal_log "Loading file" "$test_file"
     # shellcheck source=/dev/null
     source "$test_file"
@@ -180,7 +179,7 @@ function bashunit::runner::spinner() {
   local spin_chars="|/-\\"
   while true; do
     local i
-    for ((i=0; i<${#spin_chars}; i++)); do
+    for ((i = 0; i < ${#spin_chars}; i++)); do
       printf "\r%s" "${spin_chars:$i:1}"
       sleep "$delay"
     done
@@ -205,7 +204,7 @@ function bashunit::runner::parse_data_provider_args() {
   local input="$1"
   local current_arg=""
   local in_quotes=false
-  local had_quotes=false  # Track if arg was quoted (to preserve empty quoted strings)
+  local had_quotes=false # Track if arg was quoted (to preserve empty quoted strings)
   local quote_char=""
   local escaped=false
   local IFS=$' \t\n'
@@ -244,47 +243,48 @@ function bashunit::runner::parse_data_provider_args() {
 
   # Fallback: parse args from the input string into an array, respecting quotes and escapes
   local i
-  for ((i=0; i<${#input}; i++)); do
+  for ((i = 0; i < ${#input}; i++)); do
     local char="${input:$i:1}"
     if [ "$escaped" = true ]; then
       case "$char" in
-        t) current_arg="$current_arg"$'\t' ;;
-        n) current_arg="$current_arg"$'\n' ;;
-        *) current_arg="$current_arg$char" ;;
+      t) current_arg="$current_arg"$'\t' ;;
+      n) current_arg="$current_arg"$'\n' ;;
+      *) current_arg="$current_arg$char" ;;
       esac
       escaped=false
     elif [ "$char" = "\\" ]; then
       escaped=true
     elif [ "$in_quotes" = false ]; then
       case "$char" in
-        "$")
-          # Handle $'...' syntax
-          if [[ "${input:$i:2}" == "$'" ]]; then
-            in_quotes=true
-            had_quotes=true
-            quote_char="'"
-            # Skip the $
-            i=$((i + 1))
-          else
-            current_arg="$current_arg$char"
-          fi
-          ;;
-        "'" | '"')
+      "$")
+        # Handle $'...' syntax
+        if [[ "${input:$i:2}" == "$'" ]]; then
           in_quotes=true
           had_quotes=true
-          quote_char="$char"
-          ;;
-        " " | $'\t')
-          # Add if non-empty OR if was quoted (to preserve empty quoted strings like '')
-          if [[ -n "$current_arg" || "$had_quotes" == true ]]; then
-            args[args_count]="$current_arg"; args_count=$((args_count + 1))
-          fi
-          current_arg=""
-          had_quotes=false
-          ;;
-        *)
+          quote_char="'"
+          # Skip the $
+          i=$((i + 1))
+        else
           current_arg="$current_arg$char"
-          ;;
+        fi
+        ;;
+      "'" | '"')
+        in_quotes=true
+        had_quotes=true
+        quote_char="$char"
+        ;;
+      " " | $'\t')
+        # Add if non-empty OR if was quoted (to preserve empty quoted strings like '')
+        if [[ -n "$current_arg" || "$had_quotes" == true ]]; then
+          args[args_count]="$current_arg"
+          args_count=$((args_count + 1))
+        fi
+        current_arg=""
+        had_quotes=false
+        ;;
+      *)
+        current_arg="$current_arg$char"
+        ;;
       esac
     elif [ "$char" = "$quote_char" ]; then
       in_quotes=false
@@ -293,7 +293,8 @@ function bashunit::runner::parse_data_provider_args() {
       current_arg="$current_arg$char"
     fi
   done
-  args[args_count]="$current_arg"; args_count=$((args_count + 1))
+  args[args_count]="$current_arg"
+  args_count=$((args_count + 1))
   # Remove all trailing empty strings
   while [[ "$args_count" -gt 0 ]]; do
     local last_idx=$((args_count - 1))
@@ -353,7 +354,7 @@ function bashunit::runner::call_test_functions() {
       [[ -z "$line" ]] && continue
       provider_data[provider_data_count]="$line"
       provider_data_count=$((provider_data_count + 1))
-    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$script")"
+    done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
     if [[ "$provider_data_count" -eq 0 ]]; then
@@ -372,7 +373,7 @@ function bashunit::runner::call_test_functions() {
         [[ -z "$line" ]] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
         parsed_data_count=$((parsed_data_count + 1))
-      done <<< "$(bashunit::runner::parse_data_provider_args "$data")"
+      done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
       bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
     done
     unset -v fn_name
@@ -408,7 +409,7 @@ function bashunit::runner::call_bench_functions() {
 
   local fn_name
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-    read -r revs its max_ms <<< "$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
+    read -r revs its max_ms <<<"$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset -v fn_name
   done
@@ -561,9 +562,9 @@ function bashunit::runner::run_test() {
     local line="${subshell_output#*]}"  # Remove everything before and including "]"
 
     # Replace [type] with a newline to split the messages
-    line=${line//\[failed\]/$'\n'}       # Replace [failed] with newline
-    line=${line//\[skipped\]/$'\n'}      # Replace [skipped] with newline
-    line=${line//\[incomplete\]/$'\n'}   # Replace [incomplete] with newline
+    line=${line//\[failed\]/$'\n'}     # Replace [failed] with newline
+    line=${line//\[skipped\]/$'\n'}    # Replace [skipped] with newline
+    line=${line//\[incomplete\]/$'\n'} # Replace [incomplete] with newline
 
     if ! bashunit::env::is_failures_only_enabled; then
       bashunit::state::print_line "$type" "$line"
@@ -577,14 +578,14 @@ function bashunit::runner::run_test() {
   local runtime_error=""
   local error=""
   for error in "command not found" "unbound variable" "permission denied" \
-      "no such file or directory" "syntax error" "bad substitution" \
-      "division by 0" "cannot allocate memory" "bad file descriptor" \
-      "segmentation fault" "illegal option" "argument list too long" \
-      "readonly variable" "missing keyword" "killed" \
-      "cannot execute binary file" "invalid arithmetic operator"; do
+    "no such file or directory" "syntax error" "bad substitution" \
+    "division by 0" "cannot allocate memory" "bad file descriptor" \
+    "segmentation fault" "illegal option" "argument list too long" \
+    "readonly variable" "missing keyword" "killed" \
+    "cannot execute binary file" "invalid arithmetic operator"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
-      runtime_error="${runtime_output#*: }"      # Remove everything up to and including ": "
-      runtime_error=${runtime_error//$'\n'/}   # Remove all newlines using parameter expansion
+      runtime_error="${runtime_output#*: }"  # Remove everything up to and including ": "
+      runtime_error=${runtime_error//$'\n'/} # Remove all newlines using parameter expansion
       break
     fi
   done
@@ -782,7 +783,7 @@ function bashunit::runner::parse_result_parallel() {
 
   bashunit::runner::parse_result_sync "$fn_name" "$execution_result"
 
-  echo "$execution_result" > "$unique_test_result_file"
+  echo "$execution_result" >"$unique_test_result_file"
 }
 
 # shellcheck disable=SC2295
@@ -847,7 +848,7 @@ function bashunit::runner::write_failure_result_output() {
     output_section="\n    Output:\n$raw_output"
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section" >> "$FAILURES_OUTPUT_PATH"
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section" >>"$FAILURES_OUTPUT_PATH"
 }
 
 function bashunit::runner::write_skipped_result_output() {
@@ -863,7 +864,7 @@ function bashunit::runner::write_skipped_result_output() {
     test_nr=$(bashunit::state::get_tests_skipped)
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$SKIPPED_OUTPUT_PATH"
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >>"$SKIPPED_OUTPUT_PATH"
 }
 
 function bashunit::runner::write_incomplete_result_output() {
@@ -879,7 +880,7 @@ function bashunit::runner::write_incomplete_result_output() {
     test_nr=$(bashunit::state::get_tests_incomplete)
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >> "$INCOMPLETE_OUTPUT_PATH"
+  echo -e "$test_nr) $test_file:$line_number\n$output_msg" >>"$INCOMPLETE_OUTPUT_PATH"
 }
 
 function bashunit::runner::record_file_hook_failure() {
@@ -941,7 +942,7 @@ function bashunit::runner::execute_file_hook() {
     local line
     while IFS= read -r line; do
       [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
-    done < "$hook_output_file"
+    done <"$hook_output_file"
     rm -f "$hook_output_file"
   fi
 
@@ -1032,7 +1033,7 @@ function bashunit::runner::execute_test_hook() {
     local line
     while IFS= read -r line; do
       [[ -z "$hook_output" ]] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
-    done < "$hook_output_file"
+    done <"$hook_output_file"
     rm -f "$hook_output_file"
   fi
 
@@ -1088,10 +1089,10 @@ function bashunit::runner::run_tear_down_after_script() {
   # Check if hook exists first
   if ! declare -F "tear_down_after_script" >/dev/null 2>&1; then
     # Add blank line after tests if no tear_down hook
-    if ! bashunit::env::is_simple_output_enabled && \
-        ! bashunit::env::is_failures_only_enabled && \
-        ! bashunit::env::is_no_progress_enabled && \
-        ! bashunit::parallel::is_enabled; then
+    if ! bashunit::env::is_simple_output_enabled &&
+      ! bashunit::env::is_failures_only_enabled &&
+      ! bashunit::env::is_no_progress_enabled &&
+      ! bashunit::parallel::is_enabled; then
       echo ""
     fi
     return 0
@@ -1115,10 +1116,10 @@ function bashunit::runner::run_tear_down_after_script() {
   fi
 
   # Add blank line after tear_down output
-  if ! bashunit::env::is_simple_output_enabled && \
-      ! bashunit::env::is_failures_only_enabled && \
-      ! bashunit::env::is_no_progress_enabled && \
-      ! bashunit::parallel::is_enabled; then
+  if ! bashunit::env::is_simple_output_enabled &&
+    ! bashunit::env::is_failures_only_enabled &&
+    ! bashunit::env::is_no_progress_enabled &&
+    ! bashunit::parallel::is_enabled; then
     echo ""
   fi
 

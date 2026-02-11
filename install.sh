@@ -8,7 +8,7 @@ function regex_match() {
 }
 
 function is_git_installed() {
-  command -v git > /dev/null 2>&1
+  command -v git >/dev/null 2>&1
 }
 
 function build_and_install_beta() {
@@ -44,9 +44,9 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
-  if command -v curl > /dev/null 2>&1; then
+  if command -v curl >/dev/null 2>&1; then
     curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
-  elif command -v wget > /dev/null 2>&1; then
+  elif command -v wget >/dev/null 2>&1; then
     wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
   else
     echo "Cannot download bashunit: curl or wget not found."

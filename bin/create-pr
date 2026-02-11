@@ -21,7 +21,7 @@ function console_header::print_version() {
 }
 
 function console_header::print_help() {
-    cat <<EOF
+  cat <<EOF
 create-pr [arguments] [options]
 
 Arguments:
@@ -59,8 +59,8 @@ set -o allexport
 [[ -f ".env" ]] && source .env set
 set +o allexport
 
-APP_CREATE_PR_ROOT_DIR=${APP_CREATE_PR_ROOT_DIR:-"$(git rev-parse --show-toplevel)"} \
-  || error_and_exit "This directory is not a git repository"
+APP_CREATE_PR_ROOT_DIR=${APP_CREATE_PR_ROOT_DIR:-"$(git rev-parse --show-toplevel)"} ||
+  error_and_exit "This directory is not a git repository"
 PR_LINK_PREFIX_TEXT=${PR_LINK_PREFIX_TEXT:-""}
 PR_TICKET_LINK_PREFIX=${PR_TICKET_LINK_PREFIX:-""}
 PR_TEMPLATE_PATH=${PR_TEMPLATE_PATH:-".github/PULL_REQUEST_TEMPLATE.md"}
@@ -71,8 +71,8 @@ PR_ASSIGNEE=${PR_ASSIGNEE:-${ASSIGNEE:-"@me"}}
 PR_REVIEWER=${PR_REVIEWER:-${REVIEWER:-""}}
 PR_RUN_AFTER_CREATION=${PR_RUN_AFTER_CREATION:-""}
 TARGET_BRANCH=${TARGET_BRANCH:-"main"}
-CURRENT_BRANCH=${CURRENT_BRANCH:-"$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"} \
-  || error_and_exit "Failed to get the current branch name."
+CURRENT_BRANCH=${CURRENT_BRANCH:-"$(git rev-parse --abbrev-ref HEAD 2>/dev/null)"} ||
+  error_and_exit "Failed to get the current branch name."
 
 REMOTE_URL=${REMOTE_URL:-"$(git config --get remote.origin.url)"}
 if [[ "$REMOTE_URL" == *"github.com"* ]]; then
@@ -121,8 +121,8 @@ function main::create_pr() {
 
   # Push the current branch
   if ! git push -u origin "$CURRENT_BRANCH"; then
-      error_and_exit "Failed to push the current branch to the remote repository."\
-        "Please check your git remote settings."
+    error_and_exit "Failed to push the current branch to the remote repository." \
+      "Please check your git remote settings."
   fi
 
   if [[ "$PR_USING_CLIENT" == "gitlab" ]]; then
@@ -137,13 +137,13 @@ function main::create_pr_gitlab() {
 
   local glab_command=(
     glab mr create
-      --title "$PR_TITLE"
-      --target-branch "$TARGET_BRANCH"
-      --source-branch "$CURRENT_BRANCH"
-      --assignee "$PR_ASSIGNEE"
-      --reviewer "$PR_REVIEWER"
-      --label "$PR_LABEL"
-      --description "$PR_BODY"
+    --title "$PR_TITLE"
+    --target-branch "$TARGET_BRANCH"
+    --source-branch "$CURRENT_BRANCH"
+    --assignee "$PR_ASSIGNEE"
+    --reviewer "$PR_REVIEWER"
+    --label "$PR_LABEL"
+    --description "$PR_BODY"
   )
 
   if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
@@ -163,13 +163,13 @@ function main::create_pr_github() {
 
   local gh_command=(
     gh pr create
-      --title "$PR_TITLE"
-      --base "$TARGET_BRANCH"
-      --head "$CURRENT_BRANCH"
-      --assignee "$PR_ASSIGNEE"
-      --reviewer "$PR_REVIEWER"
-      --label "$PR_LABEL"
-      --body "$PR_BODY"
+    --title "$PR_TITLE"
+    --base "$TARGET_BRANCH"
+    --head "$CURRENT_BRANCH"
+    --assignee "$PR_ASSIGNEE"
+    --reviewer "$PR_REVIEWER"
+    --label "$PR_LABEL"
+    --body "$PR_BODY"
   )
 
   if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
@@ -177,8 +177,8 @@ function main::create_pr_github() {
   fi
 
   if ! "${gh_command[@]}"; then
-      error_and_exit "Failed to create the Pull Request." \
-        "Ensure you have the correct permissions and the repository is properly configured."
+    error_and_exit "Failed to create the Pull Request." \
+      "Ensure you have the correct permissions and the repository is properly configured."
   fi
 
   main::run_after_creation_script
@@ -287,7 +287,7 @@ function pr_label() {
   IFS=';' # Split mapping entries by semicolon
   for entry in $mapping; do
     # Split each entry into keys and value
-    IFS=':' read -r keys value <<< "$entry"
+    IFS=':' read -r keys value <<<"$entry"
 
     # Check if the prefix matches any of the keys
     IFS='|' # Split keys by pipe symbol
@@ -388,7 +388,7 @@ function pr_title() {
   fi
 
   local title
-  title=$(echo "$branch_name" | cut -d'-' -f3- | tr '-' ' '| tr '_' ' ')
+  title=$(echo "$branch_name" | cut -d'-' -f3- | tr '-' ' ' | tr '_' ' ')
   title="$(echo "${title:0:1}" | tr '[:lower:]' '[:upper:]')${title:1}"
 
   # Normalize the template by removing spaces around placeholders
@@ -404,7 +404,7 @@ function pr_title() {
 
   if [[ -n "$PR_TITLE_REMOVE_PREFIX" ]]; then
     # Split PR_TITLE_REMOVE_PREFIX into an array
-    IFS=',' read -ra prefixes <<< "$PR_TITLE_REMOVE_PREFIX"
+    IFS=',' read -ra prefixes <<<"$PR_TITLE_REMOVE_PREFIX"
     # Loop through each prefix and remove it from the start if it matches
     for prefix in "${prefixes[@]}"; do
       # shellcheck disable=SC2001
@@ -412,9 +412,9 @@ function pr_title() {
     done
 
     # Trim leading whitespace and capitalize the first letter
-    new_title=$(echo "$new_title" \
-      | sed 's/^ *//' \
-      | awk '{ print toupper(substr($0,1,1)) tolower(substr($0,2)) }')
+    new_title=$(echo "$new_title" |
+      sed 's/^ *//' |
+      awk '{ print toupper(substr($0,1,1)) tolower(substr($0,2)) }')
   fi
 
   formatted="${formatted//\{\{PR_TITLE\}\}/$new_title}"
@@ -450,8 +450,8 @@ GH_CLI_INSTALLATION_URL="https://cli.github.com/"
 GLAB_CLI_INSTALLATION_URL="https://gitlab.com/gitlab-org/cli/"
 
 function error_and_exit() {
-    echo "Error: $1" >&2
-    exit 1
+  echo "Error: $1" >&2
+  exit 1
 }
 
 function validate::target_branch_exists() {
@@ -473,13 +473,13 @@ function validate::current_branch_is_not_target() {
 }
 
 function validate::gh_cli_is_installed() {
-  if ! command -v gh &> /dev/null; then
+  if ! command -v gh &>/dev/null; then
     error_and_exit "gh CLI is not installed. Please install it from $GH_CLI_INSTALLATION_URL and try again."
   fi
 }
 
 function validate::glab_cli_is_installed() {
-  if ! command -v glab &> /dev/null; then
+  if ! command -v glab &>/dev/null; then
     error_and_exit "glab CLI is not installed. Please install it from $GLAB_CLI_INSTALLATION_URL and try again."
   fi
 }
@@ -493,38 +493,38 @@ declare -r CREATE_PR_VERSION="0.10.0"
 CREATE_PR_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 export CREATE_PR_ROOT_DIR
 
-
 DRY_RUN=${DRY_RUN:-false}
 EXTRA_ARGS=()
 
 while [[ $# -gt 0 ]]; do
   argument="$1"
   case $argument in
-    --debug)
-      set -x
-      ;;
-    --dry-run)
-      DRY_RUN=true
-      ;;
-    -e|--env)
-      # shellcheck disable=SC1090
-      source "$2"
-      shift
-      ;;
-    -t|--title)
-      helpers::generate_branch_name "$2" "${3:-}"
-      trap '' EXIT && exit 0
-      ;;
-    -h|--help)
-      console_header::print_help
-      trap '' EXIT && exit 0
-      ;;
-    -v|--version)
-      console_header::print_version
-      trap '' EXIT && exit 0
-      ;;
-    *)
-      EXTRA_ARGS+=("$argument")
+  --debug)
+    set -x
+    ;;
+  --dry-run)
+    DRY_RUN=true
+    ;;
+  -e | --env)
+    # shellcheck disable=SC1090
+    source "$2"
+    shift
+    ;;
+  -t | --title)
+    helpers::generate_branch_name "$2" "${3:-}"
+    trap '' EXIT && exit 0
+    ;;
+  -h | --help)
+    console_header::print_help
+    trap '' EXIT && exit 0
+    ;;
+  -v | --version)
+    console_header::print_version
+    trap '' EXIT && exit 0
+    ;;
+  *)
+    EXTRA_ARGS+=("$argument")
+    ;;
   esac
   shift
 done

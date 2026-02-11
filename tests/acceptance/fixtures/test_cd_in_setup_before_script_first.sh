@@ -5,9 +5,9 @@ set -euo pipefail
 # First test file that changes directory in set_up_before_script
 
 function set_up_before_script() {
-  cd "$(bashunit::temp_dir)" || return 1
+        cd "$(bashunit::temp_dir)" || return 1
 }
 
 function test_first_file_runs() {
-  assert_equals "first" "first"
+        assert_equals "first" "first"
 }

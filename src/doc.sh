@@ -11,7 +11,6 @@ function bashunit::doc::get_embedded_docs() {
 
 function bashunit::doc::print_asserts() {
   local filter="${1:-}"
-  local line=""
   local docstring=""
   local fn=""
   local should_print=0
@@ -32,7 +31,7 @@ function bashunit::doc::print_asserts() {
       continue
     fi
 
-    if (( should_print )); then
+    if ((should_print)); then
       if [[ "$line" =~ ^\`\`\` ]]; then
         echo "--------------"
         echo "$docstring"
@@ -44,8 +43,8 @@ function bashunit::doc::print_asserts() {
 
       # Remove markdown link brackets and anchor tags
       line="${line//[\[\]]/}"
-      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<< "$line")"
+      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<<"$line")"
       docstring="$docstring$line"$'\n'
     fi
-  done <<< "$(bashunit::doc::get_embedded_docs)"
+  done <<<"$(bashunit::doc::get_embedded_docs)"
 }

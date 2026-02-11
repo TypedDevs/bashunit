@@ -1,64 +1,64 @@
 #!/usr/bin/env bash
 
 function bashunit::console_header::print_version_with_env() {
-  local filter=${1:-}
-  shift || true
+        local filter=${1:-}
+        shift || true
 
-  if ! bashunit::env::is_show_header_enabled; then
-    return
-  fi
+        if ! bashunit::env::is_show_header_enabled; then
+                return
+        fi
 
-  bashunit::console_header::print_version "$filter" "$@"
+        bashunit::console_header::print_version "$filter" "$@"
 
-  if bashunit::env::is_dev_mode_enabled; then
-    printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
-  fi
+        if bashunit::env::is_dev_mode_enabled; then
+                printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+        fi
 }
 
 function bashunit::console_header::print_version() {
-  local filter=${1:-}
-  shift || true
+        local filter=${1:-}
+        shift || true
 
-  # Bash 3.0 compatible: check argument count after shift
-  local files_count=$#
-  local total_tests
-  if [[ "$files_count" -eq 0 ]]; then
-    total_tests=0
-  elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
-    # Skip counting in parallel+simple mode for faster startup
-    total_tests=0
-  else
-    total_tests=$(bashunit::helper::find_total_tests "$filter" "$@")
-  fi
+        # Bash 3.0 compatible: check argument count after shift
+        local files_count=$#
+        local total_tests
+        if [[ "$files_count" -eq 0 ]]; then
+                total_tests=0
+        elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
+                # Skip counting in parallel+simple mode for faster startup
+                total_tests=0
+        else
+                total_tests=$(bashunit::helper::find_total_tests "$filter" "$@")
+        fi
 
-  if bashunit::env::is_header_ascii_art_enabled; then
-    cat <<EOF
+        if bashunit::env::is_header_ascii_art_enabled; then
+                cat <<EOF
  _               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
 | '_ \ / _' / __| '_ \| | | | '_ \| | __|
 | |_) | (_| \__ \ | | | |_| | | | | | |_
 |_.__/ \__,_|___/_| |_|\___/|_| |_|_|\__|
 EOF
-    if [ "$total_tests" -eq 0 ]; then
-      printf "%s\n" "$BASHUNIT_VERSION"
-    else
-      printf "%s | Tests: %s\n" "$BASHUNIT_VERSION" "$total_tests"
-    fi
-    return
-  fi
+                if [ "$total_tests" -eq 0 ]; then
+                        printf "%s\n" "$BASHUNIT_VERSION"
+                else
+                        printf "%s | Tests: %s\n" "$BASHUNIT_VERSION" "$total_tests"
+                fi
+                return
+        fi
 
-  if [ "$total_tests" -eq 0 ]; then
-    printf "%s%sbashunit%s - %s\n" \
-      "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$BASHUNIT_VERSION"
-  else
-    printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n"\
-      "$BASHUNIT_VERSION"\
-      "$total_tests"
-  fi
+        if [ "$total_tests" -eq 0 ]; then
+                printf "%s%sbashunit%s - %s\n" \
+                        "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$BASHUNIT_VERSION"
+        else
+                printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n" \
+                        "$BASHUNIT_VERSION" \
+                        "$total_tests"
+        fi
 }
 
 function bashunit::console_header::print_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
@@ -89,7 +89,7 @@ EOF
 }
 
 function bashunit::console_header::print_test_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit test [path] [options]
        bashunit [path] [options]
 
@@ -146,7 +146,7 @@ EOF
 }
 
 function bashunit::console_header::print_bench_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit bench [path] [options]
 
 Run benchmark files. Searches for '*bench.sh' files.
@@ -173,7 +173,7 @@ EOF
 }
 
 function bashunit::console_header::print_doc_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit doc [filter]
 
 Display documentation for assertion functions.
@@ -189,7 +189,7 @@ EOF
 }
 
 function bashunit::console_header::print_init_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit init [directory]
 
 Initialize a new test directory with sample files.
@@ -208,7 +208,7 @@ EOF
 }
 
 function bashunit::console_header::print_learn_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit learn
 
 Start the interactive learning tutorial.
@@ -230,7 +230,7 @@ EOF
 }
 
 function bashunit::console_header::print_upgrade_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit upgrade
 
 Upgrade bashunit to the latest version.
@@ -240,7 +240,7 @@ EOF
 }
 
 function bashunit::console_header::print_assert_help() {
-    cat <<EOF
+        cat <<EOF
 Usage: bashunit assert <function> [args...]
        bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
 

@@ -80,7 +80,7 @@ function bashunit::reports::generate_junit_xml() {
 
     echo "  </testsuite>"
     echo "</testsuites>"
-  } > "$output_file"
+  } >"$output_file"
 }
 
 function bashunit::reports::generate_report_html() {
@@ -97,7 +97,7 @@ function bashunit::reports::generate_report_html() {
   local temp_file="temp_test_cases.txt"
 
   # Collect test cases by file
-  : > "$temp_file"  # Clear temp file if it exists
+  : >"$temp_file" # Clear temp file if it exists
   local i=0
   for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
     local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
@@ -106,7 +106,7 @@ function bashunit::reports::generate_report_html() {
     local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
     local test_case="$file|$name|$status|$test_time"
 
-    echo "$test_case" >> "$temp_file"
+    echo "$test_case" >>"$temp_file"
   done
 
   {
@@ -182,7 +182,7 @@ function bashunit::reports::generate_report_html() {
       echo "        <td>$status</td>"
       echo "        <td>$test_time</td>"
       echo "      </tr>"
-    done < "$temp_file"
+    done <"$temp_file"
 
     # Close the last table
     if [ -n "$current_file" ]; then
@@ -192,7 +192,7 @@ function bashunit::reports::generate_report_html() {
 
     echo "</body>"
     echo "</html>"
-  } > "$output_file"
+  } >"$output_file"
 
   # Clean up temporary file
   rm -f "$temp_file"

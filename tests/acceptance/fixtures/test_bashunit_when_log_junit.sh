@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 function test_success() {
-  assert_same 1 1
+        assert_same 1 1
 }
 
 function test_failure() {
-  assert_same 2 3
+        assert_same 2 3
 }

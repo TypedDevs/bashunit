@@ -4,7 +4,7 @@
 function _assert_valid_json() {
   local json="$1"
 
-  if ! echo "$json" | jq . > /dev/null 2>&1; then
+  if ! echo "$json" | jq . >/dev/null 2>&1; then
     bashunit::fail "Invalid json: $json"
     return
   fi
@@ -96,7 +96,7 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
     }
 
     _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
-    _assert_length_equals "5" "abc"  # length is 3, not 5
+    _assert_length_equals "5" "abc" # length is 3, not 5
 
     echo "$_captured_output"
   )"
@@ -145,4 +145,3 @@ function test_helper_find_test_function_name_from_deeply_nested() {
 
   assert_same "test_helper_find_test_function_name_from_deeply_nested" "$found_name"
 }
-

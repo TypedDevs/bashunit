@@ -12,7 +12,7 @@ function bashunit::str::rpad() {
   local width_padding="${3:-$TERMINAL_WIDTH}"
   # Subtract 1 more to account for the extra space
   local padding=$((width_padding - ${#right_word} - 1))
-  if (( padding < 0 )); then
+  if ((padding < 0)); then
     padding=0
   fi
 
@@ -42,7 +42,7 @@ function bashunit::str::rpad() {
         result_left_text="$result_left_text${left_text:$j:1}"
         ((j++))
       done
-      result_left_text="$result_left_text${left_text:$j:1}"  # Append the final 'm'
+      result_left_text="$result_left_text${left_text:$j:1}" # Append the final 'm'
       ((j++))
     elif [[ "$char" == "$original_char" ]]; then
       # Match the actual character
@@ -55,7 +55,7 @@ function bashunit::str::rpad() {
   done
 
   local remaining_space
-  if $is_truncated ; then
+  if $is_truncated; then
     result_left_text="$result_left_text..."
     # 1: due to a blank space
     # 3: due to the appended ...

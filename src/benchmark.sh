@@ -67,17 +67,18 @@ function bashunit::benchmark::run_function() {
   local durations_count=0
   local i r
 
-  for ((i=1; i<=its; i++)); do
+  for ((i = 1; i <= its; i++)); do
     local start_time=$(bashunit::clock::now)
     (
-      for ((r=1; r<=revs; r++)); do
+      for ((r = 1; r <= revs; r++)); do
         "$fn_name" >/dev/null 2>&1
       done
     )
     local end_time=$(bashunit::clock::now)
     local dur_ns=$(bashunit::math::calculate "($end_time - $start_time)")
     local dur_ms=$(bashunit::math::calculate "$dur_ns / 1000000")
-    durations[durations_count]="$dur_ms"; durations_count=$((durations_count + 1))
+    durations[durations_count]="$dur_ms"
+    durations_count=$((durations_count + 1))
 
     if bashunit::env::is_bench_mode_enabled; then
       local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
@@ -100,7 +101,7 @@ function bashunit::benchmark::print_results() {
     return
   fi
 
-  if (( ${#_BASHUNIT_BENCH_NAMES[@]} == 0 )); then
+  if ((${#_BASHUNIT_BENCH_NAMES[@]} == 0)); then
     return
   fi
 

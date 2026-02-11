@@ -62,7 +62,7 @@ function bashunit::console_results::render_result() {
 
   printf "%sAssertions:%s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
   if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
-      printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$assertions_passed" "$_BASHUNIT_COLOR_DEFAULT"
+    printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$assertions_passed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
     printf " %s%s skipped%s," "$_BASHUNIT_COLOR_SKIPPED" "$assertions_skipped" "$_BASHUNIT_COLOR_DEFAULT"
@@ -126,11 +126,11 @@ function bashunit::console_results::print_execution_time() {
     return
   fi
 
-  local time_in_seconds=$(( time / 1000 ))
+  local time_in_seconds=$((time / 1000))
 
   if [[ "$time_in_seconds" -ge 60 ]]; then
-    local minutes=$(( time_in_seconds / 60 ))
-    local seconds=$(( time_in_seconds % 60 ))
+    local minutes=$((time_in_seconds / 60))
+    local seconds=$((time_in_seconds % 60))
     printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
       "Time taken: ${minutes}m ${seconds}s"
     return
@@ -147,9 +147,9 @@ function bashunit::console_results::format_duration() {
   local duration_ms="$1"
 
   if [[ "$duration_ms" -ge 60000 ]]; then
-    local time_in_seconds=$(( duration_ms / 1000 ))
-    local minutes=$(( time_in_seconds / 60 ))
-    local seconds=$(( time_in_seconds % 60 ))
+    local time_in_seconds=$((duration_ms / 1000))
+    local minutes=$((time_in_seconds / 60))
+    local seconds=$((time_in_seconds % 60))
     echo "${minutes}m ${seconds}s"
   elif [[ "$duration_ms" -ge 1000 ]]; then
     local formatted_seconds
@@ -217,9 +217,9 @@ function bashunit::console_results::print_successful_test() {
   if bashunit::env::is_show_execution_time_enabled; then
     local time_display
     if [[ "$duration" -ge 60000 ]]; then
-      local time_in_seconds=$(( duration / 1000 ))
-      local minutes=$(( time_in_seconds / 60 ))
-      local seconds=$(( time_in_seconds % 60 ))
+      local time_in_seconds=$((duration / 1000))
+      local minutes=$((time_in_seconds / 60))
+      local seconds=$((time_in_seconds % 60))
       time_display="${minutes}m ${seconds}s"
     elif [[ "$duration" -ge 1000 ]]; then
       local formatted_seconds
@@ -241,7 +241,7 @@ function bashunit::console_results::print_failure_message() {
   local line
   line="$(printf "\
 ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
-    ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n"\
+    ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${test_name}" "${failure_message}")"
 
   bashunit::state::print_line "failure" "$line"
@@ -266,12 +266,11 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     line="$line$(printf "\
 
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
-    "${extra_key}" "${extra_value}")"
+      "${extra_key}" "${extra_value}")"
   fi
 
   bashunit::state::print_line "failed" "$line"
 }
-
 
 function bashunit::console_results::print_failed_snapshot_test() {
   local function_name=$1
@@ -284,12 +283,12 @@ function bashunit::console_results::print_failed_snapshot_test() {
 
   if bashunit::dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
-    echo "$actual_content" > "$actual_file"
+    echo "$actual_content" >"$actual_file"
 
     local git_diff_output
     git_diff_output="$(git diff --no-index --word-diff --color=always \
-      "$snapshot_file" "$actual_file" 2>/dev/null \
-        | tail -n +6 | sed "s/^/    /")"
+      "$snapshot_file" "$actual_file" 2>/dev/null |
+      tail -n +6 | sed "s/^/    /")"
 
     line="$line$git_diff_output"
     rm "$actual_file"
@@ -354,7 +353,7 @@ function bashunit::console_results::print_error_test() {
     local output_line
     while IFS= read -r output_line; do
       line="$line$(printf "      %s\n" "$output_line")"
-    done <<< "$raw_output"
+    done <<<"$raw_output"
   fi
 
   bashunit::state::print_line "error" "$line"
@@ -397,7 +396,7 @@ function bashunit::console_results::print_skipped_tests_and_reset() {
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_skipped skipped tests:${_BASHUNIT_COLOR_DEFAULT}\n"
     fi
 
-    tr -d '\r' < "$SKIPPED_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
+    tr -d '\r' <"$SKIPPED_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
     rm "$SKIPPED_OUTPUT_PATH"
 
     echo ""
@@ -419,7 +418,7 @@ function bashunit::console_results::print_incomplete_tests_and_reset() {
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_incomplete incomplete tests:${_BASHUNIT_COLOR_DEFAULT}\n"
     fi
 
-    tr -d '\r' < "$INCOMPLETE_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
+    tr -d '\r' <"$INCOMPLETE_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
     rm "$INCOMPLETE_OUTPUT_PATH"
 
     echo ""

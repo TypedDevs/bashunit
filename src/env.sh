@@ -190,7 +190,7 @@ function bashunit::env::active_internet_connection() {
     wget -q --spider https://github.com && return 0
   fi
 
-  if ping -c 1 -W 3 google.com &> /dev/null; then
+  if ping -c 1 -W 3 google.com &>/dev/null; then
     return 0
   fi
 
@@ -200,11 +200,11 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [[ -z "$cols" ]] && command -v tput > /dev/null; then
+  if [[ -z "$cols" ]] && command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 
-  if [[ -z "$cols" ]] && command -v stty > /dev/null; then
+  if [[ -z "$cols" ]] && command -v stty >/dev/null; then
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
@@ -247,7 +247,7 @@ function bashunit::env::print_verbose() {
 
   local key
   for key in "${keys[@]+"${keys[@]}"}"; do
-    if (( ${#key} > max_length )); then
+    if ((${#key} > max_length)); then
       max_length=${#key}
     fi
   done

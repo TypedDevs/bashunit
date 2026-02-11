@@ -85,13 +85,13 @@ function bashunit::helper::normalize_test_function_name() {
   # Capitalize the first letter (bash 3.0 compatible, no subprocess)
   local first_char="${result:0:1}"
   case "$first_char" in
-    a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
-    e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
-    i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
-    m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
-    q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
-    u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
-    y) first_char='Y' ;; z) first_char='Z' ;;
+  a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
+  e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
+  i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
+  m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
+  q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
+  u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
+  y) first_char='Y' ;; z) first_char='Z' ;;
   esac
   result="${first_char}${result:1}"
 
@@ -113,8 +113,8 @@ function bashunit::helper::interpolate_function_name() {
   local result="$function_name"
 
   local i=0
-  for ((i=0; i<args_count; i++)); do
-    local placeholder="::$((i+1))::"
+  for ((i = 0; i < args_count; i++)); do
+    local placeholder="::$((i + 1))::"
     # shellcheck disable=SC2155
     local value="$(bashunit::helper::escape_single_quotes "${args[$i]}")"
     value="'$value'"
@@ -294,8 +294,8 @@ function bashunit::helper::get_provider_data() {
   local data_provider_function
   data_provider_function=$(
     # shellcheck disable=SC1087
-    grep -B 2 -E "(function[[:space:]]+)?$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
-    sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
+    grep -B 2 -E "(function[[:space:]]+)?$function_name[[:space:]]*\(\)" "$script" 2>/dev/null |
+      sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
   if [[ -n "$data_provider_function" ]]; then
@@ -327,66 +327,66 @@ function bashunit::helper::get_latest_tag() {
 }
 
 function bashunit::helper::find_total_tests() {
-    local filter=${1:-}
-    shift || true
+  local filter=${1:-}
+  shift || true
 
-    if [[ $# -eq 0 ]]; then
-        echo 0
-        return
+  if [[ $# -eq 0 ]]; then
+    echo 0
+    return
+  fi
+
+  local total_count=0
+  local file
+
+  for file in "$@"; do
+    if [[ ! -f "$file" ]]; then
+      continue
     fi
 
-    local total_count=0
-    local file
+    local file_count
+    file_count=$( (
+      # shellcheck source=/dev/null
+      source "$file"
+      local all_fn_names
+      all_fn_names=$(declare -F | awk '{print $3}')
+      local filtered_functions
+      filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 
-    for file in "$@"; do
-        if [[ ! -f "$file" ]]; then
-            continue
-        fi
+      local count=0
+      local IFS=$' \t\n'
+      if [[ -n "$filtered_functions" ]]; then
+        local -a functions_to_run=()
+        # shellcheck disable=SC2206
+        functions_to_run=($filtered_functions)
+        # shellcheck disable=SC2034
+        local -a provider_data=()
+        local provider_data_count=0
+        local fn_name line
+        for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
+          provider_data=()
+          provider_data_count=0
+          while IFS=" " read -r line; do
+            [[ -z "$line" ]] && continue
+            # shellcheck disable=SC2034
+            provider_data[provider_data_count]="$line"
+            provider_data_count=$((provider_data_count + 1))
+          done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
-        local file_count
-        file_count=$( (
-            # shellcheck source=/dev/null
-            source "$file"
-            local all_fn_names
-            all_fn_names=$(declare -F | awk '{print $3}')
-            local filtered_functions
-            filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
+          if [[ "$provider_data_count" -eq 0 ]]; then
+            count=$((count + 1))
+          else
+            count=$((count + provider_data_count))
+          fi
+        done
+      fi
 
-            local count=0
-            local IFS=$' \t\n'
-            if [[ -n "$filtered_functions" ]]; then
-                local -a functions_to_run=()
-                # shellcheck disable=SC2206
-                functions_to_run=($filtered_functions)
-                # shellcheck disable=SC2034
-                local -a provider_data=()
-                local provider_data_count=0
-                local fn_name line
-                for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-                    provider_data=()
-                    provider_data_count=0
-                    while IFS=" " read -r line; do
-                        [[ -z "$line" ]] && continue
-                        # shellcheck disable=SC2034
-                        provider_data[provider_data_count]="$line"
-                        provider_data_count=$((provider_data_count + 1))
-                    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$file")"
+      echo "$count"
+    ))
 
-                    if [[ "$provider_data_count" -eq 0 ]]; then
-                        count=$((count + 1))
-                    else
-                        count=$((count + provider_data_count))
-                    fi
-                done
-            fi
+    total_count=$((total_count + file_count))
+  done
 
-            echo "$count"
-        ) )
-
-        total_count=$((total_count + file_count))
-    done
-
-    echo "$total_count"
+  echo "$total_count"
 }
 
 function bashunit::helper::load_test_files() {

@@ -67,25 +67,25 @@ function bashunit::learn::start() {
     echo ""
 
     case "$choice" in
-      1) bashunit::learn::lesson_basics || true ;;
-      2) bashunit::learn::lesson_assertions || true ;;
-      3) bashunit::learn::lesson_lifecycle || true ;;
-      4) bashunit::learn::lesson_functions || true ;;
-      5) bashunit::learn::lesson_scripts || true ;;
-      6) bashunit::learn::lesson_mocking || true ;;
-      7) bashunit::learn::lesson_spies || true ;;
-      8) bashunit::learn::lesson_data_providers || true ;;
-      9) bashunit::learn::lesson_exit_codes || true ;;
-      10) bashunit::learn::lesson_challenge || true ;;
-      p) bashunit::learn::show_progress ;;
-      r) bashunit::learn::reset_progress ;;
-      q)
-        echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
-        break
-        ;;
-      *)
-        echo "${_BASHUNIT_COLOR_FAILED}Invalid choice. Please try again.${_BASHUNIT_COLOR_DEFAULT}"
-        ;;
+    1) bashunit::learn::lesson_basics || true ;;
+    2) bashunit::learn::lesson_assertions || true ;;
+    3) bashunit::learn::lesson_lifecycle || true ;;
+    4) bashunit::learn::lesson_functions || true ;;
+    5) bashunit::learn::lesson_scripts || true ;;
+    6) bashunit::learn::lesson_mocking || true ;;
+    7) bashunit::learn::lesson_spies || true ;;
+    8) bashunit::learn::lesson_data_providers || true ;;
+    9) bashunit::learn::lesson_exit_codes || true ;;
+    10) bashunit::learn::lesson_challenge || true ;;
+    p) bashunit::learn::show_progress ;;
+    r) bashunit::learn::reset_progress ;;
+    q)
+      echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
+      break
+      ;;
+    *)
+      echo "${_BASHUNIT_COLOR_FAILED}Invalid choice. Please try again.${_BASHUNIT_COLOR_DEFAULT}"
+      ;;
     esac
   done
 
@@ -97,7 +97,7 @@ function bashunit::learn::start() {
 ##
 function bashunit::learn::mark_completed() {
   local lesson=$1
-  echo "$lesson" >> "$LEARN_PROGRESS_FILE"
+  echo "$lesson" >>"$LEARN_PROGRESS_FILE"
 }
 
 ##
@@ -164,7 +164,7 @@ function bashunit::learn::create_example_file() {
 
   echo ""
   echo "Creating example file ${_BASHUNIT_COLOR_BOLD}$filename${_BASHUNIT_COLOR_DEFAULT}..."
-  echo "$content" > "$filename"
+  echo "$content" >"$filename"
   chmod +x "$filename"
   echo "${_BASHUNIT_COLOR_PASSED}✓ Created $filename${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
@@ -334,9 +334,9 @@ function test_multiple_assertions() {
     return 1
   fi
 
-  if ! grep -q "assert_contains" "$test_file" || \
-      ! grep -q "assert_matches" "$test_file" || \
-      ! grep -q "assert_not_empty" "$test_file"; then
+  if ! grep -q "assert_contains" "$test_file" ||
+    ! grep -q "assert_matches" "$test_file" ||
+    ! grep -q "assert_not_empty" "$test_file"; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use all three assertion types${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -427,8 +427,8 @@ function test_file_has_content() {
     return 1
   fi
 
-  if ! grep -q "function set_up()" "$test_file" || \
-      ! grep -q "function tear_down()" "$test_file"; then
+  if ! grep -q "function set_up()" "$test_file" ||
+    ! grep -q "function tear_down()" "$test_file"; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define set_up and tear_down functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

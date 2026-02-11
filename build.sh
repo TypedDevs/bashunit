@@ -39,15 +39,15 @@ function build::generate_bin() {
   local temp
   temp="$(dirname "$out")/temp.sh"
 
-  echo '#!/usr/bin/env bash' > "$temp"
+  echo '#!/usr/bin/env bash' >"$temp"
   echo "Generating bashunit in the '$(dirname "$out")' folder..."
 
   for file in $(build::dependencies); do
     build::process_file "$file" "$temp"
   done
 
-  cat bashunit >> "$temp"
-  grep -v '^source' "$temp" > "$out"
+  cat bashunit >>"$temp"
+  grep -v '^source' "$temp" >"$out"
   rm "$temp"
   chmod u+x "$out"
 
@@ -62,9 +62,9 @@ function build::process_file() {
 
   {
     echo "# $(basename "$file")"
-    tail -n +2 "$file" >> "$temp"
+    tail -n +2 "$file" >>"$temp"
     echo ""
-  } >> "$temp"
+  } >>"$temp"
 
   # Search for any 'source' lines in the current file
   grep '^source ' "$file" | while read -r line; do
@@ -139,7 +139,7 @@ function build::embed_docs() {
 
     # Print everything after the end marker
     sed -n '/# __BASHUNIT_EMBEDDED_DOCS_END__/,$p' "$file" | tail -n +2
-  } > "$temp_file"
+  } >"$temp_file"
 
   mv "$temp_file" "$file"
   chmod u+x "$file"
@@ -159,7 +159,7 @@ function build::generate_checksum() {
     checksum=$(sha256sum "$out")
   fi
 
-  echo "$checksum" > "$(dirname "$out")/checksum"
+  echo "$checksum" >"$(dirname "$out")/checksum"
   echo "$checksum"
 }
 
@@ -173,15 +173,15 @@ SHOULD_CLEANUP=false
 
 for arg in "$@"; do
   case $arg in
-    -v|--verify)
-      SHOULD_VERIFY_BUILD=true
-      ;;
-    -c|--cleanup)
-      SHOULD_CLEANUP=true
-      ;;
-    *)
-      DIR=$arg
-      ;;
+  -v | --verify)
+    SHOULD_VERIFY_BUILD=true
+    ;;
+  -c | --cleanup)
+    SHOULD_CLEANUP=true
+    ;;
+  *)
+    DIR=$arg
+    ;;
   esac
 done
 

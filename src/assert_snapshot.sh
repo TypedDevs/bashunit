@@ -70,7 +70,7 @@ function bashunit::snapshot::initialize() {
   local path="$1"
   local content="$2"
   mkdir -p "$(dirname "$path")"
-  echo "$content" > "$path"
+  echo "$content" >"$path"
   bashunit::state::add_assertions_snapshot
 }
 
@@ -80,7 +80,7 @@ function bashunit::snapshot::compare() {
   local func_name="$3"
 
   local snapshot
-  snapshot=$(tr -d '\r' < "$snapshot_path")
+  snapshot=$(tr -d '\r' <"$snapshot_path")
 
   if ! bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label=$(bashunit::helper::normalize_test_function_name "$func_name")
