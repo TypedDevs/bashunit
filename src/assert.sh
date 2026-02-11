@@ -83,9 +83,12 @@ function assert_false() {
 function bashunit::run_command_or_eval() {
   local cmd="$1"
 
-  if [[ "$cmd" =~ ^eval ]]; then
+  # Patterns stored in variable for Bash 3.0 compatibility
+  local _eval_pattern='^eval'
+  local _alias_pattern='^alias'
+  if [[ "$cmd" =~ $_eval_pattern ]]; then
     eval "${cmd#eval }" &>/dev/null
-  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
+  elif [[ "$(command -v "$cmd")" =~ $_alias_pattern ]]; then
     eval "$cmd" &>/dev/null
   else
     "$cmd" &>/dev/null

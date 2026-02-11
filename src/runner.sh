@@ -215,8 +215,11 @@ function bashunit::runner::parse_data_provider_args() {
   local args_count=0
 
   # Check for shell metacharacters that would break eval or cause globbing
+  # Patterns stored in variable for Bash 3.0 compatibility
+  local _metachar_mid_pattern='[^\\][\|\&\;\*]'
+  local _metachar_start_pattern='^[\|\&\;\*]'
   local has_metachar=false
-  if [[ "$input" =~ [^\\][\|\&\;\*] ]] || [[ "$input" =~ ^[\|\&\;\*] ]]; then
+  if [[ "$input" =~ $_metachar_mid_pattern ]] || [[ "$input" =~ $_metachar_start_pattern ]]; then
     has_metachar=true
   fi
 

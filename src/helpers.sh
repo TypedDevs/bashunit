@@ -31,7 +31,9 @@ function bashunit::helper::find_test_function_name() {
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
-    if [[ "$fn" == test_* ]] || [[ "$fn" =~ ^test[A-Z] ]]; then
+    # Pattern stored in variable for Bash 3.0 compatibility
+    local _test_camel_pattern='^test[A-Z]'
+    if [[ "$fn" == test_* ]] || [[ "$fn" =~ $_test_camel_pattern ]]; then
       echo "$fn"
       return
     fi
@@ -270,7 +272,9 @@ function bashunit::helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+  # Pattern stored in variable for Bash 3.0 compatibility
+  local _valid_start_pattern='^[a-zA-Z_]'
+  if [[ ! $normalized_string =~ $_valid_start_pattern ]]; then
     normalized_string="_$normalized_string"
   fi
 

@@ -32,7 +32,9 @@ function bashunit::doc::print_asserts() {
     fi
 
     if ((should_print)); then
-      if [[ "$line" =~ ^\`\`\` ]]; then
+      # Pattern stored in variable for Bash 3.0 compatibility
+      local _code_fence_pattern='^\`\`\`'
+      if [[ "$line" =~ $_code_fence_pattern ]]; then
         echo "--------------"
         echo "$docstring"
         should_print=0
