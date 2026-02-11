@@ -358,13 +358,15 @@ function bashunit::coverage::is_executable_line() {
   [[ -z "${line// /}" ]] && return 1
 
   # Skip comment-only lines (including shebang)
-  [[ "$line" =~ ^[[:space:]]*# ]] && return 1
+  local _comment_pattern='^[[:space:]]*#'
+  [[ "$line" =~ $_comment_pattern ]] && return 1
 
   # Skip function declaration lines (but not single-line functions with body)
   [[ "$line" =~ $_BASHUNIT_COVERAGE_FUNC_PATTERN ]] && return 1
 
   # Skip lines with only braces
-  [[ "$line" =~ ^[[:space:]]*[\{\}][[:space:]]*$ ]] && return 1
+  local _braces_only_pattern='^[[:space:]]*[\{\}][[:space:]]*$'
+  [[ "$line" =~ $_braces_only_pattern ]] && return 1
 
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
   # Pattern stored in variable for Bash 3.0 compatibility
