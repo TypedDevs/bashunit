@@ -114,7 +114,7 @@ function bashunit::helper::interpolate_function_name() {
   [[ $# -gt 0 ]] && args=("$@")
   local result="$function_name"
 
-  local i=0
+  local i
   for ((i = 0; i < args_count; i++)); do
     local placeholder="::$((i + 1))::"
     # shellcheck disable=SC2155
