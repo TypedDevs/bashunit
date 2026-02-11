@@ -15,8 +15,9 @@ function bashunit::doc::print_asserts() {
   local fn=""
   local should_print=0
 
-  # Pattern stored in variable for Bash 3.0 compatibility
+  # Patterns stored in variable for Bash 3.0 compatibility
   local _doc_pattern='^## ([A-Za-z0-9_]+)'
+  local _code_fence_pattern='^\`\`\`'
   local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
     if [[ $line =~ $_doc_pattern ]]; then
@@ -32,8 +33,6 @@ function bashunit::doc::print_asserts() {
     fi
 
     if ((should_print)); then
-      # Pattern stored in variable for Bash 3.0 compatibility
-      local _code_fence_pattern='^\`\`\`'
       if [[ "$line" =~ $_code_fence_pattern ]]; then
         echo "--------------"
         echo "$docstring"
