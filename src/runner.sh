@@ -219,7 +219,9 @@ function bashunit::runner::parse_data_provider_args() {
 
   # Check for shell metacharacters that would break eval or cause globbing
   local has_metachar=false
-  if bashunit::regex_match "$input" '[^\\][\|\&\;\*]' || bashunit::regex_match "$input" '^[\|\&\;\*]'; then
+  local _re1='[^\\][\|\&\;\*]'
+  local _re2='^[\|\&\;\*]'
+  if [[ "$input" =~ $_re1 ]] || [[ "$input" =~ $_re2 ]]; then
     has_metachar=true
   fi
 
@@ -807,7 +809,7 @@ function bashunit::runner::parse_result_sync() {
   local test_exit_code=0
 
   # Use pre-compiled regex constant
-  if bashunit::regex_match "$result_line" "$_BASHUNIT_RUNNER_PARSE_RESULT_REGEX"; then
+  if [[ "$result_line" =~ $_BASHUNIT_RUNNER_PARSE_RESULT_REGEX ]]; then
     assertions_failed="${BASH_REMATCH[1]}"
     assertions_passed="${BASH_REMATCH[2]}"
     assertions_skipped="${BASH_REMATCH[3]}"

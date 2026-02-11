@@ -3,13 +3,6 @@
 declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 
 #
-# Helper function for regex matching that works correctly in Bash 3.0+
-# In Bash < 3.2, regex matching with literal patterns doesn't work properly,
-# so we need to use this function instead of direct [[ ... =~ ... ]] checks.
-#
-# @param $1 string The string to match
-# @param $2 string The regex pattern
-#
 # Walks up the call stack to find the first function that looks like a test function.
 # A test function is one that starts with "test_" or "test" (camelCase).
 # If no test function is found, falls back to the caller of the assertion function.

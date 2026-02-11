@@ -358,22 +358,27 @@ function bashunit::coverage::is_executable_line() {
   [[ -z "${line// /}" ]] && return 1
 
   # Skip comment-only lines (including shebang)
-  bashunit::regex_match "$line" '^[[:space:]]*#' && return 1
+  local _re='^[[:space:]]*#'
+  [[ "$line" =~ $_re ]] && return 1
 
   # Skip function declaration lines (but not single-line functions with body)
-  bashunit::regex_match "$line" "$_BASHUNIT_COVERAGE_FUNC_PATTERN" && return 1
+  [[ "$line" =~ $_BASHUNIT_COVERAGE_FUNC_PATTERN ]] && return 1
 
   # Skip lines with only braces
-  bashunit::regex_match "$line" '^[[:space:]]*[\{\}][[:space:]]*$' && return 1
+  _re='^[[:space:]]*[\{\}][[:space:]]*$'
+  [[ "$line" =~ $_re ]] && return 1
 
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
-  bashunit::regex_match "$line" '^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$' && return 1
+  _re='^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$'
+  [[ "$line" =~ $_re ]] && return 1
 
   # Skip case patterns like "--option)" or "*)"
-  bashunit::regex_match "$line" '^[[:space:]]*[^\)]+\)[[:space:]]*$' && return 1
+  _re='^[[:space:]]*[^\)]+\)[[:space:]]*$'
+  [[ "$line" =~ $_re ]] && return 1
 
   # Skip standalone ) for arrays/subshells
-  bashunit::regex_match "$line" '^[[:space:]]*\)[[:space:]]*(#.*)?$' && return 1
+  _re='^[[:space:]]*\)[[:space:]]*(#.*)?$'
+  [[ "$line" =~ $_re ]] && return 1
 
   return 0
 }
@@ -494,10 +499,14 @@ function bashunit::coverage::extract_functions() {
       local fn_name=""
 
       # Match: function name() or function name {
-      if bashunit::regex_match "$line" '^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'; then
+      local _re='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
+      if [[ "$line" =~ $_re ]]; then
         fn_name="${BASH_REMATCH[2]}"
-      elif bashunit::regex_match "$line" '^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'; then
-        fn_name="${BASH_REMATCH[2]}"
+      else
+        _re='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
+        if [[ "$line" =~ $_re ]]; then
+          fn_name="${BASH_REMATCH[2]}"
+        fi
       fi
 
       if [[ -n "$fn_name" ]]; then
@@ -512,7 +521,8 @@ function bashunit::coverage::extract_functions() {
         brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
 
         # Single-line function
-        if [[ $brace_count -eq 0 ]] && bashunit::regex_match "$line" '\{' && bashunit::regex_match "$line" '\}'; then
+        local _re_ob='\{' _re_cb='\}'
+        if [[ $brace_count -eq 0 ]] && [[ "$line" =~ $_re_ob ]] && [[ "$line" =~ $_re_cb ]]; then
           echo "${current_fn}:${fn_start}:${lineno}"
           in_function=0
           current_fn=""

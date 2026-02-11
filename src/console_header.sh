@@ -63,27 +63,27 @@ function bashunit::console_header::print_help() {
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
-test [path]         Run tests (default command)
-bench [path]        Run benchmarks
-assert <fn> <args>  Run standalone assertion
-doc [filter]        Display assertion documentation
-init [dir]          Initialize a new test directory
-learn               Start interactive tutorial
-upgrade             Upgrade bashunit to latest version
+  test [path]         Run tests (default command)
+  bench [path]        Run benchmarks
+  assert <fn> <args>  Run standalone assertion
+  doc [filter]        Display assertion documentation
+  init [dir]          Initialize a new test directory
+  learn               Start interactive tutorial
+  upgrade             Upgrade bashunit to latest version
 
 Global Options:
--h, --help        Show this help message
--v, --version     Display the current version
+  -h, --help        Show this help message
+  -v, --version     Display the current version
 
 Run 'bashunit <command> --help' for command-specific options.
 
 Examples:
-bashunit test tests/                Run all tests in directory
-bashunit tests/                     Run all tests (shorthand)
-bashunit bench                      Run all benchmarks
-bashunit assert equals "foo" "foo"  Run standalone assertion
-bashunit doc contains               Show docs for 'contains' assertions
-bashunit init                       Initialize test directory
+  bashunit test tests/                Run all tests in directory
+  bashunit tests/                     Run all tests (shorthand)
+  bashunit bench                      Run all benchmarks
+  bashunit assert equals "foo" "foo"  Run standalone assertion
+  bashunit doc contains               Show docs for 'contains' assertions
+  bashunit init                       Initialize test directory
 
 More info: https://bashunit.typeddevs.com/command-line
 EOF
@@ -92,57 +92,57 @@ EOF
 function bashunit::console_header::print_test_help() {
   cat <<EOF
 Usage: bashunit test [path] [options]
- bashunit [path] [options]
+  bashunit [path] [options]
 
 Run test files. If no path is provided, searches for tests in BASHUNIT_DEFAULT_PATH.
 
 Arguments:
-path                        File or directory containing tests
-       - Directories: runs all '*test.sh' files
-       - Wildcards: supported to match multiple files
+  path                        File or directory containing tests
+    - Directories: runs all '*test.sh' files
+    - Wildcards: supported to match multiple files
 
 Options:
--a, --assert <fn> <args>    Run a standalone assert function (deprecated: use 'bashunit assert')
--e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
--f, --filter <name>         Only run tests matching the name
---log-junit <file>          Write JUnit XML report
--p, --parallel              Run tests in parallel
---no-parallel               Run tests sequentially
--r, --report-html <file>    Write HTML report
--s, --simple                Simple output (dots)
---detailed                  Detailed output (default)
--R, --run-all               Run all assertions (don't stop on first failure)
--S, --stop-on-failure       Stop on first failure
--vvv, --verbose             Show execution details
---debug [file]              Enable shell debug mode
---no-output                 Suppress all output
---failures-only             Only show failures (suppress passed/skipped/incomplete)
---no-progress               Suppress real-time progress, show only final results
---show-output               Show test output on failure (default: enabled)
---no-output-on-failure      Hide test output on failure
---strict                    Enable strict shell mode (set -euo pipefail)
---skip-env-file             Skip .env loading, use shell environment only
--l, --login                 Run tests in login shell context
---no-color                  Disable colored output (honors NO_COLOR env var)
--h, --help                  Show this help message
+  -a, --assert <fn> <args>    Run a standalone assert function (deprecated: use 'bashunit assert')
+  -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
+  -f, --filter <name>         Only run tests matching the name
+  --log-junit <file>          Write JUnit XML report
+  -p, --parallel              Run tests in parallel
+  --no-parallel               Run tests sequentially
+  -r, --report-html <file>    Write HTML report
+  -s, --simple                Simple output (dots)
+  --detailed                  Detailed output (default)
+  -R, --run-all               Run all assertions (don't stop on first failure)
+  -S, --stop-on-failure       Stop on first failure
+  -vvv, --verbose             Show execution details
+  --debug [file]              Enable shell debug mode
+  --no-output                 Suppress all output
+  --failures-only             Only show failures (suppress passed/skipped/incomplete)
+  --no-progress               Suppress real-time progress, show only final results
+  --show-output               Show test output on failure (default: enabled)
+  --no-output-on-failure      Hide test output on failure
+  --strict                    Enable strict shell mode (set -euo pipefail)
+  --skip-env-file             Skip .env loading, use shell environment only
+  -l, --login                 Run tests in login shell context
+  --no-color                  Disable colored output (honors NO_COLOR env var)
+  -h, --help                  Show this help message
 
 Coverage:
---coverage                   Enable code coverage tracking
---coverage-paths <paths>     Source paths to track (default: auto-discover)
---coverage-exclude <pats>    Patterns to exclude (comma-separated)
---coverage-report [file]     Output file (default: coverage/lcov.info)
---coverage-report-html [dir] HTML report (default: coverage/html)
---coverage-min <pct>         Fail if coverage below percentage
---no-coverage-report         Disable file output, console only
+  --coverage                   Enable code coverage tracking
+  --coverage-paths <paths>     Source paths to track (default: auto-discover)
+  --coverage-exclude <pats>    Patterns to exclude (comma-separated)
+  --coverage-report [file]     Output file (default: coverage/lcov.info)
+  --coverage-report-html [dir] HTML report (default: coverage/html)
+  --coverage-min <pct>         Fail if coverage below percentage
+  --no-coverage-report         Disable file output, console only
 
 Examples:
-bashunit test tests/
-bashunit test tests/unit/ --parallel
-bashunit test --filter "user" tests/
-bashunit test -a equals "foo" "foo"
-bashunit test tests/ --coverage
-bashunit test tests/ --coverage --coverage-min 80
-bashunit test tests/ --coverage-report-html
+  bashunit test tests/
+  bashunit test tests/unit/ --parallel
+  bashunit test --filter "user" tests/
+  bashunit test -a equals "foo" "foo"
+  bashunit test tests/ --coverage
+  bashunit test tests/ --coverage --coverage-min 80
+  bashunit test tests/ --coverage-report-html
 EOF
 }
 
@@ -153,23 +153,23 @@ Usage: bashunit bench [path] [options]
 Run benchmark files. Searches for '*bench.sh' files.
 
 Arguments:
-path                        File or directory containing benchmarks
+  path                        File or directory containing benchmarks
 
 Options:
--e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
--f, --filter <name>         Only run benchmarks matching the name
--s, --simple                Simple output
---detailed                  Detailed output (default)
--vvv, --verbose             Show execution details
---skip-env-file             Skip .env loading, use shell environment only
--l, --login                 Run in login shell context
---no-color                  Disable colored output (honors NO_COLOR env var)
--h, --help                  Show this help message
+  -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
+  -f, --filter <name>         Only run benchmarks matching the name
+  -s, --simple                Simple output
+  --detailed                  Detailed output (default)
+  -vvv, --verbose             Show execution details
+  --skip-env-file             Skip .env loading, use shell environment only
+  -l, --login                 Run in login shell context
+  --no-color                  Disable colored output (honors NO_COLOR env var)
+  -h, --help                  Show this help message
 
 Examples:
-bashunit bench
-bashunit bench benchmarks/
-bashunit bench --filter "parse"
+  bashunit bench
+  bashunit bench benchmarks/
+  bashunit bench --filter "parse"
 EOF
 }
 
@@ -196,15 +196,15 @@ Usage: bashunit init [directory]
 Initialize a new test directory with sample files.
 
 Arguments:
-directory                   Target directory (default: tests)
+  directory                   Target directory (default: tests)
 
 Creates:
-- bootstrap.sh              Setup file for test configuration
-- example_test.sh           Sample test file to get started
+  - bootstrap.sh              Setup file for test configuration
+  - example_test.sh           Sample test file to get started
 
 Examples:
-bashunit init               Create tests/ directory
-bashunit init spec          Create spec/ directory
+  bashunit init               Create tests/ directory
+  bashunit init spec          Create spec/ directory
 EOF
 }
 
@@ -215,16 +215,16 @@ Usage: bashunit learn
 Start the interactive learning tutorial.
 
 The tutorial includes 10 progressive lessons:
-1. Basics - Your First Test
-2. Assertions - Testing Different Conditions
-3. Setup & Teardown - Managing Test Lifecycle
-4. Testing Functions - Unit Testing Patterns
-5. Testing Scripts - Integration Testing
-6. Mocking - Test Doubles and Mocks
-7. Spies - Verifying Function Calls
-8. Data Providers - Parameterized Tests
-9. Exit Codes - Testing Success and Failure
-10. Complete Challenge - Real World Scenario
+  1. Basics - Your First Test
+  2. Assertions - Testing Different Conditions
+  3. Setup & Teardown - Managing Test Lifecycle
+  4. Testing Functions - Unit Testing Patterns
+  5. Testing Scripts - Integration Testing
+  6. Mocking - Test Doubles and Mocks
+  7. Spies - Verifying Function Calls
+  8. Data Providers - Parameterized Tests
+  9. Exit Codes - Testing Success and Failure
+  10. Complete Challenge - Real World Scenario
 
 Your progress is saved automatically.
 EOF
@@ -243,28 +243,28 @@ EOF
 function bashunit::console_header::print_assert_help() {
   cat <<EOF
 Usage: bashunit assert <function> [args...]
- bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
+  bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
 
 Run standalone assertion(s) without creating a test file.
 
 Single assertion:
-bashunit assert equals "foo" "foo"
-bashunit assert same "1" "1"
-bashunit assert contains "world" "hello world"
-bashunit assert exit_code 0 "echo 'success'"
+  bashunit assert equals "foo" "foo"
+  bashunit assert same "1" "1"
+  bashunit assert contains "world" "hello world"
+  bashunit assert exit_code 0 "echo 'success'"
 
 Multiple assertions on command output:
-bashunit assert "echo 'error' && exit 1" exit_code "1" contains "error"
-bashunit assert "./my_script.sh" exit_code "0" contains "success" not_contains "error"
+  bashunit assert "echo 'error' && exit 1" exit_code "1" contains "error"
+  bashunit assert "./my_script.sh" exit_code "0" contains "success" not_contains "error"
 
 Arguments:
-function                    Assertion function name (with or without 'assert_' prefix)
-command                     Command to execute (for multi-assertion mode)
-assertion                   Assertion name (exit_code, contains, equals, etc.)
-arg                         Expected value for the assertion
+  function                    Assertion function name (with or without 'assert_' prefix)
+  command                     Command to execute (for multi-assertion mode)
+  assertion                   Assertion name (exit_code, contains, equals, etc.)
+  arg                         Expected value for the assertion
 
 Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
- The 'bashunit assert' subcommand is the recommended approach.
+  The 'bashunit assert' subcommand is the recommended approach.
 
 More info: https://bashunit.typeddevs.com/standalone
 EOF

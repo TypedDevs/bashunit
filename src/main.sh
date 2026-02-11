@@ -694,7 +694,8 @@ function bashunit::main::handle_assert_exit_code() {
     last_line=$(echo "$output" | tail -n 1)
     if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
       inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
-      if ! bashunit::regex_match "$inner_exit_code" '^[0-9]+$'; then
+      local _re='^[0-9]+$'
+      if ! [[ "$inner_exit_code" =~ $_re ]]; then
         inner_exit_code=1
       fi
       output=$(echo "$output" | sed '$d')

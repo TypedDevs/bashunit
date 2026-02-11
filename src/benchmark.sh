@@ -16,22 +16,34 @@ function bashunit::benchmark::parse_annotations() {
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
-  if bashunit::regex_match "$annotation" '@revs=([0-9]+)'; then
+  local _re='@revs=([0-9]+)'
+  if [[ "$annotation" =~ $_re ]]; then
     revs="${BASH_REMATCH[1]}"
-  elif bashunit::regex_match "$annotation" '@revolutions=([0-9]+)'; then
-    revs="${BASH_REMATCH[1]}"
+  else
+    _re='@revolutions=([0-9]+)'
+    if [[ "$annotation" =~ $_re ]]; then
+      revs="${BASH_REMATCH[1]}"
+    fi
   fi
 
-  if bashunit::regex_match "$annotation" '@its=([0-9]+)'; then
+  _re='@its=([0-9]+)'
+  if [[ "$annotation" =~ $_re ]]; then
     its="${BASH_REMATCH[1]}"
-  elif bashunit::regex_match "$annotation" '@iterations=([0-9]+)'; then
-    its="${BASH_REMATCH[1]}"
+  else
+    _re='@iterations=([0-9]+)'
+    if [[ "$annotation" =~ $_re ]]; then
+      its="${BASH_REMATCH[1]}"
+    fi
   fi
 
-  if bashunit::regex_match "$annotation" '@max_ms=([0-9.]+)'; then
+  _re='@max_ms=([0-9.]+)'
+  if [[ "$annotation" =~ $_re ]]; then
     max_ms="${BASH_REMATCH[1]}"
-  elif bashunit::regex_match "$annotation" '@max_ms=([0-9.]+)'; then
-    max_ms="${BASH_REMATCH[1]}"
+  else
+    _re='@max_ms=([0-9.]+)'
+    if [[ "$annotation" =~ $_re ]]; then
+      max_ms="${BASH_REMATCH[1]}"
+    fi
   fi
 
   if [[ -n "$max_ms" ]]; then

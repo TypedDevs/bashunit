@@ -101,7 +101,8 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if bashunit::regex_match "${!#}" '^[0-9]+$'; then
+  local _re='^[0-9]+$'
+  if [[ "${!#}" =~ $_re ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi

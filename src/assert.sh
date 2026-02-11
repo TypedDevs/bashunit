@@ -87,11 +87,12 @@ function bashunit::run_command_or_eval() {
   if [[ "$cmd" =~ $_re ]]; then
     eval "${cmd#eval }" &>/dev/null
   else
-  _re='^alias'
-  if [[ "$(command -v "$cmd")" =~ $_re ]]; then
-    eval "$cmd" &>/dev/null
-  else
-    "$cmd" &>/dev/null
+    _re='^alias'
+    if [[ "$(command -v "$cmd")" =~ $_re ]]; then
+      eval "$cmd" &>/dev/null
+    else
+      "$cmd" &>/dev/null
+    fi
   fi
   return $?
 }
