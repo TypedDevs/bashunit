@@ -120,7 +120,7 @@ function bashunit::runner::load_bench_files() {
   files=("$@")
 
   local bench_file
-  for bench_file in ${files+"${files[@]}"}; do
+  for bench_file in "${files[@]+"${files[@]}"}"; do
     [[ -f $bench_file ]] || continue
     unset BASHUNIT_CURRENT_TEST_ID
     export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${bench_file}")"

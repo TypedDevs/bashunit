@@ -233,6 +233,7 @@ function assert_not_same() {
 
 function assert_contains() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -281,6 +282,7 @@ function assert_contains_ignore_case() {
 
 function assert_not_contains() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -303,6 +305,7 @@ function assert_not_contains() {
 
 function assert_matches() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -325,6 +328,7 @@ function assert_matches() {
 
 function assert_not_matches() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -528,6 +532,7 @@ function assert_command_not_found() {
 
 function assert_string_starts_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -569,6 +574,7 @@ function assert_string_not_starts_with() {
 
 function assert_string_ends_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
@@ -591,6 +597,7 @@ function assert_string_ends_with() {
 
 function assert_string_not_ends_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
   local -a actual_arr
