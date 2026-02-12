@@ -769,7 +769,7 @@ function bashunit::runner::parse_result_parallel() {
   mkdir -p "$test_suite_dir"
 
   local sanitized_args
-  sanitized_args=$(echo "${args[*]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+  sanitized_args=$(echo "${args[*]+"${args[*]}"}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
   local template
   if [[ -z "$sanitized_args" ]]; then
     template="${fn_name}.XXXXXX"
