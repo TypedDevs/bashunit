@@ -5,9 +5,9 @@ make pre_commit/run
 EXIT_CODE=$?
 
 if [[ ${EXIT_CODE} -ne 0 ]]; then
-  echo "Pre Commit checks failed. Please fix the above issues before committing"
-  exit ${EXIT_CODE}
+    echo "Pre Commit checks failed. Please fix the above issues before committing"
+    exit ${EXIT_CODE}
 else
-  echo "Pre Commit checks passed, no problems found"
-  exit 0
+    echo "Pre Commit checks passed, no problems found"
+    exit 0
 fi
