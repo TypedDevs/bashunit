@@ -232,10 +232,32 @@ Supported: Linux (Ubuntu, Alpine), macOS, Windows (WSL/Git Bash)
 
 ```bash
 # Docker testing
-make test/alpine
+make docker/alpine
+make docker/ubuntu
 
 # NixOS
 nix-shell --pure --run "./bashunit --simple --parallel"
+```
+
+### Testing with Bash 3.0
+
+bashunit supports Bash 3.0+. A dedicated Dockerfile is provided at `local/Dockerfile.bash3` to compile Bash 3.0 from source for compatibility testing. This is the same setup used in CI.
+
+```bash
+# Build the Bash 3.0 image
+docker build -t bashunit-bash3 -f local/Dockerfile.bash3 .
+
+# Run all tests under Bash 3.0
+docker run --rm -v "$(pwd)":/bashunit -w /bashunit bashunit-bash3 \
+  /opt/bash-3.0/bin/bash ./bashunit tests/
+
+# Run tests in parallel
+docker run --rm -v "$(pwd)":/bashunit -w /bashunit bashunit-bash3 \
+  /opt/bash-3.0/bin/bash ./bashunit --parallel tests/
+
+# Open an interactive Bash 3.0 shell for debugging
+docker run --rm -it -v "$(pwd)":/bashunit -w /bashunit bashunit-bash3 \
+  /opt/bash-3.0/bin/bash
 ```
 
 ### Writing Tests

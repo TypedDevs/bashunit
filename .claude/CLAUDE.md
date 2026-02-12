@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**bashunit** is a comprehensive, lightweight Bash testing framework (requires Bash 3.2+) focused on developer experience. It provides assertions, test doubles (spies/mocks), data providers, snapshots, and more.
+**bashunit** is a comprehensive, lightweight Bash testing framework (requires Bash 3.0+) focused on developer experience. It provides assertions, test doubles (spies/mocks), data providers, snapshots, and more.
 
 **Documentation:** https://bashunit.typeddevs.com
 
@@ -11,7 +11,7 @@
 This directory (`.claude/`) contains comprehensive Claude Code configuration:
 - **Custom skills**: `/tdd-cycle`, `/fix-test`, `/add-assertion`, `/check-coverage`, `/pre-release`
 - **Custom commands**: `/gh-issue` (complete GitHub issue → PR workflow)
-- **Modular rules**: Bash 3.2+ compatibility, testing patterns, TDD workflow
+- **Modular rules**: Bash 3.0+ compatibility, testing patterns, TDD workflow
 - **Automation**: Agent SDK examples for CI/CD
 
 See `README.md` in this directory for complete documentation.
@@ -27,7 +27,7 @@ See `README.md` in this directory for complete documentation.
 
 Every change starts from a failing test. No exceptions.
 
-### Bash 3.2+ Compatible
+### Bash 3.0+ Compatible
 
 Works on macOS default bash. **Prohibited features:**
 - ❌ `declare -A` (associative arrays - Bash 4.0+)
@@ -52,7 +52,7 @@ shfmt -w .       # Code formatting
 
 ```
 bashunit/
-├── src/                    # Core framework code (Bash 3.2+ compatible)
+├── src/                    # Core framework code (Bash 3.0+ compatible)
 │   ├── bashunit.sh        # Main entry point
 │   ├── assertions.sh      # Assertion functions
 │   ├── assert_*.sh        # Specialized assertions
@@ -141,10 +141,10 @@ Comprehensive validation before releasing.
 
 Specialized agents you can consult using the Task tool:
 
-### Bash 3.2+ Expert
-**When to use:** Reviewing code for Bash 3.2+ compatibility
+### Bash 3.0+ Expert
+**When to use:** Reviewing code for Bash 3.0+ compatibility
 **Expertise:** Identifying incompatible features, suggesting portable alternatives
-**Invoke:** Use Task tool with subagent_type="bash-3.2-expert"
+**Invoke:** Use Task tool with subagent_type="bash-3.0-expert"
 
 ### Code Reviewer
 **When to use:** Before committing, for comprehensive code review
@@ -185,7 +185,7 @@ Complete end-to-end workflow from issue to PR:
 
 ### Bash Style
 @.claude/rules/bash-style.md
-- Bash 3.2+ compatibility (critical!)
+- Bash 3.0+ compatibility (critical!)
 - ShellCheck compliance
 - Function documentation
 - Naming conventions
@@ -208,7 +208,7 @@ Complete end-to-end workflow from issue to PR:
 
 ### `src/**/*.sh`
 - Small, portable functions
-- Bash 3.2+ compatibility (no associative arrays, no `[[`, no `${var,,}`)
+- Bash 3.0+ compatibility (no associative arrays, no `[[`, no `${var,,}`)
 - Proper namespacing (`bashunit::*`)
 - No external dependencies in core
 - Function documentation required
@@ -235,7 +235,7 @@ Complete end-to-end workflow from issue to PR:
 
 ### Never:
 - Invent commands/features not in the codebase
-- Break Bash 3.2+ compatibility
+- Break Bash 3.0+ compatibility
 - Skip tests or quality checks
 - Change public API without docs/CHANGELOG
 - Use speculative/unproven patterns
@@ -249,7 +249,7 @@ Complete end-to-end workflow from issue to PR:
 - Keep tests passing during REFACTOR
 - Run quality checks before committing
 - Update CHANGELOG.md for user-visible changes
-- Maintain Bash 3.2+ compatibility
+- Maintain Bash 3.0+ compatibility
 
 ## Definition of Done
 
@@ -258,7 +258,7 @@ Before marking work complete:
 - ✅ `make sa` passes (ShellCheck)
 - ✅ `make lint` passes (EditorConfig)
 - ✅ Code formatted (`shfmt -w .`)
-- ✅ Bash 3.2+ compatible
+- ✅ Bash 3.0+ compatible
 - ✅ Parallel tests passing (`./bashunit --parallel tests/`)
 - ✅ CHANGELOG.md updated (if user-facing changes)
 - ✅ Documentation updated (if needed)

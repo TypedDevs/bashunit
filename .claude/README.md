@@ -8,7 +8,7 @@ This directory contains custom Claude Code configuration to enhance AI-assisted 
 .claude/
 ├── CLAUDE.md              # Main project instructions (read this first!)
 ├── rules/                 # Modular rules by topic
-│   ├── bash-style.md      # Bash 3.2+ compatibility & style
+│   ├── bash-style.md      # Bash 3.0+ compatibility & style
 │   ├── testing.md         # Testing patterns & guidelines
 │   └── tdd-workflow.md    # TDD Red-Green-Refactor cycle
 ├── skills/                # Custom reusable workflows
@@ -90,7 +90,7 @@ python .claude/agents/examples/pr-validator.py <pr-number>
 ### 2. Rules (Modular Guidelines)
 
 #### `rules/bash-style.md`
-- **Bash 3.2+ compatibility** (critical for macOS)
+- **Bash 3.0+ compatibility** (critical for macOS)
 - Coding standards
 - ShellCheck compliance
 - Documentation patterns
@@ -252,13 +252,13 @@ Workflow steps...
 For specific domains, create custom agents:
 
 ```markdown
-# .claude/agents/bash-3-expert/agent.md
+# .claude/agents/bash-3.0-expert/agent.md
 
-You are a Bash 3.2 compatibility expert for bashunit.
+You are a Bash 3.0 compatibility expert for bashunit.
 
 Your expertise:
 - Identify Bash 4+ features
-- Suggest Bash 3.2 alternatives
+- Suggest Bash 3.0 alternatives
 - Explain compatibility trade-offs
 
 When consulted:
@@ -356,7 +356,7 @@ jobs:
 /tdd-cycle
 
 # Test rules are followed
-# (Claude should enforce Bash 3.2+ compatibility)
+# (Claude should enforce Bash 3.0+ compatibility)
 
 # Test agents run
 python .claude/agents/examples/tdd-bot.py --help

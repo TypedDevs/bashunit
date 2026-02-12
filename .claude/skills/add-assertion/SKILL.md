@@ -384,7 +384,7 @@ Provide progress updates:
 ## Quality Standards
 
 **All assertions must:**
-- Follow Bash 3.2+ compatibility (@.claude/rules/bash-style.md)
+- Follow Bash 3.0+ compatibility (@.claude/rules/bash-style.md)
 - Have comprehensive tests (success, failure, edge cases)
 - Have clear, helpful error messages
 - Be documented with examples

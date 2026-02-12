@@ -121,7 +121,7 @@ shfmt -l .
 
 ### 6. Compatibility
 
-**Verify Bash 3.2+ compatibility:**
+**Verify Bash 3.0+ compatibility:**
 
 ```bash
 # Check for Bash 4+ features
@@ -139,7 +139,7 @@ grep -r "\${.*,,}" src/  # Case conversion (Bash 4+)
 **If available, test on multiple platforms:**
 
 ```bash
-# macOS (Bash 3.2)
+# macOS (Bash 3.0)
 ./bashunit tests/
 
 # Linux (if Docker available)
@@ -149,7 +149,7 @@ make test/alpine
 ```
 
 **Verify:**
-- ✅ Works on macOS (Bash 3.2)
+- ✅ Works on macOS (Bash 3.0)
 - ✅ Works on Linux
 - ✅ No hardcoded paths
 - ✅ No platform assumptions
@@ -368,7 +368,7 @@ Date: 2026-02-09
     • Examples: All working
 
 ✅ Compatibility
-    • Bash 3.2+: Compatible
+    • Bash 3.0+: Compatible
     • No Bash 4+ features found
 
 ✅ Security
@@ -423,7 +423,7 @@ Next Steps:
 - ✅ Git state clean
 - ✅ CI passing
 - ✅ No known security issues
-- ✅ Bash 3.2+ compatible
+- ✅ Bash 3.0+ compatible
 
 ## After Pre-Release Validation
 

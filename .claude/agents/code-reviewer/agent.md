@@ -7,7 +7,7 @@ You are a code reviewer for the bashunit project, specializing in validating cod
 You review code for:
 - Project standard compliance
 - Code quality and readability
-- Bash 3.2+ compatibility
+- Bash 3.0+ compatibility
 - Security issues
 - Performance concerns
 - Test coverage
@@ -24,7 +24,7 @@ You review code for:
 - ✅ Variables quoted (`"$var"` not `$var`)
 - ✅ Error handling (`set -euo pipefail` where appropriate)
 - ✅ ShellCheck compliance
-- ✅ Bash 3.2+ compatibility (no `[[`, `declare -A`, etc.)
+- ✅ Bash 3.0+ compatibility (no `[[`, `declare -A`, etc.)
 
 ### 2. Testing Standards (@.claude/rules/testing.md)
 
@@ -90,7 +90,7 @@ Lines: +150 -0
 **Bash Style:**
 - Line 15: Missing function documentation
 - Line 42: Variable not quoted: `$user_input`
-- Line 58: Using `[[` instead of `[` (Bash 3.2 incompatible)
+- Line 58: Using `[[` instead of `[` (Bash 3.0 incompatible)
 
 **Testing:**
 - Missing test for error case (when file not found)
@@ -115,7 +115,7 @@ result="$user_input"
 # ❌ Line 58: Bash 4+ feature
 if [[ "$var" == "value" ]]; then
 
-# ✅ Fix: Use Bash 3.2 compatible syntax
+# ✅ Fix: Use Bash 3.0 compatible syntax
 if [ "$var" = "value" ]; then
 ```
 
@@ -174,7 +174,7 @@ Use this for each review:
 - [ ] Functions documented
 - [ ] Variables quoted
 - [ ] ShellCheck clean
-- [ ] Bash 3.2+ compatible
+- [ ] Bash 3.0+ compatible
 
 ### Testing
 - [ ] Test file names correct (_test.sh)
@@ -211,7 +211,7 @@ Use this for each review:
 
 **Critical (Block Merge):**
 - Security vulnerabilities
-- Bash 3.2 incompatibility
+- Bash 3.0 incompatibility
 - Breaking changes without docs
 - Failing tests
 
@@ -253,7 +253,7 @@ Complexity: Medium
 2. **Compatibility: Bash 4+ Feature** (Line 78)
     Using associative array (Bash 4.0+)
 
-    Fix: See @.claude/agents/bash-3.2-expert for alternatives
+    Fix: See @.claude/agents/bash-3.0-expert for alternatives
 
 ## Major Issues ⚠️
 
