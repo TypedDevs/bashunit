@@ -88,39 +88,39 @@ bashunit::clock::init
 _SUBCOMMAND=""
 
 case "${1:-}" in
-test | bench | doc | init | learn | upgrade | assert)
-  _SUBCOMMAND="$1"
-  shift
-  ;;
--v | --version)
-  bashunit::console_header::print_version
-  exit 0
-  ;;
--h | --help)
-  bashunit::console_header::print_help
-  exit 0
-  ;;
--*)
-  # Flag without subcommand → assume "test"
-  _SUBCOMMAND="test"
-  ;;
-"")
-  # No arguments → assume "test" (uses BASHUNIT_DEFAULT_PATH)
-  _SUBCOMMAND="test"
-  ;;
-*)
-  # Path argument → assume "test"
-  _SUBCOMMAND="test"
-  ;;
+  test | bench | doc | init | learn | upgrade | assert)
+    _SUBCOMMAND="$1"
+    shift
+    ;;
+  -v | --version)
+    bashunit::console_header::print_version
+    exit 0
+    ;;
+  -h | --help)
+    bashunit::console_header::print_help
+    exit 0
+    ;;
+  -*)
+    # Flag without subcommand → assume "test"
+    _SUBCOMMAND="test"
+    ;;
+  "")
+    # No arguments → assume "test" (uses BASHUNIT_DEFAULT_PATH)
+    _SUBCOMMAND="test"
+    ;;
+  *)
+    # Path argument → assume "test"
+    _SUBCOMMAND="test"
+    ;;
 esac
 
 # Route to subcommand handler
 case "$_SUBCOMMAND" in
-test) bashunit::main::cmd_test "$@" ;;
-bench) bashunit::main::cmd_bench "$@" ;;
-doc) bashunit::main::cmd_doc "$@" ;;
-init) bashunit::main::cmd_init "$@" ;;
-learn) bashunit::main::cmd_learn "$@" ;;
-upgrade) bashunit::main::cmd_upgrade "$@" ;;
-assert) bashunit::main::cmd_assert "$@" ;;
+  test) bashunit::main::cmd_test "$@" ;;
+  bench) bashunit::main::cmd_bench "$@" ;;
+  doc) bashunit::main::cmd_doc "$@" ;;
+  init) bashunit::main::cmd_init "$@" ;;
+  learn) bashunit::main::cmd_learn "$@" ;;
+  upgrade) bashunit::main::cmd_upgrade "$@" ;;
+  assert) bashunit::main::cmd_assert "$@" ;;
 esac
