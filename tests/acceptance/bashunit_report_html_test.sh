@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 set -euo pipefail
 
 function set_up_before_script() {

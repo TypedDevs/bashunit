@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 # shellcheck disable=SC2317
 set -uo pipefail
 set +e

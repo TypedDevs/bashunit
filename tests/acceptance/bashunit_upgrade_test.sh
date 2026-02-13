@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 set -uo pipefail
 set +e
 
