@@ -375,9 +375,14 @@ function release::sandbox::create() {
   release::log_info "Creating sandbox at: $SANDBOX_DIR"
 
   # Copy repo content excluding .git, .release-state, node_modules
-  # Using cp + rm for portability (rsync not available on all systems)
-  cp -r . "$SANDBOX_DIR/"
-  rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" "$SANDBOX_DIR/node_modules"
+  # Use tar pipe for faster copying and built-in exclusions
+  tar --exclude='.git' \
+      --exclude='.release-state' \
+      --exclude='node_modules' \
+      --exclude='.tasks' \
+      --exclude='tmp' \
+      -cf - . | tar -xf - -C "$SANDBOX_DIR"
+
   release::log_verbose "Copied project files to sandbox"
 }
 
