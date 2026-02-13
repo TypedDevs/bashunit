@@ -376,12 +376,19 @@ function release::sandbox::create() {
 
   # Copy repo content excluding .git, .release-state, node_modules
   # Try tar pipe first (faster), fallback to cp + rm for portability
-  if tar --exclude='.git' \
+  # Disable errexit temporarily to allow tar fallback in strict mode
+  local tar_status=0
+  set +e
+  tar --exclude='.git' \
     --exclude='.release-state' \
     --exclude='node_modules' \
     --exclude='.tasks' \
     --exclude='tmp' \
-    -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null; then
+    -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null
+  tar_status=$?
+  set -e
+
+  if [ "$tar_status" -eq 0 ]; then
     release::log_verbose "Copied project files to sandbox (tar)"
   else
     # Fallback: traditional cp + rm for maximum portability
