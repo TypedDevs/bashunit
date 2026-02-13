@@ -243,6 +243,7 @@ function test_dry_run_logs_what_would_happen() {
     cd "$temp_dir" || return
     release::update_bashunit_version "0.31.0" 2>&1
   )
+  # shellcheck disable=SC2034
   DRY_RUN=false
 
   assert_contains "DRY-RUN" "$output"

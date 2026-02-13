@@ -375,15 +375,21 @@ function release::sandbox::create() {
   release::log_info "Creating sandbox at: $SANDBOX_DIR"
 
   # Copy repo content excluding .git, .release-state, node_modules
-  # Use tar pipe for faster copying and built-in exclusions
-  tar --exclude='.git' \
-      --exclude='.release-state' \
-      --exclude='node_modules' \
-      --exclude='.tasks' \
-      --exclude='tmp' \
-      -cf - . | tar -xf - -C "$SANDBOX_DIR"
-
-  release::log_verbose "Copied project files to sandbox"
+  # Try tar pipe first (faster), fallback to cp + rm for portability
+  if tar --exclude='.git' \
+    --exclude='.release-state' \
+    --exclude='node_modules' \
+    --exclude='.tasks' \
+    --exclude='tmp' \
+    -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null; then
+    release::log_verbose "Copied project files to sandbox (tar)"
+  else
+    # Fallback: traditional cp + rm for maximum portability
+    cp -r . "$SANDBOX_DIR/"
+    rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" \
+      "$SANDBOX_DIR/node_modules" "$SANDBOX_DIR/.tasks" "$SANDBOX_DIR/tmp"
+    release::log_verbose "Copied project files to sandbox (cp)"
+  fi
 }
 
 function release::sandbox::setup_git() {

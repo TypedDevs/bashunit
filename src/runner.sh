@@ -368,8 +368,8 @@ function bashunit::runner::call_test_functions() {
     done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
-    if [[ "$provider_data_count" -eq 0 ]]; then
-      if bashunit::parallel::is_enabled && [[ "$allow_test_parallel" == true ]]; then
+    if [ "$provider_data_count" -eq 0 ]; then
+      if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::run_test "$script" "$fn_name" &
       else
         bashunit::runner::run_test "$script" "$fn_name"
@@ -385,11 +385,11 @@ function bashunit::runner::call_test_functions() {
       parsed_data_count=0
       local line
       while IFS= read -r line; do
-        [[ -z "$line" ]] && continue
+        [ -z "$line" ] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
         parsed_data_count=$((parsed_data_count + 1))
       done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
-      if bashunit::parallel::is_enabled && [[ "$allow_test_parallel" == true ]]; then
+      if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
@@ -399,7 +399,7 @@ function bashunit::runner::call_test_functions() {
   done
 
   # Wait for all parallel tests within this file to complete
-  if bashunit::parallel::is_enabled && [[ "$allow_test_parallel" == true ]]; then
+  if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
     wait
   fi
 }

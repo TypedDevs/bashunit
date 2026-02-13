@@ -8,11 +8,9 @@ if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
 fi
 
 RELEASE_SCRIPT_DIR=""
-FIXTURES_DIR=""
 
 function set_up_before_script() {
   RELEASE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-  FIXTURES_DIR="$(dirname "${BASH_SOURCE[0]}")/fixtures/release"
 
   # Source release.sh to get access to functions
   # shellcheck source=/dev/null
