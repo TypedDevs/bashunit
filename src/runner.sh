@@ -102,7 +102,8 @@ function bashunit::runner::load_test_files() {
     local spinner_pid=$!
     bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
-    disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
+    disown "$spinner_pid" 2>/dev/null || true
+    kill "$spinner_pid" 2>/dev/null || true
     printf "\r  \r" # Clear the spinner output
     local script_id
     for script_id in "${scripts_ids[@]+"${scripts_ids[@]}"}"; do
