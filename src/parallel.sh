@@ -56,11 +56,11 @@ function bashunit::parallel::aggregate_test_results() {
       exit_code=${exit_code:-0}
 
       # Add to the total counts
-      (( total_failed += failed ))
-      (( total_passed += passed ))
-      (( total_skipped += skipped ))
-      (( total_incomplete += incomplete ))
-      (( total_snapshot += snapshot ))
+      total_failed=$((total_failed + failed))
+      total_passed=$((total_passed + passed))
+      total_skipped=$((total_skipped + skipped))
+      total_incomplete=$((total_incomplete + incomplete))
+      total_snapshot=$((total_snapshot + snapshot))
 
       if [ "${failed:-0}" -gt 0 ]; then
         bashunit::state::add_tests_failed
