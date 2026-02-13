@@ -15,7 +15,7 @@ Welcome! This 5-minute guide will get you started with the custom Claude Code co
 - `/gh-issue 42` - Complete GitHub issue → PR workflow
 
 📚 **Code Standards** - Automatic enforcement:
-- Bash 3.2+ compatibility
+- Bash 3.0+ compatibility
 - TDD methodology (RED → GREEN → REFACTOR)
 - Testing patterns
 - Quality checks
@@ -58,7 +58,7 @@ Claude automatically follows these rules (from `.claude/CLAUDE.md`):
 - Minimal implementation
 - Refactor while green
 
-**Bash 3.2+ Compatible:**
+**Bash 3.0+ Compatible:**
 - No `declare -A` (associative arrays)
 - No `[[ ]]` (use `[ ]`)
 - No `${var,,}` (case conversion)
@@ -144,7 +144,7 @@ Study existing patterns:
 ## What Claude Automatically Enforces
 
 ✅ **TDD workflow** - Tests before code
-✅ **Bash 3.2+ compatibility** - No modern bash features
+✅ **Bash 3.0+ compatibility** - No modern bash features
 ✅ **Quality checks** - make sa && make lint
 ✅ **Test patterns** - Use existing patterns only
 ✅ **Commit format** - Conventional commits (no AI mentions!)

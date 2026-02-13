@@ -8,7 +8,7 @@ function bashunit::assert::mark_failed() {
 
 # Guard clause to skip assertion if one already failed in test (when stop-on-assertion is enabled)
 function bashunit::assert::should_skip() {
-  bashunit::env::is_stop_on_assertion_failure_enabled && (( _BASHUNIT_ASSERTION_FAILED_IN_TEST ))
+  bashunit::env::is_stop_on_assertion_failure_enabled && ((_BASHUNIT_ASSERTION_FAILED_IN_TEST))
 }
 
 function bashunit::fail() {
@@ -31,8 +31,14 @@ function assert_true() {
 
   # Check for expected literal values first
   case "$actual" in
-    "true"|"0") bashunit::state::add_assertions_passed; return ;;
-    "false"|"1") bashunit::handle_bool_assertion_failure "true or 0" "$actual"; return ;;
+  "true" | "0")
+    bashunit::state::add_assertions_passed
+    return
+    ;;
+  "false" | "1")
+    bashunit::handle_bool_assertion_failure "true or 0" "$actual"
+    return
+    ;;
   esac
 
   # Run command or eval and check the exit code
@@ -53,8 +59,14 @@ function assert_false() {
 
   # Check for expected literal values first
   case "$actual" in
-    "false"|"1") bashunit::state::add_assertions_passed; return ;;
-    "true"|"0") bashunit::handle_bool_assertion_failure "false or 1" "$actual"; return ;;
+  "false" | "1")
+    bashunit::state::add_assertions_passed
+    return
+    ;;
+  "true" | "0")
+    bashunit::handle_bool_assertion_failure "false or 1" "$actual"
+    return
+    ;;
   esac
 
   # Run command or eval and check the exit code
@@ -71,12 +83,16 @@ function assert_false() {
 function bashunit::run_command_or_eval() {
   local cmd="$1"
 
-  if [[ "$cmd" =~ ^eval ]]; then
-    eval "${cmd#eval }" &> /dev/null
-  elif [[ "$(command -v "$cmd")" =~ ^alias ]]; then
-    eval "$cmd" &> /dev/null
+  local _re='^eval'
+  if [[ "$cmd" =~ $_re ]]; then
+    eval "${cmd#eval }" &>/dev/null
   else
-    "$cmd" &> /dev/null
+    _re='^alias'
+    if [[ "$(command -v "$cmd")" =~ $_re ]]; then
+      eval "$cmd" &>/dev/null
+    else
+      "$cmd" &>/dev/null
+    fi
   fi
   return $?
 }
@@ -217,9 +233,11 @@ function assert_not_same() {
 
 function assert_contains() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -242,28 +260,33 @@ function assert_contains_ignore_case() {
   local expected="$1"
   local actual="$2"
 
-  shopt -s nocasematch
+  # Bash 3.0 compatible: use tr for case-insensitive comparison
+  # (shopt nocasematch was introduced in Bash 3.1)
+  local expected_lower
+  local actual_lower
+  expected_lower=$(printf '%s' "$expected" | tr '[:upper:]' '[:lower:]')
+  actual_lower=$(printf '%s' "$actual" | tr '[:upper:]' '[:lower:]')
 
-  if ! [[ $actual =~ $expected ]]; then
+  if [[ "$actual_lower" != *"$expected_lower"* ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
-    shopt -u nocasematch
     return
   fi
 
-  shopt -u nocasematch
   bashunit::state::add_assertions_passed
 }
 
 function assert_not_contains() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -282,13 +305,15 @@ function assert_not_contains() {
 
 function assert_matches() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ $actual =~ $expected ]]; then
+  if ! [[ "$actual" =~ $expected ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -303,13 +328,15 @@ function assert_matches() {
 
 function assert_not_matches() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual =~ $expected ]]; then
+  if [[ "$actual" =~ $expected ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -336,23 +363,23 @@ function assert_exec() {
 
   while [[ $# -gt 0 ]]; do
     case "$1" in
-      --exit)
-        expected_exit="$2"
-        shift 2
-        ;;
-      --stdout)
-        expected_stdout="$2"
-        check_stdout=true
-        shift 2
-        ;;
-      --stderr)
-        expected_stderr="$2"
-        check_stderr=true
-        shift 2
-        ;;
-      *)
-        shift
-        ;;
+    --exit)
+      expected_exit="$2"
+      shift 2
+      ;;
+    --stdout)
+      expected_stdout="$2"
+      check_stdout=true
+      shift 2
+      ;;
+    --stderr)
+      expected_stderr="$2"
+      check_stderr=true
+      shift 2
+      ;;
+    *)
+      shift
+      ;;
     esac
   done
 
@@ -379,16 +406,16 @@ function assert_exec() {
   fi
 
   if $check_stdout; then
-    expected_desc+=$'\n'"stdout: $expected_stdout"
-    actual_desc+=$'\n'"stdout: $stdout"
+    expected_desc="$expected_desc"$'\n'"stdout: $expected_stdout"
+    actual_desc="$actual_desc"$'\n'"stdout: $stdout"
     if [[ "$stdout" != "$expected_stdout" ]]; then
       failed=1
     fi
   fi
 
   if $check_stderr; then
-    expected_desc+=$'\n'"stderr: $expected_stderr"
-    actual_desc+=$'\n'"stderr: $stderr"
+    expected_desc="$expected_desc"$'\n'"stderr: $expected_stderr"
+    actual_desc="$actual_desc"$'\n'"stderr: $stderr"
     if [[ "$stderr" != "$expected_stderr" ]]; then
       failed=1
     fi
@@ -408,7 +435,7 @@ function assert_exec() {
 }
 
 function assert_exit_code() {
-  local actual_exit_code=${3-"$?"}  # Capture $? before guard check
+  local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
   local expected_exit_code="$1"
@@ -427,7 +454,7 @@ function assert_exit_code() {
 }
 
 function assert_successful_code() {
-  local actual_exit_code=${3-"$?"}  # Capture $? before guard check
+  local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
   local expected_exit_code=0
@@ -447,7 +474,7 @@ function assert_successful_code() {
 }
 
 function assert_unsuccessful_code() {
-  local actual_exit_code=${3-"$?"}  # Capture $? before guard check
+  local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
   if [[ "$actual_exit_code" -eq 0 ]]; then
@@ -464,7 +491,7 @@ function assert_unsuccessful_code() {
 }
 
 function assert_general_error() {
-  local actual_exit_code=${3-"$?"}  # Capture $? before guard check
+  local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
   local expected_exit_code=1
@@ -484,7 +511,7 @@ function assert_general_error() {
 }
 
 function assert_command_not_found() {
-  local actual_exit_code=${3-"$?"}  # Capture $? before guard check
+  local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
   local expected_exit_code=127
@@ -505,9 +532,11 @@ function assert_command_not_found() {
 
 function assert_string_starts_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -545,9 +574,11 @@ function assert_string_not_starts_with() {
 
 function assert_string_ends_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -566,9 +597,11 @@ function assert_string_ends_with() {
 
 function assert_string_not_ends_with() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual_arr=("${@:2}")
+  local -a actual_arr
+  actual_arr=("${@:2}")
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
@@ -663,11 +696,13 @@ function assert_greater_or_equal_than() {
 
 function assert_line_count() {
   bashunit::assert::should_skip && return 0
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local input_arr=("${@:2}")
+  local -a input_arr
+  input_arr=("${@:2}")
   local input_str
-  input_str=$(printf '%s\n' "${input_arr[@]}")
+  input_str=$(printf '%s\n' ${input_arr+"${input_arr[@]}"})
 
   if [ -z "$input_str" ]; then
     local actual=0
@@ -675,8 +710,8 @@ function assert_line_count() {
     local actual
     actual=$(echo "$input_str" | wc -l | tr -d '[:blank:]')
     local additional_new_lines
-    additional_new_lines=$(grep -o '\\n' <<< "$input_str" | wc -l | tr -d '[:blank:]')
-    ((actual+=additional_new_lines))
+    additional_new_lines=$(grep -o '\\n' <<<"$input_str" | wc -l | tr -d '[:blank:]')
+    actual=$((actual + additional_new_lines))
   fi
 
   if [[ "$expected" != "$actual" ]]; then
@@ -686,8 +721,8 @@ function assert_line_count() {
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
 
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${input_str}"\
-      "to contain number of lines equal to" "${expected}"\
+    bashunit::console_results::print_failed_test "${label}" "${input_str}" \
+      "to contain number of lines equal to" "${expected}" \
       "but found" "${actual}"
     return
   fi

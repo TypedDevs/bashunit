@@ -20,6 +20,6 @@ function bashunit::math::calculate() {
   # Remove leading zeros from integers
   expr=$(echo "$expr" | sed -E 's/\b0*([1-9][0-9]*)/\1/g')
 
-  local result=$(( expr ))
+  local result=$((expr))
   echo "$result"
 }

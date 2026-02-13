@@ -10,33 +10,33 @@ function tear_down() {
 
 function test_lifecycle_functions_do_not_output_without_verbose() {
   local test_file="$TEST_DIR/test_lifecycle.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function set_up_before_script() {
-  echo "stdout from set_up_before_script"
-  echo "stderr from set_up_before_script" >&2
+echo "stdout from set_up_before_script"
+echo "stderr from set_up_before_script" >&2
 }
 
 function tear_down_after_script() {
-  echo "stdout from tear_down_after_script"
-  echo "stderr from tear_down_after_script" >&2
+echo "stdout from tear_down_after_script"
+echo "stderr from tear_down_after_script" >&2
 }
 
 function set_up() {
-  echo "stdout from set_up"
-  echo "stderr from set_up" >&2
+echo "stdout from set_up"
+echo "stderr from set_up" >&2
 }
 
 function tear_down() {
-  echo "stdout from tear_down"
-  echo "stderr from tear_down" >&2
+echo "stdout from tear_down"
+echo "stderr from tear_down" >&2
 }
 
 function test_no_verbose_example() {
-  echo "stdout from test"
-  echo "stderr from test" >&2
-  assert_same "a" "a"
+echo "stdout from test"
+echo "stderr from test" >&2
+assert_same "a" "a"
 }
 EOF
 
@@ -57,33 +57,33 @@ EOF
 
 function test_lifecycle_functions_output_with_verbose() {
   local test_file="$TEST_DIR/test_lifecycle.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function set_up_before_script() {
-  echo "stdout from set_up_before_script"
-  echo "stderr from set_up_before_script" >&2
+echo "stdout from set_up_before_script"
+echo "stderr from set_up_before_script" >&2
 }
 
 function tear_down_after_script() {
-  echo "stdout from tear_down_after_script"
-  echo "stderr from tear_down_after_script" >&2
+echo "stdout from tear_down_after_script"
+echo "stderr from tear_down_after_script" >&2
 }
 
 function set_up() {
-  echo "stdout from set_up"
-  echo "stderr from set_up" >&2
+echo "stdout from set_up"
+echo "stderr from set_up" >&2
 }
 
 function tear_down() {
-  echo "stdout from tear_down"
-  echo "stderr from tear_down" >&2
+echo "stdout from tear_down"
+echo "stderr from tear_down" >&2
 }
 
 function test_verbose_example() {
-  echo "stdout from test"
-  echo "stderr from test" >&2
-  assert_same "a" "a"
+echo "stdout from test"
+echo "stderr from test" >&2
+assert_same "a" "a"
 }
 EOF
 
@@ -104,19 +104,19 @@ EOF
 
 function test_hook_visibility_shows_running_message_in_normal_mode() {
   local test_file="$TEST_DIR/test_hook_visibility_normal.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function set_up_before_script() {
-  true
+true
 }
 
 function tear_down_after_script() {
-  true
+true
 }
 
 function test_hook_normal_mode() {
-  assert_same "foo" "foo"
+assert_same "foo" "foo"
 }
 EOF
 
@@ -130,19 +130,19 @@ EOF
 
 function test_hook_visibility_suppressed_in_failures_only_mode() {
   local test_file="$TEST_DIR/test_hook_visibility_failures.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function set_up_before_script() {
-  true
+true
 }
 
 function tear_down_after_script() {
-  true
+true
 }
 
 function test_hook_failures_only() {
-  assert_same "foo" "foo"
+assert_same "foo" "foo"
 }
 EOF
 
@@ -155,19 +155,19 @@ EOF
 
 function test_hook_visibility_suppressed_in_simple_mode() {
   local test_file="$TEST_DIR/test_hook_visibility_simple.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function set_up_before_script() {
-  true
+true
 }
 
 function tear_down_after_script() {
-  true
+true
 }
 
 function test_hook_simple_mode() {
-  assert_same "foo" "foo"
+assert_same "foo" "foo"
 }
 EOF
 
@@ -181,11 +181,11 @@ EOF
 
 function test_hook_visibility_not_shown_when_hooks_not_defined() {
   local test_file="$TEST_DIR/test_no_hooks.sh"
-  cat > "$test_file" << 'EOF'
+  cat >"$test_file" <<'EOF'
 #!/usr/bin/env bash
 
 function test_no_hooks_defined() {
-  assert_same "foo" "foo"
+assert_same "foo" "foo"
 }
 EOF
 

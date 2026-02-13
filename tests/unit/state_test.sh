@@ -248,8 +248,7 @@ function test_initialize_assertions_count() {
     bashunit::state::export_subshell_context
   )
 
-  assert_same\
-    "##ASSERTIONS_FAILED=0\
+  assert_same "##ASSERTIONS_FAILED=0\
 ##ASSERTIONS_PASSED=0\
 ##ASSERTIONS_SKIPPED=0\
 ##ASSERTIONS_INCOMPLETE=0\
@@ -259,7 +258,7 @@ function test_initialize_assertions_count() {
 ##TEST_HOOK_MESSAGE=\
 ##TEST_TITLE=\
 ##TEST_OUTPUT=\
-##"\
+##" \
     "$export_assertions_count"
 }
 
@@ -280,8 +279,7 @@ function test_export_assertions_count() {
     bashunit::state::export_subshell_context
   )
 
-  assert_same\
-    "##ASSERTIONS_FAILED=5\
+  assert_same "##ASSERTIONS_FAILED=5\
 ##ASSERTIONS_PASSED=10\
 ##ASSERTIONS_SKIPPED=42\
 ##ASSERTIONS_INCOMPLETE=12\
@@ -290,7 +288,7 @@ function test_export_assertions_count() {
 ##TEST_HOOK_FAILURE=\
 ##TEST_HOOK_MESSAGE=\
 ##TEST_TITLE=\
-##TEST_OUTPUT=$(echo -n "something" | base64)##"\
+##TEST_OUTPUT=$(echo -n "something" | base64)##" \
     "$export_assertions_count"
 }
 

@@ -5,8 +5,13 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 function bashunit::unmock() {
   local command=$1
 
+  if [ "${#_BASHUNIT_MOCKED_FUNCTIONS[@]}" -eq 0 ]; then
+    return
+  fi
+
+  local i
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
-    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" == "$command" ]]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
       local variable
@@ -34,7 +39,7 @@ function bashunit::mock() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function bashunit::spy() {
@@ -46,8 +51,8 @@ function bashunit::spy() {
   local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
   times_file=$(bashunit::temp_file "${test_id}_${variable}_times")
   params_file=$(bashunit::temp_file "${test_id}_${variable}_params")
-  echo 0 > "$times_file"
-  : > "$params_file"
+  echo 0 >"$times_file"
+  : >"$params_file"
   export "${variable}_times_file"="$times_file"
   export "${variable}_params_file"="$params_file"
 
@@ -56,7 +61,7 @@ function bashunit::spy() {
     local serialized=\"\"
     local arg
     for arg in \"\$@\"; do
-      serialized+=\"\$(printf '%q' \"\$arg\")$'\\x1f'\"
+      serialized=\"\$serialized\$(printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
     printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
@@ -68,7 +73,7 @@ function bashunit::spy() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function assert_have_been_called() {
@@ -96,7 +101,8 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if [[ ${!#} =~ ^[0-9]+$ ]]; then
+  local _re='^[0-9]+$'
+  if [[ "${!#}" =~ $_re ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi

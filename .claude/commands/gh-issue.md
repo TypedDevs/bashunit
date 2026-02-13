@@ -68,7 +68,7 @@ Fetch a GitHub issue, create task file and branch, implement it following TDD, a
 
 7. **Read project context**:
     - @.claude/CLAUDE.md - Primary project instructions
-    - @.claude/rules/bash-style.md - Bash 3.2+ compatibility
+    - @.claude/rules/bash-style.md - Bash 3.0+ compatibility
     - @.claude/rules/testing.md - Testing patterns
     - @AGENTS.md - Additional TDD guidelines
 
@@ -121,7 +121,7 @@ Fetch a GitHub issue, create task file and branch, implement it following TDD, a
     1. Study existing patterns in tests/unit/assert_test.sh
     2. Start with simplest test (#1)
     3. Implement following RED → GREEN → REFACTOR
-    4. Ensure Bash 3.2+ compatible throughout
+    4. Ensure Bash 3.0+ compatible throughout
     ```
 
     **Optional:** Create `.tasks/YYYY-MM-DD-<issue>-<slug>.md` for complex work to track detailed progress.
@@ -163,7 +163,7 @@ Fetch a GitHub issue, create task file and branch, implement it following TDD, a
     - ✅ Write tests BEFORE implementation
     - ✅ Minimal code in GREEN phase
     - ✅ Keep tests passing during REFACTOR
-    - ✅ Follow Bash 3.2+ compatibility (@.claude/rules/bash-style.md)
+    - ✅ Follow Bash 3.0+ compatibility (@.claude/rules/bash-style.md)
 
 13. **Run full test suite** frequently:
     ```bash
@@ -304,7 +304,7 @@ Fetch a GitHub issue, create task file and branch, implement it following TDD, a
     ## Checklist
 
     - [ ] Follows TDD workflow (tests written first)
-    - [ ] Bash 3.2+ compatible
+    - [ ] Bash 3.0+ compatible
     - [ ] Task file complete: `.tasks/YYYY-MM-DD-<issue>-<slug>.md`
     - [ ] Two-way sync checked (AGENTS.md ↔ .github/copilot-instructions.md)
     - [ ] Breaking changes documented (if any)
@@ -372,7 +372,7 @@ Would you like me to:
 - [ ] Parallel tests passing (`./bashunit --parallel tests/`)
 - [ ] Quality checks passing (`make sa && make lint`)
 - [ ] Code formatted (`shfmt -w .`)
-- [ ] Bash 3.2+ compatible
+- [ ] Bash 3.0+ compatible
 - [ ] CHANGELOG.md updated
 - [ ] Documentation updated (if needed)
 - [ ] Commit created with conventional format
@@ -382,9 +382,9 @@ Would you like me to:
 
 ## Important Notes
 
-### Bash 3.2+ Compatibility
+### Bash 3.0+ Compatibility
 
-**Critical:** bashunit must work on macOS default Bash 3.2. Check @.claude/rules/bash-style.md
+**Critical:** bashunit must work on macOS default Bash 3.0. Check @.claude/rules/bash-style.md
 
 **Forbidden features:**
 - ❌ `declare -A` (associative arrays)
@@ -419,7 +419,7 @@ All code must:
 - ✅ Be formatted (`shfmt -w .`)
 - ✅ Have tests (90%+ coverage)
 - ✅ Follow existing patterns
-- ✅ Work in Bash 3.2+
+- ✅ Work in Bash 3.0+
 
 ### Configuration Sync
 

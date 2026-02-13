@@ -15,7 +15,7 @@
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | Main project instructions |
-| `rules/bash-style.md` | Bash 3.2+ compatibility rules |
+| `rules/bash-style.md` | Bash 3.0+ compatibility rules |
 | `rules/testing.md` | Testing patterns & guidelines |
 | `rules/tdd-workflow.md` | TDD methodology details |
 | `AGENTS.md` | Comprehensive workflow guide |
@@ -100,7 +100,7 @@ Before marking work complete:
 
 **Never:**
 - Skip task file requirement
-- Use Bash 4+ features (macOS = Bash 3.2)
+- Use Bash 4+ features (macOS = Bash 3.0)
 - Break public API without docs
 - Commit without tests passing
 - Skip quality checks
@@ -110,11 +110,11 @@ Before marking work complete:
 - Use patterns from `tests/**` and `src/**`
 - Update task file logbook
 - Run tests after every change
-- Bash 3.2+ compatible code
+- Bash 3.0+ compatible code
 
-## 🔍 Bash 3.2+ Compatibility
+## 🔍 Bash 3.0+ Compatibility
 
-| ❌ Don't Use (Bash 4+) | ✅ Use Instead (Bash 3.2+) |
+| ❌ Don't Use (Bash 4+) | ✅ Use Instead (Bash 3.0+) |
 |------------------------|----------------------------|
 | `declare -A map` | Indexed arrays or workarounds |
 | `[[ "$var" == "x" ]]` | `[ "$var" = "x" ]` |

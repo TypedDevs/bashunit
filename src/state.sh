@@ -126,7 +126,7 @@ function bashunit::state::set_file_with_duplicated_function_names() {
 }
 
 function bashunit::state::add_test_output() {
-  _BASHUNIT_TEST_OUTPUT+="$1"
+  _BASHUNIT_TEST_OUTPUT="$_BASHUNIT_TEST_OUTPUT$1"
 }
 
 function bashunit::state::get_test_exit_code() {
@@ -186,7 +186,7 @@ function bashunit::state::reset_test_hook_message() {
 }
 
 function bashunit::state::is_assertion_failed_in_test() {
-  (( _BASHUNIT_ASSERTION_FAILED_IN_TEST ))
+  ((_BASHUNIT_ASSERTION_FAILED_IN_TEST))
 }
 
 function bashunit::state::mark_assertion_failed_in_test() {
@@ -200,16 +200,16 @@ function bashunit::state::set_duplicated_functions_merged() {
 }
 
 function bashunit::state::initialize_assertions_count() {
-    _BASHUNIT_ASSERTIONS_PASSED=0
-    _BASHUNIT_ASSERTIONS_FAILED=0
-    _BASHUNIT_ASSERTIONS_SKIPPED=0
-    _BASHUNIT_ASSERTIONS_INCOMPLETE=0
-    _BASHUNIT_ASSERTIONS_SNAPSHOT=0
-    _BASHUNIT_TEST_OUTPUT=""
-    _BASHUNIT_TEST_TITLE=""
-    _BASHUNIT_TEST_HOOK_FAILURE=""
-    _BASHUNIT_TEST_HOOK_MESSAGE=""
-    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  _BASHUNIT_ASSERTIONS_PASSED=0
+  _BASHUNIT_ASSERTIONS_FAILED=0
+  _BASHUNIT_ASSERTIONS_SKIPPED=0
+  _BASHUNIT_ASSERTIONS_INCOMPLETE=0
+  _BASHUNIT_ASSERTIONS_SNAPSHOT=0
+  _BASHUNIT_TEST_OUTPUT=""
+  _BASHUNIT_TEST_TITLE=""
+  _BASHUNIT_TEST_HOOK_FAILURE=""
+  _BASHUNIT_TEST_HOOK_MESSAGE=""
+  _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
 }
 
 function bashunit::state::export_subshell_context() {
@@ -240,8 +240,7 @@ function bashunit::state::export_subshell_context() {
 ##TEST_HOOK_FAILURE=$_BASHUNIT_TEST_HOOK_FAILURE\
 ##TEST_HOOK_MESSAGE=$encoded_test_hook_message\
 ##TEST_TITLE=$encoded_test_title\
-##TEST_OUTPUT=$encoded_test_output\
-##
+##TEST_OUTPUT=$encoded_test_output##
 EOF
 }
 
@@ -252,8 +251,9 @@ function bashunit::state::calculate_total_assertions() {
   local numbers
   numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
 
+  local number
   for number in $numbers; do
-    ((total += number))
+    total=$((total + number))
   done
 
   echo $total
@@ -279,21 +279,21 @@ function bashunit::state::print_line() {
 
   local char
   case "$type" in
-    successful)       char="." ;;
-    failure)          char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
-    failed)           char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
-    failed_snapshot)  char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
-    skipped)          char="${_BASHUNIT_COLOR_SKIPPED}S${_BASHUNIT_COLOR_DEFAULT}" ;;
-    incomplete)       char="${_BASHUNIT_COLOR_INCOMPLETE}I${_BASHUNIT_COLOR_DEFAULT}" ;;
-    snapshot)         char="${_BASHUNIT_COLOR_SNAPSHOT}N${_BASHUNIT_COLOR_DEFAULT}" ;;
-    error)            char="${_BASHUNIT_COLOR_FAILED}E${_BASHUNIT_COLOR_DEFAULT}" ;;
-    *)                char="?" && bashunit::log "warning" "unknown test type '$type'" ;;
+  successful) char="." ;;
+  failure) char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
+  failed) char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
+  failed_snapshot) char="${_BASHUNIT_COLOR_FAILED}F${_BASHUNIT_COLOR_DEFAULT}" ;;
+  skipped) char="${_BASHUNIT_COLOR_SKIPPED}S${_BASHUNIT_COLOR_DEFAULT}" ;;
+  incomplete) char="${_BASHUNIT_COLOR_INCOMPLETE}I${_BASHUNIT_COLOR_DEFAULT}" ;;
+  snapshot) char="${_BASHUNIT_COLOR_SNAPSHOT}N${_BASHUNIT_COLOR_DEFAULT}" ;;
+  error) char="${_BASHUNIT_COLOR_FAILED}E${_BASHUNIT_COLOR_DEFAULT}" ;;
+  *) char="?" && bashunit::log "warning" "unknown test type '$type'" ;;
   esac
 
   if bashunit::parallel::is_enabled; then
-      printf "%s" "$char"
+    printf "%s" "$char"
   else
-    if (( _BASHUNIT_TOTAL_TESTS_COUNT % 50 == 0 )); then
+    if ((_BASHUNIT_TOTAL_TESTS_COUNT % 50 == 0)); then
       printf "%s\n" "$char"
     else
       printf "%s" "$char"

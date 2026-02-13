@@ -120,7 +120,7 @@ function _create_result_file() {
   local content="$3"
 
   mkdir -p "$dir"
-  echo "$content" > "$dir/$filename"
+  echo "$content" >"$dir/$filename"
 }
 
 function test_aggregate_handles_no_result_files() {

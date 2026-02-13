@@ -15,7 +15,7 @@ function set_up() {
 }
 
 function test_successful_mock() {
-  bashunit::mock ps<<EOF
+  bashunit::mock ps <<EOF
 PID TTY          TIME CMD
 13525 pts/7    00:00:01 bash
 24162 pts/7    00:00:00 ps
@@ -41,8 +41,8 @@ function test_successful_spy() {
 function test_unsuccessful_spy_called() {
   bashunit::spy ps
 
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")"\
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called" "ps" "to have been called" "once")" \
     "$(assert_have_been_called ps)"
 }
 
@@ -55,28 +55,26 @@ function test_successful_spy_called_times() {
   assert_have_been_called_times 2 ps
 }
 
-
 function test_unsuccessful_spy_called_times() {
   bashunit::spy ps
 
   ps
   ps
 
-  assert_same\
-    "$(bashunit::console_results::print_failed_test "Unsuccessful spy called times" "ps" \
+  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful spy called times" "ps" \
     "to have been called" "1 times" \
-    "actual" "2 times")"\
+    "actual" "2 times")" \
     "$(assert_have_been_called_times 1 ps)"
 }
 
 function test_successful_spy_with_source_function() {
-    # shellcheck source=/dev/null
-    source "$(bashunit::current_dir)/fixtures/fake_function_to_spy.sh"
-    bashunit::spy function_to_be_spied_on
+  # shellcheck source=/dev/null
+  source "$(bashunit::current_dir)/fixtures/fake_function_to_spy.sh"
+  bashunit::spy function_to_be_spied_on
 
-    function_to_be_spied_on
+  function_to_be_spied_on
 
-    assert_have_been_called function_to_be_spied_on
+  assert_have_been_called function_to_be_spied_on
 }
 
 function test_unsuccessful_spy_with_source_function_have_been_called() {
@@ -87,15 +85,13 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
   function_to_be_spied_on
   function_to_be_spied_on
 
-  assert_same\
-    "$(bashunit::console_results::print_failed_test \
-    "Unsuccessful spy with source function have been called"\
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful spy with source function have been called" \
     "function_to_be_spied_on" \
     "to have been called" "1 times" \
-    "actual" "2 times")"\
+    "actual" "2 times")" \
     "$(assert_have_been_called_times 1 function_to_be_spied_on)"
 }
-
 
 function test_successful_spy_called_times_with_source() {
   # shellcheck source=/dev/null

@@ -2,6 +2,7 @@
 
 function bashunit::parallel::aggregate_test_results() {
   local temp_dir_parallel_test_suite=$1
+  local IFS=$' \t\n'
 
   bashunit::internal_log "aggregate_test_results" "dir:$temp_dir_parallel_test_suite"
 
@@ -11,9 +12,12 @@ function bashunit::parallel::aggregate_test_results() {
   local total_incomplete=0
   local total_snapshot=0
 
+  local script_dir=""
   for script_dir in "$temp_dir_parallel_test_suite"/*; do
     shopt -s nullglob
-    local result_files=("$script_dir"/*.result)
+    # Bash 3.0 compatible: separate declaration and assignment for arrays
+    local result_files
+    result_files=("$script_dir"/*.result)
     shopt -u nullglob
 
     if [ ${#result_files[@]} -eq 0 ]; then
@@ -21,27 +25,34 @@ function bashunit::parallel::aggregate_test_results() {
       continue
     fi
 
-    for result_file in "${result_files[@]}"; do
+    local result_file=""
+    for result_file in "${result_files[@]+"${result_files[@]}"}"; do
       local result_line
-      result_line=$(tail -n 1 < "$result_file")
+      result_line=$(tail -n 1 <"$result_file")
 
       local failed="${result_line##*##ASSERTIONS_FAILED=}"
-      failed="${failed%%##*}"; failed=${failed:-0}
+      failed="${failed%%##*}"
+      failed=${failed:-0}
 
       local passed="${result_line##*##ASSERTIONS_PASSED=}"
-      passed="${passed%%##*}"; passed=${passed:-0}
+      passed="${passed%%##*}"
+      passed=${passed:-0}
 
       local skipped="${result_line##*##ASSERTIONS_SKIPPED=}"
-      skipped="${skipped%%##*}"; skipped=${skipped:-0}
+      skipped="${skipped%%##*}"
+      skipped=${skipped:-0}
 
       local incomplete="${result_line##*##ASSERTIONS_INCOMPLETE=}"
-      incomplete="${incomplete%%##*}"; incomplete=${incomplete:-0}
+      incomplete="${incomplete%%##*}"
+      incomplete=${incomplete:-0}
 
       local snapshot="${result_line##*##ASSERTIONS_SNAPSHOT=}"
-      snapshot="${snapshot%%##*}"; snapshot=${snapshot:-0}
+      snapshot="${snapshot%%##*}"
+      snapshot=${snapshot:-0}
 
       local exit_code="${result_line##*##TEST_EXIT_CODE=}"
-      exit_code="${exit_code%%##*}"; exit_code=${exit_code:-0}
+      exit_code="${exit_code%%##*}"
+      exit_code=${exit_code:-0}
 
       # Add to the total counts
       total_failed=$((total_failed + failed))
@@ -115,7 +126,7 @@ function bashunit::parallel::is_enabled() {
   bashunit::internal_log "bashunit::parallel::is_enabled" \
     "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
-  if bashunit::env::is_parallel_run_enabled && \
+  if bashunit::env::is_parallel_run_enabled &&
     (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu || bashunit::check_os::is_windows); then
     return 0
   fi

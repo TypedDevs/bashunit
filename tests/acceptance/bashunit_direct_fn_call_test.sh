@@ -4,7 +4,7 @@ set -euo pipefail
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   TEST_MULTILINE_STR="first line
-  \n
+\n
 four line
 find me with \n a regular expression"
 }
@@ -78,8 +78,10 @@ function test_bashunit_direct_fn_call_failure() {
   local expected="foo"
   local actual="bar"
 
-  assert_match_snapshot "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual 2>&1)"
-  assert_general_error "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
+  assert_match_snapshot \
+    "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual 2>&1)"
+  assert_general_error \
+    "$(./bashunit --no-parallel -a assert_same --env "$TEST_ENV_FILE" "$expected" $actual)"
 }
 
 function test_bashunit_direct_fn_call_non_existing_fn() {
@@ -91,7 +93,7 @@ function test_bashunit_direct_fn_call_non_existing_fn() {
 function test_bashunit_assert_exit_code_successful_with_inner_func() {
   local temp=$(mktemp)
   # shellcheck disable=SC2116
-  local output="$(./bashunit --no-parallel -a exit_code "0" "$(echo "unknown command")" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "0" "$(echo "unknown command")" 2>"$temp")"
 
   assert_empty "$output"
   assert_file_contains "$temp" "Command not found: unknown command"
@@ -103,7 +105,7 @@ function test_bashunit_assert_exit_code_error_with_inner_func() {
   local no_color_flag=""
   bashunit::env::is_no_color_enabled && no_color_flag="--no-color"
   # shellcheck disable=SC2116,SC2086
-  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "$(echo "unknown command")" 2> "$temp")"
+  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "$(echo "unknown command")" 2>"$temp")"
 
   assert_empty "$output"
 
@@ -127,7 +129,7 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
   local no_color_flag=""
   bashunit::env::is_no_color_enabled && no_color_flag="--no-color"
   # shellcheck disable=SC2086
-  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "echo something to stdout" 2> "$temp")"
+  local output="$(./bashunit --no-parallel $no_color_flag -a exit_code "1" "echo something to stdout" 2>"$temp")"
 
   assert_same "something to stdout" "$output"
 
@@ -138,7 +140,7 @@ function test_bashunit_assert_exit_code_str_successful_but_exit_code_error() {
 # shellcheck disable=SC2155
 function test_bashunit_assert_exit_code_str_successful_and_exit_code_ok() {
   local temp=$(mktemp)
-  local output="$(./bashunit --no-parallel -a exit_code "0" "echo something to stdout" 2> "$temp")"
+  local output="$(./bashunit --no-parallel -a exit_code "0" "echo something to stdout" 2>"$temp")"
 
   assert_same "something to stdout" "$output"
   assert_empty "$(cat "$temp")"

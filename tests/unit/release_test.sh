@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# release.sh requires Bash 3.1+ (uses += array syntax)
+# Skip this entire test file on Bash 3.0
+if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
+  # shellcheck disable=SC2317
+  return 0 2>/dev/null || exit 0
+fi
+
 RELEASE_SCRIPT_DIR=""
 FIXTURES_DIR=""
 
@@ -139,7 +146,7 @@ function test_get_checksum_returns_checksum_when_file_exists() {
   # Create a temp checksum file
   local temp_dir
   temp_dir=$(mktemp -d)
-  echo "abc123def456  bin/bashunit" > "$temp_dir/checksum"
+  echo "abc123def456  bin/bashunit" >"$temp_dir/checksum"
 
   # Override the function to use temp dir
   local result
@@ -309,7 +316,7 @@ function test_preflight_check_changelog_unreleased_passes_with_content() {
 function test_preflight_check_changelog_unreleased_fails_when_missing() {
   local temp_dir
   temp_dir=$(mktemp -d)
-  echo "# Changelog" > "$temp_dir/CHANGELOG.md"
+  echo "# Changelog" >"$temp_dir/CHANGELOG.md"
 
   local result
   result=$(cd "$temp_dir" && release::preflight::check_changelog_unreleased 2>&1) || true
@@ -330,7 +337,7 @@ function test_backup_init_creates_directory() {
     cd "$temp_dir" || return
     release::backup::init
     [[ -d "$BACKUP_DIR" ]] && echo "exists"
-  ) > /tmp/backup_test_result 2>&1
+  ) >/tmp/backup_test_result 2>&1
 
   assert_contains "exists" "$(cat /tmp/backup_test_result)" || true
   rm -rf "$temp_dir" /tmp/backup_test_result
@@ -344,7 +351,7 @@ function test_backup_save_file_copies_file() {
   local result
   result=$(
     cd "$temp_dir" || return
-    echo "test content" > testfile.txt
+    echo "test content" >testfile.txt
     release::backup::init
     release::backup::save_file "testfile.txt"
     cat "$BACKUP_DIR/testfile.txt"
@@ -361,10 +368,10 @@ function test_rollback_restore_files_restores_backup() {
   local result
   result=$(
     cd "$temp_dir" || return
-    echo "original content" > testfile.txt
+    echo "original content" >testfile.txt
     release::backup::init
     release::backup::save_file "testfile.txt"
-    echo "modified content" > testfile.txt
+    echo "modified content" >testfile.txt
     release::rollback::restore_files 2>/dev/null
     cat testfile.txt
   )
@@ -612,7 +619,7 @@ function test_sandbox_mock_git_push_allows_other_git_commands() {
     git init --quiet
     git config user.email "test@test.com"
     git config user.name "Test"
-    echo "test" > file.txt
+    echo "test" >file.txt
     git add file.txt
 
     release::sandbox::mock_git_push 2>/dev/null
@@ -635,7 +642,7 @@ function test_update_file_pattern_modifies_file() {
   local temp_dir
   temp_dir=$(mktemp -d)
 
-  echo 'VERSION="1.0.0"' > "$temp_dir/test.txt"
+  echo 'VERSION="1.0.0"' >"$temp_dir/test.txt"
 
   DRY_RUN=false
   (
@@ -654,7 +661,7 @@ function test_update_file_pattern_logs_dry_run() {
   local temp_dir
   temp_dir=$(mktemp -d)
 
-  echo 'VERSION="1.0.0"' > "$temp_dir/test.txt"
+  echo 'VERSION="1.0.0"' >"$temp_dir/test.txt"
 
   DRY_RUN=true
   local output
@@ -782,7 +789,7 @@ function test_update_checksum_updates_package_json() {
 
   cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
   mkdir -p "$temp_dir/bin"
-  echo "newchecksum123  bin/bashunit" > "$temp_dir/bin/checksum"
+  echo "newchecksum123  bin/bashunit" >"$temp_dir/bin/checksum"
 
   DRY_RUN=false
   (

@@ -6,9 +6,9 @@ paths:
 
 # Bash Style & Compatibility Rules
 
-## Bash 3.2+ Compatibility (Critical)
+## Bash 3.0+ Compatibility (Critical)
 
-bashunit must work on **Bash 3.2+** (macOS default). These features are **prohibited**:
+bashunit must work on **Bash 3.0+** (macOS default). These features are **prohibited**:
 
 ### ❌ Forbidden Features
 

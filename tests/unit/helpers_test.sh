@@ -53,27 +53,31 @@ function test_normalize_test_function_name_uses_current_interpolated_name_from_s
 }
 
 function test_get_functions_to_run_no_filter_should_return_all_functions() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
-  assert_same\
-    "prefix_function1 prefix_function2 prefix_function3"\
+  assert_same "prefix_function1 prefix_function2 prefix_function3" \
     "$(bashunit::helper::get_functions_to_run "prefix" "" "${functions[*]}")"
 }
 
 function test_get_functions_to_run_with_filter_should_return_matching_functions() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
   assert_same "prefix_function1" "$(bashunit::helper::get_functions_to_run "prefix" "function1" "${functions[*]}")"
 }
 
 function test_get_functions_to_run_filter_no_matching_functions_should_return_empty() {
-  local functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
+  local functions
+  functions=("prefix_function1" "prefix_function2" "other_function" "prefix_function3")
 
   assert_same "" "$(bashunit::helper::get_functions_to_run "prefix" "nonexistent" "${functions[*]}")"
 }
 
 function test_get_functions_to_run_fail_when_duplicates() {
-  local functions=("prefix_function1" "prefix_function1")
+  local functions
+  functions=("prefix_function1" "prefix_function1")
 
   assert_general_error "$(bashunit::helper::get_functions_to_run "prefix" "" "${functions[*]}")"
 }
@@ -154,7 +158,8 @@ function test_get_provider_data() {
 }
 
 function fake_provider_data_array() {
-  local data=("one" "two" "three")
+  local data
+  data=("one" "two" "three")
   bashunit::data_set "${data[@]}"
 }
 
@@ -212,8 +217,8 @@ function test_find_files_recursive_given_dir() {
 
   assert_same "tests/unit/fixtures/tests/example1_test.sh
 tests/unit/fixtures/tests/example2_test.sh
-tests/unit/fixtures/tests/example3_test.bash"\
-  "$result"
+tests/unit/fixtures/tests/example3_test.bash" \
+    "$result"
 }
 
 function test_find_files_recursive_given_wildcard() {
@@ -237,7 +242,7 @@ function test_find_files_recursive_given_bash_extension() {
 }
 
 function test_get_latest_tag() {
-  bashunit::mock git<<EOF
+  bashunit::mock git <<EOF
 fc9aac40eb8e5ad4483f08d79eb678a3650dcf78        refs/tags/0.1.0
 a17e6816669ec8d0f18ed8c6d5564df9fc699bf9        refs/tags/0.10.0
 3977be123b0b73cfdf4b4eff46b909f37aa83b3c        refs/tags/0.10.1
@@ -249,7 +254,8 @@ EOF
 }
 
 function test_to_run_with_filter_matching_string_in_function_name() {
-  local functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
+  local functions
+  functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")
 
   assert_same "test_your_awesome_function" \
     "$(bashunit::helper::get_functions_to_run "test" "test_your_awesome_function" "${functions[*]}")"
@@ -331,7 +337,7 @@ function test_parse_file_path_filter_plain_path() {
   {
     read -r file_path || true
     read -r filter || true
-  } <<< "$result"
+  } <<<"$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
   assert_same "" "$filter"
@@ -345,7 +351,7 @@ function test_parse_file_path_filter_with_double_colon() {
   {
     read -r file_path || true
     read -r filter || true
-  } <<< "$result"
+  } <<<"$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
   assert_same "test_my_function" "$filter"
@@ -359,7 +365,7 @@ function test_parse_file_path_filter_with_line_number() {
   {
     read -r file_path || true
     read -r filter || true
-  } <<< "$result"
+  } <<<"$result"
 
   assert_same "tests/unit/example_test.sh" "$file_path"
   assert_same "__line__:42" "$filter"
@@ -373,7 +379,7 @@ function test_parse_file_path_filter_with_colon_in_path() {
   {
     read -r file_path || true
     read -r filter || true
-  } <<< "$result"
+  } <<<"$result"
 
   assert_same "/path/to:weird/example_test.sh" "$file_path"
   assert_same "test_func" "$filter"

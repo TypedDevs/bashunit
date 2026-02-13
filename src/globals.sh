@@ -31,8 +31,9 @@ function bashunit::random_str() {
   local length=${1:-6}
   local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   local str=''
-  for (( i=0; i<length; i++ )); do
-    str+="${chars:RANDOM%${#chars}:1}"
+  local i
+  for ((i = 0; i < length; i++)); do
+    str="$str${chars:RANDOM%${#chars}:1}"
   done
   echo "$str"
 }
@@ -87,15 +88,18 @@ function bashunit::log() {
   shift
 
   case "$level" in
-    info|INFO)          level="INFO" ;;
-    debug|DEBUG)        level="DEBUG" ;;
-    warning|WARNING)    level="WARNING" ;;
-    critical|CRITICAL)  level="CRITICAL" ;;
-    error|ERROR)        level="ERROR" ;;
-    *) set -- "$level $@"; level="INFO" ;;
+  info | INFO) level="INFO" ;;
+  debug | DEBUG) level="DEBUG" ;;
+  warning | WARNING) level="WARNING" ;;
+  critical | CRITICAL) level="CRITICAL" ;;
+  error | ERROR) level="ERROR" ;;
+  *)
+    set -- "$level $@"
+    level="INFO"
+    ;;
   esac
 
-  echo "$(bashunit::current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+  echo "$(bashunit::current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
 }
 
 function bashunit::internal_log() {
@@ -103,12 +107,12 @@ function bashunit::internal_log() {
     return
   fi
 
-  echo "$(bashunit::current_timestamp) [INTERNAL]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >> "$BASHUNIT_DEV_LOG"
+  echo "$(bashunit::current_timestamp) [INTERNAL]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
 }
 
 function bashunit::print_line() {
-  local length="${1:-70}"   # Default to 70 if not passed
-  local char="${2:--}"      # Default to '-' if not passed
+  local length="${1:-70}" # Default to 70 if not passed
+  local char="${2:--}"    # Default to '-' if not passed
   printf '%*s\n' "$length" '' | tr ' ' "$char"
 }
 
@@ -118,11 +122,21 @@ function bashunit::data_set() {
 
   for arg in "$@"; do
     if [ "$first" = true ]; then
-      printf '%q' "$arg"
+      # Bash 3.0 compatible: printf '%q' "" produces nothing in Bash 3.0
+      if [[ -z "$arg" ]]; then
+        printf "''"
+      else
+        printf '%q' "$arg"
+      fi
       first=false
     else
-      printf ' %q' "$arg"
+      if [[ -z "$arg" ]]; then
+        printf " ''"
+      else
+        printf ' %q' "$arg"
+      fi
     fi
   done
-  printf ' %q\n' ""
+  # Sentinel empty string at end
+  printf " ''\n"
 }

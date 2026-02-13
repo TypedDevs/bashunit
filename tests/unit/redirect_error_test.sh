@@ -28,9 +28,9 @@ function test_redirect_error_without_log() {
 }
 
 function test_echo_does_not_break_test_execution_result() {
-    local exit_code=0
-    _="$(render_into_error_fd_and_exit "...args")" || exit_code=$?
-    assert_same 1 "$exit_code"
+  local exit_code=0
+  _="$(render_into_error_fd_and_exit "...args")" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function render_into_error_fd_and_exit() {
