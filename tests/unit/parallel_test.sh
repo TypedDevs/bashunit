@@ -28,7 +28,9 @@ function tear_down() {
   export BASHUNIT_PARALLEL_RUN=$original_parallel_run
 
   # Clean up test temp directory
-  [[ -d "$_TEST_TEMP_DIR" ]] && rm -rf "$_TEST_TEMP_DIR"
+  if [ -d "$_TEST_TEMP_DIR" ]; then
+    rm -rf "$_TEST_TEMP_DIR"
+  fi
 
   # Restore original paths
   export TEMP_DIR_PARALLEL_TEST_SUITE="$_ORIGINAL_TEMP_DIR_PARALLEL"
