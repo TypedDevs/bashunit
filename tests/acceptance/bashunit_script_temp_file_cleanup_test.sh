@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 
 # @data_provider execution_modes
 function test_script_temp_files_are_cleaned_up_after_test_run() {

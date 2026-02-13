@@ -4,6 +4,10 @@
 
 ### Changed
 - Lower minimum Bash version requirement from 3.2 to 3.0
+- Improved parallel test execution performance (30-40% faster on large test suites)
+    - Test functions now run in parallel within each file when using `--parallel` flag
+    - Better load balancing through internal test file reorganization
+    - Optimized result aggregation eliminates subprocess overhead
 
 ### Added
 - Add Claude Code configuration with custom skills, agents, and rules
@@ -21,6 +25,10 @@
     - Shows only the final test summary
     - Useful for CI/CD pipelines or log-restricted environments
     - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
+- Support for `# bashunit: no-parallel-tests` directive in test files
+    - Allows test files to opt out of test-level parallelism
+    - Useful for tests with shared state or race conditions
+    - Add as the second line in test files (after shebang)
 
 ### Fixed
 - Data providers now work without the `function` keyword on test functions (Issue #586)
@@ -29,6 +37,10 @@
     - Fixes regex in `bashunit::helper::get_provider_data()` to make the `function` keyword optional
 - Self-test `tests/acceptance/install_test.sh` now passes when no network tools are available (Issue #582)
     - Tests skip gracefully with `BASHUNIT_NO_NETWORK=true` or in sandboxed environments
+- Parallel test execution now works correctly in strict mode environments (bash -e -o pipefail)
+    - Fixed arithmetic operations in result aggregation to prevent exit code 1 when values are zero
+    - Fixed spinner cleanup to handle already-terminated processes gracefully
+    - Ensures proper exit codes in CI environments like GitHub Actions Windows runners
 
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 

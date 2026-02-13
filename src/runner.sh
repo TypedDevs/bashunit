@@ -102,7 +102,8 @@ function bashunit::runner::load_test_files() {
     local spinner_pid=$!
     bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
-    disown "$spinner_pid" && kill "$spinner_pid" &>/dev/null
+    disown "$spinner_pid" 2>/dev/null || true
+    kill "$spinner_pid" 2>/dev/null || true
     printf "\r  \r" # Clear the spinner output
     local script_id
     for script_id in "${scripts_ids[@]+"${scripts_ids[@]}"}"; do
@@ -342,6 +343,12 @@ function bashunit::runner::call_test_functions() {
 
   bashunit::helper::check_duplicate_functions "$script" || true
 
+  # Check if test file opts out of test-level parallelism
+  local allow_test_parallel=true
+  if grep -q "^# bashunit: no-parallel-tests" "$script" 2>/dev/null; then
+    allow_test_parallel=false
+  fi
+
   local -a provider_data=()
   local provider_data_count=0
   local -a parsed_data=()
@@ -362,8 +369,12 @@ function bashunit::runner::call_test_functions() {
     done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$script")"
 
     # No data provider found
-    if [[ "$provider_data_count" -eq 0 ]]; then
-      bashunit::runner::run_test "$script" "$fn_name"
+    if [ "$provider_data_count" -eq 0 ]; then
+      if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::run_test "$script" "$fn_name" &
+      else
+        bashunit::runner::run_test "$script" "$fn_name"
+      fi
       unset -v fn_name
       continue
     fi
@@ -375,14 +386,23 @@ function bashunit::runner::call_test_functions() {
       parsed_data_count=0
       local line
       while IFS= read -r line; do
-        [[ -z "$line" ]] && continue
+        [ -z "$line" ] && continue
         parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
         parsed_data_count=$((parsed_data_count + 1))
       done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
-      bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
+      if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
+      else
+        bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
+      fi
     done
     unset -v fn_name
   done
+
+  # Wait for all parallel tests within this file to complete
+  if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+    wait
+  fi
 }
 
 function bashunit::runner::call_bench_functions() {

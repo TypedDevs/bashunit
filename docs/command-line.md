@@ -188,10 +188,30 @@ The line number syntax finds the test function that contains the specified line.
 
 Run tests in parallel or sequentially. Sequential is the default.
 
+In parallel mode, both test files and individual test functions run concurrently
+for maximum performance.
+
 ::: warning
 Parallel mode is supported on **macOS**, **Ubuntu**, and **Windows**. On other
 systems (like Alpine Linux) the option is automatically disabled due to
 inconsistent results.
+:::
+
+::: tip Opt-out of test-level parallelism
+If a test file has shared state or race conditions, you can disable test-level
+parallelism by adding this directive as the second line:
+
+```bash
+#!/usr/bin/env bash
+# bashunit: no-parallel-tests
+
+function test_with_shared_state() {
+  # This test will not run in parallel with others in this file
+}
+```
+
+The file will still run in parallel with other files, but tests within it will
+run sequentially.
 :::
 
 ### Output Style

@@ -28,7 +28,8 @@ function bashunit::parallel::aggregate_test_results() {
     local result_file=""
     for result_file in "${result_files[@]+"${result_files[@]}"}"; do
       local result_line
-      result_line=$(tail -n 1 <"$result_file")
+      result_line=$(<"$result_file")
+      result_line="${result_line##*$'\n'}"
 
       local failed="${result_line##*##ASSERTIONS_FAILED=}"
       failed="${failed%%##*}"
