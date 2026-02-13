@@ -207,11 +207,14 @@ function test_aggregate_sums_multiple_result_files() {
   _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test2.result" \
     "##ASSERTIONS_PASSED=3##ASSERTIONS_FAILED=2##TEST_EXIT_CODE=0##"
 
-  local passed failed
-  read -r passed failed < <(
+  local result passed failed
+  result=$(
     bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_PASSED $_BASHUNIT_ASSERTIONS_FAILED"
   )
+  IFS=' ' read -r passed failed <<EOF
+$result
+EOF
 
   assert_same "8" "$passed"
   assert_same "3" "$failed"
