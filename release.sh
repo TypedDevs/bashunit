@@ -376,23 +376,24 @@ function release::sandbox::create() {
 
   # Copy repo content excluding .git, .release-state, node_modules
   # Try tar pipe first (faster), fallback to cp + rm for portability
-  # Disable errexit temporarily to allow tar fallback in strict mode
+  # Use subshell + || to avoid interfering with caller's shell options
+  # (set +e alone doesn't disable pipefail, which causes failures in strict mode)
   local tar_status=0
-  set +e
-  tar --exclude='.git' \
-    --exclude='.release-state' \
-    --exclude='node_modules' \
-    --exclude='.tasks' \
-    --exclude='tmp' \
-    -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null
-  tar_status=$?
-  set -e
+  (
+    tar --exclude='.git' \
+      --exclude='.release-state' \
+      --exclude='node_modules' \
+      --exclude='.tasks' \
+      --exclude='tmp' \
+      -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null
+  ) || tar_status=$?
 
   if [ "$tar_status" -eq 0 ]; then
     release::log_verbose "Copied project files to sandbox (tar)"
   else
     # Fallback: traditional cp + rm for maximum portability
-    cp -r . "$SANDBOX_DIR/"
+    # Use || true since cp may fail on transient files during parallel execution
+    cp -r . "$SANDBOX_DIR/" 2>/dev/null || true
     rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" \
       "$SANDBOX_DIR/node_modules" "$SANDBOX_DIR/.tasks" "$SANDBOX_DIR/tmp"
     release::log_verbose "Copied project files to sandbox (cp)"
