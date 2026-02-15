@@ -4,43 +4,19 @@
 
 ### Changed
 - Lower minimum Bash version requirement from 3.2 to 3.0
-- Improved parallel test execution performance (30-40% faster on large test suites)
-    - Test functions now run in parallel within each file when using `--parallel` flag
-    - Better load balancing through internal test file reorganization
-    - Optimized result aggregation eliminates subprocess overhead
+- Improve parallel test execution performance (30-40% faster on large test suites)
 
 ### Added
-- Add Claude Code configuration with custom skills, agents, and rules
-    - Custom skills for TDD workflow, test fixes, assertions, coverage, and releases
-    - Expert agents for Bash 3.0+ compatibility, code review, TDD coaching, test architecture, and performance
-    - GitHub issue → PR workflow command
-    - Consolidated AI developer tool instructions into `.claude/CLAUDE.md`
 - Display test output (stdout/stderr) on failure for runtime errors
-    - Shows captured output in an "Output:" section when tests fail with runtime errors
-    - Helps debug test failures without manually capturing output
-    - Enabled by default; use `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false` to disable
-    - New CLI options: `--show-output`, `--no-output-on-failure`
+    - Enabled by default; disable with `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false`
 - Add `--no-progress` flag to suppress real-time progress display (Issue #503)
-    - Hides per-test output, file headers, hook messages, and spinner during execution
-    - Shows only the final test summary
-    - Useful for CI/CD pipelines or log-restricted environments
-    - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
-- Support for `# bashunit: no-parallel-tests` directive in test files
-    - Allows test files to opt out of test-level parallelism
-    - Useful for tests with shared state or race conditions
-    - Add as the second line in test files (after shebang)
+    - Also available via `BASHUNIT_NO_PROGRESS=true` environment variable
+- Support `# bashunit: no-parallel-tests` directive to opt out of test-level parallelism
 
 ### Fixed
 - Data providers now work without the `function` keyword on test functions (Issue #586)
-    - Previously, data provider detection required at least the first test using a provider to have the `function` keyword
-    - Now all test functions work consistently regardless of whether they use the `function` keyword
-    - Fixes regex in `bashunit::helper::get_provider_data()` to make the `function` keyword optional
-- Self-test `tests/acceptance/install_test.sh` now passes when no network tools are available (Issue #582)
-    - Tests skip gracefully with `BASHUNIT_NO_NETWORK=true` or in sandboxed environments
-- Parallel test execution now works correctly in strict mode environments (bash -e -o pipefail)
-    - Fixed arithmetic operations in result aggregation to prevent exit code 1 when values are zero
-    - Fixed spinner cleanup to handle already-terminated processes gracefully
-    - Ensures proper exit codes in CI environments like GitHub Actions Windows runners
+- Install tests now pass in sandboxed/no-network environments (Issue #582)
+- Parallel test execution now works correctly in strict mode (`bash -e -o pipefail`)
 
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 
