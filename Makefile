@@ -79,7 +79,11 @@ pre_commit/install:
 	@echo "Installing pre-commit hook"
 	cp $(PRE_COMMIT_SCRIPTS_FILE) $(GIT_DIR)/hooks/
 
-pre_commit/run: test sa lint
+pre_commit/run:
+	@$(MAKE) -j3 test/parallel sa lint
+
+test/parallel: $(TEST_SCRIPTS)
+	@bash ./bashunit --parallel --simple $(TEST_SCRIPTS)
 
 sa:
 ifndef STATIC_ANALYSIS_CHECKER

@@ -4,7 +4,7 @@ echo "Running pre-commit checks"
 make pre_commit/run
 EXIT_CODE=$?
 
-if [[ ${EXIT_CODE} -ne 0 ]]; then
+if [ "${EXIT_CODE}" -ne 0 ]; then
     echo "Pre Commit checks failed. Please fix the above issues before committing"
     exit ${EXIT_CODE}
 else
