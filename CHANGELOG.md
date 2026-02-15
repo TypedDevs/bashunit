@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
+
 ### Changed
 - Lower minimum Bash version requirement from 3.2 to 3.0
 - Improve parallel test execution performance (30-40% faster on large test suites)
