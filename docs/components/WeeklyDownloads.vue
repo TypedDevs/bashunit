@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="downloads.length > 0"
     class="section"
   >
     <h2 class="title">
@@ -84,9 +85,16 @@ export default defineComponent({
   },
 
   async mounted() {
-    const response = await fetch('https://bashunit.typeddevs.com/downloads')
+    try {
+      const response = await fetch('https://bashunit.typeddevs.com/downloads')
+      const data = await response.json()
 
-    this.downloads = (await response.json()).reverse()
+      if (!data) return
+
+      this.downloads = data.reverse()
+    } catch {
+      return
+    }
 
     let dataCount = 0
     let totalCount = 0
