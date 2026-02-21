@@ -36,10 +36,10 @@ See more about [installation](/installation).
 
 Once **bashunit** is installed, you're ready to get started.
 
-You can bootstrap a ready to use test suite with the `--init` option:
+You can bootstrap a ready to use test suite with the `init` subcommand:
 
 ```bash
-./lib/bashunit --init tests
+./lib/bashunit init tests
 ```
 
 This will create a `tests` directory containing a sample test and bootstrap file.
@@ -87,7 +87,7 @@ Alternatively, create your tests manually:
 If you prefer hands-on learning, bashunit includes an interactive tutorial:
 
 ```bash
-./lib/bashunit --learn
+./lib/bashunit learn
 ```
 
 This will guide you through 10 progressive lessons covering all major features with practical exercises and immediate feedback.
