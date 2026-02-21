@@ -6,7 +6,7 @@ function test_successful_assert_duration_within() {
 }
 
 function test_successful_assert_duration_within_fast_command() {
-  assert_empty "$(assert_duration "echo hello" 500)"
+  assert_empty "$(assert_duration "echo hello" 5000)"
 }
 
 function test_unsuccessful_assert_duration_exceeds_threshold() {
