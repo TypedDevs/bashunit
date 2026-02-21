@@ -12,15 +12,25 @@ function bashunit::date::to_epoch() {
     ;;
   esac
 
-  # ISO 8601 conversion (GNU vs BSD date)
+  # Format conversion (GNU vs BSD date)
   local epoch
   # Try GNU date first (-d flag)
   epoch=$(date -d "$input" +%s 2>/dev/null) && {
     echo "$epoch"
     return 0
   }
-  # Try BSD date (-j -f flag) with datetime format
+  # Try BSD date (-j -f flag) with ISO 8601 datetime + timezone offset
+  epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "$input" +%s 2>/dev/null) && {
+    echo "$epoch"
+    return 0
+  }
+  # Try BSD date with ISO 8601 datetime format
   epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$input" +%s 2>/dev/null) && {
+    echo "$epoch"
+    return 0
+  }
+  # Try BSD date with space-separated datetime format
+  epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "$input" +%s 2>/dev/null) && {
     echo "$epoch"
     return 0
   }

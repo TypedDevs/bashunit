@@ -129,3 +129,37 @@ function test_successful_assert_date_within_delta_with_iso_datetime() {
   assert_empty\
     "$(assert_date_within_delta "2023-11-14T12:00:00" "2023-11-14T12:00:05" "10")"
 }
+
+# Space-separated datetime format tests
+
+function test_successful_assert_date_equals_with_space_separated_datetime() {
+  assert_empty "$(assert_date_equals "2023-11-14 12:00:00" "2023-11-14 12:00:00")"
+}
+
+function test_successful_assert_date_equals_iso_vs_space_separated() {
+  assert_empty "$(assert_date_equals "2023-11-14T12:00:00" "2023-11-14 12:00:00")"
+}
+
+function test_successful_assert_date_before_with_space_separated_datetime() {
+  assert_empty "$(assert_date_before "2023-11-14 13:00:00" "2023-11-14 12:00:00")"
+}
+
+function test_successful_assert_date_equals_epoch_vs_space_separated() {
+  local epoch
+  epoch=$(date -d "2023-11-14 12:00:00" +%s 2>/dev/null) \
+    || epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "2023-11-14 12:00:00" +%s 2>/dev/null)
+
+  assert_empty "$(assert_date_equals "$epoch" "2023-11-14 12:00:00")"
+}
+
+# UTC Z suffix test (documents existing behavior)
+
+function test_successful_assert_date_equals_with_utc_z_suffix() {
+  assert_empty "$(assert_date_equals "2023-11-14T12:00:00" "2023-11-14T12:00:00Z")"
+}
+
+# Timezone offset tests
+
+function test_successful_assert_date_equals_with_tz_offset() {
+  assert_empty "$(assert_date_equals "2023-11-14T12:00:00+0100" "2023-11-14T12:00:00+0100")"
+}

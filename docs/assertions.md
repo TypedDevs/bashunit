@@ -359,9 +359,17 @@ function test_failure() {
 ## assert_date_equals
 > `assert_date_equals "expected" "actual"`
 
-Reports an error if the two epoch timestamps `expected` and `actual` are not equal.
+Reports an error if the two date values `expected` and `actual` are not equal.
 
-All inputs are **epoch seconds** (integers), generated via `date +%s`.
+Inputs are automatically converted to epoch seconds. Supported formats:
+- Epoch seconds (integers): `1700000000`
+- ISO 8601 date: `2023-11-14`
+- ISO 8601 datetime: `2023-11-14T12:00:00`
+- ISO 8601 datetime with UTC Z: `2023-11-14T12:00:00Z`
+- ISO 8601 datetime with timezone offset: `2023-11-14T12:00:00+0100`
+- Space-separated datetime: `2023-11-14 12:00:00`
+
+You can mix formats in the same assertion (e.g., one epoch, one ISO).
 
 ::: code-group
 ```bash [Example]
@@ -383,7 +391,7 @@ function test_failure() {
 
 Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
 
-All inputs are **epoch seconds** (integers), generated via `date +%s`.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -402,7 +410,7 @@ function test_failure() {
 
 Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
 
-All inputs are **epoch seconds** (integers), generated via `date +%s`.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -421,7 +429,7 @@ function test_failure() {
 
 Reports an error if `actual` does not fall between `from` and `to` (inclusive).
 
-All inputs are **epoch seconds** (integers), generated via `date +%s`.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -440,7 +448,7 @@ function test_failure() {
 
 Reports an error if `actual` is not within `delta` seconds of `expected`.
 
-All inputs are **epoch seconds** (integers), generated via `date +%s`.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
