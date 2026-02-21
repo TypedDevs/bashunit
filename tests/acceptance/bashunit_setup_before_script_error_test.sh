@@ -90,7 +90,8 @@ function test_bashunit_when_set_up_before_script_fails_with_multiple_tests() {
 
 function test_bashunit_when_set_up_before_script_with_intermediate_failing_command() {
   local test_file
-  test_file=./tests/acceptance/fixtures/test_bashunit_when_setup_before_script_with_intermediate_failing_command.sh
+  test_file=./tests/acceptance/fixtures/\
+test_bashunit_when_setup_before_script_with_intermediate_failing_command.sh
   local fixture=$test_file
 
   local header_line="Running $fixture"

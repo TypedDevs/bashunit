@@ -34,12 +34,26 @@ jobs:
         run: make test
 
   windows:
-    name: "On windows (${{ matrix.test_chunk }})"
+    name: "On windows (${{ matrix.name }})"
     timeout-minutes: 10
     runs-on: windows-latest
     strategy:
       matrix:
-        test_chunk: [acceptance, functional, unit]
+        include:
+          - name: "acceptance a-l"
+            test_path: "tests/acceptance/bashunit_[a-l]*_test.sh"
+          - name: "acceptance m-z"
+            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/[i-p]*_test.sh"
+          - name: functional
+            test_path: "tests/functional/*_test.sh"
+          - name: "unit a-b"
+            test_path: "tests/unit/[a-b]*_test.sh"
+          - name: "unit c"
+            test_path: "tests/unit/c*_test.sh"
+          - name: "unit d-p"
+            test_path: "tests/unit/[d-p]*_test.sh"
+          - name: "unit r-z"
+            test_path: "tests/unit/[r-z]*_test.sh"
       fail-fast: false
     steps:
       - name: Checkout code
@@ -50,7 +64,7 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          ./bashunit --parallel tests/${{ matrix.test_chunk }}/*_test.sh
+          ./bashunit --parallel ${{ matrix.test_path }}
 
   alpine:
     name: "On alpine-latest"
@@ -65,7 +79,7 @@ jobs:
         run: |
           docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
             apk update && \
-            apk add --no-cache bash make git && \
+            apk add --no-cache bash make git jq && \
             adduser -D builder && \
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"

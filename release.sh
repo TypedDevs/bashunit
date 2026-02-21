@@ -15,6 +15,11 @@ GITHUB_REPO_PATH="TypedDevs/bashunit"
 GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
 RELEASE_FILES=("bashunit" "install.sh" "package.json" "CHANGELOG.md")
 
+# Helper function for regex matching (Bash 3.0+ compatible)
+function regex_match() {
+  [[ $1 =~ $2 ]]
+}
+
 # Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -370,10 +375,29 @@ function release::sandbox::create() {
   release::log_info "Creating sandbox at: $SANDBOX_DIR"
 
   # Copy repo content excluding .git, .release-state, node_modules
-  # Using cp + rm for portability (rsync not available on all systems)
-  cp -r . "$SANDBOX_DIR/"
-  rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" "$SANDBOX_DIR/node_modules"
-  release::log_verbose "Copied project files to sandbox"
+  # Try tar pipe first (faster), fallback to cp + rm for portability
+  # Use subshell + || to avoid interfering with caller's shell options
+  # (set +e alone doesn't disable pipefail, which causes failures in strict mode)
+  local tar_status=0
+  (
+    tar --exclude='.git' \
+      --exclude='.release-state' \
+      --exclude='node_modules' \
+      --exclude='.tasks' \
+      --exclude='tmp' \
+      -cf - . 2>/dev/null | tar -xf - -C "$SANDBOX_DIR" 2>/dev/null
+  ) || tar_status=$?
+
+  if [ "$tar_status" -eq 0 ]; then
+    release::log_verbose "Copied project files to sandbox (tar)"
+  else
+    # Fallback: traditional cp + rm for maximum portability
+    # Use || true since cp may fail on transient files during parallel execution
+    cp -r . "$SANDBOX_DIR/" 2>/dev/null || true
+    rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" \
+      "$SANDBOX_DIR/node_modules" "$SANDBOX_DIR/.tasks" "$SANDBOX_DIR/tmp"
+    release::log_verbose "Copied project files to sandbox (cp)"
+  fi
 }
 
 function release::sandbox::setup_git() {
@@ -391,19 +415,19 @@ function release::sandbox::mock_gh() {
   gh() {
     release::log_sandbox "Would execute: gh $*"
     case "$1" in
-      release)
-        release::log_sandbox "GitHub release would be created"
-        return 0
-        ;;
-      api)
-        # Return empty for contributor lookup
-        echo ""
-        return 0
-        ;;
-      auth)
-        # Auth status check - return success in sandbox
-        return 0
-        ;;
+    release)
+      release::log_sandbox "GitHub release would be created"
+      return 0
+      ;;
+    api)
+      # Return empty for contributor lookup
+      echo ""
+      return 0
+      ;;
+    auth)
+      # Auth status check - return success in sandbox
+      return 0
+      ;;
     esac
     return 0
   }
@@ -453,7 +477,7 @@ function release::sandbox::cleanup() {
   echo -en "${YELLOW}Keep sandbox for inspection? [y/N]: ${NC}" >&2
   read -r response
 
-  if [[ "$response" =~ ^[Yy]$ ]]; then
+  if regex_match "$response" '^[Yy]$'; then
     release::log_info "Sandbox preserved at: $SANDBOX_DIR"
     release::log_info "To clean up later: rm -rf $SANDBOX_DIR"
   else
@@ -504,7 +528,7 @@ function release::sandbox::run() {
   # Generate release notes
   RELEASE_NOTES_FILE="/tmp/bashunit-release-notes-${VERSION}.md"
   CHECKSUM=$(release::get_checksum)
-  release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" > "$RELEASE_NOTES_FILE"
+  release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" >"$RELEASE_NOTES_FILE"
   release::log_success "Generated release notes"
 
   # Show what would happen with push/gh release
@@ -529,7 +553,7 @@ function release::sandbox::run() {
 
 function release::validate_semver() {
   local version=$1
-  if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  if ! regex_match "$version" '^[0-9]+\.[0-9]+\.[0-9]+$'; then
     release::log_error "Invalid version format: $version"
     release::log_error "Version must be in semver format (e.g., 0.30.0)"
     exit $EXIT_VALIDATION_ERROR
@@ -552,10 +576,10 @@ function release::version_gt() {
   local i
   local ver1
   local ver2
-  IFS=. read -ra ver1 <<< "$v1"
-  IFS=. read -ra ver2 <<< "$v2"
+  IFS=. read -ra ver1 <<<"$v1"
+  IFS=. read -ra ver2 <<<"$v2"
 
-  for ((i=0; i<3; i++)); do
+  for ((i = 0; i < 3; i++)); do
     if ((ver1[i] > ver2[i])); then
       return 0
     elif ((ver1[i] < ver2[i])); then
@@ -652,10 +676,10 @@ function release::generate_release_notes() {
 
   # Extract content from the latest version header (first ## [) until the next version header
   # Transform changelog sections to release format with emojis
-  awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md | \
-    sed 's/^### Added$/## ✨ Improvements/' | \
-    sed 's/^### Changed$/## 🛠️ Changes/' | \
-    sed 's/^### Fixed$/## 🐛 Bug Fixes/' | \
+  awk '/^## \[/{if(found) exit; found=1; next} found' CHANGELOG.md |
+    sed 's/^### Added$/## ✨ Improvements/' |
+    sed 's/^### Changed$/## 🛠️ Changes/' |
+    sed 's/^### Fixed$/## 🐛 Bug Fixes/' |
     sed 's/^### Performance$/## ⚡ Performance/'
 
   # Add contributors section
@@ -752,7 +776,7 @@ function release::confirm_action() {
   echo -en "${YELLOW}$prompt [y/N]: ${NC}" >&2
   read -r response
 
-  if [[ "$response" =~ ^[Yy]$ ]]; then
+  if regex_match "$response" '^[Yy]$'; then
     return 0
   else
     return 1
@@ -866,48 +890,48 @@ function release::main() {
   # Parse arguments
   while [[ $# -gt 0 ]]; do
     case $1 in
-      --dry-run)
-        DRY_RUN=true
-        shift
-        ;;
-      --sandbox)
-        SANDBOX_MODE=true
-        shift
-        ;;
-      --force)
-        FORCE_MODE=true
-        shift
-        ;;
-      --verbose)
-        VERBOSE_MODE=true
-        shift
-        ;;
-      --json)
-        JSON_OUTPUT=true
-        shift
-        ;;
-      --without-gh-release)
-        WITH_GH_RELEASE=false
-        shift
-        ;;
-      --rollback)
-        release::rollback::manual
-        exit $?
-        ;;
-      -h|--help)
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --sandbox)
+      SANDBOX_MODE=true
+      shift
+      ;;
+    --force)
+      FORCE_MODE=true
+      shift
+      ;;
+    --verbose)
+      VERBOSE_MODE=true
+      shift
+      ;;
+    --json)
+      JSON_OUTPUT=true
+      shift
+      ;;
+    --without-gh-release)
+      WITH_GH_RELEASE=false
+      shift
+      ;;
+    --rollback)
+      release::rollback::manual
+      exit $?
+      ;;
+    -h | --help)
+      release::show_usage
+      exit $EXIT_SUCCESS
+      ;;
+    *)
+      if [[ -z "$VERSION" ]]; then
+        VERSION=$1
+      else
+        release::log_error "Unknown argument: $1"
         release::show_usage
-        exit $EXIT_SUCCESS
-        ;;
-      *)
-        if [[ -z "$VERSION" ]]; then
-          VERSION=$1
-        else
-          release::log_error "Unknown argument: $1"
-          release::show_usage
-          exit $EXIT_VALIDATION_ERROR
-        fi
-        shift
-        ;;
+        exit $EXIT_VALIDATION_ERROR
+      fi
+      shift
+      ;;
     esac
   done
 
@@ -1001,7 +1025,7 @@ function release::main() {
     release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" >&2
     echo "----------------------------------------" >&2
   else
-    release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" > "$RELEASE_NOTES_FILE"
+    release::generate_release_notes "$VERSION" "$CURRENT_VERSION" "$CHECKSUM" >"$RELEASE_NOTES_FILE"
     release::log_success "Saved release notes to $RELEASE_NOTES_FILE"
   fi
   release::state::record_step "generate_release_notes"

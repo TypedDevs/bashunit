@@ -13,24 +13,32 @@
     - Expert agents for Bash 3.2+ compatibility, code review, TDD coaching, test architecture, and performance
     - GitHub issue → PR workflow command
     - Consolidated AI developer tool instructions into `.claude/CLAUDE.md`
+- Add `assert_have_been_called_nth_with` for verifying arguments on the Nth invocation of a spy
+- Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
+- Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)
+- Add duration assertions: `assert_duration`, `assert_duration_less_than`, `assert_duration_greater_than`
+- Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
+
+### Changed
+- Split Windows CI test jobs into parallel chunks to avoid timeouts
+
+## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
+
+### Changed
+- Lower minimum Bash version requirement from 3.2 to 3.0
+- Improve parallel test execution performance (30-40% faster on large test suites)
+
+### Added
 - Display test output (stdout/stderr) on failure for runtime errors
-    - Shows captured output in an "Output:" section when tests fail with runtime errors
-    - Helps debug test failures without manually capturing output
-    - Enabled by default; use `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false` to disable
-    - New CLI options: `--show-output`, `--no-output-on-failure`
+    - Enabled by default; disable with `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false`
 - Add `--no-progress` flag to suppress real-time progress display (Issue #503)
-    - Hides per-test output, file headers, hook messages, and spinner during execution
-    - Shows only the final test summary
-    - Useful for CI/CD pipelines or log-restricted environments
-    - Can also be set via `BASHUNIT_NO_PROGRESS=true` environment variable
+    - Also available via `BASHUNIT_NO_PROGRESS=true` environment variable
+- Support `# bashunit: no-parallel-tests` directive to opt out of test-level parallelism
 
 ### Fixed
 - Data providers now work without the `function` keyword on test functions (Issue #586)
-    - Previously, data provider detection required at least the first test using a provider to have the `function` keyword
-    - Now all test functions work consistently regardless of whether they use the `function` keyword
-    - Fixes regex in `bashunit::helper::get_provider_data()` to make the `function` keyword optional
-- Self-test `tests/acceptance/install_test.sh` now passes when no network tools are available (Issue #582)
-    - Tests skip gracefully with `BASHUNIT_NO_NETWORK=true` or in sandboxed environments
+- Install tests now pass in sandboxed/no-network environments (Issue #582)
+- Parallel test execution now works correctly in strict mode (`bash -e -o pipefail`)
 
 ## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
 

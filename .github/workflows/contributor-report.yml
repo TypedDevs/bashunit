@@ -36,3 +36,4 @@ jobs:
           new-account-action: require-review
           new-account-threshold-days: '30'
           trusted-orgs: TypedDevs
+          trusted-users: Chemaclass

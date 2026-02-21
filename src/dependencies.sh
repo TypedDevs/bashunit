@@ -6,7 +6,7 @@ function bashunit::dependencies::has_perl() {
 }
 
 function bashunit::dependencies::has_powershell() {
-  command -v powershell > /dev/null 2>&1
+  command -v powershell >/dev/null 2>&1
 }
 
 function bashunit::dependencies::has_adjtimex() {

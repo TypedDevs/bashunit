@@ -38,9 +38,9 @@ SH
         sed -i -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"
       fi
     fi
-    echo "$env_line" >> "$env_file"
+    echo "$env_line" >>"$env_file"
   else
-    echo "$env_line" > "$env_file"
+    echo "$env_line" >"$env_file"
   fi
 
   echo "> bashunit initialized in $tests_dir"

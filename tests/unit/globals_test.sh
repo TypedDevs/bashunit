@@ -45,7 +45,7 @@ function test_globals_current_timestamp() {
 }
 
 function test_globals_is_command_available() {
-  function existing_fn(){
+  function existing_fn() {
     return 0
   }
   assert_successful_code "$(bashunit::is_command_available existing_fn)"

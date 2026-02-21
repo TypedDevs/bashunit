@@ -63,7 +63,8 @@ function test_bashunit_when_tear_down_after_script_with_failing_command() {
 
 function test_bashunit_when_tear_down_after_script_with_intermediate_failing_command() {
   local test_file
-  test_file=./tests/acceptance/fixtures/test_bashunit_when_teardown_after_script_with_intermediate_failing_command.sh
+  test_file=./tests/acceptance/fixtures/\
+test_bashunit_when_teardown_after_script_with_intermediate_failing_command.sh
   local fixture=$test_file
 
   local header_line="Running $fixture"

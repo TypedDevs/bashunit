@@ -190,7 +190,7 @@ function bashunit::env::active_internet_connection() {
     wget -q --spider https://github.com && return 0
   fi
 
-  if ping -c 1 -W 3 google.com &> /dev/null; then
+  if ping -c 1 -W 3 google.com &>/dev/null; then
     return 0
   fi
 
@@ -200,11 +200,11 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [[ -z "$cols" ]] && command -v tput > /dev/null; then
+  if [[ -z "$cols" ]] && command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 
-  if [[ -z "$cols" ]] && command -v stty > /dev/null; then
+  if [[ -z "$cols" ]] && command -v stty >/dev/null; then
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
@@ -214,7 +214,10 @@ function bashunit::env::find_terminal_width() {
 
 function bashunit::env::print_verbose() {
   bashunit::internal_log "Printing verbose environment variables"
-  local keys=(
+  local IFS=$' \t\n'
+  # Bash 3.0 compatible: separate declaration and assignment for arrays
+  local keys
+  keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"
     "BASHUNIT_BOOTSTRAP"
@@ -242,13 +245,14 @@ function bashunit::env::print_verbose() {
 
   local max_length=0
 
-  for key in "${keys[@]}"; do
-    if (( ${#key} > max_length )); then
+  local key
+  for key in "${keys[@]+"${keys[@]}"}"; do
+    if ((${#key} > max_length)); then
       max_length=${#key}
     fi
   done
 
-  for key in "${keys[@]}"; do
+  for key in "${keys[@]+"${keys[@]}"}"; do
     bashunit::internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done

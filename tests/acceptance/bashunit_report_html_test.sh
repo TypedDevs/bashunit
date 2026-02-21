@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 set -euo pipefail
 
 function set_up_before_script() {
@@ -9,7 +10,8 @@ function set_up_before_script() {
 function test_bashunit_when_report_html_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_report_html.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-html custom.html "$test_file")"
+  assert_match_snapshot \
+    "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-html custom.html "$test_file")"
   assert_file_exists custom.html
 
   if [[ -f custom.html ]]; then

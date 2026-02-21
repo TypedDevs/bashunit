@@ -32,7 +32,7 @@ function test_show_output_on_failure_disabled_via_env() {
   local actual
   actual="$(
     BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false \
-    ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" 2>&1 || true
+      ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" 2>&1 || true
   )"
 
   assert_not_contains "Output:" "$actual"
@@ -45,7 +45,7 @@ function test_show_output_flag_overrides_env() {
   local actual
   actual="$(
     BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false \
-    ./bashunit --no-parallel --env "$TEST_ENV_FILE" --show-output "$test_file" 2>&1 || true
+      ./bashunit --no-parallel --env "$TEST_ENV_FILE" --show-output "$test_file" 2>&1 || true
   )"
 
   assert_contains "Output:" "$actual"

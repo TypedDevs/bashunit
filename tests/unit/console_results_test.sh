@@ -8,20 +8,21 @@ function set_state_value() {
 
   # Extract variable name from getter function name
   case "$getter_name" in
-    bashunit::state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
-    bashunit::state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
-    bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
-    bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
-    bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
-    bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
-    bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
-    bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
-    bashunit::state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
-    bashunit::state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
-    bashunit::state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
-    bashunit::state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
-    bashunit::state::get_file_with_duplicated_function_names)
-      var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES" ;;
+  bashunit::state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
+  bashunit::state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
+  bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
+  bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
+  bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
+  bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
+  bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
+  bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
+  bashunit::state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
+  bashunit::state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
+  bashunit::state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
+  bashunit::state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
+  bashunit::state::get_file_with_duplicated_function_names)
+    var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES"
+    ;;
   esac
 
   # Set the actual variable
@@ -362,10 +363,10 @@ function test_render_execution_time_on_osx_with_perl() {
   bashunit::mock bashunit::dependencies::has_adjtimex mock_false
   bashunit::mock bashunit::dependencies::has_perl mock_true
   _BASHUNIT_START_TIME="1726393394574382186"
-  bashunit::mock perl <<< "1726393394574372186"
-  bashunit::mock uname <<< "Darwin"
+  bashunit::mock perl <<<"1726393394574372186"
+  bashunit::mock uname <<<"Darwin"
   render_result=$(
-  bashunit::mock perl <<< "1726393394574372186";
+    bashunit::mock perl <<<"1726393394574372186"
 
     bashunit::console_results::render_result || true
   )

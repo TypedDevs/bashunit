@@ -2,8 +2,13 @@
 # shellcheck disable=SC2155
 # shellcheck disable=SC2164
 
+# Helper function for regex matching (Bash 3.0+ compatible)
+function regex_match() {
+  [[ $1 =~ $2 ]]
+}
+
 function is_git_installed() {
-  command -v git > /dev/null 2>&1
+  command -v git >/dev/null 2>&1
 }
 
 function build_and_install_beta() {
@@ -39,9 +44,9 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
-  if command -v curl > /dev/null 2>&1; then
+  if command -v curl >/dev/null 2>&1; then
     curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
-  elif command -v wget > /dev/null 2>&1; then
+  elif command -v wget >/dev/null 2>&1; then
     wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
   else
     echo "Cannot download bashunit: curl or wget not found."
@@ -58,7 +63,7 @@ DIR="lib"
 VERSION="latest"
 
 function is_version() {
-  [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ || "$1" == "latest" || "$1" == "beta" ]]
+  regex_match "$1" '^[0-9]+\.[0-9]+\.[0-9]+$' || [[ "$1" == "latest" || "$1" == "beta" ]]
 }
 
 # Parse arguments flexibly
@@ -82,7 +87,7 @@ elif [[ $# -eq 2 ]]; then
 fi
 
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-LATEST_BASHUNIT_VERSION="0.32.0"
+LATEST_BASHUNIT_VERSION="0.33.0"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"

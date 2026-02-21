@@ -37,11 +37,11 @@ function bashunit::reports::add_test() {
   local assertions="$4"
   local status="$5"
 
-  _BASHUNIT_REPORTS_TEST_FILES+=("$file")
-  _BASHUNIT_REPORTS_TEST_NAMES+=("$test_name")
-  _BASHUNIT_REPORTS_TEST_STATUSES+=("$status")
-  _BASHUNIT_REPORTS_TEST_ASSERTIONS+=("$assertions")
-  _BASHUNIT_REPORTS_TEST_DURATIONS+=("$duration")
+  _BASHUNIT_REPORTS_TEST_FILES[${#_BASHUNIT_REPORTS_TEST_FILES[@]}]="$file"
+  _BASHUNIT_REPORTS_TEST_NAMES[${#_BASHUNIT_REPORTS_TEST_NAMES[@]}]="$test_name"
+  _BASHUNIT_REPORTS_TEST_STATUSES[${#_BASHUNIT_REPORTS_TEST_STATUSES[@]}]="$status"
+  _BASHUNIT_REPORTS_TEST_ASSERTIONS[${#_BASHUNIT_REPORTS_TEST_ASSERTIONS[@]}]="$assertions"
+  _BASHUNIT_REPORTS_TEST_DURATIONS[${#_BASHUNIT_REPORTS_TEST_DURATIONS[@]}]="$duration"
 }
 
 function bashunit::reports::generate_junit_xml() {
@@ -62,12 +62,13 @@ function bashunit::reports::generate_junit_xml() {
     echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\""
     echo "             time=\"$time\">"
 
+    local i
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
-      local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]}"
-      local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]}"
-      local assertions="${_BASHUNIT_REPORTS_TEST_ASSERTIONS[$i]}"
-      local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]}"
-      local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]}"
+      local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
+      local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+      local assertions="${_BASHUNIT_REPORTS_TEST_ASSERTIONS[$i]:-}"
+      local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
+      local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
@@ -79,7 +80,7 @@ function bashunit::reports::generate_junit_xml() {
 
     echo "  </testsuite>"
     echo "</testsuites>"
-  } > "$output_file"
+  } >"$output_file"
 }
 
 function bashunit::reports::generate_report_html() {
@@ -96,15 +97,16 @@ function bashunit::reports::generate_report_html() {
   local temp_file="temp_test_cases.txt"
 
   # Collect test cases by file
-  : > "$temp_file"  # Clear temp file if it exists
+  : >"$temp_file" # Clear temp file if it exists
+  local i
   for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
-    local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]}"
-    local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]}"
-    local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]}"
-    local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]}"
+    local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
+    local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+    local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
+    local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
     local test_case="$file|$name|$status|$test_time"
 
-    echo "$test_case" >> "$temp_file"
+    echo "$test_case" >>"$temp_file"
   done
 
   {
@@ -156,6 +158,7 @@ function bashunit::reports::generate_report_html() {
 
     # Read the temporary file and group by file
     local current_file=""
+    local file name status test_time
     while IFS='|' read -r file name status test_time; do
       if [ "$file" != "$current_file" ]; then
         if [ -n "$current_file" ]; then
@@ -179,7 +182,7 @@ function bashunit::reports::generate_report_html() {
       echo "        <td>$status</td>"
       echo "        <td>$test_time</td>"
       echo "      </tr>"
-    done < "$temp_file"
+    done <"$temp_file"
 
     # Close the last table
     if [ -n "$current_file" ]; then
@@ -189,7 +192,7 @@ function bashunit::reports::generate_report_html() {
 
     echo "</body>"
     echo "</html>"
-  } > "$output_file"
+  } >"$output_file"
 
   # Clean up temporary file
   rm -f "$temp_file"

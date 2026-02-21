@@ -74,7 +74,7 @@ function assert_files_equals() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$(diff -u "$expected" "$actual")" != '' ]] ; then
+  if [[ "$(diff -u "$expected" "$actual")" != '' ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -82,7 +82,7 @@ function assert_files_equals() {
     bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
-        "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
+      "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
     return
   fi
 
@@ -95,7 +95,7 @@ function assert_files_not_equals() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$(diff -u "$expected" "$actual")" == '' ]] ; then
+  if [[ "$(diff -u "$expected" "$actual")" == '' ]]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -103,7 +103,7 @@ function assert_files_not_equals() {
     bashunit::assert::mark_failed
 
     bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
-        "Diff" "Files are equals"
+      "Diff" "Files are equals"
     return
   fi
 

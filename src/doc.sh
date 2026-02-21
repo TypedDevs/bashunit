@@ -11,13 +11,14 @@ function bashunit::doc::get_embedded_docs() {
 
 function bashunit::doc::print_asserts() {
   local filter="${1:-}"
-  local line
   local docstring=""
   local fn=""
   local should_print=0
 
+  local line
   while IFS='' read -r line || [[ -n "$line" ]]; do
-    if [[ $line =~ ^##\ ([A-Za-z0-9_]+) ]]; then
+    local _re='^## ([A-Za-z0-9_]+)'
+    if [[ "$line" =~ $_re ]]; then
       fn="${BASH_REMATCH[1]}"
       if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
         should_print=1
@@ -29,8 +30,10 @@ function bashunit::doc::print_asserts() {
       continue
     fi
 
-    if (( should_print )); then
-      if [[ "$line" =~ ^\`\`\` ]]; then
+    if ((should_print)); then
+      # Check for code fence using pattern matching instead of regex
+      # Avoids backtick escaping issues in Bash 3.0
+      if [[ "$line" == '```'* ]]; then
         echo "--------------"
         echo "$docstring"
         should_print=0
@@ -41,8 +44,8 @@ function bashunit::doc::print_asserts() {
 
       # Remove markdown link brackets and anchor tags
       line="${line//[\[\]]/}"
-      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<< "$line")"
-      docstring+="$line"$'\n'
+      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<<"$line")"
+      docstring="$docstring$line"$'\n'
     fi
-  done <<< "$(bashunit::doc::get_embedded_docs)"
+  done <<<"$(bashunit::doc::get_embedded_docs)"
 }

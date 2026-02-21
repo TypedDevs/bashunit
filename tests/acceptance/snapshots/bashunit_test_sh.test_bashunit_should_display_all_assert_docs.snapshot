@@ -88,6 +88,25 @@ Reports an error if `haystack` does not ends with `needle`.
 - assert_string_not_ends_with is the inverse of this assertion and takes the same arguments.
 
 
+## assert_string_matches_format
+--------------
+> `assert_string_matches_format "format" "value"`
+
+Reports an error if `value` does not match the `format` string. The format string uses PHPUnit-style placeholders:
+
+| Placeholder | Matches |
+|-------------|---------|
+| `%d` | One or more digits |
+| `%i` | Signed integer (e.g. `+1`, `-42`) |
+| `%f` | Floating point number (e.g. `3.14`) |
+| `%s` | One or more non-whitespace characters |
+| `%x` | Hexadecimal (e.g. `ff00ab`) |
+| `%e` | Scientific notation (e.g. `1.5e10`) |
+| `%%` | Literal `%` character |
+
+- assert_string_not_matches_format is the inverse of this assertion and takes the same arguments.
+
+
 ## assert_line_count
 --------------
 > `assert_line_count "count" "haystack"`
@@ -418,6 +437,15 @@ Reports an error if `value` matches the regular expression `pattern`.
 - assert_matches is the inverse of this assertion and takes the same arguments.
 
 
+## assert_string_not_matches_format
+--------------
+> `assert_string_not_matches_format "format" "value"`
+
+Reports an error if `value` matches the `format` string. See assert_string_matches_format for supported placeholders.
+
+- assert_string_matches_format is the inverse of this assertion and takes the same arguments.
+
+
 ## assert_array_not_contains
 --------------
 > `assert_array_not_contains "needle" "haystack"`
@@ -488,6 +516,48 @@ Reports an error if `directory` is writable.
 Reports an error if `expected` and `actual` are not equals.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
+
+
+## assert_json_key_exists
+--------------
+> `assert_json_key_exists "key" "json"`
+
+Reports an error if `key` does not exist in the JSON string. Uses jq(https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+
+## assert_json_contains
+--------------
+> `assert_json_contains "key" "expected" "json"`
+
+Reports an error if `key` does not exist in the JSON string or its value does not equal `expected`. Uses jq(https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+
+## assert_json_equals
+--------------
+> `assert_json_equals "expected" "actual"`
+
+Reports an error if the two JSON strings are not structurally equal. Key order is ignored. Requires `jq` to be installed; if missing the test is skipped.
+
+
+## assert_duration
+--------------
+> `assert_duration "command" threshold_ms`
+
+Reports an error if `command` takes longer than `threshold_ms` milliseconds to execute. Uses the framework's portable clock internally.
+
+
+## assert_duration_less_than
+--------------
+> `assert_duration_less_than "command" threshold_ms`
+
+Reports an error if `command` takes `threshold_ms` milliseconds or more to execute. Stricter than assert_duration which allows equal values.
+
+
+## assert_duration_greater_than
+--------------
+> `assert_duration_greater_than "command" threshold_ms`
+
+Reports an error if `command` completes in `threshold_ms` milliseconds or less. Useful for verifying that a command takes at least a minimum amount of time.
 
 
 ## bashunit::fail

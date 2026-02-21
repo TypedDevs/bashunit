@@ -17,7 +17,8 @@ function bashunit::helper::find_test_function_name() {
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
-    if [[ "$fn" == test_* ]] || [[ "$fn" =~ ^test[A-Z] ]]; then
+    local _re='^test[A-Z]'
+    if [[ "$fn" == test_* ]] || [[ "$fn" =~ $_re ]]; then
       echo "$fn"
       return
     fi
@@ -68,16 +69,16 @@ function bashunit::helper::normalize_test_function_name() {
   fi
   # Replace underscores with spaces
   result="${result//_/ }"
-  # Capitalize the first letter (bash 3.2 compatible, no subprocess)
+  # Capitalize the first letter (bash 3.0 compatible, no subprocess)
   local first_char="${result:0:1}"
   case "$first_char" in
-    a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
-    e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
-    i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
-    m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
-    q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
-    u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
-    y) first_char='Y' ;; z) first_char='Z' ;;
+  a) first_char='A' ;; b) first_char='B' ;; c) first_char='C' ;; d) first_char='D' ;;
+  e) first_char='E' ;; f) first_char='F' ;; g) first_char='G' ;; h) first_char='H' ;;
+  i) first_char='I' ;; j) first_char='J' ;; k) first_char='K' ;; l) first_char='L' ;;
+  m) first_char='M' ;; n) first_char='N' ;; o) first_char='O' ;; p) first_char='P' ;;
+  q) first_char='Q' ;; r) first_char='R' ;; s) first_char='S' ;; t) first_char='T' ;;
+  u) first_char='U' ;; v) first_char='V' ;; w) first_char='W' ;; x) first_char='X' ;;
+  y) first_char='Y' ;; z) first_char='Z' ;;
   esac
   result="${first_char}${result:1}"
 
@@ -93,11 +94,14 @@ function bashunit::helper::escape_single_quotes() {
 function bashunit::helper::interpolate_function_name() {
   local function_name="$1"
   shift
-  local args=("$@")
+  local -a args
+  local args_count=$#
+  args=("$@")
   local result="$function_name"
 
-  for ((i=0; i<${#args[@]}; i++)); do
-    local placeholder="::$((i+1))::"
+  local i
+  for ((i = 0; i < args_count; i++)); do
+    local placeholder="::$((i + 1))::"
     # shellcheck disable=SC2155
     local value="$(bashunit::helper::escape_single_quotes "${args[$i]}")"
     value="'$value'"
@@ -110,6 +114,12 @@ function bashunit::helper::interpolate_function_name() {
 function bashunit::helper::encode_base64() {
   local value="$1"
 
+  # Handle empty string specially - base64 of "" is "", which gets lost in line parsing
+  if [[ -z "$value" ]]; then
+    printf '%s' "_BASHUNIT_EMPTY_"
+    return
+  fi
+
   if command -v base64 >/dev/null; then
     printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
   else
@@ -119,6 +129,12 @@ function bashunit::helper::encode_base64() {
 
 function bashunit::helper::decode_base64() {
   local value="$1"
+
+  # Handle empty string marker
+  if [[ "$value" == "_BASHUNIT_EMPTY_" ]]; then
+    printf ''
+    return
+  fi
 
   if command -v base64 >/dev/null; then
     printf '%s' "$value" | base64 -d
@@ -172,12 +188,13 @@ function bashunit::helper::get_functions_to_run() {
 
   local filtered_functions=""
 
+  local fn
   for fn in $function_names; do
     if [[ $fn == ${prefix}_*${filter}* ]]; then
       if [[ $filtered_functions == *" $fn"* ]]; then
         return 1
       fi
-      filtered_functions+=" $fn"
+      filtered_functions="$filtered_functions $fn"
     fi
   done
 
@@ -211,7 +228,8 @@ function bashunit::helper::find_files_recursive() {
   local pattern="${2:-*[tT]est.sh}"
 
   local alt_pattern=""
-  if [[ $pattern == *test.sh ]] || [[ $pattern =~ \[tT\]est\.sh$ ]]; then
+  local _re='\[tT\]est\.sh$'
+  if [[ $pattern == *test.sh ]] || [[ "$pattern" =~ $_re ]]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
@@ -238,7 +256,8 @@ function bashunit::helper::normalize_variable_name() {
 
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  if [[ ! $normalized_string =~ ^[a-zA-Z_] ]]; then
+  local _re='^[a-zA-Z_]'
+  if ! [[ "$normalized_string" =~ $_re ]]; then
     normalized_string="_$normalized_string"
   fi
 
@@ -262,8 +281,8 @@ function bashunit::helper::get_provider_data() {
   local data_provider_function
   data_provider_function=$(
     # shellcheck disable=SC1087
-    grep -B 2 -E "(function[[:space:]]+)?$function_name[[:space:]]*\(\)" "$script" 2>/dev/null | \
-    sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
+    grep -B 2 -E "(function[[:space:]]+)?$function_name[[:space:]]*\(\)" "$script" 2>/dev/null |
+      sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
   if [[ -n "$data_provider_function" ]]; then
@@ -295,95 +314,96 @@ function bashunit::helper::get_latest_tag() {
 }
 
 function bashunit::helper::find_total_tests() {
-    local filter=${1:-}
-    local files=("${@:2}")
+  local filter=${1:-}
+  shift || true
 
-    if [[ ${#files[@]} -eq 0 ]]; then
-        echo 0
-        return
+  if [[ $# -eq 0 ]]; then
+    echo 0
+    return
+  fi
+
+  local total_count=0
+  local file
+
+  for file in "$@"; do
+    if [[ ! -f "$file" ]]; then
+      continue
     fi
 
-    local total_count=0
-    local file
+    local file_count
+    file_count=$( (
+      # shellcheck source=/dev/null
+      source "$file"
+      local all_fn_names
+      all_fn_names=$(declare -F | awk '{print $3}')
+      local filtered_functions
+      filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 
-    for file in "${files[@]}"; do
-        if [[ ! -f "$file" ]]; then
-            continue
-        fi
+      local count=0
+      local IFS=$' \t\n'
+      if [[ -n "$filtered_functions" ]]; then
+        local -a functions_to_run=()
+        # shellcheck disable=SC2206
+        functions_to_run=($filtered_functions)
+        # shellcheck disable=SC2034
+        local -a provider_data=()
+        local provider_data_count=0
+        local fn_name line
+        for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
+          provider_data=()
+          provider_data_count=0
+          while IFS=" " read -r line; do
+            [[ -z "$line" ]] && continue
+            # shellcheck disable=SC2034
+            provider_data[provider_data_count]="$line"
+            provider_data_count=$((provider_data_count + 1))
+          done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
-        local file_count
-        file_count=$( (
-            # shellcheck source=/dev/null
-            source "$file"
-            local all_fn_names
-            all_fn_names=$(declare -F | awk '{print $3}')
-            local filtered_functions
-            filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
+          if [[ "$provider_data_count" -eq 0 ]]; then
+            count=$((count + 1))
+          else
+            count=$((count + provider_data_count))
+          fi
+        done
+      fi
 
-            local count=0
-            if [[ -n "$filtered_functions" ]]; then
-                # shellcheck disable=SC2206
-                # shellcheck disable=SC2207
-                local functions_to_run=($filtered_functions)
-                for fn_name in "${functions_to_run[@]}"; do
-                    local provider_data=()
-                    while IFS=" " read -r line; do
-                        provider_data+=("$line")
-                    done <<< "$(bashunit::helper::get_provider_data "$fn_name" "$file")"
+      echo "$count"
+    ))
 
-                    if [[ "${#provider_data[@]}" -eq 0 ]]; then
-                        count=$((count + 1))
-                    else
-                        count=$((count + ${#provider_data[@]}))
-                    fi
-                done
-            fi
+    total_count=$((total_count + file_count))
+  done
 
-            echo "$count"
-        ) )
-
-        total_count=$((total_count + file_count))
-    done
-
-    echo "$total_count"
+  echo "$total_count"
 }
 
 function bashunit::helper::load_test_files() {
-  local filter=$1
-  local files=("${@:2}")
+  local filter="${1:-}"
+  shift || true
+  # Bash 3.0 compatible: use $# after shift to check for files
+  local has_files=$#
 
-  local test_files=()
-
-  if [[ "${#files[@]}" -eq 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
-      while IFS='' read -r line; do
-        test_files+=("$line")
-      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH")
+  if [[ "$has_files" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+      bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH"
     fi
   else
-    test_files=("${files[@]}")
+    printf "%s\n" "$@"
   fi
-
-  printf "%s\n" "${test_files[@]}"
 }
 
 function bashunit::helper::load_bench_files() {
-  local filter=$1
-  local files=("${@:2}")
+  local filter="${1:-}"
+  shift || true
+  # Bash 3.0 compatible: use $# after shift to check for files
+  local has_files=$#
 
-  local bench_files=()
-
-  if [[ "${#files[@]}" -eq 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH}" ]]; then
-      while IFS='' read -r line; do
-        bench_files+=("$line")
-      done < <(bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh')
+  if [[ "$has_files" -eq 0 ]]; then
+    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+      bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh'
     fi
   else
-    bench_files=("${files[@]}")
+    printf "%s\n" "$@"
   fi
-
-  printf "%s\n" "${bench_files[@]}"
 }
 
 #
@@ -432,13 +452,16 @@ function bashunit::helper::parse_file_path_filter() {
     file_path="${input%%::*}"
     filter="${input#*::}"
   # Check for :number syntax (line number filter)
-  elif [[ "$input" =~ ^(.+):([0-9]+)$ ]]; then
-    file_path="${BASH_REMATCH[1]}"
-    local line_number="${BASH_REMATCH[2]}"
-    # Line number will be resolved to function name later
-    filter="__line__:${line_number}"
   else
-    file_path="$input"
+    local _re='^(.+):([0-9]+)$'
+    if [[ "$input" =~ $_re ]]; then
+      file_path="${BASH_REMATCH[1]}"
+      local line_number="${BASH_REMATCH[2]}"
+      # Line number will be resolved to function name later
+      filter="__line__:${line_number}"
+    else
+      file_path="$input"
+    fi
   fi
 
   echo "$file_path"
@@ -465,10 +488,12 @@ function bashunit::helper::find_function_at_line() {
   local best_match=""
   local best_line=0
 
+  local line_num content
   while IFS=: read -r line_num content; do
     # Extract function name from the line
     local fn_name=""
-    if [[ "$content" =~ ^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\) ]]; then
+    local fn_pattern='^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\)'
+    if [[ "$content" =~ $fn_pattern ]]; then
       fn_name="${BASH_REMATCH[2]}"
     fi
 
@@ -479,4 +504,118 @@ function bashunit::helper::find_function_at_line() {
   done < <(grep -n -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)' "$file")
 
   echo "$best_match"
+}
+
+#
+# Extracts @tag annotations for a specific function from a test file.
+# Looks for comment lines `# @tag <name>` immediately above the function definition.
+#
+# @param $1 string Function name
+# @param $2 string Script file path
+#
+# @return string Comma-separated list of tags, or empty if none
+#
+function bashunit::helper::get_tags_for_function() {
+  local function_name="$1"
+  local script="$2"
+
+  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+    script="$BASHUNIT_WORKING_DIR/$script"
+  fi
+
+  if [[ ! -f "$script" ]]; then
+    return
+  fi
+
+  # Find the line number of the function definition
+  local fn_line_num
+  fn_line_num=$(grep -n -E "(function[[:space:]]+)?${function_name}[[:space:]]*\(\)" "$script" 2>/dev/null | head -1)
+  if [ -z "$fn_line_num" ]; then
+    return
+  fi
+  fn_line_num="${fn_line_num%%:*}"
+
+  # Walk backwards from the line above the function, collecting @tag comments
+  local tags=""
+  local check_line=$((fn_line_num - 1))
+  while [ "$check_line" -ge 1 ]; do
+    local content
+    content=$(sed -n "${check_line}p" "$script")
+    local _re='^[[:space:]]*#[[:space:]]*@tag[[:space:]]'
+    if [[ "$content" =~ $_re ]]; then
+      local tag_name
+      tag_name=$(echo "$content" | sed -nE 's/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+//p')
+      if [ -n "$tag_name" ]; then
+        if [ -z "$tags" ]; then
+          tags="$tag_name"
+        else
+          tags="$tags,$tag_name"
+        fi
+      fi
+    elif [[ "$content" =~ ^[[:space:]]*# ]]; then
+      # Other comment line, keep walking
+      :
+    elif [[ "$content" =~ ^[[:space:]]*$ ]]; then
+      # Empty line, stop looking
+      break
+    else
+      # Non-comment, non-empty line, stop
+      break
+    fi
+    check_line=$((check_line - 1))
+  done
+
+  echo "$tags"
+}
+
+#
+# Checks if a function's tags match the include/exclude filters.
+# Include uses OR logic (any match passes).
+# Exclude uses OR logic (any match fails).
+# Exclude takes precedence over include.
+#
+# @param $1 string Comma-separated tags for the function
+# @param $2 string Comma-separated include tags (empty = no filter)
+# @param $3 string Comma-separated exclude tags (empty = no filter)
+#
+# @return 0 if function should run, 1 if it should be skipped
+#
+function bashunit::helper::function_matches_tags() {
+  local fn_tags="$1"
+  local include_tags="$2"
+  local exclude_tags="$3"
+
+  # Check exclude tags first (exclude wins over include)
+  if [ -n "$exclude_tags" ]; then
+    local IFS=','
+    local etag
+    for etag in $exclude_tags; do
+      local check_tag
+      for check_tag in $fn_tags; do
+        if [ "$check_tag" = "$etag" ]; then
+          return 1
+        fi
+      done
+    done
+  fi
+
+  # Check include tags (OR logic: any match passes)
+  if [ -n "$include_tags" ]; then
+    if [ -z "$fn_tags" ]; then
+      return 1
+    fi
+    local IFS=','
+    local itag
+    for itag in $include_tags; do
+      local check_tag
+      for check_tag in $fn_tags; do
+        if [ "$check_tag" = "$itag" ]; then
+          return 0
+        fi
+      done
+    done
+    return 1
+  fi
+
+  return 0
 }
