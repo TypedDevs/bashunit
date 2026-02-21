@@ -4,6 +4,7 @@
 
 ### Added
 - Add `assert_have_been_called_nth_with` assertion for verifying arguments on the Nth invocation of a spy (Issue #172)
+- Add `assert_string_matches_format` and `assert_string_not_matches_format` assertions with PHPUnit-style format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`) (Issue #177)
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts

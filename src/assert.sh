@@ -729,3 +729,89 @@ function assert_line_count() {
 
   bashunit::state::add_assertions_passed
 }
+
+function bashunit::format_to_regex() {
+  local format="$1"
+  local regex=""
+  local i=0
+  local len=${#format}
+
+  while [ $i -lt "$len" ]; do
+    local char="${format:$i:1}"
+    if [ "$char" = "%" ] && [ $((i + 1)) -lt "$len" ]; then
+      local next="${format:$((i + 1)):1}"
+      case "$next" in
+      d) regex="${regex}[0-9]+" ;;
+      i) regex="${regex}[+-]?[0-9]+" ;;
+      f) regex="${regex}[+-]?[0-9]*\\.?[0-9]+" ;;
+      s) regex="${regex}[^ ]+" ;;
+      x) regex="${regex}[0-9a-fA-F]+" ;;
+      e) regex="${regex}[+-]?[0-9]*\\.?[0-9]+[eE][+-]?[0-9]+" ;;
+      %) regex="${regex}%" ;;
+      *)
+        regex="${regex}%${next}"
+        ;;
+      esac
+      i=$((i + 2))
+    else
+      case "$char" in
+      . | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '^' | '$')
+        regex="${regex}\\${char}"
+        ;;
+      \\)
+        regex="${regex}\\\\"
+        ;;
+      *)
+        regex="${regex}${char}"
+        ;;
+      esac
+      i=$((i + 1))
+    fi
+  done
+
+  printf '%s' "^${regex}$"
+}
+
+function assert_string_matches_format() {
+  bashunit::assert::should_skip && return 0
+
+  local format="$1"
+  local actual="$2"
+
+  local regex
+  regex="$(bashunit::format_to_regex "$format")"
+
+  if ! [[ "$actual" =~ $regex ]]; then
+    local test_fn
+    test_fn="$(bashunit::helper::find_test_function_name)"
+    local label
+    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to match format" "${format}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_string_not_matches_format() {
+  bashunit::assert::should_skip && return 0
+
+  local format="$1"
+  local actual="$2"
+
+  local regex
+  regex="$(bashunit::format_to_regex "$format")"
+
+  if [[ "$actual" =~ $regex ]]; then
+    local test_fn
+    test_fn="$(bashunit::helper::find_test_function_name)"
+    local label
+    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not match format" "${format}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
