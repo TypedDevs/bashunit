@@ -174,6 +174,35 @@ function test_failure() {
 :::
 
 
+## assert_have_been_called_nth_with
+> `assert_have_been_called_nth_with "nth" "spy" "expected"`
+
+Reports an error if the `nth` invocation of `spy` was not called with `expected`. The index starts at 1. Reports an error if `spy` was called fewer than `nth` times.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy ps
+
+  ps first
+  ps second
+  ps third
+
+  assert_have_been_called_nth_with 1 ps "first"
+  assert_have_been_called_nth_with 2 ps "second"
+  assert_have_been_called_nth_with 3 ps "third"
+}
+
+function test_failure() {
+  bashunit::spy ps
+
+  ps first
+
+  assert_have_been_called_nth_with 1 ps "wrong"
+}
+```
+:::
+
 ## assert_have_been_called_times
 > assert_have_been_called_times "expected" "spy"
 

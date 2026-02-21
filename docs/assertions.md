@@ -221,6 +221,36 @@ function test_failure() {
 ```
 :::
 
+## assert_string_matches_format
+> `assert_string_matches_format "format" "value"`
+
+Reports an error if `value` does not match the `format` string. The format string uses PHPUnit-style placeholders:
+
+| Placeholder | Matches |
+|-------------|---------|
+| `%d` | One or more digits |
+| `%i` | Signed integer (e.g. `+1`, `-42`) |
+| `%f` | Floating point number (e.g. `3.14`) |
+| `%s` | One or more non-whitespace characters |
+| `%x` | Hexadecimal (e.g. `ff00ab`) |
+| `%e` | Scientific notation (e.g. `1.5e10`) |
+| `%%` | Literal `%` character |
+
+- [assert_string_not_matches_format](#assert-string-not-matches-format) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_matches_format "%d items found" "42 items found"
+  assert_string_matches_format "%s has %d items at %f each" "cart has 5 items at 9.99 each"
+}
+
+function test_failure() {
+  assert_string_matches_format "%d items" "hello world"
+}
+```
+:::
+
 ## assert_line_count
 > `assert_line_count "count" "haystack"`
 
@@ -953,6 +983,25 @@ function test_success() {
 
 function test_failure() {
   assert_not_matches "bar$" "foobar"
+}
+```
+:::
+
+## assert_string_not_matches_format
+> `assert_string_not_matches_format "format" "value"`
+
+Reports an error if `value` matches the `format` string. See [assert_string_matches_format](#assert-string-matches-format) for supported placeholders.
+
+- [assert_string_matches_format](#assert-string-matches-format) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_not_matches_format "%d items" "hello world"
+}
+
+function test_failure() {
+  assert_string_not_matches_format "%d items" "42 items"
 }
 ```
 :::

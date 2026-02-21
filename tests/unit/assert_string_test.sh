@@ -158,3 +158,55 @@ function test_assert_string_start_end_with_special_chars_fail() {
     "Assert string start end with special chars fail" "fooX" "to end with" ".bar")" \
     "$(assert_string_ends_with ".bar" "fooX")"
 }
+
+function test_successful_assert_string_matches_format_with_digit() {
+  assert_empty "$(assert_string_matches_format "%d items found" "42 items found")"
+}
+
+function test_successful_assert_string_matches_format_with_string() {
+  assert_empty "$(assert_string_matches_format "Hello %s" "Hello world")"
+}
+
+function test_successful_assert_string_matches_format_with_hex() {
+  assert_empty "$(assert_string_matches_format "Color: %x" "Color: ff00ab")"
+}
+
+function test_successful_assert_string_matches_format_with_float() {
+  assert_empty "$(assert_string_matches_format "Value: %f" "Value: 3.14")"
+}
+
+function test_successful_assert_string_matches_format_with_signed_integer() {
+  assert_empty "$(assert_string_matches_format "Offset: %i" "Offset: -42")"
+}
+
+function test_successful_assert_string_matches_format_with_scientific() {
+  assert_empty "$(assert_string_matches_format "Result: %e" "Result: 1.5e10")"
+}
+
+function test_successful_assert_string_matches_format_with_literal_percent() {
+  assert_empty "$(assert_string_matches_format "100%% done" "100% done")"
+}
+
+function test_successful_assert_string_matches_format_with_multiple_placeholders() {
+  assert_empty "$(assert_string_matches_format "%s has %d items at %f each" "cart has 5 items at 9.99 each")"
+}
+
+function test_unsuccessful_assert_string_matches_format() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert string matches format" \
+      "hello world" "to match format" "%d items")" \
+    "$(assert_string_matches_format "%d items" "hello world")"
+}
+
+function test_successful_assert_string_not_matches_format() {
+  assert_empty "$(assert_string_not_matches_format "%d items" "hello world")"
+}
+
+function test_unsuccessful_assert_string_not_matches_format() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert string not matches format" \
+      "42 items" "to not match format" "%d items")" \
+    "$(assert_string_not_matches_format "%d items" "42 items")"
+}
