@@ -40,8 +40,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: acceptance
-            test_path: "tests/acceptance/*_test.sh"
+          - name: "acceptance a-l"
+            test_path: "tests/acceptance/bashunit_[a-l]*_test.sh"
+          - name: "acceptance m-z"
+            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/[i-p]*_test.sh"
           - name: functional
             test_path: "tests/functional/*_test.sh"
           - name: "unit a-b"
