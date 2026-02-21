@@ -505,3 +505,117 @@ function bashunit::helper::find_function_at_line() {
 
   echo "$best_match"
 }
+
+#
+# Extracts @tag annotations for a specific function from a test file.
+# Looks for comment lines `# @tag <name>` immediately above the function definition.
+#
+# @param $1 string Function name
+# @param $2 string Script file path
+#
+# @return string Comma-separated list of tags, or empty if none
+#
+function bashunit::helper::get_tags_for_function() {
+  local function_name="$1"
+  local script="$2"
+
+  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+    script="$BASHUNIT_WORKING_DIR/$script"
+  fi
+
+  if [[ ! -f "$script" ]]; then
+    return
+  fi
+
+  # Find the line number of the function definition
+  local fn_line_num
+  fn_line_num=$(grep -n -E "(function[[:space:]]+)?${function_name}[[:space:]]*\(\)" "$script" 2>/dev/null | head -1)
+  if [ -z "$fn_line_num" ]; then
+    return
+  fi
+  fn_line_num="${fn_line_num%%:*}"
+
+  # Walk backwards from the line above the function, collecting @tag comments
+  local tags=""
+  local check_line=$((fn_line_num - 1))
+  while [ "$check_line" -ge 1 ]; do
+    local content
+    content=$(sed -n "${check_line}p" "$script")
+    local _re='^[[:space:]]*#[[:space:]]*@tag[[:space:]]'
+    if [[ "$content" =~ $_re ]]; then
+      local tag_name
+      tag_name=$(echo "$content" | sed -nE 's/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+//p')
+      if [ -n "$tag_name" ]; then
+        if [ -z "$tags" ]; then
+          tags="$tag_name"
+        else
+          tags="$tags,$tag_name"
+        fi
+      fi
+    elif [[ "$content" =~ ^[[:space:]]*# ]]; then
+      # Other comment line, keep walking
+      :
+    elif [[ "$content" =~ ^[[:space:]]*$ ]]; then
+      # Empty line, stop looking
+      break
+    else
+      # Non-comment, non-empty line, stop
+      break
+    fi
+    check_line=$((check_line - 1))
+  done
+
+  echo "$tags"
+}
+
+#
+# Checks if a function's tags match the include/exclude filters.
+# Include uses OR logic (any match passes).
+# Exclude uses OR logic (any match fails).
+# Exclude takes precedence over include.
+#
+# @param $1 string Comma-separated tags for the function
+# @param $2 string Comma-separated include tags (empty = no filter)
+# @param $3 string Comma-separated exclude tags (empty = no filter)
+#
+# @return 0 if function should run, 1 if it should be skipped
+#
+function bashunit::helper::function_matches_tags() {
+  local fn_tags="$1"
+  local include_tags="$2"
+  local exclude_tags="$3"
+
+  # Check exclude tags first (exclude wins over include)
+  if [ -n "$exclude_tags" ]; then
+    local IFS=','
+    local etag
+    for etag in $exclude_tags; do
+      local check_tag
+      for check_tag in $fn_tags; do
+        if [ "$check_tag" = "$etag" ]; then
+          return 1
+        fi
+      done
+    done
+  fi
+
+  # Check include tags (OR logic: any match passes)
+  if [ -n "$include_tags" ]; then
+    if [ -z "$fn_tags" ]; then
+      return 1
+    fi
+    local IFS=','
+    local itag
+    for itag in $include_tags; do
+      local check_tag
+      for check_tag in $fn_tags; do
+        if [ "$check_tag" = "$itag" ]; then
+          return 0
+        fi
+      done
+    done
+    return 1
+  fi
+
+  return 0
+}

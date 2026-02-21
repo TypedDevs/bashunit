@@ -7,6 +7,7 @@
 - Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
 - Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)
 - Add duration assertions: `assert_duration`, `assert_duration_less_than`, `assert_duration_greater_than`
+- Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts

@@ -5,6 +5,8 @@
 #############################
 function bashunit::main::cmd_test() {
   local filter=""
+  local tag_filter=""
+  local exclude_tag_filter=""
   local IFS=$' \t\n'
   local -a raw_args=()
   local raw_args_count=0
@@ -22,6 +24,22 @@ function bashunit::main::cmd_test() {
       ;;
     -f | --filter)
       filter="$2"
+      shift
+      ;;
+    --tag)
+      if [ -z "$tag_filter" ]; then
+        tag_filter="$2"
+      else
+        tag_filter="$tag_filter,$2"
+      fi
+      shift
+      ;;
+    --exclude-tag)
+      if [ -z "$exclude_tag_filter" ]; then
+        exclude_tag_filter="$2"
+      else
+        exclude_tag_filter="$exclude_tag_filter,$2"
+      fi
       shift
       ;;
     -s | --simple)
@@ -250,9 +268,9 @@ function bashunit::main::cmd_test() {
     # Bash 3.0 compatible: only pass args if we have files
     # (local args without =() creates a scalar, not an empty array)
     if [[ "$args_count" -gt 0 ]]; then
-      bashunit::main::exec_tests "$filter" "${args[@]}"
+      bashunit::main::exec_tests "$filter" "$tag_filter" "$exclude_tag_filter" "${args[@]}"
     else
-      bashunit::main::exec_tests "$filter"
+      bashunit::main::exec_tests "$filter" "$tag_filter" "$exclude_tag_filter"
     fi
   fi
 }
@@ -462,7 +480,9 @@ function bashunit::main::cmd_assert() {
 #############################
 function bashunit::main::exec_tests() {
   local filter=$1
-  shift
+  local tag_filter="${2:-}"
+  local exclude_tag_filter="${3:-}"
+  shift 3
 
   # Bash 3.0 compatible: collect files into array
   local test_files
@@ -513,7 +533,7 @@ function bashunit::main::exec_tests() {
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
   fi
 
-  bashunit::runner::load_test_files "$filter" "${test_files[@]}"
+  bashunit::runner::load_test_files "$filter" "$tag_filter" "$exclude_tag_filter" "${test_files[@]}"
 
   if bashunit::parallel::is_enabled; then
     wait

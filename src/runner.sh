@@ -14,7 +14,9 @@ function bashunit::runner::restore_workdir() {
 
 function bashunit::runner::load_test_files() {
   local filter=$1
-  shift
+  local tag_filter="${2:-}"
+  local exclude_tag_filter="${3:-}"
+  shift 3
   local IFS=$' \t\n'
   local -a files
   files=("$@")
@@ -49,6 +51,19 @@ function bashunit::runner::load_test_files() {
     filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
     local functions_for_script
     functions_for_script=$(bashunit::runner::functions_for_script "$test_file" "$filtered_functions")
+    # Apply tag filtering to the early check as well
+    if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
+      local _early_filtered=""
+      local _early_fn
+      for _early_fn in $functions_for_script; do
+        local _early_tags
+        _early_tags=$(bashunit::helper::get_tags_for_function "$_early_fn" "$test_file")
+        if bashunit::helper::function_matches_tags "$_early_tags" "$tag_filter" "$exclude_tag_filter"; then
+          _early_filtered="$_early_filtered $_early_fn"
+        fi
+      done
+      functions_for_script="${_early_filtered# }"
+    fi
     if [[ -z "$functions_for_script" ]]; then
       bashunit::runner::clean_set_up_and_tear_down_after_script
       bashunit::runner::restore_workdir
@@ -83,9 +98,9 @@ function bashunit::runner::load_test_files() {
       continue
     fi
     if bashunit::parallel::is_enabled; then
-      bashunit::runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
+      bashunit::runner::call_test_functions "$test_file" "$filter" "$tag_filter" "$exclude_tag_filter" 2>/dev/null &
     else
-      bashunit::runner::call_test_functions "$test_file" "$filter"
+      bashunit::runner::call_test_functions "$test_file" "$filter" "$tag_filter" "$exclude_tag_filter"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_set_up_and_tear_down_after_script
@@ -322,6 +337,8 @@ function bashunit::runner::parse_data_provider_args() {
 function bashunit::runner::call_test_functions() {
   local script="$1"
   local filter="$2"
+  local tag_filter="${3:-}"
+  local exclude_tag_filter="${4:-}"
   local IFS=$' \t\n'
   local prefix="test"
   # Use cached function names for better performance
@@ -336,6 +353,23 @@ function bashunit::runner::call_test_functions() {
     functions_to_run[functions_to_run_count]="$_fn"
     functions_to_run_count=$((functions_to_run_count + 1))
   done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
+
+  # Apply tag filtering if --tag or --exclude-tag was specified
+  if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
+    local -a tag_filtered=()
+    local tag_filtered_count=0
+    local _tf_fn
+    for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
+      local fn_tags
+      fn_tags=$(bashunit::helper::get_tags_for_function "$_tf_fn" "$script")
+      if bashunit::helper::function_matches_tags "$fn_tags" "$tag_filter" "$exclude_tag_filter"; then
+        tag_filtered[tag_filtered_count]="$_tf_fn"
+        tag_filtered_count=$((tag_filtered_count + 1))
+      fi
+    done
+    functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
+    functions_to_run_count=$tag_filtered_count
+  fi
 
   if [[ "$functions_to_run_count" -le 0 ]]; then
     return
