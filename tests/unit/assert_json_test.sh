@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2329
 
+function set_up_before_script() {
+  if ! command -v jq >/dev/null 2>&1; then
+    bashunit::skip "jq is required for JSON assertions"
+    return
+  fi
+}
+
 function test_successful_assert_json_key_exists() {
   assert_empty "$(assert_json_key_exists ".name" '{"name":"bashunit","version":"1.0"}')"
 }
