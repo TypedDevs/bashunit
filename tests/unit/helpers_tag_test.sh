@@ -39,8 +39,9 @@ function test_function_matches_tags_include_match() {
   local include_tags="slow"
   local exclude_tags=""
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_successful_code "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 0 "$exit_code"
 }
 
 function test_function_matches_tags_include_no_match() {
@@ -48,8 +49,9 @@ function test_function_matches_tags_include_no_match() {
   local include_tags="slow"
   local exclude_tags=""
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_general_error "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function test_function_matches_tags_exclude_match() {
@@ -57,8 +59,9 @@ function test_function_matches_tags_exclude_match() {
   local include_tags=""
   local exclude_tags="slow"
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_general_error "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function test_function_matches_tags_exclude_wins_over_include() {
@@ -66,8 +69,9 @@ function test_function_matches_tags_exclude_wins_over_include() {
   local include_tags="database"
   local exclude_tags="slow"
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_general_error "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function test_function_matches_tags_no_tags_with_include_filter() {
@@ -75,8 +79,9 @@ function test_function_matches_tags_no_tags_with_include_filter() {
   local include_tags="slow"
   local exclude_tags=""
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_general_error "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 1 "$exit_code"
 }
 
 function test_function_matches_tags_no_tags_with_exclude_filter() {
@@ -84,8 +89,9 @@ function test_function_matches_tags_no_tags_with_exclude_filter() {
   local include_tags=""
   local exclude_tags="slow"
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_successful_code "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 0 "$exit_code"
 }
 
 function test_function_matches_tags_multiple_include_or_logic() {
@@ -93,8 +99,9 @@ function test_function_matches_tags_multiple_include_or_logic() {
   local include_tags="slow,fast"
   local exclude_tags=""
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_successful_code "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 0 "$exit_code"
 }
 
 function test_function_matches_tags_multiple_exclude_or_logic() {
@@ -102,6 +109,7 @@ function test_function_matches_tags_multiple_exclude_or_logic() {
   local include_tags=""
   local exclude_tags="slow,fast"
 
-  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags"
-  assert_general_error "$?"
+  local exit_code=0
+  bashunit::helper::function_matches_tags "$tags" "$include_tags" "$exclude_tags" || exit_code=$?
+  assert_same 1 "$exit_code"
 }

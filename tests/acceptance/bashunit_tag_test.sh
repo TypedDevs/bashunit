@@ -79,7 +79,7 @@ function test_tag_nonexistent_runs_zero_tests() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_with_tags.sh
   local output
 
-  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --tag nonexistent "$test_file" 2>&1)
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --tag nonexistent "$test_file" 2>&1) || true
 
   assert_contains "0 total" "$output"
 }
