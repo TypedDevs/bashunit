@@ -1270,6 +1270,57 @@ function test_failure() {
 ```
 :::
 
+## assert_duration
+> `assert_duration "command" threshold_ms`
+
+Reports an error if `command` takes longer than `threshold_ms` milliseconds to execute. Uses the framework's portable clock internally.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration "echo hello" 500
+}
+
+function test_failure() {
+  assert_duration "sleep 2" 1000
+}
+```
+:::
+
+## assert_duration_less_than
+> `assert_duration_less_than "command" threshold_ms`
+
+Reports an error if `command` takes `threshold_ms` milliseconds or more to execute. Stricter than [assert_duration](#assert-duration) which allows equal values.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration_less_than "echo hello" 500
+}
+
+function test_failure() {
+  assert_duration_less_than "sleep 2" 1000
+}
+```
+:::
+
+## assert_duration_greater_than
+> `assert_duration_greater_than "command" threshold_ms`
+
+Reports an error if `command` completes in `threshold_ms` milliseconds or less. Useful for verifying that a command takes at least a minimum amount of time.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration_greater_than "sleep 1" 500
+}
+
+function test_failure() {
+  assert_duration_greater_than "echo hello" 5000
+}
+```
+:::
+
 ## bashunit::fail
 > `bashunit::fail "failure message"`
 
