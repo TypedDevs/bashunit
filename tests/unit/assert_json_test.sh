@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2329
 
-function set_up_before_script() {
-  if ! command -v jq >/dev/null 2>&1; then
-    bashunit::skip "jq is required for JSON assertions"
-    return
-  fi
-}
+_JQ_AVAILABLE=false
+if command -v jq >/dev/null 2>&1; then
+  _JQ_AVAILABLE=true
+fi
 
 function test_successful_assert_json_key_exists() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   assert_empty "$(assert_json_key_exists ".name" '{"name":"bashunit","version":"1.0"}')"
 }
 
 function test_successful_assert_json_key_exists_nested() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   assert_empty "$(assert_json_key_exists ".data.id" '{"data":{"id":42}}')"
 }
 
 function test_unsuccessful_assert_json_key_exists() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local json='{"name":"bashunit"}'
 
   assert_same \
@@ -27,14 +28,17 @@ function test_unsuccessful_assert_json_key_exists() {
 }
 
 function test_successful_assert_json_contains() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   assert_empty "$(assert_json_contains ".name" "bashunit" '{"name":"bashunit","version":"1.0"}')"
 }
 
 function test_successful_assert_json_contains_numeric() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   assert_empty "$(assert_json_contains ".count" "42" '{"count":42}')"
 }
 
 function test_unsuccessful_assert_json_contains_wrong_value() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local json='{"name":"bashunit"}'
 
   assert_same \
@@ -45,6 +49,7 @@ function test_unsuccessful_assert_json_contains_wrong_value() {
 }
 
 function test_unsuccessful_assert_json_contains_missing_key() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local json='{"name":"bashunit"}'
 
   assert_same \
@@ -55,10 +60,12 @@ function test_unsuccessful_assert_json_contains_missing_key() {
 }
 
 function test_successful_assert_json_equals() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   assert_empty "$(assert_json_equals '{"b":2,"a":1}' '{"a":1,"b":2}')"
 }
 
 function test_unsuccessful_assert_json_equals() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local expected='{"a":1}'
   local actual='{"a":2}'
 

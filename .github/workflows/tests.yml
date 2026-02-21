@@ -79,7 +79,7 @@ jobs:
         run: |
           docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
             apk update && \
-            apk add --no-cache bash make git && \
+            apk add --no-cache bash make git jq && \
             adduser -D builder && \
             chown -R builder /project && \
             su - builder -c 'cd /project; make test';"
