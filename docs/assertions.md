@@ -1216,6 +1216,60 @@ function test_failure() {
 ```
 :::
 
+## assert_json_key_exists
+> `assert_json_key_exists "key" "json"`
+
+Reports an error if `key` does not exist in the JSON string. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_key_exists ".name" '{"name":"bashunit","version":"1.0"}'
+  assert_json_key_exists ".data.id" '{"data":{"id":42}}'
+}
+
+function test_failure() {
+  assert_json_key_exists ".missing" '{"name":"bashunit"}'
+}
+```
+:::
+
+## assert_json_contains
+> `assert_json_contains "key" "expected" "json"`
+
+Reports an error if `key` does not exist in the JSON string or its value does not equal `expected`. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_contains ".name" "bashunit" '{"name":"bashunit","version":"1.0"}'
+  assert_json_contains ".count" "42" '{"count":42}'
+}
+
+function test_failure() {
+  assert_json_contains ".name" "other" '{"name":"bashunit"}'
+  assert_json_contains ".missing" "value" '{"name":"bashunit"}'
+}
+```
+:::
+
+## assert_json_equals
+> `assert_json_equals "expected" "actual"`
+
+Reports an error if the two JSON strings are not structurally equal. Key order is ignored. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_equals '{"b":2,"a":1}' '{"a":1,"b":2}'
+}
+
+function test_failure() {
+  assert_json_equals '{"a":1}' '{"a":2}'
+}
+```
+:::
+
 ## bashunit::fail
 > `bashunit::fail "failure message"`
 

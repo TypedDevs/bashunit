@@ -23,3 +23,11 @@ Reports an error if `expected` and `actual` are not equals.
 Reports an error if `expected` and `actual` are not equals.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
+
+
+## assert_json_equals
+--------------
+> `assert_json_equals "expected" "actual"`
+
+Reports an error if the two JSON strings are not structurally equal. Key order is ignored. Requires `jq` to be installed; if missing the test is skipped.
+
