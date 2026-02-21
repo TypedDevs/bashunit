@@ -177,3 +177,40 @@ function test_spy_with_pipe_in_arguments() {
 
   assert_have_been_called_with grep '-E foo|bar'
 }
+
+function test_successful_spy_nth_called_with() {
+  bashunit::spy ps
+
+  ps first_a first_b
+  ps second
+  ps third
+
+  assert_have_been_called_nth_with 1 ps "first_a first_b"
+  assert_have_been_called_nth_with 2 ps "second"
+  assert_have_been_called_nth_with 3 ps "third"
+}
+
+function test_unsuccessful_spy_nth_called_with() {
+  bashunit::spy ps
+
+  ps first
+  ps second
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful spy nth called with" \
+      "wrong" "but got " "first")" \
+    "$(assert_have_been_called_nth_with 1 ps "wrong")"
+}
+
+function test_unsuccessful_spy_nth_called_with_invalid_index() {
+  bashunit::spy ps
+
+  ps first
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful spy nth called with invalid index" \
+      "expected call" "at index 5 but" "only called 1 times")" \
+    "$(assert_have_been_called_nth_with 5 ps "first")"
+}

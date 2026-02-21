@@ -156,6 +156,49 @@ function assert_have_been_called_times() {
   bashunit::state::add_assertions_passed
 }
 
+function assert_have_been_called_nth_with() {
+  local nth=$1
+  local command=$2
+  shift 2
+  local expected="$*"
+
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local times_file_var="${variable}_times_file"
+  local file_var="${variable}_params_file"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  local times=0
+  if [ -f "${!times_file_var-}" ]; then
+    times=$(cat "${!times_file_var}" 2>/dev/null || echo 0)
+  fi
+
+  if [ "$nth" -gt "$times" ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "${label}" \
+      "expected call" "at index ${nth} but" "only called ${times} times"
+    return
+  fi
+
+  local line=""
+  if [ -f "${!file_var-}" ]; then
+    line=$(sed -n "${nth}p" "${!file_var}" 2>/dev/null || true)
+  fi
+
+  local raw
+  IFS=$'\x1e' read -r raw _ <<<"$line" || true
+
+  if [ "$expected" != "$raw" ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "${label}" \
+      "$expected" "but got " "$raw"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
 function assert_not_called() {
   local command=$1
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
