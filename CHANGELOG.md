@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Add `assert_have_been_called_nth_with` assertion for verifying arguments on the Nth invocation of a spy (Issue #172)
+
+### Changed
+- Split Windows CI test jobs into parallel chunks to avoid timeouts
+
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 
 ### Changed

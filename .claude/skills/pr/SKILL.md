@@ -11,6 +11,8 @@ allowed-tools: Bash, Read, Grep, Glob
 
 Push branch and create a PR with a concise, issue-linked description.
 
+> **IMPORTANT:** This skill MUST be used for ALL pull request creation — even when the user says "create pr" without `/pr`. Never create a PR without following these steps.
+
 ## Current Branch Context
 - Branch: !`git branch --show-current`
 - Commits: !`git log main..HEAD --oneline 2>/dev/null`
@@ -23,10 +25,13 @@ Push branch and create a PR with a concise, issue-linked description.
 
 1. **Review the branch context above** — the commits and changed files are already loaded.
 
-2. **Check CHANGELOG.md** — if it wasn't updated for these changes, update it now and commit:
-  ```bash
-  git add CHANGELOG.md && git commit -m "docs: update changelog"
-  ```
+2. **MANDATORY: Update CHANGELOG.md** — Read `CHANGELOG.md` and check the `## Unreleased` section. If the changes from this branch are NOT already listed there, you MUST update it before proceeding. **Do NOT skip this step. Do NOT proceed to push without verifying.**
+  - Add entries under the appropriate subsection (`### Added`, `### Changed`, `### Fixed`, etc.)
+  - Reference issue numbers where applicable (e.g., `(Issue #123)`)
+  - Commit the update:
+    ```bash
+    git add CHANGELOG.md && git commit -m "docs: update changelog"
+    ```
 
 3. **Push branch**:
   ```bash

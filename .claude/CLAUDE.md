@@ -241,12 +241,14 @@ Complete end-to-end workflow from issue to PR:
 - Use speculative/unproven patterns
 - Commit without tests passing
 - Batch unrelated changes in one PR
+- Create a PR without using the `/pr` skill (even if user says "create pr")
 
 ### Always:
 - Write tests before implementation
 - Use existing patterns from `tests/**` and `src/**`
 - Minimal code in GREEN phase
 - Keep tests passing during REFACTOR
+- Update CHANGELOG.md before creating a PR (for user-facing changes)
 - Run quality checks before committing
 - Update CHANGELOG.md for user-visible changes
 - Maintain Bash 3.0+ compatibility
