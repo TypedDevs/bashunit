@@ -4,15 +4,9 @@
 
 ### Added
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
-    - Accepts epoch seconds, ISO 8601 (`2023-11-14`, `2023-11-14T12:00:00`, `2023-11-14T12:00:00Z`, `2023-11-14T12:00:00+0100`), or space-separated datetime (`2023-11-14 12:00:00`)
-    - Auto-detects format and converts ISO 8601 to epoch via `bashunit::date::to_epoch`
-    - Mixed formats supported (one epoch, one ISO) in the same assertion call
-    - Fully portable across GNU and BSD systems
+    - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
+    - Mixed formats supported in the same assertion call
 - Add Claude Code configuration with custom skills, agents, and rules
-    - Custom skills for TDD workflow, test fixes, assertions, coverage, and releases
-    - Expert agents for Bash 3.2+ compatibility, code review, TDD coaching, test architecture, and performance
-    - GitHub issue → PR workflow command
-    - Consolidated AI developer tool instructions into `.claude/CLAUDE.md`
 - Add `assert_have_been_called_nth_with` for verifying arguments on the Nth invocation of a spy
 - Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
 - Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)
