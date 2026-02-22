@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+declare -r BASHUNIT_MIN_BASH_VERSION="3.0"
 
 function _check_bash_version() {
   local current_version
@@ -12,14 +12,14 @@ function _check_bash_version() {
     # Checks if the special Bash array BASH_VERSINFO exists. This array is only defined in Bash.
     current_version="${BASH_VERSINFO[0]}.${BASH_VERSINFO[1]}"
   else
-    # If not in Bash (e.g., running from Zsh). The pipeline extracts just the major.minor version (e.g., 3.2).
+    # If not in Bash (e.g., running from Zsh). The pipeline extracts just the major.minor version (e.g., 3.0).
     current_version="$(bash --version | head -n1 | cut -d' ' -f4 | cut -d. -f1,2)"
   fi
 
-  local major minor
-  IFS=. read -r major minor _ <<< "$current_version"
+  local major
+  IFS=. read -r major _ <<<"$current_version"
 
-  if (( major < 3 )) || { (( major == 3 )) && (( minor < 2 )); }; then
+  if ((major < 3)); then
     printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
     exit 1
   fi
@@ -28,7 +28,7 @@ function _check_bash_version() {
 _check_bash_version
 
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.31.0"
+declare -r BASHUNIT_VERSION="0.33.0"
 
 # shellcheck disable=SC2155
 declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
@@ -41,16 +41,16 @@ export BASHUNIT_WORKING_DIR
 # Early scan for flags that must be set before loading env.sh
 for arg in "$@"; do
   case "$arg" in
-    --skip-env-file)
-      export BASHUNIT_SKIP_ENV_FILE=true
-      ;;
-    -l|--login)
-      export BASHUNIT_LOGIN_SHELL=true
-      ;;
-    --no-color)
-      # shellcheck disable=SC2034
-      BASHUNIT_NO_COLOR=true
-      ;;
+  --skip-env-file)
+    export BASHUNIT_SKIP_ENV_FILE=true
+    ;;
+  -l | --login)
+    export BASHUNIT_LOGIN_SHELL=true
+    ;;
+  --no-color)
+    # shellcheck disable=SC2034
+    BASHUNIT_NO_COLOR=true
+    ;;
   esac
 done
 
@@ -88,15 +88,15 @@ bashunit::clock::init
 _SUBCOMMAND=""
 
 case "${1:-}" in
-  test|bench|doc|init|learn|upgrade|assert)
+  test | bench | doc | init | learn | upgrade | assert)
     _SUBCOMMAND="$1"
     shift
     ;;
-  -v|--version)
+  -v | --version)
     bashunit::console_header::print_version
     exit 0
     ;;
-  -h|--help)
+  -h | --help)
     bashunit::console_header::print_help
     exit 0
     ;;
@@ -116,11 +116,11 @@ esac
 
 # Route to subcommand handler
 case "$_SUBCOMMAND" in
-  test)    bashunit::main::cmd_test "$@" ;;
-  bench)   bashunit::main::cmd_bench "$@" ;;
-  doc)     bashunit::main::cmd_doc "$@" ;;
-  init)    bashunit::main::cmd_init "$@" ;;
-  learn)   bashunit::main::cmd_learn "$@" ;;
+  test) bashunit::main::cmd_test "$@" ;;
+  bench) bashunit::main::cmd_bench "$@" ;;
+  doc) bashunit::main::cmd_doc "$@" ;;
+  init) bashunit::main::cmd_init "$@" ;;
+  learn) bashunit::main::cmd_learn "$@" ;;
   upgrade) bashunit::main::cmd_upgrade "$@" ;;
-  assert)  bashunit::main::cmd_assert "$@" ;;
+  assert) bashunit::main::cmd_assert "$@" ;;
 esac

@@ -2,39 +2,39 @@
 
 function bashunit::console_header::print_version_with_env() {
   local filter=${1:-}
-  local files=("${@:2}")
+  shift || true
 
   if ! bashunit::env::is_show_header_enabled; then
     return
   fi
 
-  bashunit::console_header::print_version "$filter" "${files[@]}"
+  bashunit::console_header::print_version "$filter" "$@"
 
   if bashunit::env::is_dev_mode_enabled; then
-    printf "%sDev log:%s %s\n" "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
+    printf "%sDev log:%s %s\n" \
+      "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$BASHUNIT_DEV_LOG"
   fi
 }
 
 function bashunit::console_header::print_version() {
   local filter=${1:-}
-  if [[ -n "$filter" ]]; then
-   shift
-  fi
+  shift || true
 
-  local files=("$@")
+  # Bash 3.0 compatible: check argument count after shift
+  local files_count=$#
   local total_tests
-  if [[ ${#files[@]} -eq 0 ]]; then
+  if [[ "$files_count" -eq 0 ]]; then
     total_tests=0
   elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
     # Skip counting in parallel+simple mode for faster startup
     total_tests=0
   else
-    total_tests=$(bashunit::helper::find_total_tests "$filter" "${files[@]}")
+    total_tests=$(bashunit::helper::find_total_tests "$filter" "$@")
   fi
 
   if bashunit::env::is_header_ascii_art_enabled; then
     cat <<EOF
- _               _                   _
+_               _                   _
 | |__   __ _ ___| |__  __ __ ____ (_) |_
 | '_ \ / _' / __| '_ \| | | | '_ \| | __|
 | |_) | (_| \__ \ | | | |_| | | | | | |_
@@ -52,14 +52,14 @@ EOF
     printf "%s%sbashunit%s - %s\n" \
       "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$BASHUNIT_VERSION"
   else
-    printf "${_BASHUNIT_COLOR_BOLD}${_BASHUNIT_COLOR_PASSED}bashunit${_BASHUNIT_COLOR_DEFAULT} - %s | Tests: %s\n"\
-      "$BASHUNIT_VERSION"\
-      "$total_tests"
+    printf "%s%sbashunit%s - %s | Tests: %s\n" \
+      "${_BASHUNIT_COLOR_BOLD}" "${_BASHUNIT_COLOR_PASSED}" "${_BASHUNIT_COLOR_DEFAULT}" \
+      "$BASHUNIT_VERSION" "$total_tests"
   fi
 }
 
 function bashunit::console_header::print_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
@@ -90,21 +90,23 @@ EOF
 }
 
 function bashunit::console_header::print_test_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit test [path] [options]
-       bashunit [path] [options]
+  bashunit [path] [options]
 
 Run test files. If no path is provided, searches for tests in BASHUNIT_DEFAULT_PATH.
 
 Arguments:
   path                        File or directory containing tests
-                              - Directories: runs all '*test.sh' files
-                              - Wildcards: supported to match multiple files
+    - Directories: runs all '*test.sh' files
+    - Wildcards: supported to match multiple files
 
 Options:
   -a, --assert <fn> <args>    Run a standalone assert function (deprecated: use 'bashunit assert')
   -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
+  --tag <name>                Only run tests with matching @tag (repeatable, OR logic)
+  --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
   --log-junit <file>          Write JUnit XML report
   -p, --parallel              Run tests in parallel
   --no-parallel               Run tests sequentially
@@ -117,6 +119,9 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --failures-only             Only show failures (suppress passed/skipped/incomplete)
+  --no-progress               Suppress real-time progress, show only final results
+  --show-output               Show test output on failure (default: enabled)
+  --no-output-on-failure      Hide test output on failure
   --strict                    Enable strict shell mode (set -euo pipefail)
   --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run tests in login shell context
@@ -144,7 +149,7 @@ EOF
 }
 
 function bashunit::console_header::print_bench_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit bench [path] [options]
 
 Run benchmark files. Searches for '*bench.sh' files.
@@ -171,23 +176,23 @@ EOF
 }
 
 function bashunit::console_header::print_doc_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit doc [filter]
 
 Display documentation for assertion functions.
 
 Arguments:
-  filter                      Optional filter to show only matching assertions
+filter                      Optional filter to show only matching assertions
 
 Examples:
-  bashunit doc                Show all assertions
-  bashunit doc equals         Show assertions containing 'equals'
-  bashunit doc file           Show file-related assertions
+bashunit doc                Show all assertions
+bashunit doc equals         Show assertions containing 'equals'
+bashunit doc file           Show file-related assertions
 EOF
 }
 
 function bashunit::console_header::print_init_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit init [directory]
 
 Initialize a new test directory with sample files.
@@ -206,7 +211,7 @@ EOF
 }
 
 function bashunit::console_header::print_learn_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit learn
 
 Start the interactive learning tutorial.
@@ -228,7 +233,7 @@ EOF
 }
 
 function bashunit::console_header::print_upgrade_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit upgrade
 
 Upgrade bashunit to the latest version.
@@ -238,9 +243,9 @@ EOF
 }
 
 function bashunit::console_header::print_assert_help() {
-    cat <<EOF
+  cat <<EOF
 Usage: bashunit assert <function> [args...]
-       bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
+  bashunit assert "<command>" <assertion1> <arg1> [<assertion2> <arg2>...]
 
 Run standalone assertion(s) without creating a test file.
 
@@ -261,7 +266,7 @@ Arguments:
   arg                         Expected value for the assertion
 
 Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
-      The 'bashunit assert' subcommand is the recommended approach.
+  The 'bashunit assert' subcommand is the recommended approach.
 
 More info: https://bashunit.typeddevs.com/standalone
 EOF

@@ -27,11 +27,11 @@ function bashunit::check_os::init() {
 }
 
 function bashunit::check_os::is_ubuntu() {
-  command -v apt > /dev/null
+  command -v apt >/dev/null
 }
 
 function bashunit::check_os::is_alpine() {
-  command -v apk > /dev/null
+  command -v apk >/dev/null
 }
 
 function bashunit::check_os::is_nixos() {
@@ -49,12 +49,12 @@ function bashunit::check_os::is_macos() {
 
 function bashunit::check_os::is_windows() {
   case "$(uname)" in
-    *MINGW*|*MSYS*|*CYGWIN*)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
+  *MINGW* | *MSYS* | *CYGWIN*)
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
   esac
 }
 
@@ -62,12 +62,12 @@ function bashunit::check_os::is_busybox() {
 
   case "$_BASHUNIT_DISTRO" in
 
-    "Alpine")
-        return 0
-        ;;
-    *)
-      return 1
-      ;;
+  "Alpine")
+    return 0
+    ;;
+  *)
+    return 1
+    ;;
   esac
 }
 

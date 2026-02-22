@@ -2,15 +2,15 @@
 set -euo pipefail
 
 function mock_non_existing_fn() {
-  return 127;
+  return 127
 }
 
 function mock_false() {
-  return 1;
+  return 1
 }
 
 function mock_true() {
-  return 0;
+  return 0
 }
 
 function mock_unknown_linux_os() {
@@ -22,7 +22,6 @@ function mock_unknown_linux_os() {
   bashunit::mock bashunit::check_os::is_macos mock_false
   bashunit::mock bashunit::check_os::is_windows mock_false
 }
-
 
 function mock_ubuntu_os() {
   bashunit::mock bashunit::check_os::is_linux mock_true

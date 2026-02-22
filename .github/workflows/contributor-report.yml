@@ -1,0 +1,39 @@
+name: Contributor Report
+
+on:
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-contributor:
+    name: "Check contributor"
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check Contributor Report
+        uses: jdiegosierra/contributor-report@v1
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          threshold-pr-merge-rate: '0.3'
+          threshold-account-age: '30'
+          threshold-positive-reactions: '1'
+          threshold-negative-reactions: '5'
+          threshold-merger-diversity: '2'
+          enable-spam-detection: 'true'
+          required-metrics: 'prMergeRate,accountAge'
+          on-fail: comment-and-label
+          label-name: needs-review
+          new-account-action: require-review
+          new-account-threshold-days: '30'
+          trusted-orgs: TypedDevs
+          trusted-users: Chemaclass

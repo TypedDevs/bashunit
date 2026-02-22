@@ -62,6 +62,8 @@ _BASHUNIT_DEFAULT_SKIP_ENV_FILE="false"
 _BASHUNIT_DEFAULT_LOGIN_SHELL="false"
 _BASHUNIT_DEFAULT_FAILURES_ONLY="false"
 _BASHUNIT_DEFAULT_NO_COLOR="false"
+_BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
+_BASHUNIT_DEFAULT_NO_PROGRESS="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
@@ -80,6 +82,8 @@ _BASHUNIT_DEFAULT_NO_COLOR="false"
 : "${BASHUNIT_SKIP_ENV_FILE:=${SKIP_ENV_FILE:=$_BASHUNIT_DEFAULT_SKIP_ENV_FILE}}"
 : "${BASHUNIT_LOGIN_SHELL:=${LOGIN_SHELL:=$_BASHUNIT_DEFAULT_LOGIN_SHELL}}"
 : "${BASHUNIT_FAILURES_ONLY:=${FAILURES_ONLY:=$_BASHUNIT_DEFAULT_FAILURES_ONLY}}"
+: "${BASHUNIT_SHOW_OUTPUT_ON_FAILURE:=${SHOW_OUTPUT_ON_FAILURE:=$_BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE}}"
+: "${BASHUNIT_NO_PROGRESS:=${NO_PROGRESS:=$_BASHUNIT_DEFAULT_NO_PROGRESS}}"
 # Support NO_COLOR standard (https://no-color.org)
 if [[ -n "${NO_COLOR:-}" ]]; then
   BASHUNIT_NO_COLOR="true"
@@ -159,6 +163,14 @@ function bashunit::env::is_failures_only_enabled() {
   [[ "$BASHUNIT_FAILURES_ONLY" == "true" ]]
 }
 
+function bashunit::env::is_show_output_on_failure_enabled() {
+  [[ "$BASHUNIT_SHOW_OUTPUT_ON_FAILURE" == "true" ]]
+}
+
+function bashunit::env::is_no_progress_enabled() {
+  [[ "$BASHUNIT_NO_PROGRESS" == "true" ]]
+}
+
 function bashunit::env::is_no_color_enabled() {
   [[ "$BASHUNIT_NO_COLOR" == "true" ]]
 }
@@ -178,7 +190,7 @@ function bashunit::env::active_internet_connection() {
     wget -q --spider https://github.com && return 0
   fi
 
-  if ping -c 1 -W 3 google.com &> /dev/null; then
+  if ping -c 1 -W 3 google.com &>/dev/null; then
     return 0
   fi
 
@@ -188,11 +200,11 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [[ -z "$cols" ]] && command -v tput > /dev/null; then
+  if [[ -z "$cols" ]] && command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 
-  if [[ -z "$cols" ]] && command -v stty > /dev/null; then
+  if [[ -z "$cols" ]] && command -v stty >/dev/null; then
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
@@ -202,7 +214,10 @@ function bashunit::env::find_terminal_width() {
 
 function bashunit::env::print_verbose() {
   bashunit::internal_log "Printing verbose environment variables"
-  local keys=(
+  local IFS=$' \t\n'
+  # Bash 3.0 compatible: separate declaration and assignment for arrays
+  local keys
+  keys=(
     "BASHUNIT_DEFAULT_PATH"
     "BASHUNIT_DEV_LOG"
     "BASHUNIT_BOOTSTRAP"
@@ -230,13 +245,14 @@ function bashunit::env::print_verbose() {
 
   local max_length=0
 
-  for key in "${keys[@]}"; do
-    if (( ${#key} > max_length )); then
+  local key
+  for key in "${keys[@]+"${keys[@]}"}"; do
+    if ((${#key} > max_length)); then
       max_length=${#key}
     fi
   done
 
-  for key in "${keys[@]}"; do
+  for key in "${keys[@]+"${keys[@]}"}"; do
     bashunit::internal_log "$key=${!key}"
     printf "%s:%*s%s\n" "$key" $((max_length - ${#key} + 1)) "" "${!key}"
   done

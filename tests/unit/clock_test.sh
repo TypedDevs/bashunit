@@ -11,7 +11,7 @@ function tear_down_after_script() {
 }
 
 function mock_non_existing_fn() {
-  return 127;
+  return 127
 }
 
 function mock_date_seconds() {
@@ -24,7 +24,7 @@ function mock_date_seconds() {
 
 function test_now_with_perl() {
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
-  bashunit::mock perl <<< "1720705883457"
+  bashunit::mock perl <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -35,7 +35,7 @@ function test_now_on_linux_unknown() {
   mock_unknown_linux_os
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock perl mock_non_existing_fn
-  bashunit::mock date <<< "1720705883457"
+  bashunit::mock date <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -45,7 +45,7 @@ function test_now_on_linux_unknown() {
 function test_now_on_linux_alpine() {
   mock_alpine_os
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
-  bashunit::mock perl <<< "1720705883457"
+  bashunit::mock perl <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -56,7 +56,7 @@ function test_now_on_windows_without_with_powershell() {
   mock_windows_os
   bashunit::mock bashunit::dependencies::has_perl mock_false
   bashunit::mock bashunit::dependencies::has_powershell mock_true
-  bashunit::mock powershell <<< "1727768183281580800"
+  bashunit::mock powershell <<<"1727768183281580800"
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
@@ -68,7 +68,7 @@ function test_now_on_windows_without_without_powershell() {
   mock_windows_os
   bashunit::mock bashunit::dependencies::has_perl mock_false
   bashunit::mock bashunit::dependencies::has_powershell mock_false
-  bashunit::mock date <<< "1727768951"
+  bashunit::mock date <<<"1727768951"
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
@@ -94,7 +94,7 @@ function test_now_on_osx_without_perl() {
 
   mock_macos
   bashunit::mock bashunit::dependencies::has_perl mock_false
-  bashunit::mock bashunit::clock::shell_time <<< "1727708708.326957"
+  bashunit::mock bashunit::clock::shell_time <<<"1727708708.326957"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -102,7 +102,7 @@ function test_now_on_osx_without_perl() {
 }
 
 function test_runtime_in_milliseconds_when_not_empty_time() {
-  bashunit::mock perl <<< "1720705883457"
+  bashunit::mock perl <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -110,8 +110,8 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
 }
 
 function test_now_prefers_perl_over_shell_time() {
-  bashunit::mock bashunit::clock::shell_time <<< "1234.0"
-  bashunit::mock perl <<< "999999999999"
+  bashunit::mock bashunit::clock::shell_time <<<"1234.0"
+  bashunit::mock perl <<<"999999999999"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
@@ -121,9 +121,9 @@ function test_now_prefers_perl_over_shell_time() {
 function test_now_prefers_python_over_node() {
   bashunit::mock perl mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_true
-  bashunit::mock python <<< "777777777777"
+  bashunit::mock python <<<"777777777777"
   bashunit::mock bashunit::dependencies::has_node mock_true
-  bashunit::mock node <<< "888888888888"
+  bashunit::mock node <<<"888888888888"
 
   assert_same "777777777777" "$(bashunit::clock::now)"
 }

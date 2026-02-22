@@ -221,6 +221,36 @@ function test_failure() {
 ```
 :::
 
+## assert_string_matches_format
+> `assert_string_matches_format "format" "value"`
+
+Reports an error if `value` does not match the `format` string. The format string uses PHPUnit-style placeholders:
+
+| Placeholder | Matches |
+|-------------|---------|
+| `%d` | One or more digits |
+| `%i` | Signed integer (e.g. `+1`, `-42`) |
+| `%f` | Floating point number (e.g. `3.14`) |
+| `%s` | One or more non-whitespace characters |
+| `%x` | Hexadecimal (e.g. `ff00ab`) |
+| `%e` | Scientific notation (e.g. `1.5e10`) |
+| `%%` | Literal `%` character |
+
+- [assert_string_not_matches_format](#assert-string-not-matches-format) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_matches_format "%d items found" "42 items found"
+  assert_string_matches_format "%s has %d items at %f each" "cart has 5 items at 9.99 each"
+}
+
+function test_failure() {
+  assert_string_matches_format "%d items" "hello world"
+}
+```
+:::
+
 ## assert_line_count
 > `assert_line_count "count" "haystack"`
 
@@ -322,6 +352,116 @@ function test_success_with_two_equal_numbers() {
 
 function test_failure() {
   assert_greater_or_equal_than "999" "1"
+}
+```
+:::
+
+## assert_date_equals
+> `assert_date_equals "expected" "actual"`
+
+Reports an error if the two date values `expected` and `actual` are not equal.
+
+Inputs are automatically converted to epoch seconds. Supported formats:
+- Epoch seconds (integers): `1700000000`
+- ISO 8601 date: `2023-11-14`
+- ISO 8601 datetime: `2023-11-14T12:00:00`
+- ISO 8601 datetime with UTC Z: `2023-11-14T12:00:00Z`
+- ISO 8601 datetime with timezone offset: `2023-11-14T12:00:00+0100`
+- Space-separated datetime: `2023-11-14 12:00:00`
+
+You can mix formats in the same assertion (e.g., one epoch, one ISO).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+
+  assert_date_equals "$now" "$now"
+}
+
+function test_failure() {
+  assert_date_equals "1700000000" "1600000000"
+}
+```
+:::
+
+## assert_date_before
+> `assert_date_before "expected" "actual"`
+
+Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_before "1700000000" "1600000000"
+}
+
+function test_failure() {
+  assert_date_before "1700000000" "1800000000"
+}
+```
+:::
+
+## assert_date_after
+> `assert_date_after "expected" "actual"`
+
+Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_after "1600000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_after "1600000000" "1500000000"
+}
+```
+:::
+
+## assert_date_within_range
+> `assert_date_within_range "from" "to" "actual"`
+
+Reports an error if `actual` does not fall between `from` and `to` (inclusive).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_within_range "1600000000" "1800000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_within_range "1600000000" "1800000000" "1900000000"
+}
+```
+:::
+
+## assert_date_within_delta
+> `assert_date_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` seconds of `expected`.
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+  local five_seconds_later=$(( now + 5 ))
+
+  assert_date_within_delta "$now" "$five_seconds_later" "10"
+}
+
+function test_failure() {
+  assert_date_within_delta "1700000000" "1700000020" "5"
 }
 ```
 :::
@@ -957,6 +1097,25 @@ function test_failure() {
 ```
 :::
 
+## assert_string_not_matches_format
+> `assert_string_not_matches_format "format" "value"`
+
+Reports an error if `value` matches the `format` string. See [assert_string_matches_format](#assert-string-matches-format) for supported placeholders.
+
+- [assert_string_matches_format](#assert-string-matches-format) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_string_not_matches_format "%d items" "hello world"
+}
+
+function test_failure() {
+  assert_string_not_matches_format "%d items" "42 items"
+}
+```
+:::
+
 ## assert_array_not_contains
 > `assert_array_not_contains "needle" "haystack"`
 
@@ -1164,6 +1323,111 @@ function test_failure() {
     Expected '/tmp/file1.txt'
     Compared '/tmp/file2.txt'
     Diff 'Files are equals'
+```
+:::
+
+## assert_json_key_exists
+> `assert_json_key_exists "key" "json"`
+
+Reports an error if `key` does not exist in the JSON string. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_key_exists ".name" '{"name":"bashunit","version":"1.0"}'
+  assert_json_key_exists ".data.id" '{"data":{"id":42}}'
+}
+
+function test_failure() {
+  assert_json_key_exists ".missing" '{"name":"bashunit"}'
+}
+```
+:::
+
+## assert_json_contains
+> `assert_json_contains "key" "expected" "json"`
+
+Reports an error if `key` does not exist in the JSON string or its value does not equal `expected`. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_contains ".name" "bashunit" '{"name":"bashunit","version":"1.0"}'
+  assert_json_contains ".count" "42" '{"count":42}'
+}
+
+function test_failure() {
+  assert_json_contains ".name" "other" '{"name":"bashunit"}'
+  assert_json_contains ".missing" "value" '{"name":"bashunit"}'
+}
+```
+:::
+
+## assert_json_equals
+> `assert_json_equals "expected" "actual"`
+
+Reports an error if the two JSON strings are not structurally equal. Key order is ignored. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_equals '{"b":2,"a":1}' '{"a":1,"b":2}'
+}
+
+function test_failure() {
+  assert_json_equals '{"a":1}' '{"a":2}'
+}
+```
+:::
+
+## assert_duration
+> `assert_duration "command" threshold_ms`
+
+Reports an error if `command` takes longer than `threshold_ms` milliseconds to execute. Uses the framework's portable clock internally.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration "echo hello" 500
+}
+
+function test_failure() {
+  assert_duration "sleep 2" 1000
+}
+```
+:::
+
+## assert_duration_less_than
+> `assert_duration_less_than "command" threshold_ms`
+
+Reports an error if `command` takes `threshold_ms` milliseconds or more to execute. Stricter than [assert_duration](#assert-duration) which allows equal values.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration_less_than "echo hello" 500
+}
+
+function test_failure() {
+  assert_duration_less_than "sleep 2" 1000
+}
+```
+:::
+
+## assert_duration_greater_than
+> `assert_duration_greater_than "command" threshold_ms`
+
+Reports an error if `command` completes in `threshold_ms` milliseconds or less. Useful for verifying that a command takes at least a minimum amount of time.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_duration_greater_than "sleep 1" 500
+}
+
+function test_failure() {
+  assert_duration_greater_than "echo hello" 5000
+}
 ```
 :::
 

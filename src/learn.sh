@@ -67,25 +67,25 @@ function bashunit::learn::start() {
     echo ""
 
     case "$choice" in
-      1) bashunit::learn::lesson_basics || true ;;
-      2) bashunit::learn::lesson_assertions || true ;;
-      3) bashunit::learn::lesson_lifecycle || true ;;
-      4) bashunit::learn::lesson_functions || true ;;
-      5) bashunit::learn::lesson_scripts || true ;;
-      6) bashunit::learn::lesson_mocking || true ;;
-      7) bashunit::learn::lesson_spies || true ;;
-      8) bashunit::learn::lesson_data_providers || true ;;
-      9) bashunit::learn::lesson_exit_codes || true ;;
-      10) bashunit::learn::lesson_challenge || true ;;
-      p) bashunit::learn::show_progress ;;
-      r) bashunit::learn::reset_progress ;;
-      q)
-        echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
-        break
-        ;;
-      *)
-        echo "${_BASHUNIT_COLOR_FAILED}Invalid choice. Please try again.${_BASHUNIT_COLOR_DEFAULT}"
-        ;;
+    1) bashunit::learn::lesson_basics || true ;;
+    2) bashunit::learn::lesson_assertions || true ;;
+    3) bashunit::learn::lesson_lifecycle || true ;;
+    4) bashunit::learn::lesson_functions || true ;;
+    5) bashunit::learn::lesson_scripts || true ;;
+    6) bashunit::learn::lesson_mocking || true ;;
+    7) bashunit::learn::lesson_spies || true ;;
+    8) bashunit::learn::lesson_data_providers || true ;;
+    9) bashunit::learn::lesson_exit_codes || true ;;
+    10) bashunit::learn::lesson_challenge || true ;;
+    p) bashunit::learn::show_progress ;;
+    r) bashunit::learn::reset_progress ;;
+    q)
+      echo "${_BASHUNIT_COLOR_PASSED}Happy testing!${_BASHUNIT_COLOR_DEFAULT}"
+      break
+      ;;
+    *)
+      echo "${_BASHUNIT_COLOR_FAILED}Invalid choice. Please try again.${_BASHUNIT_COLOR_DEFAULT}"
+      ;;
     esac
   done
 
@@ -97,7 +97,7 @@ function bashunit::learn::start() {
 ##
 function bashunit::learn::mark_completed() {
   local lesson=$1
-  echo "$lesson" >> "$LEARN_PROGRESS_FILE"
+  echo "$lesson" >>"$LEARN_PROGRESS_FILE"
 }
 
 ##
@@ -123,6 +123,7 @@ function bashunit::learn::show_progress() {
   local total_lessons=10
   local completed=0
 
+  local i
   for i in $(seq 1 $total_lessons); do
     if bashunit::learn::is_completed "lesson_$i"; then
       echo "  ${_BASHUNIT_COLOR_PASSED}✓${_BASHUNIT_COLOR_DEFAULT} Lesson $i completed"
@@ -163,7 +164,7 @@ function bashunit::learn::create_example_file() {
 
   echo ""
   echo "Creating example file ${_BASHUNIT_COLOR_BOLD}$filename${_BASHUNIT_COLOR_DEFAULT}..."
-  echo "$content" > "$filename"
+  echo "$content" >"$filename"
   chmod +x "$filename"
   echo "${_BASHUNIT_COLOR_PASSED}✓ Created $filename${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
@@ -333,9 +334,9 @@ function test_multiple_assertions() {
     return 1
   fi
 
-  if ! grep -q "assert_contains" "$test_file" || \
-      ! grep -q "assert_matches" "$test_file" || \
-      ! grep -q "assert_not_empty" "$test_file"; then
+  if ! grep -q "assert_contains" "$test_file" ||
+    ! grep -q "assert_matches" "$test_file" ||
+    ! grep -q "assert_not_empty" "$test_file"; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use all three assertion types${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -426,8 +427,8 @@ function test_file_has_content() {
     return 1
   fi
 
-  if ! grep -q "function set_up()" "$test_file" || \
-      ! grep -q "function tear_down()" "$test_file"; then
+  if ! grep -q "function set_up()" "$test_file" ||
+    ! grep -q "function tear_down()" "$test_file"; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define set_up and tear_down functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -858,7 +859,8 @@ File: validator.sh
 #!/usr/bin/env bash
 
 function is_valid_email() {
-  [[ $1 =~ ^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$ ]]
+  local email_pattern='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+  [[ $1 =~ $email_pattern ]]
 }
 ───────────────────────────────────────────────────────────────
 
@@ -1157,17 +1159,20 @@ function test_backup_failure_when_source_missing() {
   fi
 
   # Verify the test has key components
-  local missing_components=()
+  local -a missing_components=()
+  local missing_components_count=0
 
   if ! grep -q "function set_up()" "$test_file"; then
-    missing_components+=("set_up function")
+    missing_components[missing_components_count]="set_up function"
+    missing_components_count=$((missing_components_count + 1))
   fi
 
   if ! grep -q "function tear_down()" "$test_file"; then
-    missing_components+=("tear_down function")
+    missing_components[missing_components_count]="tear_down function"
+    missing_components_count=$((missing_components_count + 1))
   fi
 
-  if [[ ${#missing_components[@]} -gt 0 ]]; then
+  if [[ "$missing_components_count" -gt 0 ]]; then
     echo "${_BASHUNIT_COLOR_FAILED}Missing required components:${_BASHUNIT_COLOR_DEFAULT}"
     printf "  - %s\n" "${missing_components[@]}"
     read -p "Press Enter to continue..." -r

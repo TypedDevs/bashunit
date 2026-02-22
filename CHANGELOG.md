@@ -3,10 +3,47 @@
 ## Unreleased
 
 ### Added
+- Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
+    - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
+    - Mixed formats supported in the same assertion call
+- Add Claude Code configuration with custom skills, agents, and rules
+- Add `assert_have_been_called_nth_with` for verifying arguments on the Nth invocation of a spy
+- Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
+- Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)
+- Add duration assertions: `assert_duration`, `assert_duration_less_than`, `assert_duration_greater_than`
+- Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
+
+### Changed
+- Split Windows CI test jobs into parallel chunks to avoid timeouts
+
+## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
+
+### Changed
+- Lower minimum Bash version requirement from 3.2 to 3.0
+- Improve parallel test execution performance (30-40% faster on large test suites)
+
+### Added
+- Display test output (stdout/stderr) on failure for runtime errors
+    - Enabled by default; disable with `--no-output-on-failure` or `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false`
+- Add `--no-progress` flag to suppress real-time progress display (Issue #503)
+    - Also available via `BASHUNIT_NO_PROGRESS=true` environment variable
+- Support `# bashunit: no-parallel-tests` directive to opt out of test-level parallelism
+
+### Fixed
+- Data providers now work without the `function` keyword on test functions (Issue #586)
+- Install tests now pass in sandboxed/no-network environments (Issue #582)
+- Parallel test execution now works correctly in strict mode (`bash -e -o pipefail`)
+
+## [0.32.0](https://github.com/TypedDevs/bashunit/compare/0.31.0...0.32.0) - 2026-01-12
+
+### Changed
+- Hook output now displays with right-aligned timing and bullet prefix (`● set_up_before_script  2.03s`)
+
+### Added
 - Better code coverage HTML report
 - Auto-discover coverage paths from test file names when `BASHUNIT_COVERAGE_PATHS` is not set
     - `tests/unit/assert_test.sh` automatically tracks `src/assert.sh`
-    - Removes need for manual `--coverage-paths` configuration in most cases
+    - Removes the need for manual `--coverage-paths` configuration in most cases
 - `--coverage-report-html` now defaults to `coverage/html` when no directory is specified
 
 ### Fixed

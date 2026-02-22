@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# bashunit: no-parallel-tests
 
 # @data_provider execution_modes
 function test_script_temp_files_are_cleaned_up_after_test_run() {
@@ -33,7 +34,8 @@ function test_script_temp_files_are_cleaned_up_after_test_run() {
   # Check that no parallel temp files remain in the temp directory
 
   if [[ -d "$parallel_temp_base_dir" ]]; then
-    remaining_files=$(find "$parallel_temp_base_dir" -name "script_with_setup_temp_file" 2>/dev/null || true)
+    remaining_files=$(find "$parallel_temp_base_dir" \
+      -name "script_with_setup_temp_file" 2>/dev/null || true)
 
     assert_empty "$remaining_files"
 

@@ -5,8 +5,13 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 function bashunit::unmock() {
   local command=$1
 
+  if [ "${#_BASHUNIT_MOCKED_FUNCTIONS[@]}" -eq 0 ]; then
+    return
+  fi
+
+  local i
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
-    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]}" == "$command" ]]; then
+    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" == "$command" ]]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
       local variable
@@ -34,7 +39,7 @@ function bashunit::mock() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function bashunit::spy() {
@@ -46,8 +51,8 @@ function bashunit::spy() {
   local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
   times_file=$(bashunit::temp_file "${test_id}_${variable}_times")
   params_file=$(bashunit::temp_file "${test_id}_${variable}_params")
-  echo 0 > "$times_file"
-  : > "$params_file"
+  echo 0 >"$times_file"
+  : >"$params_file"
   export "${variable}_times_file"="$times_file"
   export "${variable}_params_file"="$params_file"
 
@@ -56,7 +61,7 @@ function bashunit::spy() {
     local serialized=\"\"
     local arg
     for arg in \"\$@\"; do
-      serialized+=\"\$(printf '%q' \"\$arg\")$'\\x1f'\"
+      serialized=\"\$serialized\$(printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
     printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
@@ -68,7 +73,7 @@ function bashunit::spy() {
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS+=("$command")
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
 function assert_have_been_called() {
@@ -96,7 +101,8 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if [[ ${!#} =~ ^[0-9]+$ ]]; then
+  local _re='^[0-9]+$'
+  if [[ "${!#}" =~ $_re ]]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi
@@ -144,6 +150,49 @@ function assert_have_been_called_times() {
     bashunit::console_results::print_failed_test "${label}" "${command}" \
       "to have been called" "${expected_count} times" \
       "actual" "${times} times"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_have_been_called_nth_with() {
+  local nth=$1
+  local command=$2
+  shift 2
+  local expected="$*"
+
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local times_file_var="${variable}_times_file"
+  local file_var="${variable}_params_file"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  local times=0
+  if [ -f "${!times_file_var-}" ]; then
+    times=$(cat "${!times_file_var}" 2>/dev/null || echo 0)
+  fi
+
+  if [ "$nth" -gt "$times" ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "${label}" \
+      "expected call" "at index ${nth} but" "only called ${times} times"
+    return
+  fi
+
+  local line=""
+  if [ -f "${!file_var-}" ]; then
+    line=$(sed -n "${nth}p" "${!file_var}" 2>/dev/null || true)
+  fi
+
+  local raw
+  IFS=$'\x1e' read -r raw _ <<<"$line" || true
+
+  if [ "$expected" != "$raw" ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "${label}" \
+      "$expected" "but got " "$raw"
     return
   fi
 

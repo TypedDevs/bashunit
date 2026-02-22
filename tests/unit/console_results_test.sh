@@ -8,20 +8,21 @@ function set_state_value() {
 
   # Extract variable name from getter function name
   case "$getter_name" in
-    bashunit::state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
-    bashunit::state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
-    bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
-    bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
-    bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
-    bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
-    bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
-    bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
-    bashunit::state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
-    bashunit::state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
-    bashunit::state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
-    bashunit::state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
-    bashunit::state::get_file_with_duplicated_function_names)
-      var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES" ;;
+  bashunit::state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
+  bashunit::state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
+  bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
+  bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
+  bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
+  bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
+  bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
+  bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
+  bashunit::state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
+  bashunit::state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
+  bashunit::state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
+  bashunit::state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
+  bashunit::state::get_file_with_duplicated_function_names)
+    var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES"
+    ;;
   esac
 
   # Set the actual variable
@@ -362,10 +363,10 @@ function test_render_execution_time_on_osx_with_perl() {
   bashunit::mock bashunit::dependencies::has_adjtimex mock_false
   bashunit::mock bashunit::dependencies::has_perl mock_true
   _BASHUNIT_START_TIME="1726393394574382186"
-  bashunit::mock perl <<< "1726393394574372186"
-  bashunit::mock uname <<< "Darwin"
+  bashunit::mock perl <<<"1726393394574372186"
+  bashunit::mock uname <<<"Darwin"
   render_result=$(
-  bashunit::mock perl <<< "1726393394574372186";
+    bashunit::mock perl <<<"1726393394574372186"
 
     bashunit::console_results::render_result || true
   )
@@ -656,6 +657,66 @@ function test_print_successful_test_output_in_minutes_exact() {
   assert_matches \
     "✓ Passed.*$test_name.*2m 0s" \
     "$(bashunit::console_results::print_successful_test "$test_name" "120000")"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+}
+
+function test_print_hook_completed_output_milliseconds() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "12")
+
+  assert_matches "● set_up_before_script.*12ms" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
+}
+
+function test_print_hook_completed_output_seconds() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "2340")
+
+  assert_matches "● set_up_before_script.*2.34s" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
+}
+
+function test_print_hook_completed_output_minutes() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  local original_parallel_run=$BASHUNIT_PARALLEL_RUN
+  export BASHUNIT_SIMPLE_OUTPUT=false
+  export BASHUNIT_PARALLEL_RUN=false
+  export TERMINAL_WIDTH=80
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "tear_down_after_script" "125000")
+
+  assert_matches "● tear_down_after_script.*2m 5s" "$output"
+
+  export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
+  export BASHUNIT_PARALLEL_RUN=$original_parallel_run
+}
+
+function test_print_hook_completed_suppressed_in_simple_mode() {
+  local original_simple_output=$BASHUNIT_SIMPLE_OUTPUT
+  export BASHUNIT_SIMPLE_OUTPUT=true
+
+  local output
+  output=$(bashunit::console_results::print_hook_completed "set_up_before_script" "12")
+
+  assert_empty "$output"
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }

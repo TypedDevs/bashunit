@@ -69,6 +69,9 @@ bashunit test tests/ --parallel --simple
 | `--debug [file]`               | Enable shell debug mode                          |
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
+| `--no-progress`                | Suppress real-time progress, show only summary   |
+| `--show-output`                | Show test output on failure (default)            |
+| `--no-output-on-failure`       | Hide test output on failure                      |
 | `--strict`                     | Enable strict shell mode                         |
 | `--skip-env-file`              | Skip `.env` loading, use shell environment only  |
 | `-l, --login`                  | Run tests in login shell context                 |
@@ -185,10 +188,30 @@ The line number syntax finds the test function that contains the specified line.
 
 Run tests in parallel or sequentially. Sequential is the default.
 
+In parallel mode, both test files and individual test functions run concurrently
+for maximum performance.
+
 ::: warning
 Parallel mode is supported on **macOS**, **Ubuntu**, and **Windows**. On other
 systems (like Alpine Linux) the option is automatically disabled due to
 inconsistent results.
+:::
+
+::: tip Opt-out of test-level parallelism
+If a test file has shared state or race conditions, you can disable test-level
+parallelism by adding this directive as the second line:
+
+```bash
+#!/usr/bin/env bash
+# bashunit: no-parallel-tests
+
+function test_with_shared_state() {
+  # This test will not run in parallel with others in this file
+}
+```
+
+The file will still run in parallel with other files, but tests within it will
+run sequentially.
 :::
 
 ### Output Style
@@ -228,6 +251,66 @@ bashunit test tests/ --log-junit results.xml
 ```
 ```bash [HTML Report]
 bashunit test tests/ --report-html report.html
+```
+:::
+
+### Show Output on Failure
+
+> `bashunit test --show-output`
+> `bashunit test --no-output-on-failure`
+
+Control whether test output (stdout/stderr) is displayed when tests fail with runtime errors.
+
+By default (`--show-output`), when a test fails due to a runtime error (command not found,
+unbound variable, permission denied, etc.), bashunit displays the captured output in an
+"Output:" section to help debug the failure.
+
+Use `--no-output-on-failure` to suppress this output.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --no-output-on-failure
+```
+```[Output with --show-output (default)]
+✗ Error: My test function
+    command not found
+    Output:
+      Debug: Setting up test
+      Running command: my_command
+      /path/to/test.sh: line 5: my_command: command not found
+```
+:::
+
+### No Progress
+
+> `bashunit test --no-progress`
+
+Suppress real-time progress display during test execution, showing only the final summary.
+
+When enabled, bashunit hides:
+- Per-test output (pass/fail messages or dots)
+- File headers ("Running tests/...")
+- Hook completion messages
+- Spinner during parallel execution
+
+The final summary with test counts and results is still displayed.
+
+This is useful for:
+- CI/CD pipelines where streaming output causes issues
+- Log-restricted environments
+- Reducing output noise when only the final result matters
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --no-progress
+```
+```[Output]
+bashunit - 0.32.0 | Tests: 10
+Tests:      10 passed, 10 total
+Assertions: 25 passed, 25 total
+
+ All tests passed
+Time taken: 1.23s
 ```
 :::
 

@@ -1,0 +1,101 @@
+name: Bash 3.0 Compatibility
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-image:
+    name: "Build Bash 3.0 Image"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build Bash 3.0 Docker image
+        run: |
+          docker build -t bashunit-bash3 -f - . <<'EOF'
+          FROM debian:bullseye-slim
+
+          RUN apt-get update && apt-get install -y \
+              build-essential \
+              curl \
+              ca-certificates \
+              bison \
+              git \
+              procps \
+              && rm -rf /var/lib/apt/lists/*
+
+          WORKDIR /tmp
+          RUN curl -LO https://ftp.gnu.org/gnu/bash/bash-3.0.tar.gz \
+              && tar xzf bash-3.0.tar.gz \
+              && cd bash-3.0 \
+              && curl -fsSL -o support/config.guess 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.guess' \
+              && curl -fsSL -o support/config.sub 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.sub' \
+              && chmod +x support/config.guess support/config.sub \
+              && ./configure --prefix=/opt/bash-3.0 \
+              && make \
+              && make install \
+              && rm -rf /tmp/bash-3.0*
+
+          WORKDIR /bashunit
+          CMD ["/opt/bash-3.0/bin/bash", "--version"]
+          EOF
+
+      - name: Save Docker image
+        run: docker save bashunit-bash3 -o /tmp/bashunit-bash3.tar
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: bashunit-bash3-image
+          path: /tmp/bashunit-bash3.tar
+          retention-days: 1
+
+  test:
+    name: "Bash 3.0 - ${{ matrix.name }}"
+    runs-on: ubuntu-latest
+    needs: build-image
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Sequential"
+            flags: ""
+          - name: "Parallel"
+            flags: "--parallel"
+          - name: "Simple"
+            flags: "--simple"
+          - name: "Simple Parallel"
+            flags: "--simple --parallel"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: bashunit-bash3-image
+          path: /tmp
+
+      - name: Load Docker image
+        run: docker load --input /tmp/bashunit-bash3.tar
+
+      - name: Verify Bash 3.0 version
+        run: docker run --rm bashunit-bash3 /opt/bash-3.0/bin/bash --version
+
+      - name: Run tests with Bash 3.0 (${{ matrix.name }})
+        run: |
+          docker run --rm \
+            -v "$(pwd)":/bashunit \
+            -w /bashunit \
+            bashunit-bash3 \
+            /opt/bash-3.0/bin/bash ./bashunit ${{ matrix.flags }} tests/
