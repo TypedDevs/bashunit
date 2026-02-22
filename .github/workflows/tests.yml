@@ -71,6 +71,7 @@ jobs:
   alpine:
     name: "On alpine-latest"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -89,6 +90,7 @@ jobs:
   simple-output:
     name: "Simple output"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -102,6 +104,7 @@ jobs:
   simple-output-parallel:
     name: "Simple output in parallel"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -115,6 +118,7 @@ jobs:
   extended-output-parallel:
     name: "Extended output in parallel"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -128,6 +132,7 @@ jobs:
   strict-mode:
     name: "Strict mode"
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
