@@ -1,29 +1,27 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2034
 
+LCOV_FILE=""
+
 function set_up_before_script() {
-    TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
-    LCOV_FILE="$(bashunit::temp_file "lcov-output")"
+  LCOV_FILE="$(bashunit::temp_file "lcov-hooks")"
 }
 
-function test_coverage_includes_src_hits_from_setup_hook() {
-    # Enable coverage in-process and exercise code in a hook-like context
-    BASHUNIT_COVERAGE=true
-    BASHUNIT_COVERAGE_PATHS="src/"
-    bashunit::coverage::init
+function test_coverage_tracks_src_lines_executed_in_hooks() {
+  local output
+  output=$(./bashunit \
+    --coverage \
+    --no-coverage-report \
+    --coverage-paths "src/" \
+    --coverage-report "$LCOV_FILE" \
+    tests/acceptance/fixtures/test_coverage_hooks.sh 2>&1)
 
-    # Simulate hook execution with coverage trap enabled
-    bashunit::coverage::enable_trap
-    # Call a src function to generate attributable hits
-    local f
-    f="$(bashunit::temp_file "cov-hooks")"
-    [[ -n "${f:-}" ]] && echo "tmp created" > /dev/null
-    bashunit::coverage::disable_trap
+  assert_successful_code
 
-    # Generate LCOV and assert presence of src entries
-    bashunit::coverage::report_lcov "$LCOV_FILE"
-    local lcov
-    lcov="$(cat "$LCOV_FILE" 2>/dev/null)"
-    assert_contains "SF:$(pwd)/src/" "$lcov"
-    assert_contains "DA:" "$lcov"
+  local lcov
+  lcov="$(cat "$LCOV_FILE" 2>/dev/null)"
+
+  assert_not_empty "$lcov"
+  assert_contains "SF:" "$lcov"
+  assert_contains "DA:" "$lcov"
 }
