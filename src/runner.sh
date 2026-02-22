@@ -568,6 +568,11 @@ function bashunit::runner::run_test() {
       [[ -f ~/.profile ]] && source ~/.profile 2>/dev/null || true
     fi
 
+    # Enable coverage tracking early to include set_up/tear_down hooks
+    if bashunit::env::is_coverage_enabled; then
+      bashunit::coverage::enable_trap
+    fi
+
     # Run set_up and capture exit code without || to preserve errexit behavior
     local setup_exit_code=0
     bashunit::runner::run_set_up "$test_file"
@@ -581,11 +586,6 @@ function bashunit::runner::run_test() {
       set -euo pipefail
     else
       set +euo pipefail
-    fi
-
-    # Enable coverage tracking if enabled
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
     fi
 
     # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
@@ -994,16 +994,8 @@ function bashunit::runner::execute_file_hook() {
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
-    # Enable coverage trap inside hooks to attribute lines executed during setup/teardown
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
-    fi
     "$hook_name"
   } >"$hook_output_file" 2>&1
-  # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
-    bashunit::coverage::disable_trap
-  fi
 
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS
@@ -1049,9 +1041,19 @@ function bashunit::runner::run_set_up_before_script() {
   local start_time
   start_time=$(bashunit::clock::now)
 
+  # Enable coverage trap to attribute lines executed during set_up_before_script
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::enable_trap
+  fi
+
   # Execute the hook (render_header=false since header is already rendered)
   bashunit::runner::execute_file_hook 'set_up_before_script' "$test_file" false
   local status=$?
+
+  # Disable coverage trap after hook execution
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::disable_trap
+  fi
 
   local end_time
   end_time=$(bashunit::clock::now)
@@ -1093,16 +1095,8 @@ function bashunit::runner::execute_test_hook() {
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
-    # Enable coverage trap inside test-level hooks
-    if bashunit::env::is_coverage_enabled; then
-      bashunit::coverage::enable_trap
-    fi
     "$hook_name"
   } >"$hook_output_file" 2>&1
-  # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
-    bashunit::coverage::disable_trap
-  fi
 
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS
@@ -1182,9 +1176,19 @@ function bashunit::runner::run_tear_down_after_script() {
   local start_time
   start_time=$(bashunit::clock::now)
 
+  # Enable coverage trap to attribute lines executed during tear_down_after_script
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::enable_trap
+  fi
+
   # Execute the hook
   bashunit::runner::execute_file_hook 'tear_down_after_script' "$test_file"
   local status=$?
+
+  # Disable coverage trap after hook execution
+  if bashunit::env::is_coverage_enabled; then
+    bashunit::coverage::disable_trap
+  fi
 
   local end_time
   end_time=$(bashunit::clock::now)
