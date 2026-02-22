@@ -34,8 +34,8 @@ function bashunit::date::to_epoch() {
     echo "$epoch"
     return 0
   }
-  # Try BSD date with date-only format
-  epoch=$(date -j -f "%Y-%m-%d" "$input" +%s 2>/dev/null) && {
+  # Try BSD date with date-only format (append midnight for deterministic results)
+  epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "$input 00:00:00" +%s 2>/dev/null) && {
     echo "$epoch"
     return 0
   }

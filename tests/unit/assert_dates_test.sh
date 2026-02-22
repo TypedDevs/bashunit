@@ -120,7 +120,7 @@ function test_successful_assert_date_within_range_with_iso_dates() {
 function test_successful_assert_date_equals_with_mixed_formats() {
   local epoch
   epoch=$(date -d "2023-06-15" +%s 2>/dev/null) \
-    || epoch=$(date -j -f "%Y-%m-%d" "2023-06-15" +%s 2>/dev/null)
+    || epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "2023-06-15 00:00:00" +%s 2>/dev/null)
 
   assert_empty "$(assert_date_equals "$epoch" "2023-06-15")"
 }

@@ -20,7 +20,7 @@ jobs:
       - name: Build Bash 3.0 Docker image
         run: |
           docker build -t bashunit-bash3 -f - . <<'EOF'
-          FROM debian:bullseye-slim
+          FROM debian:bookworm-slim
 
           RUN apt-get update && apt-get install -y \
               build-essential \
