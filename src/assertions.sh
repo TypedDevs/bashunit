@@ -2,6 +2,7 @@
 
 source "$BASHUNIT_ROOT_DIR/src/assert.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert_arrays.sh"
+source "$BASHUNIT_ROOT_DIR/src/assert_dates.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert_duration.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert_files.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert_folders.sh"

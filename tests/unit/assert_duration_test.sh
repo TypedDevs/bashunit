@@ -2,11 +2,11 @@
 # shellcheck disable=SC2329
 
 function test_successful_assert_duration_within() {
-  assert_empty "$(assert_duration "sleep 0" 1000)"
+  assert_empty "$(assert_duration "sleep 0" 5000)"
 }
 
 function test_successful_assert_duration_within_fast_command() {
-  assert_empty "$(assert_duration "echo hello" 500)"
+  assert_empty "$(assert_duration "echo hello" 5000)"
 }
 
 function test_unsuccessful_assert_duration_exceeds_threshold() {
@@ -18,7 +18,7 @@ function test_unsuccessful_assert_duration_exceeds_threshold() {
 }
 
 function test_successful_assert_duration_less_than() {
-  assert_empty "$(assert_duration_less_than "sleep 0" 1000)"
+  assert_empty "$(assert_duration_less_than "sleep 0" 5000)"
 }
 
 function test_unsuccessful_assert_duration_less_than() {

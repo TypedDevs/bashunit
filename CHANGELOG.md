@@ -3,6 +3,10 @@
 ## Unreleased
 
 ### Added
+- Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
+    - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
+    - Mixed formats supported in the same assertion call
+- Add Claude Code configuration with custom skills, agents, and rules
 - Add `assert_have_been_called_nth_with` for verifying arguments on the Nth invocation of a spy
 - Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
 - Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)

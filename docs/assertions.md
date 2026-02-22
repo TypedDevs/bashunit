@@ -356,6 +356,116 @@ function test_failure() {
 ```
 :::
 
+## assert_date_equals
+> `assert_date_equals "expected" "actual"`
+
+Reports an error if the two date values `expected` and `actual` are not equal.
+
+Inputs are automatically converted to epoch seconds. Supported formats:
+- Epoch seconds (integers): `1700000000`
+- ISO 8601 date: `2023-11-14`
+- ISO 8601 datetime: `2023-11-14T12:00:00`
+- ISO 8601 datetime with UTC Z: `2023-11-14T12:00:00Z`
+- ISO 8601 datetime with timezone offset: `2023-11-14T12:00:00+0100`
+- Space-separated datetime: `2023-11-14 12:00:00`
+
+You can mix formats in the same assertion (e.g., one epoch, one ISO).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+
+  assert_date_equals "$now" "$now"
+}
+
+function test_failure() {
+  assert_date_equals "1700000000" "1600000000"
+}
+```
+:::
+
+## assert_date_before
+> `assert_date_before "expected" "actual"`
+
+Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_before "1700000000" "1600000000"
+}
+
+function test_failure() {
+  assert_date_before "1700000000" "1800000000"
+}
+```
+:::
+
+## assert_date_after
+> `assert_date_after "expected" "actual"`
+
+Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_after "1600000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_after "1600000000" "1500000000"
+}
+```
+:::
+
+## assert_date_within_range
+> `assert_date_within_range "from" "to" "actual"`
+
+Reports an error if `actual` does not fall between `from` and `to` (inclusive).
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_date_within_range "1600000000" "1800000000" "1700000000"
+}
+
+function test_failure() {
+  assert_date_within_range "1600000000" "1800000000" "1900000000"
+}
+```
+:::
+
+## assert_date_within_delta
+> `assert_date_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` seconds of `expected`.
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local now
+  now="$(date +%s)"
+  local five_seconds_later=$(( now + 5 ))
+
+  assert_date_within_delta "$now" "$five_seconds_later" "10"
+}
+
+function test_failure() {
+  assert_date_within_delta "1700000000" "1700000020" "5"
+}
+```
+:::
+
 ## assert_exit_code
 > `assert_exit_code "expected"`
 
