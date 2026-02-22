@@ -9,7 +9,7 @@ function set_up_before_script() {
 
 function test_coverage_tracks_src_lines_executed_in_hooks() {
   local output
-  output=$(./bashunit \
+  output=$(BASHUNIT_PARALLEL_RUN=false ./bashunit \
     --coverage \
     --no-coverage-report \
     --coverage-paths "src/globals.sh" \
