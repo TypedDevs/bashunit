@@ -4,10 +4,14 @@
 # Watches test and source files for changes and re-runs tests automatically.
 # Requires: inotifywait (inotify-tools) on Linux, or fswatch on macOS.
 
+function bashunit::watch::_command_exists() {
+  command -v "$1" &>/dev/null
+}
+
 function bashunit::watch::is_available() {
-  if command -v inotifywait &>/dev/null; then
+  if bashunit::watch::_command_exists inotifywait; then
     echo "inotifywait"
-  elif command -v fswatch &>/dev/null; then
+  elif bashunit::watch::_command_exists fswatch; then
     echo "fswatch"
   else
     echo ""
