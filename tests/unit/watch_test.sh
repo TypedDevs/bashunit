@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2329 # Test functions are invoked indirectly by bashunit
 ############################
 # bashunit::watch::is_available
 ############################

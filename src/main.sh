@@ -418,7 +418,7 @@ function bashunit::main::cmd_watch() {
   shift || true
   local -a extra_args=("$@")
 
-  bashunit::watch::run "$path" "${extra_args[@]+\"${extra_args[@]}\"}" 
+  bashunit::watch::run "$path" "${extra_args[@]+\"${extra_args[@]}\"}"
 }
 
 #############################
