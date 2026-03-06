@@ -15,6 +15,10 @@
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
+- Optimize clock: prioritize EPOCHREALTIME over subprocess-based fallbacks
+- Cache function discovery to avoid duplicate pipeline per test file
+- Reduce subshells in test execution hot path
+- Batch coverage recording with in-memory buffering
 
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 

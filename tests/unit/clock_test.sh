@@ -28,6 +28,7 @@ function mock_date_seconds() {
 
 function test_now_with_perl() {
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
+  bashunit::mock date mock_non_existing_fn
   bashunit::mock perl <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
@@ -124,6 +125,8 @@ function test_now_prefers_shell_time_over_perl() {
 }
 
 function test_now_prefers_python_over_node() {
+  bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
+  bashunit::mock date mock_non_existing_fn
   bashunit::mock perl mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_true
   bashunit::mock python <<<"777777777777"
