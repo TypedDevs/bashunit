@@ -8,38 +8,15 @@ function bashunit::clock::_choose_impl() {
   local attempts_count=0
   local attempts
 
-  # 1. Try Perl with Time::HiRes
-  attempts[attempts_count]="Perl"
+  # 1. Try native shell EPOCHREALTIME (fastest - no subprocess, Bash 5.0+)
+  attempts[attempts_count]="EPOCHREALTIME"
   attempts_count=$((attempts_count + 1))
-  if bashunit::dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
-    _BASHUNIT_CLOCK_NOW_IMPL="perl"
+  if shell_time="$(bashunit::clock::shell_time)"; then
+    _BASHUNIT_CLOCK_NOW_IMPL="shell"
     return 0
   fi
 
-  # 2. Try Python 3 with time module
-  attempts[attempts_count]="Python"
-  attempts_count=$((attempts_count + 1))
-  if bashunit::dependencies::has_python; then
-    _BASHUNIT_CLOCK_NOW_IMPL="python"
-    return 0
-  fi
-
-  # 3. Try Node.js
-  attempts[attempts_count]="Node"
-  attempts_count=$((attempts_count + 1))
-  if bashunit::dependencies::has_node; then
-    _BASHUNIT_CLOCK_NOW_IMPL="node"
-    return 0
-  fi
-  # 4. Windows fallback with PowerShell
-  attempts[attempts_count]="PowerShell"
-  attempts_count=$((attempts_count + 1))
-  if bashunit::check_os::is_windows && bashunit::dependencies::has_powershell; then
-    _BASHUNIT_CLOCK_NOW_IMPL="powershell"
-    return 0
-  fi
-
-  # 5. Unix fallback using `date +%s%N` (if not macOS or Alpine)
+  # 2. Unix date +%s%N (no subprocess overhead on supported systems)
   attempts[attempts_count]="date"
   attempts_count=$((attempts_count + 1))
   if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine; then
@@ -52,11 +29,35 @@ function bashunit::clock::_choose_impl() {
     fi
   fi
 
-  # 6. Try using native shell EPOCHREALTIME (if available)
-  attempts[attempts_count]="EPOCHREALTIME"
+  # 3. Try Perl with Time::HiRes
+  attempts[attempts_count]="Perl"
   attempts_count=$((attempts_count + 1))
-  if shell_time="$(bashunit::clock::shell_time)"; then
-    _BASHUNIT_CLOCK_NOW_IMPL="shell"
+  if bashunit::dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
+    _BASHUNIT_CLOCK_NOW_IMPL="perl"
+    return 0
+  fi
+
+  # 4. Try Python 3 with time module
+  attempts[attempts_count]="Python"
+  attempts_count=$((attempts_count + 1))
+  if bashunit::dependencies::has_python; then
+    _BASHUNIT_CLOCK_NOW_IMPL="python"
+    return 0
+  fi
+
+  # 5. Try Node.js
+  attempts[attempts_count]="Node"
+  attempts_count=$((attempts_count + 1))
+  if bashunit::dependencies::has_node; then
+    _BASHUNIT_CLOCK_NOW_IMPL="node"
+    return 0
+  fi
+
+  # 6. Windows fallback with PowerShell
+  attempts[attempts_count]="PowerShell"
+  attempts_count=$((attempts_count + 1))
+  if bashunit::check_os::is_windows && bashunit::dependencies::has_powershell; then
+    _BASHUNIT_CLOCK_NOW_IMPL="powershell"
     return 0
   fi
 
