@@ -20,6 +20,10 @@
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
+- Optimize clock: prioritize EPOCHREALTIME over subprocess-based fallbacks
+- Cache function discovery to avoid duplicate pipeline per test file
+- Reduce subshells in test execution hot path
+- Batch coverage recording with in-memory buffering
 
 ### Fixed
 - JUnit XML report now conforms to the standard schema

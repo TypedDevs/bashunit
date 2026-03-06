@@ -6,6 +6,10 @@ function set_up_before_script() {
   __ORIGINAL_OS=$_BASHUNIT_OS
 }
 
+function set_up() {
+  _BASHUNIT_CLOCK_NOW_IMPL=""
+}
+
 function tear_down_after_script() {
   export _BASHUNIT_OS=$__ORIGINAL_OS
 }
@@ -24,6 +28,7 @@ function mock_date_seconds() {
 
 function test_now_with_perl() {
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
+  bashunit::mock date mock_non_existing_fn
   bashunit::mock perl <<<"1720705883457"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
@@ -60,6 +65,7 @@ function test_now_on_windows_without_with_powershell() {
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
+  bashunit::mock date mock_non_existing_fn
 
   assert_same "1727768183281580800" "$(bashunit::clock::now)"
 }
@@ -68,10 +74,10 @@ function test_now_on_windows_without_without_powershell() {
   mock_windows_os
   bashunit::mock bashunit::dependencies::has_perl mock_false
   bashunit::mock bashunit::dependencies::has_powershell mock_false
-  bashunit::mock date <<<"1727768951"
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
+  bashunit::mock date <<<"1727768951"
 
   assert_same "1727768951" "$(bashunit::clock::now)"
 }
@@ -109,16 +115,18 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
   assert_not_empty "$(bashunit::clock::total_runtime_in_milliseconds)"
 }
 
-function test_now_prefers_perl_over_shell_time() {
-  bashunit::mock bashunit::clock::shell_time <<<"1234.0"
+function test_now_prefers_shell_time_over_perl() {
+  bashunit::mock bashunit::clock::shell_time <<<"1234.567890"
   bashunit::mock perl <<<"999999999999"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
-  assert_same "999999999999" "$(bashunit::clock::now)"
+  assert_same "1234567890000" "$(bashunit::clock::now)"
 }
 
 function test_now_prefers_python_over_node() {
+  bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
+  bashunit::mock date mock_non_existing_fn
   bashunit::mock perl mock_non_existing_fn
   bashunit::mock bashunit::dependencies::has_python mock_true
   bashunit::mock python <<<"777777777777"
