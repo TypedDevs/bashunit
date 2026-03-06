@@ -5,6 +5,10 @@
 ### Added
 - Add `--jobs N` flag to limit parallel test concurrency (e.g., `--jobs 4`)
 - Add `--watch` mode to automatically re-run tests when files change
+- Add `watch [path]` subcommand to re-run tests automatically on file changes
+    - Uses `inotifywait` on Linux (via `inotify-tools`) or `fswatch` on macOS
+    - Falls back with a clear install hint if neither tool is available
+    - Accepts optional path argument (defaults to current directory)
 - Add source context display in failure summaries showing relevant assertion lines
 - Add TAP version 13 output format via `--output tap` for CI/CD integration
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
@@ -19,10 +23,19 @@
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
-- Prioritize `EPOCHREALTIME` over subprocess-based time implementations for faster timing
-- Cache function discovery to avoid duplicate pipeline scans per test file
-- Reduce subshells in test execution hot path for lower overhead
-- Batch coverage recording with in-memory buffering for faster coverage runs
+- Optimize clock: prioritize EPOCHREALTIME over subprocess-based fallbacks
+- Cache function discovery to avoid duplicate pipeline per test file
+- Reduce subshells in test execution hot path
+- Batch coverage recording with in-memory buffering
+
+### Fixed
+- JUnit XML report now conforms to the standard schema
+    - Remove non-standard `passed`, `incomplete`, `snapshot` attributes from `<testsuite>` and `status`, `assertions` from `<testcase>`
+    - Add `errors="0"` attribute and `<failure>`/`<skipped>` child elements per the JUnit spec
+    - `skipped` count now includes both skipped and incomplete tests to match emitted `<skipped/>` elements
+    - Convert `time` values from milliseconds to seconds (float) as expected by CI tools
+    - Strip ANSI escape sequences and invalid XML control characters from failure messages
+    - Include actual failure messages in `<failure>` body instead of hard-coded placeholders
 
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 

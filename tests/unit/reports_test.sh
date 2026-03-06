@@ -13,6 +13,7 @@ function set_up() {
   _BASHUNIT_REPORTS_TEST_STATUSES=()
   _BASHUNIT_REPORTS_TEST_DURATIONS=()
   _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
+  _BASHUNIT_REPORTS_TEST_FAILURES=()
 
   # Unset report env vars by default
   unset BASHUNIT_LOG_JUNIT
@@ -92,9 +93,10 @@ function test_add_test_passed_sets_passed_status() {
 function test_add_test_failed_sets_failed_status() {
   BASHUNIT_LOG_JUNIT="report.xml"
 
-  bashunit::reports::add_test_failed "test.sh" "my_test" "100" "2"
+  bashunit::reports::add_test_failed "test.sh" "my_test" "100" "2" "some error"
 
   assert_same "failed" "${_BASHUNIT_REPORTS_TEST_STATUSES[0]}"
+  assert_same "some error" "${_BASHUNIT_REPORTS_TEST_FAILURES[0]}"
 }
 
 # === Core add_test tests ===
@@ -118,13 +120,14 @@ function test_add_test_tracks_when_html_report_enabled() {
 function test_add_test_populates_all_arrays() {
   BASHUNIT_LOG_JUNIT="report.xml"
 
-  bashunit::reports::add_test "my_file.sh" "my_test_name" "250" "5" "failed"
+  bashunit::reports::add_test "my_file.sh" "my_test_name" "250" "5" "failed" "expected X got Y"
 
   assert_same "my_file.sh" "${_BASHUNIT_REPORTS_TEST_FILES[0]}"
   assert_same "my_test_name" "${_BASHUNIT_REPORTS_TEST_NAMES[0]}"
   assert_same "failed" "${_BASHUNIT_REPORTS_TEST_STATUSES[0]}"
   assert_same "250" "${_BASHUNIT_REPORTS_TEST_DURATIONS[0]}"
   assert_same "5" "${_BASHUNIT_REPORTS_TEST_ASSERTIONS[0]}"
+  assert_same "expected X got Y" "${_BASHUNIT_REPORTS_TEST_FAILURES[0]}"
 }
 
 # === JUnit XML generation tests ===
@@ -156,9 +159,10 @@ function test_generate_junit_xml_includes_testsuite_attributes() {
 
   assert_contains '<testsuite name="bashunit"' "$content"
   assert_contains 'tests="1"' "$content"
-  assert_contains 'passed="5"' "$content"
   assert_contains 'failures="1"' "$content"
-  assert_contains 'time="1234"' "$content"
+  assert_contains 'skipped="3"' "$content"
+  assert_contains 'errors="0"' "$content"
+  assert_contains 'time="1.234"' "$content"
 }
 
 function test_generate_junit_xml_includes_testcase_elements() {
@@ -173,9 +177,82 @@ function test_generate_junit_xml_includes_testcase_elements() {
 
   assert_contains '<testcase file="my_test.sh"' "$content"
   assert_contains 'name="test_example"' "$content"
-  assert_contains 'status="passed"' "$content"
-  assert_contains 'assertions="3"' "$content"
-  assert_contains 'time="500"' "$content"
+  assert_contains 'time="0.500"' "$content"
+  assert_not_contains 'status=' "$content"
+  assert_not_contains 'assertions=' "$content"
+}
+
+function test_generate_junit_xml_passed_has_no_children() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  bashunit::reports::add_test "test.sh" "test_ok" "200" "1" "passed"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_not_contains '<failure' "$content"
+  assert_not_contains '<skipped' "$content"
+}
+
+function test_generate_junit_xml_skipped_testcase() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  bashunit::reports::add_test "test.sh" "test_skip" "0" "0" "skipped"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '<skipped/>' "$content"
+  assert_not_contains '<failure' "$content"
+}
+
+function test_generate_junit_xml_incomplete_testcase() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  bashunit::reports::add_test "test.sh" "test_todo" "0" "0" "incomplete"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '<skipped message="Test incomplete"/>' "$content"
+  assert_not_contains '<failure' "$content"
+}
+
+function test_generate_junit_xml_failure_element_without_type() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  local failure_msg="Assertion failed: expected 42 but got 0"
+  bashunit::reports::add_test "test_fail.sh" "test_failure" "1000" "5" "failed" "$failure_msg"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '<failure message="Test failed">' "$content"
+  assert_contains "$failure_msg</failure>" "$content"
+  assert_not_contains 'type=' "$content"
+}
+
+function test_generate_junit_xml_failure_element_with_xml_escaping() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  local failure_msg='Expected "value1" & "value2" to be > other'
+  bashunit::reports::add_test "test_fail.sh" "test_xml_escape" "500" "2" "failed" "$failure_msg"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  # Verify XML escaping is applied
+  assert_contains 'Expected &quot;value1&quot; &amp; &quot;value2&quot; to be &gt; other</failure>' "$content"
 }
 
 # === HTML report generation tests ===

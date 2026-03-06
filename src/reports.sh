@@ -6,6 +6,7 @@ _BASHUNIT_REPORTS_TEST_NAMES=()
 _BASHUNIT_REPORTS_TEST_STATUSES=()
 _BASHUNIT_REPORTS_TEST_DURATIONS=()
 _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
+_BASHUNIT_REPORTS_TEST_FAILURES=()
 
 function bashunit::reports::add_test_snapshot() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "snapshot"
@@ -24,7 +25,7 @@ function bashunit::reports::add_test_passed() {
 }
 
 function bashunit::reports::add_test_failed() {
-  bashunit::reports::add_test "$1" "$2" "$3" "$4" "failed"
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "failed" "$5"
 }
 
 function bashunit::reports::add_test() {
@@ -36,45 +37,69 @@ function bashunit::reports::add_test() {
   local duration="$3"
   local assertions="$4"
   local status="$5"
+  local failure_message="${6:-}"
 
   _BASHUNIT_REPORTS_TEST_FILES[${#_BASHUNIT_REPORTS_TEST_FILES[@]}]="$file"
   _BASHUNIT_REPORTS_TEST_NAMES[${#_BASHUNIT_REPORTS_TEST_NAMES[@]}]="$test_name"
   _BASHUNIT_REPORTS_TEST_STATUSES[${#_BASHUNIT_REPORTS_TEST_STATUSES[@]}]="$status"
   _BASHUNIT_REPORTS_TEST_ASSERTIONS[${#_BASHUNIT_REPORTS_TEST_ASSERTIONS[@]}]="$assertions"
   _BASHUNIT_REPORTS_TEST_DURATIONS[${#_BASHUNIT_REPORTS_TEST_DURATIONS[@]}]="$duration"
+  _BASHUNIT_REPORTS_TEST_FAILURES[${#_BASHUNIT_REPORTS_TEST_FAILURES[@]}]="$failure_message"
+}
+
+function bashunit::reports::__xml_escape() {
+  local text="$1"
+  # Strip ANSI escape sequences and control characters invalid in XML 1.0,
+  # then escape XML special characters (& first to avoid double-escaping)
+  echo "$text" \
+    | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+    | tr -d '\000-\010\013\014\016-\037' \
+    | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g' -e "s/'/\&apos;/g"
 }
 
 function bashunit::reports::generate_junit_xml() {
   local output_file="$1"
 
-  local test_passed=$(bashunit::state::get_tests_passed)
   local tests_skipped=$(bashunit::state::get_tests_skipped)
   local tests_incomplete=$(bashunit::state::get_tests_incomplete)
-  local tests_snapshot=$(bashunit::state::get_tests_snapshot)
   local tests_failed=$(bashunit::state::get_tests_failed)
-  local time=$(bashunit::clock::total_runtime_in_milliseconds)
+  local time_ms=$(bashunit::clock::total_runtime_in_milliseconds)
+  local time
+  time=$(LC_ALL=C awk -v ms="$time_ms" 'BEGIN {printf "%.3f", ms/1000}')
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     echo "<testsuites>"
     echo "  <testsuite name=\"bashunit\" tests=\"${#_BASHUNIT_REPORTS_TEST_NAMES[@]}\""
-    echo "             passed=\"$test_passed\" failures=\"$tests_failed\" incomplete=\"$tests_incomplete\""
-    echo "             skipped=\"$tests_skipped\" snapshot=\"$tests_snapshot\""
+    echo "             failures=\"$tests_failed\" errors=\"0\""
+    echo "             skipped=\"$(( tests_skipped + tests_incomplete ))\""
     echo "             time=\"$time\">"
 
     local i
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
       local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
       local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
-      local assertions="${_BASHUNIT_REPORTS_TEST_ASSERTIONS[$i]:-}"
       local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
-      local test_time="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
+      local test_time_ms="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
+      local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
+      local test_time
+      test_time=$(LC_ALL=C awk -v ms="$test_time_ms" 'BEGIN {printf "%.3f", ms/1000}')
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
-      echo "        status=\"$status\""
-      echo "        assertions=\"$assertions\""
       echo "        time=\"$test_time\">"
+
+      # Add failure element for failed tests with actual failure message
+      if [[ "$status" == "failed" ]]; then
+        local escaped_message
+        escaped_message=$(bashunit::reports::__xml_escape "$failure_message")
+        echo "      <failure message=\"Test failed\">$escaped_message</failure>"
+      elif [[ "$status" == "skipped" ]]; then
+        echo "      <skipped/>"
+      elif [[ "$status" == "incomplete" ]]; then
+        echo "      <skipped message=\"Test incomplete\"/>"
+      fi
+
       echo "    </testcase>"
     done
 

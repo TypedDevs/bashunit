@@ -117,15 +117,16 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::restore_workdir
       continue
     fi
+    local _cached_fns="$functions_for_script"
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
       bashunit::runner::call_test_functions \
         "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter" 2>/dev/null &
+        "$exclude_tag_filter" "$_cached_fns" 2>/dev/null &
     else
       bashunit::runner::call_test_functions \
         "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter"
+        "$exclude_tag_filter" "$_cached_fns"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_set_up_and_tear_down_after_script
@@ -364,36 +365,48 @@ function bashunit::runner::call_test_functions() {
   local filter="$2"
   local tag_filter="${3:-}"
   local exclude_tag_filter="${4:-}"
+  local cached_functions="${5:-}"
   local IFS=$' \t\n'
-  local prefix="test"
-  # Use cached function names for better performance
-  local filtered_functions
-  filtered_functions=$(bashunit::helper::get_functions_to_run \
-    "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
   local -a functions_to_run=()
   local functions_to_run_count=0
-  local _fn
-  while IFS= read -r _fn; do
-    [[ -z "$_fn" ]] && continue
-    functions_to_run[functions_to_run_count]="$_fn"
-    functions_to_run_count=$((functions_to_run_count + 1))
-  done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
 
-  # Apply tag filtering if --tag or --exclude-tag was specified
-  if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
-    local -a tag_filtered=()
-    local tag_filtered_count=0
-    local _tf_fn
-    for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-      local fn_tags
-      fn_tags=$(bashunit::helper::get_tags_for_function "$_tf_fn" "$script")
-      if bashunit::helper::function_matches_tags "$fn_tags" "$tag_filter" "$exclude_tag_filter"; then
-        tag_filtered[tag_filtered_count]="$_tf_fn"
-        tag_filtered_count=$((tag_filtered_count + 1))
-      fi
+  if [[ -n "$cached_functions" ]]; then
+    # Use pre-computed function list from load_test_files (already tag-filtered)
+    local _fn
+    for _fn in $cached_functions; do
+      [[ -z "$_fn" ]] && continue
+      functions_to_run[functions_to_run_count]="$_fn"
+      functions_to_run_count=$((functions_to_run_count + 1))
     done
-    functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
-    functions_to_run_count=$tag_filtered_count
+  else
+    # Fallback: compute function list (for direct calls without cache)
+    local prefix="test"
+    local filtered_functions
+    filtered_functions=$(bashunit::helper::get_functions_to_run \
+      "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
+    local _fn
+    while IFS= read -r _fn; do
+      [[ -z "$_fn" ]] && continue
+      functions_to_run[functions_to_run_count]="$_fn"
+      functions_to_run_count=$((functions_to_run_count + 1))
+    done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
+
+    # Apply tag filtering if --tag or --exclude-tag was specified
+    if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
+      local -a tag_filtered=()
+      local tag_filtered_count=0
+      local _tf_fn
+      for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
+        local fn_tags
+        fn_tags=$(bashunit::helper::get_tags_for_function "$_tf_fn" "$script")
+        if bashunit::helper::function_matches_tags "$fn_tags" "$tag_filter" "$exclude_tag_filter"; then
+          tag_filtered[tag_filtered_count]="$_tf_fn"
+          tag_filtered_count=$((tag_filtered_count + 1))
+        fi
+      done
+      functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
+      functions_to_run_count=$tag_filtered_count
+    fi
   fi
 
   if [[ "$functions_to_run_count" -le 0 ]]; then
@@ -566,10 +579,10 @@ function bashunit::runner::run_test() {
   else
     bashunit::state::reset_current_test_interpolated_function_name
   fi
-  local current_assertions_failed="$(bashunit::state::get_assertions_failed)"
-  local current_assertions_snapshot="$(bashunit::state::get_assertions_snapshot)"
-  local current_assertions_incomplete="$(bashunit::state::get_assertions_incomplete)"
-  local current_assertions_skipped="$(bashunit::state::get_assertions_skipped)"
+  local current_assertions_failed="$_BASHUNIT_ASSERTIONS_FAILED"
+  local current_assertions_snapshot="$_BASHUNIT_ASSERTIONS_SNAPSHOT"
+  local current_assertions_incomplete="$_BASHUNIT_ASSERTIONS_INCOMPLETE"
+  local current_assertions_skipped="$_BASHUNIT_ASSERTIONS_SKIPPED"
 
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
@@ -680,8 +693,24 @@ function bashunit::runner::run_test() {
 
   bashunit::runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
-  local total_assertions="$(bashunit::state::calculate_total_assertions "$test_execution_result")"
-  local test_exit_code="$(bashunit::state::get_test_exit_code)"
+  local test_exit_code="$_BASHUNIT_TEST_EXIT_CODE"
+
+  # Extract assertion counts directly via parameter expansion
+  # instead of spawning grep subprocesses
+  local _te_failed="${test_execution_result##*##ASSERTIONS_FAILED=}"
+  _te_failed="${_te_failed%%##*}"
+  local _te_passed="${test_execution_result##*##ASSERTIONS_PASSED=}"
+  _te_passed="${_te_passed%%##*}"
+  local _te_skipped="${test_execution_result##*##ASSERTIONS_SKIPPED=}"
+  _te_skipped="${_te_skipped%%##*}"
+  local _te_incomplete="${test_execution_result##*##ASSERTIONS_INCOMPLETE=}"
+  _te_incomplete="${_te_incomplete%%##*}"
+  local _te_snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
+  _te_snapshot="${_te_snapshot%%##*}"
+  local total_assertions=$(( \
+    ${_te_failed:-0} + ${_te_passed:-0} + ${_te_skipped:-0} + \
+    ${_te_incomplete:-0} + ${_te_snapshot:-0} \
+  ))
 
   local encoded_test_title
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
@@ -727,7 +756,7 @@ function bashunit::runner::run_test() {
       error_message="$hook_message"
     fi
     bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"
-    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions" "$error_message"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
@@ -735,7 +764,7 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
     bashunit::state::add_tests_failed
-    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
     bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
     bashunit::internal_log "Test failed" "$label"
@@ -1026,7 +1055,9 @@ function bashunit::runner::record_file_hook_failure() {
 
   bashunit::state::add_tests_failed
   bashunit::console_results::print_error_test "$hook_name" "$hook_output"
-  bashunit::reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
+  local _normalized_hook
+  _normalized_hook="$(bashunit::helper::normalize_test_function_name "$hook_name")"
+  bashunit::reports::add_test_failed "$test_file" "$_normalized_hook" 0 0 "$hook_output"
   bashunit::runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"

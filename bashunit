@@ -72,6 +72,7 @@ source "$BASHUNIT_ROOT_DIR/src/console_results.sh"
 source "$BASHUNIT_ROOT_DIR/src/helpers.sh"
 source "$BASHUNIT_ROOT_DIR/src/test_title.sh"
 source "$BASHUNIT_ROOT_DIR/src/upgrade.sh"
+source "$BASHUNIT_ROOT_DIR/src/watch.sh"
 source "$BASHUNIT_ROOT_DIR/src/assertions.sh"
 source "$BASHUNIT_ROOT_DIR/src/doc.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports.sh"
@@ -88,7 +89,7 @@ bashunit::clock::init
 _SUBCOMMAND=""
 
 case "${1:-}" in
-  test | bench | doc | init | learn | upgrade | assert)
+  test | bench | doc | init | learn | upgrade | assert | watch)
     _SUBCOMMAND="$1"
     shift
     ;;
@@ -123,4 +124,5 @@ case "$_SUBCOMMAND" in
   learn) bashunit::main::cmd_learn "$@" ;;
   upgrade) bashunit::main::cmd_upgrade "$@" ;;
   assert) bashunit::main::cmd_assert "$@" ;;
+  watch) bashunit::main::cmd_watch "$@" ;;
 esac
