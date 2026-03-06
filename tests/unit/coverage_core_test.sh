@@ -185,6 +185,9 @@ function test_coverage_record_line_writes_to_file() {
   bashunit::coverage::record_line "$test_file" "20"
   bashunit::coverage::record_line "$test_file" "10"
 
+  # Flush buffered coverage data to disk before reading
+  bashunit::coverage::flush_buffer
+
   # In parallel mode, data is written to a per-process file
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
   if bashunit::parallel::is_enabled; then

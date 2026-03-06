@@ -13,6 +13,17 @@ _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="${_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE:-
 # File to store which tests hit each line (for detailed coverage tooltips)
 _BASHUNIT_COVERAGE_TEST_HITS_FILE="${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}"
 
+# In-memory buffer for coverage data (reduces file I/O)
+_BASHUNIT_COVERAGE_BUFFER=""
+_BASHUNIT_COVERAGE_BUFFER_COUNT=0
+_BASHUNIT_COVERAGE_BUFFER_LIMIT=100
+_BASHUNIT_COVERAGE_HITS_BUFFER=""
+
+# In-memory caches for hot-path lookups (avoids grep + subshells)
+_BASHUNIT_COVERAGE_TRACK_CACHE=""
+_BASHUNIT_COVERAGE_PATH_CACHE=""
+_BASHUNIT_COVERAGE_IS_PARALLEL=""
+
 # Auto-discover coverage paths from test file names
 # When no explicit coverage paths are set, find source files matching test file base names
 # Example: tests/unit/assert_test.sh -> finds src/assert.sh, src/assert_*.sh
@@ -82,6 +93,14 @@ function bashunit::coverage::init() {
   : >"$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
   : >"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
 
+  # Reset in-memory caches and buffers
+  _BASHUNIT_COVERAGE_BUFFER=""
+  _BASHUNIT_COVERAGE_BUFFER_COUNT=0
+  _BASHUNIT_COVERAGE_HITS_BUFFER=""
+  _BASHUNIT_COVERAGE_TRACK_CACHE=""
+  _BASHUNIT_COVERAGE_PATH_CACHE=""
+  _BASHUNIT_COVERAGE_IS_PARALLEL=""
+
   export _BASHUNIT_COVERAGE_DATA_FILE
   export _BASHUNIT_COVERAGE_TRACKED_FILES
   export _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE
@@ -105,6 +124,8 @@ function bashunit::coverage::enable_trap() {
 function bashunit::coverage::disable_trap() {
   trap - DEBUG
   set +T
+  # Flush any remaining buffered coverage data
+  bashunit::coverage::flush_buffer
 }
 
 # Normalize file path to absolute
@@ -171,31 +192,86 @@ function bashunit::coverage::record_line() {
   # Skip if coverage data file doesn't exist (trap inherited by child process)
   [[ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ]] && return 0
 
-  # Skip if not tracking this file (uses cache internally)
-  bashunit::coverage::should_track "$file" || return 0
+  # Fast in-memory should_track cache (avoids grep + file I/O per line)
+  case "$_BASHUNIT_COVERAGE_TRACK_CACHE" in
+  *"|${file}:0|"*) return 0 ;;
+  *"|${file}:1|"*) ;;
+  *)
+    # Not cached yet — run full check and cache result
+    if bashunit::coverage::should_track "$file"; then
+      _BASHUNIT_COVERAGE_TRACK_CACHE="${_BASHUNIT_COVERAGE_TRACK_CACHE}|${file}:1|"
+    else
+      _BASHUNIT_COVERAGE_TRACK_CACHE="${_BASHUNIT_COVERAGE_TRACK_CACHE}|${file}:0|"
+      return 0
+    fi
+    ;;
+  esac
 
-  # Normalize file path using cache (must match tracked_files for hit counting)
-  local normalized_file
-  normalized_file=$(bashunit::coverage::normalize_path "$file")
+  # Fast in-memory path normalization cache (avoids cd + pwd subshell per line)
+  local normalized_file=""
+  case "$_BASHUNIT_COVERAGE_PATH_CACHE" in
+  *"|${file}="*)
+    # Extract cached value
+    normalized_file="${_BASHUNIT_COVERAGE_PATH_CACHE#*"|${file}="}"
+    normalized_file="${normalized_file%%"|"*}"
+    ;;
+  *)
+    normalized_file=$(bashunit::coverage::normalize_path "$file")
+    _BASHUNIT_COVERAGE_PATH_CACHE="${_BASHUNIT_COVERAGE_PATH_CACHE}|${file}=${normalized_file}|"
+    ;;
+  esac
 
-  # In parallel mode, use a per-process file to avoid race conditions
+  # Buffer the coverage data in memory
+  _BASHUNIT_COVERAGE_BUFFER="${_BASHUNIT_COVERAGE_BUFFER}${normalized_file}:${lineno}
+"
+  # Also buffer test hit data if in a test context
+  if [[ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE:-}" && \
+        -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FN:-}" ]]; then
+    _BASHUNIT_COVERAGE_HITS_BUFFER="${_BASHUNIT_COVERAGE_HITS_BUFFER}${normalized_file}:${lineno}|${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE}:${_BASHUNIT_COVERAGE_CURRENT_TEST_FN}
+"
+  fi
+
+  _BASHUNIT_COVERAGE_BUFFER_COUNT=$((_BASHUNIT_COVERAGE_BUFFER_COUNT + 1))
+
+  # Flush buffer to disk when threshold is reached
+  if [[ $_BASHUNIT_COVERAGE_BUFFER_COUNT -ge \
+        $_BASHUNIT_COVERAGE_BUFFER_LIMIT ]]; then
+    bashunit::coverage::flush_buffer
+  fi
+}
+
+function bashunit::coverage::flush_buffer() {
+  [[ -z "$_BASHUNIT_COVERAGE_BUFFER" ]] && return 0
+
+  # Determine output files (parallel-safe)
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
   local test_hits_file="$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
-  if bashunit::parallel::is_enabled; then
+
+  # Cache the parallel check to avoid function calls
+  if [[ -z "$_BASHUNIT_COVERAGE_IS_PARALLEL" ]]; then
+    if bashunit::parallel::is_enabled; then
+      _BASHUNIT_COVERAGE_IS_PARALLEL="yes"
+    else
+      _BASHUNIT_COVERAGE_IS_PARALLEL="no"
+    fi
+  fi
+
+  if [[ "$_BASHUNIT_COVERAGE_IS_PARALLEL" == "yes" ]]; then
     data_file="${_BASHUNIT_COVERAGE_DATA_FILE}.$$"
     test_hits_file="${_BASHUNIT_COVERAGE_TEST_HITS_FILE}.$$"
   fi
 
-  # Record the hit (only if parent directory exists)
-  if [[ -d "$(dirname "$data_file")" ]]; then
-    echo "${normalized_file}:${lineno}" >>"$data_file"
+  # Write buffered data in a single I/O operation
+  printf '%s' "$_BASHUNIT_COVERAGE_BUFFER" >>"$data_file"
 
-    # Also record which test caused this hit (if we're in a test context)
-    if [[ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE:-}" && -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FN:-}" ]]; then
-      # Format: source_file:line|test_file:test_function
-      echo "${normalized_file}:${lineno}|${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE}:${_BASHUNIT_COVERAGE_CURRENT_TEST_FN}" >>"$test_hits_file"
-    fi
+  if [[ -n "$_BASHUNIT_COVERAGE_HITS_BUFFER" ]]; then
+    printf '%s' "$_BASHUNIT_COVERAGE_HITS_BUFFER" >>"$test_hits_file"
   fi
+
+  # Reset buffer
+  _BASHUNIT_COVERAGE_BUFFER=""
+  _BASHUNIT_COVERAGE_HITS_BUFFER=""
+  _BASHUNIT_COVERAGE_BUFFER_COUNT=0
 }
 
 function bashunit::coverage::should_track() {
