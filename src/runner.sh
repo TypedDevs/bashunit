@@ -936,7 +936,43 @@ function bashunit::runner::write_failure_result_output() {
     output_section="\n    Output:\n$raw_output"
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section" >>"$FAILURES_OUTPUT_PATH"
+  local source_context=""
+  if [[ -n "$line_number" && -f "$test_file" ]]; then
+    source_context=$(bashunit::runner::get_failure_source_context \
+      "$test_file" "$line_number")
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section$source_context" \
+    >>"$FAILURES_OUTPUT_PATH"
+}
+
+function bashunit::runner::get_failure_source_context() {
+  local file=$1
+  local fn_line=$2
+
+  local end_line start_line
+  end_line=$(wc -l <"$file")
+  start_line=$((fn_line + 1))
+
+  local line_text line_num assert_lines=""
+  line_num=$start_line
+  while [[ $line_num -le $end_line ]]; do
+    line_text=$(sed -n "${line_num}p" "$file")
+    # Stop at the closing brace of the function
+    if [[ "$line_text" =~ ^[[:space:]]*\}[[:space:]]*$ ]]; then
+      break
+    fi
+    # Collect lines containing assert calls
+    if [[ "$line_text" == *assert_* ]] || [[ "$line_text" == *assert\ * ]]; then
+      local trimmed="${line_text#"${line_text%%[![:space:]]*}"}"
+      assert_lines="${assert_lines}\n    ${_BASHUNIT_COLOR_FAINT}${line_num}:${_BASHUNIT_COLOR_DEFAULT} ${trimmed}"
+    fi
+    line_num=$((line_num + 1))
+  done
+
+  if [[ -n "$assert_lines" ]]; then
+    echo -e "\n    ${_BASHUNIT_COLOR_FAINT}Source:${_BASHUNIT_COLOR_DEFAULT}${assert_lines}"
+  fi
 }
 
 function bashunit::runner::write_skipped_result_output() {
