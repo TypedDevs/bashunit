@@ -702,7 +702,7 @@ function bashunit::runner::run_test() {
       error_message="$hook_message"
     fi
     bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"
-    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions" "$error_message"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
     return
@@ -710,7 +710,7 @@ function bashunit::runner::run_test() {
 
   if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
     bashunit::state::add_tests_failed
-    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
     bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
 
     bashunit::internal_log "Test failed" "$label"
@@ -965,7 +965,9 @@ function bashunit::runner::record_file_hook_failure() {
 
   bashunit::state::add_tests_failed
   bashunit::console_results::print_error_test "$hook_name" "$hook_output"
-  bashunit::reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0
+  local _normalized_hook
+  _normalized_hook="$(bashunit::helper::normalize_test_function_name "$hook_name")"
+  bashunit::reports::add_test_failed "$test_file" "$_normalized_hook" 0 0 "$hook_output"
   bashunit::runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"
