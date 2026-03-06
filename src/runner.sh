@@ -965,7 +965,9 @@ function bashunit::runner::record_file_hook_failure() {
 
   bashunit::state::add_tests_failed
   bashunit::console_results::print_error_test "$hook_name" "$hook_output"
-  bashunit::reports::add_test_failed "$test_file" "$(bashunit::helper::normalize_test_function_name "$hook_name")" 0 0 "$hook_output"
+  local _normalized_hook
+  _normalized_hook="$(bashunit::helper::normalize_test_function_name "$hook_name")"
+  bashunit::reports::add_test_failed "$test_file" "$_normalized_hook" 0 0 "$hook_output"
   bashunit::runner::write_failure_result_output "$test_file" "$hook_name" "$hook_output"
 
   return "$status"
