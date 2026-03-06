@@ -21,6 +21,15 @@
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
 
+### Fixed
+- JUnit XML report now conforms to the standard schema
+    - Remove non-standard `passed`, `incomplete`, `snapshot` attributes from `<testsuite>` and `status`, `assertions` from `<testcase>`
+    - Add `errors="0"` attribute and `<failure>`/`<skipped>` child elements per the JUnit spec
+    - `skipped` count now includes both skipped and incomplete tests to match emitted `<skipped/>` elements
+    - Convert `time` values from milliseconds to seconds (float) as expected by CI tools
+    - Strip ANSI escape sequences and invalid XML control characters from failure messages
+    - Include actual failure messages in `<failure>` body instead of hard-coded placeholders
+
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 
 ### Changed
