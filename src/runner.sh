@@ -558,10 +558,10 @@ function bashunit::runner::run_test() {
   else
     bashunit::state::reset_current_test_interpolated_function_name
   fi
-  local current_assertions_failed="$(bashunit::state::get_assertions_failed)"
-  local current_assertions_snapshot="$(bashunit::state::get_assertions_snapshot)"
-  local current_assertions_incomplete="$(bashunit::state::get_assertions_incomplete)"
-  local current_assertions_skipped="$(bashunit::state::get_assertions_skipped)"
+  local current_assertions_failed="$_BASHUNIT_ASSERTIONS_FAILED"
+  local current_assertions_snapshot="$_BASHUNIT_ASSERTIONS_SNAPSHOT"
+  local current_assertions_incomplete="$_BASHUNIT_ASSERTIONS_INCOMPLETE"
+  local current_assertions_skipped="$_BASHUNIT_ASSERTIONS_SKIPPED"
 
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
@@ -672,8 +672,24 @@ function bashunit::runner::run_test() {
 
   bashunit::runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
-  local total_assertions="$(bashunit::state::calculate_total_assertions "$test_execution_result")"
-  local test_exit_code="$(bashunit::state::get_test_exit_code)"
+  local test_exit_code="$_BASHUNIT_TEST_EXIT_CODE"
+
+  # Extract assertion counts directly via parameter expansion
+  # instead of spawning grep subprocesses
+  local _te_failed="${test_execution_result##*##ASSERTIONS_FAILED=}"
+  _te_failed="${_te_failed%%##*}"
+  local _te_passed="${test_execution_result##*##ASSERTIONS_PASSED=}"
+  _te_passed="${_te_passed%%##*}"
+  local _te_skipped="${test_execution_result##*##ASSERTIONS_SKIPPED=}"
+  _te_skipped="${_te_skipped%%##*}"
+  local _te_incomplete="${test_execution_result##*##ASSERTIONS_INCOMPLETE=}"
+  _te_incomplete="${_te_incomplete%%##*}"
+  local _te_snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
+  _te_snapshot="${_te_snapshot%%##*}"
+  local total_assertions=$(( \
+    ${_te_failed:-0} + ${_te_passed:-0} + ${_te_skipped:-0} + \
+    ${_te_incomplete:-0} + ${_te_snapshot:-0} \
+  ))
 
   local encoded_test_title
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
