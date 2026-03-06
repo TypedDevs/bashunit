@@ -109,11 +109,13 @@ Options:
   --tag <name>                Only run tests with matching @tag (repeatable, OR logic)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
   --log-junit <file>          Write JUnit XML report
-  -p, --parallel              Run tests in parallel
+  -j, --jobs <N>              Run tests in parallel with max N concurrent jobs
+  -p, --parallel              Run tests in parallel (unlimited concurrency)
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
+  --output <format>           Output format: tap (TAP version 13)
   -R, --run-all               Run all assertions (don't stop on first failure)
   -S, --stop-on-failure       Stop on first failure
   -vvv, --verbose             Show execution details
@@ -126,6 +128,7 @@ Options:
   --strict                    Enable strict shell mode (set -euo pipefail)
   --skip-env-file             Skip .env loading, use shell environment only
   -l, --login                 Run tests in login shell context
+  -w, --watch                 Watch for changes and re-run tests
   --no-color                  Disable colored output (honors NO_COLOR env var)
   -h, --help                  Show this help message
 

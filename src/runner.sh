@@ -12,6 +12,22 @@ function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
+function bashunit::runner::wait_for_job_slot() {
+  local max_jobs="${BASHUNIT_PARALLEL_JOBS:-0}"
+  if [[ "$max_jobs" -le 0 ]]; then
+    return 0
+  fi
+
+  while true; do
+    local running_jobs
+    running_jobs=$(jobs -r | wc -l)
+    if [[ "$running_jobs" -lt "$max_jobs" ]]; then
+      break
+    fi
+    sleep 0.05
+  done
+}
+
 function bashunit::runner::load_test_files() {
   local filter=$1
   local tag_filter="${2:-}"
@@ -103,6 +119,7 @@ function bashunit::runner::load_test_files() {
     fi
     local _cached_fns="$functions_for_script"
     if bashunit::parallel::is_enabled; then
+      bashunit::runner::wait_for_job_slot
       bashunit::runner::call_test_functions \
         "$test_file" "$filter" "$tag_filter" \
         "$exclude_tag_filter" "$_cached_fns" 2>/dev/null &
@@ -426,6 +443,7 @@ function bashunit::runner::call_test_functions() {
     # No data provider found
     if [ "$provider_data_count" -eq 0 ]; then
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::wait_for_job_slot
         bashunit::runner::run_test "$script" "$fn_name" &
       else
         bashunit::runner::run_test "$script" "$fn_name"
@@ -446,6 +464,7 @@ function bashunit::runner::call_test_functions() {
         parsed_data_count=$((parsed_data_count + 1))
       done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::wait_for_job_slot
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
@@ -519,7 +538,9 @@ function bashunit::runner::render_running_file_header() {
     return
   fi
 
-  if ! bashunit::env::is_simple_output_enabled; then
+  if bashunit::env::is_tap_output_enabled; then
+    printf "# %s\n" "$script"
+  elif ! bashunit::env::is_simple_output_enabled; then
     if bashunit::env::is_verbose_enabled; then
       printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     else
@@ -946,7 +967,43 @@ function bashunit::runner::write_failure_result_output() {
     output_section="\n    Output:\n$raw_output"
   fi
 
-  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section" >>"$FAILURES_OUTPUT_PATH"
+  local source_context=""
+  if [[ -n "$line_number" && -f "$test_file" ]]; then
+    source_context=$(bashunit::runner::get_failure_source_context \
+      "$test_file" "$line_number")
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\n$error_msg$output_section$source_context" \
+    >>"$FAILURES_OUTPUT_PATH"
+}
+
+function bashunit::runner::get_failure_source_context() {
+  local file=$1
+  local fn_line=$2
+
+  local end_line start_line
+  end_line=$(wc -l <"$file")
+  start_line=$((fn_line + 1))
+
+  local line_text line_num assert_lines=""
+  line_num=$start_line
+  while [[ $line_num -le $end_line ]]; do
+    line_text=$(sed -n "${line_num}p" "$file")
+    # Stop at the closing brace of the function
+    if [[ "$line_text" =~ ^[[:space:]]*\}[[:space:]]*$ ]]; then
+      break
+    fi
+    # Collect lines containing assert calls
+    if [[ "$line_text" == *assert_* ]] || [[ "$line_text" == *assert\ * ]]; then
+      local trimmed="${line_text#"${line_text%%[![:space:]]*}"}"
+      assert_lines="${assert_lines}\n    ${_BASHUNIT_COLOR_FAINT}${line_num}:${_BASHUNIT_COLOR_DEFAULT} ${trimmed}"
+    fi
+    line_num=$((line_num + 1))
+  done
+
+  if [[ -n "$assert_lines" ]]; then
+    echo -e "\n    ${_BASHUNIT_COLOR_FAINT}Source:${_BASHUNIT_COLOR_DEFAULT}${assert_lines}"
+  fi
 }
 
 function bashunit::runner::write_skipped_result_output() {

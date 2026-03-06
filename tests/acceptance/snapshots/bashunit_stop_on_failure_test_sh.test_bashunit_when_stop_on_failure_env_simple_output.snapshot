@@ -8,6 +8,10 @@
 |[31m✗ Failed[0m: B error
 |    [2mExpected[0m [1m'1'[0m
 |    [2mbut got [0m [1m'2'[0m
+|    [2mSource:[0m
+|    [2m7:[0m assert_same 1 1
+|    [2m8:[0m assert_same 1 2 # error
+|    [2m9:[0m assert_same 2 2
 
 
 

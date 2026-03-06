@@ -3,11 +3,14 @@
 ## Unreleased
 
 ### Added
+- Add `--jobs N` flag to limit parallel test concurrency (e.g., `--jobs 4`)
+- Add `--watch` mode to automatically re-run tests when files change
 - Add `watch [path]` subcommand to re-run tests automatically on file changes
     - Uses `inotifywait` on Linux (via `inotify-tools`) or `fswatch` on macOS
     - Falls back with a clear install hint if neither tool is available
     - Accepts optional path argument (defaults to current directory)
-
+- Add source context display in failure summaries showing relevant assertion lines
+- Add TAP version 13 output format via `--output tap` for CI/CD integration
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
     - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
     - Mixed formats supported in the same assertion call
