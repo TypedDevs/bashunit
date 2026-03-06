@@ -12,6 +12,22 @@ function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
+function bashunit::runner::wait_for_job_slot() {
+  local max_jobs="${BASHUNIT_PARALLEL_JOBS:-0}"
+  if [[ "$max_jobs" -le 0 ]]; then
+    return 0
+  fi
+
+  while true; do
+    local running_jobs
+    running_jobs=$(jobs -r | wc -l)
+    if [[ "$running_jobs" -lt "$max_jobs" ]]; then
+      break
+    fi
+    sleep 0.05
+  done
+}
+
 function bashunit::runner::load_test_files() {
   local filter=$1
   local tag_filter="${2:-}"
@@ -102,9 +118,14 @@ function bashunit::runner::load_test_files() {
       continue
     fi
     if bashunit::parallel::is_enabled; then
-      bashunit::runner::call_test_functions "$test_file" "$filter" "$tag_filter" "$exclude_tag_filter" 2>/dev/null &
+      bashunit::runner::wait_for_job_slot
+      bashunit::runner::call_test_functions \
+        "$test_file" "$filter" "$tag_filter" \
+        "$exclude_tag_filter" 2>/dev/null &
     else
-      bashunit::runner::call_test_functions "$test_file" "$filter" "$tag_filter" "$exclude_tag_filter"
+      bashunit::runner::call_test_functions \
+        "$test_file" "$filter" "$tag_filter" \
+        "$exclude_tag_filter"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_set_up_and_tear_down_after_script
@@ -409,6 +430,7 @@ function bashunit::runner::call_test_functions() {
     # No data provider found
     if [ "$provider_data_count" -eq 0 ]; then
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::wait_for_job_slot
         bashunit::runner::run_test "$script" "$fn_name" &
       else
         bashunit::runner::run_test "$script" "$fn_name"
@@ -429,6 +451,7 @@ function bashunit::runner::call_test_functions() {
         parsed_data_count=$((parsed_data_count + 1))
       done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+        bashunit::runner::wait_for_job_slot
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}

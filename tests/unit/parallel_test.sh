@@ -37,6 +37,24 @@ function tear_down() {
   export TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$_ORIGINAL_TEMP_FILE_STOP"
 }
 
+# === wait_for_job_slot tests ===
+
+function test_wait_for_job_slot_returns_immediately_when_no_limit() {
+  export BASHUNIT_PARALLEL_JOBS=0
+
+  bashunit::runner::wait_for_job_slot
+
+  assert_successful_code "$?"
+}
+
+function test_wait_for_job_slot_returns_immediately_when_under_limit() {
+  export BASHUNIT_PARALLEL_JOBS=10
+
+  bashunit::runner::wait_for_job_slot
+
+  assert_successful_code "$?"
+}
+
 # === is_enabled tests ===
 
 function test_parallel_enabled_on_windows() {

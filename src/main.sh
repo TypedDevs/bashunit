@@ -62,6 +62,11 @@ function bashunit::main::cmd_test() {
     -p | --parallel)
       export BASHUNIT_PARALLEL_RUN=true
       ;;
+    -j | --jobs)
+      export BASHUNIT_PARALLEL_RUN=true
+      export BASHUNIT_PARALLEL_JOBS="$2"
+      shift
+      ;;
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
