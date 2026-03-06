@@ -69,6 +69,7 @@ Commands:
   doc [filter]        Display assertion documentation
   init [dir]          Initialize a new test directory
   learn               Start interactive tutorial
+  watch [path]        Watch files and re-run tests on change
   upgrade             Upgrade bashunit to latest version
 
 Global Options:
@@ -270,4 +271,29 @@ Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
 
 More info: https://bashunit.typeddevs.com/standalone
 EOF
+}
+
+function bashunit::console_header::print_watch_help() {
+  cat << 'ENDOFHELP'
+Usage: bashunit watch [path] [test-options]
+
+Watch .sh files for changes and automatically re-run tests.
+
+Arguments:
+  [path]          Directory or file to watch and test (default: .)
+
+Options:
+  -h, --help      Show this help message
+  Any option accepted by 'bashunit test' is also accepted here.
+
+Requirements:
+  Linux:  inotifywait  (sudo apt install inotify-tools)
+  macOS:  fswatch      (brew install fswatch)
+
+Examples:
+  bashunit watch                      Watch current directory
+  bashunit watch tests/               Watch the tests/ directory
+  bashunit watch tests/ --filter user Watch and filter by name
+  bashunit watch tests/ --simple      Watch with simple output
+ENDOFHELP
 }

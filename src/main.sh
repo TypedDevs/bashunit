@@ -406,6 +406,22 @@ function bashunit::main::cmd_learn() {
 }
 
 #############################
+# Subcommand: watch
+#############################
+function bashunit::main::cmd_watch() {
+  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+    bashunit::console_header::print_watch_help
+    exit 0
+  fi
+
+  local path="${1:-.}"
+  shift || true
+  local -a extra_args=("$@")
+
+  bashunit::watch::run "$path" "${extra_args[@]+\"${extra_args[@]}\"}"
+}
+
+#############################
 # Subcommand: upgrade
 #############################
 function bashunit::main::cmd_upgrade() {
