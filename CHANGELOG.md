@@ -3,6 +3,10 @@
 ## Unreleased
 
 ### Added
+- Add `--jobs N` flag to limit parallel test concurrency (e.g., `--jobs 4`)
+- Add `--watch` mode to automatically re-run tests when files change
+- Add source context display in failure summaries showing relevant assertion lines
+- Add TAP version 13 output format via `--output tap` for CI/CD integration
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
     - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
     - Mixed formats supported in the same assertion call
@@ -15,6 +19,10 @@
 
 ### Changed
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
+- Prioritize `EPOCHREALTIME` over subprocess-based time implementations for faster timing
+- Cache function discovery to avoid duplicate pipeline scans per test file
+- Reduce subshells in test execution hot path for lower overhead
+- Batch coverage recording with in-memory buffering for faster coverage runs
 
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 
