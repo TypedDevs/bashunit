@@ -12,6 +12,14 @@ function bashunit::console_results::render_result() {
     return 1
   fi
 
+  if bashunit::env::is_tap_output_enabled; then
+    printf "1..%d\n" "$_BASHUNIT_TOTAL_TESTS_COUNT"
+    if [[ $_BASHUNIT_TESTS_FAILED -gt 0 ]]; then
+      return 1
+    fi
+    return 0
+  fi
+
   if bashunit::env::is_simple_output_enabled; then
     printf "\n\n"
   fi
@@ -173,6 +181,10 @@ function bashunit::console_results::print_hook_completed() {
   fi
 
   if bashunit::env::is_no_progress_enabled; then
+    return
+  fi
+
+  if bashunit::env::is_tap_output_enabled; then
     return
   fi
 

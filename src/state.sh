@@ -272,6 +272,11 @@ function bashunit::state::print_line() {
     return
   fi
 
+  if bashunit::env::is_tap_output_enabled; then
+    bashunit::state::print_tap_line "$type" "$line"
+    return
+  fi
+
   if ! bashunit::env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return
@@ -299,4 +304,62 @@ function bashunit::state::print_line() {
       printf "%s" "$char"
     fi
   fi
+}
+
+function bashunit::state::print_tap_line() {
+  local type=$1
+  local line=$2
+
+  local clean_line
+  clean_line=$(printf "%s" "$line" | sed 's/\x1B\[[0-9;]*[mK]//g')
+  local test_name="${clean_line#*: }"
+  test_name="${test_name%%$'\n'*}"
+  # Strip trailing whitespace and duration
+  test_name=$(printf "%s" "$test_name" | \
+    sed 's/[[:space:]]*[0-9][0-9]*m\{0,1\}[[:space:]]*[0-9.]*[ms]*[[:space:]]*$//')
+
+  case "$type" in
+  successful)
+    printf "ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    ;;
+  failure | failed | failed_snapshot | error)
+    printf "not ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    local detail_line
+    printf "  ---\n"
+    while IFS= read -r detail_line; do
+      detail_line=$(printf "%s" "$detail_line" | sed 's/\x1B\[[0-9;]*[mK]//g')
+      if [[ -n "$detail_line" \
+        && "$detail_line" != *"Failed:"* \
+        && "$detail_line" != *"Error:"* ]]; then
+        local trimmed="${detail_line#"${detail_line%%[![:space:]]*}"}"
+        printf "  %s\n" "$trimmed"
+      fi
+    done <<< "$clean_line"
+    printf "  ...\n"
+    ;;
+  skipped)
+    local skip_name="${test_name%%   *}"
+    local skip_reason="${test_name#"$skip_name"}"
+    skip_reason="${skip_reason#"${skip_reason%%[![:space:]]*}"}"
+    if [[ -n "$skip_reason" ]]; then
+      printf "ok %d - %s # SKIP %s\n" \
+        "$_BASHUNIT_TOTAL_TESTS_COUNT" "$skip_name" "$skip_reason"
+    else
+      printf "ok %d - %s # SKIP\n" \
+        "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    fi
+    ;;
+  incomplete)
+    printf "ok %d - %s # TODO incomplete\n" \
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    ;;
+  snapshot)
+    printf "ok %d - %s # snapshot\n" \
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    ;;
+  *)
+    printf "not ok %d - %s\n" \
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    ;;
+  esac
 }

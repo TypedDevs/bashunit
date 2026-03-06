@@ -525,7 +525,9 @@ function bashunit::runner::render_running_file_header() {
     return
   fi
 
-  if ! bashunit::env::is_simple_output_enabled; then
+  if bashunit::env::is_tap_output_enabled; then
+    printf "# %s\n" "$script"
+  elif ! bashunit::env::is_simple_output_enabled; then
     if bashunit::env::is_verbose_enabled; then
       printf "\n${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" "Running $script"
     else

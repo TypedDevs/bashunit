@@ -48,6 +48,10 @@ function bashunit::main::cmd_test() {
     --detailed)
       export BASHUNIT_SIMPLE_OUTPUT=false
       ;;
+    --output)
+      export BASHUNIT_OUTPUT_FORMAT="$2"
+      shift
+      ;;
     --debug)
       local output_file="${2:-}"
       if [[ -n "$output_file" && "${output_file:0:1}" != "-" ]]; then
@@ -605,7 +609,11 @@ function bashunit::main::exec_tests() {
     bashunit::parallel::init
   fi
 
-  bashunit::console_header::print_version_with_env "$filter" "${test_files[@]}"
+  if bashunit::env::is_tap_output_enabled; then
+    printf "TAP version 13\n"
+  else
+    bashunit::console_header::print_version_with_env "$filter" "${test_files[@]}"
+  fi
 
   if bashunit::env::is_verbose_enabled; then
     if bashunit::env::is_simple_output_enabled; then
@@ -631,9 +639,11 @@ function bashunit::main::exec_tests() {
     printf "\r%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
-  bashunit::console_results::print_failing_tests_and_reset
-  bashunit::console_results::print_incomplete_tests_and_reset
-  bashunit::console_results::print_skipped_tests_and_reset
+  if ! bashunit::env::is_tap_output_enabled; then
+    bashunit::console_results::print_failing_tests_and_reset
+    bashunit::console_results::print_incomplete_tests_and_reset
+    bashunit::console_results::print_skipped_tests_and_reset
+  fi
   bashunit::console_results::render_result
   exit_code=$?
 
