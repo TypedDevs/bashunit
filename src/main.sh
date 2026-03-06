@@ -70,6 +70,9 @@ function bashunit::main::cmd_test() {
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
+    -w | --watch)
+      export BASHUNIT_WATCH_MODE=true
+      ;;
     -e | --env | --boot)
       # Support: --env "bootstrap.sh arg1 arg2"
       local boot_file="${2%% *}"
@@ -270,12 +273,19 @@ function bashunit::main::cmd_test() {
     export BASHUNIT_COVERAGE=false
     bashunit::main::exec_assert "$assert_fn" ${args+"${args[@]}"}
   else
-    # Bash 3.0 compatible: only pass args if we have files
-    # (local args without =() creates a scalar, not an empty array)
-    if [[ "$args_count" -gt 0 ]]; then
-      bashunit::main::exec_tests "$filter" "$tag_filter" "$exclude_tag_filter" "${args[@]}"
+    if [[ "${BASHUNIT_WATCH_MODE:-false}" == true ]]; then
+      bashunit::main::watch_loop \
+        "$filter" "$tag_filter" "$exclude_tag_filter" \
+        ${args+"${args[@]}"}
     else
-      bashunit::main::exec_tests "$filter" "$tag_filter" "$exclude_tag_filter"
+      if [[ "$args_count" -gt 0 ]]; then
+        bashunit::main::exec_tests \
+          "$filter" "$tag_filter" "$exclude_tag_filter" \
+          "${args[@]}"
+      else
+        bashunit::main::exec_tests \
+          "$filter" "$tag_filter" "$exclude_tag_filter"
+      fi
     fi
   fi
 }
@@ -478,6 +488,79 @@ function bashunit::main::cmd_assert() {
     bashunit::main::exec_assert "$@"
   fi
   exit $?
+}
+
+#############################
+# Watch mode
+#############################
+function bashunit::main::watch_get_checksum() {
+  local IFS=$' \t\n'
+  local -a paths=("$@")
+
+  local file checksum=""
+  for file in "${paths[@]+"${paths[@]}"}"; do
+    if [[ -d "$file" ]]; then
+      local found
+      found=$(find "$file" -name '*.sh' -type f \
+        -exec stat -f '%m %N' {} + 2>/dev/null ||
+        find "$file" -name '*.sh' -type f \
+          -exec stat -c '%Y %n' {} + 2>/dev/null) || true
+      checksum="${checksum}${found}"
+    elif [[ -f "$file" ]]; then
+      local mtime
+      mtime=$(stat -f '%m' "$file" 2>/dev/null ||
+        stat -c '%Y' "$file" 2>/dev/null) || true
+      checksum="${checksum}${mtime} ${file}"
+    fi
+  done
+  echo "$checksum"
+}
+
+function bashunit::main::watch_loop() {
+  local filter="$1"
+  local tag_filter="${2:-}"
+  local exclude_tag_filter="${3:-}"
+  shift 3
+
+  local IFS=$' \t\n'
+  local -a watch_paths=("$@")
+  [[ -d "src" ]] && watch_paths[${#watch_paths[@]}]="src"
+
+  trap 'printf "\n%sWatch mode stopped.%s\n" \
+    "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"; \
+    exit 0' INT
+
+  local last_checksum=""
+  while true; do
+    local current_checksum
+    current_checksum=$(bashunit::main::watch_get_checksum \
+      "${watch_paths[@]}")
+
+    if [[ "$current_checksum" != "$last_checksum" ]]; then
+      last_checksum="$current_checksum"
+      printf '\033[2J\033[H'
+      printf "%s[watch] Running tests...%s\n\n" \
+        "${_BASHUNIT_COLOR_SKIPPED}" \
+        "${_BASHUNIT_COLOR_DEFAULT}"
+
+      (
+        if [[ $# -gt 0 ]]; then
+          bashunit::main::exec_tests \
+            "$filter" "$tag_filter" \
+            "$exclude_tag_filter" "$@"
+        else
+          bashunit::main::exec_tests \
+            "$filter" "$tag_filter" \
+            "$exclude_tag_filter"
+        fi
+      ) || true
+
+      printf "\n%s[watch] Waiting for changes...%s\n" \
+        "${_BASHUNIT_COLOR_SKIPPED}" \
+        "${_BASHUNIT_COLOR_DEFAULT}"
+    fi
+    sleep 1
+  done
 }
 
 #############################
