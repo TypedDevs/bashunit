@@ -13,6 +13,8 @@
 |[31m✗ Failed[0m: Assert failing
 |    [2mExpected[0m [1m'1'[0m
 |    [2mbut got [0m [1m'0'[0m
+|    [2mSource:[0m
+|    [2m13:[0m assert_same 1 0
 
 [2mTests:     [0m [32m4 passed[0m, [31m1 failed[0m, 5 total
 [2mAssertions:[0m [32m6 passed[0m, [31m1 failed[0m, 7 total

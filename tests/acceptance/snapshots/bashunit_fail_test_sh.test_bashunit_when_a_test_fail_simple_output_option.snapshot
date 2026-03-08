@@ -6,6 +6,8 @@
 |[31m✗ Failed[0m: Assert failing
 |    [2mExpected[0m [1m'1'[0m
 |    [2mbut got [0m [1m'0'[0m
+|    [2mSource:[0m
+|    [2m13:[0m assert_same 1 0
 
 
 
