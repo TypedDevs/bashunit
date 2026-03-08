@@ -76,6 +76,13 @@ systems bashunit forces sequential execution to avoid inconsistent results.
 
 Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
 
+## Parallel Jobs
+
+> `BASHUNIT_PARALLEL_JOBS=<N>`
+
+Limits the number of concurrent jobs when running in parallel mode. Set to `0` (default) for unlimited concurrency.
+
+Similar as using `-j|--jobs` option on the [command line](/command-line#jobs).
 
 ## Stop on failure
 

@@ -56,6 +56,7 @@ bashunit test tests/ --parallel --simple
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
 | `--log-junit <file>`           | Write JUnit XML report                           |
+| `-j, --jobs <N>`               | Run tests in parallel with max N concurrent jobs |
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
 | `-r, --report-html <file>`     | Write HTML report                                |
@@ -212,6 +213,26 @@ function test_with_shared_state() {
 
 The file will still run in parallel with other files, but tests within it will
 run sequentially.
+:::
+
+### Jobs
+
+> `bashunit test -j|--jobs <N>`
+
+Run tests in parallel with a maximum of N concurrent jobs. This implicitly
+enables parallel mode.
+
+Use this to limit CPU usage on CI or machines with constrained resources.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --jobs 4
+```
+:::
+
+::: tip
+`--jobs 0` (the default) means unlimited concurrency, which is equivalent to
+`--parallel`.
 :::
 
 ### Output Style
