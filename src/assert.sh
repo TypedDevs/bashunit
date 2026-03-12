@@ -384,8 +384,8 @@ function assert_exec() {
   done
 
   local stdout_file stderr_file
-  stdout_file=$(mktemp)
-  stderr_file=$(mktemp)
+  stdout_file=$("$MKTEMP")
+  stderr_file=$("$MKTEMP")
 
   eval "$cmd" >"$stdout_file" 2>"$stderr_file"
   local exit_code=$?

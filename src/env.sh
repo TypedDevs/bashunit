@@ -271,10 +271,11 @@ EXIT_CODE_STOP_ON_FAILURE=4
 TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
-FAILURES_OUTPUT_PATH=$(mktemp)
-SKIPPED_OUTPUT_PATH=$(mktemp)
-INCOMPLETE_OUTPUT_PATH=$(mktemp)
 CAT="$(command -v cat)"
+MKTEMP="$(command -v mktemp)"
+FAILURES_OUTPUT_PATH=$("$MKTEMP")
+SKIPPED_OUTPUT_PATH=$("$MKTEMP")
+INCOMPLETE_OUTPUT_PATH=$("$MKTEMP")
 
 # Initialize temp directory once at startup for performance
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
