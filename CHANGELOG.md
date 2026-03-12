@@ -29,6 +29,7 @@
 - Batch coverage recording with in-memory buffering
 
 ### Fixed
+- Mocking `mktemp` no longer breaks spy creation (#602)
 - JUnit XML report now conforms to the standard schema
     - Remove non-standard `passed`, `incomplete`, `snapshot` attributes from `<testsuite>` and `status`, `assertions` from `<testcase>`
     - Add `errors="0"` attribute and `<failure>`/`<skipped>` child elements per the JUnit spec

@@ -48,7 +48,7 @@ function bashunit::temp_file() {
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
-  mktemp "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
+  "$MKTEMP" "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function bashunit::temp_dir() {
@@ -61,7 +61,7 @@ function bashunit::temp_dir() {
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
-  mktemp -d "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
+  "$MKTEMP" -d "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function bashunit::cleanup_testcase_temp_files() {

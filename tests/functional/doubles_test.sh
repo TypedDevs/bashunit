@@ -89,3 +89,20 @@ function test_spy_commands_called_once_when_executing_a_sourced_function() {
   assert_have_been_called_times 1 awk
   assert_have_been_called_times 1 head
 }
+
+function test_mock_mktemp_does_not_break_spy_creation() {
+  # shellcheck disable=SC2329
+  mock_mktemp() {
+    echo "/tmp/mocked_temp_file"
+  }
+
+  bashunit::mock mktemp mock_mktemp
+
+  bashunit::spy rm
+
+  rm -f "/tmp/mocked_temp_file"
+
+  assert_have_been_called rm
+  assert_have_been_called_times 1 rm
+  assert_have_been_called_with rm "-f" "/tmp/mocked_temp_file"
+}
