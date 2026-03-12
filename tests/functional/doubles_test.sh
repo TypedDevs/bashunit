@@ -91,6 +91,7 @@ function test_spy_commands_called_once_when_executing_a_sourced_function() {
 }
 
 function test_mock_mktemp_does_not_break_spy_creation() {
+  # shellcheck disable=SC2329
   mock_mktemp() {
     echo "/tmp/mocked_temp_file"
   }
