@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fix misleading error message for `assert_not_same` and `assert_not_equals` on failure #604
+
 ### Added
 - Add `--jobs N` flag to limit parallel test concurrency (e.g., `--jobs 4`)
 - Add `--watch` mode to automatically re-run tests when files change

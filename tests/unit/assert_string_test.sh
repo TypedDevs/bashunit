@@ -8,7 +8,7 @@ function test_successful_assert_not_equals() {
 }
 
 function test_unsuccessful_assert_not_equals() {
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert not equals" "1" "but got " "1")" \
+  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert not equals" "1" "to not be" "1")" \
     "$(assert_not_equals "1" "1")"
 }
 
@@ -18,7 +18,7 @@ function test_unsuccessful_assert_not_equals_with_special_chars() {
 
   assert_equals "$(bashunit::console_results::print_failed_test \
     "Unsuccessful assert not equals with special chars" \
-    "$str1" "but got " "$str2")" \
+    "$str1" "to not be" "$str2")" \
     "$(assert_not_equals "$str1" "$str2")"
 }
 

@@ -169,7 +169,7 @@ function assert_not_equals() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
+    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "to not be" "${actual_cleaned}"
     return
   fi
 
@@ -224,7 +224,7 @@ function assert_not_same() {
     local label
     label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
     bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
+    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not be" "${actual}"
     return
   fi
 

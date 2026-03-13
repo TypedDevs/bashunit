@@ -18,7 +18,7 @@ function test_successful_assert_not_same() {
 }
 
 function test_unsuccessful_assert_not_same() {
-  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert not same" "1" "but got " "1")" \
+  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert not same" "1" "to not be" "1")" \
     "$(assert_not_same "1" "1")"
 }
 
