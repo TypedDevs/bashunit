@@ -126,7 +126,11 @@ function bashunit::console_results::print_execution_time() {
     return
   fi
 
-  local time=$(bashunit::clock::total_runtime_in_milliseconds | awk '{printf "%.0f", $1}')
+  local time
+  time=$(bashunit::clock::total_runtime_in_milliseconds)
+  # Strip decimal portion (integer truncation, Bash 3.0 compatible)
+  time="${time%%.*}"
+  time="${time:-0}"
 
   if [[ "$time" -lt 1000 ]]; then
     printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
@@ -144,8 +148,10 @@ function bashunit::console_results::print_execution_time() {
     return
   fi
 
+  local integer_part=$((time / 1000))
+  local decimal_part=$(( (time % 1000) / 10 ))
   local formatted_seconds
-  formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $time / 1000}")
+  formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
 
   printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
     "Time taken: ${formatted_seconds}s"
@@ -160,8 +166,10 @@ function bashunit::console_results::format_duration() {
     local seconds=$((time_in_seconds % 60))
     echo "${minutes}m ${seconds}s"
   elif [[ "$duration_ms" -ge 1000 ]]; then
+    local integer_part=$((duration_ms / 1000))
+    local decimal_part=$(( (duration_ms % 1000) / 10 ))
     local formatted_seconds
-    formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $duration_ms / 1000}")
+    formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
     echo "${formatted_seconds}s"
   else
     echo "${duration_ms}ms"
@@ -234,8 +242,10 @@ function bashunit::console_results::print_successful_test() {
       local seconds=$((time_in_seconds % 60))
       time_display="${minutes}m ${seconds}s"
     elif [[ "$duration" -ge 1000 ]]; then
+      local integer_part=$((duration / 1000))
+      local decimal_part=$(( (duration % 1000) / 10 ))
       local formatted_seconds
-      formatted_seconds=$(awk "BEGIN {printf \"%.2f\", $duration / 1000}")
+      formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
       time_display="${formatted_seconds}s"
     else
       time_display="${duration}ms"

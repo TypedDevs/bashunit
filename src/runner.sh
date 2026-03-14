@@ -762,7 +762,7 @@ function bashunit::runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_failed" != "$(bashunit::state::get_assertions_failed)" ]]; then
+  if [[ "$current_assertions_failed" != "$_BASHUNIT_ASSERTIONS_FAILED" ]]; then
     bashunit::state::add_tests_failed
     bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
     bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
@@ -779,7 +779,7 @@ function bashunit::runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_snapshot" != "$(bashunit::state::get_assertions_snapshot)" ]]; then
+  if [[ "$current_assertions_snapshot" != "$_BASHUNIT_ASSERTIONS_SNAPSHOT" ]]; then
     bashunit::state::add_tests_snapshot
     # In failures-only mode, suppress snapshot test output
     if ! bashunit::env::is_failures_only_enabled; then
@@ -790,7 +790,7 @@ function bashunit::runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_incomplete" != "$(bashunit::state::get_assertions_incomplete)" ]]; then
+  if [[ "$current_assertions_incomplete" != "$_BASHUNIT_ASSERTIONS_INCOMPLETE" ]]; then
     bashunit::state::add_tests_incomplete
     bashunit::reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
@@ -798,7 +798,7 @@ function bashunit::runner::run_test() {
     return
   fi
 
-  if [[ "$current_assertions_skipped" != "$(bashunit::state::get_assertions_skipped)" ]]; then
+  if [[ "$current_assertions_skipped" != "$_BASHUNIT_ASSERTIONS_SKIPPED" ]]; then
     bashunit::state::add_tests_skipped
     bashunit::reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
@@ -1228,7 +1228,7 @@ function bashunit::runner::record_test_hook_failure() {
   local hook_message="$2"
   local status="$3"
 
-  if [[ -n "$(bashunit::state::get_test_hook_failure)" ]]; then
+  if [[ -n "$_BASHUNIT_TEST_HOOK_FAILURE" ]]; then
     return "$status"
   fi
 

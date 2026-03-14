@@ -5,6 +5,7 @@ _BASHUNIT_OS="Unknown"
 _BASHUNIT_DISTRO="Unknown"
 
 function bashunit::check_os::init() {
+  _BASHUNIT_UNAME="$(uname)"
   if bashunit::check_os::is_linux; then
     _BASHUNIT_OS="Linux"
     if bashunit::check_os::is_ubuntu; then
@@ -39,16 +40,18 @@ function bashunit::check_os::is_nixos() {
   grep -q '^ID=nixos' /etc/os-release 2>/dev/null
 }
 
+_BASHUNIT_UNAME="$(uname)"
+
 function bashunit::check_os::is_linux() {
-  [[ "$(uname)" == "Linux" ]]
+  [[ "$_BASHUNIT_UNAME" == "Linux" ]]
 }
 
 function bashunit::check_os::is_macos() {
-  [[ "$(uname)" == "Darwin" ]]
+  [[ "$_BASHUNIT_UNAME" == "Darwin" ]]
 }
 
 function bashunit::check_os::is_windows() {
-  case "$(uname)" in
+  case "$_BASHUNIT_UNAME" in
   *MINGW* | *MSYS* | *CYGWIN*)
     return 0
     ;;

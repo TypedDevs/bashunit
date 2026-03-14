@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+# Cache base64 -w flag support (Alpine needs -w 0, macOS does not support -w)
+if base64 --help 2>&1 | grep -q -- "-w"; then
+  _BASHUNIT_BASE64_WRAP_FLAG=true
+else
+  _BASHUNIT_BASE64_WRAP_FLAG=false
+fi
+
 _BASHUNIT_TESTS_PASSED=0
 _BASHUNIT_TESTS_FAILED=0
 _BASHUNIT_TESTS_SKIPPED=0
@@ -218,7 +225,7 @@ function bashunit::state::export_subshell_context() {
 
   local encoded_test_hook_message
 
-  if base64 --help 2>&1 | grep -q -- "-w"; then
+  if [[ "$_BASHUNIT_BASE64_WRAP_FLAG" == true ]]; then
     # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_BASHUNIT_TEST_OUTPUT" | base64 -w 0)
     encoded_test_title=$(echo -n "$_BASHUNIT_TEST_TITLE" | base64 -w 0)

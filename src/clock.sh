@@ -108,14 +108,19 @@ EOF
   date-seconds)
     local seconds
     seconds=$(date +%s)
-    bashunit::math::calculate "$seconds * 1000000000"
+    echo "$((seconds * 1000000000))"
     ;;
   shell)
     # shellcheck disable=SC2155
     local shell_time="$(bashunit::clock::shell_time)"
     local seconds="${shell_time%%.*}"
     local microseconds="${shell_time#*.}"
-    bashunit::math::calculate "($seconds * 1000000000) + ($microseconds * 1000)"
+    # Pad to 6 digits and strip leading zeros for arithmetic
+    microseconds="${microseconds}000000"
+    microseconds="${microseconds:0:6}"
+    microseconds="${microseconds#"${microseconds%%[!0]*}"}"
+    microseconds="${microseconds:-0}"
+    echo "$(( (seconds * 1000000000) + (microseconds * 1000) ))"
     ;;
   *)
     bashunit::clock::_choose_impl || return 1
