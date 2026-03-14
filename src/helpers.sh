@@ -120,8 +120,10 @@ function bashunit::helper::encode_base64() {
     return
   fi
 
-  if command -v base64 >/dev/null; then
-    printf '%s' "$value" | base64 -w 0 2>/dev/null || printf '%s' "$value" | base64 | tr -d '\n'
+  if [[ "$_BASHUNIT_BASE64_WRAP_FLAG" == true ]]; then
+    printf '%s' "$value" | base64 -w 0
+  elif command -v base64 >/dev/null; then
+    printf '%s' "$value" | base64 | tr -d '\n'
   else
     printf '%s' "$value" | openssl enc -base64 -A
   fi
