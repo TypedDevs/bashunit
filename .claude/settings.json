@@ -5,7 +5,12 @@
     "PostToolUse": [
       {
         "matcher": "Edit|Write",
-        "command": "file=\"$CLAUDE_FILE_PATH\"; if [ -n \"$file\" ] && echo \"$file\" | grep -q '\\.sh$'; then shellcheck -x \"$file\" 2>&1 | head -20; fi"
+        "hooks": [
+          {
+            "type": "command",
+            "command": "file=\"$CLAUDE_FILE_PATH\"; if [ -n \"$file\" ] && echo \"$file\" | grep -q '\\.sh$'; then shellcheck -x \"$file\" 2>&1 | head -20; fi"
+          }
+        ]
       }
     ]
   }
