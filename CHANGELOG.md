@@ -25,6 +25,7 @@
 - Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
 
 ### Changed
+- Optimize Claude Code config for agentic efficiency: trim rules/skills, add shellcheck hook, path-scoped rule loading
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
 - Optimize clock: prioritize EPOCHREALTIME over subprocess-based fallbacks
 - Cache function discovery to avoid duplicate pipeline per test file
