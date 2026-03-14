@@ -20,7 +20,7 @@ Works on macOS default bash. **Prohibited features:**
 - `${array[-1]}` (negative indexing - Bash 4.3+)
 - `&>>` redirect (Bash 4.0+)
 
-See @.claude/rules/bash-style.md for complete compatibility guide.
+See `.claude/rules/bash-style.md` for complete compatibility guide (auto-loaded when editing `src/` or `tests/`).
 
 ### Quality Standards
 
@@ -90,18 +90,9 @@ Invoke with `/skill-name`:
 | `/gh-issue <N>` | GitHub issue → branch → implement → PR |
 | `/pr [#N]` | Push branch and create PR |
 
-## Code Standards
-
-### Bash Style
-@.claude/rules/bash-style.md
-
-### Testing
-@.claude/rules/testing.md
-
-### TDD Workflow
-@.claude/rules/tdd-workflow.md
-
 ## Path-Scoped Guidelines
+
+Rules auto-load based on file paths being edited (via `paths:` frontmatter in each rule file).
 
 ### `src/**/*.sh`
 - Small, portable functions
