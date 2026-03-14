@@ -31,6 +31,10 @@
 - Cache function discovery to avoid duplicate pipeline per test file
 - Reduce subshells in test execution hot path
 - Batch coverage recording with in-memory buffering
+- Cache `uname` result at source time to eliminate repeated subprocess forks in OS detection
+- Replace `bc` and `awk` subprocesses with native bash arithmetic in clock and duration formatting
+- Cache `base64 -w` flag support at load time instead of detecting per test
+- Use direct variable access for assertion state instead of getter subshells in runner hot path
 
 ### Fixed
 - Mocking `mktemp` no longer breaks spy creation (#602)
