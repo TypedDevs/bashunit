@@ -24,6 +24,9 @@
 - Add duration assertions: `assert_duration`, `assert_duration_less_than`, `assert_duration_greater_than`
 - Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
 
+### Tests
+- Add unit tests for `env.sh`, `math.sh`, `colors.sh`, `test_title.sh`, `console_header.sh`, and `doc.sh`
+
 ### Changed
 - Optimize Claude Code config for agentic efficiency: trim rules/skills, add shellcheck hook, path-scoped rule loading
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
