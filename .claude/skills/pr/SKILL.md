@@ -37,8 +37,8 @@ Push branch and create a PR with a concise, issue-linked description.
   ```bash
   git push -u origin HEAD
   ```
-  - The `pre-push` git hook automatically runs the full test suite (BE & FE in parallel).
-  - If the hook fails, read the output, fix the issue, commit the fix, and retry the push. Do NOT use `--no-verify` to bypass.
+  - The `pre-commit` hook runs tests, shellcheck, and linting automatically on commit. Ensure all checks passed before pushing.
+  - If push fails, read the output, fix the issue, commit the fix, and retry. Do NOT use `--no-verify` to bypass.
 
 4. **Generate PR title**:
   - If `$ARGUMENTS` contains an issue number, fetch the issue title:
