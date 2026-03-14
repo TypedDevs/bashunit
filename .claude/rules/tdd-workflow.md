@@ -17,9 +17,10 @@ REFACTOR -> Improve code while keeping all tests green
 REPEAT -> Until acceptance criteria are met
 ```
 
-## Task File (Mandatory)
+## Task File (Recommended for non-trivial changes)
 
-Before starting, create `.tasks/YYYY-MM-DD-slug.md`:
+For features, refactors, or multi-test work, create `.tasks/YYYY-MM-DD-slug.md`.
+Skip for small bug fixes or single-test changes.
 
 ```markdown
 # [Feature/Fix Name]
