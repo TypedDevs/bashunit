@@ -1,12 +1,14 @@
-## 📚 Description
+## Background
 
-Replace this text with a short description of your feature/bugfix.
+Related #
 
-## 🔖 Changes
+<!-- 1-2 sentences: motivation and context for the changes -->
 
-- List individual changes in more detail
+## Changes
 
-## ✅ To-do list
+- <!-- what changed and why -->
+
+## Checklist
 
 - [ ] I updated the `CHANGELOG.md` to reflect the new feature or fix
 - [ ] I updated the documentation to reflect the changes
