@@ -2,52 +2,44 @@
 
 ## Unreleased
 
-### Fixed
-- Fix misleading error message for `assert_not_same` and `assert_not_equals` on failure #604
-
 ### Added
-- Add `--jobs N` flag to limit parallel test concurrency (e.g., `--jobs 4`)
-- Add `--watch` mode to automatically re-run tests when files change
-- Add `watch [path]` subcommand to re-run tests automatically on file changes
-    - Uses `inotifywait` on Linux (via `inotify-tools`) or `fswatch` on macOS
-    - Falls back with a clear install hint if neither tool is available
-    - Accepts optional path argument (defaults to current directory)
-- Add source context display in failure summaries showing relevant assertion lines
+- Add `--watch` mode and `watch [path]` subcommand to re-run tests on file changes
+    - Uses `inotifywait` on Linux or `fswatch` on macOS; clear install hint if unavailable
+- Add `--jobs N` flag to limit parallel test concurrency
+- Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
 - Add TAP version 13 output format via `--output tap` for CI/CD integration
+- Add source context display in failure summaries showing relevant assertion lines
 - Add date comparison assertions: `assert_date_equals`, `assert_date_before`, `assert_date_after`, `assert_date_within_range`, `assert_date_within_delta`
     - Auto-detects epoch seconds, ISO 8601, space-separated datetime, and timezone offsets
-    - Mixed formats supported in the same assertion call
-- Add Claude Code configuration with custom skills, agents, and rules
-- Add `assert_have_been_called_nth_with` for verifying arguments on the Nth invocation of a spy
+- Add `assert_have_been_called_nth_with` for verifying spy arguments on the Nth invocation
 - Add `assert_string_matches_format` and `assert_string_not_matches_format` with format placeholders (`%d`, `%s`, `%f`, `%i`, `%x`, `%e`, `%%`)
 - Add JSON assertions: `assert_json_key_exists`, `assert_json_contains`, `assert_json_equals` (requires `jq`)
 - Add duration assertions: `assert_duration`, `assert_duration_less_than`, `assert_duration_greater_than`
-- Add `--tag` and `--exclude-tag` CLI flags for filtering tests by `# @tag` annotations
-
-### Tests
-- Add unit tests for `env.sh`, `math.sh`, `colors.sh`, `test_title.sh`, `console_header.sh`, and `doc.sh`
 
 ### Changed
-- Optimize Claude Code config for agentic efficiency: trim rules/skills, add shellcheck hook, path-scoped rule loading
 - Split Windows CI test jobs into parallel chunks to avoid timeouts
 - Optimize clock: prioritize EPOCHREALTIME over subprocess-based fallbacks
 - Cache function discovery to avoid duplicate pipeline per test file
 - Reduce subshells in test execution hot path
 - Batch coverage recording with in-memory buffering
-- Cache `uname` result at source time to eliminate repeated subprocess forks in OS detection
+- Cache `uname` result at source time to eliminate repeated subprocess forks
 - Replace `bc` and `awk` subprocesses with native bash arithmetic in clock and duration formatting
 - Cache `base64 -w` flag support at load time instead of detecting per test
 - Use direct variable access for assertion state instead of getter subshells in runner hot path
 
 ### Fixed
+- Fix misleading error message for `assert_not_same` and `assert_not_equals` on failure (#604)
 - Mocking `mktemp` no longer breaks spy creation (#602)
 - JUnit XML report now conforms to the standard schema
-    - Remove non-standard `passed`, `incomplete`, `snapshot` attributes from `<testsuite>` and `status`, `assertions` from `<testcase>`
-    - Add `errors="0"` attribute and `<failure>`/`<skipped>` child elements per the JUnit spec
-    - `skipped` count now includes both skipped and incomplete tests to match emitted `<skipped/>` elements
-    - Convert `time` values from milliseconds to seconds (float) as expected by CI tools
+    - Remove non-standard attributes from `<testsuite>` and `<testcase>`
+    - Add `errors="0"` attribute and `<failure>`/`<skipped>` child elements per spec
+    - `skipped` count now includes both skipped and incomplete tests
+    - Convert `time` values from milliseconds to seconds (float)
     - Strip ANSI escape sequences and invalid XML control characters from failure messages
-    - Include actual failure messages in `<failure>` body instead of hard-coded placeholders
+    - Include actual failure messages in `<failure>` body
+
+### Tests
+- Add unit tests for `env.sh`, `math.sh`, `colors.sh`, `test_title.sh`, `console_header.sh`, and `doc.sh`
 
 ## [0.33.0](https://github.com/TypedDevs/bashunit/compare/0.32.0...0.33.0) - 2026-02-15
 
