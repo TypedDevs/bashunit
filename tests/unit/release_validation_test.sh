@@ -71,6 +71,26 @@ function test_validate_semver_rejects_text() {
 }
 
 ##########################
+# release::increment_minor tests
+##########################
+
+function test_increment_minor_bumps_minor_version() {
+  assert_equals "0.34.0" "$(release::increment_minor "0.33.0")"
+}
+
+function test_increment_minor_resets_patch_to_zero() {
+  assert_equals "1.3.0" "$(release::increment_minor "1.2.5")"
+}
+
+function test_increment_minor_handles_zero_minor() {
+  assert_equals "2.1.0" "$(release::increment_minor "2.0.0")"
+}
+
+function test_increment_minor_handles_large_numbers() {
+  assert_equals "10.21.0" "$(release::increment_minor "10.20.30")"
+}
+
+##########################
 # release::version_gt tests
 ##########################
 

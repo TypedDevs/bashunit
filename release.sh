@@ -47,10 +47,11 @@ CURRENT_VERSION=""
 
 function release::show_usage() {
   cat >&2 <<EOF
-Usage: ./release.sh <version> [options]
+Usage: ./release.sh [version] [options]
 
 Arguments:
   version     The new version number (e.g., 0.30.0)
+              If omitted, auto-increments the minor version (e.g., 0.33.0 → 0.34.0)
 
 Options:
   --dry-run         Preview changes without modifying any files
@@ -68,6 +69,7 @@ Exit Codes:
   2    Execution error (build failed, git failed)
 
 Examples:
+  ./release.sh                            # Auto-increment minor version
   ./release.sh 0.31.0                    # Interactive release
   ./release.sh 0.31.0 --dry-run          # Preview changes
   ./release.sh 0.31.0 --sandbox          # Test in isolated sandbox
@@ -551,6 +553,13 @@ function release::sandbox::run() {
   release::sandbox::cleanup
 }
 
+function release::increment_minor() {
+  local version=$1
+  local major minor
+  IFS=. read -r major minor _ <<<"$version"
+  echo "$major.$((minor + 1)).0"
+}
+
 function release::validate_semver() {
   local version=$1
   if ! regex_match "$version" '^[0-9]+\.[0-9]+\.[0-9]+$'; then
@@ -935,17 +944,17 @@ function release::main() {
     esac
   done
 
-  # Validate version argument
-  if [[ -z "$VERSION" ]]; then
-    release::log_error "Version argument is required"
-    release::show_usage
-    exit $EXIT_VALIDATION_ERROR
-  fi
-
-  release::validate_semver "$VERSION"
-
   # Get current version
   CURRENT_VERSION=$(release::get_current_version)
+
+  # Auto-increment minor version if not specified
+  if [[ -z "$VERSION" ]]; then
+    VERSION=$(release::increment_minor "$CURRENT_VERSION")
+    release::log_info "No version specified, auto-incrementing minor: $CURRENT_VERSION → $VERSION"
+  else
+    release::validate_semver "$VERSION"
+  fi
+
   release::log_info "Current version: $CURRENT_VERSION"
   release::log_info "New version: $VERSION"
 

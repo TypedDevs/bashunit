@@ -86,6 +86,7 @@ Invoke with `/skill-name`:
 | `/add-assertion` | Add new assertion with TDD |
 | `/check-coverage` | Analyze test coverage gaps |
 | `/pre-release` | Pre-release validation checklist |
+| `/release` | Run pre-release checks and execute release |
 | `/commit` | Stage and commit with conventional commits |
 | `/gh-issue <N>` | GitHub issue → branch → implement → PR |
 | `/pr [#N]` | Push branch and create PR |
