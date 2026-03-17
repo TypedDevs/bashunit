@@ -1,7 +1,7 @@
 {
   "name": "bashunit-docs",
-  "version": "0.33.0",
-  "checksum": "e81c5c262d2e7296598b823c7d7fda1b54a818f5324cee1d65cc3b074a194ed0",
+  "version": "0.34.0",
+  "checksum": "dfb53a905b49fe791ac6b63b5cc2109287694346e4300b591ff11c0b08e7898f",
   "description": "Docs for bashunit a simple testing library for bash scripts",
   "main": "index.js",
   "repository": "git@github.com:TypedDevs/bashunit.git",

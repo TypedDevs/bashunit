@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.34.0](https://github.com/TypedDevs/bashunit/compare/0.33.0...0.34.0) - 2026-03-17
+
 ### Added
 - Add `--watch` mode and `watch [path]` subcommand to re-run tests on file changes
     - Uses `inotifywait` on Linux or `fswatch` on macOS; clear install hint if unavailable
