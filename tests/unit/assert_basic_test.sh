@@ -4,7 +4,7 @@
 # shellcheck disable=SC2329
 
 function test_successful_fail() {
-  true || bashunit::fail "This cannot fail"
+  assert_empty "$(true || bashunit::fail "This cannot fail")"
 }
 
 function test_unsuccessful_fail() {

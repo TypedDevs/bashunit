@@ -55,6 +55,7 @@ function test_env_flag_returns_failure_when_false() {
   fi
 
   eval "export $var_name='$original_value'"
+  assert_successful_code 0
 }
 
 function provide_boolean_flags_false() {
@@ -90,6 +91,7 @@ function test_is_dev_mode_disabled_when_dev_log_empty() {
   fi
 
   export BASHUNIT_DEV_LOG="$original"
+  assert_successful_code 0
 }
 
 function test_is_tap_output_enabled_when_format_is_tap() {
@@ -113,6 +115,7 @@ function test_is_tap_output_disabled_when_format_is_not_tap() {
   fi
 
   export BASHUNIT_OUTPUT_FORMAT="$original"
+  assert_successful_code 0
 }
 
 function test_active_internet_connection_returns_failure_when_no_network() {
@@ -126,6 +129,7 @@ function test_active_internet_connection_returns_failure_when_no_network() {
   fi
 
   export BASHUNIT_NO_NETWORK="$original"
+  assert_successful_code 0
 }
 
 function test_find_terminal_width_returns_a_number() {
