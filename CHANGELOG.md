@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fix `source` of non-existent file in `set_up()` silently passing all tests (#611)
+
 ## [0.34.0](https://github.com/TypedDevs/bashunit/compare/0.33.0...0.34.0) - 2026-03-17
 
 ### Added

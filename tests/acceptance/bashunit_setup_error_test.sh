@@ -106,3 +106,26 @@ function test_bashunit_set_up_stops_on_first_failure() {
   # Clean up
   rm -f "$marker_file"
 }
+
+# Issue #611: Sourcing a non-existent file in set_up should fail the test
+function test_bashunit_when_set_up_sources_nonexistent_file() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_setup_sources_nonexistent_file.sh
+  local fixture=$test_file
+
+  local error_line="✗ Error: Set up"
+  local tests_summary="Tests:      1 failed, 1 total"
+  local assertions_summary="Assertions: 0 failed, 0 total"
+
+  local actual_raw
+  set +e
+  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
+  set -e
+
+  local actual
+  actual="$(printf "%s" "$actual_raw" | strip_ansi)"
+
+  assert_contains "$error_line" "$actual"
+  assert_contains "$tests_summary" "$actual"
+  assert_contains "$assertions_summary" "$actual"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+}
