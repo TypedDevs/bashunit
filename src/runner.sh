@@ -590,6 +590,11 @@ function bashunit::runner::run_test() {
   exec 3>&1
 
   local test_execution_result=$(
+    # Save subshell stdout to FD 5 so the EXIT trap can restore it.
+    # When set -e kills the subshell during a redirected block in
+    # execute_test_hook, the redirect leaks into the EXIT trap,
+    # causing export_subshell_context output to be lost.
+    exec 5>&1
     # shellcheck disable=SC2064
     trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
     bashunit::state::initialize_assertions_count
@@ -612,9 +617,12 @@ function bashunit::runner::run_test() {
     fi
 
     # Run set_up and capture exit code without || to preserve errexit behavior
+    # shellcheck disable=SC2030
+    _BASHUNIT_SETUP_COMPLETED=false
     local setup_exit_code=0
     bashunit::runner::run_set_up "$test_file"
     setup_exit_code=$?
+    _BASHUNIT_SETUP_COMPLETED=true
     if [[ $setup_exit_code -ne 0 ]]; then
       exit $setup_exit_code
     fi
@@ -829,6 +837,26 @@ function bashunit::runner::cleanup_on_exit() {
   fi
 
   set +e
+
+  # Detect unexpected subshell exit during set_up (Issue #611).
+  # When 'source' of a non-existent file fails under set -eE, the ERR trap
+  # does not fire. On macOS Bash 3.2, $? is 0 in the EXIT trap; on Linux
+  # Bash 5.x, $? is 1. In both cases the hook failure is not recorded.
+  # Additionally, the stdout redirect from execute_test_hook leaks into the
+  # EXIT trap. Restore stdout from saved FD 5 so export_subshell_context
+  # output reaches test_execution_result.
+  # shellcheck disable=SC2031
+  if [[ "${_BASHUNIT_SETUP_COMPLETED:-true}" != "true" ]]; then
+    exec 1>&5
+    if [[ "$exit_code" -eq 0 ]]; then
+      exit_code=1
+    fi
+    if [[ -z "${_BASHUNIT_TEST_HOOK_FAILURE:-}" ]]; then
+      bashunit::state::set_test_hook_failure "set_up"
+      bashunit::state::set_test_hook_message "Hook 'set_up' failed unexpectedly (e.g., source of non-existent file)"
+    fi
+  fi
+
   # Don't use || here - it disables ERR trap in the entire call chain
   bashunit::runner::run_tear_down "$test_file"
   local teardown_status=$?

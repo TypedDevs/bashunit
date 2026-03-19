@@ -12,6 +12,7 @@ function test_coverage_tracks_src_lines_executed_in_hooks() {
   output=$(BASHUNIT_PARALLEL_RUN=false ./bashunit \
     --coverage \
     --no-coverage-report \
+    --coverage-min 0 \
     --coverage-paths "src/globals.sh" \
     --coverage-report "$LCOV_FILE" \
     tests/acceptance/fixtures/test_coverage_hooks.sh 2>&1)
