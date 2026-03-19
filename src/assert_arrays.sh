@@ -13,11 +13,15 @@ function assert_array_contains() {
   local -a actual
   actual=("$@")
 
-  if ! [[ "${actual[*]:-}" == *"$expected"* ]]; then
+  case "${actual[*]:-}" in
+  *"$expected"*)
+    ;;
+  *)
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -34,11 +38,13 @@ function assert_array_not_contains() {
   local -a actual
   actual=("$@")
 
-  if [[ "${actual[*]:-}" == *"$expected"* ]]; then
+  case "${actual[*]:-}" in
+  *"$expected"*)
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }

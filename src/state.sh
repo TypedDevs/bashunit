@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Cache base64 -w flag support (Alpine needs -w 0, macOS does not support -w)
-if base64 --help 2>&1 | grep -q -- "-w"; then
+if [ "$(base64 --help 2>&1 | "$GREP" -c -- "-w" || true)" -gt 0 ]; then
   _BASHUNIT_BASE64_WRAP_FLAG=true
 else
   _BASHUNIT_BASE64_WRAP_FLAG=false
@@ -234,7 +234,7 @@ function bashunit::state::export_subshell_context() {
 
   local encoded_test_hook_message
 
-  if [[ "$_BASHUNIT_BASE64_WRAP_FLAG" == true ]]; then
+  if [ "$_BASHUNIT_BASE64_WRAP_FLAG" = true ]; then
     # Alpine requires the -w 0 option to avoid wrapping
     encoded_test_output=$(echo -n "$_BASHUNIT_TEST_OUTPUT" | base64 -w 0)
     encoded_test_title=$(echo -n "$_BASHUNIT_TEST_TITLE" | base64 -w 0)
@@ -345,9 +345,9 @@ function bashunit::state::print_tap_line() {
     printf "  ---\n"
     while IFS= read -r detail_line; do
       detail_line=$(printf "%s" "$detail_line" | sed 's/\x1B\[[0-9;]*[mK]//g')
-      if [[ -n "$detail_line" \
-        && "$detail_line" != *"Failed:"* \
-        && "$detail_line" != *"Error:"* ]]; then
+      if [ -n "$detail_line" ] \
+        && [ "$(echo "$detail_line" | "$GREP" -cF "Failed:" || true)" -eq 0 ] \
+        && [ "$(echo "$detail_line" | "$GREP" -cF "Error:" || true)" -eq 0 ]; then
         local trimmed="${detail_line#"${detail_line%%[![:space:]]*}"}"
         printf "  %s\n" "$trimmed"
       fi
@@ -358,7 +358,7 @@ function bashunit::state::print_tap_line() {
     local skip_name="${test_name%%   *}"
     local skip_reason="${test_name#"$skip_name"}"
     skip_reason="${skip_reason#"${skip_reason%%[![:space:]]*}"}"
-    if [[ -n "$skip_reason" ]]; then
+    if [ -n "$skip_reason" ]; then
       printf "ok %d - %s # SKIP %s\n" \
         "$_BASHUNIT_TOTAL_TESTS_COUNT" "$skip_name" "$skip_reason"
     else

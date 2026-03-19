@@ -41,10 +41,10 @@ function bashunit::random_str() {
 function bashunit::temp_file() {
   local prefix=${1:-bashunit}
   local test_prefix=""
-  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+  if [ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]; then
     # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
-  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+  elif [ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]; then
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
@@ -54,10 +54,10 @@ function bashunit::temp_file() {
 function bashunit::temp_dir() {
   local prefix=${1:-bashunit}
   local test_prefix=""
-  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+  if [ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]; then
     # We're inside a test function - use test ID
     test_prefix="${BASHUNIT_CURRENT_TEST_ID}_"
-  elif [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+  elif [ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]; then
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
@@ -66,14 +66,14 @@ function bashunit::temp_dir() {
 
 function bashunit::cleanup_testcase_temp_files() {
   bashunit::internal_log "cleanup_testcase_temp_files"
-  if [[ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]]; then
+  if [ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]; then
     rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*
   fi
 }
 
 function bashunit::cleanup_script_temp_files() {
   bashunit::internal_log "cleanup_script_temp_files"
-  if [[ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]]; then
+  if [ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]; then
     rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_SCRIPT_ID}"_*
   fi
 }
@@ -123,14 +123,14 @@ function bashunit::data_set() {
   for arg in "$@"; do
     if [ "$first" = true ]; then
       # Bash 3.0 compatible: printf '%q' "" produces nothing in Bash 3.0
-      if [[ -z "$arg" ]]; then
+      if [ -z "$arg" ]; then
         printf "''"
       else
         printf '%q' "$arg"
       fi
       first=false
     else
-      if [[ -z "$arg" ]]; then
+      if [ -z "$arg" ]; then
         printf " ''"
       else
         printf ' %q' "$arg"

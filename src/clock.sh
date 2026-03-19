@@ -22,8 +22,8 @@ function bashunit::clock::_choose_impl() {
   if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine; then
     local result
     result=$(date +%s%N 2>/dev/null)
-    local _re='^[0-9]+$'
-    if [[ "$result" != *N ]] && [[ "$result" =~ $_re ]]; then
+    if [ "$(echo "$result" | "$GREP" -cv 'N' || true)" -gt 0 ] \
+      && [ "$(echo "$result" | "$GREP" -cE '^[0-9]+$' || true)" -gt 0 ]; then
       _BASHUNIT_CLOCK_NOW_IMPL="date"
       return 0
     fi
@@ -76,7 +76,7 @@ function bashunit::clock::_choose_impl() {
 }
 
 function bashunit::clock::now() {
-  if [[ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]]; then
+  if [ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]; then
     bashunit::clock::_choose_impl || return 1
   fi
 
@@ -131,13 +131,13 @@ EOF
 
 function bashunit::clock::shell_time() {
   # Get time directly from the shell variable EPOCHREALTIME (Bash 5+)
-  [[ -n ${EPOCHREALTIME+x} && -n "$EPOCHREALTIME" ]] && LC_ALL=C echo "$EPOCHREALTIME"
+  [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && LC_ALL=C echo "$EPOCHREALTIME"
 }
 
 function bashunit::clock::total_runtime_in_milliseconds() {
   local end_time
   end_time=$(bashunit::clock::now)
-  if [[ -n $end_time ]]; then
+  if [ -n "$end_time" ]; then
     bashunit::math::calculate "($end_time - $_BASHUNIT_START_TIME) / 1000000"
   else
     echo ""
@@ -147,7 +147,7 @@ function bashunit::clock::total_runtime_in_milliseconds() {
 function bashunit::clock::total_runtime_in_nanoseconds() {
   local end_time
   end_time=$(bashunit::clock::now)
-  if [[ -n $end_time ]]; then
+  if [ -n "$end_time" ]; then
     bashunit::math::calculate "$end_time - $_BASHUNIT_START_TIME"
   else
     echo ""

@@ -105,14 +105,14 @@ function bashunit::learn::mark_completed() {
 ##
 function bashunit::learn::is_completed() {
   local lesson=$1
-  [[ -f "$LEARN_PROGRESS_FILE" ]] && grep -q "^$lesson$" "$LEARN_PROGRESS_FILE"
+  [ -f "$LEARN_PROGRESS_FILE" ] && [ "$("$GREP" -c "^$lesson$" "$LEARN_PROGRESS_FILE" || true)" -gt 0 ]
 }
 
 ##
 # Show learning progress
 ##
 function bashunit::learn::show_progress() {
-  if [[ ! -f "$LEARN_PROGRESS_FILE" ]]; then
+  if [ ! -f "$LEARN_PROGRESS_FILE" ]; then
     echo "${_BASHUNIT_COLOR_INCOMPLETE}No progress yet. Start with lesson 1!${_BASHUNIT_COLOR_DEFAULT}"
     return
   fi
@@ -136,7 +136,7 @@ function bashunit::learn::show_progress() {
   echo ""
   echo "Progress: $completed/$total_lessons lessons completed"
 
-  if [[ $completed -eq $total_lessons ]]; then
+  if [ $completed -eq $total_lessons ]; then
     echo ""
     printf "%s%s🎉 Congratulations! You've completed all lessons!%s\n" \
       "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$_BASHUNIT_COLOR_DEFAULT"
@@ -240,7 +240,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function test_bashunit_works() {
@@ -253,7 +253,7 @@ function test_bashunit_works() {
   fi
 
   # Check if file contains assert_same
-  if ! grep -q "assert_same" "$test_file"; then
+  if [ "$("$GREP" -c "assert_same" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use assert_same${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -314,7 +314,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function test_multiple_assertions() {
@@ -334,9 +334,9 @@ function test_multiple_assertions() {
     return 1
   fi
 
-  if ! grep -q "assert_contains" "$test_file" ||
-    ! grep -q "assert_matches" "$test_file" ||
-    ! grep -q "assert_not_empty" "$test_file"; then
+  if [ "$("$GREP" -c "assert_contains" "$test_file" || true)" -eq 0 ] ||
+    [ "$("$GREP" -c "assert_matches" "$test_file" || true)" -eq 0 ] ||
+    [ "$("$GREP" -c "assert_not_empty" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use all three assertion types${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -401,7 +401,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -427,8 +427,8 @@ function test_file_has_content() {
     return 1
   fi
 
-  if ! grep -q "function set_up()" "$test_file" ||
-    ! grep -q "function tear_down()" "$test_file"; then
+  if [ "$("$GREP" -c "function set_up()" "$test_file" || true)" -eq 0 ] ||
+    [ "$("$GREP" -c "function tear_down()" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define set_up and tear_down functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -497,7 +497,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -521,7 +521,7 @@ function test_add_negative_numbers() {
     return 1
   fi
 
-  if ! grep -q "source" "$test_file"; then
+  if [ "$("$GREP" -c "source" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should source the calculator.sh file${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -588,7 +588,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function test_default_greeting() {
@@ -680,7 +680,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -710,7 +710,7 @@ function test_system_info_on_macos() {
     return 1
   fi
 
-  if ! grep -q "mock" "$test_file"; then
+  if [ "$("$GREP" -c "mock" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use mock${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -794,7 +794,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -827,7 +827,7 @@ function test_deploy_calls_docker_twice() {
     return 1
   fi
 
-  if ! grep -q "spy" "$test_file"; then
+  if [ "$("$GREP" -c "spy" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use spy${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -860,7 +860,7 @@ File: validator.sh
 
 function is_valid_email() {
   local email_pattern='^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-  [[ $1 =~ $email_pattern ]]
+  [ "$(echo "$1" | "$GREP" -cE "$email_pattern" || true)" -gt 0 ]
 }
 ───────────────────────────────────────────────────────────────
 
@@ -909,7 +909,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -941,7 +941,7 @@ function test_invalid_emails() {
     return 1
   fi
 
-  if ! grep -q "function data_provider_" "$test_file"; then
+  if [ "$("$GREP" -c "function data_provider_" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define data provider functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -973,12 +973,12 @@ File: checker.sh
 #!/usr/bin/env bash
 
 function check_file() {
-  if [[ ! -e "$1" ]]; then
+  if [ ! -e "$1" ]; then
     echo "File not found" >&2
     return 127
   fi
 
-  if [[ ! -r "$1" ]]; then
+  if [ ! -r "$1" ]; then
     echo "Permission denied" >&2
     return 1
   fi
@@ -1029,7 +1029,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -1057,7 +1057,8 @@ function test_missing_file_returns_127() {
     return 1
   fi
 
-  if ! grep -q "assert_successful_code\|assert_exit_code\|assert_general_error" "$test_file"; then
+  local _exit_assert_pattern="assert_successful_code\|assert_exit_code\|assert_general_error"
+  if [ "$("$GREP" -c "$_exit_assert_pattern" "$test_file" || true)" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use exit code assertions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
@@ -1091,7 +1092,7 @@ function create_backup() {
   local source=$1
   local dest=$2
 
-  if [[ ! -d "$source" ]]; then
+  if [ ! -d "$source" ]; then
     echo "Source directory not found" >&2
     return 1
   fi
@@ -1123,7 +1124,7 @@ EOF
   read -r test_file
   test_file="${test_file:-$default_file}"
 
-  if [[ ! -f "$test_file" ]]; then
+  if [ ! -f "$test_file" ]; then
     local template='#!/usr/bin/env bash
 
 function set_up() {
@@ -1162,17 +1163,17 @@ function test_backup_failure_when_source_missing() {
   local -a missing_components=()
   local missing_components_count=0
 
-  if ! grep -q "function set_up()" "$test_file"; then
+  if [ "$("$GREP" -c "function set_up()" "$test_file" || true)" -eq 0 ]; then
     missing_components[missing_components_count]="set_up function"
     missing_components_count=$((missing_components_count + 1))
   fi
 
-  if ! grep -q "function tear_down()" "$test_file"; then
+  if [ "$("$GREP" -c "function tear_down()" "$test_file" || true)" -eq 0 ]; then
     missing_components[missing_components_count]="tear_down function"
     missing_components_count=$((missing_components_count + 1))
   fi
 
-  if [[ "$missing_components_count" -gt 0 ]]; then
+  if [ "$missing_components_count" -gt 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Missing required components:${_BASHUNIT_COLOR_DEFAULT}"
     printf "  - %s\n" "${missing_components[@]}"
     read -p "Press Enter to continue..." -r

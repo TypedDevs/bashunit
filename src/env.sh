@@ -3,10 +3,10 @@
 # shellcheck disable=SC2034
 
 # Load .env file (skip if --skip-env-file is used to keep shell environment intact)
-if [[ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]]; then
+if [ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]; then
   set -o allexport
   # shellcheck source=/dev/null
-  [[ -f ".env" ]] && source .env
+  [ -f ".env" ] && source .env
   set +o allexport
 fi
 
@@ -88,106 +88,106 @@ _BASHUNIT_DEFAULT_OUTPUT_FORMAT=""
 : "${BASHUNIT_NO_PROGRESS:=${NO_PROGRESS:=$_BASHUNIT_DEFAULT_NO_PROGRESS}}"
 : "${BASHUNIT_OUTPUT_FORMAT:=${OUTPUT_FORMAT:=$_BASHUNIT_DEFAULT_OUTPUT_FORMAT}}"
 # Support NO_COLOR standard (https://no-color.org)
-if [[ -n "${NO_COLOR:-}" ]]; then
+if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
 else
   : "${BASHUNIT_NO_COLOR:=$_BASHUNIT_DEFAULT_NO_COLOR}"
 fi
 
 function bashunit::env::is_parallel_run_enabled() {
-  [[ "$BASHUNIT_PARALLEL_RUN" == "true" ]]
+  [ "$BASHUNIT_PARALLEL_RUN" = "true" ]
 }
 
 function bashunit::env::is_show_header_enabled() {
-  [[ "$BASHUNIT_SHOW_HEADER" == "true" ]]
+  [ "$BASHUNIT_SHOW_HEADER" = "true" ]
 }
 
 function bashunit::env::is_header_ascii_art_enabled() {
-  [[ "$BASHUNIT_HEADER_ASCII_ART" == "true" ]]
+  [ "$BASHUNIT_HEADER_ASCII_ART" = "true" ]
 }
 
 function bashunit::env::is_simple_output_enabled() {
-  [[ "$BASHUNIT_SIMPLE_OUTPUT" == "true" ]]
+  [ "$BASHUNIT_SIMPLE_OUTPUT" = "true" ]
 }
 
 function bashunit::env::is_stop_on_failure_enabled() {
-  [[ "$BASHUNIT_STOP_ON_FAILURE" == "true" ]]
+  [ "$BASHUNIT_STOP_ON_FAILURE" = "true" ]
 }
 
 function bashunit::env::is_show_execution_time_enabled() {
-  [[ "$BASHUNIT_SHOW_EXECUTION_TIME" == "true" ]]
+  [ "$BASHUNIT_SHOW_EXECUTION_TIME" = "true" ]
 }
 
 function bashunit::env::is_dev_mode_enabled() {
-  [[ -n "$BASHUNIT_DEV_LOG" ]]
+  [ -n "$BASHUNIT_DEV_LOG" ]
 }
 
 function bashunit::env::is_internal_log_enabled() {
-  [[ "$BASHUNIT_INTERNAL_LOG" == "true" ]]
+  [ "$BASHUNIT_INTERNAL_LOG" = "true" ]
 }
 
 function bashunit::env::is_verbose_enabled() {
-  [[ "$BASHUNIT_VERBOSE" == "true" ]]
+  [ "$BASHUNIT_VERBOSE" = "true" ]
 }
 
 function bashunit::env::is_bench_mode_enabled() {
-  [[ "$BASHUNIT_BENCH_MODE" == "true" ]]
+  [ "$BASHUNIT_BENCH_MODE" = "true" ]
 }
 
 function bashunit::env::is_no_output_enabled() {
-  [[ "$BASHUNIT_NO_OUTPUT" == "true" ]]
+  [ "$BASHUNIT_NO_OUTPUT" = "true" ]
 }
 
 function bashunit::env::is_show_skipped_enabled() {
-  [[ "$BASHUNIT_SHOW_SKIPPED" == "true" ]]
+  [ "$BASHUNIT_SHOW_SKIPPED" = "true" ]
 }
 
 function bashunit::env::is_show_incomplete_enabled() {
-  [[ "$BASHUNIT_SHOW_INCOMPLETE" == "true" ]]
+  [ "$BASHUNIT_SHOW_INCOMPLETE" = "true" ]
 }
 
 function bashunit::env::is_strict_mode_enabled() {
-  [[ "$BASHUNIT_STRICT_MODE" == "true" ]]
+  [ "$BASHUNIT_STRICT_MODE" = "true" ]
 }
 
 function bashunit::env::is_stop_on_assertion_failure_enabled() {
-  [[ "$BASHUNIT_STOP_ON_ASSERTION_FAILURE" == "true" ]]
+  [ "$BASHUNIT_STOP_ON_ASSERTION_FAILURE" = "true" ]
 }
 
 function bashunit::env::is_skip_env_file_enabled() {
-  [[ "$BASHUNIT_SKIP_ENV_FILE" == "true" ]]
+  [ "$BASHUNIT_SKIP_ENV_FILE" = "true" ]
 }
 
 function bashunit::env::is_login_shell_enabled() {
-  [[ "$BASHUNIT_LOGIN_SHELL" == "true" ]]
+  [ "$BASHUNIT_LOGIN_SHELL" = "true" ]
 }
 
 function bashunit::env::is_failures_only_enabled() {
-  [[ "$BASHUNIT_FAILURES_ONLY" == "true" ]]
+  [ "$BASHUNIT_FAILURES_ONLY" = "true" ]
 }
 
 function bashunit::env::is_show_output_on_failure_enabled() {
-  [[ "$BASHUNIT_SHOW_OUTPUT_ON_FAILURE" == "true" ]]
+  [ "$BASHUNIT_SHOW_OUTPUT_ON_FAILURE" = "true" ]
 }
 
 function bashunit::env::is_no_progress_enabled() {
-  [[ "$BASHUNIT_NO_PROGRESS" == "true" ]]
+  [ "$BASHUNIT_NO_PROGRESS" = "true" ]
 }
 
 function bashunit::env::is_no_color_enabled() {
-  [[ "$BASHUNIT_NO_COLOR" == "true" ]]
+  [ "$BASHUNIT_NO_COLOR" = "true" ]
 }
 
 function bashunit::env::is_coverage_enabled() {
-  [[ "$BASHUNIT_COVERAGE" == "true" ]]
+  [ "$BASHUNIT_COVERAGE" = "true" ]
 }
 
 function bashunit::env::is_tap_output_enabled() {
-  [[ "$BASHUNIT_OUTPUT_FORMAT" == "tap" ]]
+  [ "$BASHUNIT_OUTPUT_FORMAT" = "tap" ]
 }
 
 function bashunit::env::active_internet_connection() {
-  if [[ "${BASHUNIT_NO_NETWORK:-}" == "true" ]]; then
+  if [ "${BASHUNIT_NO_NETWORK:-}" = "true" ]; then
     return 1
   fi
 
@@ -207,11 +207,11 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [[ -z "$cols" ]] && command -v tput >/dev/null; then
+  if [ -z "$cols" ] && command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 
-  if [[ -z "$cols" ]] && command -v stty >/dev/null; then
+  if [ -z "$cols" ] && command -v stty >/dev/null; then
     cols=$(stty size 2>/dev/null | cut -d' ' -f2)
   fi
 
@@ -272,6 +272,7 @@ TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_BASHUNIT_OS:-
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
 CAT="$(command -v cat)"
+GREP="$(command -v grep)"
 MKTEMP="$(command -v mktemp)"
 FAILURES_OUTPUT_PATH=$("$MKTEMP")
 SKIPPED_OUTPUT_PATH=$("$MKTEMP")

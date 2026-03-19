@@ -5,7 +5,7 @@ function bashunit::init::project() {
   mkdir -p "$tests_dir"
 
   local bootstrap_file="$tests_dir/bootstrap.sh"
-  if [[ ! -f "$bootstrap_file" ]]; then
+  if [ ! -f "$bootstrap_file" ]; then
     cat >"$bootstrap_file" <<'SH'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -16,7 +16,7 @@ SH
   fi
 
   local example_test="$tests_dir/example_test.sh"
-  if [[ ! -f "$example_test" ]]; then
+  if [ ! -f "$example_test" ]; then
     cat >"$example_test" <<'SH'
 #!/usr/bin/env bash
 
@@ -30,7 +30,7 @@ SH
 
   local env_file=".env"
   local env_line="BASHUNIT_BOOTSTRAP=$bootstrap_file"
-  if [[ -f "$env_file" ]]; then
+  if [ -f "$env_file" ]; then
     if grep -q "^BASHUNIT_BOOTSTRAP=" "$env_file"; then
       if bashunit::check_os::is_macos; then
         sed -i '' -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"

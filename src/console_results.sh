@@ -4,7 +4,7 @@
 _BASHUNIT_TOTAL_TESTS_COUNT=0
 
 function bashunit::console_results::render_result() {
-  if [[ "$(bashunit::state::is_duplicated_test_functions_found)" == true ]]; then
+  if [ "$(bashunit::state::is_duplicated_test_functions_found)" = true ]; then
     bashunit::console_results::print_execution_time
     printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
     printf "File with duplicate functions: %s\n" "$(bashunit::state::get_file_with_duplicated_function_names)"
@@ -14,7 +14,7 @@ function bashunit::console_results::render_result() {
 
   if bashunit::env::is_tap_output_enabled; then
     printf "1..%d\n" "$_BASHUNIT_TOTAL_TESTS_COUNT"
-    if [[ $_BASHUNIT_TESTS_FAILED -gt 0 ]]; then
+    if [ "$_BASHUNIT_TESTS_FAILED" -gt 0 ]; then
       return 1
     fi
     return 0
@@ -53,75 +53,75 @@ function bashunit::console_results::render_result() {
   total_assertions=$((total_assertions + assertions_failed))
 
   printf "%sTests:     %s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
-  if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
+  if [ "$tests_passed" -gt 0 ] || [ "$assertions_passed" -gt 0 ]; then
     printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$tests_passed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
+  if [ "$tests_skipped" -gt 0 ] || [ "$assertions_skipped" -gt 0 ]; then
     printf " %s%s skipped%s," "$_BASHUNIT_COLOR_SKIPPED" "$tests_skipped" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
+  if [ "$tests_incomplete" -gt 0 ] || [ "$assertions_incomplete" -gt 0 ]; then
     printf " %s%s incomplete%s," "$_BASHUNIT_COLOR_INCOMPLETE" "$tests_incomplete" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
+  if [ "$tests_snapshot" -gt 0 ] || [ "$assertions_snapshot" -gt 0 ]; then
     printf " %s%s snapshot%s," "$_BASHUNIT_COLOR_SNAPSHOT" "$tests_snapshot" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
+  if [ "$tests_failed" -gt 0 ] || [ "$assertions_failed" -gt 0 ]; then
     printf " %s%s failed%s," "$_BASHUNIT_COLOR_FAILED" "$tests_failed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_risky" -gt 0 ]]; then
+  if [ "$tests_risky" -gt 0 ]; then
     printf " %s%s risky%s," "$_BASHUNIT_COLOR_RISKY" "$tests_risky" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
   printf "%sAssertions:%s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
-  if [[ "$tests_passed" -gt 0 ]] || [[ "$assertions_passed" -gt 0 ]]; then
+  if [ "$tests_passed" -gt 0 ] || [ "$assertions_passed" -gt 0 ]; then
     printf " %s%s passed%s," "$_BASHUNIT_COLOR_PASSED" "$assertions_passed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_skipped" -gt 0 ]] || [[ "$assertions_skipped" -gt 0 ]]; then
+  if [ "$tests_skipped" -gt 0 ] || [ "$assertions_skipped" -gt 0 ]; then
     printf " %s%s skipped%s," "$_BASHUNIT_COLOR_SKIPPED" "$assertions_skipped" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_incomplete" -gt 0 ]] || [[ "$assertions_incomplete" -gt 0 ]]; then
+  if [ "$tests_incomplete" -gt 0 ] || [ "$assertions_incomplete" -gt 0 ]; then
     printf " %s%s incomplete%s," "$_BASHUNIT_COLOR_INCOMPLETE" "$assertions_incomplete" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_snapshot" -gt 0 ]] || [[ "$assertions_snapshot" -gt 0 ]]; then
+  if [ "$tests_snapshot" -gt 0 ] || [ "$assertions_snapshot" -gt 0 ]; then
     printf " %s%s snapshot%s," "$_BASHUNIT_COLOR_SNAPSHOT" "$assertions_snapshot" "$_BASHUNIT_COLOR_DEFAULT"
   fi
-  if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
+  if [ "$tests_failed" -gt 0 ] || [ "$assertions_failed" -gt 0 ]; then
     printf " %s%s failed%s," "$_BASHUNIT_COLOR_FAILED" "$assertions_failed" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_assertions"
 
-  if [[ "$tests_failed" -gt 0 ]]; then
+  if [ "$tests_failed" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " Some tests failed " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 1
   fi
 
-  if [[ "$tests_risky" -gt 0 ]]; then
+  if [ "$tests_risky" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_RISKY" " Some tests risky (no assertions) " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 0
   fi
 
-  if [[ "$tests_incomplete" -gt 0 ]]; then
+  if [ "$tests_incomplete" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_INCOMPLETE" " Some tests incomplete " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 0
   fi
 
-  if [[ "$tests_skipped" -gt 0 ]]; then
+  if [ "$tests_skipped" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SKIPPED" " Some tests skipped " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 0
   fi
 
-  if [[ "$tests_snapshot" -gt 0 ]]; then
+  if [ "$tests_snapshot" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 0
   fi
 
-  if [[ $total_tests -eq 0 ]]; then
+  if [ "$total_tests" -eq 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 1
@@ -143,7 +143,7 @@ function bashunit::console_results::print_execution_time() {
   time="${time%%.*}"
   time="${time:-0}"
 
-  if [[ "$time" -lt 1000 ]]; then
+  if [ "$time" -lt 1000 ]; then
     printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
       "Time taken: ${time}ms"
     return
@@ -151,7 +151,7 @@ function bashunit::console_results::print_execution_time() {
 
   local time_in_seconds=$((time / 1000))
 
-  if [[ "$time_in_seconds" -ge 60 ]]; then
+  if [ "$time_in_seconds" -ge 60 ]; then
     local minutes=$((time_in_seconds / 60))
     local seconds=$((time_in_seconds % 60))
     printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
@@ -171,12 +171,12 @@ function bashunit::console_results::print_execution_time() {
 function bashunit::console_results::format_duration() {
   local duration_ms="$1"
 
-  if [[ "$duration_ms" -ge 60000 ]]; then
+  if [ "$duration_ms" -ge 60000 ]; then
     local time_in_seconds=$((duration_ms / 1000))
     local minutes=$((time_in_seconds / 60))
     local seconds=$((time_in_seconds % 60))
     echo "${minutes}m ${seconds}s"
-  elif [[ "$duration_ms" -ge 1000 ]]; then
+  elif [ "$duration_ms" -ge 1000 ]; then
     local integer_part=$((duration_ms / 1000))
     local decimal_part=$(( (duration_ms % 1000) / 10 ))
     local formatted_seconds
@@ -228,13 +228,13 @@ function bashunit::console_results::print_successful_test() {
   shift
 
   local line
-  if [[ -z "$*" ]]; then
+  if [ -z "$*" ]; then
     line=$(printf "%s✓ Passed%s: %s" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name")
   else
     local quoted_args=""
     local arg
     for arg in "$@"; do
-      if [[ -z "$quoted_args" ]]; then
+      if [ -z "$quoted_args" ]; then
         quoted_args="'$arg'"
       else
         quoted_args="$quoted_args, '$arg'"
@@ -247,12 +247,12 @@ function bashunit::console_results::print_successful_test() {
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
     local time_display
-    if [[ "$duration" -ge 60000 ]]; then
+    if [ "$duration" -ge 60000 ]; then
       local time_in_seconds=$((duration / 1000))
       local minutes=$((time_in_seconds / 60))
       local seconds=$((time_in_seconds % 60))
       time_display="${minutes}m ${seconds}s"
-    elif [[ "$duration" -ge 1000 ]]; then
+    elif [ "$duration" -ge 1000 ]; then
       local integer_part=$((duration / 1000))
       local decimal_part=$(( (duration % 1000) / 10 ))
       local formatted_seconds
@@ -338,7 +338,7 @@ function bashunit::console_results::print_skipped_test() {
   local line
   line="$(printf "${_BASHUNIT_COLOR_SKIPPED}↷ Skipped${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
-  if [[ -n "$reason" ]]; then
+  if [ -n "$reason" ]; then
     line="$line$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${reason}")"
   fi
 
@@ -352,7 +352,7 @@ function bashunit::console_results::print_incomplete_test() {
   local line
   line="$(printf "${_BASHUNIT_COLOR_INCOMPLETE}✒ Incomplete${_BASHUNIT_COLOR_DEFAULT}: %s\n" "${function_name}")"
 
-  if [[ -n "$pending" ]]; then
+  if [ -n "$pending" ]; then
     line="$line$(printf "${_BASHUNIT_COLOR_FAINT}    %s${_BASHUNIT_COLOR_DEFAULT}\n" "${pending}")"
   fi
 
@@ -399,7 +399,7 @@ function bashunit::console_results::print_error_test() {
   line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Error${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT}\n" "${test_name}" "${error}")"
 
-  if [[ -n "$raw_output" ]] && bashunit::env::is_show_output_on_failure_enabled; then
+  if [ -n "$raw_output" ] && bashunit::env::is_show_output_on_failure_enabled; then
     line="$line$(printf "    %sOutput:%s\n" "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}")"
     local output_line
     while IFS= read -r output_line; do
@@ -411,7 +411,7 @@ function bashunit::console_results::print_error_test() {
 }
 
 function bashunit::console_results::print_failing_tests_and_reset() {
-  if [[ -s "$FAILURES_OUTPUT_PATH" ]]; then
+  if [ -s "$FAILURES_OUTPUT_PATH" ]; then
     local total_failed
     total_failed=$(bashunit::state::get_tests_failed)
 
@@ -419,7 +419,7 @@ function bashunit::console_results::print_failing_tests_and_reset() {
       printf "\n\n"
     fi
 
-    if [[ "$total_failed" -eq 1 ]]; then
+    if [ "$total_failed" -eq 1 ]; then
       echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 failure:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_failed failures:${_BASHUNIT_COLOR_DEFAULT}\n"
@@ -433,7 +433,7 @@ function bashunit::console_results::print_failing_tests_and_reset() {
 }
 
 function bashunit::console_results::print_skipped_tests_and_reset() {
-  if [[ -s "$SKIPPED_OUTPUT_PATH" ]] && bashunit::env::is_show_skipped_enabled; then
+  if [ -s "$SKIPPED_OUTPUT_PATH" ] && bashunit::env::is_show_skipped_enabled; then
     local total_skipped
     total_skipped=$(bashunit::state::get_tests_skipped)
 
@@ -441,7 +441,7 @@ function bashunit::console_results::print_skipped_tests_and_reset() {
       printf "\n"
     fi
 
-    if [[ "$total_skipped" -eq 1 ]]; then
+    if [ "$total_skipped" -eq 1 ]; then
       echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 skipped test:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_skipped skipped tests:${_BASHUNIT_COLOR_DEFAULT}\n"
@@ -455,7 +455,7 @@ function bashunit::console_results::print_skipped_tests_and_reset() {
 }
 
 function bashunit::console_results::print_incomplete_tests_and_reset() {
-  if [[ -s "$INCOMPLETE_OUTPUT_PATH" ]] && bashunit::env::is_show_incomplete_enabled; then
+  if [ -s "$INCOMPLETE_OUTPUT_PATH" ] && bashunit::env::is_show_incomplete_enabled; then
     local total_incomplete
     total_incomplete=$(bashunit::state::get_tests_incomplete)
 
@@ -463,7 +463,7 @@ function bashunit::console_results::print_incomplete_tests_and_reset() {
       printf "\n"
     fi
 
-    if [[ "$total_incomplete" -eq 1 ]]; then
+    if [ "$total_incomplete" -eq 1 ]; then
       echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 incomplete test:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_incomplete incomplete tests:${_BASHUNIT_COLOR_DEFAULT}\n"
@@ -477,7 +477,7 @@ function bashunit::console_results::print_incomplete_tests_and_reset() {
 }
 
 function bashunit::console_results::print_risky_tests_and_reset() {
-  if [[ -s "$RISKY_OUTPUT_PATH" ]]; then
+  if [ -s "$RISKY_OUTPUT_PATH" ]; then
     local total_risky
     total_risky=$(bashunit::state::get_tests_risky)
 
@@ -485,7 +485,7 @@ function bashunit::console_results::print_risky_tests_and_reset() {
       printf "\n"
     fi
 
-    if [[ "$total_risky" -eq 1 ]]; then
+    if [ "$total_risky" -eq 1 ]; then
       echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 risky test:${_BASHUNIT_COLOR_DEFAULT}\n"
     else
       echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_risky risky tests:${_BASHUNIT_COLOR_DEFAULT}\n"

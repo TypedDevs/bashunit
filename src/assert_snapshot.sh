@@ -7,7 +7,7 @@ function assert_match_snapshot() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
 
-  if [[ ! -f "$snapshot_file" ]]; then
+  if [ ! -f "$snapshot_file" ]; then
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
@@ -21,7 +21,7 @@ function assert_match_snapshot_ignore_colors() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
 
-  if [[ ! -f "$snapshot_file" ]]; then
+  if [ ! -f "$snapshot_file" ]; then
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
@@ -56,7 +56,7 @@ function bashunit::snapshot::resolve_file() {
   local file_hint="$1"
   local func_name="$2"
 
-  if [[ -n "$file_hint" ]]; then
+  if [ -n "$file_hint" ]; then
     echo "$file_hint"
   else
     local dir="./$(dirname "${BASH_SOURCE[2]}")/snapshots"

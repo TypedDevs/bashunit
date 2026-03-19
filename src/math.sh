@@ -8,14 +8,16 @@ function bashunit::math::calculate() {
     return
   fi
 
-  if [[ "$expr" == *.* ]]; then
+  case "$expr" in
+  *.*)
     if bashunit::dependencies::has_awk; then
       awk "BEGIN { print ($expr) }"
       return
     fi
     # Downgrade to integer math by stripping decimals
     expr=$(echo "$expr" | sed -E 's/([0-9]+)\.[0-9]+/\1/g')
-  fi
+    ;;
+  esac
 
   # Remove leading zeros from integers
   expr=$(echo "$expr" | sed -E 's/\b0*([1-9][0-9]*)/\1/g')

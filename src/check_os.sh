@@ -28,26 +28,26 @@ function bashunit::check_os::init() {
 }
 
 function bashunit::check_os::is_ubuntu() {
-  command -v apt >/dev/null
+  command -v apt >/dev/null 2>&1
 }
 
 function bashunit::check_os::is_alpine() {
-  command -v apk >/dev/null
+  command -v apk >/dev/null 2>&1
 }
 
 function bashunit::check_os::is_nixos() {
-  [[ -f /etc/NIXOS ]] && return 0
+  [ -f /etc/NIXOS ] && return 0
   grep -q '^ID=nixos' /etc/os-release 2>/dev/null
 }
 
 _BASHUNIT_UNAME="$(uname)"
 
 function bashunit::check_os::is_linux() {
-  [[ "$_BASHUNIT_UNAME" == "Linux" ]]
+  [ "$_BASHUNIT_UNAME" = "Linux" ]
 }
 
 function bashunit::check_os::is_macos() {
-  [[ "$_BASHUNIT_UNAME" == "Darwin" ]]
+  [ "$_BASHUNIT_UNAME" = "Darwin" ]
 }
 
 function bashunit::check_os::is_windows() {

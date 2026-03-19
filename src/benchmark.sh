@@ -16,37 +16,33 @@ function bashunit::benchmark::parse_annotations() {
   local annotation
   annotation=$(awk "/function[[:space:]]+${fn_name}[[:space:]]*\(/ {print prev; exit} {prev=\$0}" "$script")
 
-  local _re='@revs=([0-9]+)'
-  if [[ "$annotation" =~ $_re ]]; then
-    revs="${BASH_REMATCH[1]}"
+  local _extracted
+  _extracted=$(echo "$annotation" | sed -n 's/.*@revs=\([0-9][0-9]*\).*/\1/p')
+  if [ -n "$_extracted" ]; then
+    revs="$_extracted"
   else
-    _re='@revolutions=([0-9]+)'
-    if [[ "$annotation" =~ $_re ]]; then
-      revs="${BASH_REMATCH[1]}"
+    _extracted=$(echo "$annotation" | sed -n 's/.*@revolutions=\([0-9][0-9]*\).*/\1/p')
+    if [ -n "$_extracted" ]; then
+      revs="$_extracted"
     fi
   fi
 
-  _re='@its=([0-9]+)'
-  if [[ "$annotation" =~ $_re ]]; then
-    its="${BASH_REMATCH[1]}"
+  _extracted=$(echo "$annotation" | sed -n 's/.*@its=\([0-9][0-9]*\).*/\1/p')
+  if [ -n "$_extracted" ]; then
+    its="$_extracted"
   else
-    _re='@iterations=([0-9]+)'
-    if [[ "$annotation" =~ $_re ]]; then
-      its="${BASH_REMATCH[1]}"
+    _extracted=$(echo "$annotation" | sed -n 's/.*@iterations=\([0-9][0-9]*\).*/\1/p')
+    if [ -n "$_extracted" ]; then
+      its="$_extracted"
     fi
   fi
 
-  _re='@max_ms=([0-9.]+)'
-  if [[ "$annotation" =~ $_re ]]; then
-    max_ms="${BASH_REMATCH[1]}"
-  else
-    _re='@max_ms=([0-9.]+)'
-    if [[ "$annotation" =~ $_re ]]; then
-      max_ms="${BASH_REMATCH[1]}"
-    fi
+  _extracted=$(echo "$annotation" | sed -n 's/.*@max_ms=\([0-9.][0-9.]*\).*/\1/p')
+  if [ -n "$_extracted" ]; then
+    max_ms="$_extracted"
   fi
 
-  if [[ -n "$max_ms" ]]; then
+  if [ -n "$max_ms" ]; then
     echo "$revs" "$its" "$max_ms"
   else
     echo "$revs" "$its"
@@ -122,7 +118,7 @@ function bashunit::benchmark::print_results() {
   local has_threshold=false
   local val
   for val in "${_BASHUNIT_BENCH_MAX_MILLIS[@]+"${_BASHUNIT_BENCH_MAX_MILLIS[@]}"}"; do
-    if [[ -n "$val" ]]; then
+    if [ -n "$val" ]; then
       has_threshold=true
       break
     fi
@@ -142,12 +138,12 @@ function bashunit::benchmark::print_results() {
     local avg="${_BASHUNIT_BENCH_AVERAGES[$i]:-}"
     local max_ms="${_BASHUNIT_BENCH_MAX_MILLIS[$i]:-}"
 
-    if [[ -z "$max_ms" ]]; then
+    if [ -z "$max_ms" ]; then
       printf '%-40s %6s %6s %10s\n' "$name" "$revs" "$its" "$avg"
       continue
     fi
 
-    if [[ "$avg" -le "$max_ms" ]]; then
+    if [ "$avg" -le "$max_ms" ]; then
       local raw="≤ ${max_ms}"
       local padded
       padded=$(printf "%14s" "$raw")

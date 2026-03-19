@@ -26,7 +26,7 @@ function bashunit::watch::run() {
   local tool
   tool=$(bashunit::watch::is_available)
 
-  if [[ -z "$tool" ]]; then
+  if [ -z "$tool" ]; then
     printf "%sError: watch mode requires 'inotifywait' (Linux) or 'fswatch' (macOS).%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     printf "  Linux:  sudo apt install inotify-tools\n"

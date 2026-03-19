@@ -6,7 +6,7 @@ function bashunit::upgrade::upgrade() {
   local latest_tag
   latest_tag="$(bashunit::helper::get_latest_tag)"
 
-  if [[ "$BASHUNIT_VERSION" == "$latest_tag" ]]; then
+  if [ "$BASHUNIT_VERSION" = "$latest_tag" ]; then
     echo "> You are already on latest version"
     return
   fi

@@ -31,7 +31,7 @@ function bashunit::date::to_epoch() {
     return 0
   }
   # Try GNU date with normalized (space-separated) input
-  if [[ "$normalized" != "$input" ]]; then
+  if [ "$normalized" != "$input" ]; then
     epoch=$(date -d "$normalized" +%s 2>/dev/null) && {
       echo "$epoch"
       return 0
@@ -71,7 +71,7 @@ function assert_date_equals() {
   local actual
   actual="$(bashunit::date::to_epoch "$2")"
 
-  if [[ "$actual" -ne "$expected" ]]; then
+  if [ "$actual" -ne "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -92,7 +92,7 @@ function assert_date_before() {
   local actual
   actual="$(bashunit::date::to_epoch "$2")"
 
-  if ! [[ "$actual" -lt "$expected" ]]; then
+  if [ "$actual" -ge "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -113,7 +113,7 @@ function assert_date_after() {
   local actual
   actual="$(bashunit::date::to_epoch "$2")"
 
-  if ! [[ "$actual" -gt "$expected" ]]; then
+  if [ "$actual" -le "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -136,7 +136,7 @@ function assert_date_within_range() {
   local actual
   actual="$(bashunit::date::to_epoch "$3")"
 
-  if [[ "$actual" -lt "$from" ]] || [[ "$actual" -gt "$to" ]]; then
+  if [ "$actual" -lt "$from" ] || [ "$actual" -gt "$to" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -159,11 +159,11 @@ function assert_date_within_delta() {
   local delta="$3"
 
   local diff=$((actual - expected))
-  if [[ "$diff" -lt 0 ]]; then
+  if [ "$diff" -lt 0 ]; then
     diff=$((-diff))
   fi
 
-  if [[ "$diff" -gt "$delta" ]]; then
+  if [ "$diff" -gt "$delta" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label

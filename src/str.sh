@@ -22,7 +22,7 @@ function bashunit::str::rpad() {
 
   local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."
-  if [[ ${#clean_left_text} -gt $padding ]]; then
+  if [ ${#clean_left_text} -gt $padding ]; then
     local truncation_length=$((padding < 3 ? 0 : padding - 3))
     clean_left_text="${clean_left_text:0:$truncation_length}"
     is_truncated=true
@@ -32,19 +32,19 @@ function bashunit::str::rpad() {
   local result_left_text=""
   local i=0
   local j=0
-  while [[ $i -lt ${#clean_left_text} && $j -lt ${#left_text} ]]; do
+  while [ $i -lt ${#clean_left_text} ] && [ $j -lt ${#left_text} ]; do
     local char="${clean_left_text:$i:1}"
     local original_char="${left_text:$j:1}"
 
     # If the current character is part of an ANSI sequence, skip it and copy it
-    if [[ "$original_char" == $'\x1b' ]]; then
-      while [[ "${left_text:$j:1}" != "m" && $j -lt ${#left_text} ]]; do
+    if [ "$original_char" = $'\x1b' ]; then
+      while [ "${left_text:$j:1}" != "m" ] && [ $j -lt ${#left_text} ]; do
         result_left_text="$result_left_text${left_text:$j:1}"
         ((j++))
       done
       result_left_text="$result_left_text${left_text:$j:1}" # Append the final 'm'
       ((j++))
-    elif [[ "$char" == "$original_char" ]]; then
+    elif [ "$char" = "$original_char" ]; then
       # Match the actual character
       result_left_text="$result_left_text$char"
       ((i++))
@@ -68,7 +68,7 @@ function bashunit::str::rpad() {
 
   # Ensure the right word is placed exactly at the far right of the screen
   # filling the remaining space with padding
-  if [[ $remaining_space -lt 0 ]]; then
+  if [ $remaining_space -lt 0 ]; then
     remaining_space=0
   fi
 

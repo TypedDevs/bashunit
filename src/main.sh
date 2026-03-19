@@ -16,7 +16,7 @@ function bashunit::main::cmd_test() {
   local _bashunit_coverage_opt_set=false
 
   # Parse test-specific options
-  while [[ $# -gt 0 ]]; do
+  while [ $# -gt 0 ]; do
     case "$1" in
     -a | --assert)
       assert_fn="$2"
@@ -54,7 +54,7 @@ function bashunit::main::cmd_test() {
       ;;
     --debug)
       local output_file="${2:-}"
-      if [[ -n "$output_file" && "${output_file:0:1}" != "-" ]]; then
+      if [ -n "$output_file" ] && [ "${output_file:0:1}" != "-" ]; then
         exec >"$output_file" 2>&1
         shift
       fi
@@ -81,7 +81,7 @@ function bashunit::main::cmd_test() {
       # Support: --env "bootstrap.sh arg1 arg2"
       local boot_file="${2%% *}"
       local boot_args="${2#* }"
-      if [[ "$boot_args" != "$2" ]]; then
+      if [ "$boot_args" != "$2" ]; then
         export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
       fi
       # Export all variables from the env file so they're available in subshells
@@ -178,11 +178,18 @@ function bashunit::main::cmd_test() {
     --coverage-report-html)
       # shellcheck disable=SC2034
       # Use default if no value provided or next arg is a flag
-      if [[ -z "${2:-}" || "${2:-}" == -* ]]; then
+      if [ -z "${2:-}" ]; then
         BASHUNIT_COVERAGE_REPORT_HTML="coverage/html"
       else
-        BASHUNIT_COVERAGE_REPORT_HTML="$2"
-        shift
+        case "${2:-}" in
+        -*)
+          BASHUNIT_COVERAGE_REPORT_HTML="coverage/html"
+          ;;
+        *)
+          BASHUNIT_COVERAGE_REPORT_HTML="$2"
+          shift
+          ;;
+        esac
       fi
       _bashunit_coverage_opt_set=true
       ;;
@@ -195,7 +202,7 @@ function bashunit::main::cmd_test() {
   done
 
   # Auto-enable coverage when any coverage output option is specified
-  if [[ "$_bashunit_coverage_opt_set" == true ]]; then
+  if [ "$_bashunit_coverage_opt_set" = true ]; then
     # shellcheck disable=SC2034
     BASHUNIT_COVERAGE=true
   fi
@@ -204,8 +211,8 @@ function bashunit::main::cmd_test() {
   # Skip filter parsing for assert mode - args are not file paths
   local inline_filter=""
   local inline_filter_file=""
-  if [[ "$raw_args_count" -gt 0 ]]; then
-    if [[ -n "$assert_fn" ]]; then
+  if [ "$raw_args_count" -gt 0 ]; then
+    if [ -n "$assert_fn" ]; then
       # Assert mode: pass args as-is without file path processing
       args=("${raw_args[@]}")
       args_count="$raw_args_count"
@@ -220,7 +227,7 @@ function bashunit::main::cmd_test() {
         } < <(bashunit::helper::parse_file_path_filter "$arg")
 
         # If an inline filter was found, store it
-        if [[ -n "$parsed_filter" ]]; then
+        if [ -n "$parsed_filter" ]; then
           inline_filter="$parsed_filter"
           inline_filter_file="$parsed_path"
         fi
@@ -233,25 +240,27 @@ function bashunit::main::cmd_test() {
       done
 
       # Resolve line number filter to function name
-      if [[ "$inline_filter" == "__line__:"* ]]; then
+      case "$inline_filter" in
+      "__line__:"*)
         local line_number="${inline_filter#__line__:}"
         local resolved_file="${inline_filter_file}"
 
         # If the file path was a pattern, use the first resolved file
-        if [[ "$args_count" -gt 0 ]]; then
+        if [ "$args_count" -gt 0 ]; then
           resolved_file="${args[0]}"
         fi
 
         inline_filter=$(bashunit::helper::find_function_at_line "$resolved_file" "$line_number")
-        if [[ -z "$inline_filter" ]]; then
+        if [ -z "$inline_filter" ]; then
           printf "%sError: No test function found at line %s in %s%s\n" \
             "${_BASHUNIT_COLOR_FAILED}" "$line_number" "$resolved_file" "${_BASHUNIT_COLOR_DEFAULT}"
           exit 1
         fi
-      fi
+        ;;
+      esac
 
       # Use inline filter if no -f filter was provided
-      if [[ -z "$filter" && -n "$inline_filter" ]]; then
+      if [ -z "$filter" ] && [ -n "$inline_filter" ]; then
         filter="$inline_filter"
       fi
     fi
@@ -259,9 +268,9 @@ function bashunit::main::cmd_test() {
 
   # Optional bootstrap
   # shellcheck disable=SC1090,SC2086
-  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+  [ -f "${BASHUNIT_BOOTSTRAP:-}" ] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
 
-  if [[ "${BASHUNIT_NO_OUTPUT:-false}" == true ]]; then
+  if [ "${BASHUNIT_NO_OUTPUT:-false}" = true ]; then
     exec >/dev/null 2>&1
   fi
 
@@ -270,19 +279,19 @@ function bashunit::main::cmd_test() {
   # - Non-zero exit codes from failing tests (set +e)
   # - Pipe failures in test output (set +o pipefail)
   set +euo pipefail
-  if [[ -n "$assert_fn" ]]; then
+  if [ -n "$assert_fn" ]; then
     # Disable coverage for assert mode - it's meant for running single assertions,
     # not tracking code coverage. This also prevents issues when parent bashunit
     # runs with coverage and calls subprocess bashunit with -a flag.
     export BASHUNIT_COVERAGE=false
     bashunit::main::exec_assert "$assert_fn" ${args+"${args[@]}"}
   else
-    if [[ "${BASHUNIT_WATCH_MODE:-false}" == true ]]; then
+    if [ "${BASHUNIT_WATCH_MODE:-false}" = true ]; then
       bashunit::main::watch_loop \
         "$filter" "$tag_filter" "$exclude_tag_filter" \
         ${args+"${args[@]}"}
     else
-      if [[ "$args_count" -gt 0 ]]; then
+      if [ "$args_count" -gt 0 ]; then
         bashunit::main::exec_tests \
           "$filter" "$tag_filter" "$exclude_tag_filter" \
           "${args[@]}"
@@ -308,7 +317,7 @@ function bashunit::main::cmd_bench() {
   export BASHUNIT_BENCH_MODE=true
 
   # Parse bench-specific options
-  while [[ $# -gt 0 ]]; do
+  while [ $# -gt 0 ]; do
     case "$1" in
     -f | --filter)
       filter="$2"
@@ -324,7 +333,7 @@ function bashunit::main::cmd_bench() {
       # Support: --env "bootstrap.sh arg1 arg2"
       local boot_file="${2%% *}"
       local boot_args="${2#* }"
-      if [[ "$boot_args" != "$2" ]]; then
+      if [ "$boot_args" != "$2" ]; then
         export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
       fi
       # Export all variables from the env file so they're available in subshells
@@ -361,7 +370,7 @@ function bashunit::main::cmd_bench() {
   done
 
   # Expand positional arguments
-  if [[ "$raw_args_count" -gt 0 ]]; then
+  if [ "$raw_args_count" -gt 0 ]; then
     local arg file
     for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
       while IFS= read -r file; do
@@ -373,12 +382,12 @@ function bashunit::main::cmd_bench() {
 
   # Optional bootstrap
   # shellcheck disable=SC1090,SC2086
-  [[ -f "${BASHUNIT_BOOTSTRAP:-}" ]] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+  [ -f "${BASHUNIT_BOOTSTRAP:-}" ] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
 
   set +euo pipefail
 
   # Bash 3.0 compatible: only pass args if we have files
-  if [[ "$args_count" -gt 0 ]]; then
+  if [ "$args_count" -gt 0 ]; then
     bashunit::main::exec_benchmarks "$filter" "${args[@]}"
   else
     bashunit::main::exec_benchmarks "$filter"
@@ -389,10 +398,12 @@ function bashunit::main::cmd_bench() {
 # Subcommand: doc
 #############################
 function bashunit::main::cmd_doc() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_doc_help
     exit 0
-  fi
+    ;;
+  esac
 
   bashunit::doc::print_asserts "${1:-}"
   exit 0
@@ -402,10 +413,12 @@ function bashunit::main::cmd_doc() {
 # Subcommand: init
 #############################
 function bashunit::main::cmd_init() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_init_help
     exit 0
-  fi
+    ;;
+  esac
 
   bashunit::init::project "${1:-}"
   exit 0
@@ -415,10 +428,12 @@ function bashunit::main::cmd_init() {
 # Subcommand: learn
 #############################
 function bashunit::main::cmd_learn() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_learn_help
     exit 0
-  fi
+    ;;
+  esac
 
   bashunit::learn::start
   exit 0
@@ -428,10 +443,12 @@ function bashunit::main::cmd_learn() {
 # Subcommand: watch
 #############################
 function bashunit::main::cmd_watch() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_watch_help
     exit 0
-  fi
+    ;;
+  esac
 
   local path="${1:-.}"
   shift || true
@@ -444,10 +461,12 @@ function bashunit::main::cmd_watch() {
 # Subcommand: upgrade
 #############################
 function bashunit::main::cmd_upgrade() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_upgrade_help
     exit 0
-  fi
+    ;;
+  esac
 
   bashunit::upgrade::upgrade
   exit 0
@@ -477,13 +496,15 @@ function bashunit::main::is_exit_code_assertion() {
 }
 
 function bashunit::main::cmd_assert() {
-  if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  case "${1:-}" in
+  -h | --help)
     bashunit::console_header::print_assert_help
     exit 0
-  fi
+    ;;
+  esac
 
   local first_arg="${1:-}"
-  if [[ -z "$first_arg" ]]; then
+  if [ -z "$first_arg" ]; then
     printf "%sError: Assert function name or command is required.%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_assert_help
@@ -499,7 +520,7 @@ function bashunit::main::cmd_assert() {
     local assert_fn="$first_arg"
     shift
     bashunit::main::exec_assert "$assert_fn" "$@"
-  elif [[ $# -ge 2 ]] && bashunit::main::is_assertion_function "$2"; then
+  elif [ $# -ge 2 ] && bashunit::main::is_assertion_function "$2"; then
     # New multi-assertion syntax: bashunit assert "<cmd>" <assertion1> <arg1> ...
     # Detected by: first arg is not assertion, but second arg is an assertion name
     bashunit::main::exec_multi_assert "$@"
@@ -519,14 +540,14 @@ function bashunit::main::watch_get_checksum() {
 
   local file checksum=""
   for file in "${paths[@]+"${paths[@]}"}"; do
-    if [[ -d "$file" ]]; then
+    if [ -d "$file" ]; then
       local found
       found=$(find "$file" -name '*.sh' -type f \
         -exec stat -f '%m %N' {} + 2>/dev/null ||
         find "$file" -name '*.sh' -type f \
           -exec stat -c '%Y %n' {} + 2>/dev/null) || true
       checksum="${checksum}${found}"
-    elif [[ -f "$file" ]]; then
+    elif [ -f "$file" ]; then
       local mtime
       mtime=$(stat -f '%m' "$file" 2>/dev/null ||
         stat -c '%Y' "$file" 2>/dev/null) || true
@@ -544,7 +565,7 @@ function bashunit::main::watch_loop() {
 
   local IFS=$' \t\n'
   local -a watch_paths=("$@")
-  [[ -d "src" ]] && watch_paths[${#watch_paths[@]}]="src"
+  [ -d "src" ] && watch_paths[${#watch_paths[@]}]="src"
 
   trap 'printf "\n%sWatch mode stopped.%s\n" \
     "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"; \
@@ -556,7 +577,7 @@ function bashunit::main::watch_loop() {
     current_checksum=$(bashunit::main::watch_get_checksum \
       "${watch_paths[@]}")
 
-    if [[ "$current_checksum" != "$last_checksum" ]]; then
+    if [ "$current_checksum" != "$last_checksum" ]; then
       last_checksum="$current_checksum"
       printf '\033[2J\033[H'
       printf "%s[watch] Running tests...%s\n\n" \
@@ -564,7 +585,7 @@ function bashunit::main::watch_loop() {
         "${_BASHUNIT_COLOR_DEFAULT}"
 
       (
-        if [[ $# -gt 0 ]]; then
+        if [ $# -gt 0 ]; then
           bashunit::main::exec_tests \
             "$filter" "$tag_filter" \
             "$exclude_tag_filter" "$@"
@@ -597,14 +618,14 @@ function bashunit::main::exec_tests() {
   local test_files_count=0
   local _line
   while IFS= read -r _line; do
-    [[ -z "$_line" ]] && continue
+    [ -z "$_line" ] && continue
     test_files[test_files_count]="$_line"
     test_files_count=$((test_files_count + 1))
   done < <(bashunit::helper::load_test_files "$filter" "$@")
 
   bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]:-}"
 
-  if [[ "$test_files_count" -eq 0 ]]; then
+  if [ "$test_files_count" -eq 0 ]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
@@ -612,7 +633,7 @@ function bashunit::main::exec_tests() {
 
   # Trap SIGINT (Ctrl-C) and call the cleanup function
   trap 'bashunit::main::cleanup' SIGINT
-  trap '[[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ]] && bashunit::main::handle_stop_on_failure_sync' EXIT
+  trap '[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ] && bashunit::main::handle_stop_on_failure_sync' EXIT
 
   if bashunit::env::is_parallel_run_enabled && ! bashunit::parallel::is_enabled; then
     printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_BASHUNIT_COLOR_INCOMPLETE}"
@@ -664,11 +685,11 @@ function bashunit::main::exec_tests() {
   bashunit::console_results::render_result
   exit_code=$?
 
-  if [[ -n "$BASHUNIT_LOG_JUNIT" ]]; then
+  if [ -n "$BASHUNIT_LOG_JUNIT" ]; then
     bashunit::reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
   fi
 
-  if [[ -n "$BASHUNIT_REPORT_HTML" ]]; then
+  if [ -n "$BASHUNIT_REPORT_HTML" ]; then
     bashunit::reports::generate_report_html "$BASHUNIT_REPORT_HTML"
   fi
 
@@ -681,11 +702,11 @@ function bashunit::main::exec_tests() {
 
     bashunit::coverage::report_text
 
-    if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then
+    if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
       bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
     fi
 
-    if [[ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]]; then
+    if [ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]; then
       bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
     fi
 
@@ -714,14 +735,14 @@ function bashunit::main::exec_benchmarks() {
   local bench_files_count=0
   local _line
   while IFS= read -r _line; do
-    [[ -z "$_line" ]] && continue
+    [ -z "$_line" ] && continue
     bench_files[bench_files_count]="$_line"
     bench_files_count=$((bench_files_count + 1))
   done < <(bashunit::helper::load_bench_files "$filter" "$@")
 
   bashunit::internal_log "exec_benchmarks" "filter:$filter" "files:${bench_files[*]:-}"
 
-  if [[ "$bench_files_count" -eq 0 ]]; then
+  if [ "$bench_files_count" -eq 0 ]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
@@ -766,7 +787,7 @@ function bashunit::main::exec_assert() {
   local original_assert_fn=$1
   local -a args=()
   local args_count=$(($# - 1))
-  [[ $# -gt 1 ]] && args=("${@:2}")
+  [ $# -gt 1 ] && args=("${@:2}")
 
   local assert_fn=$original_assert_fn
 
@@ -800,7 +821,7 @@ function bashunit::main::exec_assert() {
     ;;
   esac
 
-  if [[ -n "$output" ]]; then
+  if [ -n "$output" ]; then
     echo "$output" 1>&1
     assert_fn="assert_same"
   fi
@@ -812,7 +833,7 @@ function bashunit::main::exec_assert() {
   "$assert_fn" "${args[@]}" 1>&2
   bashunit_exit_code=$?
 
-  if [[ "$(bashunit::state::get_tests_failed)" -gt 0 ]] || [[ "$(bashunit::state::get_assertions_failed)" -gt 0 ]]; then
+  if [ "$(bashunit::state::get_tests_failed)" -gt 0 ] || [ "$(bashunit::state::get_assertions_failed)" -gt 0 ]; then
     return 1
   fi
 
@@ -824,14 +845,14 @@ function bashunit::main::handle_assert_exit_code() {
   local output
   local inner_exit_code=0
 
-  if [[ $(command -v "${cmd%% *}") ]]; then
+  if command -v "${cmd%% *}" >/dev/null 2>&1; then
     output=$(eval "$cmd" 2>&1 || echo "inner_exit_code:$?")
     local last_line
     last_line=$(echo "$output" | tail -n 1)
-    if echo "$last_line" | grep -q 'inner_exit_code:[0-9]*'; then
+    if [ "$(echo "$last_line" | "$GREP" -c 'inner_exit_code:[0-9]*' || true)" -gt 0 ]; then
       inner_exit_code=$(echo "$last_line" | grep -o 'inner_exit_code:[0-9]*' | cut -d':' -f2)
       local _re='^[0-9]+$'
-      if ! [[ "$inner_exit_code" =~ $_re ]]; then
+      if [ "$(echo "$inner_exit_code" | "$GREP" -cE "$_re" || true)" -eq 0 ]; then
         inner_exit_code=1
       fi
       output=$(echo "$output" | sed '$d')
@@ -851,7 +872,7 @@ function bashunit::main::exec_multi_assert() {
   shift
 
   # Require at least one assertion
-  if [[ $# -lt 1 ]]; then
+  if [ $# -lt 1 ]; then
     printf "%sError: Multi-assertion mode requires at least one assertion.%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
     printf "Usage: bashunit assert \"<command>\" <assertion1> <arg1> [<assertion2> <arg2>...]\n" 1>&2
@@ -859,7 +880,7 @@ function bashunit::main::exec_multi_assert() {
   fi
 
   # Check that assertions come in pairs (assertion + arg)
-  if [[ $# -lt 2 ]] || [[ $(($# % 2)) -ne 0 ]]; then
+  if [ $# -lt 2 ] || [ $(($# % 2)) -ne 0 ]; then
     local assertion_name="${1:-}"
     printf "%sError: Missing argument for assertion '%s'.%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "$assertion_name" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
@@ -873,17 +894,17 @@ function bashunit::main::exec_multi_assert() {
   cmd_exit_code=$?
 
   # Print stdout for user visibility
-  if [[ -n "$stdout" ]]; then
+  if [ -n "$stdout" ]; then
     echo "$stdout" 1>&1
   fi
 
   # Parse and execute assertions in pairs
   local overall_result=0
-  while [[ $# -gt 0 ]]; do
+  while [ $# -gt 0 ]; do
     local assertion_name="$1"
     local assertion_arg="${2:-}"
 
-    if [[ -z "$assertion_arg" ]]; then
+    if [ -z "$assertion_arg" ]; then
       printf "%sError: Missing argument for assertion '%s'.%s\n" \
         "${_BASHUNIT_COLOR_FAILED}" "$assertion_name" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
       return 1
@@ -914,7 +935,7 @@ function bashunit::main::exec_multi_assert() {
       "$assert_fn" "$assertion_arg" "$stdout" 1>&2
     fi
 
-    if [[ "$(bashunit::state::get_assertions_failed)" -gt 0 ]]; then
+    if [ "$(bashunit::state::get_assertions_failed)" -gt 0 ]; then
       overall_result=1
     fi
   done

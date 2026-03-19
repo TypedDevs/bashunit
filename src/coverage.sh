@@ -41,24 +41,23 @@ function bashunit::coverage::auto_discover_paths() {
 
     # Remove test suffixes to get source name: assert_test.sh -> assert
     local source_name="${file_basename%_test.sh}"
-    [[ "$source_name" == "$file_basename" ]] && source_name="${file_basename%Test.sh}"
-    [[ "$source_name" == "$file_basename" ]] && continue # Not a test file pattern
+    [ "$source_name" = "$file_basename" ] && source_name="${file_basename%Test.sh}"
+    [ "$source_name" = "$file_basename" ] && continue # Not a test file pattern
 
     # Find matching source files recursively
     local found_file
     while IFS= read -r -d '' found_file; do
       # Skip test files and vendor directories
-      [[ "$found_file" == *test* ]] && continue
-      [[ "$found_file" == *Test* ]] && continue
-      [[ "$found_file" == *vendor* ]] && continue
-      [[ "$found_file" == *node_modules* ]] && continue
+      case "$found_file" in
+      *test* | *Test* | *vendor* | *node_modules*) continue ;;
+      esac
       discovered_paths[discovered_paths_count]="$found_file"
       discovered_paths_count=$((discovered_paths_count + 1))
     done < <(find "$project_root" -name "${source_name}*.sh" -type f -print0 2>/dev/null)
   done
 
   # Return unique paths, comma-separated
-  if [[ "$discovered_paths_count" -gt 0 ]]; then
+  if [ "$discovered_paths_count" -gt 0 ]; then
     printf '%s\n' "${discovered_paths[@]}" | sort -u | tr '\n' ',' | sed 's/,$//'
   fi
 }
@@ -71,7 +70,7 @@ function bashunit::coverage::init() {
   # Skip coverage init if we're a subprocess of another coverage-enabled bashunit
   # This prevents nested bashunit calls (e.g., in acceptance tests) from
   # interfering with the parent's coverage tracking
-  if [[ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ]]; then
+  if [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ]; then
     export BASHUNIT_COVERAGE=false
     return 0
   fi
@@ -133,7 +132,7 @@ function bashunit::coverage::normalize_path() {
   local file="$1"
 
   # Normalize path to absolute
-  if [[ -f "$file" ]]; then
+  if [ -f "$file" ]; then
     echo "$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
   else
     echo "$file"
@@ -142,7 +141,7 @@ function bashunit::coverage::normalize_path() {
 
 # Get deduplicated list of tracked files
 function bashunit::coverage::get_tracked_files() {
-  if [[ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]]; then
+  if [ ! -f "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]; then
     return
   fi
   sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES"
@@ -151,9 +150,9 @@ function bashunit::coverage::get_tracked_files() {
 # Get coverage class (high/medium/low) based on percentage
 function bashunit::coverage::get_coverage_class() {
   local pct="$1"
-  if [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80} ]]; then
+  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}" ]; then
     echo "high"
-  elif [[ $pct -ge ${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50} ]]; then
+  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}" ]; then
     echo "medium"
   else
     echo "low"
@@ -164,7 +163,7 @@ function bashunit::coverage::get_coverage_class() {
 function bashunit::coverage::calculate_percentage() {
   local hit="$1"
   local executable="$2"
-  if [[ $executable -gt 0 ]]; then
+  if [ "$executable" -gt 0 ]; then
     echo $((hit * 100 / executable))
   else
     echo "0"
@@ -187,10 +186,10 @@ function bashunit::coverage::record_line() {
   local lineno="$2"
 
   # Skip if no file or line
-  [[ -z "$file" || -z "$lineno" ]] && return 0
+  { [ -z "$file" ] || [ -z "$lineno" ]; } && return 0
 
   # Skip if coverage data file doesn't exist (trap inherited by child process)
-  [[ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ]] && return 0
+  [ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ] && return 0
 
   # Fast in-memory should_track cache (avoids grep + file I/O per line)
   case "$_BASHUNIT_COVERAGE_TRACK_CACHE" in
@@ -225,8 +224,8 @@ function bashunit::coverage::record_line() {
   _BASHUNIT_COVERAGE_BUFFER="${_BASHUNIT_COVERAGE_BUFFER}${normalized_file}:${lineno}
 "
   # Also buffer test hit data if in a test context
-  if [[ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE:-}" && \
-        -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FN:-}" ]]; then
+  if [ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE:-}" ] &&
+    [ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FN:-}" ]; then
     _BASHUNIT_COVERAGE_HITS_BUFFER="${_BASHUNIT_COVERAGE_HITS_BUFFER}${normalized_file}:${lineno}|${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE}:${_BASHUNIT_COVERAGE_CURRENT_TEST_FN}
 "
   fi
@@ -234,21 +233,21 @@ function bashunit::coverage::record_line() {
   _BASHUNIT_COVERAGE_BUFFER_COUNT=$((_BASHUNIT_COVERAGE_BUFFER_COUNT + 1))
 
   # Flush buffer to disk when threshold is reached
-  if [[ $_BASHUNIT_COVERAGE_BUFFER_COUNT -ge \
-        $_BASHUNIT_COVERAGE_BUFFER_LIMIT ]]; then
+  if [ "$_BASHUNIT_COVERAGE_BUFFER_COUNT" -ge \
+    "$_BASHUNIT_COVERAGE_BUFFER_LIMIT" ]; then
     bashunit::coverage::flush_buffer
   fi
 }
 
 function bashunit::coverage::flush_buffer() {
-  [[ -z "$_BASHUNIT_COVERAGE_BUFFER" ]] && return 0
+  [ -z "$_BASHUNIT_COVERAGE_BUFFER" ] && return 0
 
   # Determine output files (parallel-safe)
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
   local test_hits_file="$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
 
   # Cache the parallel check to avoid function calls
-  if [[ -z "$_BASHUNIT_COVERAGE_IS_PARALLEL" ]]; then
+  if [ -z "$_BASHUNIT_COVERAGE_IS_PARALLEL" ]; then
     if bashunit::parallel::is_enabled; then
       _BASHUNIT_COVERAGE_IS_PARALLEL="yes"
     else
@@ -256,7 +255,7 @@ function bashunit::coverage::flush_buffer() {
     fi
   fi
 
-  if [[ "$_BASHUNIT_COVERAGE_IS_PARALLEL" == "yes" ]]; then
+  if [ "$_BASHUNIT_COVERAGE_IS_PARALLEL" = "yes" ]; then
     data_file="${_BASHUNIT_COVERAGE_DATA_FILE}.$$"
     test_hits_file="${_BASHUNIT_COVERAGE_TEST_HITS_FILE}.$$"
   fi
@@ -264,7 +263,7 @@ function bashunit::coverage::flush_buffer() {
   # Write buffered data in a single I/O operation
   printf '%s' "$_BASHUNIT_COVERAGE_BUFFER" >>"$data_file"
 
-  if [[ -n "$_BASHUNIT_COVERAGE_HITS_BUFFER" ]]; then
+  if [ -n "$_BASHUNIT_COVERAGE_HITS_BUFFER" ]; then
     printf '%s' "$_BASHUNIT_COVERAGE_HITS_BUFFER" >>"$test_hits_file"
   fi
 
@@ -278,26 +277,26 @@ function bashunit::coverage::should_track() {
   local file="$1"
 
   # Skip empty paths
-  [[ -z "$file" ]] && return 1
+  [ -z "$file" ] && return 1
 
   # Skip if tracked files list doesn't exist (trap inherited by child process)
-  [[ -z "$_BASHUNIT_COVERAGE_TRACKED_FILES" ]] && return 1
+  [ -z "$_BASHUNIT_COVERAGE_TRACKED_FILES" ] && return 1
 
   # Check file-based cache for previous decision (Bash 3.0 compatible)
   # Cache format: "file:0" for excluded, "file:1" for tracked
   # In parallel mode, use per-process cache to avoid race conditions
   local cache_file="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
-  if bashunit::parallel::is_enabled && [[ -n "$cache_file" ]]; then
+  if bashunit::parallel::is_enabled && [ -n "$cache_file" ]; then
     cache_file="${cache_file}.$$"
     # Initialize per-process cache if needed
-    [[ ! -f "$cache_file" ]] && [[ -d "$(dirname "$cache_file")" ]] && : >"$cache_file"
+    [ ! -f "$cache_file" ] && [ -d "$(dirname "$cache_file")" ] && : >"$cache_file"
   fi
-  if [[ -n "$cache_file" && -f "$cache_file" ]]; then
+  if [ -n "$cache_file" ] && [ -f "$cache_file" ]; then
     local cached_decision
     # Use || true to prevent exit in strict mode when grep finds no match
     cached_decision=$(grep "^${file}:" "$cache_file" 2>/dev/null | head -1) || true
-    if [[ -n "$cached_decision" ]]; then
-      [[ "${cached_decision##*:}" == "1" ]] && return 0 || return 1
+    if [ -n "$cached_decision" ]; then
+      [ "${cached_decision##*:}" = "1" ] && return 0 || return 1
     fi
   fi
 
@@ -316,7 +315,7 @@ function bashunit::coverage::should_track() {
     *$pattern*)
       IFS="$old_ifs"
       # Cache exclusion decision (use per-process cache in parallel mode)
-      [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:0" >>"$cache_file"
+      { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:0" >>"$cache_file"
       return 1
       ;;
     esac
@@ -328,27 +327,32 @@ function bashunit::coverage::should_track() {
   for path in $BASHUNIT_COVERAGE_PATHS; do
     # Resolve relative paths
     local resolved_path
-    if [[ "$path" == /* ]]; then
+    case "$path" in
+    /*)
       resolved_path="$path"
-    else
+      ;;
+    *)
       resolved_path="$(pwd)/$path"
-    fi
+      ;;
+    esac
 
-    if [[ "$normalized_file" == "$resolved_path"* ]]; then
+    case "$normalized_file" in
+    "$resolved_path"*)
       matched=true
       break
-    fi
+      ;;
+    esac
   done
   IFS="$old_ifs"
 
-  if [[ "$matched" == "false" ]]; then
+  if [ "$matched" = "false" ]; then
     # Cache exclusion decision (use per-process cache in parallel mode)
-    [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:0" >>"$cache_file"
+    { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:0" >>"$cache_file"
     return 1
   fi
 
   # Cache tracking decision (use per-process cache in parallel mode)
-  [[ -n "$cache_file" && -f "$cache_file" ]] && echo "${file}:1" >>"$cache_file"
+  { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:1" >>"$cache_file"
 
   # Track this file for later reporting
   # In parallel mode, use a per-process file to avoid race conditions
@@ -358,7 +362,7 @@ function bashunit::coverage::should_track() {
   fi
 
   # Only write if parent directory exists
-  if [[ -d "$(dirname "$tracked_file")" ]]; then
+  if [ -d "$(dirname "$tracked_file")" ]; then
     # Check if not already written to avoid duplicates
     if ! grep -q "^${normalized_file}$" "$tracked_file" 2>/dev/null; then
       echo "$normalized_file" >>"$tracked_file"
@@ -378,9 +382,9 @@ function bashunit::coverage::aggregate_parallel() {
   # Use nullglob to handle case when no files match
   local pid_files pid_file
   pid_files=$(ls -1 "${base_file}."* 2>/dev/null) || true
-  if [[ -n "$pid_files" ]]; then
+  if [ -n "$pid_files" ]; then
     while IFS= read -r pid_file; do
-      [[ -f "$pid_file" ]] || continue
+      [ -f "$pid_file" ] || continue
       cat "$pid_file" >>"$base_file"
       rm -f "$pid_file"
     done <<<"$pid_files"
@@ -388,20 +392,20 @@ function bashunit::coverage::aggregate_parallel() {
 
   # Find and merge all per-process tracked files lists
   pid_files=$(ls -1 "${tracked_base}."* 2>/dev/null) || true
-  if [[ -n "$pid_files" ]]; then
+  if [ -n "$pid_files" ]; then
     while IFS= read -r pid_file; do
-      [[ -f "$pid_file" ]] || continue
+      [ -f "$pid_file" ] || continue
       cat "$pid_file" >>"$tracked_base"
       rm -f "$pid_file"
     done <<<"$pid_files"
   fi
 
   # Find and merge all per-process test hits files
-  if [[ -n "$test_hits_base" ]]; then
+  if [ -n "$test_hits_base" ]; then
     pid_files=$(ls -1 "${test_hits_base}."* 2>/dev/null) || true
-    if [[ -n "$pid_files" ]]; then
+    if [ -n "$pid_files" ]; then
       while IFS= read -r pid_file; do
-        [[ -f "$pid_file" ]] || continue
+        [ -f "$pid_file" ] || continue
         cat "$pid_file" >>"$test_hits_base"
         rm -f "$pid_file"
       done <<<"$pid_files"
@@ -409,7 +413,7 @@ function bashunit::coverage::aggregate_parallel() {
   fi
 
   # Deduplicate tracked files
-  if [[ -f "$tracked_base" ]]; then
+  if [ -f "$tracked_base" ]; then
     sort -u "$tracked_base" -o "$tracked_base"
   fi
 }
@@ -431,30 +435,25 @@ function bashunit::coverage::is_executable_line() {
   : "$lineno"
 
   # Skip empty lines (line with only whitespace)
-  [[ -z "${line// /}" ]] && return 1
+  [ -z "${line// /}" ] && return 1
 
   # Skip comment-only lines (including shebang)
-  local _re='^[[:space:]]*#'
-  [[ "$line" =~ $_re ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*#' || true)" -gt 0 ] && return 1
 
   # Skip function declaration lines (but not single-line functions with body)
-  [[ "$line" =~ $_BASHUNIT_COVERAGE_FUNC_PATTERN ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_FUNC_PATTERN" || true)" -gt 0 ] && return 1
 
   # Skip lines with only braces
-  _re='^[[:space:]]*[\{\}][[:space:]]*$'
-  [[ "$line" =~ $_re ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*[\{\}][[:space:]]*$' || true)" -gt 0 ] && return 1
 
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
-  _re='^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$'
-  [[ "$line" =~ $_re ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
 
   # Skip case patterns like "--option)" or "*)"
-  _re='^[[:space:]]*[^\)]+\)[[:space:]]*$'
-  [[ "$line" =~ $_re ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*[^\)]+\)[[:space:]]*$' || true)" -gt 0 ] && return 1
 
   # Skip standalone ) for arrays/subshells
-  _re='^[[:space:]]*\)[[:space:]]*(#.*)?$'
-  [[ "$line" =~ $_re ]] && return 1
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*\)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
 
   return 0
 }
@@ -465,7 +464,7 @@ function bashunit::coverage::get_executable_lines() {
   local lineno=0
   local line
 
-  while IFS= read -r line || [[ -n "$line" ]]; do
+  while IFS= read -r line || [ -n "$line" ]; do
     ((lineno++))
     bashunit::coverage::is_executable_line "$line" "$lineno" && ((count++))
   done <"$file"
@@ -476,7 +475,7 @@ function bashunit::coverage::get_executable_lines() {
 function bashunit::coverage::get_hit_lines() {
   local file="$1"
 
-  if [[ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+  if [ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
     echo "0"
     return
   fi
@@ -486,7 +485,7 @@ function bashunit::coverage::get_hit_lines() {
   hit_lines=$( (grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null || true) |
     cut -d: -f2 | sort -u)
 
-  if [[ -z "$hit_lines" ]]; then
+  if [ -z "$hit_lines" ]; then
     echo "0"
     return
   fi
@@ -510,13 +509,13 @@ function bashunit::coverage::get_line_hits() {
   local file="$1"
   local lineno="$2"
 
-  if [[ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+  if [ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
     echo "0"
     return
   fi
 
   local count
-  count=$(grep -c "^${file}:${lineno}$" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null) || count=0
+  count=$("$GREP" -c "^${file}:${lineno}$" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null) || count=0
   echo "$count"
 }
 
@@ -525,7 +524,7 @@ function bashunit::coverage::get_line_hits() {
 function bashunit::coverage::get_all_line_hits() {
   local file="$1"
 
-  if [[ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+  if [ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
     return
   fi
 
@@ -543,7 +542,7 @@ function bashunit::coverage::get_all_line_hits() {
 function bashunit::coverage::get_all_line_tests() {
   local file="$1"
 
-  if [[ ! -f "${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}" ]]; then
+  if [ ! -f "${_BASHUNIT_COVERAGE_TEST_HITS_FILE:-}" ]; then
     return
   fi
 
@@ -565,27 +564,24 @@ function bashunit::coverage::extract_functions() {
   local fn_start=0
   local line
 
-  while IFS= read -r line || [[ -n "$line" ]]; do
+  while IFS= read -r line || [ -n "$line" ]; do
     ((lineno++))
 
     # Check for function definition patterns
     # Pattern 1: function name() { or function name {
     # Pattern 2: name() { or name () {
-    if [[ $in_function -eq 0 ]]; then
+    if [ "$in_function" -eq 0 ]; then
       local fn_name=""
 
       # Match: function name() or function name {
       local _re='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
-      if [[ "$line" =~ $_re ]]; then
-        fn_name="${BASH_REMATCH[2]}"
-      else
+      fn_name=$(echo "$line" | sed -nE "s/$_re/\2/p")
+      if [ -z "$fn_name" ]; then
         _re='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
-        if [[ "$line" =~ $_re ]]; then
-          fn_name="${BASH_REMATCH[2]}"
-        fi
+        fn_name=$(echo "$line" | sed -nE "s/$_re/\2/p")
       fi
 
-      if [[ -n "$fn_name" ]]; then
+      if [ -n "$fn_name" ]; then
         in_function=1
         current_fn="$fn_name"
         fn_start=$lineno
@@ -597,8 +593,7 @@ function bashunit::coverage::extract_functions() {
         brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
 
         # Single-line function
-        local _re_ob='\{' _re_cb='\}'
-        if [[ $brace_count -eq 0 ]] && [[ "$line" =~ $_re_ob ]] && [[ "$line" =~ $_re_cb ]]; then
+        if [ "$brace_count" -eq 0 ] && [ "$(echo "$line" | "$GREP" -c '\{' || true)" -gt 0 ] && [ "$(echo "$line" | "$GREP" -c '\}' || true)" -gt 0 ]; then
           echo "${current_fn}:${fn_start}:${lineno}"
           in_function=0
           current_fn=""
@@ -608,13 +603,13 @@ function bashunit::coverage::extract_functions() {
     fi
 
     # Track braces inside function
-    if [[ $in_function -eq 1 ]]; then
+    if [ "$in_function" -eq 1 ]; then
       local open_braces="${line//[^\{]/}"
       local close_braces="${line//[^\}]/}"
       brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
 
       # Function ended
-      if [[ $brace_count -le 0 ]]; then
+      if [ "$brace_count" -le 0 ]; then
         echo "${current_fn}|${fn_start}|${lineno}"
         in_function=0
         current_fn=""
@@ -624,7 +619,7 @@ function bashunit::coverage::extract_functions() {
   done <"$file"
 
   # Handle unclosed function (shouldn't happen in valid code)
-  if [[ $in_function -eq 1 && -n "$current_fn" ]]; then
+  if [ "$in_function" -eq 1 ] && [ -n "$current_fn" ]; then
     echo "${current_fn}|${fn_start}|${lineno}"
   fi
 }
@@ -651,14 +646,14 @@ function bashunit::coverage::get_function_coverage() {
     if bashunit::coverage::is_executable_line "$line_content" "$lineno"; then
       ((executable++))
       local line_hits=${_hits_ref[$lineno]:-0}
-      if [[ $line_hits -gt 0 ]]; then
+      if [ "$line_hits" -gt 0 ]; then
         ((hit++))
       fi
     fi
   done
 
   local pct=0
-  if [[ $executable -gt 0 ]]; then
+  if [ "$executable" -gt 0 ]; then
     pct=$((hit * 100 / executable))
   fi
 
@@ -670,7 +665,7 @@ function bashunit::coverage::get_percentage() {
   local total_hit=0
 
   while IFS= read -r file; do
-    [[ -z "$file" || ! -f "$file" ]] && continue
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
     local executable hit
     executable=$(bashunit::coverage::get_executable_lines "$file")
@@ -698,7 +693,7 @@ function bashunit::coverage::report_text() {
 
   local file
   while IFS= read -r file; do
-    [[ -z "$file" || ! -f "$file" ]] && continue
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
     has_files=true
 
     local executable hit pct class
@@ -712,7 +707,7 @@ function bashunit::coverage::report_text() {
 
     # Determine color based on class
     local color="" reset=""
-    if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
+    if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
       reset=$'\033[0m'
       case "$class" in
       high) color=$'\033[32m' ;;   # Green
@@ -727,7 +722,7 @@ function bashunit::coverage::report_text() {
       "$color" "$display_file" "$hit" "$executable" "$pct" "$reset"
   done < <(bashunit::coverage::get_tracked_files)
 
-  if [[ "$has_files" != "true" ]]; then
+  if [ "$has_files" != "true" ]; then
     echo "---------------"
     echo "Total: 0/0 (0%)"
     return 0
@@ -741,7 +736,7 @@ function bashunit::coverage::report_text() {
   total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
 
   local color="" reset=""
-  if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
+  if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
     reset=$'\033[0m'
     case "$total_class" in
     high) color=$'\033[32m' ;;
@@ -754,7 +749,7 @@ function bashunit::coverage::report_text() {
     "$color" "$total_hit" "$total_executable" "$total_pct" "$reset"
 
   # Show report location if generated
-  if [[ -n "$BASHUNIT_COVERAGE_REPORT" ]]; then
+  if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
     echo ""
     echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
   fi
@@ -763,7 +758,7 @@ function bashunit::coverage::report_text() {
 function bashunit::coverage::report_lcov() {
   local output_file="${1:-$BASHUNIT_COVERAGE_REPORT}"
 
-  if [[ -z "$output_file" ]]; then
+  if [ -z "$output_file" ]; then
     return 0
   fi
 
@@ -775,14 +770,14 @@ function bashunit::coverage::report_lcov() {
     echo "TN:"
 
     while IFS= read -r file; do
-      [[ -z "$file" || ! -f "$file" ]] && continue
+      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
       echo "SF:$file"
 
       local lineno=0
       local line
       # shellcheck disable=SC2094
-      while IFS= read -r line || [[ -n "$line" ]]; do
+      while IFS= read -r line || [ -n "$line" ]; do
         ((lineno++))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
         echo "DA:${lineno},$(bashunit::coverage::get_line_hits "$file" "$lineno")"
@@ -800,17 +795,17 @@ function bashunit::coverage::report_lcov() {
 }
 
 function bashunit::coverage::check_threshold() {
-  if [[ -z "$BASHUNIT_COVERAGE_MIN" ]]; then
+  if [ -z "$BASHUNIT_COVERAGE_MIN" ]; then
     return 0
   fi
 
   local pct
   pct=$(bashunit::coverage::get_percentage)
 
-  if [[ $pct -lt $BASHUNIT_COVERAGE_MIN ]]; then
+  if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
     local color=""
     local reset=""
-    if [[ "${BASHUNIT_NO_COLOR:-false}" != "true" ]]; then
+    if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
       color=$'\033[31m'
       reset=$'\033[0m'
     fi
@@ -841,7 +836,7 @@ function bashunit::coverage::path_to_filename() {
 function bashunit::coverage::report_html() {
   local output_dir="${1:-coverage/html}"
 
-  if [[ -z "$output_dir" ]]; then
+  if [ -z "$output_dir" ]; then
     return 0
   fi
 
@@ -857,7 +852,7 @@ function bashunit::coverage::report_html() {
   local file=""
 
   while IFS= read -r file; do
-    [[ -z "$file" || ! -f "$file" ]] && continue
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
     local executable hit pct
     executable=$(bashunit::coverage::get_executable_lines "$file")
@@ -910,7 +905,7 @@ function bashunit::coverage::generate_index_html() {
   # Handle array passed as arguments - Bash 3.0 compatible
   local -a file_data=()
   local file_count=0
-  if [[ $# -gt 0 ]]; then
+  if [ $# -gt 0 ]; then
     file_data=("$@")
     file_count=$#
   fi
@@ -1284,15 +1279,20 @@ function bashunit::coverage::generate_file_html() {
   local -a tests_by_line=()
   local _line_and_test
   while IFS= read -r _line_and_test; do
-    [[ -z "$_line_and_test" ]] && continue
+    [ -z "$_line_and_test" ] && continue
     local _tln="${_line_and_test%%|*}"
     local _tinfo="${_line_and_test#*|}"
-    if [[ -n "${tests_by_line[_tln]:-}" ]]; then
+    if [ -n "${tests_by_line[_tln]:-}" ]; then
       # Append only if not already present (avoid duplicates)
       # Use newline boundaries to prevent false positives (e.g., test_foo matching test_foo_bar)
-      if [[ $'\n'"${tests_by_line[_tln]}"$'\n' != *$'\n'"$_tinfo"$'\n'* ]]; then
+      case $'\n'"${tests_by_line[_tln]}"$'\n' in
+      *$'\n'"$_tinfo"$'\n'*)
+        # already present, skip
+        ;;
+      *)
         tests_by_line[_tln]="${tests_by_line[_tln]}"$'\n'"${_tinfo}"
-      fi
+        ;;
+      esac
     else
       tests_by_line[_tln]="$_tinfo"
     fi
@@ -1513,7 +1513,7 @@ EOF
     local functions_data
     functions_data=$(bashunit::coverage::extract_functions "$file")
 
-    if [[ -n "$functions_data" ]]; then
+    if [ -n "$functions_data" ]; then
       cat <<'EOF'
   <div class="function-summary">
     <table class="function-table">
@@ -1528,7 +1528,7 @@ EOF
 EOF
       local fn_entry
       while IFS= read -r fn_entry; do
-        [[ -z "$fn_entry" ]] && continue
+        [ -z "$fn_entry" ] && continue
         local fn_name fn_start fn_end
         fn_name="${fn_entry%%|*}"
         local rest="${fn_entry#*|}"
@@ -1545,7 +1545,7 @@ EOF
           if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
             ((fn_executable++))
             local ln_hits=${hits_by_line[$ln]:-0}
-            if [[ $ln_hits -gt 0 ]]; then
+            if [ "$ln_hits" -gt 0 ]; then
               ((fn_hit++))
             fi
           fi
@@ -1596,7 +1596,7 @@ EOF
 
     local lineno=0
     local line
-    while IFS= read -r line || [[ -n "$line" ]]; do
+    while IFS= read -r line || [ -n "$line" ]; do
       ((lineno++))
 
       local escaped_line
@@ -1609,17 +1609,17 @@ EOF
         # O(1) lookup from pre-loaded array
         local hits=${hits_by_line[$lineno]:-0}
 
-        if [[ $hits -gt 0 ]]; then
+        if [ "$hits" -gt 0 ]; then
           row_class="covered"
 
           # Check if we have test info for this line
           local test_info="${tests_by_line[$lineno]:-}"
-          if [[ -n "$test_info" ]]; then
+          if [ -n "$test_info" ]; then
             # Build tooltip with test information
             local tooltip_html="<div class=\"hits-tooltip\"><div class=\"hits-tooltip-title\">Tests hitting this line</div><ul class=\"hits-tooltip-list\">"
             local test_file test_fn
             while IFS=':' read -r test_file test_fn; do
-              [[ -z "$test_file" ]] && continue
+              [ -z "$test_file" ] && continue
               local short_file
               short_file=$(basename "$test_file")
               tooltip_html="$tooltip_html<li><span class=\"hits-tooltip-file\">${short_file}</span>:<span class=\"hits-tooltip-fn\">${test_fn}</span></li>"
@@ -1659,7 +1659,7 @@ EOF
 }
 
 function bashunit::coverage::cleanup() {
-  if [[ -n "$_BASHUNIT_COVERAGE_DATA_FILE" ]]; then
+  if [ -n "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
     local coverage_dir
     coverage_dir=$(dirname "$_BASHUNIT_COVERAGE_DATA_FILE")
     rm -rf "$coverage_dir"

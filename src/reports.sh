@@ -34,7 +34,7 @@ function bashunit::reports::add_test_failed() {
 
 function bashunit::reports::add_test() {
   # Skip tracking when no report output is requested
-  [[ -n "${BASHUNIT_LOG_JUNIT:-}" || -n "${BASHUNIT_REPORT_HTML:-}" ]] || return 0
+  { [ -n "${BASHUNIT_LOG_JUNIT:-}" ] || [ -n "${BASHUNIT_REPORT_HTML:-}" ]; } || return 0
 
   local file="$1"
   local test_name="$2"
@@ -94,15 +94,15 @@ function bashunit::reports::generate_junit_xml() {
       echo "        time=\"$test_time\">"
 
       # Add failure element for failed tests with actual failure message
-      if [[ "$status" == "failed" ]]; then
+      if [ "$status" = "failed" ]; then
         local escaped_message
         escaped_message=$(bashunit::reports::__xml_escape "$failure_message")
         echo "      <failure message=\"Test failed\">$escaped_message</failure>"
-      elif [[ "$status" == "risky" ]]; then
+      elif [ "$status" = "risky" ]; then
         echo "      <skipped message=\"Test has no assertions (risky)\"/>"
-      elif [[ "$status" == "skipped" ]]; then
+      elif [ "$status" = "skipped" ]; then
         echo "      <skipped/>"
-      elif [[ "$status" == "incomplete" ]]; then
+      elif [ "$status" = "incomplete" ]; then
         echo "      <skipped message=\"Test incomplete\"/>"
       fi
 
@@ -124,8 +124,9 @@ function bashunit::reports::generate_report_html() {
   local tests_failed=$(bashunit::state::get_tests_failed)
   local time=$(bashunit::clock::total_runtime_in_milliseconds)
 
-  # Temporary file to store test cases by file
-  local temp_file="temp_test_cases.txt"
+  # Temporary file to store test cases by file (use mktemp for parallel safety)
+  local temp_file
+  temp_file=$(mktemp "${TMPDIR:-/tmp}/bashunit-report.XXXXXX")
 
   # Collect test cases by file
   : >"$temp_file" # Clear temp file if it exists

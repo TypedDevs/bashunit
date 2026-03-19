@@ -117,7 +117,7 @@ function bashunit::parallel::mark_stop_on_failure() {
 }
 
 function bashunit::parallel::must_stop_on_failure() {
-  [[ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]]
+  [ -f "$TEMP_FILE_PARALLEL_STOP_ON_FAILURE" ]
 }
 
 function bashunit::parallel::cleanup() {
