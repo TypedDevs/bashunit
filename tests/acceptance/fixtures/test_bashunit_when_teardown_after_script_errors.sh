@@ -5,5 +5,5 @@ function tear_down_after_script() {
 }
 
 function test_sample() {
-  :
+  assert_same "foo" "foo"
 }

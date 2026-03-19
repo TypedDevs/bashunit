@@ -30,6 +30,7 @@ function bashunit::console_results::render_result() {
   local tests_incomplete=$_BASHUNIT_TESTS_INCOMPLETE
   local tests_snapshot=$_BASHUNIT_TESTS_SNAPSHOT
   local tests_failed=$_BASHUNIT_TESTS_FAILED
+  local tests_risky=$_BASHUNIT_TESTS_RISKY
   local assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
   local assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
   local assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
@@ -42,6 +43,7 @@ function bashunit::console_results::render_result() {
   total_tests=$((total_tests + tests_incomplete))
   total_tests=$((total_tests + tests_snapshot))
   total_tests=$((total_tests + tests_failed))
+  total_tests=$((total_tests + tests_risky))
 
   local total_assertions=0
   total_assertions=$((total_assertions + assertions_passed))
@@ -65,6 +67,9 @@ function bashunit::console_results::render_result() {
   fi
   if [[ "$tests_failed" -gt 0 ]] || [[ "$assertions_failed" -gt 0 ]]; then
     printf " %s%s failed%s," "$_BASHUNIT_COLOR_FAILED" "$tests_failed" "$_BASHUNIT_COLOR_DEFAULT"
+  fi
+  if [[ "$tests_risky" -gt 0 ]]; then
+    printf " %s%s risky%s," "$_BASHUNIT_COLOR_RISKY" "$tests_risky" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
@@ -90,6 +95,12 @@ function bashunit::console_results::render_result() {
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " Some tests failed " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 1
+  fi
+
+  if [[ "$tests_risky" -gt 0 ]]; then
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_RISKY" " Some tests risky (no assertions) " "$_BASHUNIT_COLOR_DEFAULT"
+    bashunit::console_results::print_execution_time
+    return 0
   fi
 
   if [[ "$tests_incomplete" -gt 0 ]]; then
@@ -359,6 +370,23 @@ function bashunit::console_results::print_snapshot_test() {
   bashunit::state::print_line "snapshot" "$line"
 }
 
+function bashunit::console_results::print_risky_test() {
+  local test_name=$1
+  local duration=${2:-"0"}
+
+  local line
+  line=$(printf "%s⚠ Risky%s: %s" "$_BASHUNIT_COLOR_RISKY" "$_BASHUNIT_COLOR_DEFAULT" "$test_name")
+
+  local full_line=$line
+  if bashunit::env::is_show_execution_time_enabled; then
+    local time_display
+    time_display=$(bashunit::console_results::format_duration "$duration")
+    full_line="$(printf "%s\n" "$(bashunit::str::rpad "$line" "$time_display")")"
+  fi
+
+  bashunit::state::print_line "risky" "$full_line"
+}
+
 function bashunit::console_results::print_error_test() {
   local function_name=$1
   local error="$2"
@@ -443,6 +471,28 @@ function bashunit::console_results::print_incomplete_tests_and_reset() {
 
     tr -d '\r' <"$INCOMPLETE_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
     rm "$INCOMPLETE_OUTPUT_PATH"
+
+    echo ""
+  fi
+}
+
+function bashunit::console_results::print_risky_tests_and_reset() {
+  if [[ -s "$RISKY_OUTPUT_PATH" ]]; then
+    local total_risky
+    total_risky=$(bashunit::state::get_tests_risky)
+
+    if bashunit::env::is_simple_output_enabled; then
+      printf "\n"
+    fi
+
+    if [[ "$total_risky" -eq 1 ]]; then
+      echo -e "${_BASHUNIT_COLOR_BOLD}There was 1 risky test:${_BASHUNIT_COLOR_DEFAULT}\n"
+    else
+      echo -e "${_BASHUNIT_COLOR_BOLD}There were $total_risky risky tests:${_BASHUNIT_COLOR_DEFAULT}\n"
+    fi
+
+    tr -d '\r' <"$RISKY_OUTPUT_PATH" | sed '/^[[:space:]]*$/d' | sed 's/^/|/'
+    rm "$RISKY_OUTPUT_PATH"
 
     echo ""
   fi

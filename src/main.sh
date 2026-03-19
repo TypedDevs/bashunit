@@ -657,6 +657,7 @@ function bashunit::main::exec_tests() {
 
   if ! bashunit::env::is_tap_output_enabled; then
     bashunit::console_results::print_failing_tests_and_reset
+    bashunit::console_results::print_risky_tests_and_reset
     bashunit::console_results::print_incomplete_tests_and_reset
     bashunit::console_results::print_skipped_tests_and_reset
   fi
@@ -750,6 +751,7 @@ function bashunit::main::cleanup() {
 function bashunit::main::handle_stop_on_failure_sync() {
   printf "\n%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   bashunit::console_results::print_failing_tests_and_reset
+  bashunit::console_results::print_risky_tests_and_reset
   bashunit::console_results::print_incomplete_tests_and_reset
   bashunit::console_results::print_skipped_tests_and_reset
   bashunit::console_results::render_result

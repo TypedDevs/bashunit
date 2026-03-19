@@ -276,6 +276,7 @@ MKTEMP="$(command -v mktemp)"
 FAILURES_OUTPUT_PATH=$("$MKTEMP")
 SKIPPED_OUTPUT_PATH=$("$MKTEMP")
 INCOMPLETE_OUTPUT_PATH=$("$MKTEMP")
+RISKY_OUTPUT_PATH=$("$MKTEMP")
 
 # Initialize temp directory once at startup for performance
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"

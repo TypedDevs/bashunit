@@ -691,7 +691,10 @@ function bashunit::runner::run_test() {
     "division by 0" "cannot allocate memory" "bad file descriptor" \
     "segmentation fault" "illegal option" "argument list too long" \
     "readonly variable" "missing keyword" "killed" \
-    "cannot execute binary file" "invalid arithmetic operator"; do
+    "cannot execute binary file" "invalid arithmetic operator" \
+    "ambiguous redirect" "integer expression expected" \
+    "too many arguments" "value too great" \
+    "not a valid identifier" "unexpected EOF"; do
     if [[ "$runtime_output" == *"$error"* ]]; then
       runtime_error="${runtime_output#*: }"  # Remove everything up to and including ": "
       runtime_error=${runtime_error//$'\n'/} # Remove all newlines using parameter expansion
@@ -811,6 +814,18 @@ function bashunit::runner::run_test() {
     bashunit::reports::add_test_skipped "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_skipped_result_output "$test_file" "$fn_name" "$subshell_output"
     bashunit::internal_log "Test skipped" "$label"
+    return
+  fi
+
+  # Check for risky test (zero assertions)
+  if [[ "$total_assertions" -eq 0 ]]; then
+    bashunit::state::add_tests_risky
+    if ! bashunit::env::is_failures_only_enabled; then
+      bashunit::console_results::print_risky_test "${label}" "$duration"
+    fi
+    bashunit::reports::add_test_risky "$test_file" "$label" "$duration" "$total_assertions"
+    bashunit::runner::write_risky_result_output "$test_file" "$fn_name"
+    bashunit::internal_log "Test risky" "$label"
     return
   fi
 
@@ -1066,6 +1081,21 @@ function bashunit::runner::write_incomplete_result_output() {
   echo -e "$test_nr) $test_file:$line_number\n$output_msg" >>"$INCOMPLETE_OUTPUT_PATH"
 }
 
+function bashunit::runner::write_risky_result_output() {
+  local test_file=$1
+  local fn_name=$2
+
+  local line_number
+  line_number=$(bashunit::helper::get_function_line_number "$fn_name")
+
+  local test_nr="*"
+  if ! bashunit::parallel::is_enabled; then
+    test_nr=$(bashunit::state::get_tests_risky)
+  fi
+
+  echo -e "$test_nr) $test_file:$line_number\nTest has no assertions (risky)" >>"$RISKY_OUTPUT_PATH"
+}
+
 function bashunit::runner::record_file_hook_failure() {
   local hook_name="$1"
   local test_file="$2"
@@ -1103,15 +1133,19 @@ function bashunit::runner::execute_file_hook() {
   local hook_output_file
   hook_output_file=$(bashunit::temp_file "${hook_name}_output")
 
-  # Enable errexit and errtrace to catch any failing command in the hook.
-  # The ERR trap saves the exit status to a global variable (since return value
-  # from trap doesn't propagate properly), disables errexit (to prevent caller
-  # from exiting) and returns from the hook function, preventing subsequent
-  # commands from executing.
+  # Enable errtrace to catch any failing command in the hook.
+  # Using -E (errtrace) without -e (errexit) prevents the main process from
+  # exiting on source failures (Bash 3.2 doesn't trigger ERR trap with -eE).
+  # The ERR trap saves the exit status to a global variable, cleans up shell
+  # options, and returns from the hook function to prevent subsequent commands
+  # from executing.
   # Variables set before the failure are preserved since we don't use a subshell.
   _BASHUNIT_HOOK_ERR_STATUS=0
-  set -eE
-  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+  set -E
+  if bashunit::env::is_strict_mode_enabled; then
+    set -uo pipefail
+  fi
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +Eu +o pipefail; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
     "$hook_name"
@@ -1120,7 +1154,7 @@ function bashunit::runner::execute_file_hook() {
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS
   trap - ERR
-  set +eE
+  set +Eu +o pipefail
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""
@@ -1204,15 +1238,19 @@ function bashunit::runner::execute_test_hook() {
   local hook_output_file
   hook_output_file=$(bashunit::temp_file "${hook_name}_output")
 
-  # Enable errexit and errtrace to catch any failing command in the hook.
-  # The ERR trap saves the exit status to a global variable (since return value
-  # from trap doesn't propagate properly), disables errexit (to prevent caller
-  # from exiting) and returns from the hook function, preventing subsequent
-  # commands from executing.
+  # Enable errtrace to catch any failing command in the hook.
+  # Using -E (errtrace) without -e (errexit) prevents the subshell from
+  # exiting on source failures (Bash 3.2 doesn't trigger ERR trap with -eE).
+  # The ERR trap saves the exit status to a global variable, cleans up shell
+  # options, and returns from the hook function to prevent subsequent commands
+  # from executing.
   # Variables set before the failure are preserved since we don't use a subshell.
   _BASHUNIT_HOOK_ERR_STATUS=0
-  set -eE
-  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +eE; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+  set -E
+  if bashunit::env::is_strict_mode_enabled; then
+    set -uo pipefail
+  fi
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +Eu +o pipefail; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
 
   {
     "$hook_name"
@@ -1221,7 +1259,7 @@ function bashunit::runner::execute_test_hook() {
   # Capture exit status from global variable and clean up
   status=$_BASHUNIT_HOOK_ERR_STATUS
   trap - ERR
-  set +eE
+  set +Eu +o pipefail
 
   if [[ -f "$hook_output_file" ]]; then
     hook_output=""

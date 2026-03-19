@@ -12,13 +12,31 @@ function bashunit::date::to_epoch() {
     ;;
   esac
 
+  # Normalize ISO 8601: replace T with space, strip Z suffix, strip tz offset
+  local normalized="$input"
+  normalized="${normalized/T/ }"
+  normalized="${normalized%Z}"
+  # Strip timezone offset (+HHMM or -HHMM) at end for initial parsing
+  case "$normalized" in
+  *[+-][0-9][0-9][0-9][0-9])
+    normalized="${normalized%[+-][0-9][0-9][0-9][0-9]}"
+    ;;
+  esac
+
   # Format conversion (GNU vs BSD date)
   local epoch
-  # Try GNU date first (-d flag)
+  # Try GNU date first (-d flag) with original input
   epoch=$(date -d "$input" +%s 2>/dev/null) && {
     echo "$epoch"
     return 0
   }
+  # Try GNU date with normalized (space-separated) input
+  if [[ "$normalized" != "$input" ]]; then
+    epoch=$(date -d "$normalized" +%s 2>/dev/null) && {
+      echo "$epoch"
+      return 0
+    }
+  fi
   # Try BSD date (-j -f flag) with ISO 8601 datetime + timezone offset
   epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "$input" +%s 2>/dev/null) && {
     echo "$epoch"
