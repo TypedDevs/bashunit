@@ -292,21 +292,21 @@ function test_find_total_tests_no_files() {
 
 function test_find_total_tests_simple_file() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
 
 function test_find_total_tests_simple_file_bash() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.bash"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.bash"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
 
 function test_find_total_tests_with_provider() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/provider_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "3" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
@@ -314,8 +314,8 @@ function test_find_total_tests_with_provider() {
 function test_find_total_tests_multiple_files() {
   local file1
   local file2
-  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
-  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_test.sh"
+  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "5" "$(helpers_test::find_total_in_subshell "" "$file1" "$file2")"
 }
@@ -323,8 +323,8 @@ function test_find_total_tests_multiple_files() {
 function test_find_total_tests_with_filter() {
   local file1
   local file2
-  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
-  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_test.sh"
+  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "3" "$(helpers_test::find_total_in_subshell "with_provider" "$file1" "$file2")"
 }
@@ -387,28 +387,28 @@ function test_parse_file_path_filter_with_colon_in_path() {
 
 function test_find_function_at_line_first_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_first" "$(bashunit::helper::find_function_at_line "$file" 4)"
 }
 
 function test_find_function_at_line_second_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_second" "$(bashunit::helper::find_function_at_line "$file" 8)"
 }
 
 function test_find_function_at_line_exact_function_line() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_first" "$(bashunit::helper::find_function_at_line "$file" 3)"
 }
 
 function test_find_function_at_line_before_any_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_test.sh"
+  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "" "$(bashunit::helper::find_function_at_line "$file" 1)"
 }
