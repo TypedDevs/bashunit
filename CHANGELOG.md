@@ -2,8 +2,14 @@
 
 ## Unreleased
 
+### Added
+- Add risky test detection for tests with zero assertions (shown as warning, does not fail)
+
 ### Fixed
 - Fix `source` of non-existent file in `set_up()` silently passing all tests (#611)
+- Fix `set_up` running before strict mode — unbound variables in hooks now detected with `--strict`
+- Fix `source` failure in `tear_down()`, `set_up_before_script()`, and `tear_down_after_script()` silently passing
+- Add missing runtime error patterns: ambiguous redirect, integer expression expected, too many arguments, value too great, not a valid identifier, unexpected EOF
 
 ## [0.34.0](https://github.com/TypedDevs/bashunit/compare/0.33.0...0.34.0) - 2026-03-17
 

@@ -24,6 +24,10 @@ function bashunit::reports::add_test_passed() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "passed"
 }
 
+function bashunit::reports::add_test_risky() {
+  bashunit::reports::add_test "$1" "$2" "$3" "$4" "risky"
+}
+
 function bashunit::reports::add_test_failed() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "failed" "$5"
 }
@@ -94,6 +98,8 @@ function bashunit::reports::generate_junit_xml() {
         local escaped_message
         escaped_message=$(bashunit::reports::__xml_escape "$failure_message")
         echo "      <failure message=\"Test failed\">$escaped_message</failure>"
+      elif [[ "$status" == "risky" ]]; then
+        echo "      <skipped message=\"Test has no assertions (risky)\"/>"
       elif [[ "$status" == "skipped" ]]; then
         echo "      <skipped/>"
       elif [[ "$status" == "incomplete" ]]; then
@@ -151,6 +157,7 @@ function bashunit::reports::generate_report_html() {
     echo "    .skipped { background-color: #fcf8e3; }"
     echo "    .incomplete { background-color: #d9edf7; }"
     echo "    .snapshot { background-color: #dfe6e9; }"
+    echo "    .risky { background-color: #f5e6f5; }"
     echo "  </style>"
     echo "</head>"
     echo "<body>"

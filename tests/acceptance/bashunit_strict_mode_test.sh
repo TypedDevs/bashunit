@@ -36,6 +36,14 @@ function test_strict_mode_fails_on_nonzero_returns() {
   assert_contains "failed" "$output"
 }
 
+function test_strict_mode_fails_on_unset_variable_in_set_up() {
+  local output
+  output=$(BASHUNIT_STRICT_MODE=true ./bashunit --no-parallel --simple --skip-env-file --env "$TEST_ENV_FILE" \
+    tests/acceptance/fixtures/strict_mode_setup_unset_variable.sh 2>&1) || true
+
+  assert_contains "failed" "$output"
+}
+
 function test_cli_flag_overrides_env_var() {
   local output
   output=$(BASHUNIT_STRICT_MODE=false ./bashunit \

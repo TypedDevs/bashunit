@@ -12,6 +12,7 @@ _BASHUNIT_TESTS_FAILED=0
 _BASHUNIT_TESTS_SKIPPED=0
 _BASHUNIT_TESTS_INCOMPLETE=0
 _BASHUNIT_TESTS_SNAPSHOT=0
+_BASHUNIT_TESTS_RISKY=0
 _BASHUNIT_ASSERTIONS_PASSED=0
 _BASHUNIT_ASSERTIONS_FAILED=0
 _BASHUNIT_ASSERTIONS_SKIPPED=0
@@ -66,6 +67,14 @@ function bashunit::state::get_tests_snapshot() {
 
 function bashunit::state::add_tests_snapshot() {
   ((_BASHUNIT_TESTS_SNAPSHOT++)) || true
+}
+
+function bashunit::state::get_tests_risky() {
+  echo "$_BASHUNIT_TESTS_RISKY"
+}
+
+function bashunit::state::add_tests_risky() {
+  ((_BASHUNIT_TESTS_RISKY++)) || true
 }
 
 function bashunit::state::get_assertions_passed() {
@@ -298,6 +307,7 @@ function bashunit::state::print_line() {
   skipped) char="${_BASHUNIT_COLOR_SKIPPED}S${_BASHUNIT_COLOR_DEFAULT}" ;;
   incomplete) char="${_BASHUNIT_COLOR_INCOMPLETE}I${_BASHUNIT_COLOR_DEFAULT}" ;;
   snapshot) char="${_BASHUNIT_COLOR_SNAPSHOT}N${_BASHUNIT_COLOR_DEFAULT}" ;;
+  risky) char="${_BASHUNIT_COLOR_RISKY}R${_BASHUNIT_COLOR_DEFAULT}" ;;
   error) char="${_BASHUNIT_COLOR_FAILED}E${_BASHUNIT_COLOR_DEFAULT}" ;;
   *) char="?" && bashunit::log "warning" "unknown test type '$type'" ;;
   esac
@@ -362,6 +372,10 @@ function bashunit::state::print_tap_line() {
     ;;
   snapshot)
     printf "ok %d - %s # snapshot\n" \
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    ;;
+  risky)
+    printf "ok %d - %s # RISKY no assertions\n" \
       "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
     ;;
   *)

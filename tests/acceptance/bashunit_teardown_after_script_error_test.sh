@@ -17,7 +17,7 @@ function test_bashunit_when_tear_down_after_script_errors() {
   local error_line="✗ Error: Tear down after script"
   local message_line="    $fixture: line 4: missing_cleanup_command: command not found"
   local tests_summary="Tests:      1 passed, 1 failed, 2 total"
-  local assertions_summary="Assertions: 0 passed, 0 failed, 0 total"
+  local assertions_summary="Assertions: 1 passed, 0 failed, 1 total"
 
   local actual_raw
   set +e

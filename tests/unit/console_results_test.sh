@@ -13,6 +13,7 @@ function set_state_value() {
   bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
   bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
   bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
+  bashunit::state::get_tests_risky) var_name="_BASHUNIT_TESTS_RISKY" ;;
   bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
   bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
   bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
@@ -40,6 +41,7 @@ function mock_all_state_getters() {
   set_state_value "bashunit::state::get_tests_skipped" "0"
   set_state_value "bashunit::state::get_tests_incomplete" "0"
   set_state_value "bashunit::state::get_tests_snapshot" "0"
+  set_state_value "bashunit::state::get_tests_risky" "0"
   set_state_value "bashunit::state::get_assertions_passed" "0"
   set_state_value "bashunit::state::get_assertions_failed" "0"
   set_state_value "bashunit::state::get_assertions_skipped" "0"
@@ -52,6 +54,7 @@ function mock_all_state_getters() {
   _BASHUNIT_TESTS_SKIPPED=0
   _BASHUNIT_TESTS_INCOMPLETE=0
   _BASHUNIT_TESTS_SNAPSHOT=0
+  _BASHUNIT_TESTS_RISKY=0
   _BASHUNIT_ASSERTIONS_PASSED=0
   _BASHUNIT_ASSERTIONS_FAILED=0
   _BASHUNIT_ASSERTIONS_SKIPPED=0
