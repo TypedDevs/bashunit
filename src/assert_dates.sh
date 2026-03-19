@@ -17,11 +17,8 @@ function bashunit::date::to_epoch() {
   normalized="${normalized/T/ }"
   normalized="${normalized%Z}"
   # Strip timezone offset (+HHMM or -HHMM) at end for initial parsing
-  # shellcheck disable=SC2034
-  local tz_offset=""
   case "$normalized" in
   *[+-][0-9][0-9][0-9][0-9])
-    tz_offset="${normalized: -5}"
     normalized="${normalized%[+-][0-9][0-9][0-9][0-9]}"
     ;;
   esac
