@@ -45,7 +45,7 @@ function assert_true() {
   bashunit::run_command_or_eval "$actual"
   local exit_code=$?
 
-  if [[ $exit_code -ne 0 ]]; then
+  if [ "$exit_code" -ne 0 ]; then
     bashunit::handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
   else
     bashunit::state::add_assertions_passed
@@ -73,7 +73,7 @@ function assert_false() {
   bashunit::run_command_or_eval "$actual"
   local exit_code=$?
 
-  if [[ $exit_code -eq 0 ]]; then
+  if [ "$exit_code" -eq 0 ]; then
     bashunit::handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
   else
     bashunit::state::add_assertions_passed
@@ -83,17 +83,18 @@ function assert_false() {
 function bashunit::run_command_or_eval() {
   local cmd="$1"
 
-  local _re='^eval'
-  if [[ "$cmd" =~ $_re ]]; then
+  case "$cmd" in
+  eval\ * | eval)
     eval "${cmd#eval }" &>/dev/null
-  else
-    _re='^alias'
-    if [[ "$(command -v "$cmd")" =~ $_re ]]; then
+    ;;
+  *)
+    if [ "$(command -v "$cmd" | "$GREP" -cE '^alias' || true)" -gt 0 ]; then
       eval "$cmd" &>/dev/null
     else
       "$cmd" &>/dev/null
     fi
-  fi
+    ;;
+  esac
   return $?
 }
 
@@ -115,7 +116,7 @@ function assert_same() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$expected" != "$actual" ]]; then
+  if [ "$expected" != "$actual" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -139,7 +140,7 @@ function assert_equals() {
   local expected_cleaned
   expected_cleaned=$(bashunit::str::strip_ansi "$expected")
 
-  if [[ "$expected_cleaned" != "$actual_cleaned" ]]; then
+  if [ "$expected_cleaned" != "$actual_cleaned" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -163,7 +164,7 @@ function assert_not_equals() {
   local expected_cleaned
   expected_cleaned=$(bashunit::str::strip_ansi "$expected")
 
-  if [[ "$expected_cleaned" == "$actual_cleaned" ]]; then
+  if [ "$expected_cleaned" = "$actual_cleaned" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -181,7 +182,7 @@ function assert_empty() {
 
   local expected="$1"
 
-  if [[ "$expected" != "" ]]; then
+  if [ "$expected" != "" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -199,7 +200,7 @@ function assert_not_empty() {
 
   local expected="$1"
 
-  if [[ "$expected" == "" ]]; then
+  if [ "$expected" = "" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -218,7 +219,7 @@ function assert_not_same() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$expected" == "$actual" ]]; then
+  if [ "$expected" = "$actual" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -241,7 +242,9 @@ function assert_contains() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ $actual == *"$expected"* ]]; then
+  case "$actual" in
+  *"$expected"*) ;;
+  *)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -249,7 +252,8 @@ function assert_contains() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -267,7 +271,9 @@ function assert_contains_ignore_case() {
   expected_lower=$(printf '%s' "$expected" | tr '[:upper:]' '[:lower:]')
   actual_lower=$(printf '%s' "$actual" | tr '[:upper:]' '[:lower:]')
 
-  if [[ "$actual_lower" != *"$expected_lower"* ]]; then
+  case "$actual_lower" in
+  *"$expected_lower"*) ;;
+  *)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -275,7 +281,8 @@ function assert_contains_ignore_case() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -290,7 +297,8 @@ function assert_not_contains() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual == *"$expected"* ]]; then
+  case "$actual" in
+  *"$expected"*)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -298,7 +306,8 @@ function assert_not_contains() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -313,14 +322,17 @@ function assert_matches() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if ! [[ "$actual" =~ $expected ]]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
-    return
+  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
+    # Retry with newlines collapsed for cross-line patterns
+    if [ "$(printf '%s' "$actual" | tr '\n' ' ' | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
+      local test_fn
+      test_fn="$(bashunit::helper::find_test_function_name)"
+      local label
+      label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+      bashunit::assert::mark_failed
+      bashunit::console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
+      return
+    fi
   fi
 
   bashunit::state::add_assertions_passed
@@ -336,7 +348,9 @@ function assert_not_matches() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ "$actual" =~ $expected ]]; then
+  # Check both line-by-line and with newlines collapsed for cross-line patterns
+  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -gt 0 ] ||
+    [ "$(printf '%s' "$actual" | tr '\n' ' ' | "$GREP" -cE "$expected" || true)" -gt 0 ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -361,7 +375,7 @@ function assert_exec() {
   local check_stdout=false
   local check_stderr=false
 
-  while [[ $# -gt 0 ]]; do
+  while [ $# -gt 0 ]; do
     case "$1" in
     --exit)
       expected_exit="$2"
@@ -401,14 +415,14 @@ function assert_exec() {
   local actual_desc="exit: $exit_code"
   local failed=0
 
-  if [[ "$exit_code" -ne "$expected_exit" ]]; then
+  if [ "$exit_code" -ne "$expected_exit" ]; then
     failed=1
   fi
 
   if $check_stdout; then
     expected_desc="$expected_desc"$'\n'"stdout: $expected_stdout"
     actual_desc="$actual_desc"$'\n'"stdout: $stdout"
-    if [[ "$stdout" != "$expected_stdout" ]]; then
+    if [ "$stdout" != "$expected_stdout" ]; then
       failed=1
     fi
   fi
@@ -416,12 +430,12 @@ function assert_exec() {
   if $check_stderr; then
     expected_desc="$expected_desc"$'\n'"stderr: $expected_stderr"
     actual_desc="$actual_desc"$'\n'"stderr: $stderr"
-    if [[ "$stderr" != "$expected_stderr" ]]; then
+    if [ "$stderr" != "$expected_stderr" ]; then
       failed=1
     fi
   fi
 
-  if [[ $failed -eq 1 ]]; then
+  if [ "$failed" -eq 1 ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -440,7 +454,7 @@ function assert_exit_code() {
 
   local expected_exit_code="$1"
 
-  if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
+  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -459,7 +473,7 @@ function assert_successful_code() {
 
   local expected_exit_code=0
 
-  if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
+  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -477,7 +491,7 @@ function assert_unsuccessful_code() {
   local actual_exit_code=${3-"$?"} # Capture $? before guard check
   bashunit::assert::should_skip && return 0
 
-  if [[ "$actual_exit_code" -eq 0 ]]; then
+  if [ "$actual_exit_code" -eq 0 ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -496,7 +510,7 @@ function assert_general_error() {
 
   local expected_exit_code=1
 
-  if [[ "$actual_exit_code" -ne "$expected_exit_code" ]]; then
+  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -516,7 +530,7 @@ function assert_command_not_found() {
 
   local expected_exit_code=127
 
-  if [[ $actual_exit_code -ne "$expected_exit_code" ]]; then
+  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -540,7 +554,9 @@ function assert_string_starts_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual != "$expected"* ]]; then
+  case "$actual" in
+  "$expected"*) ;;
+  *)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -548,7 +564,8 @@ function assert_string_starts_with() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -559,7 +576,8 @@ function assert_string_not_starts_with() {
   local expected="$1"
   local actual="$2"
 
-  if [[ $actual == "$expected"* ]]; then
+  case "$actual" in
+  "$expected"*)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -567,7 +585,8 @@ function assert_string_not_starts_with() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -582,7 +601,9 @@ function assert_string_ends_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual != *"$expected" ]]; then
+  case "$actual" in
+  *"$expected") ;;
+  *)
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -590,7 +611,8 @@ function assert_string_ends_with() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -605,7 +627,8 @@ function assert_string_not_ends_with() {
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
-  if [[ $actual == *"$expected" ]]; then
+  case "$actual" in
+  *"$expected")
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -613,7 +636,8 @@ function assert_string_not_ends_with() {
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
     return
-  fi
+    ;;
+  esac
 
   bashunit::state::add_assertions_passed
 }
@@ -624,7 +648,7 @@ function assert_less_than() {
   local expected="$1"
   local actual="$2"
 
-  if ! [[ "$actual" -lt "$expected" ]]; then
+  if ! [ "$actual" -lt "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -643,7 +667,7 @@ function assert_less_or_equal_than() {
   local expected="$1"
   local actual="$2"
 
-  if ! [[ "$actual" -le "$expected" ]]; then
+  if ! [ "$actual" -le "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -662,7 +686,7 @@ function assert_greater_than() {
   local expected="$1"
   local actual="$2"
 
-  if ! [[ "$actual" -gt "$expected" ]]; then
+  if ! [ "$actual" -gt "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -681,7 +705,7 @@ function assert_greater_or_equal_than() {
   local expected="$1"
   local actual="$2"
 
-  if ! [[ "$actual" -ge "$expected" ]]; then
+  if ! [ "$actual" -ge "$expected" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -714,7 +738,7 @@ function assert_line_count() {
     actual=$((actual + additional_new_lines))
   fi
 
-  if [[ "$expected" != "$actual" ]]; then
+  if [ "$expected" != "$actual" ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -781,7 +805,7 @@ function assert_string_matches_format() {
   local regex
   regex="$(bashunit::format_to_regex "$format")"
 
-  if ! [[ "$actual" =~ $regex ]]; then
+  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$regex" || true)" -eq 0 ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -803,7 +827,7 @@ function assert_string_not_matches_format() {
   local regex
   regex="$(bashunit::format_to_regex "$format")"
 
-  if [[ "$actual" =~ $regex ]]; then
+  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$regex" || true)" -gt 0 ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label

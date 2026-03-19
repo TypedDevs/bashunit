@@ -8,7 +8,7 @@ function assert_file_exists() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
-  if [[ ! -f "$expected" ]]; then
+  if [ ! -f "$expected" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
     return
@@ -25,7 +25,7 @@ function assert_file_not_exists() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
-  if [[ -f "$expected" ]]; then
+  if [ -f "$expected" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
     return
@@ -42,7 +42,7 @@ function assert_is_file() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
-  if [[ ! -f "$expected" ]]; then
+  if [ ! -f "$expected" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
     return
@@ -59,7 +59,7 @@ function assert_is_file_empty() {
   test_fn="$(bashunit::helper::find_test_function_name)"
   local label="${3:-$(bashunit::helper::normalize_test_function_name "$test_fn")}"
 
-  if [[ -s "$expected" ]]; then
+  if [ -s "$expected" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
     return
@@ -74,7 +74,7 @@ function assert_files_equals() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$(diff -u "$expected" "$actual")" != '' ]]; then
+  if [ "$(diff -u "$expected" "$actual")" != '' ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label
@@ -95,7 +95,7 @@ function assert_files_not_equals() {
   local expected="$1"
   local actual="$2"
 
-  if [[ "$(diff -u "$expected" "$actual")" == '' ]]; then
+  if [ "$(diff -u "$expected" "$actual")" = '' ]; then
     local test_fn
     test_fn="$(bashunit::helper::find_test_function_name)"
     local label

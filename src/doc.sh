@@ -16,11 +16,16 @@ function bashunit::doc::print_asserts() {
   local should_print=0
 
   local line
-  while IFS='' read -r line || [[ -n "$line" ]]; do
-    local _re='^## ([A-Za-z0-9_]+)'
-    if [[ "$line" =~ $_re ]]; then
-      fn="${BASH_REMATCH[1]}"
-      if [[ -z "$filter" || "$fn" == *"$filter"* ]]; then
+  while IFS='' read -r line || [ -n "$line" ]; do
+    fn=$(echo "$line" | sed -n 's/^## \([A-Za-z0-9_]*\).*/\1/p')
+    if [ -n "$fn" ]; then
+      local _match=0
+      if [ -z "$filter" ]; then
+        _match=1
+      else
+        case "$fn" in *"$filter"*) _match=1 ;; esac
+      fi
+      if [ "$_match" -eq 1 ]; then
         should_print=1
         echo "$line"
         docstring=""
@@ -33,14 +38,18 @@ function bashunit::doc::print_asserts() {
     if ((should_print)); then
       # Check for code fence using pattern matching instead of regex
       # Avoids backtick escaping issues in Bash 3.0
-      if [[ "$line" == '```'* ]]; then
+      case "$line" in
+      '```'*)
         echo "--------------"
         echo "$docstring"
         should_print=0
         continue
-      fi
+        ;;
+      esac
 
-      [[ "$line" == "::: code-group"* ]] && continue
+      case "$line" in
+      "::: code-group"*) continue ;;
+      esac
 
       # Remove markdown link brackets and anchor tags
       line="${line//[\[\]]/}"

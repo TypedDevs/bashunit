@@ -11,15 +11,15 @@ function bashunit::unmock() {
 
   local i
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
-    if [[ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" == "$command" ]]; then
+    if [ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" = "$command" ]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
       local variable
       variable="$(bashunit::helper::normalize_variable_name "$command")"
       local times_file_var="${variable}_times_file"
       local params_file_var="${variable}_params_file"
-      [[ -f "${!times_file_var-}" ]] && rm -f "${!times_file_var}"
-      [[ -f "${!params_file_var-}" ]] && rm -f "${!params_file_var}"
+      [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
+      [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
       unset "$times_file_var"
       unset "$params_file_var"
       break
@@ -31,7 +31,7 @@ function bashunit::mock() {
   local command=$1
   shift
 
-  if [[ $# -gt 0 ]]; then
+  if [ $# -gt 0 ]; then
     eval "function $command() { $* \"\$@\"; }"
   else
     eval "function $command() { echo \"$($CAT)\" ; }"
@@ -82,12 +82,12 @@ function assert_have_been_called() {
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_times_file"
   local times=0
-  if [[ -f "${!file_var-}" ]]; then
+  if [ -f "${!file_var-}" ]; then
     times=$(cat "${!file_var}" 2>/dev/null || echo 0)
   fi
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [[ $times -eq 0 ]]; then
+  if [ "$times" -eq 0 ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
     return
@@ -101,8 +101,7 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  local _re='^[0-9]+$'
-  if [[ "${!#}" =~ $_re ]]; then
+  if [ "$(echo "${!#}" | "$GREP" -cE '^[0-9]+$' || true)" -gt 0 ]; then
     index=${!#}
     set -- "${@:1:$#-1}"
   fi
@@ -113,8 +112,8 @@ function assert_have_been_called_with() {
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_params_file"
   local line=""
-  if [[ -f "${!file_var-}" ]]; then
-    if [[ -n $index ]]; then
+  if [ -f "${!file_var-}" ]; then
+    if [ -n "$index" ]; then
       line=$(sed -n "${index}p" "${!file_var}" 2>/dev/null || true)
     else
       line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
@@ -124,7 +123,7 @@ function assert_have_been_called_with() {
   local raw
   IFS=$'\x1e' read -r raw _ <<<"$line" || true
 
-  if [[ "$expected" != "$raw" ]]; then
+  if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
       "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
@@ -141,11 +140,11 @@ function assert_have_been_called_times() {
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="${variable}_times_file"
   local times=0
-  if [[ -f "${!file_var-}" ]]; then
+  if [ -f "${!file_var-}" ]; then
     times=$(cat "${!file_var}" 2>/dev/null || echo 0)
   fi
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-  if [[ $times -ne $expected_count ]]; then
+  if [ "$times" -ne "$expected_count" ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "${label}" "${command}" \
       "to have been called" "${expected_count} times" \

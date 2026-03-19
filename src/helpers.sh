@@ -18,7 +18,9 @@ function bashunit::helper::find_test_function_name() {
     local fn="${FUNCNAME[$i]}"
     # Check if function starts with "test_" or "test" followed by uppercase
     local _re='^test[A-Z]'
-    if [[ "$fn" == test_* ]] || [[ "$fn" =~ $_re ]]; then
+    local _is_test=false
+    case "$fn" in test_*) _is_test=true ;; esac
+    if [ "$_is_test" = true ] || [ "$(echo "$fn" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
       echo "$fn"
       return
     fi
@@ -41,21 +43,25 @@ function bashunit::helper::normalize_test_function_name() {
 
   local custom_title
   custom_title="$(bashunit::state::get_test_title)"
-  if [[ -n "$custom_title" ]]; then
+  if [ -n "$custom_title" ]; then
     echo "$custom_title"
     return
   fi
 
-  if [[ -z "${interpolated_fn_name-}" && "${original_fn_name}" == *"::"* ]]; then
-    local state_interpolated_fn_name
-    state_interpolated_fn_name="$(bashunit::state::get_current_test_interpolated_function_name)"
+  if [ -z "${interpolated_fn_name-}" ]; then
+    case "${original_fn_name}" in
+    *"::"*)
+      local state_interpolated_fn_name
+      state_interpolated_fn_name="$(bashunit::state::get_current_test_interpolated_function_name)"
 
-    if [[ -n "$state_interpolated_fn_name" ]]; then
-      interpolated_fn_name="$state_interpolated_fn_name"
-    fi
+      if [ -n "$state_interpolated_fn_name" ]; then
+        interpolated_fn_name="$state_interpolated_fn_name"
+      fi
+      ;;
+    esac
   fi
 
-  if [[ -n "${interpolated_fn_name-}" ]]; then
+  if [ -n "${interpolated_fn_name-}" ]; then
     original_fn_name="$interpolated_fn_name"
   fi
 
@@ -64,7 +70,7 @@ function bashunit::helper::normalize_test_function_name() {
   # Remove the first "test_" prefix, if present
   result="${original_fn_name#test_}"
   # If no "test_" was removed (e.g., "testFoo"), remove the "test" prefix
-  if [[ "$result" == "$original_fn_name" ]]; then
+  if [ "$result" = "$original_fn_name" ]; then
     result="${original_fn_name#test}"
   fi
   # Replace underscores with spaces
@@ -115,12 +121,12 @@ function bashunit::helper::encode_base64() {
   local value="$1"
 
   # Handle empty string specially - base64 of "" is "", which gets lost in line parsing
-  if [[ -z "$value" ]]; then
+  if [ -z "$value" ]; then
     printf '%s' "_BASHUNIT_EMPTY_"
     return
   fi
 
-  if [[ "$_BASHUNIT_BASE64_WRAP_FLAG" == true ]]; then
+  if [ "$_BASHUNIT_BASE64_WRAP_FLAG" = true ]; then
     printf '%s' "$value" | base64 -w 0
   elif command -v base64 >/dev/null; then
     printf '%s' "$value" | base64 | tr -d '\n'
@@ -133,7 +139,7 @@ function bashunit::helper::decode_base64() {
   local value="$1"
 
   # Handle empty string marker
-  if [[ "$value" == "_BASHUNIT_EMPTY_" ]]; then
+  if [ "$value" = "_BASHUNIT_EMPTY_" ]; then
     printf ''
     return
   fi
@@ -149,7 +155,7 @@ function bashunit::helper::check_duplicate_functions() {
   local script="$1"
 
   # Handle directory changes in set_up_before_script (issue #529)
-  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+  if [ ! -f "$script" ] && [ -n "${BASHUNIT_WORKING_DIR:-}" ]; then
     script="$BASHUNIT_WORKING_DIR/$script"
   fi
 
@@ -192,8 +198,12 @@ function bashunit::helper::get_functions_to_run() {
 
   local fn
   for fn in $function_names; do
-    if [[ $fn == ${prefix}_*${filter}* ]]; then
-      if [[ $filtered_functions == *" $fn"* ]]; then
+    local _fn_match=false
+    case "$fn" in ${prefix}_*${filter}*) _fn_match=true ;; esac
+    if [ "$_fn_match" = true ]; then
+      local _dup=false
+      case "$filtered_functions" in *" $fn"*) _dup=true ;; esac
+      if [ "$_dup" = true ]; then
         return 1
       fi
       filtered_functions="$filtered_functions $fn"
@@ -231,18 +241,22 @@ function bashunit::helper::find_files_recursive() {
 
   local alt_pattern=""
   local _re='\[tT\]est\.sh$'
-  if [[ $pattern == *test.sh ]] || [[ "$pattern" =~ $_re ]]; then
+  local _pattern_match=false
+  case "$pattern" in *test.sh) _pattern_match=true ;; esac
+  if [ "$_pattern_match" = true ] || [ "$(echo "$pattern" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
     alt_pattern="${pattern%.sh}.bash"
   fi
 
-  if [[ "$path" == *"*"* ]]; then
-    if [[ -n $alt_pattern ]]; then
+  local _has_glob=false
+  case "$path" in *"*"*) _has_glob=true ;; esac
+  if [ "$_has_glob" = true ]; then
+    if [ -n "$alt_pattern" ]; then
       eval "find $path -type f \( -name \"$pattern\" -o -name \"$alt_pattern\" \)" | sort -u
     else
       eval "find $path -type f -name \"$pattern\"" | sort -u
     fi
-  elif [[ -d "$path" ]]; then
-    if [[ -n $alt_pattern ]]; then
+  elif [ -d "$path" ]; then
+    if [ -n "$alt_pattern" ]; then
       find "$path" -type f \( -name "$pattern" -o -name "$alt_pattern" \) | sort -u
     else
       find "$path" -type f -name "$pattern" | sort -u
@@ -259,7 +273,7 @@ function bashunit::helper::normalize_variable_name() {
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
   local _re='^[a-zA-Z_]'
-  if ! [[ "$normalized_string" =~ $_re ]]; then
+  if [ "$(echo "$normalized_string" | "$GREP" -cE "$_re" || true)" -eq 0 ]; then
     normalized_string="_$normalized_string"
   fi
 
@@ -272,11 +286,11 @@ function bashunit::helper::get_provider_data() {
 
   # Handle directory changes in set_up_before_script (issue #529)
   # If relative path doesn't exist, try with BASHUNIT_WORKING_DIR
-  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+  if [ ! -f "$script" ] && [ -n "${BASHUNIT_WORKING_DIR:-}" ]; then
     script="$BASHUNIT_WORKING_DIR/$script"
   fi
 
-  if [[ ! -f "$script" ]]; then
+  if [ ! -f "$script" ]; then
     return
   fi
 
@@ -287,7 +301,7 @@ function bashunit::helper::get_provider_data() {
       sed -nE 's/^[[:space:]]*# *@?data_provider[[:space:]]+//p'
   )
 
-  if [[ -n "$data_provider_function" ]]; then
+  if [ -n "$data_provider_function" ]; then
     bashunit::helper::execute_function_if_exists "$data_provider_function"
   fi
 }
@@ -319,7 +333,7 @@ function bashunit::helper::find_total_tests() {
   local filter=${1:-}
   shift || true
 
-  if [[ $# -eq 0 ]]; then
+  if [ $# -eq 0 ]; then
     echo 0
     return
   fi
@@ -328,7 +342,7 @@ function bashunit::helper::find_total_tests() {
   local file
 
   for file in "$@"; do
-    if [[ ! -f "$file" ]]; then
+    if [ ! -f "$file" ]; then
       continue
     fi
 
@@ -343,7 +357,7 @@ function bashunit::helper::find_total_tests() {
 
       local count=0
       local IFS=$' \t\n'
-      if [[ -n "$filtered_functions" ]]; then
+      if [ -n "$filtered_functions" ]; then
         local -a functions_to_run=()
         # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
@@ -355,13 +369,13 @@ function bashunit::helper::find_total_tests() {
           provider_data=()
           provider_data_count=0
           while IFS=" " read -r line; do
-            [[ -z "$line" ]] && continue
+            [ -z "$line" ] && continue
             # shellcheck disable=SC2034
             provider_data[provider_data_count]="$line"
             provider_data_count=$((provider_data_count + 1))
           done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$file")"
 
-          if [[ "$provider_data_count" -eq 0 ]]; then
+          if [ "$provider_data_count" -eq 0 ]; then
             count=$((count + 1))
           else
             count=$((count + provider_data_count))
@@ -384,8 +398,8 @@ function bashunit::helper::load_test_files() {
   # Bash 3.0 compatible: use $# after shift to check for files
   local has_files=$#
 
-  if [[ "$has_files" -eq 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+  if [ "$has_files" -eq 0 ]; then
+    if [ -n "${BASHUNIT_DEFAULT_PATH:-}" ]; then
       bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH"
     fi
   else
@@ -399,8 +413,8 @@ function bashunit::helper::load_bench_files() {
   # Bash 3.0 compatible: use $# after shift to check for files
   local has_files=$#
 
-  if [[ "$has_files" -eq 0 ]]; then
-    if [[ -n "${BASHUNIT_DEFAULT_PATH:-}" ]]; then
+  if [ "$has_files" -eq 0 ]; then
+    if [ -n "${BASHUNIT_DEFAULT_PATH:-}" ]; then
       bashunit::helper::find_files_recursive "$BASHUNIT_DEFAULT_PATH" '*[bB]ench.sh'
     fi
   else
@@ -450,21 +464,24 @@ function bashunit::helper::parse_file_path_filter() {
   local filter=""
 
   # Check for :: syntax (function name filter)
-  if [[ "$input" == *"::"* ]]; then
+  case "$input" in *"::"*)
     file_path="${input%%::*}"
     filter="${input#*::}"
-  # Check for :number syntax (line number filter)
-  else
+    ;;
+  *)
+    # Check for :number syntax (line number filter)
     local _re='^(.+):([0-9]+)$'
-    if [[ "$input" =~ $_re ]]; then
-      file_path="${BASH_REMATCH[1]}"
-      local line_number="${BASH_REMATCH[2]}"
+    if [ "$(echo "$input" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
+      file_path=$(echo "$input" | sed -nE 's/^(.+):([0-9]+)$/\1/p')
+      local line_number
+      line_number=$(echo "$input" | sed -nE 's/^(.+):([0-9]+)$/\2/p')
       # Line number will be resolved to function name later
       filter="__line__:${line_number}"
     else
       file_path="$input"
     fi
-  fi
+    ;;
+  esac
 
   echo "$file_path"
   echo "$filter"
@@ -482,7 +499,7 @@ function bashunit::helper::find_function_at_line() {
   local file="$1"
   local target_line="$2"
 
-  if [[ ! -f "$file" ]]; then
+  if [ ! -f "$file" ]; then
     return 1
   fi
 
@@ -494,12 +511,10 @@ function bashunit::helper::find_function_at_line() {
   while IFS=: read -r line_num content; do
     # Extract function name from the line
     local fn_name=""
-    local fn_pattern='^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\)'
-    if [[ "$content" =~ $fn_pattern ]]; then
-      fn_name="${BASH_REMATCH[2]}"
-    fi
+    local fn_pattern='^[[:space:]]*(function[[:space:]]+)?(test[a-zA-Z_][a-zA-Z0-9_]*)[[:space:]]*\(\).*'
+    fn_name=$(echo "$content" | sed -nE "s/$fn_pattern/\2/p")
 
-    if [[ -n "$fn_name" && "$line_num" -le "$target_line" && "$line_num" -gt "$best_line" ]]; then
+    if [ -n "$fn_name" ] && [ "$line_num" -le "$target_line" ] && [ "$line_num" -gt "$best_line" ]; then
       best_match="$fn_name"
       best_line="$line_num"
     fi
@@ -521,11 +536,11 @@ function bashunit::helper::get_tags_for_function() {
   local function_name="$1"
   local script="$2"
 
-  if [[ ! -f "$script" && -n "${BASHUNIT_WORKING_DIR:-}" ]]; then
+  if [ ! -f "$script" ] && [ -n "${BASHUNIT_WORKING_DIR:-}" ]; then
     script="$BASHUNIT_WORKING_DIR/$script"
   fi
 
-  if [[ ! -f "$script" ]]; then
+  if [ ! -f "$script" ]; then
     return
   fi
 
@@ -544,7 +559,7 @@ function bashunit::helper::get_tags_for_function() {
     local content
     content=$(sed -n "${check_line}p" "$script")
     local _re='^[[:space:]]*#[[:space:]]*@tag[[:space:]]'
-    if [[ "$content" =~ $_re ]]; then
+    if [ "$(echo "$content" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
       local tag_name
       tag_name=$(echo "$content" | sed -nE 's/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+//p')
       if [ -n "$tag_name" ]; then
@@ -554,10 +569,10 @@ function bashunit::helper::get_tags_for_function() {
           tags="$tags,$tag_name"
         fi
       fi
-    elif [[ "$content" =~ ^[[:space:]]*# ]]; then
+    elif [ "$(echo "$content" | "$GREP" -cE '^[[:space:]]*#' || true)" -gt 0 ]; then
       # Other comment line, keep walking
       :
-    elif [[ "$content" =~ ^[[:space:]]*$ ]]; then
+    elif [ "$(echo "$content" | "$GREP" -cE '^[[:space:]]*$' || true)" -gt 0 ]; then
       # Empty line, stop looking
       break
     else

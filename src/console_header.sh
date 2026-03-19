@@ -23,7 +23,7 @@ function bashunit::console_header::print_version() {
   # Bash 3.0 compatible: check argument count after shift
   local files_count=$#
   local total_tests
-  if [[ "$files_count" -eq 0 ]]; then
+  if [ "$files_count" -eq 0 ]; then
     total_tests=0
   elif bashunit::parallel::is_enabled && bashunit::env::is_simple_output_enabled; then
     # Skip counting in parallel+simple mode for faster startup
