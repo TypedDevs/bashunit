@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
+
 ### Added
 - Add risky test detection for tests with zero assertions (shown as warning, does not fail)
 
