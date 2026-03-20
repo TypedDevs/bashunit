@@ -66,12 +66,35 @@ If `$ARGUMENTS` is empty, run `./release.sh` (auto-increments minor version).
 
 The script handles everything interactively: version bumps, build, commit, tag, GitHub release, and docs deployment.
 
+**Important:** The script uses interactive prompts (`read`) that may be skipped when run from Claude. If the script skips the commit, tag, push, or GitHub release steps, complete them manually:
+
+```bash
+# Commit the release changes
+git add CHANGELOG.md bashunit install.sh package.json
+git commit -m "chore(release): <version>"
+
+# Tag
+git tag -a <version> -m "<version>"
+
+# Push
+git push origin main --tags
+
+# Create GitHub release with BOTH binary and checksum as assets
+gh release create <version> bin/bashunit bin/checksum \
+  --title "<version>" \
+  --notes-file /tmp/bashunit-release-notes-<version>.md
+
+# Update latest branch for docs deployment
+git checkout latest && git rebase <version> \
+  && git push origin latest --force && git checkout main
+```
+
 ### 4. Post-release
 
 After the script completes, verify:
 ```bash
 git log --oneline -1
-git tag --list | tail -1
+git tag --list --sort=-v:refname | head -1
 ```
 
 Report the release URL to the user.
