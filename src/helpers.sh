@@ -273,11 +273,11 @@ function bashunit::helper::normalize_variable_name() {
   normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
   local _re='^[a-zA-Z_]'
-  if [ "$(echo "$normalized_string" | "$GREP" -cE "$_re" || true)" -eq 0 ]; then
+  if [ "$(builtin echo "$normalized_string" | "$GREP" -cE "$_re" || true)" -eq 0 ]; then
     normalized_string="_$normalized_string"
   fi
 
-  echo "$normalized_string"
+  builtin echo "$normalized_string"
 }
 
 function bashunit::helper::get_provider_data() {
