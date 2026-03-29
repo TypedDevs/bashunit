@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fix spying on `echo` or `printf` causing bashunit to hang due to infinite recursion (#607)
+
 ## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
 
 ### Added
