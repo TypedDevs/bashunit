@@ -44,6 +44,7 @@ function bashunit::mock() {
 
 function bashunit::spy() {
   local command=$1
+  local exit_code_or_impl="${2:-}"
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
 
@@ -55,6 +56,13 @@ function bashunit::spy() {
   : >"$params_file"
   export "${variable}_times_file"="$times_file"
   export "${variable}_params_file"="$params_file"
+
+  local body_suffix=""
+  if [[ "$exit_code_or_impl" =~ ^[0-9]+$ ]]; then
+    body_suffix="return $exit_code_or_impl"
+  elif [ -n "$exit_code_or_impl" ]; then
+    body_suffix="$exit_code_or_impl \"\$@\""
+  fi
 
   eval "function $command() {
     local raw=\"\$*\"
@@ -69,6 +77,7 @@ function bashunit::spy() {
     _c=\$(cat '$times_file' 2>/dev/null || builtin echo 0)
     _c=\$((_c+1))
     builtin echo \"\$_c\" > '$times_file'
+    $body_suffix
   }"
 
   export -f "${command?}"

@@ -216,3 +216,54 @@ function test_unsuccessful_spy_nth_called_with_invalid_index() {
 }
 
 
+
+function test_spy_with_exit_code_returns_specified_exit_code() {
+  bashunit::spy ps 1
+
+  local actual_exit_code=0
+  ps || actual_exit_code=$?
+
+  assert_have_been_called ps
+  assert_same "1" "$actual_exit_code"
+}
+
+function test_spy_with_exit_code_zero_returns_zero() {
+  bashunit::spy ps 0
+
+  ps
+  local actual_exit_code=$?
+
+  assert_have_been_called ps
+  assert_same "0" "$actual_exit_code"
+}
+
+function test_spy_with_impl_calls_custom_function() {
+  custom_ps_impl() {
+    builtin echo "custom output"
+  }
+  export -f custom_ps_impl
+
+  bashunit::spy ps custom_ps_impl
+
+  local output
+  output=$(ps)
+
+  assert_have_been_called ps
+  assert_same "custom output" "$output"
+}
+
+function test_spy_with_impl_records_calls_and_delegates() {
+  custom_ps_impl() {
+    builtin echo "delegated"
+  }
+  export -f custom_ps_impl
+
+  bashunit::spy ps custom_ps_impl
+
+  ps first
+  ps second
+
+  assert_have_been_called_times 2 ps
+  assert_have_been_called_nth_with 1 ps "first"
+  assert_have_been_called_nth_with 2 ps "second"
+}
