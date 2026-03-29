@@ -34,7 +34,7 @@ function bashunit::mock() {
   if [ $# -gt 0 ]; then
     eval "function $command() { $* \"\$@\"; }"
   else
-    eval "function $command() { echo \"$($CAT)\" ; }"
+    eval "function $command() { builtin echo \"$($CAT)\" ; }"
   fi
 
   export -f "${command?}"
@@ -61,14 +61,14 @@ function bashunit::spy() {
     local serialized=\"\"
     local arg
     for arg in \"\$@\"; do
-      serialized=\"\$serialized\$(printf '%q' \"\$arg\")$'\\x1f'\"
+      serialized=\"\$serialized\$(builtin printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
-    printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
+    builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
     local _c
-    _c=\$(cat '$times_file' 2>/dev/null || echo 0)
+    _c=\$(cat '$times_file' 2>/dev/null || builtin echo 0)
     _c=\$((_c+1))
-    echo \"\$_c\" > '$times_file'
+    builtin echo \"\$_c\" > '$times_file'
   }"
 
   export -f "${command?}"
@@ -83,7 +83,7 @@ function assert_have_been_called() {
   local file_var="${variable}_times_file"
   local times=0
   if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || echo 0)
+    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
   fi
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
@@ -141,7 +141,7 @@ function assert_have_been_called_times() {
   local file_var="${variable}_times_file"
   local times=0
   if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || echo 0)
+    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
   fi
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   if [ "$times" -ne "$expected_count" ]; then
@@ -170,7 +170,7 @@ function assert_have_been_called_nth_with() {
 
   local times=0
   if [ -f "${!times_file_var-}" ]; then
-    times=$(cat "${!times_file_var}" 2>/dev/null || echo 0)
+    times=$(cat "${!times_file_var}" 2>/dev/null || builtin echo 0)
   fi
 
   if [ "$nth" -gt "$times" ]; then

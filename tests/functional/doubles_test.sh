@@ -106,3 +106,21 @@ function test_mock_mktemp_does_not_break_spy_creation() {
   assert_have_been_called_times 1 rm
   assert_have_been_called_with rm "-f" "/tmp/mocked_temp_file"
 }
+
+function test_spy_on_echo_does_not_hang() {
+  source ./tests/functional/fixtures/echo_function.sh
+  bashunit::spy echo
+
+  write_message "hello world"
+
+  assert_have_been_called echo
+}
+
+function test_spy_on_printf_does_not_hang() {
+  source ./tests/functional/fixtures/printf_function.sh
+  bashunit::spy printf
+
+  format_message "hello world"
+
+  assert_have_been_called printf
+}
