@@ -220,8 +220,8 @@ function test_unsuccessful_spy_nth_called_with_invalid_index() {
 function test_spy_with_exit_code_returns_specified_exit_code() {
   bashunit::spy ps 1
 
-  ps
-  local actual_exit_code=$?
+  local actual_exit_code=0
+  ps || actual_exit_code=$?
 
   assert_have_been_called ps
   assert_same "1" "$actual_exit_code"
