@@ -155,7 +155,7 @@ function test_successful_assert_date_equals_epoch_vs_space_separated() {
 # UTC Z suffix test
 
 function test_successful_assert_date_equals_with_utc_z_suffix() {
-  assert_empty "$(assert_date_equals "2023-11-14T12:00:00Z" "2023-11-14T12:00:00Z")"
+  assert_empty "$(assert_date_equals "2023-11-14T14:00:00+0200" "2023-11-14T12:00:00Z")"
 }
 
 # Timezone offset tests
