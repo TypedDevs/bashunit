@@ -23,6 +23,45 @@ jobs:
       - name: Run Tests
         run: make test
 
+  localized-ubuntu:
+    name: "Ubuntu - ${{ matrix.name }} Locale"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Spanish"
+            lang: "es_ES.UTF-8"
+            tz: "Europe/Madrid"
+          - name: "Brazilian"
+            lang: "pt_BR.UTF-8"
+            tz: "America/Sao_Paulo"
+          - name: "Japanese"
+            lang: "ja_JP.UTF-8"
+            tz: "Asia/Tokyo"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install locales
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales
+          sudo locale-gen "${{ matrix.lang }}"
+
+      - name: Setup Config
+        run: cp .env.example .env
+
+      - name: Run Tests
+        env:
+          LANG: ${{ matrix.lang }}
+          LC_ALL: ${{ matrix.lang }}
+          TZ: ${{ matrix.tz }}
+        run: make test
+
   macos:
     name: "macOS - latest"
     runs-on: macos-latest
