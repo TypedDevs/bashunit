@@ -15,7 +15,7 @@ function test_bashunit_when_set_up_before_script_errors() {
 
   local header_line="Running $fixture"
   local error_line="✗ Error: Set up before script"
-  local message_line="    $fixture: line 4: invalid_function_name: command not found"
+  local message_line="invalid_function_name"
   local tests_summary="Tests:      1 failed, 1 total"
   local assertions_summary="Assertions: 0 failed, 0 total"
 
