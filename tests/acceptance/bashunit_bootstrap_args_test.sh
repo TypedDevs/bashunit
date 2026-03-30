@@ -26,7 +26,7 @@ function test_bootstrap_args_via_env_variable() {
   # Use --env flag to set the bootstrap file (avoiding .env override),
   # but use BASHUNIT_BOOTSTRAP_ARGS from environment
   output=$(BASHUNIT_BOOTSTRAP_ARGS="hello world" \
-    ./bashunit --no-parallel --simple \
+    ./bashunit --no-parallel --simple --skip-env-file \
     --env "tests/acceptance/fixtures/bootstrap_with_args.sh" \
     tests/acceptance/fixtures/test_bootstrap_args.sh 2>&1) || true
 
