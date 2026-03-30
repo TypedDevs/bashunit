@@ -34,12 +34,15 @@ jobs:
           - name: "Spanish"
             lang: "es_ES.UTF-8"
             tz: "Europe/Madrid"
+            probe_error: "orden no encontrada"
           - name: "Brazilian"
             lang: "pt_BR.UTF-8"
             tz: "America/Sao_Paulo"
+            probe_error: ""
           - name: "Japanese"
             lang: "ja_JP.UTF-8"
             tz: "Asia/Tokyo"
+            probe_error: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,8 +52,19 @@ jobs:
       - name: Install locales
         run: |
           sudo apt-get update
-          sudo apt-get install -y locales
+          sudo apt-get install -y locales ${{ matrix.lang == 'es_ES.UTF-8' && 'language-pack-es-base' || '' }}
           sudo locale-gen "${{ matrix.lang }}"
+
+      - name: Probe localized shell error
+        if: ${{ matrix.probe_error != '' }}
+        env:
+          LANG: ${{ matrix.lang }}
+          LC_ALL: ${{ matrix.lang }}
+          TZ: ${{ matrix.tz }}
+        run: |
+          set -euo pipefail
+          bash -lc 'invalid_function_name' 2>&1 | tee /tmp/bash-locale-probe.txt || true
+          grep -q "${{ matrix.probe_error }}" /tmp/bash-locale-probe.txt
 
       - name: Setup Config
         run: cp .env.example .env
