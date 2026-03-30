@@ -124,6 +124,12 @@ function test_now_prefers_shell_time_over_perl() {
   assert_same "1234567890000" "$(bashunit::clock::now)"
 }
 
+function test_now_handles_shell_time_with_comma_decimal_separator() {
+  bashunit::mock bashunit::clock::shell_time <<<"1234,567890"
+
+  assert_same "1234567890000" "$(bashunit::clock::now)"
+}
+
 function test_now_prefers_python_over_node() {
   bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
   bashunit::mock date mock_non_existing_fn
