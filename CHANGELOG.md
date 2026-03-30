@@ -4,6 +4,7 @@
 
 ### Added
 - Allow `bashunit::spy` to accept an optional exit code (e.g. `bashunit::spy thing 1`) or custom implementation function (e.g. `bashunit::spy thing mock_thing`) (#600)
+- Allow most assert functions to accept an optional trailing label parameter to override the failure message title (e.g. `assert_same "a" "$b" "checking user name"`) (#77)
 
 ### Fixed
 - Fix spying on `echo` or `printf` causing bashunit to hang due to infinite recursion (#607)

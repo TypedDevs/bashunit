@@ -91,3 +91,27 @@ function test_unsuccessful_assert_empty() {
     "$(bashunit::console_results::print_failed_test "Unsuccessful assert empty" "to be empty" "but got " "1")" \
     "$(assert_empty "1")"
 }
+
+function test_assert_same_with_custom_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "my custom label" "1" "but got " "2")" \
+    "$(assert_same "1" "2" "my custom label")"
+}
+
+function test_assert_empty_with_custom_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "my custom label" "to be empty" "but got " "foo")" \
+    "$(assert_empty "foo" "my custom label")"
+}
+
+function test_assert_not_empty_with_custom_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "my custom label" "to not be empty" "but got " "")" \
+    "$(assert_not_empty "" "my custom label")"
+}
+
+function test_assert_not_same_with_custom_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "my custom label" "foo" "to not be" "foo")" \
+    "$(assert_not_same "foo" "foo" "my custom label")"
+}
