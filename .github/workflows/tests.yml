@@ -17,6 +17,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
         run: make test
 
@@ -29,6 +32,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: make test
@@ -63,6 +69,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        shell: bash
+        run: cp .env.example .env
+
       - name: Run tests
         shell: bash
         run: |
@@ -77,6 +87,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: |
@@ -97,6 +110,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
         run: |
           ./bashunit --simple tests/
@@ -110,6 +126,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: |
@@ -125,6 +144,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
         run: |
           ./bashunit --parallel tests/
@@ -138,6 +160,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests with strict mode
         run: |
