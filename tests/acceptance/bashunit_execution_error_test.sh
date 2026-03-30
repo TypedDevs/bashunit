@@ -25,7 +25,6 @@ function test_bashunit_when_a_execution_error() {
     printf "%sRunning ./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh%s\n" \
       "${color_bold}" "${color_default}"
     printf "%s✗ Error%s: Error\n" "${color_red}" "${color_default}"
-    printf "    %sline 4: invalid_function_name: command not found%s\n" "${color_dim}" "${color_default}"
   )
   local fixture_end=$(
     format_summary_title "Tests:     "
@@ -39,6 +38,7 @@ function test_bashunit_when_a_execution_error() {
 
   local actual="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
   assert_contains "$fixture_start" "$actual"
+  assert_contains "invalid_function_name" "$actual"
   assert_contains "$fixture_end" "$actual"
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }

@@ -17,7 +17,52 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
+        run: make test
+
+  localized-ubuntu:
+    name: "Ubuntu - ${{ matrix.name }} Locale"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "Spanish"
+            lang: "es_ES.UTF-8"
+            tz: "Europe/Madrid"
+            language_pack: "language-pack-es-base"
+          - name: "Brazilian"
+            lang: "pt_BR.UTF-8"
+            tz: "America/Sao_Paulo"
+            language_pack: "language-pack-pt-base"
+          - name: "Japanese"
+            lang: "ja_JP.UTF-8"
+            tz: "Asia/Tokyo"
+            language_pack: "language-pack-ja-base"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Install locales
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales "${{ matrix.language_pack }}"
+          sudo locale-gen "${{ matrix.lang }}"
+
+      - name: Setup Config
+        run: cp .env.example .env
+
+      - name: Run Tests
+        env:
+          LANG: ${{ matrix.lang }}
+          LC_ALL: ${{ matrix.lang }}
+          TZ: ${{ matrix.tz }}
         run: make test
 
   macos:
@@ -29,6 +74,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: make test
@@ -63,6 +111,10 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        shell: bash
+        run: cp .env.example .env
+
       - name: Run tests
         shell: bash
         run: |
@@ -77,6 +129,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: |
@@ -97,6 +152,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
         run: |
           ./bashunit --simple tests/
@@ -110,6 +168,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests
         run: |
@@ -125,6 +186,9 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Setup Config
+        run: cp .env.example .env
+
       - name: Run Tests
         run: |
           ./bashunit --parallel tests/
@@ -138,6 +202,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
 
       - name: Run Tests with strict mode
         run: |

@@ -8,7 +8,7 @@ function set_up_before_script() {
 function test_bashunit_no_color_flag_disables_colors() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
   local output
-  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --no-color --simple)
+  output=$(./bashunit --no-parallel --skip-env-file --env "$TEST_ENV_FILE" "$test_file" --no-color --simple)
 
   # ANSI escape codes start with \x1b[ (ESC[) - should not be present
   assert_not_contains $'\e[' "$output"

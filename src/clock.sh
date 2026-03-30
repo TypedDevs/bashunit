@@ -113,8 +113,11 @@ EOF
   shell)
     # shellcheck disable=SC2155
     local shell_time="$(bashunit::clock::shell_time)"
-    local seconds="${shell_time%%.*}"
-    local microseconds="${shell_time#*.}"
+    local seconds="${shell_time%%[.,]*}"
+    local microseconds="${shell_time#*[.,]}"
+    if [ "$seconds" = "$shell_time" ]; then
+      microseconds=""
+    fi
     # Pad to 6 digits and strip leading zeros for arithmetic
     microseconds="${microseconds}000000"
     microseconds="${microseconds:0:6}"
