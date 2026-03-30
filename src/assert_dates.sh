@@ -12,10 +12,25 @@ function bashunit::date::to_epoch() {
     ;;
   esac
 
-  # Normalize ISO 8601: replace T with space, strip Z suffix, strip tz offset
+  # Handle Z (UTC) suffix explicitly: BusyBox needs TZ=UTC, BSD needs +0000
+  case "$input" in
+  *Z)
+    local utc_input="${input%Z}"
+    local utc_norm="${utc_input/T/ }"
+    local epoch
+    # GNU/BusyBox: parse in explicit UTC
+    epoch=$(TZ=UTC date -d "$utc_input" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
+    epoch=$(TZ=UTC date -d "$utc_norm" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
+    # BSD: use +0000 offset which %z understands
+    epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "${utc_input}+0000" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
+    echo "$input"
+    return 1
+    ;;
+  esac
+
+  # Normalize ISO 8601: replace T with space, strip tz offset
   local normalized="$input"
   normalized="${normalized/T/ }"
-  normalized="${normalized%Z}"
   # Strip timezone offset (+HHMM or -HHMM) at end for initial parsing
   case "$normalized" in
   *[+-][0-9][0-9][0-9][0-9])
@@ -30,6 +45,24 @@ function bashunit::date::to_epoch() {
     echo "$epoch"
     return 0
   }
+  # If input has timezone offset, parse in UTC and adjust manually (BusyBox)
+  case "$input" in
+  *[+-][0-9][0-9][0-9][0-9])
+    epoch=$(TZ=UTC date -d "$normalized" +%s 2>/dev/null) && {
+      local ilen=${#input}
+      local ostart=$((ilen - 5))
+      local osign="${input:$ostart:1}"
+      local ohh="${input:$((ostart + 1)):2}"
+      local omm="${input:$((ostart + 3)):2}"
+      local osecs=$(( (10#$ohh * 3600) + (10#$omm * 60) ))
+      if [ "$osign" = "+" ]; then
+        osecs=$(( -osecs ))
+      fi
+      echo $(( epoch + osecs ))
+      return 0
+    }
+    ;;
+  esac
   # Try GNU date with normalized (space-separated) input
   if [ "$normalized" != "$input" ]; then
     epoch=$(date -d "$normalized" +%s 2>/dev/null) && {
