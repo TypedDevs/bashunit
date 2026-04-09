@@ -146,6 +146,40 @@ EOF
   rm -f "$temp_file" "$report_file"
 }
 
+function test_coverage_report_lcov_completes_under_set_e() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local report_file
+  report_file=$(mktemp)
+
+  # ((lineno++)) when lineno=0 returns exit code 1 under set -e
+  # causing incomplete LCOV output (#618)
+  (
+    set -e
+    bashunit::coverage::report_lcov "$report_file"
+  )
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "end_of_record" "$content"
+  assert_contains "DA:2," "$content"
+  assert_contains "DA:3," "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
 function test_coverage_report_text_shows_no_files_message() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init

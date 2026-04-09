@@ -51,6 +51,18 @@ function test_rpad_custom_width_padding_text_too_long_and_special_chars() {
     "$actual"
 }
 
+function test_rpad_does_not_exit_under_set_e() {
+  # ((i++)) when i=0 evaluates to 0 (falsy) causing exit code 1;
+  # under set -e this silently terminates the function (#618)
+  local actual
+  actual=$(
+    set -e
+    bashunit::str::rpad "input" "1" 20
+  )
+
+  assert_same "input              1" "$actual"
+}
+
 function test_rpad_width_smaller_than_right_word() {
   local actual=$(bashunit::str::rpad "foo" "verylongword" 5)
 

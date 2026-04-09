@@ -174,6 +174,29 @@ EOF
   rm -f "$temp_file"
 }
 
+function test_coverage_get_executable_lines_does_not_exit_under_set_e() {
+  local temp_file
+  temp_file=$(mktemp)
+
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  # ((var++)) when var=0 evaluates to 0 (falsy) causing exit code 1;
+  # under set -e this silently terminates the function (#618)
+  local result
+  result=$(
+    set -e
+    bashunit::coverage::get_executable_lines "$temp_file"
+  )
+
+  assert_equals "2" "$result"
+
+  rm -f "$temp_file"
+}
+
 function test_coverage_record_line_writes_to_file() {
   BASHUNIT_COVERAGE="true"
   BASHUNIT_COVERAGE_PATHS="/"
