@@ -40,17 +40,17 @@ function bashunit::str::rpad() {
     if [ "$original_char" = $'\x1b' ]; then
       while [ "${left_text:$j:1}" != "m" ] && [ $j -lt ${#left_text} ]; do
         result_left_text="$result_left_text${left_text:$j:1}"
-        ((j++))
+        ((++j))
       done
       result_left_text="$result_left_text${left_text:$j:1}" # Append the final 'm'
-      ((j++))
+      ((++j))
     elif [ "$char" = "$original_char" ]; then
       # Match the actual character
       result_left_text="$result_left_text$char"
-      ((i++))
-      ((j++))
+      ((++i))
+      ((++j))
     else
-      ((j++))
+      ((++j))
     fi
   done
 
