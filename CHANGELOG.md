@@ -10,6 +10,7 @@
 - Fix spying on `echo` or `printf` causing bashunit to hang due to infinite recursion (#607)
 - Fix invalid `.env.example` coverage threshold entry and copy `.env.example` to `.env` in CI test workflows so configuration parse errors are caught during automated test runs
 - Fix `clock::now` shell-time parsing when `EPOCHREALTIME` uses a comma decimal separator
+- Fix LCOV and HTML coverage reports generating incomplete/empty output due to post-increment operator causing silent exit under `set -e` (#618)
 
 ## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
 
