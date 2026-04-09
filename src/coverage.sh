@@ -465,8 +465,8 @@ function bashunit::coverage::get_executable_lines() {
   local line
 
   while IFS= read -r line || [ -n "$line" ]; do
-    ((lineno++))
-    bashunit::coverage::is_executable_line "$line" "$lineno" && ((count++))
+    ((++lineno))
+    bashunit::coverage::is_executable_line "$line" "$lineno" && ((++count))
   done <"$file"
 
   echo "$count"
@@ -498,7 +498,7 @@ function bashunit::coverage::get_hit_lines() {
     local line_content
     line_content=$(sed -n "${line_num}p" "$file" 2>/dev/null) || continue
     if bashunit::coverage::is_executable_line "$line_content" "$line_num"; then
-      ((count++))
+      ((++count))
     fi
   done
 
@@ -565,7 +565,7 @@ function bashunit::coverage::extract_functions() {
   local line
 
   while IFS= read -r line || [ -n "$line" ]; do
-    ((lineno++))
+    ((++lineno))
 
     # Check for function definition patterns
     # Pattern 1: function name() { or function name {
@@ -644,10 +644,10 @@ function bashunit::coverage::get_function_coverage() {
     line_content=$(sed -n "${lineno}p" "$file" 2>/dev/null) || continue
 
     if bashunit::coverage::is_executable_line "$line_content" "$lineno"; then
-      ((executable++))
+      ((++executable))
       local line_hits=${_hits_ref[$lineno]:-0}
       if [ "$line_hits" -gt 0 ]; then
-        ((hit++))
+        ((++hit))
       fi
     fi
   done
@@ -778,7 +778,7 @@ function bashunit::coverage::report_lcov() {
       local line
       # shellcheck disable=SC2094
       while IFS= read -r line || [ -n "$line" ]; do
-        ((lineno++))
+        ((++lineno))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
         echo "DA:${lineno},$(bashunit::coverage::get_line_hits "$file" "$lineno")"
       done <"$file"
@@ -1543,10 +1543,10 @@ EOF
           local ln_content
           ln_content=$(sed -n "${ln}p" "$file" 2>/dev/null) || continue
           if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
-            ((fn_executable++))
+            ((++fn_executable))
             local ln_hits=${hits_by_line[$ln]:-0}
             if [ "$ln_hits" -gt 0 ]; then
-              ((fn_hit++))
+              ((++fn_hit))
             fi
           fi
         done
@@ -1597,7 +1597,7 @@ EOF
     local lineno=0
     local line
     while IFS= read -r line || [ -n "$line" ]; do
-      ((lineno++))
+      ((++lineno))
 
       local escaped_line
       escaped_line=$(bashunit::coverage::html_escape "$line")
