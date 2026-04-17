@@ -966,16 +966,32 @@ function bashunit::runner::parse_result_sync() {
   local assertions_snapshot=0
   local test_exit_code=0
 
-  # Extract values using sed instead of BASH_REMATCH for Bash 3.0+ compatibility
-  # shellcheck disable=SC2001
-  if [ "$(echo "$result_line" | "$GREP" -cE 'ASSERTIONS_FAILED=[0-9]*##ASSERTIONS_PASSED=[0-9]*' || true)" -gt 0 ]; then
-    assertions_failed=$(echo "$result_line" | sed 's/.*ASSERTIONS_FAILED=\([0-9]*\)##.*/\1/')
-    assertions_passed=$(echo "$result_line" | sed 's/.*ASSERTIONS_PASSED=\([0-9]*\)##.*/\1/')
-    assertions_skipped=$(echo "$result_line" | sed 's/.*ASSERTIONS_SKIPPED=\([0-9]*\)##.*/\1/')
-    assertions_incomplete=$(echo "$result_line" | sed 's/.*ASSERTIONS_INCOMPLETE=\([0-9]*\)##.*/\1/')
-    assertions_snapshot=$(echo "$result_line" | sed 's/.*ASSERTIONS_SNAPSHOT=\([0-9]*\)##.*/\1/')
-    test_exit_code=$(echo "$result_line" | sed 's/.*TEST_EXIT_CODE=\([0-9]*\).*/\1/')
-  fi
+  # Extract values using parameter expansion instead of spawning grep/sed subprocesses
+  case "$result_line" in
+  *"ASSERTIONS_FAILED="*"##ASSERTIONS_PASSED="*)
+    local _tail
+    _tail="${result_line##*ASSERTIONS_FAILED=}"
+    assertions_failed="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_PASSED=}"
+    assertions_passed="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_SKIPPED=}"
+    assertions_skipped="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_INCOMPLETE=}"
+    assertions_incomplete="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_SNAPSHOT=}"
+    assertions_snapshot="${_tail%%##*}"
+    _tail="${result_line##*TEST_EXIT_CODE=}"
+    test_exit_code="${_tail%%##*}"
+    # Strip any trailing non-digit suffix (end of line) from the final field
+    test_exit_code="${test_exit_code%%[!0-9]*}"
+    : "${assertions_failed:=0}"
+    : "${assertions_passed:=0}"
+    : "${assertions_skipped:=0}"
+    : "${assertions_incomplete:=0}"
+    : "${assertions_snapshot:=0}"
+    : "${test_exit_code:=0}"
+    ;;
+  esac
 
   bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
