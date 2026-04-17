@@ -18,13 +18,23 @@ function bashunit::runner::wait_for_job_slot() {
     return 0
   fi
 
+  # Adaptive backoff: start at 50ms, grow to 200ms to reduce `jobs -r` overhead
+  # on long-running tests while keeping short tests responsive.
+  local delay="0.05"
+  local iterations=0
   while true; do
     local running_jobs
     running_jobs=$(jobs -r | wc -l)
     if [ "$running_jobs" -lt "$max_jobs" ]; then
       break
     fi
-    sleep 0.05
+    sleep "$delay"
+    iterations=$((iterations + 1))
+    if [ "$iterations" -eq 4 ]; then
+      delay="0.1"
+    elif [ "$iterations" -eq 20 ]; then
+      delay="0.2"
+    fi
   done
 }
 
@@ -259,12 +269,11 @@ function bashunit::runner::parse_data_provider_args() {
   local -a args=()
   local args_count=0
 
-  # Check for shell metacharacters that would break eval or cause globbing
+  # Check for unescaped shell metacharacters that would break eval or cause
+  # globbing. Combines the leading-metachar case and the embedded-metachar
+  # case into a single regex to avoid a second grep subprocess per call.
   local has_metachar=false
-  local _re1='[^\\][\|\&\;\*]'
-  local _re2='^[\|\&\;\*]'
-  if [ "$(echo "$input" | "$GREP" -cE "$_re1" || true)" -gt 0 ] \
-    || [ "$(echo "$input" | "$GREP" -cE "$_re2" || true)" -gt 0 ]; then
+  if [ "$(echo "$input" | "$GREP" -cE '(^|[^\])[|&;*]' || true)" -gt 0 ]; then
     has_metachar=true
   fi
 
@@ -966,16 +975,32 @@ function bashunit::runner::parse_result_sync() {
   local assertions_snapshot=0
   local test_exit_code=0
 
-  # Extract values using sed instead of BASH_REMATCH for Bash 3.0+ compatibility
-  # shellcheck disable=SC2001
-  if [ "$(echo "$result_line" | "$GREP" -cE 'ASSERTIONS_FAILED=[0-9]*##ASSERTIONS_PASSED=[0-9]*' || true)" -gt 0 ]; then
-    assertions_failed=$(echo "$result_line" | sed 's/.*ASSERTIONS_FAILED=\([0-9]*\)##.*/\1/')
-    assertions_passed=$(echo "$result_line" | sed 's/.*ASSERTIONS_PASSED=\([0-9]*\)##.*/\1/')
-    assertions_skipped=$(echo "$result_line" | sed 's/.*ASSERTIONS_SKIPPED=\([0-9]*\)##.*/\1/')
-    assertions_incomplete=$(echo "$result_line" | sed 's/.*ASSERTIONS_INCOMPLETE=\([0-9]*\)##.*/\1/')
-    assertions_snapshot=$(echo "$result_line" | sed 's/.*ASSERTIONS_SNAPSHOT=\([0-9]*\)##.*/\1/')
-    test_exit_code=$(echo "$result_line" | sed 's/.*TEST_EXIT_CODE=\([0-9]*\).*/\1/')
-  fi
+  # Extract values using parameter expansion instead of spawning grep/sed subprocesses
+  case "$result_line" in
+  *"ASSERTIONS_FAILED="*"##ASSERTIONS_PASSED="*)
+    local _tail
+    _tail="${result_line##*ASSERTIONS_FAILED=}"
+    assertions_failed="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_PASSED=}"
+    assertions_passed="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_SKIPPED=}"
+    assertions_skipped="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_INCOMPLETE=}"
+    assertions_incomplete="${_tail%%##*}"
+    _tail="${result_line##*ASSERTIONS_SNAPSHOT=}"
+    assertions_snapshot="${_tail%%##*}"
+    _tail="${result_line##*TEST_EXIT_CODE=}"
+    test_exit_code="${_tail%%##*}"
+    # Strip any trailing non-digit suffix (end of line) from the final field
+    test_exit_code="${test_exit_code%%[!0-9]*}"
+    : "${assertions_failed:=0}"
+    : "${assertions_passed:=0}"
+    : "${assertions_skipped:=0}"
+    : "${assertions_incomplete:=0}"
+    : "${assertions_snapshot:=0}"
+    : "${test_exit_code:=0}"
+    ;;
+  esac
 
   bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
