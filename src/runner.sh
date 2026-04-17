@@ -18,13 +18,23 @@ function bashunit::runner::wait_for_job_slot() {
     return 0
   fi
 
+  # Adaptive backoff: start at 50ms, grow to 200ms to reduce `jobs -r` overhead
+  # on long-running tests while keeping short tests responsive.
+  local delay="0.05"
+  local iterations=0
   while true; do
     local running_jobs
     running_jobs=$(jobs -r | wc -l)
     if [ "$running_jobs" -lt "$max_jobs" ]; then
       break
     fi
-    sleep 0.05
+    sleep "$delay"
+    iterations=$((iterations + 1))
+    if [ "$iterations" -eq 4 ]; then
+      delay="0.1"
+    elif [ "$iterations" -eq 20 ]; then
+      delay="0.2"
+    fi
   done
 }
 
