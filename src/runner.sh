@@ -269,12 +269,11 @@ function bashunit::runner::parse_data_provider_args() {
   local -a args=()
   local args_count=0
 
-  # Check for shell metacharacters that would break eval or cause globbing
+  # Check for unescaped shell metacharacters that would break eval or cause
+  # globbing. Combines the leading-metachar case and the embedded-metachar
+  # case into a single regex to avoid a second grep subprocess per call.
   local has_metachar=false
-  local _re1='[^\\][\|\&\;\*]'
-  local _re2='^[\|\&\;\*]'
-  if [ "$(echo "$input" | "$GREP" -cE "$_re1" || true)" -gt 0 ] \
-    || [ "$(echo "$input" | "$GREP" -cE "$_re2" || true)" -gt 0 ]; then
+  if [ "$(echo "$input" | "$GREP" -cE '(^|[^\])[|&;*]' || true)" -gt 0 ]; then
     has_metachar=true
   fi
 
