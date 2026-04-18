@@ -135,7 +135,8 @@ function bashunit::parallel::is_enabled() {
     "requested:$BASHUNIT_PARALLEL_RUN" "os:${_BASHUNIT_OS:-Unknown}"
 
   if bashunit::env::is_parallel_run_enabled &&
-    (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu || bashunit::check_os::is_windows); then
+    (bashunit::check_os::is_macos || bashunit::check_os::is_ubuntu ||
+      bashunit::check_os::is_alpine || bashunit::check_os::is_windows); then
     return 0
   fi
   return 1
