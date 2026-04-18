@@ -7,6 +7,7 @@
 - Allow most assert functions to accept an optional trailing label parameter to override the failure message title (e.g. `assert_same "a" "$b" "checking user name"`) (#77)
 
 ### Fixed
+- Fix `--stop-on-failure` not stopping when a test errors with a runtime error (e.g. `command not found`, `illegal option`) (#383)
 - Fix spying on `echo` or `printf` causing bashunit to hang due to infinite recursion (#607)
 - Fix invalid `.env.example` coverage threshold entry and copy `.env.example` to `.env` in CI test workflows so configuration parse errors are caught during automated test runs
 - Fix `clock::now` shell-time parsing when `EPOCHREALTIME` uses a comma decimal separator
