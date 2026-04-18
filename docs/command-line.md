@@ -155,29 +155,47 @@ Select an alternative output format. Currently supported:
 
 - `tap` — [TAP version 13](https://testanything.org/tap-version-13-specification.html) for CI/CD integrations.
 
+The `TAP version 13` header comes first, each test file is announced via a
+`# <path>` diagnostic line, each test emits an `ok <n> - <name>` or
+`not ok <n> - <name>` line (failures include a YAML `--- ... ...` block with
+expected/actual), and the `1..N` plan line closes the report.
+
 ::: code-group
 ```bash [Example]
 bashunit test tests/ --output tap
 ```
 ```[Output]
 TAP version 13
-1..2
+# tests/example_test.sh
 ok 1 - Should validate input
 not ok 2 - Should handle errors
+  ---
+  Expected 'foo'
+  but got  'bar'
+  ...
+
+1..2
 ```
 :::
 
 ### Watch mode
 
 > `bashunit test -w|--watch`
-> `bashunit watch [path]`
 
-Watch `.sh` files for changes and automatically re-run tests. Available as a
-flag on `test` or as a dedicated [`watch`](#watch) subcommand.
+Watch the test path (plus `src/` if present) and re-run tests when files change.
+The `-w`/`--watch` flag uses a lightweight **checksum polling loop** that works
+on any system — no external tools required.
 
-::: warning Requirements
-- **Linux:** `inotifywait` (`sudo apt install inotify-tools`)
-- **macOS:** `fswatch` (`brew install fswatch`)
+::: code-group
+```bash [Example]
+bashunit test tests/ --watch
+```
+:::
+
+::: tip
+For file-event-driven watching (no polling), use the dedicated
+[`watch`](#watch) subcommand, which relies on `inotifywait` (Linux) or
+`fswatch` (macOS).
 :::
 
 ### Environment / Bootstrap
@@ -534,8 +552,9 @@ bashunit bench --filter "parse"
 
 > `bashunit watch [path] [test-options]`
 
-Watch `.sh` files for changes and automatically re-run tests. Any option
-accepted by `bashunit test` is also accepted here.
+Dedicated watch subcommand that uses **OS file-event notifications** (no
+polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
+by `bashunit test` is also accepted here.
 
 ::: code-group
 ```bash [Examples]
@@ -557,7 +576,13 @@ bashunit watch tests/ --simple
 - **Linux:** `inotifywait` (`sudo apt install inotify-tools`)
 - **macOS:** `fswatch` (`brew install fswatch`)
 
-If the required tool is not installed, bashunit prints a clear installation hint.
+If the required tool is not installed, bashunit prints a clear installation hint
+and exits with a non-zero code.
+:::
+
+::: tip
+If you cannot install `inotifywait` or `fswatch`, use the portable
+[`-w/--watch`](#watch-mode) flag on `bashunit test` instead (uses polling).
 :::
 
 ## doc
