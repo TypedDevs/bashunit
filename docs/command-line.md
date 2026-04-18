@@ -392,7 +392,7 @@ This is useful for:
 bashunit test tests/ --no-progress
 ```
 ```[Output]
-bashunit - 0.32.0 | Tests: 10
+bashunit - 0.34.1 | Tests: 10
 Tests:      10 passed, 10 total
 Assertions: 25 passed, 25 total
 
@@ -663,7 +663,7 @@ bashunit upgrade
 ```
 ```[Output]
 > Upgrading bashunit to latest version
-> bashunit upgraded successfully to latest version 0.28.0
+> bashunit upgraded successfully to latest version 0.34.1
 ```
 :::
 
