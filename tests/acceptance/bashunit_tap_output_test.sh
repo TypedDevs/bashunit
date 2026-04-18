@@ -31,6 +31,5 @@ function test_tap_output_env_var_equivalent_to_flag() {
 function test_tap_output_exits_non_zero_on_failure() {
   local test_file=tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --output tap "$test_file" >/dev/null 2>&1
-  assert_general_error "$?"
+  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output tap "$test_file" 2>&1)"
 }
