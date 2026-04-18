@@ -32,6 +32,12 @@ Internal messages from bashunit include the `[INTERNAL]` prefix so you can easil
 
 > `bashunit::caller_filename`: Gets the caller filename.
 
+## bashunit::caller_line
+
+> `bashunit::caller_line`: Gets the line number of the caller.
+
+Useful inside custom assertions to report the line that triggered the failure.
+
 ## bashunit::current_timestamp
 
 > `bashunit::current_timestamp`: Gets the current timestamp.
@@ -54,4 +60,39 @@ The directory is automatically deleted when bashunit completes.
 
 ## bashunit::is_command_available
 
-> `bashunit::is_command_available`: Checks if command is available
+> `bashunit::is_command_available <command>`: Checks if a command is available in `PATH`.
+
+Returns `0` when the command is found, `1` otherwise.
+
+```bash
+if bashunit::is_command_available jq; then
+  # jq-based assertions
+fi
+```
+
+## bashunit::print_line
+
+> `bashunit::print_line <?length> <?char>`: Prints a horizontal separator.
+
+Defaults to 70 characters of `-`. Both arguments are optional.
+
+```bash
+bashunit::print_line          # 70 dashes
+bashunit::print_line 40 '='   # 40 equals signs
+```
+
+## Custom assertion helpers
+
+These helpers are intended for building [custom assertions](/custom-asserts).
+
+- `bashunit::assertion_passed` — Mark the current assertion as passed.
+- `bashunit::assertion_failed <expected> <actual> <?label>` — Mark the current
+  assertion as failed and print a failure report.
+- `bashunit::fail <?message>` — Fail the current test with an optional message.
+
+See [Custom asserts](/custom-asserts) for full examples.
+
+## Test doubles
+
+The `bashunit::spy`, `bashunit::mock`, and `bashunit::unmock` helpers are
+documented in [Test doubles](/test-doubles).

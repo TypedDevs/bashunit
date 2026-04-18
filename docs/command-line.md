@@ -7,6 +7,8 @@
 ```bash
 bashunit test [path] [options]    # Run tests (default)
 bashunit bench [path] [options]   # Run benchmarks
+bashunit watch [path] [options]   # Watch files, re-run tests on change
+bashunit assert <fn> <args>       # Run standalone assertion
 bashunit doc [filter]             # Show assertion documentation
 bashunit init [dir]               # Initialize test directory
 bashunit learn                    # Interactive tutorial
@@ -55,6 +57,10 @@ bashunit test tests/ --parallel --simple
 | `-a, --assert <fn> <args>`     | Run a standalone assert function                 |
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
+| `--tag <name>`                 | Only run tests with matching `@tag` (repeatable) |
+| `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
+| `--output <format>`            | Output format (`tap` for TAP version 13)         |
+| `-w, --watch`                  | Watch files and re-run tests on change           |
 | `--log-junit <file>`           | Write JUnit XML report                           |
 | `-j, --jobs <N>`               | Run tests in parallel with max N concurrent jobs |
 | `-p, --parallel`               | Run tests in parallel                            |
@@ -112,6 +118,84 @@ Run only tests matching the given name.
 ```bash [Example]
 bashunit test tests/ --filter "user_login"
 ```
+:::
+
+### Tags
+
+> `bashunit test --tag <name>`
+> `bashunit test --exclude-tag <name>`
+
+Filter tests by `# @tag` annotations. Both flags are repeatable. `--tag` uses OR
+logic across names; `--exclude-tag` wins when a test matches both.
+
+::: code-group
+```bash [Annotate tests]
+# @tag slow
+function test_heavy_computation() {
+  ...
+}
+
+# @tag integration
+function test_api_call() {
+  ...
+}
+```
+```bash [Run by tag]
+bashunit test tests/ --tag slow
+bashunit test tests/ --tag slow --tag integration
+bashunit test tests/ --exclude-tag integration
+```
+:::
+
+### Output format
+
+> `bashunit test --output <format>`
+
+Select an alternative output format. Currently supported:
+
+- `tap` — [TAP version 13](https://testanything.org/tap-version-13-specification.html) for CI/CD integrations.
+
+The `TAP version 13` header comes first, each test file is announced via a
+`# <path>` diagnostic line, each test emits an `ok <n> - <name>` or
+`not ok <n> - <name>` line (failures include a YAML `--- ... ...` block with
+expected/actual), and the `1..N` plan line closes the report.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --output tap
+```
+```[Output]
+TAP version 13
+# tests/example_test.sh
+ok 1 - Should validate input
+not ok 2 - Should handle errors
+  ---
+  Expected 'foo'
+  but got  'bar'
+  ...
+
+1..2
+```
+:::
+
+### Watch mode
+
+> `bashunit test -w|--watch`
+
+Watch the test path (plus `src/` if present) and re-run tests when files change.
+The `-w`/`--watch` flag uses a lightweight **checksum polling loop** that works
+on any system — no external tools required.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --watch
+```
+:::
+
+::: tip
+For file-event-driven watching (no polling), use the dedicated
+[`watch`](#watch) subcommand, which relies on `inotifywait` (Linux) or
+`fswatch` (macOS).
 :::
 
 ### Environment / Bootstrap
@@ -326,7 +410,7 @@ This is useful for:
 bashunit test tests/ --no-progress
 ```
 ```[Output]
-bashunit - 0.32.0 | Tests: 10
+bashunit - 0.34.1 | Tests: 10
 Tests:      10 passed, 10 total
 Assertions: 25 passed, 25 total
 
@@ -464,6 +548,43 @@ bashunit bench --filter "parse"
 | `--skip-env-file` | Skip `.env` loading, use shell environment only |
 | `-l, --login` | Run in login shell context |
 
+## watch
+
+> `bashunit watch [path] [test-options]`
+
+Dedicated watch subcommand that uses **OS file-event notifications** (no
+polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
+by `bashunit test` is also accepted here.
+
+::: code-group
+```bash [Examples]
+# Watch current directory
+bashunit watch
+
+# Watch the tests/ directory
+bashunit watch tests/
+
+# Watch and filter by name
+bashunit watch tests/ --filter user
+
+# Watch with simple output
+bashunit watch tests/ --simple
+```
+:::
+
+::: warning Requirements
+- **Linux:** `inotifywait` (`sudo apt install inotify-tools`)
+- **macOS:** `fswatch` (`brew install fswatch`)
+
+If the required tool is not installed, bashunit prints a clear installation hint
+and exits with a non-zero code.
+:::
+
+::: tip
+If you cannot install `inotifywait` or `fswatch`, use the portable
+[`-w/--watch`](#watch-mode) flag on `bashunit test` instead (uses polling).
+:::
+
 ## doc
 
 > `bashunit doc [filter]`
@@ -567,7 +688,7 @@ bashunit upgrade
 ```
 ```[Output]
 > Upgrading bashunit to latest version
-> bashunit upgraded successfully to latest version 0.28.0
+> bashunit upgraded successfully to latest version 0.34.1
 ```
 :::
 
@@ -604,16 +725,18 @@ bashunit --help
 Usage: bashunit <command> [arguments] [options]
 
 Commands:
-  test [path]       Run tests (default command)
-  bench [path]      Run benchmarks
-  doc [filter]      Display assertion documentation
-  init [dir]        Initialize a new test directory
-  learn             Start interactive tutorial
-  upgrade           Upgrade bashunit to latest version
+  test [path]         Run tests (default command)
+  bench [path]        Run benchmarks
+  assert <fn> <args>  Run standalone assertion
+  doc [filter]        Display assertion documentation
+  init [dir]          Initialize a new test directory
+  learn               Start interactive tutorial
+  watch [path]        Watch files and re-run tests on change
+  upgrade             Upgrade bashunit to latest version
 
 Global Options:
-  -h, --help        Show this help message
-  -v, --version     Display the current version
+  -h, --help          Show this help message
+  -v, --version       Display the current version
 
 Run 'bashunit <command> --help' for command-specific options.
 ```
@@ -624,6 +747,7 @@ Each subcommand also supports `--help`:
 ```bash
 bashunit test --help
 bashunit bench --help
+bashunit watch --help
 bashunit doc --help
 ```
 
