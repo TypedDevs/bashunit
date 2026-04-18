@@ -77,6 +77,16 @@ function test_parallel_enabled_on_ubuntu() {
   bashunit::mock bashunit::check_os::is_windows mock_false
   bashunit::mock bashunit::check_os::is_macos mock_false
   bashunit::mock bashunit::check_os::is_ubuntu mock_true
+  bashunit::mock bashunit::check_os::is_alpine mock_false
+
+  assert_successful_code "$(bashunit::parallel::is_enabled)"
+}
+
+function test_parallel_enabled_on_alpine() {
+  bashunit::mock bashunit::check_os::is_windows mock_false
+  bashunit::mock bashunit::check_os::is_macos mock_false
+  bashunit::mock bashunit::check_os::is_ubuntu mock_false
+  bashunit::mock bashunit::check_os::is_alpine mock_true
 
   assert_successful_code "$(bashunit::parallel::is_enabled)"
 }
@@ -93,6 +103,7 @@ function test_parallel_disabled_on_unsupported_os() {
   bashunit::mock bashunit::check_os::is_windows mock_false
   bashunit::mock bashunit::check_os::is_macos mock_false
   bashunit::mock bashunit::check_os::is_ubuntu mock_false
+  bashunit::mock bashunit::check_os::is_alpine mock_false
 
   assert_general_error "$(bashunit::parallel::is_enabled)"
 }

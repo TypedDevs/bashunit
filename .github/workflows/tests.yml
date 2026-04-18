@@ -168,9 +168,19 @@ jobs:
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   alpine:
-    name: "Alpine - latest"
+    name: "Alpine - ${{ matrix.name }}"
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "sequential"
+            command: "make test"
+          - name: "parallel simple"
+            command: "./bashunit --parallel --simple tests/"
+          - name: "parallel extended"
+            command: "./bashunit --parallel tests/"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -184,7 +194,7 @@ jobs:
         run: |
           docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
             apk update && \
-            apk add --no-cache bash make git jq && \
+            apk add --no-cache bash make git jq coreutils && \
             adduser -D builder && \
             chown -R builder /project && \
-            su - builder -c 'cd /project; make test';"
+            su - builder -c 'cd /project; ${{ matrix.command }}';"
