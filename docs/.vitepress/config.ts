@@ -46,62 +46,49 @@ export default defineConfig({
 
     sidebar: {
       '/': [{
-        text: 'Quickstart',
-        link: '/quickstart',
+        text: 'Getting Started',
+        collapsed: false,
+        items: [
+          { text: 'Quickstart', link: '/quickstart' },
+          { text: 'Installation', link: '/installation' },
+        ],
       }, {
-        text: 'Installation',
-        link: '/installation',
+        text: 'Usage',
+        collapsed: false,
+        items: [
+          { text: 'Command line', link: '/command-line' },
+          { text: 'Configuration', link: '/configuration' },
+          { text: 'Test files', link: '/test-files' },
+          { text: 'Globals', link: '/globals' },
+        ],
       }, {
-        text: 'Command line',
-        link: '/command-line'
+        text: 'Writing Tests',
+        collapsed: false,
+        items: [
+          { text: 'Assertions', link: '/assertions' },
+          { text: 'Custom asserts', link: '/custom-asserts' },
+          { text: 'Data providers', link: '/data-providers' },
+          { text: 'Test doubles', link: '/test-doubles' },
+          { text: 'Snapshots', link: '/snapshots' },
+          { text: 'Skipping/incomplete', link: '/skipping-incomplete' },
+        ],
       }, {
-        text: 'Configuration',
-        link: '/configuration'
+        text: 'Advanced',
+        collapsed: true,
+        items: [
+          { text: 'Coverage', link: '/coverage' },
+          { text: 'Benchmarks', link: '/benchmarks' },
+          { text: 'Standalone', link: '/standalone' },
+          { text: 'Common patterns', link: '/common-patterns' },
+        ],
       }, {
-        text: 'Test files',
-        link: '/test-files',
-      }, {
-        text: 'Data providers',
-        link: '/data-providers',
-      }, {
-        text: 'Test doubles',
-        link: '/test-doubles'
-      }, {
-        text: 'Assertions',
-        link: '/assertions'
-      }, {
-        text: 'Snapshots',
-        link: '/snapshots'
-      }, {
-        text: 'Skipping/incomplete',
-        link: '/skipping-incomplete'
-      }, {
-        text: 'Standalone',
-        link: '/standalone'
-      }, {
-        text: 'Benchmarks',
-        link: '/benchmarks'
-      }, {
-        text: 'Coverage',
-        link: '/coverage'
-      }, {
-        text: 'Globals',
-        link: '/globals'
-      }, {
-        text: 'Custom asserts',
-        link: '/custom-asserts'
-      }, {
-        text: 'Common patterns',
-        link: '/common-patterns',
-      }, {
-        text: 'Examples',
-        link: '/examples'
-      }, {
-        text: 'Project overview',
-        link: '/project-overview',
-      }, {
-        text: 'Support',
-        link: '/support',
+        text: 'Reference',
+        collapsed: true,
+        items: [
+          { text: 'Examples', link: '/examples' },
+          { text: 'Project overview', link: '/project-overview' },
+          { text: 'Support', link: '/support' },
+        ],
       }],
       '/blog/': []
     },
