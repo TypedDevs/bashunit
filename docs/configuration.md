@@ -203,6 +203,22 @@ BASHUNIT_SHOW_EXECUTION_TIME=false
 ```
 :::
 
+## Output format
+
+> `BASHUNIT_OUTPUT_FORMAT=tap`
+
+Select an alternative output format. Currently supported: `tap` for
+[TAP version 13](https://testanything.org/tap-version-13-specification.html),
+useful for CI/CD integrations.
+
+Similar as using `--output` option on the [command line](/command-line#output-format).
+
+::: code-group
+```bash [.env]
+BASHUNIT_OUTPUT_FORMAT=tap
+```
+:::
+
 ## Log JUnit
 
 > `BASHUNIT_LOG_JUNIT=file`
