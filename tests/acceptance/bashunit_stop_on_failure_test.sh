@@ -34,10 +34,12 @@ function test_bashunit_when_stop_on_failure_env_simple_output() {
 
 function test_bashunit_stop_on_failure_with_runtime_error() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_stop_on_failure_runtime_error.sh
-  local output
-  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --stop-on-failure "$test_file")"
+  local output=""
+  local exit_code=0
 
-  assert_general_error "$?"
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --stop-on-failure "$test_file")" || exit_code=$?
+
+  assert_same 1 "$exit_code"
   assert_contains "A runtime error" "$output"
   assert_not_contains "B not executed" "$output"
 }
