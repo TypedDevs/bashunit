@@ -2,9 +2,19 @@ name: Tests
 
 on:
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'adrs/**'
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
   push:
     branches:
       - main
+
+concurrency:
+  group: tests-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   ubuntu:
@@ -88,10 +98,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: "acceptance a-l"
-            test_path: "tests/acceptance/bashunit_[a-l]*_test.sh"
-          - name: "acceptance m-z"
-            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/[i-p]*_test.sh"
           - name: functional
             test_path: "tests/functional/*_test.sh"
           - name: "unit a-b"
@@ -118,7 +124,37 @@ jobs:
       - name: Run tests
         shell: bash
         run: |
-          ./bashunit --parallel ${{ matrix.test_path }}
+          ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
+
+  windows-acceptance:
+    name: "On windows (${{ matrix.name }})"
+    if: github.event_name == 'push'
+    timeout-minutes: 10
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - name: "acceptance a-e"
+            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh"
+          - name: "acceptance f-l"
+            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh"
+          - name: "acceptance m-z"
+            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/[i-p]*_test.sh"
+      fail-fast: false
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Config
+        shell: bash
+        run: cp .env.example .env
+
+      - name: Run tests
+        shell: bash
+        run: |
+          ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   alpine:
     name: "On alpine-latest"
