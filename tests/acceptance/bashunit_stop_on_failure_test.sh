@@ -31,3 +31,13 @@ function test_bashunit_when_stop_on_failure_env_simple_output() {
   assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_STOP_ON_FAILURE" "$test_file" --simple)"
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_STOP_ON_FAILURE" "$test_file" --simple)"
 }
+
+function test_bashunit_stop_on_failure_with_runtime_error() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_stop_on_failure_runtime_error.sh
+  local output
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --stop-on-failure "$test_file")"
+
+  assert_general_error "$?"
+  assert_contains "A runtime error" "$output"
+  assert_not_contains "B not executed" "$output"
+}
