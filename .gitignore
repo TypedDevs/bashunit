@@ -27,3 +27,4 @@ dev.log
 .tasks/
 .claude/settings.local.json
 .claude/plans/
+.claude/scheduled_tasks.lock

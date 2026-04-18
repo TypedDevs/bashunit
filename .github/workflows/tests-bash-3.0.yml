@@ -2,9 +2,19 @@ name: Bash 3.0 Compatibility
 
 on:
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - 'adrs/**'
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
   push:
     branches:
       - main
+
+concurrency:
+  group: bash3-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build-image:
