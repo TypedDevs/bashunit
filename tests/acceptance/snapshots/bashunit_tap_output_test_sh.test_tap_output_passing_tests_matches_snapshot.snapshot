@@ -1,0 +1,8 @@
+TAP version 13
+# tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
+ok 1 - Assert same
+ok 2 - Assert contains
+ok 3 - Assert greater and less than
+ok 4 - Assert empty
+
+1..4

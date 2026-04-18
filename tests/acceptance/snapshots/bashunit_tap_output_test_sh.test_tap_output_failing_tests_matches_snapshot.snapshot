@@ -1,0 +1,13 @@
+TAP version 13
+# tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+ok 1 - Assert same
+ok 2 - Assert contains
+not ok 3 - Assert failing
+  ---
+  Expected '1'
+  but got  '0'
+  ...
+ok 4 - Assert greater and less than
+ok 5 - Assert empty
+
+1..5
