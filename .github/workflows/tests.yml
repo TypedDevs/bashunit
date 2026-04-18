@@ -140,7 +140,6 @@ jobs:
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   windows-acceptance:
-    name: "Windows acceptance - ${{ matrix.name }}"
     if: github.event_name == 'push'
     timeout-minutes: 10
     runs-on: windows-latest
