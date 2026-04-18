@@ -543,14 +543,14 @@ function bashunit::main::watch_get_checksum() {
     if [ -d "$file" ]; then
       local found
       found=$(find "$file" -name '*.sh' -type f \
-        -exec stat -f '%m %N' {} + 2>/dev/null ||
+        -exec stat -c '%Y %n' {} + 2>/dev/null ||
         find "$file" -name '*.sh' -type f \
-          -exec stat -c '%Y %n' {} + 2>/dev/null) || true
+          -exec stat -f '%m %N' {} + 2>/dev/null) || true
       checksum="${checksum}${found}"
     elif [ -f "$file" ]; then
       local mtime
-      mtime=$(stat -f '%m' "$file" 2>/dev/null ||
-        stat -c '%Y' "$file" 2>/dev/null) || true
+      mtime=$(stat -c '%Y' "$file" 2>/dev/null ||
+        stat -f '%m' "$file" 2>/dev/null) || true
       checksum="${checksum}${mtime} ${file}"
     fi
   done
