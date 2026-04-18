@@ -782,6 +782,14 @@ function bashunit::runner::run_test() {
     bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions" "$error_message"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
+
+    if bashunit::env::is_stop_on_failure_enabled; then
+      if bashunit::parallel::is_enabled; then
+        bashunit::parallel::mark_stop_on_failure
+      else
+        exit "$EXIT_CODE_STOP_ON_FAILURE"
+      fi
+    fi
     return
   fi
 
