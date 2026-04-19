@@ -96,6 +96,10 @@ function bashunit::main::cmd_test() {
       export BASHUNIT_LOG_JUNIT="$2"
       shift
       ;;
+    --log-gha)
+      export BASHUNIT_LOG_GHA="$2"
+      shift
+      ;;
     -r | --report-html)
       export BASHUNIT_REPORT_HTML="$2"
       shift
@@ -690,6 +694,10 @@ function bashunit::main::exec_tests() {
 
   if [ -n "$BASHUNIT_LOG_JUNIT" ]; then
     bashunit::reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
+  fi
+
+  if [ -n "$BASHUNIT_LOG_GHA" ]; then
+    bashunit::reports::generate_gha_log "$BASHUNIT_LOG_GHA"
   fi
 
   if [ -n "$BASHUNIT_REPORT_HTML" ]; then

@@ -18,6 +18,7 @@ function set_up() {
   # Unset report env vars by default
   unset BASHUNIT_LOG_JUNIT
   unset BASHUNIT_REPORT_HTML
+  unset BASHUNIT_LOG_GHA
 
   # Create temp file for output tests
   _TEMP_OUTPUT_FILE=$(mktemp)
@@ -30,6 +31,7 @@ function tear_down() {
   # Restore env vars
   unset BASHUNIT_LOG_JUNIT
   unset BASHUNIT_REPORT_HTML
+  unset BASHUNIT_LOG_GHA
 }
 
 # Mock functions for report generation tests
@@ -111,6 +113,14 @@ function test_add_test_tracks_when_junit_enabled() {
 
 function test_add_test_tracks_when_html_report_enabled() {
   BASHUNIT_REPORT_HTML="report.html"
+
+  bashunit::reports::add_test "file.sh" "test_name" "100" "3" "passed"
+
+  assert_same "1" "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+}
+
+function test_add_test_tracks_when_gha_log_enabled() {
+  BASHUNIT_LOG_GHA="gha.log"
 
   bashunit::reports::add_test "file.sh" "test_name" "100" "3" "passed"
 
@@ -303,6 +313,111 @@ function test_generate_report_html_groups_tests_by_file() {
 
   assert_contains '<h2>File: file_a.sh</h2>' "$content"
   assert_contains '<h2>File: file_b.sh</h2>' "$content"
+}
+
+# === GitHub Actions log generation tests ===
+
+function test_generate_gha_log_emits_error_for_failed_test() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_fail" "100" "1" "failed" "expected 1 got 2"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '::error file=tests/foo_test.sh' "$content"
+  assert_contains 'title=test_fail' "$content"
+  assert_contains 'expected 1 got 2' "$content"
+}
+
+function test_generate_gha_log_emits_warning_for_risky_test() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_risky" "10" "0" "risky"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '::warning file=tests/foo_test.sh' "$content"
+  assert_contains 'title=test_risky' "$content"
+  assert_contains 'no assertions' "$content"
+}
+
+function test_generate_gha_log_emits_notice_for_incomplete_test() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_incomplete" "0" "0" "incomplete"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '::notice file=tests/foo_test.sh' "$content"
+  assert_contains 'title=test_incomplete' "$content"
+}
+
+function test_generate_gha_log_skips_passed_test() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_ok" "100" "1" "passed"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_empty "$content"
+}
+
+function test_generate_gha_log_skips_skipped_test() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_skip" "0" "0" "skipped"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_empty "$content"
+}
+
+function test_generate_gha_log_encodes_newlines_in_message() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  local msg
+  msg=$(printf 'line one\nline two')
+  bashunit::reports::add_test "tests/foo_test.sh" "test_multi" "100" "1" "failed" "$msg"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains 'line one%0Aline two' "$content"
+  assert_not_contains 'line one
+line two' "$content"
+}
+
+function test_generate_gha_log_strips_ansi_color_codes() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  local msg
+  msg=$(printf 'expected \033[32mgreen\033[0m got \033[31mred\033[0m')
+  bashunit::reports::add_test "tests/foo_test.sh" "test_color" "100" "1" "failed" "$msg"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains 'expected green got red' "$content"
+  assert_not_contains $'\033[' "$content"
 }
 
 function test_generate_report_html_applies_status_css_classes() {

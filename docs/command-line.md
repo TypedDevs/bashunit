@@ -62,6 +62,7 @@ bashunit test tests/ --parallel --simple
 | `--output <format>`            | Output format (`tap` for TAP version 13)         |
 | `-w, --watch`                  | Watch files and re-run tests on change           |
 | `--log-junit <file>`           | Write JUnit XML report                           |
+| `--log-gha <file>`             | Write GitHub Actions workflow-commands log       |
 | `-j, --jobs <N>`               | Run tests in parallel with max N concurrent jobs |
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
@@ -358,7 +359,12 @@ bashunit test tests/ --log-junit results.xml
 ```bash [HTML Report]
 bashunit test tests/ --report-html report.html
 ```
+```bash [GitHub Actions]
+bashunit test tests/ --log-gha gha.log && cat gha.log
+```
 :::
+
+The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests. When streamed to stdout on a runner, they appear as inline annotations in the "Files changed" tab of a pull request.
 
 ### Show Output on Failure
 

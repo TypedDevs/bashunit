@@ -231,6 +231,23 @@ BASHUNIT_LOG_JUNIT=log-junit.xml
 ```
 :::
 
+## Log GitHub Actions
+
+> `BASHUNIT_LOG_GHA=file`
+
+Write GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) to the given file, so failed, risky and incomplete tests show up as inline annotations in the "Files changed" tab of a pull request.
+
+On a CI runner, stream the generated file to stdout so GitHub parses it:
+
+::: code-group
+```bash [Example]
+BASHUNIT_LOG_GHA=gha.log
+```
+```yaml [GitHub Actions workflow]
+- run: ./bashunit --log-gha gha.log tests/ || (cat gha.log && exit 1)
+```
+:::
+
 ## Report HTML
 
 > `BASHUNIT_REPORT_HTML=file`

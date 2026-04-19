@@ -34,7 +34,11 @@ function bashunit::reports::add_test_failed() {
 
 function bashunit::reports::add_test() {
   # Skip tracking when no report output is requested
-  { [ -n "${BASHUNIT_LOG_JUNIT:-}" ] || [ -n "${BASHUNIT_REPORT_HTML:-}" ]; } || return 0
+  {
+    [ -n "${BASHUNIT_LOG_JUNIT:-}" ] ||
+      [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
+      [ -n "${BASHUNIT_LOG_GHA:-}" ]
+  } || return 0
 
   local file="$1"
   local test_name="$2"
@@ -112,6 +116,53 @@ function bashunit::reports::generate_junit_xml() {
     echo "  </testsuite>"
     echo "</testsuites>"
   } >"$output_file"
+}
+
+function bashunit::reports::__gha_encode() {
+  local text="$1"
+  # Strip ANSI escape sequences, then percent-encode reserved chars
+  # (see GitHub Actions workflow-commands docs: %25, %0A, %0D)
+  echo "$text" \
+    | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+    | awk 'BEGIN{ORS=""} {gsub(/%/,"%25"); gsub(/\r/,"%0D"); print; if (NR>0) print "%0A"}' \
+    | sed -e 's/%0A$//'
+}
+
+function bashunit::reports::generate_gha_log() {
+  local output_file="$1"
+
+  : >"$output_file"
+
+  local i
+  for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+    local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
+    local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+    local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
+    local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
+    local level="" message=""
+
+    case "$status" in
+      failed)
+        level="error"
+        message="$failure_message"
+        ;;
+      risky)
+        level="warning"
+        message="Test has no assertions (risky)"
+        ;;
+      incomplete)
+        level="notice"
+        message="Test incomplete"
+        ;;
+      *)
+        continue
+        ;;
+    esac
+
+    local encoded_message
+    encoded_message=$(bashunit::reports::__gha_encode "$message")
+    echo "::${level} file=${file},title=${name}::${encoded_message}" >>"$output_file"
+  done
 }
 
 function bashunit::reports::generate_report_html() {
