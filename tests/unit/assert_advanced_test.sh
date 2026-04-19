@@ -171,8 +171,8 @@ function test_successful_assert_exec_with_stdin() {
   }
 
   assert_empty "$(assert_exec prompt_command \
-    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
-    --stdout "Your name is Taylor Otwell and you prefer PHP." \
+    --stdin "Chemaclass"$'\n'"Phel-Lang"$'\n' \
+    --stdout "Your name is Chemaclass and you prefer Phel-Lang." \
     --exit 0)"
 }
 
@@ -206,22 +206,22 @@ function test_successful_assert_exec_stdout_not_contains() {
     echo "Hello, World!"
   }
 
-  assert_empty "$(assert_exec greet_command --stdout-not-contains "Ruby")"
+  assert_empty "$(assert_exec greet_command --stdout-not-contains "Delphi")"
 }
 
 function test_unsuccessful_assert_exec_stdout_not_contains() {
   # shellcheck disable=SC2317
   function greet_command() {
-    echo "Hello, Ruby lovers!"
+    echo "Hello, Delphi lovers!"
   }
 
-  local expected="exit: 0"$'\n'"stdout not contains: Ruby"
-  local actual="exit: 0"$'\n'"stdout: Hello, Ruby lovers!"
+  local expected="exit: 0"$'\n'"stdout not contains: Delphi"
+  local actual="exit: 0"$'\n'"stdout: Hello, Delphi lovers!"
 
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Unsuccessful assert exec stdout not contains" "$expected" "but got " "$actual")" \
-    "$(assert_exec greet_command --stdout-not-contains "Ruby")"
+    "$(assert_exec greet_command --stdout-not-contains "Delphi")"
 }
 
 function test_successful_assert_exec_stderr_contains() {
@@ -282,8 +282,8 @@ function test_successful_assert_exec_interactive_prompt_flow() {
   }
 
   assert_empty "$(assert_exec question_command \
-    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
-    --stdout-contains "Your name is Taylor Otwell and you prefer PHP." \
-    --stdout-not-contains "Ruby" \
+    --stdin "Chemaclass"$'\n'"Phel-Lang"$'\n' \
+    --stdout-contains "Your name is Chemaclass and you prefer Phel-Lang." \
+    --stdout-not-contains "Delphi" \
     --exit 0)"
 }

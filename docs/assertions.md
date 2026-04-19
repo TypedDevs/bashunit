@@ -552,9 +552,9 @@ function question() {
 
 function test_interactive_prompt() {
   assert_exec question \
-    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
-    --stdout-contains "Your name is Taylor Otwell and you prefer PHP." \
-    --stdout-not-contains "Ruby" \
+    --stdin "Chemaclass"$'\n'"Phel-Lang"$'\n' \
+    --stdout-contains "Your name is Chemaclass and you prefer Phel-Lang." \
+    --stdout-not-contains "Delphi" \
     --exit 0
 }
 ```
