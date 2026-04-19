@@ -5,6 +5,7 @@
 ### Added
 - Allow `bashunit::spy` to accept an optional exit code (e.g. `bashunit::spy thing 1`) or custom implementation function (e.g. `bashunit::spy thing mock_thing`) (#600)
 - Allow most assert functions to accept an optional trailing label parameter to override the failure message title (e.g. `assert_same "a" "$b" "checking user name"`) (#77)
+- Add `--fail-on-risky` flag and `BASHUNIT_FAIL_ON_RISKY` env var to treat risky tests (no assertions) as failures (#115)
 
 ### Fixed
 - Fix `--stop-on-failure` not stopping when a test errors with a runtime error (e.g. `command not found`, `illegal option`) (#383)

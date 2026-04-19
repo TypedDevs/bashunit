@@ -34,6 +34,7 @@ function provide_boolean_flags_true() {
   bashunit::data_set "BASHUNIT_SKIP_ENV_FILE" "bashunit::env::is_skip_env_file_enabled"
   bashunit::data_set "BASHUNIT_LOGIN_SHELL" "bashunit::env::is_login_shell_enabled"
   bashunit::data_set "BASHUNIT_FAILURES_ONLY" "bashunit::env::is_failures_only_enabled"
+  bashunit::data_set "BASHUNIT_FAIL_ON_RISKY" "bashunit::env::is_fail_on_risky_enabled"
   bashunit::data_set "BASHUNIT_SHOW_OUTPUT_ON_FAILURE" "bashunit::env::is_show_output_on_failure_enabled"
   bashunit::data_set "BASHUNIT_NO_PROGRESS" "bashunit::env::is_no_progress_enabled"
   bashunit::data_set "BASHUNIT_NO_COLOR" "bashunit::env::is_no_color_enabled"

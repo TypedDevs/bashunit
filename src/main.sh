@@ -119,6 +119,9 @@ function bashunit::main::cmd_test() {
     --failures-only)
       export BASHUNIT_FAILURES_ONLY=true
       ;;
+    --fail-on-risky)
+      export BASHUNIT_FAIL_ON_RISKY=true
+      ;;
     --show-output)
       export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true
       ;;

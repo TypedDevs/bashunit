@@ -90,7 +90,11 @@ function bashunit::parallel::aggregate_test_results() {
       # Check for risky test (zero assertions, no error)
       local total_for_test=$((failed + passed + skipped + incomplete + snapshot))
       if [ "$total_for_test" -eq 0 ] && [ "${exit_code:-0}" -eq 0 ]; then
-        bashunit::state::add_tests_risky
+        if bashunit::env::is_fail_on_risky_enabled; then
+          bashunit::state::add_tests_failed
+        else
+          bashunit::state::add_tests_risky
+        fi
         continue
       fi
 

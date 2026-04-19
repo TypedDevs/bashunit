@@ -353,6 +353,22 @@ BASHUNIT_NO_OUTPUT=true
 ```
 :::
 
+## Fail on risky
+
+> `BASHUNIT_FAIL_ON_RISKY=true|false`
+
+Treat risky tests (tests with zero assertions) as failures instead of warnings. `false` by default.
+
+When enabled, a test that finishes without running any assertion is reported as failed, and the run exits with a non-zero status.
+
+Similar as using `--fail-on-risky` option on the command line.
+
+::: code-group
+```bash [Example]
+BASHUNIT_FAIL_ON_RISKY=true
+```
+:::
+
 ## Failures only
 
 > `BASHUNIT_FAILURES_ONLY=true|false`
