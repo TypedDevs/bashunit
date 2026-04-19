@@ -10,7 +10,7 @@ function test_bashunit_when_a_execution_error() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_execution_error.sh
   local color_default="$(bashunit::sgr 0)"
   local color_bold="$(bashunit::sgr 1)"
-  local color_dim="$(bashunit::sgr 2)"
+  local color_dim="$(bashunit::sgr 90)"
   local color_red="$(bashunit::sgr 31)"
 
   function format_summary_title() {

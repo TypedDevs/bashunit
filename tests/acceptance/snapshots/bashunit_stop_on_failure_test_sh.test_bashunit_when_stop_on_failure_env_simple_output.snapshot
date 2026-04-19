@@ -6,16 +6,16 @@
 
 |1) ./tests/acceptance/fixtures/test_bashunit_when_stop_on_failure.sh:6
 |[31m✗ Failed[0m: B error
-|    [2mExpected[0m [1m'1'[0m
-|    [2mbut got [0m [1m'2'[0m
-|    [2mSource:[0m
-|    [2m7:[0m assert_same 1 1
-|    [2m8:[0m assert_same 1 2 # error
-|    [2m9:[0m assert_same 2 2
+|    [90mExpected[0m [1m'1'[0m
+|    [90mbut got [0m [1m'2'[0m
+|    [90mSource:[0m
+|    [90m7:[0m assert_same 1 1
+|    [90m8:[0m assert_same 1 2 # error
+|    [90m9:[0m assert_same 2 2
 
 
 
-[2mTests:     [0m [32m1 passed[0m, [31m1 failed[0m, 2 total
-[2mAssertions:[0m [32m2 passed[0m, [31m1 failed[0m, 3 total
+[90mTests:     [0m [32m1 passed[0m, [31m1 failed[0m, 2 total
+[90mAssertions:[0m [32m2 passed[0m, [31m1 failed[0m, 3 total
 
 [41m[30m[1m Some tests failed [0m

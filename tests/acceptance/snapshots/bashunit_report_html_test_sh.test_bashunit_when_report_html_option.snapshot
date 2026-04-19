@@ -1,8 +1,8 @@
 [1mRunning ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh[0m
 [32m✓ Passed[0m: Success
 [31m✗ Failed[0m: Fail
-    [2mExpected[0m [1m'to be empty'[0m
-    [2mbut got [0m [1m'non empty'[0m
+    [90mExpected[0m [1m'to be empty'[0m
+    [90mbut got [0m [1m'non empty'[0m
 [33m↷ Skipped[0m: Skipped
 [36m✒ Incomplete[0m: Todo
 
@@ -10,12 +10,12 @@
 
 |1) ./tests/acceptance/fixtures/test_bashunit_when_report_html.sh:7
 |[31m✗ Failed[0m: Fail
-|    [2mExpected[0m [1m'to be empty'[0m
-|    [2mbut got [0m [1m'non empty'[0m
-|    [2mSource:[0m
-|    [2m8:[0m assert_empty "non empty"
+|    [90mExpected[0m [1m'to be empty'[0m
+|    [90mbut got [0m [1m'non empty'[0m
+|    [90mSource:[0m
+|    [90m8:[0m assert_empty "non empty"
 
-[2mTests:     [0m [32m1 passed[0m, [33m1 skipped[0m, [36m1 incomplete[0m, [31m1 failed[0m, 4 total
-[2mAssertions:[0m [32m1 passed[0m, [33m1 skipped[0m, [36m1 incomplete[0m, [31m1 failed[0m, 4 total
+[90mTests:     [0m [32m1 passed[0m, [33m1 skipped[0m, [36m1 incomplete[0m, [31m1 failed[0m, 4 total
+[90mAssertions:[0m [32m1 passed[0m, [33m1 skipped[0m, [36m1 incomplete[0m, [31m1 failed[0m, 4 total
 
 [41m[30m[1m Some tests failed [0m
