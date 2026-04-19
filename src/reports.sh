@@ -34,7 +34,11 @@ function bashunit::reports::add_test_failed() {
 
 function bashunit::reports::add_test() {
   # Skip tracking when no report output is requested
-  { [ -n "${BASHUNIT_LOG_JUNIT:-}" ] || [ -n "${BASHUNIT_REPORT_HTML:-}" ]; } || return 0
+  {
+    [ -n "${BASHUNIT_LOG_JUNIT:-}" ] ||
+      [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
+      [ -n "${BASHUNIT_LOG_GHA:-}" ]
+  } || return 0
 
   local file="$1"
   local test_name="$2"
@@ -112,6 +116,56 @@ function bashunit::reports::generate_junit_xml() {
     echo "  </testsuite>"
     echo "</testsuites>"
   } >"$output_file"
+}
+
+function bashunit::reports::__gha_encode() {
+  local text="$1"
+  # Strip ANSI escape sequences first (one sed call)
+  text=$(printf '%s' "$text" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g')
+  # Percent-encode reserved chars per GHA workflow-commands spec.
+  # Bash 3.0+ parameter expansion avoids extra awk/sed calls.
+  # Order matters: encode '%' first so the sequences we inject stay literal.
+  text="${text//%/%25}"
+  text="${text//$'\r'/%0D}"
+  text="${text//$'\n'/%0A}"
+  printf '%s' "$text"
+}
+
+function bashunit::reports::generate_gha_log() {
+  local output_file="$1"
+
+  : >"$output_file"
+
+  local i
+  for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+    local file="${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
+    local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+    local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
+    local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
+    local level="" message=""
+
+    case "$status" in
+      failed)
+        level="error"
+        message="$failure_message"
+        ;;
+      risky)
+        level="warning"
+        message="Test has no assertions (risky)"
+        ;;
+      incomplete)
+        level="notice"
+        message="Test incomplete"
+        ;;
+      *)
+        continue
+        ;;
+    esac
+
+    local encoded_message
+    encoded_message=$(bashunit::reports::__gha_encode "$message")
+    echo "::${level} file=${file},title=${name}::${encoded_message}" >>"$output_file"
+  done
 }
 
 function bashunit::reports::generate_report_html() {
