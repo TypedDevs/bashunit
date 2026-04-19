@@ -122,6 +122,7 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --failures-only             Only show failures (suppress passed/skipped/incomplete)
+  --fail-on-risky             Treat risky tests (no assertions) as failures
   --no-progress               Suppress real-time progress, show only final results
   --show-output               Show test output on failure (default: enabled)
   --no-output-on-failure      Hide test output on failure

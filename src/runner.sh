@@ -857,6 +857,22 @@ function bashunit::runner::run_test() {
 
   # Check for risky test (zero assertions)
   if [ "$total_assertions" -eq 0 ]; then
+    if bashunit::env::is_fail_on_risky_enabled; then
+      local risky_msg="Test has no assertions (risky)"
+      bashunit::state::add_tests_failed
+      bashunit::console_results::print_error_test "$fn_name" "$risky_msg"
+      bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$risky_msg"
+      bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$risky_msg"
+      bashunit::internal_log "Test failed (risky)" "$label"
+      if bashunit::env::is_stop_on_failure_enabled; then
+        if bashunit::parallel::is_enabled; then
+          bashunit::parallel::mark_stop_on_failure
+        else
+          exit "$EXIT_CODE_STOP_ON_FAILURE"
+        fi
+      fi
+      return
+    fi
     bashunit::state::add_tests_risky
     if ! bashunit::env::is_failures_only_enabled; then
       bashunit::console_results::print_risky_test "${label}" "$duration"
