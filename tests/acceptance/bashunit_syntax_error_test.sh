@@ -10,7 +10,7 @@ function strip_ansi() {
 }
 
 function test_bashunit_when_test_file_has_syntax_error() {
-  local test_file=./tests/acceptance/fixtures/test_bashunit_when_syntax_error.sh
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_syntax_error.bash
 
   local actual_raw
   set +e
