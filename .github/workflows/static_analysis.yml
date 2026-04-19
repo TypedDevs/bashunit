@@ -25,4 +25,6 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         env:
           SHELLCHECK_OPTS: -e SC1091 -e SC2155 -e SC2016
+        with:
+          ignore_names: test_bashunit_when_syntax_error.bash
 
