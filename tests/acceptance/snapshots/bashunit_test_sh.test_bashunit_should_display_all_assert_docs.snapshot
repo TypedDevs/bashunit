@@ -223,11 +223,17 @@ are more semantic versions of this assertion, for which you don't need to specif
 
 ## assert_exec
 --------------
-> `assert_exec "command" --exit <code> --stdout "text" --stderr "text"`
+> `assert_exec "command" --exit <code> --stdout "text" --stderr "text" --stdout-contains "needle" --stdout-not-contains "needle" --stderr-contains "needle" --stderr-not-contains "needle" --stdin "input"`
 
 Runs `command` capturing its exit status, standard output and standard error and
 checks all provided expectations. When `--exit` is omitted the expected exit
 status defaults to `0`.
+
+Use `--stdin` to feed input into interactive commands (e.g. commands using
+`read`). Multiple answers can be passed by separating them with newlines.
+
+Use `--stdout-contains` / `--stdout-not-contains` (and the `stderr-*` variants)
+for substring matching when you don't want to assert against the full output.
 
 
 ## assert_array_contains

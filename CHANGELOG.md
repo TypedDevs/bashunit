@@ -7,6 +7,7 @@
 - Assert functions accept an optional trailing label to override the failure title (#77)
 - `--fail-on-risky` flag and `BASHUNIT_FAIL_ON_RISKY` env var treat no-assertion tests as failures (#115)
 - `--log-gha <file>` flag and `BASHUNIT_LOG_GHA` env var emit GitHub Actions workflow commands so failed, risky and incomplete tests show up as inline PR annotations (#280)
+- `assert_exec` accepts `--stdin`, `--stdout-contains`, `--stdout-not-contains`, `--stderr-contains` and `--stderr-not-contains` flags to test interactive prompt commands and substring output (#301)
 
 ### Changed
 - Parallel test execution is now enabled on Alpine Linux (#370)

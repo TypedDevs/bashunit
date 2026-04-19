@@ -160,3 +160,130 @@ function test_assert_line_count_does_not_modify_existing_variable() {
   assert_empty "$(assert_line_count 1 "one")"
   assert_same "original" "$additional_new_lines"
 }
+
+function test_successful_assert_exec_with_stdin() {
+  # shellcheck disable=SC2317
+  function prompt_command() {
+    local name lang
+    read -r name
+    read -r lang
+    echo "Your name is $name and you prefer $lang."
+  }
+
+  assert_empty "$(assert_exec prompt_command \
+    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
+    --stdout "Your name is Taylor Otwell and you prefer PHP." \
+    --exit 0)"
+}
+
+function test_successful_assert_exec_stdout_contains() {
+  # shellcheck disable=SC2317
+  function greet_command() {
+    echo "Hello, World! Welcome to bashunit."
+  }
+
+  assert_empty "$(assert_exec greet_command --stdout-contains "bashunit")"
+}
+
+function test_unsuccessful_assert_exec_stdout_contains() {
+  # shellcheck disable=SC2317
+  function greet_command() {
+    echo "Hello, World!"
+  }
+
+  local expected="exit: 0"$'\n'"stdout contains: bashunit"
+  local actual="exit: 0"$'\n'"stdout: Hello, World!"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert exec stdout contains" "$expected" "but got " "$actual")" \
+    "$(assert_exec greet_command --stdout-contains "bashunit")"
+}
+
+function test_successful_assert_exec_stdout_not_contains() {
+  # shellcheck disable=SC2317
+  function greet_command() {
+    echo "Hello, World!"
+  }
+
+  assert_empty "$(assert_exec greet_command --stdout-not-contains "Ruby")"
+}
+
+function test_unsuccessful_assert_exec_stdout_not_contains() {
+  # shellcheck disable=SC2317
+  function greet_command() {
+    echo "Hello, Ruby lovers!"
+  }
+
+  local expected="exit: 0"$'\n'"stdout not contains: Ruby"
+  local actual="exit: 0"$'\n'"stdout: Hello, Ruby lovers!"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert exec stdout not contains" "$expected" "but got " "$actual")" \
+    "$(assert_exec greet_command --stdout-not-contains "Ruby")"
+}
+
+function test_successful_assert_exec_stderr_contains() {
+  # shellcheck disable=SC2317
+  function warn_command() {
+    echo "warning: low disk" >&2
+  }
+
+  assert_empty "$(assert_exec warn_command --stderr-contains "low disk")"
+}
+
+function test_unsuccessful_assert_exec_stderr_contains() {
+  # shellcheck disable=SC2317
+  function warn_command() {
+    echo "ok" >&2
+  }
+
+  local expected="exit: 0"$'\n'"stderr contains: failure"
+  local actual="exit: 0"$'\n'"stderr: ok"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert exec stderr contains" "$expected" "but got " "$actual")" \
+    "$(assert_exec warn_command --stderr-contains "failure")"
+}
+
+function test_successful_assert_exec_stderr_not_contains() {
+  # shellcheck disable=SC2317
+  function warn_command() {
+    echo "ok" >&2
+  }
+
+  assert_empty "$(assert_exec warn_command --stderr-not-contains "error")"
+}
+
+function test_unsuccessful_assert_exec_stderr_not_contains() {
+  # shellcheck disable=SC2317
+  function warn_command() {
+    echo "fatal error" >&2
+  }
+
+  local expected="exit: 0"$'\n'"stderr not contains: error"
+  local actual="exit: 0"$'\n'"stderr: fatal error"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert exec stderr not contains" "$expected" "but got " "$actual")" \
+    "$(assert_exec warn_command --stderr-not-contains "error")"
+}
+
+function test_successful_assert_exec_interactive_prompt_flow() {
+  # shellcheck disable=SC2317
+  function question_command() {
+    local name lang
+    read -r name
+    read -r lang
+    echo "Your name is $name and you prefer $lang."
+  }
+
+  assert_empty "$(assert_exec question_command \
+    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
+    --stdout-contains "Your name is Taylor Otwell and you prefer PHP." \
+    --stdout-not-contains "Ruby" \
+    --exit 0)"
+}

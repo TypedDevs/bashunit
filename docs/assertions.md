@@ -513,11 +513,17 @@ function test_failure() {
 :::
 
 ## assert_exec
-> `assert_exec "command" [--exit <code>] [--stdout "text"] [--stderr "text"]`
+> `assert_exec "command" [--exit <code>] [--stdout "text"] [--stderr "text"] [--stdout-contains "needle"] [--stdout-not-contains "needle"] [--stderr-contains "needle"] [--stderr-not-contains "needle"] [--stdin "input"]`
 
 Runs `command` capturing its exit status, standard output and standard error and
 checks all provided expectations. When `--exit` is omitted the expected exit
 status defaults to `0`.
+
+Use `--stdin` to feed input into interactive commands (e.g. commands using
+`read`). Multiple answers can be passed by separating them with newlines.
+
+Use `--stdout-contains` / `--stdout-not-contains` (and the `stderr-*` variants)
+for substring matching when you don't want to assert against the full output.
 
 ::: code-group
 ```bash [Example]
@@ -533,6 +539,23 @@ function test_success() {
 
 function test_failure() {
   assert_exec sample --exit 0 --stdout "out" --stderr "err"
+}
+```
+
+```bash [Interactive]
+function question() {
+  local name lang
+  read -r name
+  read -r lang
+  echo "Your name is $name and you prefer $lang."
+}
+
+function test_interactive_prompt() {
+  assert_exec question \
+    --stdin "Taylor Otwell"$'\n'"PHP"$'\n' \
+    --stdout-contains "Your name is Taylor Otwell and you prefer PHP." \
+    --stdout-not-contains "Ruby" \
+    --exit 0
 }
 ```
 :::
