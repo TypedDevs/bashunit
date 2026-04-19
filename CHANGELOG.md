@@ -13,6 +13,7 @@
 - Fix `clock::now` shell-time parsing when `EPOCHREALTIME` uses a comma decimal separator
 - Fix LCOV and HTML coverage reports generating incomplete/empty output due to post-increment operator causing silent exit under `set -e` (#618)
 - Enable parallel test execution on Alpine Linux; previously gated off due to race conditions, now resolved (#370)
+- Fix syntax error in test file silently passing; now reported as a failing test (#220)
 
 ## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
 

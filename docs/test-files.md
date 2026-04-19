@@ -129,3 +129,23 @@ function tear_down_after_script() {
 }
 ```
 :::
+
+## Syntax errors in test files
+
+If a test file contains a Bash syntax error, **bashunit** records a failing
+test for that file instead of silently skipping the remaining tests. The exact
+error message from Bash (including file path and line number) is shown in the
+summary, and the suite exits with a non-zero status.
+
+```
+Running tests/example_test.sh
+✗ Error: Source
+    tests/example_test.sh: line 10: syntax error near unexpected token `fi'
+    tests/example_test.sh: line 10: `  fi'
+
+Tests:      1 failed, 1 total
+Some tests failed
+```
+
+This guarantees a broken test file always fails the suite, so it never
+passes by absence.

@@ -72,8 +72,26 @@ function bashunit::runner::load_test_files() {
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
     bashunit::internal_log "Loading file" "$test_file"
+    local source_err_file source_err source_status
+    source_err_file="$(bashunit::temp_file "source_err")"
     # shellcheck source=/dev/null
-    source "$test_file"
+    source "$test_file" 2>"$source_err_file"
+    source_status=$?
+    source_err=""
+    if [ -s "$source_err_file" ]; then
+      source_err="$(cat "$source_err_file")"
+    fi
+    rm -f "$source_err_file"
+    if [ "$source_status" -ne 0 ] || [ "$(printf '%s' "$source_err" \
+      | "$GREP" -cE 'syntax error|unexpected EOF' || true)" -gt 0 ]; then
+      local message="$source_err"
+      [ -z "$message" ] && message="Failed to source '$test_file' (exit $source_status)"
+      bashunit::runner::record_file_hook_failure \
+        "source" "$test_file" "$message" 1 true
+      bashunit::runner::clean_set_up_and_tear_down_after_script
+      bashunit::runner::restore_workdir
+      continue
+    fi
     # Update function cache after sourcing new test file
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
     # Check if any tests match the filter before rendering header or running hooks
