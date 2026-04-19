@@ -380,8 +380,18 @@ function assert_exec() {
   local expected_exit=0
   local expected_stdout=""
   local expected_stderr=""
+  local stdout_needle=""
+  local stdout_no_needle=""
+  local stderr_needle=""
+  local stderr_no_needle=""
+  local stdin_input=""
   local check_stdout=false
   local check_stderr=false
+  local check_stdout_contains=false
+  local check_stdout_not_contains=false
+  local check_stderr_contains=false
+  local check_stderr_not_contains=false
+  local check_stdin=false
 
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -399,6 +409,31 @@ function assert_exec() {
       check_stderr=true
       shift 2
       ;;
+    --stdout-contains)
+      stdout_needle="$2"
+      check_stdout_contains=true
+      shift 2
+      ;;
+    --stdout-not-contains)
+      stdout_no_needle="$2"
+      check_stdout_not_contains=true
+      shift 2
+      ;;
+    --stderr-contains)
+      stderr_needle="$2"
+      check_stderr_contains=true
+      shift 2
+      ;;
+    --stderr-not-contains)
+      stderr_no_needle="$2"
+      check_stderr_not_contains=true
+      shift 2
+      ;;
+    --stdin)
+      stdin_input="$2"
+      check_stdin=true
+      shift 2
+      ;;
     *)
       shift
       ;;
@@ -409,8 +444,17 @@ function assert_exec() {
   stdout_file=$("$MKTEMP")
   stderr_file=$("$MKTEMP")
 
-  eval "$cmd" >"$stdout_file" 2>"$stderr_file"
-  local exit_code=$?
+  if $check_stdin; then
+    local stdin_file
+    stdin_file=$("$MKTEMP")
+    printf '%s' "$stdin_input" >"$stdin_file"
+    eval "$cmd" <"$stdin_file" >"$stdout_file" 2>"$stderr_file"
+    local exit_code=$?
+    rm -f "$stdin_file"
+  else
+    eval "$cmd" >"$stdout_file" 2>"$stderr_file"
+    local exit_code=$?
+  fi
 
   local stdout
   stdout=$(cat "$stdout_file")
@@ -435,12 +479,46 @@ function assert_exec() {
     fi
   fi
 
+  if $check_stdout_contains; then
+    expected_desc="$expected_desc"$'\n'"stdout contains: $stdout_needle"
+    actual_desc="$actual_desc"$'\n'"stdout: $stdout"
+    case "$stdout" in
+    *"$stdout_needle"*) ;;
+    *) failed=1 ;;
+    esac
+  fi
+
+  if $check_stdout_not_contains; then
+    expected_desc="$expected_desc"$'\n'"stdout not contains: $stdout_no_needle"
+    actual_desc="$actual_desc"$'\n'"stdout: $stdout"
+    case "$stdout" in
+    *"$stdout_no_needle"*) failed=1 ;;
+    esac
+  fi
+
   if $check_stderr; then
     expected_desc="$expected_desc"$'\n'"stderr: $expected_stderr"
     actual_desc="$actual_desc"$'\n'"stderr: $stderr"
     if [ "$stderr" != "$expected_stderr" ]; then
       failed=1
     fi
+  fi
+
+  if $check_stderr_contains; then
+    expected_desc="$expected_desc"$'\n'"stderr contains: $stderr_needle"
+    actual_desc="$actual_desc"$'\n'"stderr: $stderr"
+    case "$stderr" in
+    *"$stderr_needle"*) ;;
+    *) failed=1 ;;
+    esac
+  fi
+
+  if $check_stderr_not_contains; then
+    expected_desc="$expected_desc"$'\n'"stderr not contains: $stderr_no_needle"
+    actual_desc="$actual_desc"$'\n'"stderr: $stderr"
+    case "$stderr" in
+    *"$stderr_no_needle"*) failed=1 ;;
+    esac
   fi
 
   if [ "$failed" -eq 1 ]; then
