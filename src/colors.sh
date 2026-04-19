@@ -37,7 +37,9 @@ if bashunit::env::is_no_color_enabled; then
   _BASHUNIT_COLOR_DEFAULT=""
 else
   _BASHUNIT_COLOR_BOLD="$(bashunit::sgr 1)"
-  _BASHUNIT_COLOR_FAINT="$(bashunit::sgr 2)"
+  # Use SGR 90 (bright black / gray) instead of SGR 2 (faint), since
+  # GitHub Actions' log renderer does not render the faint attribute.
+  _BASHUNIT_COLOR_FAINT="$(bashunit::sgr 90)"
   _BASHUNIT_COLOR_BLACK="$(bashunit::sgr 30)"
   _BASHUNIT_COLOR_FAILED="$(bashunit::sgr 31)"
   _BASHUNIT_COLOR_PASSED="$(bashunit::sgr 32)"

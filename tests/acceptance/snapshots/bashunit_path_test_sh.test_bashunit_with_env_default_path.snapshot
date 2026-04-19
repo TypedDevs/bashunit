@@ -10,7 +10,7 @@
 [32m✓ Passed[0m: Assert same
 [32m✓ Passed[0m: Assert contains
 
-[2mTests:     [0m [32m6 passed[0m, 6 total
-[2mAssertions:[0m [32m9 passed[0m, 9 total
+[90mTests:     [0m [32m6 passed[0m, 6 total
+[90mAssertions:[0m [32m9 passed[0m, 9 total
 
 [42m[30m[1m All tests passed [0m

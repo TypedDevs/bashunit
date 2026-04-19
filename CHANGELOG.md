@@ -11,6 +11,7 @@
 - Parallel test execution is now enabled on Alpine Linux (#370)
 
 ### Fixed
+- Dim/faint labels now render as gray (SGR 90) so keywords like `Expected` and `Tests:` stay colored in GitHub Actions logs (#323)
 - Syntax error in a test file now fails the suite instead of passing silently (#220)
 - `--stop-on-failure` now stops on runtime errors such as `command not found` or `illegal option` (#383)
 - Spying on `echo` or `printf` no longer hangs via infinite recursion (#607)
