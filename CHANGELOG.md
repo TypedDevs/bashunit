@@ -3,18 +3,20 @@
 ## Unreleased
 
 ### Added
-- Allow `bashunit::spy` to accept an optional exit code (e.g. `bashunit::spy thing 1`) or custom implementation function (e.g. `bashunit::spy thing mock_thing`) (#600)
-- Allow most assert functions to accept an optional trailing label parameter to override the failure message title (e.g. `assert_same "a" "$b" "checking user name"`) (#77)
-- Add `--fail-on-risky` flag and `BASHUNIT_FAIL_ON_RISKY` env var to treat risky tests (no assertions) as failures (#115)
+- `bashunit::spy` accepts an optional exit code or custom implementation function (#600)
+- Assert functions accept an optional trailing label to override the failure title (#77)
+- `--fail-on-risky` flag and `BASHUNIT_FAIL_ON_RISKY` env var treat no-assertion tests as failures (#115)
+
+### Changed
+- Parallel test execution is now enabled on Alpine Linux (#370)
 
 ### Fixed
-- Fix `--stop-on-failure` not stopping when a test errors with a runtime error (e.g. `command not found`, `illegal option`) (#383)
-- Fix spying on `echo` or `printf` causing bashunit to hang due to infinite recursion (#607)
-- Fix invalid `.env.example` coverage threshold entry and copy `.env.example` to `.env` in CI test workflows so configuration parse errors are caught during automated test runs
-- Fix `clock::now` shell-time parsing when `EPOCHREALTIME` uses a comma decimal separator
-- Fix LCOV and HTML coverage reports generating incomplete/empty output due to post-increment operator causing silent exit under `set -e` (#618)
-- Enable parallel test execution on Alpine Linux; previously gated off due to race conditions, now resolved (#370)
-- Fix syntax error in test file silently passing; now reported as a failing test (#220)
+- Syntax error in a test file now fails the suite instead of passing silently (#220)
+- `--stop-on-failure` now stops on runtime errors such as `command not found` or `illegal option` (#383)
+- Spying on `echo` or `printf` no longer hangs via infinite recursion (#607)
+- LCOV and HTML coverage reports no longer produce empty output under `set -e` (#618)
+- `clock::now` handles `EPOCHREALTIME` values that use a comma decimal separator
+- Invalid `.env.example` coverage threshold entry; CI now copies `.env.example` to `.env` so config parse errors are caught
 
 ## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
 
