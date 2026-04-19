@@ -147,5 +147,5 @@ Tests:      1 failed, 1 total
 Some tests failed
 ```
 
-This guarantees a broken test file always fails the suite — it never passes
-by absence.
+This guarantees a broken test file always fails the suite, so it never
+passes by absence.
