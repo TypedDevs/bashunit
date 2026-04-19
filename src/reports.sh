@@ -120,12 +120,15 @@ function bashunit::reports::generate_junit_xml() {
 
 function bashunit::reports::__gha_encode() {
   local text="$1"
-  # Strip ANSI escape sequences, then percent-encode reserved chars
-  # (see GitHub Actions workflow-commands docs: %25, %0A, %0D)
-  echo "$text" \
-    | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
-    | awk 'BEGIN{ORS=""} {gsub(/%/,"%25"); gsub(/\r/,"%0D"); print; if (NR>0) print "%0A"}' \
-    | sed -e 's/%0A$//'
+  # Strip ANSI escape sequences first (one sed call)
+  text=$(printf '%s' "$text" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g')
+  # Percent-encode reserved chars per GHA workflow-commands spec.
+  # Bash 3.0+ parameter expansion avoids extra awk/sed calls.
+  # Order matters: encode '%' first so the sequences we inject stay literal.
+  text="${text//%/%25}"
+  text="${text//$'\r'/%0D}"
+  text="${text//$'\n'/%0A}"
+  printf '%s' "$text"
 }
 
 function bashunit::reports::generate_gha_log() {
