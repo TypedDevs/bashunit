@@ -449,8 +449,8 @@ function bashunit::coverage::is_executable_line() {
   # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
   [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
 
-  # Skip loop terminator with redirection or pipe (e.g. "done < file", "done <<<\"$var\"", "done | sort")
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*done[[:space:]]+[<>|&].*$' || true)" -gt 0 ] && return 1
+  # Skip loop terminator with trailing redirection/pipe/fd (e.g. "done < file", "done | sort", "done 2>&1", "done &")
+  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*done[[:space:]]+[^[:space:]#].*$' || true)" -gt 0 ] && return 1
 
   # Skip case patterns like "--option)" or "*) # comment"
   [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*[^\)]+\)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1

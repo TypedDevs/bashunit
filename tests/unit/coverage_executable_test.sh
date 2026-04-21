@@ -262,3 +262,21 @@ function test_coverage_is_executable_line_returns_false_for_done_with_pipe() {
   result=$(bashunit::coverage::is_executable_line '  done | sort' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
 }
+
+function test_coverage_is_executable_line_returns_false_for_done_with_fd_redirect() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done 2>&1' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_background() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done &' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_append_redirect() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done >> /tmp/out.log' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
