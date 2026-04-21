@@ -20,6 +20,7 @@
 - LCOV and HTML coverage reports no longer produce empty output under `set -e` (#618)
 - `clock::now` handles `EPOCHREALTIME` values that use a comma decimal separator
 - Invalid `.env.example` coverage threshold entry; CI now copies `.env.example` to `.env` so config parse errors are caught
+- Coverage no longer counts case patterns with trailing comments (e.g. `*thing) # note`) or loop terminators with redirections/pipes (e.g. `done < file`, `done <<<"$var"`, `done | sort`) as executable lines (#634)
 
 ## [0.34.1](https://github.com/TypedDevs/bashunit/compare/0.34.0...0.34.1) - 2026-03-20
 
