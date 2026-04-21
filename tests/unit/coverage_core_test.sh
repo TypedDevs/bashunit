@@ -174,6 +174,49 @@ EOF
   rm -f "$temp_file"
 }
 
+function test_coverage_get_executable_lines_ignores_case_comments_and_done_redirects() {
+  # Regression for #634: case patterns with trailing comments and loop terminators
+  # with redirections or pipes must be ignored when counting executable lines.
+  local temp_file
+  temp_file=$(mktemp)
+
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function demo() {
+  case "$1" in
+    *thing) # Looks for thing at end of text
+      echo "thing"
+      ;;
+    *) # fallback branch
+      echo "other"
+      ;;
+  esac
+
+  while read -r line; do
+    echo "$line"
+  done < /path/to/file
+
+  while read -r item; do
+    echo "$item"
+  done <<<"$some_var"
+
+  while read -r x; do
+    echo "$x"
+  done | sort
+}
+EOF
+
+  # Executable lines: case "$1" in, echo "thing", echo "other",
+  # while read -r line, echo "$line", while read -r item, echo "$item",
+  # while read -r x, echo "$x" -> 9 total.
+  local count
+  count=$(bashunit::coverage::get_executable_lines "$temp_file")
+
+  assert_equals "9" "$count"
+
+  rm -f "$temp_file"
+}
+
 function test_coverage_get_executable_lines_does_not_exit_under_set_e() {
   local temp_file
   temp_file=$(mktemp)

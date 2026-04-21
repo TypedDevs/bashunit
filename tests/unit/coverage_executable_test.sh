@@ -219,3 +219,46 @@ function test_coverage_is_executable_line_returns_false_for_standalone_paren() {
   result=$(bashunit::coverage::is_executable_line '  )' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
 }
+
+function test_coverage_is_executable_line_returns_false_for_case_pattern_with_comment() {
+  local input='    *thing) # Looks for thing at end of text'
+  local result
+  result=$(bashunit::coverage::is_executable_line "$input" 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_wildcard_case_with_comment() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '    *) # fallback' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_file_redirect() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done < /path/to/file' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_herestring() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done <<<"$var"' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_process_sub() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done < <(some_cmd)' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_redirect_and_comment() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done < "$file" # read input' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_is_executable_line_returns_false_for_done_with_pipe() {
+  local result
+  result=$(bashunit::coverage::is_executable_line '  done | sort' 2 && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
