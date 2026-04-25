@@ -32,6 +32,13 @@ function test_unsuccessful_assert_true() {
     "$(assert_true false)"
 }
 
+function test_unsuccessful_assert_true_with_empty_value() {
+  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert true with empty value" \
+    "true or 0" \
+    "but got " "")" \
+    "$(assert_true "")"
+}
+
 function test_successful_assert_true_on_function() {
   assert_empty "$(assert_true ls)"
 }
@@ -60,6 +67,13 @@ function test_unsuccessful_assert_false() {
     "false or 1" \
     "but got " "true")" \
     "$(assert_false true)"
+}
+
+function test_unsuccessful_assert_false_with_empty_value() {
+  assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert false with empty value" \
+    "false or 1" \
+    "but got " "")" \
+    "$(assert_false "")"
 }
 
 function test_successful_assert_false_on_function() {
