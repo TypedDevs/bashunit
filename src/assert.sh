@@ -43,6 +43,10 @@ function assert_true() {
 
   # Check for expected literal values first
   case "$actual" in
+  "")
+    bashunit::handle_bool_assertion_failure "true or 0" "$actual"
+    return
+    ;;
   "true" | "0")
     bashunit::state::add_assertions_passed
     return
@@ -71,6 +75,10 @@ function assert_false() {
 
   # Check for expected literal values first
   case "$actual" in
+  "")
+    bashunit::handle_bool_assertion_failure "false or 1" "$actual"
+    return
+    ;;
   "false" | "1")
     bashunit::state::add_assertions_passed
     return
