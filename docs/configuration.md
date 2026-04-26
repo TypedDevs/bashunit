@@ -424,10 +424,11 @@ BASHUNIT_NO_PROGRESS=true
 
 > `BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true|false`
 
-Display captured stdout/stderr output when tests fail with runtime errors. `true` by default.
+Display captured stdout/stderr output when tests fail with runtime errors or assertion failures. `true` by default.
 
-When a test fails due to a runtime error (command not found, unbound variable, etc.),
-bashunit displays the test's output in an "Output:" section to help debug the failure.
+When a test fails due to a runtime error (command not found, unbound variable, etc.) or
+a failed assertion after the test printed diagnostics, bashunit displays the test's output
+in an "Output:" section to help debug the failure.
 
 Similar as using `--show-output` or `--no-output-on-failure` options on the [command line](/command-line#show-output-on-failure).
 
