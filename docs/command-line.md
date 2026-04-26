@@ -371,11 +371,12 @@ The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warn
 > `bashunit test --show-output`
 > `bashunit test --no-output-on-failure`
 
-Control whether test output (stdout/stderr) is displayed when tests fail with runtime errors.
+Control whether test output (stdout/stderr) is displayed when tests fail with runtime errors or assertion failures.
 
 By default (`--show-output`), when a test fails due to a runtime error (command not found,
-unbound variable, permission denied, etc.), bashunit displays the captured output in an
-"Output:" section to help debug the failure.
+unbound variable, permission denied, etc.) or a failed assertion after the test printed
+diagnostics, bashunit displays the captured output in an "Output:" section to help debug
+the failure.
 
 Use `--no-output-on-failure` to suppress this output.
 

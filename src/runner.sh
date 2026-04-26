@@ -814,7 +814,12 @@ function bashunit::runner::run_test() {
   if [ "$current_assertions_failed" != "$_BASHUNIT_ASSERTIONS_FAILED" ]; then
     bashunit::state::add_tests_failed
     bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
-    bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$subshell_output"
+    local assertion_runtime_output
+    assertion_runtime_output="$(
+      bashunit::runner::extract_assertion_runtime_output "$runtime_output" "$subshell_output"
+    )"
+    bashunit::runner::write_failure_result_output \
+      "$test_file" "$fn_name" "$subshell_output" "$assertion_runtime_output"
 
     bashunit::internal_log "Test failed" "$label"
 
@@ -947,6 +952,78 @@ function bashunit::runner::decode_subshell_output() {
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
   bashunit::helper::decode_base64 "$test_output_base64"
+}
+
+function bashunit::runner::is_simple_progress_output() {
+  local output="$1"
+
+  [ -n "$output" ] || return 1
+
+  local color
+  for color in \
+    "$_BASHUNIT_COLOR_DEFAULT" \
+    "$_BASHUNIT_COLOR_PASSED" \
+    "$_BASHUNIT_COLOR_FAILED" \
+    "$_BASHUNIT_COLOR_SKIPPED" \
+    "$_BASHUNIT_COLOR_INCOMPLETE" \
+    "$_BASHUNIT_COLOR_SNAPSHOT" \
+    "$_BASHUNIT_COLOR_RISKY"; do
+    [ -n "$color" ] && output="${output//"$color"/}"
+  done
+
+  local i
+  local char
+  for ((i = 0; i < ${#output}; i++)); do
+    char="${output:$i:1}"
+    case "$char" in
+    "." | "F" | "S" | "I" | "N" | "R" | "E" | "?") ;;
+    *) return 1 ;;
+    esac
+  done
+
+  return 0
+}
+
+function bashunit::runner::line_exists_in_output() {
+  local needle="$1"
+  local haystack="$2"
+  local line
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    [ "$line" = "$needle" ] && return 0
+  done <<<"$haystack"
+
+  return 1
+}
+
+function bashunit::runner::extract_assertion_runtime_output() {
+  local runtime_output="$1"
+  local rendered_assertion_output="$2"
+  local filtered_output=""
+  local line
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    if bashunit::runner::line_exists_in_output "$line" "$rendered_assertion_output"; then
+      continue
+    fi
+    if bashunit::runner::is_simple_progress_output "$line"; then
+      continue
+    fi
+
+    [ -n "$filtered_output" ] && filtered_output="$filtered_output"$'\n'
+    filtered_output="$filtered_output$line"
+  done <<<"$runtime_output"
+
+  runtime_output="$filtered_output"
+
+  while [ -n "$runtime_output" ]; do
+    case "$runtime_output" in
+    *$'\n') runtime_output="${runtime_output%$'\n'}" ;;
+    *) break ;;
+    esac
+  done
+
+  echo "$runtime_output"
 }
 
 function bashunit::runner::parse_result() {
