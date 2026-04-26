@@ -560,6 +560,31 @@ function test_interactive_prompt() {
 ```
 :::
 
+## assert_arrays_equal
+> `assert_arrays_equal "expected..." -- "actual..."`
+
+Reports an error if the arrays have different lengths or any element differs at the same index.
+
+Use `--` to separate the expected array from the actual array.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local expected=(foo bar baz)
+  local actual=(foo bar baz)
+
+  assert_arrays_equal "${expected[@]}" -- "${actual[@]}"
+}
+
+function test_failure() {
+  local expected=(foo bar baz)
+  local actual=(foo baz bar)
+
+  assert_arrays_equal "${expected[@]}" -- "${actual[@]}"
+}
+```
+:::
+
 ## assert_array_contains
 > `assert_array_contains "needle" "haystack"`
 

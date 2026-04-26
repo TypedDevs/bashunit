@@ -118,6 +118,41 @@ function test_unsuccessful_assert_array_not_contains() {
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
 
+function test_successful_assert_arrays_equal() {
+  local expected
+  expected=(Ubuntu 123 Linux\ Mint)
+  local actual
+  actual=(Ubuntu 123 Linux\ Mint)
+
+  assert_empty "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+}
+
+function test_unsuccessful_assert_arrays_equal_with_different_lengths() {
+  local expected
+  expected=(Ubuntu 123 Linux\ Mint)
+  local actual
+  actual=(Ubuntu 123)
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert arrays equal with different lengths" \
+    "Ubuntu 123 Linux Mint" "but got " "Ubuntu 123" "Expected length" "3, actual length 2")" \
+    "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+}
+
+function test_unsuccessful_assert_arrays_equal_with_different_elements() {
+  local expected
+  expected=(Ubuntu 123 Linux\ Mint)
+  local actual
+  actual=(Ubuntu 321 Linux\ Mint)
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert arrays equal with different elements" \
+    "Ubuntu 123 Linux Mint" "but got " "Ubuntu 321 Linux Mint" "Different index" "1")" \
+    "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+}
+
 function test_successful_assert_line_count_empty_str() {
   assert_empty "$(assert_line_count 0 "")"
 }
