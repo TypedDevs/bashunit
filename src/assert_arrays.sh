@@ -6,8 +6,8 @@ function assert_arrays_equal() {
   local label
   label="$(bashunit::assert::label)"
 
-  local -a expected_values
-  local -a actual_values
+  local -a expected_values=()
+  local -a actual_values=()
   local found_separator=false
   local argument
 
