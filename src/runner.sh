@@ -984,36 +984,6 @@ function bashunit::runner::is_simple_progress_output() {
   return 0
 }
 
-function bashunit::runner::line_starts_with_result_marker() {
-  local line="$1"
-  local marker
-  local -a result_markers
-  result_markers=(
-    "${_BASHUNIT_COLOR_PASSED}✓ Passed"
-    "${_BASHUNIT_COLOR_FAILED}✗ Failed"
-    "${_BASHUNIT_COLOR_FAILED}✗ Error"
-    "${_BASHUNIT_COLOR_SKIPPED}↷ Skipped"
-    "${_BASHUNIT_COLOR_INCOMPLETE}✒ Incomplete"
-    "${_BASHUNIT_COLOR_SNAPSHOT}✎ Snapshot"
-    "${_BASHUNIT_COLOR_RISKY}⚠ Risky"
-    "✓ Passed"
-    "✗ Failed"
-    "✗ Error"
-    "↷ Skipped"
-    "✒ Incomplete"
-    "✎ Snapshot"
-    "⚠ Risky"
-  )
-
-  for marker in "${result_markers[@]}"; do
-    case "$line" in
-    "$marker"*) return 0 ;;
-    esac
-  done
-
-  return 1
-}
-
 function bashunit::runner::line_exists_in_output() {
   local needle="$1"
   local haystack="$2"
@@ -1037,9 +1007,6 @@ function bashunit::runner::extract_assertion_runtime_output() {
       continue
     fi
     if bashunit::runner::is_simple_progress_output "$line"; then
-      continue
-    fi
-    if bashunit::runner::line_starts_with_result_marker "$line"; then
       continue
     fi
 

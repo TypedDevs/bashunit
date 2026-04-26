@@ -35,3 +35,15 @@ function test_extract_assertion_runtime_output_keeps_user_output_after_status_ou
 
   assert_same "diagnostic after pass" "$actual"
 }
+
+function test_extract_assertion_runtime_output_keeps_user_output_that_looks_like_status_output() {
+  local runtime_output
+  runtime_output=$'✗ Failed: emitted by the code under test\n✗ Failed: Example'
+  local rendered_assertion_output
+  rendered_assertion_output="✗ Failed: Example"
+
+  local actual
+  actual="$(bashunit::runner::extract_assertion_runtime_output "$runtime_output" "$rendered_assertion_output")"
+
+  assert_same "✗ Failed: emitted by the code under test" "$actual"
+}
