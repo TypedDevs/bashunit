@@ -119,38 +119,38 @@ function test_unsuccessful_assert_array_not_contains() {
 }
 
 function test_successful_assert_arrays_equal() {
-  local expected
-  expected=(Ubuntu 123 Linux\ Mint)
-  local actual
-  actual=(Ubuntu 123 Linux\ Mint)
+  local expected_values
+  expected_values=(Ubuntu 123 Linux\ Mint)
+  local actual_values
+  actual_values=(Ubuntu 123 Linux\ Mint)
 
-  assert_empty "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+  assert_empty "$(assert_arrays_equal "${expected_values[@]}" -- "${actual_values[@]}")"
 }
 
 function test_unsuccessful_assert_arrays_equal_with_different_lengths() {
-  local expected
-  expected=(Ubuntu 123 Linux\ Mint)
-  local actual
-  actual=(Ubuntu 123)
+  local expected_values
+  expected_values=(Ubuntu 123 Linux\ Mint)
+  local actual_values
+  actual_values=(Ubuntu 123)
 
   assert_same \
     "$(bashunit::console_results::print_failed_test \
     "Unsuccessful assert arrays equal with different lengths" \
     "Ubuntu 123 Linux Mint" "but got " "Ubuntu 123" "Expected length" "3, actual length 2")" \
-    "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+    "$(assert_arrays_equal "${expected_values[@]}" -- "${actual_values[@]}")"
 }
 
 function test_unsuccessful_assert_arrays_equal_with_different_elements() {
-  local expected
-  expected=(Ubuntu 123 Linux\ Mint)
-  local actual
-  actual=(Ubuntu 321 Linux\ Mint)
+  local expected_values
+  expected_values=(Ubuntu 123 Linux\ Mint)
+  local actual_values
+  actual_values=(Ubuntu 321 Linux\ Mint)
 
   assert_same \
     "$(bashunit::console_results::print_failed_test \
     "Unsuccessful assert arrays equal with different elements" \
     "Ubuntu 123 Linux Mint" "but got " "Ubuntu 321 Linux Mint" "Different index" "1")" \
-    "$(assert_arrays_equal "${expected[@]}" -- "${actual[@]}")"
+    "$(assert_arrays_equal "${expected_values[@]}" -- "${actual_values[@]}")"
 }
 
 function test_successful_assert_line_count_empty_str() {

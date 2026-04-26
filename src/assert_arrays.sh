@@ -6,8 +6,8 @@ function assert_arrays_equal() {
   local label
   label="$(bashunit::assert::label)"
 
-  local -a expected
-  local -a actual
+  local -a expected_values
+  local -a actual_values
   local found_separator=false
   local argument
 
@@ -18,9 +18,9 @@ function assert_arrays_equal() {
     fi
 
     if [ "$found_separator" = true ]; then
-      actual[${#actual[@]}]="$argument"
+      actual_values[${#actual_values[@]}]="$argument"
     else
-      expected[${#expected[@]}]="$argument"
+      expected_values[${#expected_values[@]}]="$argument"
     fi
   done
 
@@ -30,20 +30,20 @@ function assert_arrays_equal() {
     return
   fi
 
-  if [ "${#expected[@]}" -ne "${#actual[@]}" ]; then
+  if [ "${#expected_values[@]}" -ne "${#actual_values[@]}" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test \
-      "$label" "${expected[*]}" "but got " "${actual[*]}" \
-      "Expected length" "${#expected[@]}, actual length ${#actual[@]}"
+      "$label" "${expected_values[*]}" "but got " "${actual_values[*]}" \
+      "Expected length" "${#expected_values[@]}, actual length ${#actual_values[@]}"
     return
   fi
 
   local index
-  for ((index = 0; index < ${#expected[@]}; index++)); do
-    if [ "${expected[$index]}" != "${actual[$index]}" ]; then
+  for ((index = 0; index < ${#expected_values[@]}; index++)); do
+    if [ "${expected_values[$index]}" != "${actual_values[$index]}" ]; then
       bashunit::assert::mark_failed
       bashunit::console_results::print_failed_test \
-        "$label" "${expected[*]}" "but got " "${actual[*]}" \
+        "$label" "${expected_values[*]}" "but got " "${actual_values[*]}" \
         "Different index" "$index"
       return
     fi
