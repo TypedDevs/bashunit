@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Display captured test output on assertion failures when `--show-output` is enabled (#637)
+
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 
 ### Added

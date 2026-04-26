@@ -51,3 +51,23 @@ function test_show_output_flag_overrides_env() {
   assert_contains "Output:" "$actual"
   assert_contains "Debug: Starting test" "$actual"
 }
+
+function test_show_output_on_assertion_failure_enabled_by_default() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_show_assertion_failure_output.sh
+
+  local actual
+  actual="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" 2>&1 || true)"
+
+  assert_contains "Output:" "$actual"
+  assert_contains "function_being_tested requires at least 3 arguments." "$actual"
+}
+
+function test_show_output_on_assertion_failure_disabled_via_flag() {
+  local test_file=./tests/acceptance/fixtures/test_bashunit_show_assertion_failure_output.sh
+
+  local actual
+  actual="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --no-output-on-failure "$test_file" 2>&1 || true)"
+
+  assert_not_contains "Output:" "$actual"
+  assert_not_contains "function_being_tested requires at least 3 arguments." "$actual"
+}
