@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
+
 ### Added
 - `bashunit::spy` accepts an optional exit code or custom implementation function (#600)
 - Assert functions accept an optional trailing label to override the failure title (#77)
