@@ -236,6 +236,15 @@ Use `--stdout-contains` / `--stdout-not-contains` (and the `stderr-*` variants)
 for substring matching when you don't want to assert against the full output.
 
 
+## assert_arrays_equal
+--------------
+> `assert_arrays_equal "expected..." -- "actual..."`
+
+Reports an error if the arrays have different lengths or any element differs at the same index.
+
+Use `--` to separate the expected array from the actual array.
+
+
 ## assert_array_contains
 --------------
 > `assert_array_contains "needle" "haystack"`
