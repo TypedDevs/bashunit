@@ -511,7 +511,7 @@ function bashunit::coverage::is_executable_line() {
   [ -z "${line// /}" ] && return 1
 
   # Single combined grep covers every non-executable pattern
-  [ "$(echo "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_NONEXEC_PATTERN" || true)" -gt 0 ] && return 1
+  [ "$(printf '%s' "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_NONEXEC_PATTERN" || true)" -gt 0 ] && return 1
 
   return 0
 }
@@ -556,7 +556,7 @@ function bashunit::coverage::get_hit_lines() {
   local _idx=0 _fl
   while IFS= read -r _fl || [ -n "$_fl" ]; do
     file_lines[_idx]="$_fl"
-    _idx=$((_idx + 1))
+    ((++_idx))
   done <"$file"
 
   local count=0
@@ -565,7 +565,7 @@ function bashunit::coverage::get_hit_lines() {
     local line_content="${file_lines[$((line_num - 1))]:-}"
     [ -z "$line_content" ] && continue
     if bashunit::coverage::is_executable_line "$line_content" "$line_num"; then
-      count=$((count + 1))
+      ((++count))
     fi
   done
 
@@ -600,11 +600,11 @@ function bashunit::coverage::compute_file_coverage() {
 
   local executable=0 hit=0 lineno=0 line line_hits
   while IFS= read -r line || [ -n "$line" ]; do
-    lineno=$((lineno + 1))
+    ((++lineno))
     bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-    executable=$((executable + 1))
+    ((++executable))
     line_hits=${hits_by_line[lineno]:-0}
-    [ "$line_hits" -gt 0 ] && hit=$((hit + 1))
+    [ "$line_hits" -gt 0 ] && ((++hit))
   done <"$file"
 
   echo "${executable}:${hit}"
@@ -664,16 +664,33 @@ function bashunit::coverage::extract_functions() {
     if [ "$in_function" -eq 0 ]; then
       local fn_name=""
 
-      # Match: name() with optional `function` keyword (parens form)
-      local _re='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
-      if [[ "$line" =~ $_re ]]; then
-        fn_name="${BASH_REMATCH[2]}"
-      else
-        # Match: function name { (keyword form, no parens)
-        _re='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
-        if [[ "$line" =~ $_re ]]; then
-          fn_name="${BASH_REMATCH[2]}"
-        fi
+      # Extract function name using pure Bash string operations (avoids sed subshell)
+      local stripped="${line#"${line%%[![:space:]]*}"}"
+
+      # Strip "function " prefix if present
+      case "$stripped" in
+      function[\ \	]*)
+        stripped="${stripped#function}"
+        stripped="${stripped#"${stripped%%[![:space:]]*}"}"
+        ;;
+      esac
+
+      # Extract first word as candidate function name
+      fn_name="${stripped%%[[:space:]\(\{]*}"
+
+      # Validate: must start with valid identifier char, and rest must have () or {
+      if [ -n "$fn_name" ]; then
+        case "$fn_name" in
+        [a-zA-Z_]*)
+          local after_name="${stripped#"$fn_name"}"
+          after_name="${after_name#"${after_name%%[![:space:]]*}"}"
+          case "$after_name" in
+          '()'* | '{'*) ;;
+          *) fn_name="" ;;
+          esac
+          ;;
+        *) fn_name="" ;;
+        esac
       fi
 
       if [ -n "$fn_name" ]; then
@@ -888,12 +905,12 @@ function bashunit::coverage::report_lcov() {
       local lineno=0 executable=0 hit=0 line line_hits
       # shellcheck disable=SC2094
       while IFS= read -r line || [ -n "$line" ]; do
-        lineno=$((lineno + 1))
+        ((++lineno))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-        executable=$((executable + 1))
-        line_hits=${hits_by_line[lineno]:-0}
-        [ "$line_hits" -gt 0 ] && hit=$((hit + 1))
-        echo "DA:${lineno},${line_hits}"
+        ((++executable))
+        local lh="${hits_by_line[$lineno]:-0}"
+        [ "$lh" -gt 0 ] && ((++hit))
+        echo "DA:${lineno},${lh}"
       done <"$file"
 
       echo "LF:$executable"
@@ -1400,7 +1417,7 @@ function bashunit::coverage::generate_file_html() {
   local _fli=0 _fl
   while IFS= read -r _fl || [ -n "$_fl" ]; do
     file_lines[_fli]="$_fl"
-    _fli=$((_fli + 1))
+    ((++_fli))
   done <"$file"
 
   # Pre-load test hits data into indexed array (for tooltips)
@@ -1671,7 +1688,7 @@ EOF
         local ln
         for ((ln = fn_start; ln <= fn_end; ln++)); do
           local ln_content
-          ln_content="${file_lines[$((ln - 1))]}"
+          ln_content="${file_lines[$((ln - 1))]:-}"
           if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
             ((++fn_executable))
             local ln_hits=${hits_by_line[$ln]:-0}
@@ -1727,7 +1744,7 @@ EOF
     local lineno=0
     local line
     for line in "${file_lines[@]}"; do
-      lineno=$((lineno + 1))
+      ((++lineno))
 
       local escaped_line
       escaped_line=$(bashunit::coverage::html_escape "$line")
