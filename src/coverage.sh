@@ -190,6 +190,57 @@ function bashunit::coverage::get_file_stats() {
   echo "${executable}:${hit}:${pct}:${class}"
 }
 
+# Pre-computed file stats cache (avoids redundant per-file reads across reports)
+_BASHUNIT_COVERAGE_STATS_FILES=()
+_BASHUNIT_COVERAGE_STATS_EXEC=()
+_BASHUNIT_COVERAGE_STATS_HIT=()
+_BASHUNIT_COVERAGE_STATS_PCT=()
+_BASHUNIT_COVERAGE_STATS_CLASS=()
+_BASHUNIT_COVERAGE_STATS_COUNT=0
+
+# Pre-compute stats for all tracked files (call once before reports)
+function bashunit::coverage::precompute_file_stats() {
+  _BASHUNIT_COVERAGE_STATS_FILES=()
+  _BASHUNIT_COVERAGE_STATS_EXEC=()
+  _BASHUNIT_COVERAGE_STATS_HIT=()
+  _BASHUNIT_COVERAGE_STATS_PCT=()
+  _BASHUNIT_COVERAGE_STATS_CLASS=()
+  _BASHUNIT_COVERAGE_STATS_COUNT=0
+
+  local file
+  while IFS= read -r file; do
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+    local executable hit pct class
+    executable=$(bashunit::coverage::get_executable_lines "$file")
+    hit=$(bashunit::coverage::get_hit_lines "$file")
+    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+    class=$(bashunit::coverage::get_coverage_class "$pct")
+
+    local idx="$_BASHUNIT_COVERAGE_STATS_COUNT"
+    _BASHUNIT_COVERAGE_STATS_FILES[idx]="$file"
+    _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$executable"
+    _BASHUNIT_COVERAGE_STATS_HIT[idx]="$hit"
+    _BASHUNIT_COVERAGE_STATS_PCT[idx]="$pct"
+    _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$class"
+    _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
+  done < <(bashunit::coverage::get_tracked_files)
+}
+
+# Look up cached stats for a file, returns "executable:hit:pct:class"
+function bashunit::coverage::get_cached_stats() {
+  local file="$1"
+  local i
+  for ((i = 0; i < _BASHUNIT_COVERAGE_STATS_COUNT; i++)); do
+    if [ "${_BASHUNIT_COVERAGE_STATS_FILES[i]}" = "$file" ]; then
+      echo "${_BASHUNIT_COVERAGE_STATS_EXEC[i]}:${_BASHUNIT_COVERAGE_STATS_HIT[i]}:${_BASHUNIT_COVERAGE_STATS_PCT[i]}:${_BASHUNIT_COVERAGE_STATS_CLASS[i]}"
+      return 0
+    fi
+  done
+  # Fallback: compute if not cached
+  bashunit::coverage::get_file_stats "$file"
+}
+
 function bashunit::coverage::record_line() {
   local file="$1"
   local lineno="$2"
@@ -710,16 +761,24 @@ function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
 
-  while IFS= read -r file; do
-    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+  if [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]; then
+    local i
+    for ((i = 0; i < _BASHUNIT_COVERAGE_STATS_COUNT; i++)); do
+      total_executable=$((total_executable + _BASHUNIT_COVERAGE_STATS_EXEC[i]))
+      total_hit=$((total_hit + _BASHUNIT_COVERAGE_STATS_HIT[i]))
+    done
+  else
+    while IFS= read -r file; do
+      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local executable hit
-    executable=$(bashunit::coverage::get_executable_lines "$file")
-    hit=$(bashunit::coverage::get_hit_lines "$file")
+      local executable hit
+      executable=$(bashunit::coverage::get_executable_lines "$file")
+      hit=$(bashunit::coverage::get_hit_lines "$file")
 
-    total_executable=$((total_executable + executable))
-    total_hit=$((total_hit + hit))
-  done < <(bashunit::coverage::get_tracked_files)
+      total_executable=$((total_executable + executable))
+      total_hit=$((total_hit + hit))
+    done < <(bashunit::coverage::get_tracked_files)
+  fi
 
   bashunit::coverage::calculate_percentage "$total_hit" "$total_executable"
 }
@@ -742,14 +801,26 @@ function bashunit::coverage::report_text() {
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
     has_files=true
 
-    local stats executable hit pct class
-    stats=$(bashunit::coverage::get_file_stats "$file")
-    executable="${stats%%:*}"
-    stats="${stats#*:}"
-    hit="${stats%%:*}"
-    stats="${stats#*:}"
-    pct="${stats%%:*}"
-    class="${stats##*:}"
+    local executable hit pct class
+    if [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]; then
+      local stats
+      stats=$(bashunit::coverage::get_cached_stats "$file")
+      executable="${stats%%:*}"
+      local rest="${stats#*:}"
+      hit="${rest%%:*}"
+      rest="${rest#*:}"
+      pct="${rest%%:*}"
+      class="${rest#*:}"
+    else
+      local stats
+      stats=$(bashunit::coverage::get_file_stats "$file")
+      executable="${stats%%:*}"
+      stats="${stats#*:}"
+      hit="${stats%%:*}"
+      stats="${stats#*:}"
+      pct="${stats%%:*}"
+      class="${stats##*:}"
+    fi
 
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
@@ -887,7 +958,11 @@ function bashunit::coverage::report_html() {
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
     local stats executable hit pct
-    stats=$(bashunit::coverage::get_file_stats "$file")
+    if [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]; then
+      stats=$(bashunit::coverage::get_cached_stats "$file")
+    else
+      stats=$(bashunit::coverage::get_file_stats "$file")
+    fi
     executable="${stats%%:*}"
     stats="${stats#*:}"
     hit="${stats%%:*}"
@@ -1295,9 +1370,21 @@ function bashunit::coverage::generate_file_html() {
 
   local display_file="${file#"$(pwd)"/}"
   local executable hit pct class
-  executable=$(bashunit::coverage::get_executable_lines "$file")
-  hit=$(bashunit::coverage::get_hit_lines "$file")
-  pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+  if [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]; then
+    local stats
+    stats=$(bashunit::coverage::get_cached_stats "$file")
+    executable="${stats%%:*}"
+    local _rest="${stats#*:}"
+    hit="${_rest%%:*}"
+    _rest="${_rest#*:}"
+    pct="${_rest%%:*}"
+    class="${_rest#*:}"
+  else
+    executable=$(bashunit::coverage::get_executable_lines "$file")
+    hit=$(bashunit::coverage::get_hit_lines "$file")
+    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+    class=$(bashunit::coverage::get_coverage_class "$pct")
+  fi
   class=$(bashunit::coverage::get_coverage_class "$pct")
   local uncovered=$((executable - hit))
 
