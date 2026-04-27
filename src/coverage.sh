@@ -499,13 +499,22 @@ function bashunit::coverage::get_hit_lines() {
 
   # Only count hits that correspond to executable lines
   # This prevents >100% coverage when DEBUG trap fires on non-executable lines
+
+  # Pre-load file lines into indexed array (avoids sed per line)
+  local -a file_lines=()
+  local _idx=0 _fl
+  while IFS= read -r _fl || [ -n "$_fl" ]; do
+    file_lines[_idx]="$_fl"
+    _idx=$((_idx + 1))
+  done <"$file"
+
   local count=0
   local line_num
   for line_num in $hit_lines; do
-    local line_content
-    line_content=$(sed -n "${line_num}p" "$file" 2>/dev/null) || continue
+    local line_content="${file_lines[$((line_num - 1))]:-}"
+    [ -z "$line_content" ] && continue
     if bashunit::coverage::is_executable_line "$line_content" "$line_num"; then
-      ((++count))
+      count=$((count + 1))
     fi
   done
 
@@ -1299,6 +1308,14 @@ function bashunit::coverage::generate_file_html() {
     hits_by_line[_ln]=$_cnt
   done < <(bashunit::coverage::get_all_line_hits "$file")
 
+  # Pre-load all file lines into indexed array (avoids sed per line)
+  local -a file_lines=()
+  local _fli=0 _fl
+  while IFS= read -r _fl || [ -n "$_fl" ]; do
+    file_lines[_fli]="$_fl"
+    _fli=$((_fli + 1))
+  done <"$file"
+
   # Pre-load test hits data into indexed array (for tooltips)
   # Index: line number, Value: newline-separated list of "test_file:test_function"
   # Using indexed array for Bash 3.0 compatibility (no associative arrays)
@@ -1567,7 +1584,7 @@ EOF
         local ln
         for ((ln = fn_start; ln <= fn_end; ln++)); do
           local ln_content
-          ln_content=$(sed -n "${ln}p" "$file" 2>/dev/null) || continue
+          ln_content="${file_lines[$((ln - 1))]}"
           if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
             ((++fn_executable))
             local ln_hits=${hits_by_line[$ln]:-0}
@@ -1622,8 +1639,8 @@ EOF
 
     local lineno=0
     local line
-    while IFS= read -r line || [ -n "$line" ]; do
-      ((++lineno))
+    for line in "${file_lines[@]}"; do
+      lineno=$((lineno + 1))
 
       local escaped_line
       escaped_line=$(bashunit::coverage::html_escape "$line")
@@ -1666,7 +1683,7 @@ EOF
       echo "            <td class=\"hits\">$hits_display</td>"
       echo "            <td class=\"code\">$escaped_line</td>"
       echo "          </tr>"
-    done <"$file"
+    done
 
     cat <<'EOF'
         </table>
