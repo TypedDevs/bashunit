@@ -1,83 +1,55 @@
-# Hybrid tput + ANSI for terminal output
+# Keep ANSI for colors, use tput where it pays off
 
 * Status: accepted
 * Deciders: @Chemaclass
 * Date: 2026-04-29
 
-Technical Story: [#247](https://github.com/TypedDevs/bashunit/issues/247) — evaluate replacing hardcoded ANSI escape sequences with `tput` (terminfo).
+Technical Story: [#247](https://github.com/TypedDevs/bashunit/issues/247)
 
-## Context and Problem Statement
+## Context
 
-bashunit emits colored output and screen-clear sequences via hardcoded ANSI escapes (`\e[31m`, `\033[2J\033[H`). `tput` queries the `terminfo` database, adapting to terminal capabilities and providing safer, more portable codes. A previous attempt to fully migrate to `tput` (around PR #245) caused widespread test instability across CI environments, so any move toward `tput` must be incremental and reliable.
+bashunit prints colors and clears the screen with hardcoded ANSI escapes (`\e[31m`, `\033[2J\033[H`). The idea floated in #247 was to switch to `tput`, which reads terminfo and is in theory more portable.
 
-Should bashunit replace ANSI escapes with `tput`?
+We tried something similar around PR #245 and it broke the test suite across CI envs. Lots of runners ship with `TERM=dumb` or no `TERM` at all, so `tput setaf` returns empty and colored output silently disappears.
 
-## Decision Drivers
+So the question is not really "tput or ANSI" but "where does tput actually help us, and where does it just break things?"
 
-* Bash 3.0+ portability (macOS, Linux, BSD, Windows runners)
-* Reliability across CI matrices (GitHub Actions, dumb terminals, non-TTY pipelines)
-* Minimal behavioral churn — tests and snapshots must keep passing
-* Single source of truth for color/control sequences
-* Auto-disable color when terminal does not support it (avoid garbled output)
+## Options
 
-## Considered Options
+* A. Replace every ANSI escape with `tput`.
+* B. Keep ANSI everywhere, change nothing.
+* C. Keep ANSI for colors. Use tput only where it gives us something ANSI cannot.
 
-* A. Full migration: replace every ANSI escape with `tput`
-* B. Status quo: keep ANSI everywhere
-* C. Hybrid: keep ANSI as primary mechanism via centralized helper, adopt `tput` for capability probing and select control sequences (e.g. screen clear)
+## Decision
 
-## Decision Outcome
+Option C.
 
-Chosen option: **C. Hybrid**.
+Reasoning:
 
-Rationale: ANSI SGR codes are stable and identical to what `tput setaf` emits on color terminals, so a wholesale `tput` rewrite buys little while introducing the failure modes that broke the previous attempt (e.g. `tput` returning empty strings under `TERM=dumb`, missing `terminfo` entries on stripped-down CI images, subprocess overhead per call). The real wins from `tput` are (1) capability probing (`tput colors`) to auto-disable color when unsupported and (2) portability for non-color sequences like screen clear. We adopt those targeted uses while keeping the existing centralized `bashunit::sgr` helper as the only emitter of color escape sequences.
+* For colors, tput just emits the same ANSI codes we already write by hand. The only thing it adds is breaking on dumb terminals.
+* For things ANSI cannot do well, like probing whether the terminal supports color at all, or producing the right "clear screen" sequence on weird terminals, tput is genuinely useful.
+* We already use `tput cols` in `src/env.sh` with an ANSI/`stty` fallback. Same pattern fits here.
 
-Concretely:
+What this PR does:
 
-1. Keep `bashunit::sgr` and `_BASHUNIT_COLOR_*` constants as the only place that emits color sequences. All ad-hoc `\033[...m` literals in `src/` are migrated to these constants.
-2. Expose `bashunit::env::supports_color` returning false when `TERM=dumb` or `tput colors` reports fewer than 8 colors. Available for callers that need a capability check. **Not** wired into `colors.sh` init: GitHub Actions sets `TERM=dumb` on runners, and PR #245's instability was caused by exactly this style of auto-disable. Auto-disable is deferred until we add a CI-aware override (e.g. `CI=true` / `FORCE_COLOR`) and validate across the matrix.
-3. Replace the hardcoded `printf '\033[2J\033[H'` screen clear with `tput clear` when available, falling back to the ANSI sequence otherwise.
-4. `tput` is already used for `tput cols` in `src/env.sh:215-219` — that pattern (probe + ANSI fallback) is the model.
+1. All color escapes go through `bashunit::sgr` and the `_BASHUNIT_COLOR_*` constants. No more raw `\033[...m` literals in `src/coverage.sh` or `src/main.sh`.
+2. New `bashunit::env::supports_color` (false on `TERM=dumb` or `tput colors < 8`). Exposed but not wired into `colors.sh` init yet. The same auto-disable broke CI in PR #245 and again on the first push of this branch, so it waits until we add a `CI` / `FORCE_COLOR` override.
+3. New `bashunit::io::clear_screen` runs `tput clear` and falls back to `\033[2J\033[H` if tput is missing or returns nothing. Replaces the hardcoded clear in `--watch` mode.
 
-### Positive Consequences
+## Consequences
 
-* One place (`bashunit::sgr` + `_BASHUNIT_COLOR_*`) to change colors.
-* `supports_color` is now available for future use (e.g. CLI auto-detect, theming).
-* Screen clear works on terminals where the hardcoded sequence is wrong.
-* No subprocess explosion: `tput` is invoked once at init for capability probing, not per emitted color.
-* Avoids the failure mode from the previous attempt (per-call `tput setaf` returning empty strings under unusual `TERM` values).
+Good:
 
-### Negative Consequences
+* One place to change colors.
+* Screen clear works on terminals where the literal ANSI is wrong.
+* `supports_color` is ready for the next step (auto-detect with a CI override).
 
-* Slight init-time cost for the `tput colors` probe.
-* Test suite must mock `tput` in scenarios that depended on guaranteed-color output. Existing tests already mock `tput` for `find_terminal_width` (see `tests/unit/env_test.sh:144`), so the pattern is established.
+Bad:
 
-## Pros and Cons of the Options
-
-### A. Full migration
-
-* Good, because terminfo is the canonical Unix way to handle terminals.
-* Good, because `tput` adapts to capability quirks (e.g. 8 vs 256 colors).
-* Bad, because the previous attempt destabilized CI tests across environments.
-* Bad, because every color emission becomes a subprocess call (`$(tput setaf 1)`), measurable overhead in tight loops like the runner output.
-* Bad, because `terminfo` databases on minimal CI images may lack capabilities, returning empty strings and silently breaking output.
-
-### B. Status quo
-
-* Good, because it is known to work across the entire current CI matrix.
-* Bad, because color does not auto-disable on dumb terminals.
-* Bad, because ad-hoc `\033[...m` literals in `coverage.sh` and `main.sh` bypass the centralized helper.
-
-### C. Hybrid (chosen)
-
-* Good, because it gets the practical benefits of `tput` (capability probing, portable control sequences) without the per-emission failure modes.
-* Good, because it consolidates color emission through one helper, simplifying future changes (themes, 256-color, truecolor).
-* Good, because it aligns with the existing `tput cols` pattern in `env.sh`.
-* Bad, because two mechanisms coexist; contributors must know to use the constants, not raw escapes. Mitigated by lint/grep rules and code review.
+* Two mechanisms (constants for colors, tput for clear/probe). Contributors need to know not to add raw escapes back.
 
 ## Links
 
-* [Issue #247](https://github.com/TypedDevs/bashunit/issues/247)
-* [PR #245 — Increase contrast of test results](https://github.com/TypedDevs/bashunit/pull/245)
-* [terminfo(5) man page](https://man7.org/linux/man-pages/man5/terminfo.5.html)
-* [NO_COLOR specification](https://no-color.org/)
+* Issue [#247](https://github.com/TypedDevs/bashunit/issues/247)
+* PR [#245](https://github.com/TypedDevs/bashunit/pull/245)
+* [NO_COLOR spec](https://no-color.org/)
