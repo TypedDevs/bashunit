@@ -264,8 +264,10 @@ echo "line 2"
 echo "line 3"
 EOF
 
-  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
-  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  {
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
 
   local result
   result=$(bashunit::coverage::compute_file_coverage "$temp_file")
@@ -307,9 +309,11 @@ function test_coverage_compute_file_coverage_ignores_non_executable_hits() {
 echo "line 3"
 EOF
 
-  echo "${temp_file}:1" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
-  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
-  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  {
+    echo "${temp_file}:1"
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
 
   local result
   result=$(bashunit::coverage::compute_file_coverage "$temp_file")
