@@ -185,14 +185,14 @@ function bashunit::env::is_no_color_enabled() {
 ##
 # Whether the current terminal can render ANSI color sequences.
 # Returns 1 when TERM=dumb or when `tput colors` reports fewer than 8.
-# Returns 0 when tput is missing (assume colors work — preserves prior behavior).
+# Returns 0 when tput is missing (assume colors work, preserving prior behavior).
 ##
 function bashunit::env::supports_color() {
   if [ "${TERM:-}" = "dumb" ]; then
     return 1
   fi
 
-  if ! command -v tput >/dev/null 2>&1; then
+  if ! bashunit::dependencies::has_tput; then
     return 0
   fi
 

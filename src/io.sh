@@ -6,7 +6,7 @@
 # and falls back to the ANSI sequence \033[2J\033[H otherwise.
 ##
 function bashunit::io::clear_screen() {
-  if command -v tput >/dev/null 2>&1; then
+  if bashunit::dependencies::has_tput; then
     local out
     out=$(tput clear 2>/dev/null)
     if [ -n "$out" ]; then

@@ -159,6 +159,14 @@ function bashunit::coverage::get_coverage_class() {
   fi
 }
 
+function bashunit::coverage::get_color_for_class() {
+  case "$1" in
+  high) printf '%s' "$_BASHUNIT_COLOR_PASSED" ;;
+  medium) printf '%s' "$_BASHUNIT_COLOR_SKIPPED" ;;
+  low) printf '%s' "$_BASHUNIT_COLOR_FAILED" ;;
+  esac
+}
+
 # Calculate percentage from hit and executable counts
 function bashunit::coverage::calculate_percentage() {
   local hit="$1"
@@ -737,14 +745,8 @@ function bashunit::coverage::report_text() {
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
 
-    # Determine color based on class. Constants are empty when --no-color
-    # or NO_COLOR is set (see src/colors.sh), so no extra guard is needed.
-    local color="" reset="$_BASHUNIT_COLOR_DEFAULT"
-    case "$class" in
-    high) color="$_BASHUNIT_COLOR_PASSED" ;;
-    medium) color="$_BASHUNIT_COLOR_SKIPPED" ;;
-    low) color="$_BASHUNIT_COLOR_FAILED" ;;
-    esac
+    local color reset="$_BASHUNIT_COLOR_DEFAULT"
+    color=$(bashunit::coverage::get_color_for_class "$class")
 
     # Display relative path
     local display_file="${file#"$(pwd)"/}"
@@ -765,12 +767,8 @@ function bashunit::coverage::report_text() {
   total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
   total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
 
-  local color="" reset="$_BASHUNIT_COLOR_DEFAULT"
-  case "$total_class" in
-  high) color="$_BASHUNIT_COLOR_PASSED" ;;
-  medium) color="$_BASHUNIT_COLOR_SKIPPED" ;;
-  low) color="$_BASHUNIT_COLOR_FAILED" ;;
-  esac
+  local color reset="$_BASHUNIT_COLOR_DEFAULT"
+  color=$(bashunit::coverage::get_color_for_class "$total_class")
 
   printf "%sTotal: %d/%d (%d%%)%s\n" \
     "$color" "$total_hit" "$total_executable" "$total_pct" "$reset"
