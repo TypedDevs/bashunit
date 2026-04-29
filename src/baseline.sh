@@ -9,13 +9,15 @@ _BASHUNIT_BASELINE_STATUSES=()
 # Arguments: $1 - text
 ##
 function bashunit::baseline::__xml_escape_attr() {
-  local text="$1"
-  text="${text//&/&amp;}"
-  text="${text//</&lt;}"
-  text="${text//>/&gt;}"
-  text="${text//\"/&quot;}"
-  text="${text//\'/&apos;}"
-  printf '%s' "$text"
+  # sed handles & and \" literals consistently across Bash versions; bash
+  # parameter expansion with patsub_replacement (5.2+) treats & in the
+  # replacement specially, which would corrupt entity strings.
+  printf '%s' "$1" \
+    | sed -e 's/&/\&amp;/g' \
+      -e 's/</\&lt;/g' \
+      -e 's/>/\&gt;/g' \
+      -e 's/"/\&quot;/g' \
+      -e "s/'/\&apos;/g"
 }
 
 ##
@@ -23,13 +25,13 @@ function bashunit::baseline::__xml_escape_attr() {
 # Arguments: $1 - text
 ##
 function bashunit::baseline::__xml_unescape_attr() {
-  local text="$1"
-  text="${text//&lt;/<}"
-  text="${text//&gt;/>}"
-  text="${text//&quot;/\"}"
-  text="${text//&apos;/\'}"
-  text="${text//&amp;/&}"
-  printf '%s' "$text"
+  # &amp; must be decoded last so we don't double-decode.
+  printf '%s' "$1" \
+    | sed -e 's/&lt;/</g' \
+      -e 's/&gt;/>/g' \
+      -e 's/&quot;/"/g' \
+      -e "s/&apos;/'/g" \
+      -e 's/&amp;/\&/g'
 }
 
 ##
