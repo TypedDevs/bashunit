@@ -708,7 +708,7 @@ function bashunit::coverage::extract_functions() {
 
         # Single-line function: braces balance on same line and both present
         if [ "$brace_count" -eq 0 ] && [ "$open_count" -gt 0 ] && [ "$close_count" -gt 0 ]; then
-          echo "${current_fn}:${fn_start}:${lineno}"
+          echo "${current_fn}|${fn_start}|${lineno}"
           in_function=0
           current_fn=""
         fi
