@@ -7,10 +7,14 @@
 ##
 function bashunit::io::clear_screen() {
   if command -v tput >/dev/null 2>&1; then
-    tput clear
-  else
-    printf '\033[2J\033[H'
+    local out
+    out=$(tput clear 2>/dev/null)
+    if [ -n "$out" ]; then
+      printf '%s' "$out"
+      return
+    fi
   fi
+  printf '\033[2J\033[H'
 }
 
 function bashunit::io::download_to() {
