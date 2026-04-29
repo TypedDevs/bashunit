@@ -4,8 +4,7 @@
 
 ### Added
 - Display captured test output on assertion failures when `--show-output` is enabled (#637)
-- Auto-disable colored output when the terminal cannot render it: `TERM=dumb` or `tput colors` reporting fewer than 8 now suppress color the same way `--no-color` / `NO_COLOR` does (#247)
-- `bashunit::env::supports_color` helper exposing the capability probe; `bashunit::io::clear_screen` helper that prefers `tput clear` and falls back to the raw ANSI sequence (#247)
+- `bashunit::env::supports_color` helper exposing a capability probe (`TERM=dumb` / `tput colors < 8`) for future auto-detection use; `bashunit::io::clear_screen` helper that prefers `tput clear` and falls back to the raw ANSI sequence (#247)
 
 ### Changed
 - Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)

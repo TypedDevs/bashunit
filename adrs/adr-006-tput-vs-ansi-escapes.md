@@ -35,14 +35,14 @@ Rationale: ANSI SGR codes are stable and identical to what `tput setaf` emits on
 Concretely:
 
 1. Keep `bashunit::sgr` and `_BASHUNIT_COLOR_*` constants as the only place that emits color sequences. All ad-hoc `\033[...m` literals in `src/` are migrated to these constants.
-2. Add `bashunit::env::supports_color` that returns false when `TERM=dumb`, `NO_COLOR` is set, or `tput colors` reports fewer than 8 colors. Wire this into `colors.sh` so colors auto-disable.
+2. Expose `bashunit::env::supports_color` returning false when `TERM=dumb` or `tput colors` reports fewer than 8 colors. Available for callers that need a capability check. **Not** wired into `colors.sh` init: GitHub Actions sets `TERM=dumb` on runners, and PR #245's instability was caused by exactly this style of auto-disable. Auto-disable is deferred until we add a CI-aware override (e.g. `CI=true` / `FORCE_COLOR`) and validate across the matrix.
 3. Replace the hardcoded `printf '\033[2J\033[H'` screen clear with `tput clear` when available, falling back to the ANSI sequence otherwise.
 4. `tput` is already used for `tput cols` in `src/env.sh:215-219` — that pattern (probe + ANSI fallback) is the model.
 
 ### Positive Consequences
 
 * One place (`bashunit::sgr` + `_BASHUNIT_COLOR_*`) to change colors.
-* Color auto-disables on dumb terminals and non-TTY pipelines without requiring `--no-color`.
+* `supports_color` is now available for future use (e.g. CLI auto-detect, theming).
 * Screen clear works on terminals where the hardcoded sequence is wrong.
 * No subprocess explosion: `tput` is invoked once at init for capability probing, not per emitted color.
 * Avoids the failure mode from the previous attempt (per-call `tput setaf` returning empty strings under unusual `TERM` values).
