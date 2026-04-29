@@ -18,7 +18,7 @@ bashunit::sgr() {
   echo $'\e'"[${codes}m"
 }
 
-if bashunit::env::is_no_color_enabled; then
+if bashunit::env::is_no_color_enabled || ! bashunit::env::supports_color; then
   _BASHUNIT_COLOR_BOLD=""
   _BASHUNIT_COLOR_FAINT=""
   _BASHUNIT_COLOR_BLACK=""

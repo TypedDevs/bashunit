@@ -586,7 +586,7 @@ function bashunit::main::watch_loop() {
 
     if [ "$current_checksum" != "$last_checksum" ]; then
       last_checksum="$current_checksum"
-      printf '\033[2J\033[H'
+      bashunit::io::clear_screen
       printf "%s[watch] Running tests...%s\n\n" \
         "${_BASHUNIT_COLOR_SKIPPED}" \
         "${_BASHUNIT_COLOR_DEFAULT}"

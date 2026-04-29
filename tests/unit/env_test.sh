@@ -150,6 +150,47 @@ function test_find_terminal_width_fallback_returns_100() {
   assert_equals "100" "$result"
 }
 
+function test_supports_color_returns_failure_when_TERM_is_dumb() {
+  local original_term="${TERM:-}"
+  export TERM="dumb"
+
+  if bashunit::env::supports_color; then
+    export TERM="$original_term"
+    fail "Expected supports_color to fail when TERM=dumb"
+    return
+  fi
+
+  export TERM="$original_term"
+  assert_successful_code 0
+}
+
+function test_supports_color_returns_failure_when_tput_reports_below_8_colors() {
+  local original_term="${TERM:-}"
+  export TERM="xterm"
+  bashunit::mock tput <<<"2"
+
+  if bashunit::env::supports_color; then
+    export TERM="$original_term"
+    fail "Expected supports_color to fail when tput colors reports 2"
+    return
+  fi
+
+  export TERM="$original_term"
+  assert_successful_code 0
+}
+
+function test_supports_color_returns_success_when_tput_reports_8_or_more_colors() {
+  local original_term="${TERM:-}"
+  export TERM="xterm"
+  bashunit::mock tput <<<"256"
+
+  bashunit::env::supports_color
+  local result=$?
+
+  export TERM="$original_term"
+  assert_equals 0 "$result"
+}
+
 function test_print_verbose_outputs_env_var_names() {
   local original="$BASHUNIT_VERBOSE"
   export BASHUNIT_VERBOSE="true"
