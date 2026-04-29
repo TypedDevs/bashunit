@@ -113,6 +113,8 @@ Options:
   -p, --parallel              Run tests in parallel (unlimited concurrency)
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
+  --generate-baseline <file>  Write a baseline XML of current failed/risky/incomplete tests
+  --use-baseline <file>       Ignore tests listed in the baseline (don't count as failures)
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
   --output <format>           Output format: tap (TAP version 13)

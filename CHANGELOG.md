@@ -4,6 +4,7 @@
 
 ### Added
 - Display captured test output on assertion failures when `--show-output` is enabled (#637)
+- `--generate-baseline <file>` flag (and `BASHUNIT_BASELINE_GENERATE` env var) writes an XML baseline of the run's failed/risky/incomplete tests, and `--use-baseline <file>` (`BASHUNIT_BASELINE_USE`) ignores those known issues so only newly introduced ones fail the run (#284)
 
 ### Changed
 - Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)

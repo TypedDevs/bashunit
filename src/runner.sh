@@ -789,6 +789,10 @@ function bashunit::runner::run_test() {
   fi
 
   if [ -n "$runtime_error" ] || [ "$test_exit_code" -ne 0 ]; then
+    if bashunit::baseline::match_and_record \
+      "$test_file" "$failure_label" "failed" "$duration" "$total_assertions"; then
+      return
+    fi
     bashunit::state::add_tests_failed
     local error_message="$runtime_error"
     if [ -n "$hook_failure" ] && [ -n "$hook_message" ]; then
@@ -812,6 +816,10 @@ function bashunit::runner::run_test() {
   fi
 
   if [ "$current_assertions_failed" != "$_BASHUNIT_ASSERTIONS_FAILED" ]; then
+    if bashunit::baseline::match_and_record \
+      "$test_file" "$label" "failed" "$duration" "$total_assertions"; then
+      return
+    fi
     bashunit::state::add_tests_failed
     bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
     local assertion_runtime_output
@@ -845,6 +853,10 @@ function bashunit::runner::run_test() {
   fi
 
   if [ "$current_assertions_incomplete" != "$_BASHUNIT_ASSERTIONS_INCOMPLETE" ]; then
+    if bashunit::baseline::match_and_record \
+      "$test_file" "$label" "incomplete" "$duration" "$total_assertions"; then
+      return
+    fi
     bashunit::state::add_tests_incomplete
     bashunit::reports::add_test_incomplete "$test_file" "$label" "$duration" "$total_assertions"
     bashunit::runner::write_incomplete_result_output "$test_file" "$fn_name" "$subshell_output"
@@ -862,6 +874,10 @@ function bashunit::runner::run_test() {
 
   # Check for risky test (zero assertions)
   if [ "$total_assertions" -eq 0 ]; then
+    if bashunit::baseline::match_and_record \
+      "$test_file" "$label" "risky" "$duration" "$total_assertions"; then
+      return
+    fi
     if bashunit::env::is_fail_on_risky_enabled; then
       local risky_msg="Test has no assertions (risky)"
       bashunit::state::add_tests_failed

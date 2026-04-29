@@ -67,6 +67,8 @@ bashunit test tests/ --parallel --simple
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
 | `-r, --report-html <file>`     | Write HTML report                                |
+| `--generate-baseline <file>`   | Write a baseline XML of failed/risky/incomplete tests |
+| `--use-baseline <file>`        | Ignore tests listed in the baseline              |
 | `-R, --run-all`                | Run all assertions (don't stop on first failure) |
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
@@ -365,6 +367,21 @@ bashunit test tests/ --log-gha gha.log && cat gha.log
 :::
 
 The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests. When streamed to stdout on a runner, they appear as inline annotations in the "Files changed" tab of a pull request.
+
+### Baseline
+
+Capture the run's existing failed, risky and incomplete tests so they no longer fail the suite, allowing you to focus on newly introduced issues.
+
+::: code-group
+```bash [Generate]
+bashunit test tests/ --generate-baseline baseline.xml
+```
+```bash [Use]
+bashunit test tests/ --use-baseline baseline.xml
+```
+:::
+
+When `--generate-baseline` is set, the run exits with code 0 even if tests failed: the failures are recorded in the XML for later use. When `--use-baseline` is set, any failed/risky/incomplete test that matches an entry in the baseline (by file, name and status) is reported as `baselined` and excluded from the failure count. Newly failing tests still fail the run.
 
 ### Show Output on Failure
 

@@ -37,7 +37,8 @@ function bashunit::reports::add_test() {
   {
     [ -n "${BASHUNIT_LOG_JUNIT:-}" ] ||
       [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
-      [ -n "${BASHUNIT_LOG_GHA:-}" ]
+      [ -n "${BASHUNIT_LOG_GHA:-}" ] ||
+      [ -n "${BASHUNIT_BASELINE_GENERATE:-}" ]
   } || return 0
 
   local file="$1"

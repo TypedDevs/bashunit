@@ -260,6 +260,22 @@ BASHUNIT_REPORT_HTML=report.html
 ```
 :::
 
+## Baseline
+
+> `BASHUNIT_BASELINE_GENERATE=file`
+> `BASHUNIT_BASELINE_USE=file`
+
+`BASHUNIT_BASELINE_GENERATE` writes an XML baseline of every failed, risky or incomplete test in the current run. The run then exits with code 0 so the baseline can be committed.
+
+`BASHUNIT_BASELINE_USE` loads a previously generated baseline. Tests whose file, name and status all match a baseline entry are reported as `baselined` and excluded from the failure count. Tests not present in the baseline still fail the run.
+
+::: code-group
+```bash [Example]
+BASHUNIT_BASELINE_GENERATE=baseline.xml
+BASHUNIT_BASELINE_USE=baseline.xml
+```
+:::
+
 ## Bootstrap
 
 > `BASHUNIT_BOOTSTRAP=file`

@@ -104,6 +104,14 @@ function bashunit::main::cmd_test() {
       export BASHUNIT_REPORT_HTML="$2"
       shift
       ;;
+    --generate-baseline)
+      export BASHUNIT_BASELINE_GENERATE="$2"
+      shift
+      ;;
+    --use-baseline)
+      export BASHUNIT_BASELINE_USE="$2"
+      shift
+      ;;
     --no-output)
       export BASHUNIT_NO_OUTPUT=true
       ;;
@@ -673,6 +681,14 @@ function bashunit::main::exec_tests() {
     printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '#'
   fi
 
+  if [ -n "${BASHUNIT_BASELINE_USE:-}" ]; then
+    if ! bashunit::baseline::load "$BASHUNIT_BASELINE_USE"; then
+      printf "%sError: baseline file not found: %s%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$BASHUNIT_BASELINE_USE" "${_BASHUNIT_COLOR_DEFAULT}"
+      exit 1
+    fi
+  fi
+
   bashunit::runner::load_test_files "$filter" "$tag_filter" "$exclude_tag_filter" "${test_files[@]}"
 
   if bashunit::parallel::is_enabled; then
@@ -702,6 +718,12 @@ function bashunit::main::exec_tests() {
 
   if [ -n "$BASHUNIT_REPORT_HTML" ]; then
     bashunit::reports::generate_report_html "$BASHUNIT_REPORT_HTML"
+  fi
+
+  if [ -n "${BASHUNIT_BASELINE_GENERATE:-}" ]; then
+    bashunit::baseline::generate "$BASHUNIT_BASELINE_GENERATE"
+    # Listed issues are intentional baseline; treat run as success.
+    exit_code=0
   fi
 
   # Generate coverage report if enabled

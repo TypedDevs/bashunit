@@ -13,6 +13,7 @@ _BASHUNIT_TESTS_SKIPPED=0
 _BASHUNIT_TESTS_INCOMPLETE=0
 _BASHUNIT_TESTS_SNAPSHOT=0
 _BASHUNIT_TESTS_RISKY=0
+_BASHUNIT_TESTS_BASELINED=0
 _BASHUNIT_ASSERTIONS_PASSED=0
 _BASHUNIT_ASSERTIONS_FAILED=0
 _BASHUNIT_ASSERTIONS_SKIPPED=0
@@ -75,6 +76,14 @@ function bashunit::state::get_tests_risky() {
 
 function bashunit::state::add_tests_risky() {
   ((_BASHUNIT_TESTS_RISKY++)) || true
+}
+
+function bashunit::state::get_tests_baselined() {
+  echo "$_BASHUNIT_TESTS_BASELINED"
+}
+
+function bashunit::state::add_tests_baselined() {
+  ((_BASHUNIT_TESTS_BASELINED++)) || true
 }
 
 function bashunit::state::get_assertions_passed() {

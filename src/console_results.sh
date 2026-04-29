@@ -31,6 +31,7 @@ function bashunit::console_results::render_result() {
   local tests_snapshot=$_BASHUNIT_TESTS_SNAPSHOT
   local tests_failed=$_BASHUNIT_TESTS_FAILED
   local tests_risky=$_BASHUNIT_TESTS_RISKY
+  local tests_baselined=$_BASHUNIT_TESTS_BASELINED
   local assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
   local assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
   local assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
@@ -44,6 +45,7 @@ function bashunit::console_results::render_result() {
   total_tests=$((total_tests + tests_snapshot))
   total_tests=$((total_tests + tests_failed))
   total_tests=$((total_tests + tests_risky))
+  total_tests=$((total_tests + tests_baselined))
 
   local total_assertions=0
   total_assertions=$((total_assertions + assertions_passed))
@@ -70,6 +72,9 @@ function bashunit::console_results::render_result() {
   fi
   if [ "$tests_risky" -gt 0 ]; then
     printf " %s%s risky%s," "$_BASHUNIT_COLOR_RISKY" "$tests_risky" "$_BASHUNIT_COLOR_DEFAULT"
+  fi
+  if [ "$tests_baselined" -gt 0 ]; then
+    printf " %s%s baselined%s," "$_BASHUNIT_COLOR_SKIPPED" "$tests_baselined" "$_BASHUNIT_COLOR_DEFAULT"
   fi
   printf " %s total\n" "$total_tests"
 
