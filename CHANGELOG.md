@@ -5,6 +5,9 @@
 ### Added
 - Display captured test output on assertion failures when `--show-output` is enabled (#637)
 
+### Changed
+- Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)
+
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 
 ### Added

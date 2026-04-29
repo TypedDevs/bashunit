@@ -418,11 +418,24 @@ function bashunit::coverage::aggregate_parallel() {
   fi
 }
 
-# Pre-compiled regex pattern for function declarations (performance optimization)
-# Matches: function foo() { OR foo() { OR function foo() OR foo()
-# Does NOT match single-line functions with body: function foo() { echo "hi"; }
-_BASHUNIT_COVERAGE_FUNC_PATTERN='^[[:space:]]*(function[[:space:]]+)?'
-_BASHUNIT_COVERAGE_FUNC_PATTERN="${_BASHUNIT_COVERAGE_FUNC_PATTERN}"'[a-zA-Z_][a-zA-Z0-9_:]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
+# Pre-compiled combined regex of all non-executable line patterns.
+# Collapses multiple grep subshells into a single invocation per line for performance.
+# Each alternation is fully self-anchored so semantics match the original per-pattern checks.
+# Patterns covered (in order):
+#   - comment-only lines (including shebang)
+#   - function declarations (but not single-line functions with a body)
+#   - brace-only lines
+#   - control flow keywords (then, else, fi, do, done, esac, in, ;;, ;;&, ;&)
+#   - loop terminators with redirection/pipe/fd (e.g. "done < file", "done | sort")
+#   - case patterns like "--option)" or "*) # comment"
+#   - standalone ) for arrays/subshells
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN='^[[:space:]]*#'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*(function[[:space:]]+)?[a-zA-Z_][a-zA-Z0-9_:]*[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*[\{\}][[:space:]]*$'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*done[[:space:]]+[^[:space:]#].*$'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*[^\)]+\)[[:space:]]*(#.*)?$'
+_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*\)[[:space:]]*(#.*)?$'
 
 # Check if a line is executable (used by get_executable_lines and report_lcov)
 # Arguments: line content, line number
@@ -434,29 +447,11 @@ function bashunit::coverage::is_executable_line() {
   # Unused but kept for API compatibility
   : "$lineno"
 
-  # Skip empty lines (line with only whitespace)
+  # Skip empty lines (line with only whitespace) — built-in, no subshell
   [ -z "${line// /}" ] && return 1
 
-  # Skip comment-only lines (including shebang)
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*#' || true)" -gt 0 ] && return 1
-
-  # Skip function declaration lines (but not single-line functions with body)
-  [ "$(echo "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_FUNC_PATTERN" || true)" -gt 0 ] && return 1
-
-  # Skip lines with only braces
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*[\{\}][[:space:]]*$' || true)" -gt 0 ] && return 1
-
-  # Skip control flow keywords (then, else, fi, do, done, esac, in, ;;, ;&, ;;&)
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*(then|else|fi|do|done|esac|in|;;|;;&|;&)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
-
-  # Skip loop terminator with trailing redirection/pipe/fd (e.g. "done < file", "done | sort", "done 2>&1", "done &")
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*done[[:space:]]+[^[:space:]#].*$' || true)" -gt 0 ] && return 1
-
-  # Skip case patterns like "--option)" or "*) # comment"
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*[^\)]+\)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
-
-  # Skip standalone ) for arrays/subshells
-  [ "$(echo "$line" | "$GREP" -cE '^[[:space:]]*\)[[:space:]]*(#.*)?$' || true)" -gt 0 ] && return 1
+  # Single combined grep covers every non-executable pattern
+  [ "$(echo "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_NONEXEC_PATTERN" || true)" -gt 0 ] && return 1
 
   return 0
 }
