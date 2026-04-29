@@ -250,3 +250,75 @@ function test_coverage_get_hit_lines_returns_zero_when_no_data() {
 
   assert_equals "0" "$result"
 }
+
+function test_coverage_compute_file_coverage_returns_executable_and_hit_counts() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+echo "line 3"
+EOF
+
+  {
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::compute_file_coverage "$temp_file")
+
+  assert_equals "3:2" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_compute_file_coverage_zero_hits() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  local result
+  result=$(bashunit::coverage::compute_file_coverage "$temp_file")
+
+  assert_equals "2:0" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_compute_file_coverage_ignores_non_executable_hits() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+# comment
+echo "line 3"
+EOF
+
+  {
+    echo "${temp_file}:1"
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::compute_file_coverage "$temp_file")
+
+  assert_equals "1:1" "$result"
+
+  rm -f "$temp_file"
+}
