@@ -182,6 +182,32 @@ function bashunit::env::is_no_color_enabled() {
   [ "$BASHUNIT_NO_COLOR" = "true" ]
 }
 
+##
+# Whether the current terminal can render ANSI color sequences.
+# Returns 1 when TERM=dumb or when `tput colors` reports fewer than 8.
+# Returns 0 when tput is missing (assume colors work, preserving prior behavior).
+##
+function bashunit::env::supports_color() {
+  if [ "${TERM:-}" = "dumb" ]; then
+    return 1
+  fi
+
+  if ! bashunit::dependencies::has_tput; then
+    return 0
+  fi
+
+  local n
+  n=$(tput colors 2>/dev/null)
+  case "$n" in
+  '' | *[!0-9]*)
+    return 0
+    ;;
+  *)
+    [ "$n" -ge 8 ]
+    ;;
+  esac
+}
+
 function bashunit::env::is_coverage_enabled() {
   [ "$BASHUNIT_COVERAGE" = "true" ]
 }

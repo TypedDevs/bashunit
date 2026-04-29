@@ -159,6 +159,14 @@ function bashunit::coverage::get_coverage_class() {
   fi
 }
 
+function bashunit::coverage::get_color_for_class() {
+  case "$1" in
+  high) printf '%s' "$_BASHUNIT_COLOR_PASSED" ;;
+  medium) printf '%s' "$_BASHUNIT_COLOR_SKIPPED" ;;
+  low) printf '%s' "$_BASHUNIT_COLOR_FAILED" ;;
+  esac
+}
+
 # Calculate percentage from hit and executable counts
 function bashunit::coverage::calculate_percentage() {
   local hit="$1"
@@ -737,16 +745,8 @@ function bashunit::coverage::report_text() {
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
 
-    # Determine color based on class
-    local color="" reset=""
-    if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
-      reset=$'\033[0m'
-      case "$class" in
-      high) color=$'\033[32m' ;;   # Green
-      medium) color=$'\033[33m' ;; # Yellow
-      low) color=$'\033[31m' ;;    # Red
-      esac
-    fi
+    local color reset="$_BASHUNIT_COLOR_DEFAULT"
+    color=$(bashunit::coverage::get_color_for_class "$class")
 
     # Display relative path
     local display_file="${file#"$(pwd)"/}"
@@ -767,15 +767,8 @@ function bashunit::coverage::report_text() {
   total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
   total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
 
-  local color="" reset=""
-  if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
-    reset=$'\033[0m'
-    case "$total_class" in
-    high) color=$'\033[32m' ;;
-    medium) color=$'\033[33m' ;;
-    low) color=$'\033[31m' ;;
-    esac
-  fi
+  local color reset="$_BASHUNIT_COLOR_DEFAULT"
+  color=$(bashunit::coverage::get_color_for_class "$total_class")
 
   printf "%sTotal: %d/%d (%d%%)%s\n" \
     "$color" "$total_hit" "$total_executable" "$total_pct" "$reset"
@@ -839,14 +832,8 @@ function bashunit::coverage::check_threshold() {
   pct=$(bashunit::coverage::get_percentage)
 
   if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
-    local color=""
-    local reset=""
-    if [ "${BASHUNIT_NO_COLOR:-false}" != "true" ]; then
-      color=$'\033[31m'
-      reset=$'\033[0m'
-    fi
     printf "%sCoverage %d%% is below minimum %d%%%s\n" \
-      "$color" "$pct" "$BASHUNIT_COVERAGE_MIN" "$reset"
+      "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT"
     return 1
   fi
 

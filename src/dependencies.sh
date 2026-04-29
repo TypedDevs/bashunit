@@ -40,3 +40,7 @@ function bashunit::dependencies::has_python() {
 function bashunit::dependencies::has_node() {
   command -v node >/dev/null 2>&1
 }
+
+function bashunit::dependencies::has_tput() {
+  command -v tput >/dev/null 2>&1
+}
