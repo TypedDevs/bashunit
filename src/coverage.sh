@@ -173,9 +173,10 @@ function bashunit::coverage::calculate_percentage() {
 # Get file coverage stats as "executable:hit:pct:class"
 function bashunit::coverage::get_file_stats() {
   local file="$1"
-  local executable hit pct class
-  executable=$(bashunit::coverage::get_executable_lines "$file")
-  hit=$(bashunit::coverage::get_hit_lines "$file")
+  local stats executable hit pct class
+  stats=$(bashunit::coverage::compute_file_coverage "$file")
+  executable="${stats%%:*}"
+  hit="${stats##*:}"
   pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
   class=$(bashunit::coverage::get_coverage_class "$pct")
   echo "${executable}:${hit}:${pct}:${class}"
@@ -517,6 +518,30 @@ function bashunit::coverage::get_line_hits() {
   echo "$count"
 }
 
+# Compute executable + hit counts for a file in a single source-file pass.
+# Reuses get_all_line_hits to avoid scanning the coverage data per line.
+# Output format: "executable:hit"
+function bashunit::coverage::compute_file_coverage() {
+  local file="$1"
+
+  local -a hits_by_line=()
+  local hit_lineno hit_count
+  while IFS=: read -r hit_lineno hit_count; do
+    [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
+  done < <(bashunit::coverage::get_all_line_hits "$file")
+
+  local executable=0 hit=0 lineno=0 line line_hits
+  while IFS= read -r line || [ -n "$line" ]; do
+    lineno=$((lineno + 1))
+    bashunit::coverage::is_executable_line "$line" "$lineno" || continue
+    executable=$((executable + 1))
+    line_hits=${hits_by_line[lineno]:-0}
+    [ "$line_hits" -gt 0 ] && hit=$((hit + 1))
+  done <"$file"
+
+  echo "${executable}:${hit}"
+}
+
 # Get all line hits for a file in one pass (performance optimization)
 # Output format: one "lineno:count" per line
 function bashunit::coverage::get_all_line_hits() {
@@ -571,12 +596,16 @@ function bashunit::coverage::extract_functions() {
     if [ "$in_function" -eq 0 ]; then
       local fn_name=""
 
-      # Match: function name() or function name {
+      # Match: name() with optional `function` keyword (parens form)
       local _re='^[[:space:]]*(function[[:space:]]+)?([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*(#.*)?$'
-      fn_name=$(echo "$line" | sed -nE "s/$_re/\2/p")
-      if [ -z "$fn_name" ]; then
+      if [[ "$line" =~ $_re ]]; then
+        fn_name="${BASH_REMATCH[2]}"
+      else
+        # Match: function name { (keyword form, no parens)
         _re='^[[:space:]]*(function[[:space:]]+)([a-zA-Z_][a-zA-Z0-9_:]*)[[:space:]]*\{[[:space:]]*(#.*)?$'
-        fn_name=$(echo "$line" | sed -nE "s/$_re/\2/p")
+        if [[ "$line" =~ $_re ]]; then
+          fn_name="${BASH_REMATCH[2]}"
+        fi
       fi
 
       if [ -n "$fn_name" ]; then
@@ -588,10 +617,12 @@ function bashunit::coverage::extract_functions() {
         # Count opening braces on this line
         local open_braces="${line//[^\{]/}"
         local close_braces="${line//[^\}]/}"
-        brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
+        local open_count=${#open_braces}
+        local close_count=${#close_braces}
+        brace_count=$((brace_count + open_count - close_count))
 
-        # Single-line function
-        if [ "$brace_count" -eq 0 ] && [ "$(echo "$line" | "$GREP" -c '\{' || true)" -gt 0 ] && [ "$(echo "$line" | "$GREP" -c '\}' || true)" -gt 0 ]; then
+        # Single-line function: braces balance on same line and both present
+        if [ "$brace_count" -eq 0 ] && [ "$open_count" -gt 0 ] && [ "$close_count" -gt 0 ]; then
           echo "${current_fn}:${fn_start}:${lineno}"
           in_function=0
           current_fn=""
@@ -694,11 +725,14 @@ function bashunit::coverage::report_text() {
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
     has_files=true
 
-    local executable hit pct class
-    executable=$(bashunit::coverage::get_executable_lines "$file")
-    hit=$(bashunit::coverage::get_hit_lines "$file")
-    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
-    class=$(bashunit::coverage::get_coverage_class "$pct")
+    local stats executable hit pct class
+    stats=$(bashunit::coverage::get_file_stats "$file")
+    executable="${stats%%:*}"
+    stats="${stats#*:}"
+    hit="${stats%%:*}"
+    stats="${stats#*:}"
+    pct="${stats%%:*}"
+    class="${stats##*:}"
 
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
@@ -772,18 +806,22 @@ function bashunit::coverage::report_lcov() {
 
       echo "SF:$file"
 
-      local lineno=0
-      local line
+      local -a hits_by_line=()
+      local hit_lineno hit_count
+      while IFS=: read -r hit_lineno hit_count; do
+        [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
+      done < <(bashunit::coverage::get_all_line_hits "$file")
+
+      local lineno=0 executable=0 hit=0 line line_hits
       # shellcheck disable=SC2094
       while IFS= read -r line || [ -n "$line" ]; do
-        ((++lineno))
+        lineno=$((lineno + 1))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-        echo "DA:${lineno},$(bashunit::coverage::get_line_hits "$file" "$lineno")"
+        executable=$((executable + 1))
+        line_hits=${hits_by_line[lineno]:-0}
+        [ "$line_hits" -gt 0 ] && hit=$((hit + 1))
+        echo "DA:${lineno},${line_hits}"
       done <"$file"
-
-      local executable hit
-      executable=$(bashunit::coverage::get_executable_lines "$file")
-      hit=$(bashunit::coverage::get_hit_lines "$file")
 
       echo "LF:$executable"
       echo "LH:$hit"
@@ -852,10 +890,13 @@ function bashunit::coverage::report_html() {
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local executable hit pct
-    executable=$(bashunit::coverage::get_executable_lines "$file")
-    hit=$(bashunit::coverage::get_hit_lines "$file")
-    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+    local stats executable hit pct
+    stats=$(bashunit::coverage::get_file_stats "$file")
+    executable="${stats%%:*}"
+    stats="${stats#*:}"
+    hit="${stats%%:*}"
+    stats="${stats#*:}"
+    pct="${stats%%:*}"
 
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
