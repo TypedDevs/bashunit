@@ -99,6 +99,13 @@ function bashunit::coverage::init() {
   _BASHUNIT_COVERAGE_TRACK_CACHE=""
   _BASHUNIT_COVERAGE_PATH_CACHE=""
   _BASHUNIT_COVERAGE_IS_PARALLEL=""
+  _BASHUNIT_COVERAGE_STATS_FILES=()
+  _BASHUNIT_COVERAGE_STATS_EXEC=()
+  _BASHUNIT_COVERAGE_STATS_HIT=()
+  _BASHUNIT_COVERAGE_STATS_PCT=()
+  _BASHUNIT_COVERAGE_STATS_CLASS=()
+  _BASHUNIT_COVERAGE_STATS_COUNT=0
+  _BASHUNIT_COVERAGE_STATS_LOOKUP=""
 
   export _BASHUNIT_COVERAGE_DATA_FILE
   export _BASHUNIT_COVERAGE_TRACKED_FILES
@@ -1446,7 +1453,6 @@ function bashunit::coverage::generate_file_html() {
     pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
     class=$(bashunit::coverage::get_coverage_class "$pct")
   fi
-  class=$(bashunit::coverage::get_coverage_class "$pct")
   local uncovered=$((executable - hit))
 
   # Pre-load all line hits into indexed array (performance optimization)
