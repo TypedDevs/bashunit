@@ -197,6 +197,7 @@ _BASHUNIT_COVERAGE_STATS_HIT=()
 _BASHUNIT_COVERAGE_STATS_PCT=()
 _BASHUNIT_COVERAGE_STATS_CLASS=()
 _BASHUNIT_COVERAGE_STATS_COUNT=0
+_BASHUNIT_COVERAGE_STATS_LOOKUP=""
 
 # Pre-compute stats for all tracked files (call once before reports)
 function bashunit::coverage::precompute_file_stats() {
@@ -206,14 +207,16 @@ function bashunit::coverage::precompute_file_stats() {
   _BASHUNIT_COVERAGE_STATS_PCT=()
   _BASHUNIT_COVERAGE_STATS_CLASS=()
   _BASHUNIT_COVERAGE_STATS_COUNT=0
+  _BASHUNIT_COVERAGE_STATS_LOOKUP=""
 
   local file
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local executable hit pct class
-    executable=$(bashunit::coverage::get_executable_lines "$file")
-    hit=$(bashunit::coverage::get_hit_lines "$file")
+    local stats executable hit pct class
+    stats=$(bashunit::coverage::compute_file_coverage "$file")
+    executable="${stats%%:*}"
+    hit="${stats##*:}"
     pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
     class=$(bashunit::coverage::get_coverage_class "$pct")
 
@@ -224,20 +227,21 @@ function bashunit::coverage::precompute_file_stats() {
     _BASHUNIT_COVERAGE_STATS_PCT[idx]="$pct"
     _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$class"
     _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
+    _BASHUNIT_COVERAGE_STATS_LOOKUP="${_BASHUNIT_COVERAGE_STATS_LOOKUP}|${file}=${idx}|"
   done < <(bashunit::coverage::get_tracked_files)
 }
 
 # Look up cached stats for a file, returns "executable:hit:pct:class"
 function bashunit::coverage::get_cached_stats() {
   local file="$1"
-  local i
-  for ((i = 0; i < _BASHUNIT_COVERAGE_STATS_COUNT; i++)); do
-    if [ "${_BASHUNIT_COVERAGE_STATS_FILES[i]}" = "$file" ]; then
-      echo "${_BASHUNIT_COVERAGE_STATS_EXEC[i]}:${_BASHUNIT_COVERAGE_STATS_HIT[i]}:${_BASHUNIT_COVERAGE_STATS_PCT[i]}:${_BASHUNIT_COVERAGE_STATS_CLASS[i]}"
-      return 0
-    fi
-  done
-  # Fallback: compute if not cached
+  case "$_BASHUNIT_COVERAGE_STATS_LOOKUP" in
+  *"|${file}="*)
+    local idx="${_BASHUNIT_COVERAGE_STATS_LOOKUP#*"|${file}="}"
+    idx="${idx%%"|"*}"
+    echo "${_BASHUNIT_COVERAGE_STATS_EXEC[idx]}:${_BASHUNIT_COVERAGE_STATS_HIT[idx]}:${_BASHUNIT_COVERAGE_STATS_PCT[idx]}:${_BASHUNIT_COVERAGE_STATS_CLASS[idx]}"
+    return 0
+    ;;
+  esac
   bashunit::coverage::get_file_stats "$file"
 }
 
@@ -510,7 +514,27 @@ function bashunit::coverage::is_executable_line() {
   # Skip empty lines (line with only whitespace) — built-in, no subshell
   [ -z "${line// /}" ] && return 1
 
-  # Single combined grep covers every non-executable pattern
+  # Fast path: pure Bash checks for common non-executable patterns (no subshell)
+  local stripped="${line#"${line%%[![:space:]]*}"}"
+  local _trail="${stripped##*[![:space:]]}"
+  local trimmed="${stripped%"$_trail"}"
+
+  case "$trimmed" in
+  '#'*) return 1 ;;      # Comments (including shebang)
+  '{' | '}') return 1 ;; # Braces only
+  esac
+
+  local first="${trimmed%%[[:space:]]*}"
+  case "$first" in
+  'then' | 'else' | 'fi' | 'do' | 'done' | 'esac' | 'in' | ';;' | ';;&' | ';&' | ')')
+    local rest="${trimmed#"$first"}"
+    local _rl="${rest%%[![:space:]]*}"
+    rest="${rest#"$_rl"}"
+    case "$rest" in '' | '#'*) return 1 ;; esac
+    ;;
+  esac
+
+  # Fallback: grep for complex patterns (function declarations, case patterns, done+redirection)
   [ "$(printf '%s' "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_NONEXEC_PATTERN" || true)" -gt 0 ] && return 1
 
   return 0
@@ -599,13 +623,20 @@ function bashunit::coverage::compute_file_coverage() {
   done < <(bashunit::coverage::get_all_line_hits "$file")
 
   local executable=0 hit=0 lineno=0 line line_hits
-  while IFS= read -r line || [ -n "$line" ]; do
+  local -a cv_lines=()
+  local _cli=0 _cl
+  while IFS= read -r _cl || [ -n "$_cl" ]; do
+    cv_lines[_cli]="$_cl"
+    ((++_cli))
+  done <"$file"
+
+  for line in "${cv_lines[@]}"; do
     ((++lineno))
     bashunit::coverage::is_executable_line "$line" "$lineno" || continue
     ((++executable))
     line_hits=${hits_by_line[lineno]:-0}
     [ "$line_hits" -gt 0 ] && ((++hit))
-  done <"$file"
+  done
 
   echo "${executable}:${hit}"
 }
@@ -753,9 +784,16 @@ function bashunit::coverage::get_function_coverage() {
   local hit=0
   local lineno=0
 
+  # Pre-load file lines into indexed array (avoids sed per line)
+  local -a fn_lines=()
+  local _fli=0 _fl
+  while IFS= read -r _fl || [ -n "$_fl" ]; do
+    fn_lines[_fli]="$_fl"
+    ((++_fli))
+  done <"$file"
+
   for ((lineno = fn_start; lineno <= fn_end; lineno++)); do
-    local line_content
-    line_content=$(sed -n "${lineno}p" "$file" 2>/dev/null) || continue
+    local line_content="${fn_lines[$((lineno - 1))]:-}"
 
     if bashunit::coverage::is_executable_line "$line_content" "$lineno"; then
       ((++executable))
@@ -903,15 +941,21 @@ function bashunit::coverage::report_lcov() {
       done < <(bashunit::coverage::get_all_line_hits "$file")
 
       local lineno=0 executable=0 hit=0 line line_hits
-      # shellcheck disable=SC2094
-      while IFS= read -r line || [ -n "$line" ]; do
+      local -a lcov_lines=()
+      local _lli=0 _ll
+      while IFS= read -r _ll || [ -n "$_ll" ]; do
+        lcov_lines[_lli]="$_ll"
+        ((++_lli))
+      done <"$file"
+
+      for line in "${lcov_lines[@]}"; do
         ((++lineno))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
         ((++executable))
         local lh="${hits_by_line[$lineno]:-0}"
         [ "$lh" -gt 0 ] && ((++hit))
         echo "DA:${lineno},${lh}"
-      done <"$file"
+      done
 
       echo "LF:$executable"
       echo "LH:$hit"
