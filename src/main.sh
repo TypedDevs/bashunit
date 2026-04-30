@@ -711,6 +711,8 @@ function bashunit::main::exec_tests() {
       bashunit::coverage::aggregate_parallel
     fi
 
+    bashunit::coverage::precompute_file_stats
+
     bashunit::coverage::report_text
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then

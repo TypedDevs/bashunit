@@ -11,6 +11,8 @@
 - Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)
 - Speed up coverage report generation further by combining executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage`) shared across text/lcov/html reporters, removing per-line `get_line_hits` scans of the coverage data file (#636)
 - Replace `echo | sed` / `echo | grep` subshells in `bashunit::coverage::extract_functions` with bash native regex matching and parameter expansion (#636)
+- Speed up coverage report generation by replacing per-line `sed` lookups with pre-loaded indexed arrays in `get_hit_lines` and `generate_file_html` (#636)
+- Speed up coverage report generation by caching pre-computed file stats across text/lcov/html reports (#636)
 
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 

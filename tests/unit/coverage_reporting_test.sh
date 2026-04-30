@@ -322,3 +322,76 @@ EOF
 
   rm -f "$temp_file"
 }
+
+function test_coverage_precompute_file_stats_populates_cache() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  bashunit::coverage::precompute_file_stats
+
+  assert_equals "1" "$_BASHUNIT_COVERAGE_STATS_COUNT"
+  assert_equals "$temp_file" "${_BASHUNIT_COVERAGE_STATS_FILES[0]}"
+  assert_equals "2" "${_BASHUNIT_COVERAGE_STATS_EXEC[0]}"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_get_cached_stats_returns_same_as_get_file_stats() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  bashunit::coverage::precompute_file_stats
+
+  local cached direct
+  cached=$(bashunit::coverage::get_cached_stats "$temp_file")
+  direct=$(bashunit::coverage::get_file_stats "$temp_file")
+
+  assert_equals "$direct" "$cached"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_get_cached_stats_falls_back_when_not_cached() {
+  _BASHUNIT_COVERAGE_STATS_COUNT=0
+
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local cached direct
+  cached=$(bashunit::coverage::get_cached_stats "$temp_file")
+  direct=$(bashunit::coverage::get_file_stats "$temp_file")
+
+  assert_equals "$direct" "$cached"
+
+  rm -f "$temp_file"
+}
