@@ -5,6 +5,7 @@
 ### Added
 - Display captured test output on assertion failures when `--show-output` is enabled (#637)
 - `bashunit::env::supports_color` helper exposing a capability probe (`TERM=dumb` / `tput colors < 8`) for future auto-detection use; `bashunit::io::clear_screen` helper that prefers `tput clear` and falls back to the raw ANSI sequence (#247)
+- Publish bashunit to the npm registry: `npm install -g bashunit` ships the prebuilt single-file binary; new `npm-publish.yml` workflow publishes on release (#244)
 
 ### Changed
 - Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)

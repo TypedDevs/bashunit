@@ -157,6 +157,116 @@ On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.
 sudo port install bashunit
 ```
 
+## npm
+
+If your project already uses Node.js tooling (e.g. a JavaScript or TypeScript repo), you can install **bashunit** directly from the [npm registry](https://www.npmjs.com/package/bashunit).
+
+The npm package ships only the prebuilt single-file binary plus `LICENSE` and `README.md`; it does not include the source tree.
+
+### Per-project (recommended)
+
+Install **bashunit** as a `devDependency` so the version is pinned in your `package.json` and reproducible across machines and CI:
+
+```bash
+npm install --save-dev bashunit
+```
+
+Add a script to your `package.json`:
+
+```json
+{
+  "scripts": {
+    "test:sh": "bashunit tests/"
+  },
+  "devDependencies": {
+    "bashunit": "^{{ pkg.version }}"
+  }
+}
+```
+
+Then run:
+
+```bash
+npm run test:sh
+# or invoke directly via npx
+npx bashunit tests/
+```
+
+### Global
+
+Install **bashunit** system-wide so the `bashunit` command is available on your `PATH`:
+
+```bash
+npm install -g bashunit
+bashunit --version
+bashunit tests/
+```
+
+### One-shot, no install
+
+`npx` can download and run the latest release on demand, useful for quick tries or ephemeral CI jobs:
+
+```bash
+npx bashunit@latest tests/
+```
+
+### Example consumer project
+
+```
+my-app/
+├── package.json          # has "bashunit" in devDependencies
+├── src/
+│   └── deploy.sh
+└── tests/
+    └── deploy_test.sh
+```
+
+```bash [tests/deploy_test.sh]
+#!/usr/bin/env bash
+
+source "$(dirname "$0")/../src/deploy.sh"
+
+function test_deploy_returns_url() {
+  assert_equals "https://example.com" "$(get_deploy_url)"
+}
+```
+
+Run from the project root:
+
+```bash
+npx bashunit tests/
+```
+
+### GitHub Actions with npm
+
+```yaml
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npx bashunit tests/
+```
+
+::: tip
+The npm package is restricted to `darwin` and `linux`; on Windows use [WSL](https://learn.microsoft.com/windows/wsl/install). bashunit still requires **Bash 3.0 or newer** at runtime - npm does not enforce this, the `bashunit` script does.
+:::
+
+::: warning
+Because only the prebuilt single-file binary is shipped, you cannot `source` bashunit internals from inside `node_modules/bashunit/`. Use the `bashunit` command directly. If you need to extend or vendor the framework, install via [install.sh](#install-sh) or clone the repository.
+:::
+
 ## GitHub Actions
 
 ```yaml
