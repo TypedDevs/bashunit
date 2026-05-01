@@ -84,12 +84,18 @@ Committing (or not) this file to your project it's up to you. In the end, it is 
 
 ::: code-group
 ```bash [Per-project (recommended)]
+# Install as dev dependency
 npm install --save-dev bashunit
+
+# Run via npx (resolves node_modules/.bin/bashunit)
 npx bashunit tests/
 ```
 
 ```bash [Global]
+# Install on PATH
 npm install -g bashunit
+
+# Run directly, no npx needed
 bashunit tests/
 ```
 
@@ -99,12 +105,15 @@ npx bashunit@latest tests/
 ```
 :::
 
-Add a script to your `package.json` so contributors and CI run the same command:
+### Per-project: `package.json` script
 
-```json
+Only relevant for the per-project install (global and one-shot don't touch `package.json`).
+Define a script so contributors and CI share one command:
+
+```json-vue
 {
   "scripts": {
-    "test:sh": "bashunit tests/"
+    "test": "bashunit tests/"
   },
   "devDependencies": {
     "bashunit": "^{{ pkg.version }}"
@@ -112,8 +121,27 @@ Add a script to your `package.json` so contributors and CI run the same command:
 }
 ```
 
+Then run:
+
+```bash
+npm test
+# or any custom script name
+npm run <script-name>
+```
+
+::: warning Windows (native) not supported
+The npm package declares `"os": ["darwin", "linux"]`, so `npm install bashunit` on native Windows (PowerShell / cmd) fails with `EBADPLATFORM`:
+
+```text
+npm error code EBADPLATFORM
+npm error notsup Unsupported platform for bashunit@x.y.z: wanted {"os":"darwin,linux"} (current: {"os":"win32"})
+```
+
+Fix: install [WSL](https://learn.microsoft.com/windows/wsl/install) and run `npm install --save-dev bashunit` inside the WSL shell. Alternatively use the [`install.sh`](#install-sh) route from WSL.
+:::
+
 ::: warning
-The npm package only ships the prebuilt single-file binary (no `src/` tree), and is restricted to `darwin` and `linux`. You cannot `source` internals from `node_modules/bashunit/` - use the `bashunit` command. To vendor or extend the framework, use [install.sh](#install-sh) or clone the repository.
+The npm package only ships the prebuilt single-file binary (no `src/` tree). You cannot `source` internals from `node_modules/bashunit/` - use the `bashunit` command. To vendor or extend the framework, use [install.sh](#install-sh) or clone the repository.
 :::
 
 ## Brew

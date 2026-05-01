@@ -17,11 +17,11 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
 
 ```bash [npm]
-# Per-project: pinned in package.json, run via npx
+# Per-project (pinned in package.json), run via npx
 npm install --save-dev bashunit
 npx bashunit tests/
 
-# Or global
+# Global install, run directly on PATH
 npm install -g bashunit
 bashunit tests/
 ```
