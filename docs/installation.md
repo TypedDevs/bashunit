@@ -1,13 +1,10 @@
 # Installation
 
-Although there's no Bash script dependency manager like npm for JavaScript, Maven for Java, pip for Python, or composer for PHP;
-you can add **bashunit** as a dependency in your repository according to your preferences.
-
-Here, we provide different options that you can use to install **bashunit** in your application.
+**bashunit** ships as a single-file executable. Pick the option that fits your project: `install.sh` (universal), [npm](#npm) (Node.js projects), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), or [bashdep](#bashdep).
 
 ## Requirements
 
-bashunit requires **Bash 3.0** or newer.
+bashunit requires **Bash 3.0** or newer. On Windows use [WSL](https://learn.microsoft.com/windows/wsl/install).
 
 ## install.sh
 
@@ -81,6 +78,60 @@ We try to keep it stable, but there is no promise that we won't change functions
 Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
 :::
 
+## npm
+
+[bashunit on npm](https://www.npmjs.com/package/bashunit) is the recommended option for Node.js projects.
+
+::: code-group
+```bash [Per-project (recommended)]
+npm install --save-dev bashunit
+npx bashunit tests/
+```
+
+```bash [Global]
+npm install -g bashunit
+bashunit tests/
+```
+
+```bash [One-shot]
+# No install, runs the latest release
+npx bashunit@latest tests/
+```
+:::
+
+Add a script to your `package.json` so contributors and CI run the same command:
+
+```json
+{
+  "scripts": {
+    "test:sh": "bashunit tests/"
+  },
+  "devDependencies": {
+    "bashunit": "^{{ pkg.version }}"
+  }
+}
+```
+
+::: warning
+The npm package only ships the prebuilt single-file binary (no `src/` tree), and is restricted to `darwin` and `linux`. You cannot `source` internals from `node_modules/bashunit/` - use the `bashunit` command. To vendor or extend the framework, use [install.sh](#install-sh) or clone the repository.
+:::
+
+## Brew
+
+You can install **bashunit** globally on macOS or Linux using brew.
+
+```bash
+brew install bashunit
+```
+
+## MacPorts
+
+On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.org):
+
+```bash
+sudo port install bashunit
+```
+
 ## bashdep
 
 You can manage your dependencies using [bashdep](https://github.com/Chemaclass/bashdep),
@@ -141,54 +192,40 @@ Downloading 'bashunit' to 'lib'...
 ```
 :::
 
-## Brew
-
-You can install **bashunit** globally on macOS or Linux using brew.
-
-```bash
-brew install bashunit
-```
-
-## MacPorts
-
-On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.org):
-
-```bash
-sudo port install bashunit
-```
-
 ## GitHub Actions
 
-```yaml
-# example: .github/workflows/bashunit-tests.yml
+::: code-group
+```yaml [via install.sh]
+# .github/workflows/bashunit-tests.yml
 name: Tests
-
-on:
-  pull_request:
-  push:
-    branches:
-      - main
-
+on: [pull_request, push]
 jobs:
   tests:
-    name: "Run tests"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: "Install bashunit"
-        run: |
-          curl -s https://bashunit.typeddevs.com/install.sh > install.sh
-          chmod +x install.sh
-          ./install.sh
-
-      - name: "Test"
-        run: "./lib/bashunit tests"
+      - uses: actions/checkout@v4
+      - run: curl -s https://bashunit.typeddevs.com/install.sh | bash
+      - run: ./lib/bashunit tests
 ```
 
+```yaml [via npm]
+# .github/workflows/bashunit-tests.yml
+name: Tests
+on: [pull_request, push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx bashunit tests/
+```
+:::
+
 ::: tip
-Get inspiration from the pipelines running on the bashunit-project itself: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
+See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
 
 <script setup>

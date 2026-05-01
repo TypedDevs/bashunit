@@ -8,11 +8,22 @@ Thanks to **bashunit**, verifying and validating your Bash code has never been s
 
 ## Installation
 
-There is a tool that will generate an executable with the whole library in a single file:
+Pick whichever fits your project. See [installation](/installation) for the complete list (Brew, MacPorts, bashdep, GitHub Actions, etc.).
 
 ::: code-group
-```bash [Linux/Mac]
+```bash [install.sh]
+# Generates lib/bashunit (single-file executable)
 curl -s https://bashunit.typeddevs.com/install.sh | bash
+```
+
+```bash [npm]
+# Per-project: pinned in package.json, run via npx
+npm install --save-dev bashunit
+npx bashunit tests/
+
+# Or global
+npm install -g bashunit
+bashunit tests/
 ```
 
 ```bash [Windows]
@@ -28,9 +39,7 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 ```
 :::
 
-This will create a file inside a lib folder, such as `lib/bashunit`.
-
-See more about [installation](/installation).
+The `install.sh` route creates `lib/bashunit`; the npm route exposes `bashunit` via `npx` or your global `PATH`.
 
 ## Usage
 
