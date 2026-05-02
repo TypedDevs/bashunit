@@ -60,7 +60,7 @@ Docs live in their own workspace under `docs/` with an isolated `package.json`.
 nvm use  # Uses .nvmrc version
 cd docs
 npm ci
-npm run docs:dev
+npm run dev
 ```
 
 ## Making Changes
@@ -204,8 +204,8 @@ Documentation is built with [VitePress](https://vitepress.dev/) and lives in `do
 nvm use
 cd docs
 npm ci
-npm run docs:dev    # Start dev server
-npm run docs:build  # Build and test
+npm run dev    # Start dev server
+npm run build  # Build and test
 ```
 
 **Guidelines:** Keep it simple, include examples, test all code examples.

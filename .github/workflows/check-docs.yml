@@ -34,4 +34,4 @@ jobs:
 
       - name: Build with VitePress
         working-directory: docs
-        run: npm run docs:build
+        run: npm run build

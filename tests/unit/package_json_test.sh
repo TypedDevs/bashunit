@@ -55,15 +55,15 @@ function test_package_json_keeps_checksum_field() {
 function test_package_json_excludes_docs_scripts() {
   local pkg
   pkg=$(cat "$PKG_FILE")
-  assert_not_contains 'docs:dev' "$pkg"
-  assert_not_contains 'docs:build' "$pkg"
+  assert_not_contains 'vitepress' "$pkg"
 }
 
-function test_docs_package_json_keeps_docs_scripts() {
+function test_docs_package_json_declares_vitepress_scripts() {
   local pkg
   pkg=$(cat "$DOCS_PKG_FILE")
-  assert_contains 'docs:dev' "$pkg"
-  assert_contains 'docs:build' "$pkg"
+  assert_contains '"dev": "vitepress dev' "$pkg"
+  assert_contains '"build": "vitepress build' "$pkg"
+  assert_contains '"preview": "vitepress preview' "$pkg"
 }
 
 function test_docs_package_json_name_is_bashunit_docs() {

@@ -36,7 +36,7 @@ jobs:
 
       - name: Build with VitePress
         working-directory: docs
-        run: npm run docs:build
+        run: npm run build
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1

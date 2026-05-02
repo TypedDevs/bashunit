@@ -107,10 +107,10 @@ docs/install:
 	@cd docs && npm ci
 
 docs/dev:
-	@cd docs && npm run docs:dev
+	@cd docs && npm run dev
 
 docs/build:
-	@cd docs && npm run docs:build
+	@cd docs && npm run build
 
 docs/preview:
-	@cd docs && npm run docs:preview
+	@cd docs && npm run preview
