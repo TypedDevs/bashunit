@@ -122,6 +122,43 @@ function test_update_package_json_version_changes_version_string() {
   rm -rf "$temp_dir"
 }
 
+function test_update_package_json_version_also_updates_docs_package_json() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+  mkdir -p "$temp_dir/docs"
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/docs/package.json"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_package_json_version "0.31.0" 2>/dev/null
+  )
+
+  assert_contains '"version": "0.31.0"' "$(cat "$temp_dir/package.json")"
+  assert_contains '"version": "0.31.0"' "$(cat "$temp_dir/docs/package.json")"
+
+  rm -rf "$temp_dir"
+}
+
+function test_update_package_json_version_skips_docs_when_missing() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_package_json_version "0.31.0" 2>/dev/null
+  )
+
+  assert_file_not_exists "$temp_dir/docs/package.json"
+
+  rm -rf "$temp_dir"
+}
+
 function test_update_changelog_adds_new_unreleased_section() {
   local temp_dir
   temp_dir=$(mktemp -d)

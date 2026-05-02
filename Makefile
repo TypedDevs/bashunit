@@ -48,6 +48,10 @@ help:
 	@echo "  pre_commit/run           Function that will be called when the pre-commit hook runs"
 	@echo "  sa                       Run shellcheck static analysis tool"
 	@echo "  lint                     Run editorconfig linter tool"
+	@echo "  docs/install             Install docs npm dependencies (in docs/)"
+	@echo "  docs/dev                 Start the VitePress dev server"
+	@echo "  docs/build               Build the documentation site"
+	@echo "  docs/preview             Preview the built documentation"
 
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
@@ -98,3 +102,15 @@ ifndef LINTER_CHECKER
 else
 	@editorconfig-checker && printf "\e[1m\e[32m%s\e[0m\n" "editorconfig-check: OK!"
 endif
+
+docs/install:
+	@cd docs && npm ci
+
+docs/dev:
+	@cd docs && npm run docs:dev
+
+docs/build:
+	@cd docs && npm run docs:build
+
+docs/preview:
+	@cd docs && npm run docs:preview

@@ -521,7 +521,7 @@ function release::sandbox::run() {
   release::blank_line
   # Commit changes (confirmations skipped in sandbox)
   release::log_info "Creating release commit..."
-  git add "${RELEASE_FILES[@]}"
+  git add "${RELEASE_FILES[@]}" docs/package.json
   git commit -m "release: $VERSION" -n
   release::log_success "Created commit"
   git tag "$VERSION"
@@ -624,6 +624,13 @@ function release::update_package_json_version() {
     "\"version\": \"[^\"]*\"" \
     "\"version\": \"$new_version\"" \
     "version"
+  if [ -f "docs/package.json" ]; then
+    release::update_file_pattern \
+      "docs/package.json" \
+      "\"version\": \"[^\"]*\"" \
+      "\"version\": \"$new_version\"" \
+      "version"
+  fi
 }
 
 function release::update_changelog() {
@@ -836,7 +843,7 @@ function release::git_commit_and_tag() {
     return
   fi
 
-  git add "${RELEASE_FILES[@]}"
+  git add "${RELEASE_FILES[@]}" docs/package.json
   git commit -m "release: $new_version" -n
   release::log_success "Created commit"
 

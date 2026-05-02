@@ -1,0 +1,23 @@
+{
+  "name": "bashunit-docs",
+  "version": "0.35.0",
+  "description": "Docs for bashunit a simple testing library for bash scripts",
+  "private": true,
+  "repository": "git@github.com:TypedDevs/bashunit.git",
+  "author": "TypedDevs <team@typeddevs.com>",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "docs:dev": "vitepress dev .",
+    "docs:build": "vitepress build .",
+    "docs:preview": "vitepress preview ."
+  },
+  "dependencies": {
+    "chart.js": "^4.4.9",
+    "vanilla-tilt": "^1.8.1"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.3",
+    "vue": "^3.5.16"
+  }
+}
