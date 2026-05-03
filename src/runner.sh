@@ -12,6 +12,37 @@ function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
+function bashunit::runner::source_login_shell_profiles() {
+  # shellcheck disable=SC1091
+  [ -f /etc/profile ] && source /etc/profile 2>/dev/null || true
+  # shellcheck disable=SC1090
+  [ -f ~/.bash_profile ] && source ~/.bash_profile 2>/dev/null || true
+  # shellcheck disable=SC1090
+  [ -f ~/.bash_login ] && source ~/.bash_login 2>/dev/null || true
+  # shellcheck disable=SC1090
+  [ -f ~/.profile ] && source ~/.profile 2>/dev/null || true
+}
+
+function bashunit::runner::print_verbose_test_summary() {
+  local test_file=$1
+  local fn_name=$2
+  local duration=$3
+  local test_execution_result=$4
+
+  if bashunit::env::is_simple_output_enabled; then
+    echo ""
+  fi
+
+  printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '='
+  printf "%s\n" "File:     $test_file"
+  printf "%s\n" "Function: $fn_name"
+  printf "%s\n" "Duration: $duration ms"
+  local raw_text=${test_execution_result%%##ASSERTIONS_*}
+  [ -n "$raw_text" ] && printf "%s" "Raw text: $raw_text"
+  printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
+  printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
+}
+
 function bashunit::runner::wait_for_job_slot() {
   local max_jobs="${BASHUNIT_PARALLEL_JOBS:-0}"
   if [ "$max_jobs" -le 0 ]; then
@@ -627,16 +658,8 @@ function bashunit::runner::run_test() {
     trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
     bashunit::state::initialize_assertions_count
 
-    # Source login shell profiles if enabled
     if bashunit::env::is_login_shell_enabled; then
-      # shellcheck disable=SC1091
-      [ -f /etc/profile ] && source /etc/profile 2>/dev/null || true
-      # shellcheck disable=SC1090
-      [ -f ~/.bash_profile ] && source ~/.bash_profile 2>/dev/null || true
-      # shellcheck disable=SC1090
-      [ -f ~/.bash_login ] && source ~/.bash_login 2>/dev/null || true
-      # shellcheck disable=SC1090
-      [ -f ~/.profile ] && source ~/.profile 2>/dev/null || true
+      bashunit::runner::source_login_shell_profiles
     fi
 
     # Enable coverage tracking early to include set_up/tear_down hooks
@@ -676,18 +699,8 @@ function bashunit::runner::run_test() {
   local duration=$((duration_ns / 1000000))
 
   if bashunit::env::is_verbose_enabled; then
-    if bashunit::env::is_simple_output_enabled; then
-      echo ""
-    fi
-
-    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '='
-    printf "%s\n" "File:     $test_file"
-    printf "%s\n" "Function: $fn_name"
-    printf "%s\n" "Duration: $duration ms"
-    local raw_text=${test_execution_result%%##ASSERTIONS_*}
-    [ -n "$raw_text" ] && printf "%s" "Raw text: ${test_execution_result%%##ASSERTIONS_*}"
-    printf "%s\n" "##ASSERTIONS_${test_execution_result#*##ASSERTIONS_}"
-    printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
+    bashunit::runner::print_verbose_test_summary \
+      "$test_file" "$fn_name" "$duration" "$test_execution_result"
   fi
 
   local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
