@@ -11,18 +11,9 @@
 - Split documentation into its own npm workspace under `docs/`: VitePress dependencies and `docs:*` scripts moved out of the root `package.json` so the published npm package stays slim. CI workflows, release script and contributing docs updated for the new `cd docs && npm ci` workflow; `make docs/{install,dev,build,preview}` shortcuts added
 - Guard root `package.json` against accidental regression of the docs-split: assert no `dependencies`/`devDependencies`/`peerDependencies`/`scripts` blocks ever return to the published manifest
 - `release.sh` now treats `docs/package.json` as a first-class `RELEASE_FILES` entry, so the release flow backs it up, restores it on rollback, and stages it without inline duplication. Backup/restore preserves nested directory paths
-- Extract `bashunit::runner::source_login_shell_profiles` and `bashunit::runner::print_verbose_test_summary` from the 320-line `run_test` body so the hot path reads top-down without inline `~/.profile` sourcing or printf scaffolding
-- Further trim `bashunit::runner::run_test`: extract `export_test_identity` (test ID + coverage env exports) and `apply_interpolated_title` (data-provider title interpolation) so the function opens with five named one-liners instead of an inline export/branch block
-- Extract `bashunit::runner::detect_runtime_error` so the 23-pattern runtime-error scan in `run_test` becomes a single named call
-- Extract `bashunit::runner::extract_subshell_type` and `bashunit::runner::format_subshell_output` so the encoded-output decode block in `run_test` is two pure transforms (the `print_line` side effect stays at the call site)
-- Extract `bashunit::runner::compute_total_assertions` so the five `_te_*` parameter-expansion lines collapse into a single named call
-- Extract `bashunit::runner::extract_encoded_field` so the three `TEST_TITLE`/`TEST_HOOK_FAILURE`/`TEST_HOOK_MESSAGE` decode blocks share a single key-aware helper instead of three near-duplicates
+- Slim `bashunit::runner::run_test` (~320 lines) by extracting nine pure helpers (`source_login_shell_profiles`, `print_verbose_test_summary`, `export_test_identity`, `apply_interpolated_title`, `detect_runtime_error`, `extract_subshell_type`, `format_subshell_output`, `compute_total_assertions`, `extract_encoded_field`) so the hot path reads as a sequence of named steps. Pure refactor, no behavior change
 - Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)
-- Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)
-- Speed up coverage report generation further by combining executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage`) shared across text/lcov/html reporters, removing per-line `get_line_hits` scans of the coverage data file (#636)
-- Replace `echo | sed` / `echo | grep` subshells in `bashunit::coverage::extract_functions` with bash native regex matching and parameter expansion (#636)
-- Speed up coverage report generation by replacing per-line `sed` lookups with pre-loaded indexed arrays in `get_hit_lines` and `generate_file_html` (#636)
-- Speed up coverage report generation by caching pre-computed file stats across text/lcov/html reports (#636)
+- Speed up coverage report generation (#636): combine executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage` shared across text/lcov/html reporters), collapse the per-line non-executable pattern checks in `is_executable_line` into a single combined `grep`, replace `echo | sed`/`grep` subshells in `extract_functions` with bash-native regex and parameter expansion, swap per-line `sed` lookups for pre-loaded indexed arrays in `get_hit_lines`/`generate_file_html`, and cache pre-computed file stats across reports
 
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 
