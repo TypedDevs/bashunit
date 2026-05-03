@@ -9,6 +9,7 @@
 
 ### Changed
 - Split documentation into its own npm workspace under `docs/`: VitePress dependencies and `docs:*` scripts moved out of the root `package.json` so the published npm package stays slim. CI workflows, release script and contributing docs updated for the new `cd docs && npm ci` workflow; `make docs/{install,dev,build,preview}` shortcuts added
+- Guard root `package.json` against accidental regression of the docs-split: assert no `dependencies`/`devDependencies`/`peerDependencies`/`scripts` blocks ever return to the published manifest
 - Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)
 - Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)
 - Speed up coverage report generation further by combining executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage`) shared across text/lcov/html reporters, removing per-line `get_line_hits` scans of the coverage data file (#636)
