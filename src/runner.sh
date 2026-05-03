@@ -23,6 +23,29 @@ function bashunit::runner::source_login_shell_profiles() {
   [ -f ~/.profile ] && source ~/.profile 2>/dev/null || true
 }
 
+function bashunit::runner::export_test_identity() {
+  local test_file=$1
+  local fn_name=$2
+  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
+  if bashunit::env::is_coverage_enabled; then
+    export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
+    export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
+  fi
+}
+
+function bashunit::runner::apply_interpolated_title() {
+  local fn_name=$1
+  shift
+  local interpolated
+  interpolated="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
+  if [ "$interpolated" != "$fn_name" ]; then
+    bashunit::state::set_current_test_interpolated_function_name "$interpolated"
+  else
+    bashunit::state::reset_current_test_interpolated_function_name
+  fi
+  printf '%s' "$interpolated"
+}
+
 function bashunit::runner::print_verbose_test_summary() {
   local test_file=$1
   local fn_name=$2
@@ -620,24 +643,11 @@ function bashunit::runner::run_test() {
   shift
 
   bashunit::internal_log "Running test" "$fn_name" "$*"
-  # Export a unique test identifier so that test doubles can
-  # create temporary files scoped per test run. This prevents
-  # race conditions when running tests in parallel.
-  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
-  # Export current test file and function for coverage tracking (only when coverage enabled)
-  if bashunit::env::is_coverage_enabled; then
-    export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
-    export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
-  fi
+  bashunit::runner::export_test_identity "$test_file" "$fn_name"
 
   bashunit::state::reset_test_title
-
-  local interpolated_fn_name="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
-  if [ "$interpolated_fn_name" != "$fn_name" ]; then
-    bashunit::state::set_current_test_interpolated_function_name "$interpolated_fn_name"
-  else
-    bashunit::state::reset_current_test_interpolated_function_name
-  fi
+  local interpolated_fn_name
+  interpolated_fn_name=$(bashunit::runner::apply_interpolated_title "$fn_name" "$@")
   local current_assertions_failed="$_BASHUNIT_ASSERTIONS_FAILED"
   local current_assertions_snapshot="$_BASHUNIT_ASSERTIONS_SNAPSHOT"
   local current_assertions_incomplete="$_BASHUNIT_ASSERTIONS_INCOMPLETE"
