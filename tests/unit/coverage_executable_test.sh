@@ -241,6 +241,7 @@ function test_coverage_is_executable_line_returns_false_for_done_with_file_redir
 
 function test_coverage_is_executable_line_returns_false_for_done_with_herestring() {
   local result
+  # shellcheck disable=SC2016
   result=$(bashunit::coverage::is_executable_line '  done <<<"$var"' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
 }
@@ -253,6 +254,7 @@ function test_coverage_is_executable_line_returns_false_for_done_with_process_su
 
 function test_coverage_is_executable_line_returns_false_for_done_with_redirect_and_comment() {
   local result
+  # shellcheck disable=SC2016
   result=$(bashunit::coverage::is_executable_line '  done < "$file" # read input' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
 }
