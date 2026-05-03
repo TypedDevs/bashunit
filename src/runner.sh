@@ -46,6 +46,21 @@ function bashunit::runner::apply_interpolated_title() {
   printf '%s' "$interpolated"
 }
 
+function bashunit::runner::extract_subshell_type() {
+  local subshell_output=$1
+  local type="${subshell_output%%]*}"
+  printf '%s' "${type#[}"
+}
+
+function bashunit::runner::format_subshell_output() {
+  local subshell_output=$1
+  local line="${subshell_output#*]}"
+  line=${line//\[failed\]/$'\n'}
+  line=${line//\[skipped\]/$'\n'}
+  line=${line//\[incomplete\]/$'\n'}
+  printf '%s' "$line"
+}
+
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
   local error
@@ -739,21 +754,12 @@ function bashunit::runner::run_test() {
   local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
 
   if [ -n "$subshell_output" ]; then
-    # Formatted as "[type]line" @see `bashunit::state::print_line()`
-    local type="${subshell_output%%]*}" # Remove everything after "]"
-    type="${type#[}"                    # Remove the leading "["
-    local line="${subshell_output#*]}"  # Remove everything before and including "]"
-
-    # Replace [type] with a newline to split the messages
-    line=${line//\[failed\]/$'\n'}     # Replace [failed] with newline
-    line=${line//\[skipped\]/$'\n'}    # Replace [skipped] with newline
-    line=${line//\[incomplete\]/$'\n'} # Replace [incomplete] with newline
-
+    local type
+    type=$(bashunit::runner::extract_subshell_type "$subshell_output")
+    subshell_output=$(bashunit::runner::format_subshell_output "$subshell_output")
     if ! bashunit::env::is_failures_only_enabled; then
-      bashunit::state::print_line "$type" "$line"
+      bashunit::state::print_line "$type" "$subshell_output"
     fi
-
-    subshell_output=$line
   fi
 
   local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
