@@ -46,6 +46,19 @@ function bashunit::runner::apply_interpolated_title() {
   printf '%s' "$interpolated"
 }
 
+function bashunit::runner::extract_encoded_field() {
+  local test_execution_result=$1
+  local key=$2
+  local marker="##${key}="
+  case "$test_execution_result" in
+  *"$marker"*)
+    local rest="${test_execution_result#*"$marker"}"
+    printf '%s' "${rest%%##*}"
+    ;;
+  *) printf '' ;;
+  esac
+}
+
 function bashunit::runner::compute_total_assertions() {
   local test_execution_result=$1
   local failed passed skipped incomplete snapshot
@@ -790,27 +803,15 @@ function bashunit::runner::run_test() {
   local total_assertions
   total_assertions=$(bashunit::runner::compute_total_assertions "$test_execution_result")
 
-  local encoded_test_title
-  encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
-  encoded_test_title="${encoded_test_title%%##*}"
+  local encoded_test_title hook_failure encoded_hook_message
+  encoded_test_title=$(bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_TITLE")
+  hook_failure=$(bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_HOOK_FAILURE")
+  encoded_hook_message=$(bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_HOOK_MESSAGE")
+
   local test_title=""
   [ -n "$encoded_test_title" ] && test_title="$(bashunit::helper::decode_base64 "$encoded_test_title")"
-
-  local encoded_hook_failure
-  encoded_hook_failure="${test_execution_result##*##TEST_HOOK_FAILURE=}"
-  encoded_hook_failure="${encoded_hook_failure%%##*}"
-  local hook_failure=""
-  if [ "$encoded_hook_failure" != "$test_execution_result" ]; then
-    hook_failure="$encoded_hook_failure"
-  fi
-
-  local encoded_hook_message
-  encoded_hook_message="${test_execution_result##*##TEST_HOOK_MESSAGE=}"
-  encoded_hook_message="${encoded_hook_message%%##*}"
   local hook_message=""
-  if [ -n "$encoded_hook_message" ]; then
-    hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
-  fi
+  [ -n "$encoded_hook_message" ] && hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
 
   bashunit::set_test_title "$test_title"
   local label
