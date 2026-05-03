@@ -3,18 +3,22 @@
 ## Unreleased
 
 ### Added
-- Display captured test output on assertion failures when `--show-output` is enabled (#637)
-- `bashunit::env::supports_color` helper exposing a capability probe (`TERM=dumb` / `tput colors < 8`) for future auto-detection use; `bashunit::io::clear_screen` helper that prefers `tput clear` and falls back to the raw ANSI sequence (#247)
-- Publish bashunit to the npm registry: `npm install -g bashunit` ships the prebuilt single-file binary; new `npm-publish.yml` workflow publishes on release (#244)
+- `--show-output` displays captured test output on assertion failures (#637)
+- npm registry distribution: `npm install -g bashunit` ships the prebuilt single-file binary (#244)
+- `bashunit::env::supports_color` capability probe (`TERM=dumb`, `tput colors < 8`) and `bashunit::io::clear_screen` helper (`tput clear` with ANSI fallback) (#247)
 
 ### Changed
-- Split documentation into its own npm workspace under `docs/`: VitePress dependencies and `docs:*` scripts moved out of the root `package.json` so the published npm package stays slim. CI workflows, release script and contributing docs updated for the new `cd docs && npm ci` workflow; `make docs/{install,dev,build,preview}` shortcuts added
-- Guard root `package.json` against accidental regression of the docs-split: assert no `dependencies`/`devDependencies`/`peerDependencies`/`scripts` blocks ever return to the published manifest
-- `release.sh` now treats `docs/package.json` as a first-class `RELEASE_FILES` entry, so the release flow backs it up, restores it on rollback, and stages it without inline duplication. Backup/restore preserves nested directory paths
-- Slim `bashunit::runner::run_test` (~320 lines) by extracting nine pure helpers (`source_login_shell_profiles`, `print_verbose_test_summary`, `export_test_identity`, `apply_interpolated_title`, `detect_runtime_error`, `extract_subshell_type`, `format_subshell_output`, `compute_total_assertions`, `extract_encoded_field`) so the hot path reads as a sequence of named steps. Pure refactor, no behavior change
-- Pre-commit hook (`bin/pre-commit`) skips the test suite when no `.sh`/`.bash`/CLI files are staged, falling back to `make lint` only — docs-only commits no longer pay the multi-minute test cost
-- Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)
-- Speed up coverage report generation (#636): combine executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage` shared across text/lcov/html reporters), collapse the per-line non-executable pattern checks in `is_executable_line` into a single combined `grep`, replace `echo | sed`/`grep` subshells in `extract_functions` with bash-native regex and parameter expansion, swap per-line `sed` lookups for pre-loaded indexed arrays in `get_hit_lines`/`generate_file_html`, and cache pre-computed file stats across reports
+- Docs moved into their own npm workspace under `docs/`. Use `cd docs && npm ci` (or `make docs/install`) to set up; the published npm package no longer ships VitePress, Vue, chart.js or vanilla-tilt
+- Pre-commit hook skips the test suite when no `.sh`/`.bash`/CLI files are staged, running `make lint` only
+- ANSI escapes route through the existing `_BASHUNIT_COLOR_*` constants (#247)
+
+### Performance
+- Coverage report generation (#636): single source-file pass for executable + hit counting via `bashunit::coverage::compute_file_coverage`, combined non-executable grep, native bash regex replacing `echo | sed`/`grep` subshells, pre-loaded line-hit arrays, cached file stats across reports
+
+### Internal
+- `bashunit::runner::run_test` (~320 lines) split into nine named helpers for top-down readability (no behavior change)
+- `release.sh` treats `docs/package.json` as a first-class `RELEASE_FILES` entry; backup/restore preserves nested paths
+- Structural test guards root `package.json` against regaining `dependencies`/`devDependencies`/`peerDependencies`/`scripts`
 
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 
