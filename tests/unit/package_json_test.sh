@@ -81,6 +81,20 @@ function test_package_json_excludes_docs_dependencies() {
   assert_not_contains '"vue"' "$pkg"
 }
 
+function test_package_json_declares_no_dependencies_block() {
+  local pkg
+  pkg=$(cat "$PKG_FILE")
+  assert_not_matches '"dependencies"[[:space:]]*:' "$pkg"
+  assert_not_matches '"devDependencies"[[:space:]]*:' "$pkg"
+  assert_not_matches '"peerDependencies"[[:space:]]*:' "$pkg"
+}
+
+function test_package_json_declares_no_scripts_block() {
+  local pkg
+  pkg=$(cat "$PKG_FILE")
+  assert_not_matches '"scripts"[[:space:]]*:' "$pkg"
+}
+
 function test_docs_package_json_marked_private() {
   local pkg
   pkg=$(cat "$DOCS_PKG_FILE")
