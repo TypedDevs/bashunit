@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 echo "Running pre-commit checks"
 
-make pre_commit/run
-EXIT_CODE=$?
+CHANGED_SHELL_FILES=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '(\.(sh|bash)$|^bashunit$|^bin/)' || true)
+
+if [ -n "$CHANGED_SHELL_FILES" ]; then
+    make pre_commit/run
+    EXIT_CODE=$?
+else
+    echo "No shell files changed; running lint only."
+    make lint
+    EXIT_CODE=$?
+fi
 
 if [ "${EXIT_CODE}" -ne 0 ]; then
     echo "Pre Commit checks failed. Please fix the above issues before committing"
