@@ -46,6 +46,29 @@ function bashunit::runner::apply_interpolated_title() {
   printf '%s' "$interpolated"
 }
 
+function bashunit::runner::detect_runtime_error() {
+  local runtime_output=$1
+  local error
+  for error in "command not found" "unbound variable" "permission denied" \
+    "no such file or directory" "syntax error" "bad substitution" \
+    "division by 0" "cannot allocate memory" "bad file descriptor" \
+    "segmentation fault" "illegal option" "argument list too long" \
+    "readonly variable" "missing keyword" "killed" \
+    "cannot execute binary file" "invalid arithmetic operator" \
+    "ambiguous redirect" "integer expression expected" \
+    "too many arguments" "value too great" \
+    "not a valid identifier" "unexpected EOF"; do
+    case "$runtime_output" in
+    *"$error"*)
+      local runtime_error="${runtime_output#*: }"
+      printf '%s' "${runtime_error//$'\n'/}"
+      return 0
+      ;;
+    esac
+  done
+  printf ''
+}
+
 function bashunit::runner::print_verbose_test_summary() {
   local test_file=$1
   local fn_name=$2
@@ -735,25 +758,8 @@ function bashunit::runner::run_test() {
 
   local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
 
-  local runtime_error=""
-  local error=""
-  for error in "command not found" "unbound variable" "permission denied" \
-    "no such file or directory" "syntax error" "bad substitution" \
-    "division by 0" "cannot allocate memory" "bad file descriptor" \
-    "segmentation fault" "illegal option" "argument list too long" \
-    "readonly variable" "missing keyword" "killed" \
-    "cannot execute binary file" "invalid arithmetic operator" \
-    "ambiguous redirect" "integer expression expected" \
-    "too many arguments" "value too great" \
-    "not a valid identifier" "unexpected EOF"; do
-    case "$runtime_output" in
-    *"$error"*)
-      runtime_error="${runtime_output#*: }"  # Remove everything up to and including ": "
-      runtime_error=${runtime_error//$'\n'/} # Remove all newlines using parameter expansion
-      break
-      ;;
-    esac
-  done
+  local runtime_error
+  runtime_error=$(bashunit::runner::detect_runtime_error "$runtime_output")
 
   bashunit::runner::parse_result "$fn_name" "$test_execution_result" "$@"
 

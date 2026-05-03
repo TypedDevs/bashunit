@@ -13,6 +13,7 @@
 - `release.sh` now treats `docs/package.json` as a first-class `RELEASE_FILES` entry, so the release flow backs it up, restores it on rollback, and stages it without inline duplication. Backup/restore preserves nested directory paths
 - Extract `bashunit::runner::source_login_shell_profiles` and `bashunit::runner::print_verbose_test_summary` from the 320-line `run_test` body so the hot path reads top-down without inline `~/.profile` sourcing or printf scaffolding
 - Further trim `bashunit::runner::run_test`: extract `export_test_identity` (test ID + coverage env exports) and `apply_interpolated_title` (data-provider title interpolation) so the function opens with five named one-liners instead of an inline export/branch block
+- Extract `bashunit::runner::detect_runtime_error` so the 23-pattern runtime-error scan in `run_test` becomes a single named call
 - Centralize all ANSI escape emission through the existing `_BASHUNIT_COLOR_*` constants. `src/coverage.sh` and the `--watch` screen-clear in `src/main.sh` no longer hardcode escape sequences (#247)
 - Speed up coverage report generation by collapsing the per-line non-executable pattern checks in `bashunit::coverage::is_executable_line` into a single combined `grep` invocation (#636)
 - Speed up coverage report generation further by combining executable + hit counting into a single source-file pass (`bashunit::coverage::compute_file_coverage`) shared across text/lcov/html reporters, removing per-line `get_line_hits` scans of the coverage data file (#636)
