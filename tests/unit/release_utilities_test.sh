@@ -135,6 +135,47 @@ function test_rollback_restore_files_restores_backup() {
   rm -rf "$temp_dir"
 }
 
+function test_backup_save_file_preserves_subdirectory_path() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local result
+  result=$(
+    cd "$temp_dir" || return
+    mkdir -p docs
+    echo "docs content" >docs/package.json
+    release::backup::init
+    release::backup::save_file "docs/package.json"
+    cat "$BACKUP_DIR/docs/package.json"
+  )
+
+  assert_same "docs content" "$result"
+  rm -rf "$temp_dir"
+}
+
+function test_rollback_restore_files_restores_nested_paths() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local result
+  result=$(
+    cd "$temp_dir" || return
+    mkdir -p docs
+    echo "original docs" >docs/package.json
+    echo "original root" >root.txt
+    release::backup::init
+    release::backup::save_file "docs/package.json"
+    release::backup::save_file "root.txt"
+    echo "modified docs" >docs/package.json
+    echo "modified root" >root.txt
+    release::rollback::restore_files 2>/dev/null
+    printf '%s|%s' "$(cat docs/package.json)" "$(cat root.txt)"
+  )
+
+  assert_same "original docs|original root" "$result"
+  rm -rf "$temp_dir"
+}
+
 ##########################
 # Pre-flight check tests
 ##########################

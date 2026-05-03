@@ -13,7 +13,7 @@ declare -r EXIT_EXECUTION_ERROR=2
 # Constants
 GITHUB_REPO_PATH="TypedDevs/bashunit"
 GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
-RELEASE_FILES=("bashunit" "install.sh" "package.json" "CHANGELOG.md")
+RELEASE_FILES=("bashunit" "install.sh" "package.json" "docs/package.json" "CHANGELOG.md")
 
 # Helper function for regex matching (Bash 3.0+ compatible)
 function regex_match() {
@@ -287,7 +287,9 @@ function release::backup::init() {
 function release::backup::save_file() {
   local file=$1
   if [[ -f "$file" ]]; then
-    cp "$file" "$BACKUP_DIR/"
+    local dest="$BACKUP_DIR/$file"
+    mkdir -p "$(dirname "$dest")"
+    cp "$file" "$dest"
     release::log_verbose "Backed up: $file"
   fi
 }
@@ -313,14 +315,12 @@ function release::rollback::restore_files() {
   fi
 
   release::log_info "Restoring files from backup..."
-  for file in "$BACKUP_DIR"/*; do
-    if [[ -f "$file" ]]; then
-      local filename
-      filename=$(basename "$file")
-      cp "$file" "./$filename"
-      release::log_verbose "Restored: $filename"
-    fi
-  done
+  while IFS= read -r file; do
+    local rel="${file#"$BACKUP_DIR"/}"
+    mkdir -p "$(dirname "./$rel")"
+    cp "$file" "./$rel"
+    release::log_verbose "Restored: $rel"
+  done < <(find "$BACKUP_DIR" -type f)
   release::log_success "Files restored from backup"
 }
 
@@ -521,7 +521,7 @@ function release::sandbox::run() {
   release::blank_line
   # Commit changes (confirmations skipped in sandbox)
   release::log_info "Creating release commit..."
-  git add "${RELEASE_FILES[@]}" docs/package.json
+  git add "${RELEASE_FILES[@]}"
   git commit -m "release: $VERSION" -n
   release::log_success "Created commit"
   git tag "$VERSION"
@@ -843,7 +843,7 @@ function release::git_commit_and_tag() {
     return
   fi
 
-  git add "${RELEASE_FILES[@]}" docs/package.json
+  git add "${RELEASE_FILES[@]}"
   git commit -m "release: $new_version" -n
   release::log_success "Created commit"
 
