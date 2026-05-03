@@ -46,6 +46,22 @@ function bashunit::runner::apply_interpolated_title() {
   printf '%s' "$interpolated"
 }
 
+function bashunit::runner::compute_total_assertions() {
+  local test_execution_result=$1
+  local failed passed skipped incomplete snapshot
+  failed="${test_execution_result##*##ASSERTIONS_FAILED=}"
+  failed="${failed%%##*}"
+  passed="${test_execution_result##*##ASSERTIONS_PASSED=}"
+  passed="${passed%%##*}"
+  skipped="${test_execution_result##*##ASSERTIONS_SKIPPED=}"
+  skipped="${skipped%%##*}"
+  incomplete="${test_execution_result##*##ASSERTIONS_INCOMPLETE=}"
+  incomplete="${incomplete%%##*}"
+  snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
+  snapshot="${snapshot%%##*}"
+  printf '%d' "$(( ${failed:-0} + ${passed:-0} + ${skipped:-0} + ${incomplete:-0} + ${snapshot:-0} ))"
+}
+
 function bashunit::runner::extract_subshell_type() {
   local subshell_output=$1
   local type="${subshell_output%%]*}"
@@ -771,22 +787,8 @@ function bashunit::runner::run_test() {
 
   local test_exit_code="$_BASHUNIT_TEST_EXIT_CODE"
 
-  # Extract assertion counts directly via parameter expansion
-  # instead of spawning grep subprocesses
-  local _te_failed="${test_execution_result##*##ASSERTIONS_FAILED=}"
-  _te_failed="${_te_failed%%##*}"
-  local _te_passed="${test_execution_result##*##ASSERTIONS_PASSED=}"
-  _te_passed="${_te_passed%%##*}"
-  local _te_skipped="${test_execution_result##*##ASSERTIONS_SKIPPED=}"
-  _te_skipped="${_te_skipped%%##*}"
-  local _te_incomplete="${test_execution_result##*##ASSERTIONS_INCOMPLETE=}"
-  _te_incomplete="${_te_incomplete%%##*}"
-  local _te_snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
-  _te_snapshot="${_te_snapshot%%##*}"
-  local total_assertions=$(( \
-    ${_te_failed:-0} + ${_te_passed:-0} + ${_te_skipped:-0} + \
-    ${_te_incomplete:-0} + ${_te_snapshot:-0} \
-  ))
+  local total_assertions
+  total_assertions=$(bashunit::runner::compute_total_assertions "$test_execution_result")
 
   local encoded_test_title
   encoded_test_title="${test_execution_result##*##TEST_TITLE=}"
