@@ -38,11 +38,12 @@ Pull requests are welcome! Please read the [contribution guide](https://github.c
 For documentation changes you can preview locally with:
 
 ```bash
+cd docs
 npm ci
-npm run docs:dev
+npm run dev
 ```
 
-Before submitting your pull request ensure that `npm run docs:build` succeeds and that the test suite passes.
+Before submitting your pull request ensure that `npm run build` (run from `docs/`) succeeds and that the test suite passes.
 
 ## Further reading
 

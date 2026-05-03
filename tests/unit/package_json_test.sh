@@ -2,10 +2,12 @@
 
 ROOT_DIR=""
 PKG_FILE=""
+DOCS_PKG_FILE=""
 
 function set_up_before_script() {
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
   PKG_FILE="$ROOT_DIR/package.json"
+  DOCS_PKG_FILE="$ROOT_DIR/docs/package.json"
 }
 
 function test_package_json_name_is_bashunit() {
@@ -50,9 +52,44 @@ function test_package_json_keeps_checksum_field() {
   assert_matches '"checksum"[[:space:]]*:' "$pkg"
 }
 
-function test_package_json_keeps_docs_scripts() {
+function test_package_json_excludes_docs_scripts() {
   local pkg
   pkg=$(cat "$PKG_FILE")
-  assert_contains 'docs:dev' "$pkg"
-  assert_contains 'docs:build' "$pkg"
+  assert_not_contains 'vitepress' "$pkg"
+}
+
+function test_docs_package_json_declares_vitepress_scripts() {
+  local pkg
+  pkg=$(cat "$DOCS_PKG_FILE")
+  assert_contains '"dev": "vitepress dev' "$pkg"
+  assert_contains '"build": "vitepress build' "$pkg"
+  assert_contains '"preview": "vitepress preview' "$pkg"
+}
+
+function test_docs_package_json_name_is_bashunit_docs() {
+  local pkg
+  pkg=$(cat "$DOCS_PKG_FILE")
+  assert_matches '"name"[[:space:]]*:[[:space:]]*"bashunit-docs"' "$pkg"
+}
+
+function test_package_json_excludes_docs_dependencies() {
+  local pkg
+  pkg=$(cat "$PKG_FILE")
+  assert_not_contains 'vitepress' "$pkg"
+  assert_not_contains 'chart.js' "$pkg"
+  assert_not_contains 'vanilla-tilt' "$pkg"
+  assert_not_contains '"vue"' "$pkg"
+}
+
+function test_docs_package_json_marked_private() {
+  local pkg
+  pkg=$(cat "$DOCS_PKG_FILE")
+  assert_matches '"private"[[:space:]]*:[[:space:]]*true' "$pkg"
+}
+
+function test_docs_package_json_declares_vitepress_devdep() {
+  local pkg
+  pkg=$(cat "$DOCS_PKG_FILE")
+  assert_matches '"devDependencies"[[:space:]]*:' "$pkg"
+  assert_contains 'vitepress' "$pkg"
 }

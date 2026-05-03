@@ -54,12 +54,13 @@ make test && make sa && make lint
 
 ### Documentation Setup (Optional)
 
-For documentation changes:
+Docs live in their own workspace under `docs/` with an isolated `package.json`.
 
 ```bash
 nvm use  # Uses .nvmrc version
+cd docs
 npm ci
-npm run docs:dev
+npm run dev
 ```
 
 ## Making Changes
@@ -197,13 +198,14 @@ Then create the PR on GitHub, fill out the template, and link related issues.
 
 ## Documentation
 
-Documentation is built with [VitePress](https://vitepress.dev/).
+Documentation is built with [VitePress](https://vitepress.dev/) and lives in `docs/` as its own npm workspace.
 
 ```bash
 nvm use
+cd docs
 npm ci
-npm run docs:dev  # Start dev server
-npm run docs:build  # Build and test
+npm run dev    # Start dev server
+npm run build  # Build and test
 ```
 
 **Guidelines:** Keep it simple, include examples, test all code examples.

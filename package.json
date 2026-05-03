@@ -11,7 +11,7 @@
   "bugs": {
     "url": "https://github.com/TypedDevs/bashunit/issues"
   },
-  "author": "TypedDevs <team@typeddevs.com>",
+  "author": "Chemaclass <chemaclass@outlook.es>",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -35,18 +35,5 @@
     "bashunit",
     "tdd",
     "assertions"
-  ],
-  "scripts": {
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
-  },
-  "dependencies": {
-    "chart.js": "^4.4.9",
-    "vanilla-tilt": "^1.8.1"
-  },
-  "devDependencies": {
-    "vitepress": "^1.6.3",
-    "vue": "^3.5.16"
-  }
+  ]
 }
