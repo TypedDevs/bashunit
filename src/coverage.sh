@@ -908,11 +908,90 @@ function bashunit::coverage::report_text() {
     bashunit::coverage::report_text_functions
   fi
 
+  # Optional uncovered hotspots (gated on BASHUNIT_COVERAGE_SHOW_UNCOVERED)
+  if [ "${BASHUNIT_COVERAGE_SHOW_UNCOVERED:-false}" = "true" ]; then
+    bashunit::coverage::report_text_uncovered
+  fi
+
   # Show report location if generated
   if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
     echo ""
     echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
   fi
+}
+
+# List executable lines that were never hit, grouped by file.
+# Gated on BASHUNIT_COVERAGE_SHOW_UNCOVERED=true. Output is suppressed
+# when no uncovered lines exist so a fully-covered run stays quiet.
+function bashunit::coverage::report_text_uncovered() {
+  local file
+  local printed_header=false
+  while IFS= read -r file; do
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+    local -a hits_by_line=()
+    local _hl_ln _hl_cnt
+    while IFS=: read -r _hl_ln _hl_cnt; do
+      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
+    done < <(bashunit::coverage::get_all_line_hits "$file")
+
+    local -a uncovered_lines=()
+    local _ucount=0
+    local lineno=0 line
+    while IFS= read -r line || [ -n "$line" ]; do
+      lineno=$((lineno + 1))
+      bashunit::coverage::is_executable_line "$line" "$lineno" || continue
+      local lh="${hits_by_line[$lineno]:-0}"
+      if [ "$lh" -eq 0 ]; then
+        uncovered_lines[_ucount]="$lineno"
+        _ucount=$((_ucount + 1))
+      fi
+    done <"$file"
+
+    [ "$_ucount" -eq 0 ] && continue
+
+    if [ "$printed_header" != "true" ]; then
+      echo ""
+      echo "Uncovered Lines"
+      echo "---------------"
+      printed_header=true
+    fi
+
+    local display_file="${file#"$(pwd)"/}"
+    local color reset="$_BASHUNIT_COLOR_DEFAULT"
+    color="$_BASHUNIT_COLOR_FAILED"
+
+    # Compress consecutive line numbers into ranges (3-5 instead of 3,4,5)
+    local out="" prev_start="" prev_end="" ln
+    for ln in "${uncovered_lines[@]}"; do
+      if [ -z "$prev_start" ]; then
+        prev_start="$ln"
+        prev_end="$ln"
+        continue
+      fi
+      if [ "$ln" -eq $((prev_end + 1)) ]; then
+        prev_end="$ln"
+      else
+        if [ "$prev_start" = "$prev_end" ]; then
+          out="${out}${prev_start},"
+        else
+          out="${out}${prev_start}-${prev_end},"
+        fi
+        prev_start="$ln"
+        prev_end="$ln"
+      fi
+    done
+    if [ -n "$prev_start" ]; then
+      if [ "$prev_start" = "$prev_end" ]; then
+        out="${out}${prev_start}"
+      else
+        out="${out}${prev_start}-${prev_end}"
+      fi
+    fi
+    out="${out%,}"
+
+    printf "%s%s:%s%s\n" "$color" "$display_file" "$out" "$reset"
+  done < <(bashunit::coverage::get_tracked_files)
 }
 
 # Per-function coverage summary printed after the file table.

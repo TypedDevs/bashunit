@@ -699,3 +699,104 @@ EOF
 
   rm -f "$temp_file" "$out_html"
 }
+
+function test_coverage_report_text_lists_uncovered_hotspots_when_enabled() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+echo "uncovered-1"
+echo "uncovered-2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_contains "Uncovered" "$output"
+  # Lines 3 and 4 are uncovered, rendered as a compressed range "3-4"
+  assert_contains "3-4" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_uncovered_renders_singletons_separately() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "uncovered-2"
+echo "covered-3"
+echo "uncovered-4"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  # Non-consecutive uncovered lines stay as individual entries
+  assert_contains "2,4" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_omits_uncovered_section_by_default() {
+  BASHUNIT_COVERAGE="true"
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "uncovered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "Uncovered" "$output"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_skips_uncovered_section_when_no_misses() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "Uncovered" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  rm -f "$temp_file"
+}
