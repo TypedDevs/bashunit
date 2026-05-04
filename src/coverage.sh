@@ -936,23 +936,23 @@ function bashunit::coverage::extract_branches() {
   done
 }
 
-# Returns 1 (true/taken) iff any executable line in [arm_start..arm_end]
-# has a recorded hit. Caller must have populated the hits_by_line and
-# src_lines arrays in scope (Bash 3.0 cannot pass arrays in).
-# Result is echoed as "0" or "1" so the caller can capture it.
+# Sets _BASHUNIT_ARM_TAKEN_OUT to 1 iff any executable line in
+# [arm_start..arm_end] has a recorded hit, else 0. Caller must have
+# populated the hits_by_line and src_lines arrays in scope; Bash 3.0
+# cannot pass arrays into a function. Result is returned via the
+# global to avoid a per-arm subshell.
+_BASHUNIT_ARM_TAKEN_OUT=0
 function bashunit::coverage::_arm_taken() {
-  local arm_start="$1" arm_end="$2"
-  local ln content h
+  local arm_start="$1" arm_end="$2" ln
   for ((ln = arm_start; ln <= arm_end; ln++)); do
-    content="${src_lines[$((ln - 1))]:-}"
-    bashunit::coverage::is_executable_line "$content" "$ln" || continue
-    h=${hits_by_line[$ln]:-0}
-    if [ "$h" -gt 0 ]; then
-      echo 1
+    bashunit::coverage::is_executable_line \
+      "${src_lines[$((ln - 1))]:-}" "$ln" || continue
+    if [ "${hits_by_line[$ln]:-0}" -gt 0 ]; then
+      _BASHUNIT_ARM_TAKEN_OUT=1
       return
     fi
   done
-  echo 0
+  _BASHUNIT_ARM_TAKEN_OUT=0
 }
 
 # Compute branch hit data for a file.
@@ -979,7 +979,7 @@ function bashunit::coverage::compute_branch_hits() {
 
   local block=0 decision_line _kind arms branch_entry
   local -a arm_specs=()
-  local arm arm_index taken
+  local arm arm_index
   while IFS= read -r branch_entry; do
     [ -z "$branch_entry" ] && continue
     IFS='|' read -r decision_line _kind arms <<<"$branch_entry"
@@ -987,8 +987,8 @@ function bashunit::coverage::compute_branch_hits() {
     arm_index=0
     IFS=',' read -ra arm_specs <<<"$arms"
     for arm in "${arm_specs[@]}"; do
-      taken=$(bashunit::coverage::_arm_taken "${arm%%:*}" "${arm##*:}")
-      echo "${decision_line}|${block}|${arm_index}|${taken}"
+      bashunit::coverage::_arm_taken "${arm%%:*}" "${arm##*:}"
+      echo "${decision_line}|${block}|${arm_index}|${_BASHUNIT_ARM_TAKEN_OUT}"
       arm_index=$((arm_index + 1))
     done
 
@@ -1140,6 +1140,38 @@ function bashunit::coverage::report_text() {
   fi
 }
 
+# Compress a sorted list of integers into a comma-separated range
+# string (e.g. "3 4 5 7 9 10" -> "3-5,7,9-10"). Result on
+# _BASHUNIT_RANGES_OUT to avoid a subshell on each call.
+_BASHUNIT_RANGES_OUT=""
+function bashunit::coverage::_compress_ranges() {
+  local out="" start="" end="" n
+  for n in "$@"; do
+    if [ -z "$start" ]; then
+      start="$n"
+      end="$n"
+    elif [ "$n" -eq $((end + 1)) ]; then
+      end="$n"
+    else
+      if [ "$start" = "$end" ]; then
+        out="${out}${start},"
+      else
+        out="${out}${start}-${end},"
+      fi
+      start="$n"
+      end="$n"
+    fi
+  done
+  if [ -n "$start" ]; then
+    if [ "$start" = "$end" ]; then
+      out="${out}${start}"
+    else
+      out="${out}${start}-${end}"
+    fi
+  fi
+  _BASHUNIT_RANGES_OUT="${out%,}"
+}
+
 # List executable lines that were never hit, grouped by file.
 # Gated on BASHUNIT_COVERAGE_SHOW_UNCOVERED=true. Output is suppressed
 # when no uncovered lines exist so a fully-covered run stays quiet.
@@ -1178,37 +1210,10 @@ function bashunit::coverage::report_text_uncovered() {
     fi
 
     local display_file="${file#"$(pwd)"/}"
-    local color reset="$_BASHUNIT_COLOR_DEFAULT"
-    color="$_BASHUNIT_COLOR_FAILED"
-
-    # Compress consecutive line numbers into ranges (3-5 instead of 3,4,5)
-    local out="" prev_start="" prev_end="" ln
-    for ln in "${uncovered_lines[@]}"; do
-      if [ -z "$prev_start" ]; then
-        prev_start="$ln"
-        prev_end="$ln"
-        continue
-      fi
-      if [ "$ln" -eq $((prev_end + 1)) ]; then
-        prev_end="$ln"
-      else
-        if [ "$prev_start" = "$prev_end" ]; then
-          out="${out}${prev_start},"
-        else
-          out="${out}${prev_start}-${prev_end},"
-        fi
-        prev_start="$ln"
-        prev_end="$ln"
-      fi
-    done
-    if [ -n "$prev_start" ]; then
-      if [ "$prev_start" = "$prev_end" ]; then
-        out="${out}${prev_start}"
-      else
-        out="${out}${prev_start}-${prev_end}"
-      fi
-    fi
-    out="${out%,}"
+    local color="$_BASHUNIT_COLOR_FAILED" reset="$_BASHUNIT_COLOR_DEFAULT"
+    local out
+    bashunit::coverage::_compress_ranges "${uncovered_lines[@]}"
+    out="$_BASHUNIT_RANGES_OUT"
 
     printf "%s%s:%s%s\n" "$color" "$display_file" "$out" "$reset"
   done < <(bashunit::coverage::get_tracked_files)
