@@ -3,25 +3,25 @@
 ## Unreleased
 
 ### Fixed
-- `bashunit upgrade` no longer reports success when the binary download fails; it now exits non-zero, prints the URL it tried, surfaces the underlying curl/wget error, and validates the downloaded file is non-empty before replacing the binary
+- `bashunit upgrade` exits non-zero with a clear error when the download fails (no more false success message)
 
 ### Added
 - `--show-output` displays captured test output on assertion failures (#637)
-- npm registry distribution: `npm install -g bashunit` ships the prebuilt single-file binary (#244)
-- `bashunit::env::supports_color` capability probe (`TERM=dumb`, `tput colors < 8`) and `bashunit::io::clear_screen` helper (`tput clear` with ANSI fallback) (#247)
+- npm registry distribution: `npm install -g bashunit` (#244)
+- `bashunit::env::supports_color` and `bashunit::io::clear_screen` helpers (#247)
 
 ### Changed
-- Docs moved into their own npm workspace under `docs/`. Use `cd docs && npm ci` (or `make docs/install`) to set up; the published npm package no longer ships VitePress, Vue, chart.js or vanilla-tilt
-- Pre-commit hook skips the test suite when no `.sh`/`.bash`/CLI files are staged, running `make lint` only
-- ANSI escapes route through the existing `_BASHUNIT_COLOR_*` constants (#247)
+- Docs moved into their own npm workspace under `docs/` (use `cd docs && npm ci` or `make docs/install`)
+- Pre-commit hook skips the test suite when no shell files are staged
+- ANSI escapes route through `_BASHUNIT_COLOR_*` constants (#247)
 
 ### Performance
-- Coverage report generation (#636): single source-file pass for executable + hit counting via `bashunit::coverage::compute_file_coverage`, combined non-executable grep, native bash regex replacing `echo | sed`/`grep` subshells, pre-loaded line-hit arrays, cached file stats across reports
+- Faster coverage report generation: single-pass file scan, native bash regex, cached file stats (#636)
 
 ### Internal
-- `bashunit::runner::run_test` (~320 lines) split into nine named helpers for top-down readability (no behavior change)
-- `release.sh` treats `docs/package.json` as a first-class `RELEASE_FILES` entry; backup/restore preserves nested paths
-- Structural test guards root `package.json` against regaining `dependencies`/`devDependencies`/`peerDependencies`/`scripts`
+- `bashunit::runner::run_test` split into nine named helpers (no behavior change)
+- `release.sh` handles `docs/package.json` as a first-class release file
+- Structural test guards root `package.json` against regaining dependencies or scripts
 
 ## [0.35.0](https://github.com/TypedDevs/bashunit/compare/0.34.1...0.35.0) - 2026-04-26
 
