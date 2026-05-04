@@ -395,3 +395,96 @@ EOF
 
   rm -f "$temp_file"
 }
+
+function test_coverage_report_lcov_includes_function_records() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function alpha() {
+  echo "in alpha"
+}
+function beta() {
+  echo "in beta"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  # Hit alpha body (line 3) only; beta body (line 6) not hit
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "FN:2,alpha" "$content"
+  assert_contains "FN:5,beta" "$content"
+  assert_contains "FNDA:1,alpha" "$content"
+  assert_contains "FNDA:0,beta" "$content"
+  assert_contains "FNF:2" "$content"
+  assert_contains "FNH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_text_includes_function_summary_when_enabled() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_FUNCTIONS="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function alpha() {
+  echo "alpha"
+}
+function beta() {
+  echo "beta"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_contains "alpha" "$output"
+  assert_contains "beta" "$output"
+  assert_contains "Functions" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_FUNCTIONS
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_omits_function_summary_by_default() {
+  BASHUNIT_COVERAGE="true"
+  unset BASHUNIT_COVERAGE_SHOW_FUNCTIONS
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function only_fn() {
+  echo "x"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "only_fn" "$output"
+
+  rm -f "$temp_file"
+}

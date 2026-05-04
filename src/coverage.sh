@@ -903,11 +903,81 @@ function bashunit::coverage::report_text() {
   printf "%sTotal: %d/%d (%d%%)%s\n" \
     "$color" "$total_hit" "$total_executable" "$total_pct" "$reset"
 
+  # Optional per-function summary (gated on BASHUNIT_COVERAGE_SHOW_FUNCTIONS)
+  if [ "${BASHUNIT_COVERAGE_SHOW_FUNCTIONS:-false}" = "true" ]; then
+    bashunit::coverage::report_text_functions
+  fi
+
   # Show report location if generated
   if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
     echo ""
     echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
   fi
+}
+
+# Per-function coverage summary printed after the file table.
+# Gated on BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true to keep default output compact.
+function bashunit::coverage::report_text_functions() {
+  local file
+  local printed_header=false
+  while IFS= read -r file; do
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+    local functions_data
+    functions_data=$(bashunit::coverage::extract_functions "$file")
+    [ -z "$functions_data" ] && continue
+
+    local -a hits_by_line=()
+    local _hl_ln _hl_cnt
+    while IFS=: read -r _hl_ln _hl_cnt; do
+      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
+    done < <(bashunit::coverage::get_all_line_hits "$file")
+
+    local -a file_lines=()
+    local _fli=0 _fl
+    while IFS= read -r _fl || [ -n "$_fl" ]; do
+      file_lines[_fli]="$_fl"
+      ((++_fli))
+    done <"$file"
+
+    local display_file="${file#"$(pwd)"/}"
+
+    if [ "$printed_header" != "true" ]; then
+      echo ""
+      echo "Functions"
+      echo "---------"
+      printed_header=true
+    fi
+    echo "${display_file}"
+
+    local fn_entry
+    while IFS= read -r fn_entry; do
+      [ -z "$fn_entry" ] && continue
+      local fn_name fn_start fn_end fn_rest
+      fn_name="${fn_entry%%|*}"
+      fn_rest="${fn_entry#*|}"
+      fn_start="${fn_rest%%|*}"
+      fn_end="${fn_rest#*|}"
+
+      local fn_executable=0 fn_hit=0 ln
+      for ((ln = fn_start; ln <= fn_end; ln++)); do
+        local ln_content="${file_lines[$((ln - 1))]:-}"
+        if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
+          fn_executable=$((fn_executable + 1))
+          local ln_hits=${hits_by_line[$ln]:-0}
+          [ "$ln_hits" -gt 0 ] && fn_hit=$((fn_hit + 1))
+        fi
+      done
+
+      local fn_pct fn_class color reset="$_BASHUNIT_COLOR_DEFAULT"
+      fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
+      fn_class=$(bashunit::coverage::get_coverage_class "$fn_pct")
+      color=$(bashunit::coverage::get_color_for_class "$fn_class")
+
+      printf "  %s%-38s %3d/%3d lines (%3d%%)%s\n" \
+        "$color" "$fn_name" "$fn_hit" "$fn_executable" "$fn_pct" "$reset"
+    done <<<"$functions_data"
+  done < <(bashunit::coverage::get_tracked_files)
 }
 
 function bashunit::coverage::report_lcov() {
@@ -934,6 +1004,42 @@ function bashunit::coverage::report_lcov() {
       while IFS=: read -r hit_lineno hit_count; do
         [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
       done < <(bashunit::coverage::get_all_line_hits "$file")
+
+      # Function records (FN/FNDA/FNF/FNH)
+      local fn_total=0 fn_hit=0
+      local fn_entry fn_name fn_start fn_end fn_rest
+      local -a fn_dn_records=()
+      local _fdi=0
+      while IFS= read -r fn_entry; do
+        [ -z "$fn_entry" ] && continue
+        fn_name="${fn_entry%%|*}"
+        fn_rest="${fn_entry#*|}"
+        fn_start="${fn_rest%%|*}"
+        fn_end="${fn_rest#*|}"
+        echo "FN:${fn_start},${fn_name}"
+        fn_total=$((fn_total + 1))
+
+        # Function is "hit" if any executable line in its range has hits
+        local fln any_hit=0
+        for ((fln = fn_start; fln <= fn_end; fln++)); do
+          local fc="${hits_by_line[$fln]:-0}"
+          if [ "$fc" -gt 0 ]; then
+            any_hit=1
+            break
+          fi
+        done
+        fn_dn_records[_fdi]="FNDA:${any_hit},${fn_name}"
+        _fdi=$((_fdi + 1))
+        [ "$any_hit" -eq 1 ] && fn_hit=$((fn_hit + 1))
+      done < <(bashunit::coverage::extract_functions "$file")
+
+      # Emit FNDA records grouped after FN records (per LCOV convention)
+      local fda
+      for fda in ${fn_dn_records[@]+"${fn_dn_records[@]}"}; do
+        echo "$fda"
+      done
+      echo "FNF:$fn_total"
+      echo "FNH:$fn_hit"
 
       local lineno=0 executable=0 hit=0 line line_hits
       local -a lcov_lines=()
