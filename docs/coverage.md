@@ -368,3 +368,14 @@ Due to Bash's process model, hits produced inside a subshell are written to the 
 - Functions invoked from `$( ... )`: the call site and surrounding lines are hit, but the function body lines are lost when called inside a subshell.
 
 These contracts are pinned by `tests/unit/coverage_subshell_test.sh`.
+
+### Branch Coverage Scope
+
+The LCOV report includes `BRDA`/`BRF`/`BRH` records for `if`/`elif`/`else` chains and `case` patterns. An arm is reported as taken iff at least one executable line inside its range was hit. Known limitations:
+
+- An arm whose body has no executable lines (e.g. only comments or braces) registers as not-taken even when the conditional fired.
+- Implicit `else` (an `if`/`elif` chain without an explicit `else`) reports only the explicit arms; the synthetic fall-through outcome is omitted.
+- Compound conditionals (`if A && B`) are reported as a single binary decision, not per sub-expression.
+- `&&`/`||` short-circuit branches outside `if` and loop-entry decisions (`while`/`until`) are not tracked.
+
+See `adrs/adr-007-branch-coverage-mvp.md` for the full design rationale.
