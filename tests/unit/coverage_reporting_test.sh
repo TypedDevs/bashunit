@@ -577,3 +577,125 @@ EOF
 
   rm -f "$temp_file" "$out_html"
 }
+
+function test_coverage_html_index_contains_overall_metrics() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "a"
+echo "b"
+echo "c"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  {
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_dir
+  out_dir=$(mktemp -d)
+
+  bashunit::coverage::report_html "$out_dir" >/dev/null
+
+  assert_file_exists "$out_dir/index.html"
+
+  local index
+  index=$(cat "$out_dir/index.html")
+
+  assert_contains "Code Coverage Report" "$index"
+  assert_contains "Overall Code Coverage" "$index"
+  # 2 of 3 executable lines hit -> 66%
+  assert_contains "66%" "$index"
+  assert_contains "$(basename "$temp_file")" "$index"
+
+  rm -rf "$out_dir"
+  rm -f "$temp_file"
+}
+
+function test_coverage_html_index_creates_per_file_pages() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_dir
+  out_dir=$(mktemp -d)
+
+  bashunit::coverage::report_html "$out_dir" >/dev/null
+
+  # Per-file HTML page exists under files/
+  local file_pages
+  file_pages=$(find "$out_dir/files/" -maxdepth 1 -type f -name '*.html' | wc -l | tr -d ' ')
+  assert_equals "1" "$file_pages"
+
+  rm -rf "$out_dir"
+  rm -f "$temp_file"
+}
+
+function test_coverage_html_file_page_marks_covered_and_uncovered_rows() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+echo "uncovered"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains 'class="covered line-anchor"' "$content"
+  assert_contains 'class="uncovered line-anchor"' "$content"
+  # Line 1 (shebang) is non-executable -> no covered/uncovered class
+  assert_contains 'id="line-1" class=" line-anchor"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_file_page_escapes_special_chars() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "<tag> & 'quote'"
+EOF
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains "&lt;tag&gt;" "$content"
+  assert_contains "&amp;" "$content"
+  # Raw <tag> must not appear in the code cell content
+  assert_not_contains '<td class="code">echo "<tag>' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
