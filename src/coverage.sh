@@ -776,6 +776,41 @@ function bashunit::coverage::extract_functions() {
   fi
 }
 
+# Append "start:end" to a comma-separated arms string. Result is
+# returned via the global _BASHUNIT_BRANCH_ARMS_OUT to avoid the cost
+# of a subshell on a hot per-line path. Bash 3.0 cannot pass arrays
+# (or namerefs) by reference, so a single output slot is the cheapest
+# portable option.
+_BASHUNIT_BRANCH_ARMS_OUT=""
+function bashunit::coverage::_append_arm() {
+  local existing="$1" arm_start="$2" arm_end="$3"
+  if [ -z "$existing" ]; then
+    _BASHUNIT_BRANCH_ARMS_OUT="${arm_start}:${arm_end}"
+  else
+    _BASHUNIT_BRANCH_ARMS_OUT="${existing},${arm_start}:${arm_end}"
+  fi
+}
+
+# Detect whether a trimmed line is a case-pattern opener (ends with
+# `)` optionally followed by whitespace and a comment). Avoids
+# matching mid-line uses such as `cmd $(other)`.
+function bashunit::coverage::_is_case_pattern_line() {
+  local trimmed="$1"
+  case "$trimmed" in
+  *')'*) ;;
+  *) return 1 ;;
+  esac
+
+  local before_paren="${trimmed%%')'*}"
+  local after="${trimmed#"$before_paren"}"
+  after="${after#)}"
+  after="${after#"${after%%[![:space:]]*}"}"
+  case "$after" in
+  '' | '#'*) return 0 ;;
+  esac
+  return 1
+}
+
 # Extract branch points from a Bash file.
 # Output format: <decision_line>|<kind>|<arm_start>:<arm_end>[,<arm_start>:<arm_end>]...
 # kind ∈ {if, case}
@@ -794,192 +829,133 @@ function bashunit::coverage::extract_branches() {
   local total_lines=$_i
   local lineno=0
 
-  # State for if/elif/else parsing. We allow nested ifs by stacking
-  # decision contexts in parallel arrays (Bash 3.0 has no associative
-  # arrays).
-  local -a if_stack_decision_line=()
-  local -a if_stack_arms=()      # comma-separated "start:end" pairs accumulated
-  local -a if_stack_current_arm_start=()
+  # Nested decision contexts live in parallel indexed arrays since
+  # Bash 3.0 has no associative arrays. Each array is keyed by depth.
+  local -a if_decision_line=() if_arms=() if_arm_start=()
   local if_depth=0
 
-  # State for case parsing
-  local -a case_stack_decision_line=()
-  local -a case_stack_arms=()
-  local -a case_stack_current_arm_start=()
-  local -a case_stack_in_pattern=() # 1 once we've seen the first pattern
+  local -a case_decision_line=() case_arms=() case_arm_start=() case_in_pattern=()
   local case_depth=0
 
-  local trimmed first
+  local trimmed first idx prev_end
   while [ "$lineno" -lt "$total_lines" ]; do
     local line="${lines[$lineno]}"
     lineno=$((lineno + 1))
 
-    # Strip leading whitespace
     trimmed="${line#"${line%%[![:space:]]*}"}"
-
-    # Skip comments and empty lines for keyword matching
     case "$trimmed" in '' | '#'*) continue ;; esac
-
     first="${trimmed%%[[:space:]\;]*}"
+    prev_end=$((lineno - 1))
 
-    # --- if / elif / else / fi handling ---
     # Reserved-word patterns are single-quoted to avoid Bash parser
     # confusion with the surrounding `case ... esac`.
     case "$first" in
     'if')
-      # Push new decision context
-      if_stack_decision_line[if_depth]=$lineno
-      if_stack_arms[if_depth]=""
-      # Body of `then` arm starts on the next line
-      if_stack_current_arm_start[if_depth]=$((lineno + 1))
+      if_decision_line[if_depth]=$lineno
+      if_arms[if_depth]=""
+      if_arm_start[if_depth]=$((lineno + 1))
       if_depth=$((if_depth + 1))
       continue
       ;;
-    'elif')
+    'elif' | 'else')
       if [ "$if_depth" -gt 0 ]; then
-        local idx=$((if_depth - 1))
-        local arm_end=$((lineno - 1))
-        local existing="${if_stack_arms[$idx]}"
-        local prev_start="${if_stack_current_arm_start[$idx]}"
-        if [ -z "$existing" ]; then
-          if_stack_arms[idx]="${prev_start}:${arm_end}"
-        else
-          if_stack_arms[idx]="${existing},${prev_start}:${arm_end}"
-        fi
-        if_stack_current_arm_start[idx]=$((lineno + 1))
-      fi
-      continue
-      ;;
-    'else')
-      if [ "$if_depth" -gt 0 ]; then
-        local idx=$((if_depth - 1))
-        local arm_end=$((lineno - 1))
-        local existing="${if_stack_arms[$idx]}"
-        local prev_start="${if_stack_current_arm_start[$idx]}"
-        if [ -z "$existing" ]; then
-          if_stack_arms[idx]="${prev_start}:${arm_end}"
-        else
-          if_stack_arms[idx]="${existing},${prev_start}:${arm_end}"
-        fi
-        if_stack_current_arm_start[idx]=$((lineno + 1))
+        idx=$((if_depth - 1))
+        bashunit::coverage::_append_arm "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$prev_end"
+        if_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
+        if_arm_start[idx]=$((lineno + 1))
       fi
       continue
       ;;
     'fi')
       if [ "$if_depth" -gt 0 ]; then
-        local idx=$((if_depth - 1))
-        local arm_end=$((lineno - 1))
-        local existing="${if_stack_arms[$idx]}"
-        local prev_start="${if_stack_current_arm_start[$idx]}"
-        local final_arms
-        if [ -z "$existing" ]; then
-          final_arms="${prev_start}:${arm_end}"
-        else
-          final_arms="${existing},${prev_start}:${arm_end}"
-        fi
-        echo "${if_stack_decision_line[$idx]}|if|${final_arms}"
+        idx=$((if_depth - 1))
+        bashunit::coverage::_append_arm "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$prev_end"
+        echo "${if_decision_line[$idx]}|if|${_BASHUNIT_BRANCH_ARMS_OUT}"
         if_depth=$idx
       fi
       continue
       ;;
     'case')
-      case_stack_decision_line[case_depth]=$lineno
-      case_stack_arms[case_depth]=""
-      case_stack_current_arm_start[case_depth]=0
-      case_stack_in_pattern[case_depth]=0
+      case_decision_line[case_depth]=$lineno
+      case_arms[case_depth]=""
+      case_arm_start[case_depth]=0
+      case_in_pattern[case_depth]=0
       case_depth=$((case_depth + 1))
       continue
       ;;
     'esac')
       if [ "$case_depth" -gt 0 ]; then
-        local cidx=$((case_depth - 1))
-        # Close out the trailing pattern (its body extends until ;; or esac)
-        if [ "${case_stack_in_pattern[$cidx]}" = "1" ]; then
-          local arm_end=$((lineno - 1))
-          local prev_start="${case_stack_current_arm_start[$cidx]}"
-          local existing="${case_stack_arms[$cidx]}"
-          if [ -z "$existing" ]; then
-            case_stack_arms[cidx]="${prev_start}:${arm_end}"
-          else
-            case_stack_arms[cidx]="${existing},${prev_start}:${arm_end}"
-          fi
+        idx=$((case_depth - 1))
+        if [ "${case_in_pattern[$idx]}" = "1" ]; then
+          bashunit::coverage::_append_arm "${case_arms[$idx]}" "${case_arm_start[$idx]}" "$prev_end"
+          case_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
         fi
-        if [ -n "${case_stack_arms[$cidx]}" ]; then
-          echo "${case_stack_decision_line[$cidx]}|case|${case_stack_arms[$cidx]}"
+        if [ -n "${case_arms[$idx]}" ]; then
+          echo "${case_decision_line[$idx]}|case|${case_arms[$idx]}"
         fi
-        case_depth=$cidx
+        case_depth=$idx
       fi
       continue
       ;;
     esac
 
-    # --- case pattern detection ---
-    # Inside a case body, lines like `pattern)` open a new arm; `;;`
-    # closes the current arm.
-    if [ "$case_depth" -gt 0 ]; then
-      local cidx=$((case_depth - 1))
+    # Inside a case body: `;;` / `;&` / `;;&` close the current arm,
+    # `pattern)` opens a new one.
+    [ "$case_depth" -eq 0 ] && continue
+    idx=$((case_depth - 1))
 
-      case "$trimmed" in
-      ';;&'* | ';;'* | ';&'*)
-        # Close current arm; body ended on the previous line
-        if [ "${case_stack_in_pattern[$cidx]}" = "1" ]; then
-          local arm_end=$((lineno - 1))
-          local prev_start="${case_stack_current_arm_start[$cidx]}"
-          local existing="${case_stack_arms[$cidx]}"
-          if [ -z "$existing" ]; then
-            case_stack_arms[cidx]="${prev_start}:${arm_end}"
-          else
-            case_stack_arms[cidx]="${existing},${prev_start}:${arm_end}"
-          fi
-          case_stack_in_pattern[cidx]=0
-        fi
-        continue
-        ;;
-      esac
+    case "$trimmed" in
+    ';;&'* | ';;'* | ';&'*)
+      if [ "${case_in_pattern[$idx]}" = "1" ]; then
+        bashunit::coverage::_append_arm "${case_arms[$idx]}" "${case_arm_start[$idx]}" "$prev_end"
+        case_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
+        case_in_pattern[idx]=0
+      fi
+      continue
+      ;;
+    esac
 
-      # A pattern line ends with `)` and is not just a closing paren of
-      # a subshell.
-      case "$trimmed" in
-      *')'*)
-        # Avoid matching things like `cmd $(other)` mid-line: the
-        # `)` we want is at end-of-trimmed (optionally followed by `# comment`).
-        local pattern_close
-        pattern_close="${trimmed%%')'*}"
-        local rest_after_paren="${trimmed#"$pattern_close"}"
-        rest_after_paren="${rest_after_paren#)}"
-        # Remove trailing whitespace and optional comment
-        rest_after_paren="${rest_after_paren#"${rest_after_paren%%[![:space:]]*}"}"
-        case "$rest_after_paren" in
-        '' | '#'*)
-          # This is a case pattern. Body starts on next line.
-          case_stack_current_arm_start[cidx]=$((lineno + 1))
-          case_stack_in_pattern[cidx]=1
-          continue
-          ;;
-        esac
-        ;;
-      esac
+    if bashunit::coverage::_is_case_pattern_line "$trimmed"; then
+      case_arm_start[idx]=$((lineno + 1))
+      case_in_pattern[idx]=1
     fi
   done
+}
+
+# Returns 1 (true/taken) iff any executable line in [arm_start..arm_end]
+# has a recorded hit. Caller must have populated the hits_by_line and
+# src_lines arrays in scope (Bash 3.0 cannot pass arrays in).
+# Result is echoed as "0" or "1" so the caller can capture it.
+function bashunit::coverage::_arm_taken() {
+  local arm_start="$1" arm_end="$2"
+  local ln content h
+  for ((ln = arm_start; ln <= arm_end; ln++)); do
+    content="${src_lines[$((ln - 1))]:-}"
+    bashunit::coverage::is_executable_line "$content" "$ln" || continue
+    h=${hits_by_line[$ln]:-0}
+    if [ "$h" -gt 0 ]; then
+      echo 1
+      return
+    fi
+  done
+  echo 0
 }
 
 # Compute branch hit data for a file.
 # Output format: <decision_line>|<block>|<branch_index>|<taken_count>
 # block = sequential id per decision (0..N-1), branch_index = arm index (0..M-1).
 # An arm is "taken" iff at least one executable line inside its range
-# has a recorded hit. taken_count is 0 (not taken) or 1 (taken). MVP
-# does not preserve actual hit counts per arm.
+# has a recorded hit. taken_count is 0 or 1 — MVP does not preserve
+# per-arm hit counts.
 function bashunit::coverage::compute_branch_hits() {
   local file="$1"
 
-  # Pre-load hits keyed by line number
   local -a hits_by_line=()
   local _hl_ln _hl_cnt
   while IFS=: read -r _hl_ln _hl_cnt; do
     [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
   done < <(bashunit::coverage::get_all_line_hits "$file")
 
-  # Pre-load source lines for is_executable_line checks
   local -a src_lines=()
   local _sli=0 _sl
   while IFS= read -r _sl || [ -n "$_sl" ]; do
@@ -988,39 +964,29 @@ function bashunit::coverage::compute_branch_hits() {
   done <"$file"
 
   local block=0
-  local branch_entry decision_line kind arms rest
+  local branch_entry decision_line arms rest remaining arm arm_start arm_end taken arm_index
   while IFS= read -r branch_entry; do
     [ -z "$branch_entry" ] && continue
 
     decision_line="${branch_entry%%|*}"
     rest="${branch_entry#*|}"
-    kind="${rest%%|*}"
+    # Skip the kind field — reserved for future BRDA grouping but not
+    # needed by this MVP output.
     arms="${rest#*|}"
-    : "$kind" # currently unused in output; reserved for future BRDA grouping
 
-    local arm_index=0
-    local arm
-    local IFS_orig="$IFS"
-    IFS=','
-    # shellcheck disable=SC2086
-    set -- $arms
-    IFS="$IFS_orig"
+    arm_index=0
+    remaining="$arms"
+    while [ -n "$remaining" ]; do
+      arm="${remaining%%,*}"
+      if [ "$arm" = "$remaining" ]; then
+        remaining=""
+      else
+        remaining="${remaining#*,}"
+      fi
 
-    for arm in "$@"; do
-      local arm_start="${arm%%:*}"
-      local arm_end="${arm##*:}"
-      local taken=0
-      local ln
-      for ((ln = arm_start; ln <= arm_end; ln++)); do
-        local content="${src_lines[$((ln - 1))]:-}"
-        if bashunit::coverage::is_executable_line "$content" "$ln"; then
-          local h=${hits_by_line[$ln]:-0}
-          if [ "$h" -gt 0 ]; then
-            taken=1
-            break
-          fi
-        fi
-      done
+      arm_start="${arm%%:*}"
+      arm_end="${arm##*:}"
+      taken=$(bashunit::coverage::_arm_taken "$arm_start" "$arm_end")
 
       echo "${decision_line}|${block}|${arm_index}|${taken}"
       arm_index=$((arm_index + 1))
@@ -1375,17 +1341,9 @@ function bashunit::coverage::report_lcov() {
       echo "FNH:$fn_hit"
 
       # Branch records (BRDA/BRF/BRH)
-      local br_total=0 br_hit=0 br_entry
-      while IFS= read -r br_entry; do
-        [ -z "$br_entry" ] && continue
-        local br_line br_block br_idx br_taken br_rest
-        br_line="${br_entry%%|*}"
-        br_rest="${br_entry#*|}"
-        br_block="${br_rest%%|*}"
-        br_rest="${br_rest#*|}"
-        br_idx="${br_rest%%|*}"
-        br_taken="${br_rest#*|}"
-
+      local br_total=0 br_hit=0 br_line br_block br_idx br_taken
+      while IFS='|' read -r br_line br_block br_idx br_taken; do
+        [ -z "$br_line" ] && continue
         echo "BRDA:${br_line},${br_block},${br_idx},${br_taken}"
         br_total=$((br_total + 1))
         [ "$br_taken" -gt 0 ] && br_hit=$((br_hit + 1))
