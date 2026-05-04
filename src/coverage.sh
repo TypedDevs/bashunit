@@ -815,110 +815,124 @@ function bashunit::coverage::_is_case_pattern_line() {
 # Output format: <decision_line>|<kind>|<arm_start>:<arm_end>[,<arm_start>:<arm_end>]...
 # kind ∈ {if, case}
 # Scope: if/elif/else chains and case patterns. See adrs/adr-007-branch-coverage-mvp.md.
+# The handlers below operate on the per-construct state arrays that
+# extract_branches keeps as locals. Bash 3.0 has dynamic scoping for
+# `local` vars, so the helpers see and mutate the caller's state
+# without needing namerefs (which would require Bash 4.3+).
+
+function bashunit::coverage::_branch_push_if() {
+  local lineno=$1
+  if_decision_line[if_depth]=$lineno
+  if_arms[if_depth]=""
+  if_arm_start[if_depth]=$((lineno + 1))
+  if_depth=$((if_depth + 1))
+}
+
+function bashunit::coverage::_branch_close_if_arm() {
+  local lineno=$1 idx=$((if_depth - 1))
+  bashunit::coverage::_append_arm \
+    "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$((lineno - 1))"
+  if_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
+  if_arm_start[idx]=$((lineno + 1))
+}
+
+function bashunit::coverage::_branch_emit_if() {
+  local lineno=$1 idx=$((if_depth - 1))
+  bashunit::coverage::_append_arm \
+    "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$((lineno - 1))"
+  echo "${if_decision_line[$idx]}|if|${_BASHUNIT_BRANCH_ARMS_OUT}"
+  if_depth=$idx
+}
+
+function bashunit::coverage::_branch_push_case() {
+  local lineno=$1
+  case_decision_line[case_depth]=$lineno
+  case_arms[case_depth]=""
+  case_arm_start[case_depth]=0
+  case_in_pattern[case_depth]=0
+  case_depth=$((case_depth + 1))
+}
+
+function bashunit::coverage::_branch_close_case_arm() {
+  local lineno=$1 idx=$((case_depth - 1))
+  [ "${case_in_pattern[$idx]}" = "1" ] || return 0
+  bashunit::coverage::_append_arm \
+    "${case_arms[$idx]}" "${case_arm_start[$idx]}" "$((lineno - 1))"
+  case_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
+  case_in_pattern[idx]=0
+}
+
+function bashunit::coverage::_branch_emit_case() {
+  local lineno=$1 idx=$((case_depth - 1))
+  bashunit::coverage::_branch_close_case_arm "$lineno"
+  if [ -n "${case_arms[$idx]}" ]; then
+    echo "${case_decision_line[$idx]}|case|${case_arms[$idx]}"
+  fi
+  case_depth=$idx
+}
+
+function bashunit::coverage::_branch_open_case_pattern() {
+  local lineno=$1 idx=$((case_depth - 1))
+  case_arm_start[idx]=$((lineno + 1))
+  case_in_pattern[idx]=1
+}
+
 function bashunit::coverage::extract_branches() {
   local file="$1"
 
-  # Pre-load lines for indexed access
   local -a lines=()
   local _i=0 _l
   while IFS= read -r _l || [ -n "$_l" ]; do
     lines[_i]="$_l"
     ((++_i))
   done <"$file"
-
   local total_lines=$_i
-  local lineno=0
 
-  # Nested decision contexts live in parallel indexed arrays since
-  # Bash 3.0 has no associative arrays. Each array is keyed by depth.
+  # State arrays — read and mutated by the _branch_* helpers via Bash's
+  # dynamic scoping. Each array is keyed by depth so nested constructs
+  # work without associative arrays.
   local -a if_decision_line=() if_arms=() if_arm_start=()
   local if_depth=0
-
   local -a case_decision_line=() case_arms=() case_arm_start=() case_in_pattern=()
   local case_depth=0
 
-  local trimmed first idx prev_end
+  local lineno=0 line trimmed first
   while [ "$lineno" -lt "$total_lines" ]; do
-    local line="${lines[$lineno]}"
+    line="${lines[$lineno]}"
     lineno=$((lineno + 1))
 
     trimmed="${line#"${line%%[![:space:]]*}"}"
     case "$trimmed" in '' | '#'*) continue ;; esac
     first="${trimmed%%[[:space:]\;]*}"
-    prev_end=$((lineno - 1))
 
-    # Reserved-word patterns are single-quoted to avoid Bash parser
-    # confusion with the surrounding `case ... esac`.
+    # Reserved-word patterns single-quoted to dodge `case ... esac`
+    # parser confusion.
     case "$first" in
-    'if')
-      if_decision_line[if_depth]=$lineno
-      if_arms[if_depth]=""
-      if_arm_start[if_depth]=$((lineno + 1))
-      if_depth=$((if_depth + 1))
-      continue
-      ;;
+    'if') bashunit::coverage::_branch_push_if "$lineno" ;;
     'elif' | 'else')
-      if [ "$if_depth" -gt 0 ]; then
-        idx=$((if_depth - 1))
-        bashunit::coverage::_append_arm "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$prev_end"
-        if_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
-        if_arm_start[idx]=$((lineno + 1))
-      fi
-      continue
+      [ "$if_depth" -gt 0 ] && bashunit::coverage::_branch_close_if_arm "$lineno"
       ;;
     'fi')
-      if [ "$if_depth" -gt 0 ]; then
-        idx=$((if_depth - 1))
-        bashunit::coverage::_append_arm "${if_arms[$idx]}" "${if_arm_start[$idx]}" "$prev_end"
-        echo "${if_decision_line[$idx]}|if|${_BASHUNIT_BRANCH_ARMS_OUT}"
-        if_depth=$idx
-      fi
-      continue
+      [ "$if_depth" -gt 0 ] && bashunit::coverage::_branch_emit_if "$lineno"
       ;;
-    'case')
-      case_decision_line[case_depth]=$lineno
-      case_arms[case_depth]=""
-      case_arm_start[case_depth]=0
-      case_in_pattern[case_depth]=0
-      case_depth=$((case_depth + 1))
-      continue
-      ;;
+    'case') bashunit::coverage::_branch_push_case "$lineno" ;;
     'esac')
-      if [ "$case_depth" -gt 0 ]; then
-        idx=$((case_depth - 1))
-        if [ "${case_in_pattern[$idx]}" = "1" ]; then
-          bashunit::coverage::_append_arm "${case_arms[$idx]}" "${case_arm_start[$idx]}" "$prev_end"
-          case_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
+      [ "$case_depth" -gt 0 ] && bashunit::coverage::_branch_emit_case "$lineno"
+      ;;
+    *)
+      [ "$case_depth" -eq 0 ] && continue
+      case "$trimmed" in
+      ';;&'* | ';;'* | ';&'*)
+        bashunit::coverage::_branch_close_case_arm "$lineno"
+        ;;
+      *)
+        if bashunit::coverage::_is_case_pattern_line "$trimmed"; then
+          bashunit::coverage::_branch_open_case_pattern "$lineno"
         fi
-        if [ -n "${case_arms[$idx]}" ]; then
-          echo "${case_decision_line[$idx]}|case|${case_arms[$idx]}"
-        fi
-        case_depth=$idx
-      fi
-      continue
+        ;;
+      esac
       ;;
     esac
-
-    # Inside a case body: `;;` / `;&` / `;;&` close the current arm,
-    # `pattern)` opens a new one.
-    [ "$case_depth" -eq 0 ] && continue
-    idx=$((case_depth - 1))
-
-    case "$trimmed" in
-    ';;&'* | ';;'* | ';&'*)
-      if [ "${case_in_pattern[$idx]}" = "1" ]; then
-        bashunit::coverage::_append_arm "${case_arms[$idx]}" "${case_arm_start[$idx]}" "$prev_end"
-        case_arms[idx]="$_BASHUNIT_BRANCH_ARMS_OUT"
-        case_in_pattern[idx]=0
-      fi
-      continue
-      ;;
-    esac
-
-    if bashunit::coverage::_is_case_pattern_line "$trimmed"; then
-      case_arm_start[idx]=$((lineno + 1))
-      case_in_pattern[idx]=1
-    fi
   done
 }
 
