@@ -996,49 +996,6 @@ function bashunit::coverage::compute_branch_hits() {
   done < <(bashunit::coverage::extract_branches "$file")
 }
 
-# Calculate coverage for a specific function in a file
-# Returns: hit_lines:executable_lines:percentage
-function bashunit::coverage::get_function_coverage() {
-  local file="$1"
-  local fn_start="$2"
-  local fn_end="$3"
-  shift 3
-
-  # Accept hits_by_line array as nameref (Bash 4.3+) or fall back to counting
-  local -n _hits_ref=$1 2>/dev/null || true
-
-  local executable=0
-  local hit=0
-  local lineno=0
-
-  # Pre-load file lines into indexed array (avoids sed per line)
-  local -a fn_lines=()
-  local _fli=0 _fl
-  while IFS= read -r _fl || [ -n "$_fl" ]; do
-    fn_lines[_fli]="$_fl"
-    ((++_fli))
-  done <"$file"
-
-  for ((lineno = fn_start; lineno <= fn_end; lineno++)); do
-    local line_content="${fn_lines[$((lineno - 1))]:-}"
-
-    if bashunit::coverage::is_executable_line "$line_content" "$lineno"; then
-      ((++executable))
-      local line_hits=${_hits_ref[$lineno]:-0}
-      if [ "$line_hits" -gt 0 ]; then
-        ((++hit))
-      fi
-    fi
-  done
-
-  local pct=0
-  if [ "$executable" -gt 0 ]; then
-    pct=$((hit * 100 / executable))
-  fi
-
-  echo "${hit}:${executable}:${pct}"
-}
-
 function bashunit::coverage::get_percentage() {
   local total_executable=0
   local total_hit=0
