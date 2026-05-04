@@ -977,31 +977,17 @@ function bashunit::coverage::compute_branch_hits() {
     ((++_sli))
   done <"$file"
 
-  local block=0
-  local branch_entry decision_line arms rest remaining arm arm_start arm_end taken arm_index
+  local block=0 decision_line _kind arms branch_entry
+  local -a arm_specs=()
+  local arm arm_index taken
   while IFS= read -r branch_entry; do
     [ -z "$branch_entry" ] && continue
-
-    decision_line="${branch_entry%%|*}"
-    rest="${branch_entry#*|}"
-    # Skip the kind field — reserved for future BRDA grouping but not
-    # needed by this MVP output.
-    arms="${rest#*|}"
+    IFS='|' read -r decision_line _kind arms <<<"$branch_entry"
 
     arm_index=0
-    remaining="$arms"
-    while [ -n "$remaining" ]; do
-      arm="${remaining%%,*}"
-      if [ "$arm" = "$remaining" ]; then
-        remaining=""
-      else
-        remaining="${remaining#*,}"
-      fi
-
-      arm_start="${arm%%:*}"
-      arm_end="${arm##*:}"
-      taken=$(bashunit::coverage::_arm_taken "$arm_start" "$arm_end")
-
+    IFS=',' read -ra arm_specs <<<"$arms"
+    for arm in "${arm_specs[@]}"; do
+      taken=$(bashunit::coverage::_arm_taken "${arm%%:*}" "${arm##*:}")
       echo "${decision_line}|${block}|${arm_index}|${taken}"
       arm_index=$((arm_index + 1))
     done
@@ -1263,26 +1249,20 @@ function bashunit::coverage::report_text_functions() {
     fi
     echo "${display_file}"
 
-    local fn_entry
-    while IFS= read -r fn_entry; do
-      [ -z "$fn_entry" ] && continue
-      local fn_name fn_start fn_end fn_rest
-      fn_name="${fn_entry%%|*}"
-      fn_rest="${fn_entry#*|}"
-      fn_start="${fn_rest%%|*}"
-      fn_end="${fn_rest#*|}"
+    local fn_name fn_start fn_end ln fn_executable fn_hit
+    local fn_pct fn_class color reset="$_BASHUNIT_COLOR_DEFAULT"
+    while IFS='|' read -r fn_name fn_start fn_end; do
+      [ -z "$fn_name" ] && continue
 
-      local fn_executable=0 fn_hit=0 ln
+      fn_executable=0
+      fn_hit=0
       for ((ln = fn_start; ln <= fn_end; ln++)); do
-        local ln_content="${file_lines[$((ln - 1))]:-}"
-        if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
-          fn_executable=$((fn_executable + 1))
-          local ln_hits=${hits_by_line[$ln]:-0}
-          [ "$ln_hits" -gt 0 ] && fn_hit=$((fn_hit + 1))
-        fi
+        bashunit::coverage::is_executable_line \
+          "${file_lines[$((ln - 1))]:-}" "$ln" || continue
+        fn_executable=$((fn_executable + 1))
+        [ "${hits_by_line[$ln]:-0}" -gt 0 ] && fn_hit=$((fn_hit + 1))
       done
 
-      local fn_pct fn_class color reset="$_BASHUNIT_COLOR_DEFAULT"
       fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
       fn_class=$(bashunit::coverage::get_coverage_class "$fn_pct")
       color=$(bashunit::coverage::get_color_for_class "$fn_class")
@@ -1318,25 +1298,20 @@ function bashunit::coverage::report_lcov() {
         [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
       done < <(bashunit::coverage::get_all_line_hits "$file")
 
-      # Function records (FN/FNDA/FNF/FNH)
-      local fn_total=0 fn_hit=0
-      local fn_entry fn_name fn_start fn_end fn_rest
+      # Function records (FN/FNDA/FNF/FNH). Emit FN lines as we walk
+      # and buffer the matching FNDA lines for emission after, per
+      # LCOV convention.
+      local fn_total=0 fn_hit=0 fn_name fn_start fn_end fln any_hit
       local -a fn_dn_records=()
       local _fdi=0
-      while IFS= read -r fn_entry; do
-        [ -z "$fn_entry" ] && continue
-        fn_name="${fn_entry%%|*}"
-        fn_rest="${fn_entry#*|}"
-        fn_start="${fn_rest%%|*}"
-        fn_end="${fn_rest#*|}"
+      while IFS='|' read -r fn_name fn_start fn_end; do
+        [ -z "$fn_name" ] && continue
         echo "FN:${fn_start},${fn_name}"
         fn_total=$((fn_total + 1))
 
-        # Function is "hit" if any executable line in its range has hits
-        local fln any_hit=0
+        any_hit=0
         for ((fln = fn_start; fln <= fn_end; fln++)); do
-          local fc="${hits_by_line[$fln]:-0}"
-          if [ "$fc" -gt 0 ]; then
+          if [ "${hits_by_line[$fln]:-0}" -gt 0 ]; then
             any_hit=1
             break
           fi
@@ -1346,7 +1321,6 @@ function bashunit::coverage::report_lcov() {
         [ "$any_hit" -eq 1 ] && fn_hit=$((fn_hit + 1))
       done < <(bashunit::coverage::extract_functions "$file")
 
-      # Emit FNDA records grouped after FN records (per LCOV convention)
       local fda
       for fda in ${fn_dn_records[@]+"${fn_dn_records[@]}"}; do
         echo "$fda"
