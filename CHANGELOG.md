@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `bashunit upgrade` no longer reports success when the binary download fails; it now exits non-zero, prints the URL it tried, surfaces the underlying curl/wget error, and validates the downloaded file is non-empty before replacing the binary
+
 ### Added
 - `--show-output` displays captured test output on assertion failures (#637)
 - npm registry distribution: `npm install -g bashunit` ships the prebuilt single-file binary (#244)
