@@ -21,10 +21,11 @@ function bashunit::io::download_to() {
   local url="$1"
   local output="$2"
   if bashunit::dependencies::has_curl; then
-    curl -L -J -o "$output" "$url" 2>/dev/null
+    curl -fsSL -o "$output" "$url"
   elif bashunit::dependencies::has_wget; then
-    wget -q -O "$output" "$url" 2>/dev/null
+    wget -q -O "$output" "$url"
   else
+    echo "no curl or wget available" >&2
     return 1
   fi
 }
