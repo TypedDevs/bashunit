@@ -106,6 +106,10 @@ BASHUNIT_COVERAGE_MIN=80
 # Color thresholds for console output
 BASHUNIT_COVERAGE_THRESHOLD_LOW=50   # Red below this
 BASHUNIT_COVERAGE_THRESHOLD_HIGH=80  # Green above this, yellow between
+
+# Optional text-report blocks (off by default, opt-in for verbose runs)
+BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true   # Print per-function coverage
+BASHUNIT_COVERAGE_SHOW_UNCOVERED=true   # Print missed line ranges per file
 ```
 
 ## Examples
@@ -355,4 +359,12 @@ Coverage only tracks Bash code. External commands (like `grep`, `sed`, etc.) are
 
 ### Subshell Behavior
 
-Due to Bash's process model, some subshell contexts may not have full coverage tracking. The DEBUG trap is inherited into subshells, but complex nested scenarios may have edge cases.
+Due to Bash's process model, hits produced inside a subshell are written to the subshell's in-memory buffer, which is discarded when the subshell exits. The pinned behavior is:
+
+- `$( ... )` command substitution: the outer line is recorded; commands inside the substitution are not.
+- `( ... )` explicit subshells: the same applies; only the outer line is tracked.
+- Pipelines (`a | b`): each stage is recorded as a single hit on its source line.
+- Process substitution `< <( ... )`: the consumer side is fully tracked; producer lines are not.
+- Functions invoked from `$( ... )`: the call site and surrounding lines are hit, but the function body lines are lost when called inside a subshell.
+
+These contracts are pinned by `tests/unit/coverage_subshell_test.sh`.
