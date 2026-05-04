@@ -488,3 +488,92 @@ EOF
 
   rm -f "$temp_file"
 }
+
+function test_coverage_html_renders_test_attribution_tooltip() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered line"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  echo "${temp_file}:2|tests/unit/sample_test.sh:test_should_do_thing" \
+    >>"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains 'class="hits-tooltip"' "$content"
+  assert_contains "Tests hitting this line" "$content"
+  assert_contains "sample_test.sh" "$content"
+  assert_contains "test_should_do_thing" "$content"
+  assert_contains 'class="hits-badge has-tooltip"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_tooltip_dedupes_repeated_test_hits() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  # Same test recorded multiple times (typical for loops)
+  {
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+  } >>"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local count
+  count=$(grep -c "test_one</span>" "$out_html" || true)
+
+  # Tooltip should list test_one exactly once despite multiple records
+  assert_equals "1" "$count"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_omits_tooltip_when_no_test_data() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "no tests recorded"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_not_contains "Tests hitting this line" "$content"
+  assert_not_contains 'class="hits-badge has-tooltip"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
