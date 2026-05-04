@@ -396,6 +396,107 @@ EOF
   rm -f "$temp_file"
 }
 
+function test_coverage_report_lcov_includes_branch_records_for_if_else() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "x" ]; then
+  echo "taken"
+else
+  echo "not-taken"
+fi
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "BRDA:2,0,0,1" "$content"
+  assert_contains "BRDA:2,0,1,0" "$content"
+  assert_contains "BRF:2" "$content"
+  assert_contains "BRH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_lcov_includes_branch_records_for_case() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+a)
+  echo "got a"
+  ;;
+b)
+  echo "got b"
+  ;;
+*)
+  echo "other"
+  ;;
+esac
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:7" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  # Three case arms: only the second was hit
+  assert_contains "BRDA:2,0,0,0" "$content"
+  assert_contains "BRDA:2,0,1,1" "$content"
+  assert_contains "BRDA:2,0,2,0" "$content"
+  assert_contains "BRF:3" "$content"
+  assert_contains "BRH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_lcov_omits_branch_records_when_none_present() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "no branches"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_not_contains "BRDA:" "$content"
+  assert_contains "BRF:0" "$content"
+  assert_contains "BRH:0" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
 function test_coverage_report_lcov_includes_function_records() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init
