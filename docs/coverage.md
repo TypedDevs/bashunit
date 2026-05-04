@@ -278,6 +278,13 @@ end_of_record
 |-------|-------------|---------|
 | `TN:` | Test Name (usually empty) | `TN:` |
 | `SF:` | Source File path | `SF:/home/user/project/src/math.sh` |
+| `FN:` | Function: `start_line,name` | `FN:5,multiply` |
+| `FNDA:` | Function call data: `count,name` (1 if any line in body was hit, else 0) | `FNDA:1,add` |
+| `FNF:` | Functions Found | `FNF:2` |
+| `FNH:` | Functions Hit | `FNH:1` |
+| `BRDA:` | Branch data: `decision_line,block,arm,taken` | `BRDA:12,0,1,1` |
+| `BRF:` | Branches Found | `BRF:6` |
+| `BRH:` | Branches Hit | `BRH:4` |
 | `DA:` | Line Data: `line_number,hit_count` | `DA:15,3` (line 15 hit 3 times) |
 | `LF:` | Lines Found (total executable lines) | `LF:25` |
 | `LH:` | Lines Hit (lines with hits > 0) | `LH:20` |
@@ -351,6 +358,131 @@ These lines are not counted toward coverage:
 - Control flow keywords (`then`, `else`, `fi`, `do`, `done`, `esac`, `in`)
 - Case statement patterns (`--option)`, `*)`) and terminators (`;;`, `;&`, `;;&`)
 
+## Branch Coverage
+
+Beyond line and function coverage, bashunit emits **branch coverage** records in the LCOV report so reviewers can see whether each `else`/`elif` arm and each `case` pattern was exercised. Branch records are produced automatically; no extra flags are needed.
+
+### What Counts as a Branch
+
+| Construct | Arms |
+|-----------|------|
+| `if X; then ... fi` | 1 (the `then` body) |
+| `if X; then ... else ... fi` | 2 (`then` + `else`) |
+| `if X; then ... elif Y; then ... else ... fi` | 3 (one per arm) |
+| `case X in a) ... ;; b) ... ;; *) ... ;; esac` | one per pattern |
+
+An arm is reported as **taken** iff at least one executable line inside its range was hit by tests.
+
+### Verbose Output Helpers
+
+Two opt-in environment variables enrich the text report when investigating coverage gaps:
+
+::: code-group
+```bash [Per-function block]
+BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true bashunit tests/ --coverage
+```
+```bash [Uncovered lines block]
+BASHUNIT_COVERAGE_SHOW_UNCOVERED=true bashunit tests/ --coverage
+```
+```bash [Both]
+BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true \
+BASHUNIT_COVERAGE_SHOW_UNCOVERED=true \
+  bashunit tests/ --coverage
+```
+:::
+
+The default text report stays compact; opt in only when triaging.
+
+### Worked Example
+
+Given `src/route.sh`:
+
+```bash
+#!/usr/bin/env bash
+function route() {
+  if [ "$1" = "GET" ]; then
+    echo "fetch"
+  elif [ "$1" = "POST" ]; then
+    echo "create"
+  else
+    echo "405"
+  fi
+}
+```
+
+If tests only call `route GET`, the LCOV record looks like:
+
+```
+TN:
+SF:/path/to/src/route.sh
+FN:2,route
+FNDA:1,route
+FNF:1
+FNH:1
+BRDA:3,0,0,1
+BRDA:3,0,1,0
+BRDA:3,0,2,0
+BRF:3
+BRH:1
+DA:3,1
+DA:4,1
+DA:5,0
+DA:6,0
+DA:7,0
+DA:8,0
+LF:6
+LH:2
+end_of_record
+```
+
+**Reading the branch records:**
+- `BRDA:3,0,0,1`: decision on line 3, block 0, arm 0 (`then`/GET), taken.
+- `BRDA:3,0,1,0`: same decision, arm 1 (`elif`/POST), not taken.
+- `BRDA:3,0,2,0`: same decision, arm 2 (`else`/405), not taken.
+- `BRF:3` `BRH:1`: 3 branches found, 1 taken.
+
+### Visualizing with genhtml
+
+LCOV's `genhtml` renders branch coverage alongside line and function coverage:
+
+::: code-group
+```bash [Generate]
+bashunit tests/ --coverage
+genhtml --branch-coverage coverage/lcov.info -o coverage/html
+```
+:::
+
+The resulting site shows a red/green diamond next to each branch decision, mirroring `gcov`'s C/C++ output.
+
+### CI Integration
+
+Codecov and Coveralls pick up the new records without configuration. To require branch coverage in PR gates:
+
+::: code-group
+```yaml [Codecov]
+coverage:
+  status:
+    project:
+      default:
+        target: 80%
+    patch:
+      default:
+        target: 80%
+        threshold: 0%
+        flags:
+          - branch
+```
+:::
+
+### Limitations
+
+- An arm whose body has no executable lines (only comments or braces) registers as not-taken even when the conditional fired.
+- Implicit `else` (an `if`/`elif` chain without an explicit `else`) reports only the explicit arms; the synthetic fall-through outcome is omitted.
+- Compound conditionals (`if A && B`) are reported as a single binary decision, not per sub-expression.
+- `&&`/`||` short-circuit branches outside `if` and loop-entry decisions (`while`/`until`) are not tracked.
+
+See `adrs/adr-007-branch-coverage-mvp.md` for the design rationale and the rejected alternatives.
+
 ## Limitations
 
 ### External Commands
@@ -368,14 +500,3 @@ Due to Bash's process model, hits produced inside a subshell are written to the 
 - Functions invoked from `$( ... )`: the call site and surrounding lines are hit, but the function body lines are lost when called inside a subshell.
 
 These contracts are pinned by `tests/unit/coverage_subshell_test.sh`.
-
-### Branch Coverage Scope
-
-The LCOV report includes `BRDA`/`BRF`/`BRH` records for `if`/`elif`/`else` chains and `case` patterns. An arm is reported as taken iff at least one executable line inside its range was hit. Known limitations:
-
-- An arm whose body has no executable lines (e.g. only comments or braces) registers as not-taken even when the conditional fired.
-- Implicit `else` (an `if`/`elif` chain without an explicit `else`) reports only the explicit arms; the synthetic fall-through outcome is omitted.
-- Compound conditionals (`if A && B`) are reported as a single binary decision, not per sub-expression.
-- `&&`/`||` short-circuit branches outside `if` and loop-entry decisions (`while`/`until`) are not tracked.
-
-See `adrs/adr-007-branch-coverage-mvp.md` for the full design rationale.
