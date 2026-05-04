@@ -35,7 +35,8 @@ function set_up() {
 
 function tear_down() {
   # Clean up any coverage temp files created by tests
-  if [[ -n "$_BASHUNIT_COVERAGE_DATA_FILE" && "$_BASHUNIT_COVERAGE_DATA_FILE" != "$_ORIG_COVERAGE_DATA_FILE" ]]; then
+  if [ -n "$_BASHUNIT_COVERAGE_DATA_FILE" ] &&
+    [ "$_BASHUNIT_COVERAGE_DATA_FILE" != "$_ORIG_COVERAGE_DATA_FILE" ]; then
     local coverage_dir
     coverage_dir=$(dirname "$_BASHUNIT_COVERAGE_DATA_FILE")
     rm -rf "$coverage_dir" 2>/dev/null || true
@@ -45,27 +46,27 @@ function tear_down() {
   _BASHUNIT_COVERAGE_DATA_FILE="$_ORIG_COVERAGE_DATA_FILE"
   _BASHUNIT_COVERAGE_TRACKED_FILES="$_ORIG_COVERAGE_TRACKED_FILES"
   _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="$_ORIG_COVERAGE_TRACKED_CACHE_FILE"
-  if [[ -n "$_ORIG_COVERAGE" ]]; then
+  if [ -n "$_ORIG_COVERAGE" ]; then
     export BASHUNIT_COVERAGE="$_ORIG_COVERAGE"
   else
     unset BASHUNIT_COVERAGE
   fi
-  if [[ -n "$_ORIG_COVERAGE_PATHS" ]]; then
+  if [ -n "$_ORIG_COVERAGE_PATHS" ]; then
     export BASHUNIT_COVERAGE_PATHS="$_ORIG_COVERAGE_PATHS"
   else
     unset BASHUNIT_COVERAGE_PATHS
   fi
-  if [[ -n "$_ORIG_COVERAGE_EXCLUDE" ]]; then
+  if [ -n "$_ORIG_COVERAGE_EXCLUDE" ]; then
     export BASHUNIT_COVERAGE_EXCLUDE="$_ORIG_COVERAGE_EXCLUDE"
   else
     unset BASHUNIT_COVERAGE_EXCLUDE
   fi
-  if [[ -n "$_ORIG_COVERAGE_REPORT" ]]; then
+  if [ -n "$_ORIG_COVERAGE_REPORT" ]; then
     export BASHUNIT_COVERAGE_REPORT="$_ORIG_COVERAGE_REPORT"
   else
     unset BASHUNIT_COVERAGE_REPORT
   fi
-  if [[ -n "$_ORIG_COVERAGE_MIN" ]]; then
+  if [ -n "$_ORIG_COVERAGE_MIN" ]; then
     export BASHUNIT_COVERAGE_MIN="$_ORIG_COVERAGE_MIN"
   else
     unset BASHUNIT_COVERAGE_MIN
@@ -393,5 +394,511 @@ EOF
 
   assert_equals "$direct" "$cached"
 
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_lcov_includes_branch_records_for_if_else() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+if [ "$1" = "x" ]; then
+  echo "taken"
+else
+  echo "not-taken"
+fi
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "BRDA:2,0,0,1" "$content"
+  assert_contains "BRDA:2,0,1,0" "$content"
+  assert_contains "BRF:2" "$content"
+  assert_contains "BRH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_lcov_includes_branch_records_for_case() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+case "$1" in
+a)
+  echo "got a"
+  ;;
+b)
+  echo "got b"
+  ;;
+*)
+  echo "other"
+  ;;
+esac
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:7" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  # Three case arms: only the second was hit
+  assert_contains "BRDA:2,0,0,0" "$content"
+  assert_contains "BRDA:2,0,1,1" "$content"
+  assert_contains "BRDA:2,0,2,0" "$content"
+  assert_contains "BRF:3" "$content"
+  assert_contains "BRH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_lcov_omits_branch_records_when_none_present() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "no branches"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_not_contains "BRDA:" "$content"
+  assert_contains "BRF:0" "$content"
+  assert_contains "BRH:0" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_lcov_includes_function_records() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function alpha() {
+  echo "in alpha"
+}
+function beta() {
+  echo "in beta"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  # Hit alpha body (line 3) only; beta body (line 6) not hit
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+
+  local content
+  content=$(cat "$report_file")
+
+  assert_contains "FN:2,alpha" "$content"
+  assert_contains "FN:5,beta" "$content"
+  assert_contains "FNDA:1,alpha" "$content"
+  assert_contains "FNDA:0,beta" "$content"
+  assert_contains "FNF:2" "$content"
+  assert_contains "FNH:1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_text_includes_function_summary_when_enabled() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_FUNCTIONS="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function alpha() {
+  echo "alpha"
+}
+function beta() {
+  echo "beta"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_contains "alpha" "$output"
+  assert_contains "beta" "$output"
+  assert_contains "Functions" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_FUNCTIONS
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_omits_function_summary_by_default() {
+  BASHUNIT_COVERAGE="true"
+  unset BASHUNIT_COVERAGE_SHOW_FUNCTIONS
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+function only_fn() {
+  echo "x"
+}
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "only_fn" "$output"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_html_renders_test_attribution_tooltip() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered line"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  echo "${temp_file}:2|tests/unit/sample_test.sh:test_should_do_thing" \
+    >>"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains 'class="hits-tooltip"' "$content"
+  assert_contains "Tests hitting this line" "$content"
+  assert_contains "sample_test.sh" "$content"
+  assert_contains "test_should_do_thing" "$content"
+  assert_contains 'class="hits-badge has-tooltip"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_tooltip_dedupes_repeated_test_hits() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  # Same test recorded multiple times (typical for loops)
+  {
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+    echo "${temp_file}:2|tests/unit/dup_test.sh:test_one"
+  } >>"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local count
+  count=$(grep -c "test_one</span>" "$out_html" || true)
+
+  # Tooltip should list test_one exactly once despite multiple records
+  assert_equals "1" "$count"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_omits_tooltip_when_no_test_data() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "no tests recorded"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_not_contains "Tests hitting this line" "$content"
+  assert_not_contains 'class="hits-badge has-tooltip"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_index_contains_overall_metrics() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "a"
+echo "b"
+echo "c"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  {
+    echo "${temp_file}:2"
+    echo "${temp_file}:3"
+  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_dir
+  out_dir=$(mktemp -d)
+
+  bashunit::coverage::report_html "$out_dir" >/dev/null
+
+  assert_file_exists "$out_dir/index.html"
+
+  local index
+  index=$(cat "$out_dir/index.html")
+
+  assert_contains "Code Coverage Report" "$index"
+  assert_contains "Overall Code Coverage" "$index"
+  # 2 of 3 executable lines hit -> 66%
+  assert_contains "66%" "$index"
+  assert_contains "$(basename "$temp_file")" "$index"
+
+  rm -rf "$out_dir"
+  rm -f "$temp_file"
+}
+
+function test_coverage_html_index_creates_per_file_pages() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_dir
+  out_dir=$(mktemp -d)
+
+  bashunit::coverage::report_html "$out_dir" >/dev/null
+
+  # Per-file HTML page exists under files/
+  local file_pages
+  file_pages=$(find "$out_dir/files/" -maxdepth 1 -type f -name '*.html' | wc -l | tr -d ' ')
+  assert_equals "1" "$file_pages"
+
+  rm -rf "$out_dir"
+  rm -f "$temp_file"
+}
+
+function test_coverage_html_file_page_marks_covered_and_uncovered_rows() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+echo "uncovered"
+EOF
+
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains 'class="covered line-anchor"' "$content"
+  assert_contains 'class="uncovered line-anchor"' "$content"
+  # Line 1 (shebang) is non-executable -> no covered/uncovered class
+  assert_contains 'id="line-1" class=" line-anchor"' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_html_file_page_escapes_special_chars() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "<tag> & 'quote'"
+EOF
+
+  local out_html
+  out_html=$(mktemp)
+  bashunit::coverage::generate_file_html "$temp_file" "$out_html"
+
+  local content
+  content=$(cat "$out_html")
+
+  assert_contains "&lt;tag&gt;" "$content"
+  assert_contains "&amp;" "$content"
+  # Raw <tag> must not appear in the code cell content
+  assert_not_contains '<td class="code">echo "<tag>' "$content"
+
+  rm -f "$temp_file" "$out_html"
+}
+
+function test_coverage_report_text_lists_uncovered_hotspots_when_enabled() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+echo "uncovered-1"
+echo "uncovered-2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_contains "Uncovered" "$output"
+  # Lines 3 and 4 are uncovered, rendered as a compressed range "3-4"
+  assert_contains "3-4" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_uncovered_renders_singletons_separately() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "uncovered-2"
+echo "covered-3"
+echo "uncovered-4"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  # Non-consecutive uncovered lines stay as individual entries
+  assert_contains "2,4" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_omits_uncovered_section_by_default() {
+  BASHUNIT_COVERAGE="true"
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "uncovered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "Uncovered" "$output"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_report_text_skips_uncovered_section_when_no_misses() {
+  BASHUNIT_COVERAGE="true"
+  export BASHUNIT_COVERAGE_SHOW_UNCOVERED="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "covered"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  echo "${temp_file}:2" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text)
+
+  assert_not_contains "Uncovered" "$output"
+
+  unset BASHUNIT_COVERAGE_SHOW_UNCOVERED
   rm -f "$temp_file"
 }

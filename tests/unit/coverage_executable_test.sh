@@ -35,7 +35,8 @@ function set_up() {
 
 function tear_down() {
   # Clean up any coverage temp files created by tests
-  if [[ -n "$_BASHUNIT_COVERAGE_DATA_FILE" && "$_BASHUNIT_COVERAGE_DATA_FILE" != "$_ORIG_COVERAGE_DATA_FILE" ]]; then
+  if [ -n "$_BASHUNIT_COVERAGE_DATA_FILE" ] &&
+    [ "$_BASHUNIT_COVERAGE_DATA_FILE" != "$_ORIG_COVERAGE_DATA_FILE" ]; then
     local coverage_dir
     coverage_dir=$(dirname "$_BASHUNIT_COVERAGE_DATA_FILE")
     rm -rf "$coverage_dir" 2>/dev/null || true
@@ -45,27 +46,27 @@ function tear_down() {
   _BASHUNIT_COVERAGE_DATA_FILE="$_ORIG_COVERAGE_DATA_FILE"
   _BASHUNIT_COVERAGE_TRACKED_FILES="$_ORIG_COVERAGE_TRACKED_FILES"
   _BASHUNIT_COVERAGE_TRACKED_CACHE_FILE="$_ORIG_COVERAGE_TRACKED_CACHE_FILE"
-  if [[ -n "$_ORIG_COVERAGE" ]]; then
+  if [ -n "$_ORIG_COVERAGE" ]; then
     export BASHUNIT_COVERAGE="$_ORIG_COVERAGE"
   else
     unset BASHUNIT_COVERAGE
   fi
-  if [[ -n "$_ORIG_COVERAGE_PATHS" ]]; then
+  if [ -n "$_ORIG_COVERAGE_PATHS" ]; then
     export BASHUNIT_COVERAGE_PATHS="$_ORIG_COVERAGE_PATHS"
   else
     unset BASHUNIT_COVERAGE_PATHS
   fi
-  if [[ -n "$_ORIG_COVERAGE_EXCLUDE" ]]; then
+  if [ -n "$_ORIG_COVERAGE_EXCLUDE" ]; then
     export BASHUNIT_COVERAGE_EXCLUDE="$_ORIG_COVERAGE_EXCLUDE"
   else
     unset BASHUNIT_COVERAGE_EXCLUDE
   fi
-  if [[ -n "$_ORIG_COVERAGE_REPORT" ]]; then
+  if [ -n "$_ORIG_COVERAGE_REPORT" ]; then
     export BASHUNIT_COVERAGE_REPORT="$_ORIG_COVERAGE_REPORT"
   else
     unset BASHUNIT_COVERAGE_REPORT
   fi
-  if [[ -n "$_ORIG_COVERAGE_MIN" ]]; then
+  if [ -n "$_ORIG_COVERAGE_MIN" ]; then
     export BASHUNIT_COVERAGE_MIN="$_ORIG_COVERAGE_MIN"
   else
     unset BASHUNIT_COVERAGE_MIN

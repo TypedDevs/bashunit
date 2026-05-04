@@ -9,6 +9,10 @@
 - `--show-output` displays captured test output on assertion failures (#637)
 - npm registry distribution: `npm install -g bashunit` (#244)
 - `bashunit::env::supports_color` and `bashunit::io::clear_screen` helpers (#247)
+- LCOV reports now include `FN`, `FNDA`, `FNF` and `FNH` function records, consumed by `genhtml`, Codecov and Coveralls
+- LCOV reports now include `BRDA`, `BRF` and `BRH` branch records for `if`/`elif`/`else` chains and `case` patterns (see `adrs/adr-007-branch-coverage-mvp.md`)
+- `BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true` adds a per-function coverage block to the text report
+- `BASHUNIT_COVERAGE_SHOW_UNCOVERED=true` adds an "Uncovered Lines" block to the text report, with consecutive line numbers compressed into ranges
 
 ### Changed
 - Docs moved into their own npm workspace under `docs/` (use `cd docs && npm ci` or `make docs/install`)
