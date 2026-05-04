@@ -14,6 +14,26 @@ _ORIG_COVERAGE=""
 _ORIG_COVERAGE_PATHS=""
 _ORIG_COVERAGE_EXCLUDE=""
 
+# Whole-suite skip: enabling the DEBUG trap inside a parallel test
+# worker process makes the worker fire the trap on every internal
+# coordination command, which combines with file-I/O contention on
+# /tmp to deadlock CI runners. The contracts tested here are
+# deterministic in single-process mode, so the parallel run is not
+# a useful execution context.
+function _skip_when_parallel_or_windows() {
+  if [ "${BASHUNIT_PARALLEL_RUN:-false}" = "true" ]; then
+    bashunit::skip "subshell tracking tests require single-process execution"
+    return 0
+  fi
+  case "$(uname -s 2>/dev/null)" in
+  CYGWIN* | MINGW* | MSYS*)
+    bashunit::skip "DEBUG trap + set -T behavior is unstable on Git Bash"
+    return 0
+    ;;
+  esac
+  return 1
+}
+
 function set_up() {
   _ORIG_COVERAGE_DATA_FILE="$_BASHUNIT_COVERAGE_DATA_FILE"
   _ORIG_COVERAGE_TRACKED_FILES="$_BASHUNIT_COVERAGE_TRACKED_FILES"
@@ -85,6 +105,7 @@ function _run_fixture_under_coverage() {
 }
 
 function test_coverage_records_lines_inside_command_substitution() {
+  _skip_when_parallel_or_windows && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -104,6 +125,7 @@ EOF
 }
 
 function test_coverage_records_explicit_subshell_block() {
+  _skip_when_parallel_or_windows && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -125,6 +147,7 @@ EOF
 }
 
 function test_coverage_records_pipeline_lhs() {
+  _skip_when_parallel_or_windows && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -142,6 +165,7 @@ EOF
 }
 
 function test_coverage_records_process_substitution_consumer() {
+  _skip_when_parallel_or_windows && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -162,6 +186,7 @@ EOF
 }
 
 function test_coverage_records_lines_inside_function_called_from_subshell() {
+  _skip_when_parallel_or_windows && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
