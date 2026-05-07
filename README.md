@@ -21,8 +21,8 @@
 <br>
 <p align="center">
     <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/public/logo-name-dark.svg">
-        <img alt="bashunit" src="docs/public/logo-name.svg" width="400">
+        <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/TypedDevs/bashunit/main/docs/public/logo-name-dark.svg">
+        <img alt="bashunit" src="https://raw.githubusercontent.com/TypedDevs/bashunit/main/docs/public/logo-name.svg" width="400">
     </picture>
 </p>
 
@@ -50,4 +50,4 @@ bashunit requires **Bash 3.0** or newer.
 You are welcome to contribute reporting issues, sharing ideas,
 or with your pull requests.
 
-Make sure to read our [contribution guide](.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this framework.
+Make sure to read our [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this framework.
