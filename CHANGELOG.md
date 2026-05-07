@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.36.0](https://github.com/TypedDevs/bashunit/compare/0.35.0...0.36.0) - 2026-05-07
+
 ### Fixed
 - `bashunit upgrade` exits non-zero with a clear error when the download fails (no more false success message)
 
