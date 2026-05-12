@@ -48,6 +48,33 @@ function test_extract_assertion_runtime_output_keeps_user_output_that_looks_like
   assert_same "✗ Failed: emitted by the code under test" "$actual"
 }
 
+function test_sync_coverage_flag_sets_one_when_enabled() {
+  local _orig="${BASHUNIT_COVERAGE-}"
+  BASHUNIT_COVERAGE="true"
+  bashunit::runner::sync_coverage_flag
+  assert_same "1" "$_BASHUNIT_COVERAGE_ON"
+  BASHUNIT_COVERAGE="$_orig"
+  bashunit::runner::sync_coverage_flag
+}
+
+function test_sync_coverage_flag_sets_zero_when_disabled() {
+  local _orig="${BASHUNIT_COVERAGE-}"
+  BASHUNIT_COVERAGE="false"
+  bashunit::runner::sync_coverage_flag
+  assert_same "0" "$_BASHUNIT_COVERAGE_ON"
+  BASHUNIT_COVERAGE="$_orig"
+  bashunit::runner::sync_coverage_flag
+}
+
+function test_sync_coverage_flag_sets_zero_when_unset() {
+  local _orig="${BASHUNIT_COVERAGE-}"
+  unset BASHUNIT_COVERAGE
+  bashunit::runner::sync_coverage_flag
+  assert_same "0" "$_BASHUNIT_COVERAGE_ON"
+  BASHUNIT_COVERAGE="$_orig"
+  bashunit::runner::sync_coverage_flag
+}
+
 function test_detect_runtime_error_returns_empty_when_input_is_empty() {
   local actual
   actual="$(bashunit::runner::detect_runtime_error "")"
