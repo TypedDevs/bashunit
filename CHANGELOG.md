@@ -4,6 +4,7 @@
 
 ### Performance
 - Faster runtime-error detection: single `case` glob instead of 23-iteration loop in `detect_runtime_error` (#668)
+- Hot-path coverage flag now cached in `_BASHUNIT_COVERAGE_ON`, removing a function dispatch per call (#664)
 
 ## [0.36.0](https://github.com/TypedDevs/bashunit/compare/0.35.0...0.36.0) - 2026-05-07
 
