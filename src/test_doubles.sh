@@ -2,6 +2,11 @@
 
 declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 
+# Spy/mock state is keyed by the sanitized command name and stored in globals
+# prefixed with `_BASHUNIT_SPY_` so they cannot collide with caller locals.
+# A test that does `local foo_times_file=...` is harmless because the helper
+# resolves `_BASHUNIT_SPY_foo_TIMES_FILE` instead.
+
 function bashunit::unmock() {
   local command=$1
 
@@ -16,8 +21,8 @@ function bashunit::unmock() {
       unset -f "$command"
       local variable
       variable="$(bashunit::helper::normalize_variable_name "$command")"
-      local times_file_var="${variable}_times_file"
-      local params_file_var="${variable}_params_file"
+      local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
+      local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
       [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
       [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
       unset "$times_file_var"
@@ -54,8 +59,8 @@ function bashunit::spy() {
   params_file=$(bashunit::temp_file "${test_id}_${variable}_params")
   echo 0 >"$times_file"
   : >"$params_file"
-  export "${variable}_times_file"="$times_file"
-  export "${variable}_params_file"="$params_file"
+  export "_BASHUNIT_SPY_${variable}_TIMES_FILE"="$times_file"
+  export "_BASHUNIT_SPY_${variable}_PARAMS_FILE"="$params_file"
 
   local body_suffix=""
   if [[ "$exit_code_or_impl" =~ ^[0-9]+$ ]]; then
@@ -89,7 +94,7 @@ function assert_have_been_called() {
   local command=$1
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_times_file"
+  local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   local times=0
   if [ -f "${!file_var-}" ]; then
     times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
@@ -119,7 +124,7 @@ function assert_have_been_called_with() {
 
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_params_file"
+  local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local line=""
   if [ -f "${!file_var-}" ]; then
     if [ -n "$index" ]; then
@@ -147,7 +152,7 @@ function assert_have_been_called_times() {
   local command=$2
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_times_file"
+  local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   local times=0
   if [ -f "${!file_var-}" ]; then
     times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
@@ -172,8 +177,8 @@ function assert_have_been_called_nth_with() {
 
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local times_file_var="${variable}_times_file"
-  local file_var="${variable}_params_file"
+  local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
+  local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
   label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
 

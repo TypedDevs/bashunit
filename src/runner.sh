@@ -57,71 +57,76 @@ function bashunit::runner::apply_interpolated_title() {
   printf '%s' "$interpolated"
 }
 
-# All four helpers below use the outvar pattern (first argument is the name of
-# the variable to assign into) so callers can avoid the per-test $(...) subshell
-# capture in the hot path. Internal locals use a `__bu_` prefix to avoid name
-# collisions with caller variables passed by name.
+# Hot-path result helpers below return their value via a dedicated global slot
+# (`_BASHUNIT_RUNNER_*_OUT`) instead of stdout. This avoids the per-test
+# `$(...)` subshell capture that dominated the result-parsing hot path. Callers
+# invoke the helper and immediately read the slot:
+#
+#   bashunit::runner::extract_subshell_type "$subshell_output"
+#   type=$_BASHUNIT_RUNNER_TYPE_OUT
+#
+# A dedicated slot per helper (rather than one shared slot) means nested or
+# adjacent calls cannot clobber each other and callers don't need to copy out
+# before every other helper runs.
+_BASHUNIT_RUNNER_FIELD_OUT=""
+_BASHUNIT_RUNNER_TOTAL_OUT=""
+_BASHUNIT_RUNNER_TYPE_OUT=""
+_BASHUNIT_RUNNER_OUTPUT_OUT=""
 
-# Writes the value of an encoded field (##KEY=value##) into the named outvar.
-# Arguments: $1 outvar name, $2 test_execution_result, $3 key
+# Writes the value of an encoded field (##KEY=value##) into _BASHUNIT_RUNNER_FIELD_OUT.
+# Arguments: $1 test_execution_result, $2 key
 function bashunit::runner::extract_encoded_field() {
-  local __bu_out=$1
-  local __bu_in=$2
-  local __bu_key=$3
-  local __bu_marker="##${__bu_key}="
-  local __bu_val=""
-  case "$__bu_in" in
-  *"$__bu_marker"*)
-    local __bu_rest="${__bu_in#*"$__bu_marker"}"
-    __bu_val="${__bu_rest%%##*}"
+  local test_execution_result=$1
+  local key=$2
+  local marker="##${key}="
+  case "$test_execution_result" in
+  *"$marker"*)
+    local rest="${test_execution_result#*"$marker"}"
+    _BASHUNIT_RUNNER_FIELD_OUT="${rest%%##*}"
     ;;
+  *) _BASHUNIT_RUNNER_FIELD_OUT="" ;;
   esac
-  eval "$__bu_out=\$__bu_val"
 }
 
-# Writes the sum of all ASSERTIONS_* counters into the named outvar.
-# Arguments: $1 outvar name, $2 test_execution_result
+# Writes the sum of all ASSERTIONS_* counters into _BASHUNIT_RUNNER_TOTAL_OUT.
+# Arguments: $1 test_execution_result
 function bashunit::runner::compute_total_assertions() {
-  local __bu_out=$1
-  local __bu_in=$2
-  local __bu_failed __bu_passed __bu_skipped __bu_incomplete __bu_snapshot
-  __bu_failed="${__bu_in##*##ASSERTIONS_FAILED=}"
-  __bu_failed="${__bu_failed%%##*}"
-  __bu_passed="${__bu_in##*##ASSERTIONS_PASSED=}"
-  __bu_passed="${__bu_passed%%##*}"
-  __bu_skipped="${__bu_in##*##ASSERTIONS_SKIPPED=}"
-  __bu_skipped="${__bu_skipped%%##*}"
-  __bu_incomplete="${__bu_in##*##ASSERTIONS_INCOMPLETE=}"
-  __bu_incomplete="${__bu_incomplete%%##*}"
-  __bu_snapshot="${__bu_in##*##ASSERTIONS_SNAPSHOT=}"
-  __bu_snapshot="${__bu_snapshot%%##*}"
-  local __bu_val
-  __bu_val=$((${__bu_failed:-0} + ${__bu_passed:-0} + ${__bu_skipped:-0}))
-  __bu_val=$((__bu_val + ${__bu_incomplete:-0} + ${__bu_snapshot:-0}))
-  eval "$__bu_out=\$__bu_val"
+  local test_execution_result=$1
+  local failed passed skipped incomplete snapshot
+  failed="${test_execution_result##*##ASSERTIONS_FAILED=}"
+  failed="${failed%%##*}"
+  passed="${test_execution_result##*##ASSERTIONS_PASSED=}"
+  passed="${passed%%##*}"
+  skipped="${test_execution_result##*##ASSERTIONS_SKIPPED=}"
+  skipped="${skipped%%##*}"
+  incomplete="${test_execution_result##*##ASSERTIONS_INCOMPLETE=}"
+  incomplete="${incomplete%%##*}"
+  snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
+  snapshot="${snapshot%%##*}"
+  local total
+  total=$((${failed:-0} + ${passed:-0} + ${skipped:-0}))
+  total=$((total + ${incomplete:-0} + ${snapshot:-0}))
+  _BASHUNIT_RUNNER_TOTAL_OUT=$total
 }
 
-# Writes the subshell type marker (text inside leading [...]) into the named outvar.
-# Arguments: $1 outvar name, $2 subshell_output
+# Writes the subshell type marker (text inside leading [...]) into _BASHUNIT_RUNNER_TYPE_OUT.
+# Arguments: $1 subshell_output
 function bashunit::runner::extract_subshell_type() {
-  local __bu_out=$1
-  local __bu_in=$2
-  local __bu_val="${__bu_in%%]*}"
-  __bu_val="${__bu_val#[}"
-  eval "$__bu_out=\$__bu_val"
+  local subshell_output=$1
+  local type="${subshell_output%%]*}"
+  _BASHUNIT_RUNNER_TYPE_OUT="${type#[}"
 }
 
 # Writes the subshell output (minus the leading [type] marker, with embedded
-# status markers replaced by newlines) into the named outvar.
-# Arguments: $1 outvar name, $2 subshell_output
+# status markers replaced by newlines) into _BASHUNIT_RUNNER_OUTPUT_OUT.
+# Arguments: $1 subshell_output
 function bashunit::runner::format_subshell_output() {
-  local __bu_out=$1
-  local __bu_in=$2
-  local __bu_val="${__bu_in#*]}"
-  __bu_val=${__bu_val//\[failed\]/$'\n'}
-  __bu_val=${__bu_val//\[skipped\]/$'\n'}
-  __bu_val=${__bu_val//\[incomplete\]/$'\n'}
-  eval "$__bu_out=\$__bu_val"
+  local subshell_output=$1
+  local line="${subshell_output#*]}"
+  line=${line//\[failed\]/$'\n'}
+  line=${line//\[skipped\]/$'\n'}
+  line=${line//\[incomplete\]/$'\n'}
+  _BASHUNIT_RUNNER_OUTPUT_OUT=$line
 }
 
 function bashunit::runner::detect_runtime_error() {
@@ -837,9 +842,10 @@ function bashunit::runner::run_test() {
   local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
 
   if [ -n "$subshell_output" ]; then
-    local type
-    bashunit::runner::extract_subshell_type type "$subshell_output"
-    bashunit::runner::format_subshell_output subshell_output "$subshell_output"
+    bashunit::runner::extract_subshell_type "$subshell_output"
+    local type=$_BASHUNIT_RUNNER_TYPE_OUT
+    bashunit::runner::format_subshell_output "$subshell_output"
+    subshell_output=$_BASHUNIT_RUNNER_OUTPUT_OUT
     if ! bashunit::env::is_failures_only_enabled; then
       bashunit::state::print_line "$type" "$subshell_output"
     fi
@@ -854,13 +860,15 @@ function bashunit::runner::run_test() {
 
   local test_exit_code="$_BASHUNIT_TEST_EXIT_CODE"
 
-  local total_assertions
-  bashunit::runner::compute_total_assertions total_assertions "$test_execution_result"
+  bashunit::runner::compute_total_assertions "$test_execution_result"
+  local total_assertions=$_BASHUNIT_RUNNER_TOTAL_OUT
 
-  local encoded_test_title hook_failure encoded_hook_message
-  bashunit::runner::extract_encoded_field encoded_test_title "$test_execution_result" "TEST_TITLE"
-  bashunit::runner::extract_encoded_field hook_failure "$test_execution_result" "TEST_HOOK_FAILURE"
-  bashunit::runner::extract_encoded_field encoded_hook_message "$test_execution_result" "TEST_HOOK_MESSAGE"
+  bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_TITLE"
+  local encoded_test_title=$_BASHUNIT_RUNNER_FIELD_OUT
+  bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_HOOK_FAILURE"
+  local hook_failure=$_BASHUNIT_RUNNER_FIELD_OUT
+  bashunit::runner::extract_encoded_field "$test_execution_result" "TEST_HOOK_MESSAGE"
+  local encoded_hook_message=$_BASHUNIT_RUNNER_FIELD_OUT
 
   local test_title=""
   [ -n "$encoded_test_title" ] && test_title="$(bashunit::helper::decode_base64 "$encoded_test_title")"
