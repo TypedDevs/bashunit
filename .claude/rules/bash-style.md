@@ -49,70 +49,85 @@ Constants -> Globals -> Private functions -> Public functions
 
 Source deps relative to script: `"$(dirname "${BASH_SOURCE[0]}")/dep.sh"`
 
-## Outvar helpers (dynamic-scope safety)
+## Returning values from a helper (dynamic-scope safety)
 
 Bash `local` is **dynamically scoped**, not lexically scoped. A `local` inside a callee
-shadows the caller's same-named variable for the duration of the call. Any helper that
-writes back to a caller-named variable (the **outvar pattern**) must defend against this
-or it will silently corrupt callers that pick a "natural" name.
+shadows the caller's same-named variable for the duration of the call. Same trap fires
+with `${!name}` reads and `eval "$name=..."`/`printf -v "$name"`/`export "$name"=...`
+writes — they all resolve against the dynamic scope.
 
-### Rule
+We need **all three** properties on the hot path:
 
-Helpers that take a caller-named variable as an outvar (typically the first argument)
-**MUST prefix every internal local with `__bu_`** so no caller-passed name can collide.
+1. **No subshell fork.** Returning via stdout and capturing with `$(...)` costs a fork
+  per call, which dominates per-test cost.
+2. **No collision with caller locals.** A helper that silently overwrites or reads
+  the wrong variable is the worst kind of bug — no error, just stale data.
+3. **Bash 3.0+ portable.** Rules out `declare -n` (4.3+) and `printf -v` (3.1+, and
+  it has the same dynamic-scope shadowing as `eval "$name=..."` anyway).
 
-### Why
-
-Without the prefix, this fails silently:
+### Preferred: dedicated global return slot
 
 ```bash
-without_prefix() {
-  local _out=$1
-  local subshell_output=$2     # LOCAL shadows caller's same-named var
-  local line="formatted"
-  eval "$_out=\$line"          # assigns to the LOCAL, not the caller
+_BASHUNIT_PKG_THING_OUT=""
+
+# Writes the result into _BASHUNIT_PKG_THING_OUT.
+# Arguments: $1 input
+function bashunit::pkg::do_thing() {
+  local input=$1                       # natural name, no prefix needed
+  local val="${input%%]*}"
+  val="${val#[}"
+  _BASHUNIT_PKG_THING_OUT=$val
 }
 
-main() {
-  local subshell_output="raw"
-  without_prefix subshell_output "$subshell_output"
-  echo "$subshell_output"      # prints "raw" — the helper appeared to succeed
-}
+# Caller
+bashunit::pkg::do_thing "$payload"
+local thing=$_BASHUNIT_PKG_THING_OUT
 ```
 
-The caller's variable is untouched, no error is raised, and tests downstream silently
-get stale data. This regression bit us in #662 (12 parallel test failures, fixed in
-PR #672) before the prefix was applied.
+- Zero forks per call.
+- Helper has natural local names; no `__bu_` noise.
+- Caller cannot accidentally shadow the slot because the `_BASHUNIT_*` namespace
+  is reserved for the framework.
+- A dedicated slot per helper (rather than one shared `_BASHUNIT_OUT`) means
+  adjacent or nested calls can't clobber each other. Cheap: globals are free.
 
-### Pattern
+Examples in tree: `src/runner.sh` (`_BASHUNIT_RUNNER_FIELD_OUT`,
+`_BASHUNIT_RUNNER_TOTAL_OUT`, `_BASHUNIT_RUNNER_TYPE_OUT`, `_BASHUNIT_RUNNER_OUTPUT_OUT`),
+`src/coverage.sh` (`_BASHUNIT_BRANCH_ARMS_OUT`).
+
+### When the helper builds dynamic variable names (mock/spy state)
+
+Use a clear namespace prefix on the **constructed** name, not on the helper's locals:
 
 ```bash
-# Writes <description> into the named outvar.
-# Arguments: $1 outvar name, $2 input
+# Spy state lives in _BASHUNIT_SPY_${variable}_TIMES_FILE, not ${variable}_times_file.
+# A caller doing `local foo_times_file=...` is therefore harmless: the helper
+# resolves a different global.
+export "_BASHUNIT_SPY_${variable}_TIMES_FILE"="$times_file"
+```
+
+Example in tree: `src/test_doubles.sh` (`_BASHUNIT_SPY_*`).
+
+### Last-resort fallback: outvar by name + `__bu_` prefix on locals
+
+Only use this when neither a fixed return slot nor a namespaced constructed name is
+practical (e.g. a generic helper called from many call sites with different output
+variables and no shared global is appropriate):
+
+```bash
 function bashunit::pkg::do_thing() {
   local __bu_out=$1
   local __bu_in=$2
   local __bu_val="${__bu_in%%]*}"
-  __bu_val="${__bu_val#[}"
   eval "$__bu_out=\$__bu_val"
 }
 ```
 
-- Use `eval "$__bu_out=\$__bu_val"` for the assignment. Quote the `$` of the value with
-  a backslash so only the outvar name is expanded at eval time.
-- Do **not** use `printf -v` (Bash 3.0 lacks it) or `declare -n` (Bash 4.3+).
-- A regression test should pass the helper's own local names as outvar to catch any
-  contributor who later drops the prefix.
-
-### Where the convention applies in this repo
-
-- All four hot-path outvar helpers in `src/runner.sh`: `extract_encoded_field`,
-  `extract_subshell_type`, `format_subshell_output`, `compute_total_assertions`.
-- All helpers in `src/test_doubles.sh` that touch caller-named or caller-constructed
-  variables: `bashunit::mock`, `bashunit::spy`, `bashunit::unmock`, plus the
-  `assert_have_been_called*` family. Each takes a command name and either `export`s
-  derived globals or reads them via `${!file_var}`; both directions can collide with a
-  caller local of the same constructed name, so internal locals are `__bu_`-prefixed.
+- All internal locals MUST be `__bu_`-prefixed; otherwise dynamic-scope shadowing
+  silently breaks the caller's outvar (see PR #672 — that exact bug caused 12 parallel
+  test failures in #662).
+- Include a regression test that calls the helper with one of its own documented
+  internal names as the outvar.
 
 ### Intentional dynamic-scope mutation is a separate pattern
 

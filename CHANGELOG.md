@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Internal
-- Codify outvar `__bu_` prefix rule; apply across `test_doubles.sh` (#674)
+- Codify global-slot return pattern for hot-path helpers; namespace mock/spy state under `_BASHUNIT_SPY_*` (#674)
 
 ### Performance
 - Faster runtime-error detection: single `case` glob (#668)
