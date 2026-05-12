@@ -55,6 +55,29 @@ function test_wait_for_job_slot_returns_immediately_when_under_limit() {
   assert_successful_code "$?"
 }
 
+function test_supports_wait_n_matches_running_bash_version() {
+  local major="${BASH_VERSINFO[0]:-0}"
+  local minor="${BASH_VERSINFO[1]:-0}"
+  local expected_rc=1
+  if [ "$major" -gt 4 ] || { [ "$major" -eq 4 ] && [ "$minor" -ge 3 ]; }; then
+    expected_rc=0
+  fi
+
+  bashunit::runner::_supports_wait_n
+  assert_same "$expected_rc" "$?"
+}
+
+function test_wait_for_job_slot_releases_when_background_job_finishes() {
+  export BASHUNIT_PARALLEL_JOBS=1
+
+  # Launch a short-lived job, occupy the only slot, then call wait_for_job_slot.
+  # On Bash 4.3+ this exercises the `wait -n` path; on Bash 3.x the poll path.
+  (sleep 0.1) &
+  bashunit::runner::wait_for_job_slot
+
+  assert_successful_code "$?"
+}
+
 # === is_enabled tests ===
 
 function test_parallel_enabled_on_windows() {

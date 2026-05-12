@@ -141,14 +141,35 @@ function bashunit::runner::print_verbose_test_summary() {
   printf '%*s\n' "$TERMINAL_WIDTH" '' | tr ' ' '-'
 }
 
+# Returns 0 when this Bash supports `wait -n` (Bash 4.3+), 1 otherwise.
+function bashunit::runner::_supports_wait_n() {
+  local major="${BASH_VERSINFO[0]:-0}"
+  local minor="${BASH_VERSINFO[1]:-0}"
+  if [ "$major" -gt 4 ]; then
+    return 0
+  fi
+  if [ "$major" -eq 4 ] && [ "$minor" -ge 3 ]; then
+    return 0
+  fi
+  return 1
+}
+
 function bashunit::runner::wait_for_job_slot() {
   local max_jobs="${BASHUNIT_PARALLEL_JOBS:-0}"
   if [ "$max_jobs" -le 0 ]; then
     return 0
   fi
 
-  # Adaptive backoff: start at 50ms, grow to 200ms to reduce `jobs -r` overhead
-  # on long-running tests while keeping short tests responsive.
+  if bashunit::runner::_supports_wait_n; then
+    # Bash 4.3+: block until any child exits. No polling, no sleep latency.
+    while [ "$(jobs -r | wc -l)" -ge "$max_jobs" ]; do
+      wait -n 2>/dev/null || break
+    done
+    return 0
+  fi
+
+  # Bash 3.x fallback: adaptive poll starting at 50ms, growing to 200ms to
+  # reduce `jobs -r` overhead on long-running tests while staying responsive.
   local delay="0.05"
   local iterations=0
   while true; do
