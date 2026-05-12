@@ -9,7 +9,7 @@
 - Faster runtime-error detection: single `case` glob (#668)
 - Cache coverage-enabled flag in hot path (#664)
 - Parallel runner uses `wait -n` on Bash 4.3+ instead of polling (#667)
-- Outvar pattern in hot-path result helpers, dropping a fork per call (#662)
+- Hot-path result helpers return via global slots, dropping a fork per call (#662)
 - Drop `grep`/`random_str` forks in `generate_id` and `normalize_variable_name` (#663)
 
 ## [0.36.0](https://github.com/TypedDevs/bashunit/compare/0.35.0...0.36.0) - 2026-05-07
