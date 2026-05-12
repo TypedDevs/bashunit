@@ -268,14 +268,15 @@ function bashunit::helper::find_files_recursive() {
 
 function bashunit::helper::normalize_variable_name() {
   local input_string="$1"
-  local normalized_string
+  local normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
-  normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
-
-  local _re='^[a-zA-Z_]'
-  if [ "$(builtin echo "$normalized_string" | "$GREP" -cE "$_re" || true)" -eq 0 ]; then
-    normalized_string="_$normalized_string"
-  fi
+  # First character must be alpha or underscore. Empty string also gets a `_`
+  # prefix to satisfy the same identifier rule. Uses pure-bash globbing to
+  # avoid a per-call grep fork (called once per test via generate_id).
+  case "${normalized_string:0:1}" in
+  [a-zA-Z_]) ;;
+  *) normalized_string="_$normalized_string" ;;
+  esac
 
   builtin echo "$normalized_string"
 }
@@ -439,12 +440,23 @@ function bashunit::helper::get_function_line_number() {
 
 function bashunit::helper::generate_id() {
   local basename="$1"
-  local sanitized_basename
-  sanitized_basename="$(bashunit::helper::normalize_variable_name "$basename")"
+  # Inline normalize_variable_name + random_str to avoid two forks per call.
+  # generate_id is called once per test and per file load.
+  local sanitized="${basename//[^a-zA-Z0-9_]/_}"
+  case "${sanitized:0:1}" in
+  [a-zA-Z_]) ;;
+  *) sanitized="_$sanitized" ;;
+  esac
   if bashunit::env::is_parallel_run_enabled; then
-    echo "${sanitized_basename}_$$_$(bashunit::random_str 6)"
+    local _chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    local _suffix=''
+    local _i
+    for ((_i = 0; _i < 6; _i++)); do
+      _suffix="$_suffix${_chars:RANDOM%${#_chars}:1}"
+    done
+    echo "${sanitized}_$$_${_suffix}"
   else
-    echo "${sanitized_basename}_$$"
+    echo "${sanitized}_$$"
   fi
 }
 
