@@ -28,43 +28,43 @@ function bashunit::unmock() {
 }
 
 function bashunit::mock() {
-  local command=$1
+  local __bu_command=$1
   shift
 
   if [ $# -gt 0 ]; then
-    eval "function $command() { $* \"\$@\"; }"
+    eval "function $__bu_command() { $* \"\$@\"; }"
   else
-    eval "function $command() { builtin echo \"$($CAT)\" ; }"
+    eval "function $__bu_command() { builtin echo \"$($CAT)\" ; }"
   fi
 
-  export -f "${command?}"
+  export -f "${__bu_command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$__bu_command"
 }
 
 function bashunit::spy() {
-  local command=$1
-  local exit_code_or_impl="${2:-}"
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local __bu_command=$1
+  local __bu_exit_code_or_impl="${2:-}"
+  local __bu_variable
+  __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
 
-  local times_file params_file
-  local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
-  times_file=$(bashunit::temp_file "${test_id}_${variable}_times")
-  params_file=$(bashunit::temp_file "${test_id}_${variable}_params")
-  echo 0 >"$times_file"
-  : >"$params_file"
-  export "${variable}_times_file"="$times_file"
-  export "${variable}_params_file"="$params_file"
+  local __bu_times_file __bu_params_file
+  local __bu_test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
+  __bu_times_file=$(bashunit::temp_file "${__bu_test_id}_${__bu_variable}_times")
+  __bu_params_file=$(bashunit::temp_file "${__bu_test_id}_${__bu_variable}_params")
+  echo 0 >"$__bu_times_file"
+  : >"$__bu_params_file"
+  export "${__bu_variable}_times_file"="$__bu_times_file"
+  export "${__bu_variable}_params_file"="$__bu_params_file"
 
-  local body_suffix=""
-  if [[ "$exit_code_or_impl" =~ ^[0-9]+$ ]]; then
-    body_suffix="return $exit_code_or_impl"
-  elif [ -n "$exit_code_or_impl" ]; then
-    body_suffix="$exit_code_or_impl \"\$@\""
+  local __bu_body_suffix=""
+  if [[ "$__bu_exit_code_or_impl" =~ ^[0-9]+$ ]]; then
+    __bu_body_suffix="return $__bu_exit_code_or_impl"
+  elif [ -n "$__bu_exit_code_or_impl" ]; then
+    __bu_body_suffix="$__bu_exit_code_or_impl \"\$@\""
   fi
 
-  eval "function $command() {
+  eval "function $__bu_command() {
     local raw=\"\$*\"
     local serialized=\"\"
     local arg
@@ -72,17 +72,17 @@ function bashunit::spy() {
       serialized=\"\$serialized\$(builtin printf '%q' \"\$arg\")$'\\x1f'\"
     done
     serialized=\${serialized%$'\\x1f'}
-    builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
+    builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$__bu_params_file'
     local _c
-    _c=\$(cat '$times_file' 2>/dev/null || builtin echo 0)
+    _c=\$(cat '$__bu_times_file' 2>/dev/null || builtin echo 0)
     _c=\$((_c+1))
-    builtin echo \"\$_c\" > '$times_file'
-    $body_suffix
+    builtin echo \"\$_c\" > '$__bu_times_file'
+    $__bu_body_suffix
   }"
 
-  export -f "${command?}"
+  export -f "${__bu_command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$__bu_command"
 }
 
 function assert_have_been_called() {

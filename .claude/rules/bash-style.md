@@ -106,11 +106,13 @@ function bashunit::pkg::do_thing() {
 
 ### Where the convention applies in this repo
 
-- All four hot-path helpers in `src/runner.sh`: `extract_encoded_field`,
+- All four hot-path outvar helpers in `src/runner.sh`: `extract_encoded_field`,
   `extract_subshell_type`, `format_subshell_output`, `compute_total_assertions`.
-- Indirect-read sites in `src/test_doubles.sh` (`${!file_var}`) follow the same rule
-  defensively — internal locals are `__bu_`-prefixed even though the read direction is
-  less likely to collide in practice.
+- All helpers in `src/test_doubles.sh` that touch caller-named or caller-constructed
+  variables: `bashunit::mock`, `bashunit::spy`, `bashunit::unmock`, plus the
+  `assert_have_been_called*` family. Each takes a command name and either `export`s
+  derived globals or reads them via `${!file_var}`; both directions can collide with a
+  caller local of the same constructed name, so internal locals are `__bu_`-prefixed.
 
 ### Intentional dynamic-scope mutation is a separate pattern
 
