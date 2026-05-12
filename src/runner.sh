@@ -72,7 +72,7 @@ function bashunit::runner::compute_total_assertions() {
   incomplete="${incomplete%%##*}"
   snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
   snapshot="${snapshot%%##*}"
-  printf '%d' "$(( ${failed:-0} + ${passed:-0} + ${skipped:-0} + ${incomplete:-0} + ${snapshot:-0} ))"
+  printf '%d' "$((${failed:-0} + ${passed:-0} + ${skipped:-0} + ${incomplete:-0} + ${snapshot:-0}))"
 }
 
 function bashunit::runner::extract_subshell_type() {
@@ -92,24 +92,21 @@ function bashunit::runner::format_subshell_output() {
 
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
-  local error
-  for error in "command not found" "unbound variable" "permission denied" \
-    "no such file or directory" "syntax error" "bad substitution" \
-    "division by 0" "cannot allocate memory" "bad file descriptor" \
-    "segmentation fault" "illegal option" "argument list too long" \
-    "readonly variable" "missing keyword" "killed" \
-    "cannot execute binary file" "invalid arithmetic operator" \
-    "ambiguous redirect" "integer expression expected" \
-    "too many arguments" "value too great" \
-    "not a valid identifier" "unexpected EOF"; do
-    case "$runtime_output" in
-    *"$error"*)
-      local runtime_error="${runtime_output#*: }"
-      printf '%s' "${runtime_error//$'\n'/}"
-      return 0
-      ;;
-    esac
-  done
+  case "$runtime_output" in
+  *"command not found"* | *"unbound variable"* | *"permission denied"* | \
+    *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
+    *"division by 0"* | *"cannot allocate memory"* | *"bad file descriptor"* | \
+    *"segmentation fault"* | *"illegal option"* | *"argument list too long"* | \
+    *"readonly variable"* | *"missing keyword"* | *"killed"* | \
+    *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
+    *"ambiguous redirect"* | *"integer expression expected"* | \
+    *"too many arguments"* | *"value too great"* | \
+    *"not a valid identifier"* | *"unexpected EOF"*)
+    local runtime_error="${runtime_output#*: }"
+    printf '%s' "${runtime_error//$'\n'/}"
+    return 0
+    ;;
+  esac
   printf ''
 }
 
@@ -203,8 +200,8 @@ function bashunit::runner::load_test_files() {
       source_err="$(cat "$source_err_file")"
     fi
     rm -f "$source_err_file"
-    if [ "$source_status" -ne 0 ] || [ "$(printf '%s' "$source_err" \
-      | "$GREP" -cE 'syntax error|unexpected EOF' || true)" -gt 0 ]; then
+    if [ "$source_status" -ne 0 ] || [ "$(printf '%s' "$source_err" |
+      "$GREP" -cE 'syntax error|unexpected EOF' || true)" -gt 0 ]; then
       local message="$source_err"
       [ -z "$message" ] && message="Failed to source '$test_file' (exit $source_status)"
       bashunit::runner::record_file_hook_failure \
