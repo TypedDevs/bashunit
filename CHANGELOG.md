@@ -3,14 +3,14 @@
 ## Unreleased
 
 ### Internal
-- Codify dynamic-scope safety rule for outvar helpers (`__bu_` prefix on internal locals) and apply it defensively across `src/test_doubles.sh`, with regression tests (#674)
+- Codify outvar `__bu_` prefix rule; apply across `test_doubles.sh` (#674)
 
 ### Performance
-- Faster runtime-error detection: single `case` glob instead of 23-iteration loop in `detect_runtime_error` (#668)
-- Hot-path coverage flag now cached in `_BASHUNIT_COVERAGE_ON`, removing a function dispatch per call (#664)
-- Parallel runner blocks on `wait -n` on Bash 4.3+ instead of polling `jobs -r`, removing sleep-induced slot-release latency (#667)
-- Hot-path result helpers (`extract_encoded_field`, `extract_subshell_type`, `format_subshell_output`, `compute_total_assertions`) use outvar pattern, dropping a fork per call per test (#662)
-- `generate_id` and `normalize_variable_name` drop `grep` and `random_str` forks via pure-bash globbing/inlining (#663)
+- Faster runtime-error detection: single `case` glob (#668)
+- Cache coverage-enabled flag in hot path (#664)
+- Parallel runner uses `wait -n` on Bash 4.3+ instead of polling (#667)
+- Outvar pattern in hot-path result helpers, dropping a fork per call (#662)
+- Drop `grep`/`random_str` forks in `generate_id` and `normalize_variable_name` (#663)
 
 ## [0.36.0](https://github.com/TypedDevs/bashunit/compare/0.35.0...0.36.0) - 2026-05-07
 
