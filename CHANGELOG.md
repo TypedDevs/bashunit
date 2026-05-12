@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Internal
+- Codify dynamic-scope safety rule for outvar helpers (`__bu_` prefix on internal locals) and apply it defensively across `src/test_doubles.sh`, with regression tests (#674)
+
 ### Performance
 - Faster runtime-error detection: single `case` glob instead of 23-iteration loop in `detect_runtime_error` (#668)
 - Hot-path coverage flag now cached in `_BASHUNIT_COVERAGE_ON`, removing a function dispatch per call (#664)

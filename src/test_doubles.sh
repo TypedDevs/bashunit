@@ -3,25 +3,25 @@
 declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 
 function bashunit::unmock() {
-  local command=$1
+  local __bu_command=$1
 
   if [ "${#_BASHUNIT_MOCKED_FUNCTIONS[@]}" -eq 0 ]; then
     return
   fi
 
-  local i
-  for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
-    if [ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" = "$command" ]; then
-      unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
-      unset -f "$command"
-      local variable
-      variable="$(bashunit::helper::normalize_variable_name "$command")"
-      local times_file_var="${variable}_times_file"
-      local params_file_var="${variable}_params_file"
-      [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
-      [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
-      unset "$times_file_var"
-      unset "$params_file_var"
+  local __bu_i
+  for __bu_i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
+    if [ "${_BASHUNIT_MOCKED_FUNCTIONS[$__bu_i]:-}" = "$__bu_command" ]; then
+      unset "_BASHUNIT_MOCKED_FUNCTIONS[$__bu_i]"
+      unset -f "$__bu_command"
+      local __bu_variable
+      __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
+      local __bu_times_file_var="${__bu_variable}_times_file"
+      local __bu_params_file_var="${__bu_variable}_params_file"
+      [ -f "${!__bu_times_file_var-}" ] && rm -f "${!__bu_times_file_var}"
+      [ -f "${!__bu_params_file_var-}" ] && rm -f "${!__bu_params_file_var}"
+      unset "$__bu_times_file_var"
+      unset "$__bu_params_file_var"
       break
     fi
   done
@@ -86,19 +86,19 @@ function bashunit::spy() {
 }
 
 function assert_have_been_called() {
-  local command=$1
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_times_file"
-  local times=0
-  if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
+  local __bu_command=$1
+  local __bu_variable
+  __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
+  local __bu_file_var="${__bu_variable}_times_file"
+  local __bu_times=0
+  if [ -f "${!__bu_file_var-}" ]; then
+    __bu_times=$(cat "${!__bu_file_var}" 2>/dev/null || builtin echo 0)
   fi
-  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local __bu_label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
-  if [ "$times" -eq 0 ]; then
+  if [ "$__bu_times" -eq 0 ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
+    bashunit::console_results::print_failed_test "${__bu_label}" "${__bu_command}" "to have been called" "once"
     return
   fi
 
@@ -106,36 +106,36 @@ function assert_have_been_called() {
 }
 
 function assert_have_been_called_with() {
-  local command=$1
+  local __bu_command=$1
   shift
 
-  local index=""
+  local __bu_index=""
   if [ "$(echo "${!#}" | "$GREP" -cE '^[0-9]+$' || true)" -gt 0 ]; then
-    index=${!#}
+    __bu_index=${!#}
     set -- "${@:1:$#-1}"
   fi
 
-  local expected="$*"
+  local __bu_expected="$*"
 
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_params_file"
-  local line=""
-  if [ -f "${!file_var-}" ]; then
-    if [ -n "$index" ]; then
-      line=$(sed -n "${index}p" "${!file_var}" 2>/dev/null || true)
+  local __bu_variable
+  __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
+  local __bu_file_var="${__bu_variable}_params_file"
+  local __bu_line=""
+  if [ -f "${!__bu_file_var-}" ]; then
+    if [ -n "$__bu_index" ]; then
+      __bu_line=$(sed -n "${__bu_index}p" "${!__bu_file_var}" 2>/dev/null || true)
     else
-      line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
+      __bu_line=$(tail -n 1 "${!__bu_file_var}" 2>/dev/null || true)
     fi
   fi
 
-  local raw
-  IFS=$'\x1e' read -r raw _ <<<"$line" || true
+  local __bu_raw
+  IFS=$'\x1e' read -r __bu_raw _ <<<"$__bu_line" || true
 
-  if [ "$expected" != "$raw" ]; then
+  if [ "$__bu_expected" != "$__bu_raw" ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
-      "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
+      "${FUNCNAME[1]}")" "$__bu_expected" "but got " "$__bu_raw"
     return
   fi
 
@@ -143,21 +143,21 @@ function assert_have_been_called_with() {
 }
 
 function assert_have_been_called_times() {
-  local expected_count=$1
-  local command=$2
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="${variable}_times_file"
-  local times=0
-  if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
+  local __bu_expected_count=$1
+  local __bu_command=$2
+  local __bu_variable
+  __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
+  local __bu_file_var="${__bu_variable}_times_file"
+  local __bu_times=0
+  if [ -f "${!__bu_file_var-}" ]; then
+    __bu_times=$(cat "${!__bu_file_var}" 2>/dev/null || builtin echo 0)
   fi
-  local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-  if [ "$times" -ne "$expected_count" ]; then
+  local __bu_label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  if [ "$__bu_times" -ne "$__bu_expected_count" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "${label}" "${command}" \
-      "to have been called" "${expected_count} times" \
-      "actual" "${times} times"
+    bashunit::console_results::print_failed_test "${__bu_label}" "${__bu_command}" \
+      "to have been called" "${__bu_expected_count} times" \
+      "actual" "${__bu_times} times"
     return
   fi
 
@@ -165,42 +165,42 @@ function assert_have_been_called_times() {
 }
 
 function assert_have_been_called_nth_with() {
-  local nth=$1
-  local command=$2
+  local __bu_nth=$1
+  local __bu_command=$2
   shift 2
-  local expected="$*"
+  local __bu_expected="$*"
 
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local times_file_var="${variable}_times_file"
-  local file_var="${variable}_params_file"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  local __bu_variable
+  __bu_variable="$(bashunit::helper::normalize_variable_name "$__bu_command")"
+  local __bu_times_file_var="${__bu_variable}_times_file"
+  local __bu_file_var="${__bu_variable}_params_file"
+  local __bu_label
+  __bu_label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
-  local times=0
-  if [ -f "${!times_file_var-}" ]; then
-    times=$(cat "${!times_file_var}" 2>/dev/null || builtin echo 0)
+  local __bu_times=0
+  if [ -f "${!__bu_times_file_var-}" ]; then
+    __bu_times=$(cat "${!__bu_times_file_var}" 2>/dev/null || builtin echo 0)
   fi
 
-  if [ "$nth" -gt "$times" ]; then
+  if [ "$__bu_nth" -gt "$__bu_times" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "${label}" \
-      "expected call" "at index ${nth} but" "only called ${times} times"
+    bashunit::console_results::print_failed_test "${__bu_label}" \
+      "expected call" "at index ${__bu_nth} but" "only called ${__bu_times} times"
     return
   fi
 
-  local line=""
-  if [ -f "${!file_var-}" ]; then
-    line=$(sed -n "${nth}p" "${!file_var}" 2>/dev/null || true)
+  local __bu_line=""
+  if [ -f "${!__bu_file_var-}" ]; then
+    __bu_line=$(sed -n "${__bu_nth}p" "${!__bu_file_var}" 2>/dev/null || true)
   fi
 
-  local raw
-  IFS=$'\x1e' read -r raw _ <<<"$line" || true
+  local __bu_raw
+  IFS=$'\x1e' read -r __bu_raw _ <<<"$__bu_line" || true
 
-  if [ "$expected" != "$raw" ]; then
+  if [ "$__bu_expected" != "$__bu_raw" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "${label}" \
-      "$expected" "but got " "$raw"
+    bashunit::console_results::print_failed_test "${__bu_label}" \
+      "$__bu_expected" "but got " "$__bu_raw"
     return
   fi
 
@@ -208,7 +208,7 @@ function assert_have_been_called_nth_with() {
 }
 
 function assert_not_called() {
-  local command=$1
-  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
-  assert_have_been_called_times 0 "$command" "$label"
+  local __bu_command=$1
+  local __bu_label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  assert_have_been_called_times 0 "$__bu_command" "$__bu_label"
 }

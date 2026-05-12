@@ -173,3 +173,42 @@ function test_format_subshell_output_strips_type_and_expands_markers() {
   expected=$' line1\nline2\nline3'
   assert_same "$expected" "$out"
 }
+
+# Regression for #674: helpers that take a caller-named outvar MUST not be
+# corrupted when the caller's variable shares a name with one of the helper's
+# internal locals. Bash uses dynamic scoping for `local`, so without the
+# `__bu_` prefix on internal names the eval assignment would hit the local and
+# the caller's variable would silently keep its old value.
+function test_format_subshell_output_does_not_shadow_caller_named_subshell_output() {
+  local subshell_output="raw"
+  bashunit::runner::format_subshell_output subshell_output "[failed] formatted"
+
+  assert_same " formatted" "$subshell_output"
+}
+
+function test_extract_subshell_type_does_not_shadow_caller_named_subshell_output() {
+  local subshell_output="[failed] payload"
+  local type
+  bashunit::runner::extract_subshell_type type "$subshell_output"
+
+  assert_same "failed" "$type"
+  assert_same "[failed] payload" "$subshell_output"
+}
+
+function test_extract_encoded_field_does_not_shadow_caller_named_test_execution_result() {
+  local test_execution_result="##TEST_TITLE=hi##ASSERTIONS_PASSED=1"
+  local out
+  bashunit::runner::extract_encoded_field out "$test_execution_result" "TEST_TITLE"
+
+  assert_same "hi" "$out"
+  assert_same "##TEST_TITLE=hi##ASSERTIONS_PASSED=1" "$test_execution_result"
+}
+
+function test_compute_total_assertions_does_not_shadow_caller_named_test_execution_result() {
+  local test_execution_result="##ASSERTIONS_PASSED=4##ASSERTIONS_FAILED=1"
+  local total
+  bashunit::runner::compute_total_assertions total "$test_execution_result"
+
+  assert_same "5" "$total"
+  assert_same "##ASSERTIONS_PASSED=4##ASSERTIONS_FAILED=1" "$test_execution_result"
+}
