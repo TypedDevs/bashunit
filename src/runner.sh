@@ -12,6 +12,17 @@ function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
+# Caches BASHUNIT_COVERAGE into _BASHUNIT_COVERAGE_ON ("1"|"0") so hot-path checks
+# avoid a function dispatch per call. Call once after arg parsing; tests that
+# toggle BASHUNIT_COVERAGE mid-run must call this again to refresh.
+function bashunit::runner::sync_coverage_flag() {
+  if [ "${BASHUNIT_COVERAGE-}" = "true" ]; then
+    _BASHUNIT_COVERAGE_ON=1
+  else
+    _BASHUNIT_COVERAGE_ON=0
+  fi
+}
+
 function bashunit::runner::source_login_shell_profiles() {
   # shellcheck disable=SC1091
   [ -f /etc/profile ] && source /etc/profile 2>/dev/null || true
@@ -27,7 +38,7 @@ function bashunit::runner::export_test_identity() {
   local test_file=$1
   local fn_name=$2
   export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
   fi
@@ -167,8 +178,10 @@ function bashunit::runner::load_test_files() {
   local -a scripts_ids=()
   local scripts_ids_count=0
 
+  bashunit::runner::sync_coverage_flag
+
   # Initialize coverage tracking if enabled
-  if bashunit::env::is_coverage_enabled; then
+  if [ "$_BASHUNIT_COVERAGE_ON" = 1 ]; then
     # Auto-discover coverage paths if not explicitly set
     if [ -z "$BASHUNIT_COVERAGE_PATHS" ]; then
       BASHUNIT_COVERAGE_PATHS=$(bashunit::coverage::auto_discover_paths "${files[@]}")
@@ -737,7 +750,7 @@ function bashunit::runner::run_test() {
     fi
 
     # Enable coverage tracking early to include set_up/tear_down hooks
-    if bashunit::env::is_coverage_enabled; then
+    if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
       bashunit::coverage::enable_trap
     fi
 
@@ -941,7 +954,7 @@ function bashunit::runner::cleanup_on_exit() {
   local exit_code="$2"
 
   # Disable coverage trap before cleanup to avoid interference
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     bashunit::coverage::disable_trap
   fi
 
@@ -1381,7 +1394,7 @@ function bashunit::runner::run_set_up_before_script() {
   start_time=$(bashunit::clock::now)
 
   # Enable coverage trap to attribute lines executed during set_up_before_script
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     bashunit::coverage::enable_trap
   fi
 
@@ -1390,7 +1403,7 @@ function bashunit::runner::run_set_up_before_script() {
   local status=$?
 
   # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     bashunit::coverage::disable_trap
   fi
 
@@ -1520,7 +1533,7 @@ function bashunit::runner::run_tear_down_after_script() {
   start_time=$(bashunit::clock::now)
 
   # Enable coverage trap to attribute lines executed during tear_down_after_script
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     bashunit::coverage::enable_trap
   fi
 
@@ -1529,7 +1542,7 @@ function bashunit::runner::run_tear_down_after_script() {
   local status=$?
 
   # Disable coverage trap after hook execution
-  if bashunit::env::is_coverage_enabled; then
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     bashunit::coverage::disable_trap
   fi
 
