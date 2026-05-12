@@ -127,3 +127,49 @@ function test_detect_runtime_error_matches_unexpected_eof() {
 
   assert_same "line 5: unexpected EOF while looking for matching" "$actual"
 }
+
+function test_extract_encoded_field_writes_value_to_outvar() {
+  local out=""
+  bashunit::runner::extract_encoded_field out \
+    "preamble##TEST_TITLE=hello world##ASSERTIONS_PASSED=1" "TEST_TITLE"
+
+  assert_same "hello world" "$out"
+}
+
+function test_extract_encoded_field_writes_empty_when_key_missing() {
+  local out="prior"
+  bashunit::runner::extract_encoded_field out "##ASSERTIONS_PASSED=1" "TEST_TITLE"
+
+  assert_empty "$out"
+}
+
+function test_compute_total_assertions_sums_into_outvar() {
+  local out=""
+  bashunit::runner::compute_total_assertions out \
+    "##ASSERTIONS_FAILED=1##ASSERTIONS_PASSED=2##ASSERTIONS_SKIPPED=3##ASSERTIONS_INCOMPLETE=4##ASSERTIONS_SNAPSHOT=5"
+
+  assert_same "15" "$out"
+}
+
+function test_compute_total_assertions_treats_missing_counters_as_zero() {
+  local out=""
+  bashunit::runner::compute_total_assertions out "##ASSERTIONS_PASSED=2"
+
+  assert_same "2" "$out"
+}
+
+function test_extract_subshell_type_strips_brackets_into_outvar() {
+  local out=""
+  bashunit::runner::extract_subshell_type out "[failed] something happened"
+
+  assert_same "failed" "$out"
+}
+
+function test_format_subshell_output_strips_type_and_expands_markers() {
+  local out=""
+  bashunit::runner::format_subshell_output out "[failed] line1[skipped]line2[incomplete]line3"
+
+  local expected
+  expected=$' line1\nline2\nline3'
+  assert_same "$expected" "$out"
+}
