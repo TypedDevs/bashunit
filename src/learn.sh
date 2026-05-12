@@ -6,14 +6,14 @@
 # Provides guided tutorials and exercises to learn bashunit
 ##
 
-declare -r LEARN_TEMP_DIR="/tmp/bashunit_learn_$$"
+LEARN_TEMP_DIR=""
 declare -r LEARN_PROGRESS_FILE="$HOME/.bashunit_learn_progress"
 
 ##
 # Initialize learning environment
 ##
 function bashunit::learn::init() {
-  mkdir -p "$LEARN_TEMP_DIR"
+  LEARN_TEMP_DIR=$("${MKTEMP:-mktemp}" -d "${TMPDIR:-/tmp}/bashunit_learn.XXXXXXXX")
   mkdir -p tests
 }
 
@@ -21,7 +21,9 @@ function bashunit::learn::init() {
 # Cleanup learning environment
 ##
 function bashunit::learn::cleanup() {
-  rm -rf "$LEARN_TEMP_DIR"
+  if [ -n "${LEARN_TEMP_DIR:-}" ] && [ -d "$LEARN_TEMP_DIR" ]; then
+    rm -rf "$LEARN_TEMP_DIR"
+  fi
 }
 
 ##

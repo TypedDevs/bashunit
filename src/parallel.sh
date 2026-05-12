@@ -126,7 +126,16 @@ function bashunit::parallel::must_stop_on_failure() {
 
 function bashunit::parallel::cleanup() {
   # shellcheck disable=SC2153
-  rm -rf "$TEMP_DIR_PARALLEL_TEST_SUITE"
+  local target="$TEMP_DIR_PARALLEL_TEST_SUITE"
+  case "$target" in
+  */bashunit/parallel/*)
+    rm -rf "$target"
+    ;;
+  *)
+    bashunit::internal_log "parallel::cleanup" "refused unsafe path:$target"
+    return 1
+    ;;
+  esac
 }
 
 function bashunit::parallel::init() {

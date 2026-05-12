@@ -20,7 +20,7 @@ function set_up() {
   _ORIGINAL_TEMP_DIR_PARALLEL="${TEMP_DIR_PARALLEL_TEST_SUITE:-}"
   _ORIGINAL_TEMP_FILE_STOP="${TEMP_FILE_PARALLEL_STOP_ON_FAILURE:-}"
 
-  export TEMP_DIR_PARALLEL_TEST_SUITE="$_TEST_TEMP_DIR/parallel_suite"
+  export TEMP_DIR_PARALLEL_TEST_SUITE="$_TEST_TEMP_DIR/bashunit/parallel/suite"
   export TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$_TEST_TEMP_DIR/stop_on_failure"
 }
 
@@ -145,6 +145,16 @@ function test_cleanup_removes_temp_directory() {
   bashunit::parallel::cleanup
 
   assert_directory_not_exists "$TEMP_DIR_PARALLEL_TEST_SUITE"
+}
+
+function test_cleanup_refuses_path_outside_bashunit_parallel() {
+  local unsafe_dir="$_TEST_TEMP_DIR/not_bashunit"
+  mkdir -p "$unsafe_dir"
+  export TEMP_DIR_PARALLEL_TEST_SUITE="$unsafe_dir"
+
+  bashunit::parallel::cleanup
+
+  assert_directory_exists "$unsafe_dir"
 }
 
 # === stop_on_failure tests ===
