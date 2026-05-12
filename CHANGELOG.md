@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Performance
+- Faster runtime-error detection: single `case` glob instead of 23-iteration loop in `detect_runtime_error` (#668)
+
 ## [0.36.0](https://github.com/TypedDevs/bashunit/compare/0.35.0...0.36.0) - 2026-05-07
 
 ### Fixed
