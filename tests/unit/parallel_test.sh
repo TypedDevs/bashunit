@@ -152,8 +152,10 @@ function test_cleanup_refuses_path_outside_bashunit_parallel() {
   mkdir -p "$unsafe_dir"
   export TEMP_DIR_PARALLEL_TEST_SUITE="$unsafe_dir"
 
-  bashunit::parallel::cleanup
+  local rc=0
+  bashunit::parallel::cleanup || rc=$?
 
+  assert_same "1" "$rc"
   assert_directory_exists "$unsafe_dir"
 }
 
