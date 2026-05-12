@@ -75,11 +75,10 @@ function bashunit::coverage::init() {
     return 0
   fi
 
-  # Create coverage data directory with unique name
-  # Use $$ (PID) + $RANDOM to avoid conflicts when tests call coverage::init
+  # Create coverage data directory with unique name via mktemp -d
+  # (avoids $$-$RANDOM collisions and symlink races in shared temp dirs)
   local coverage_dir
-  coverage_dir="${BASHUNIT_TEMP_DIR:-/tmp}/bashunit-coverage-$$-$RANDOM"
-  mkdir -p "$coverage_dir"
+  coverage_dir=$("${MKTEMP:-mktemp}" -d "${BASHUNIT_TEMP_DIR:-${TMPDIR:-/tmp}}/bashunit-coverage.XXXXXXXX")
 
   _BASHUNIT_COVERAGE_DATA_FILE="${coverage_dir}/hits.dat"
   _BASHUNIT_COVERAGE_TRACKED_FILES="${coverage_dir}/files.dat"
