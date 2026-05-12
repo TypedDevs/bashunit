@@ -127,6 +127,45 @@ function test_check_duplicate_functions_without_function_keyword() {
   assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
+function test_generate_id_uses_pid_suffix_when_not_parallel() {
+  local _orig="${BASHUNIT_PARALLEL_RUN-}"
+  export BASHUNIT_PARALLEL_RUN=false
+
+  local id
+  id="$(bashunit::helper::generate_id "test_foo")"
+  assert_same "test_foo_$$" "$id"
+
+  export BASHUNIT_PARALLEL_RUN="$_orig"
+}
+
+function test_generate_id_appends_random_suffix_when_parallel() {
+  local _orig="${BASHUNIT_PARALLEL_RUN-}"
+  export BASHUNIT_PARALLEL_RUN=true
+
+  local id1 id2
+  id1="$(bashunit::helper::generate_id "test_foo")"
+  id2="$(bashunit::helper::generate_id "test_foo")"
+
+  assert_matches "^test_foo_${$}_[a-zA-Z0-9]{6}$" "$id1"
+  assert_matches "^test_foo_${$}_[a-zA-Z0-9]{6}$" "$id2"
+
+  export BASHUNIT_PARALLEL_RUN="$_orig"
+}
+
+function test_generate_id_sanitizes_basename() {
+  local _orig="${BASHUNIT_PARALLEL_RUN-}"
+  export BASHUNIT_PARALLEL_RUN=false
+
+  local id
+  id="$(bashunit::helper::generate_id "my-file.sh")"
+  assert_same "my_file_sh_$$" "$id"
+
+  id="$(bashunit::helper::generate_id "123start")"
+  assert_same "_123start_$$" "$id"
+
+  export BASHUNIT_PARALLEL_RUN="$_orig"
+}
+
 function test_normalize_variable_name() {
   assert_same "valid_name123" "$(bashunit::helper::normalize_variable_name "valid_name123")"
   assert_same "non_valid_symbols__________" "$(bashunit::helper::normalize_variable_name "non_valid_symbols!@#$%^&*()")"
