@@ -126,6 +126,9 @@ function bashunit::main::cmd_test() {
     --fail-on-risky)
       export BASHUNIT_FAIL_ON_RISKY=true
       ;;
+    --profile)
+      export BASHUNIT_PROFILE=true
+      ;;
     --show-output)
       export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true
       ;;
@@ -692,6 +695,10 @@ function bashunit::main::exec_tests() {
   bashunit::console_results::render_result
   exit_code=$?
 
+  if bashunit::env::is_profile_enabled; then
+    bashunit::console_results::print_profile_and_reset
+  fi
+
   if [ -n "$BASHUNIT_LOG_JUNIT" ]; then
     bashunit::reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
   fi
@@ -789,6 +796,9 @@ function bashunit::main::handle_stop_on_failure_sync() {
   bashunit::console_results::print_incomplete_tests_and_reset
   bashunit::console_results::print_skipped_tests_and_reset
   bashunit::console_results::render_result
+  if bashunit::env::is_profile_enabled; then
+    bashunit::console_results::print_profile_and_reset
+  fi
   bashunit::cleanup_script_temp_files
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup

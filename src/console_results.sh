@@ -432,6 +432,33 @@ function bashunit::console_results::print_failing_tests_and_reset() {
   fi
 }
 
+##
+# Prints the slowest tests recorded during the run, sorted by duration
+# descending, limited to BASHUNIT_PROFILE_COUNT entries. Reads the
+# tab-separated records appended to PROFILE_OUTPUT_PATH (duration, name, file).
+##
+function bashunit::console_results::print_profile_and_reset() {
+  if [ ! -s "$PROFILE_OUTPUT_PATH" ]; then
+    rm -f "$PROFILE_OUTPUT_PATH"
+    return
+  fi
+
+  local count="${BASHUNIT_PROFILE_COUNT:-10}"
+
+  echo -e "\n${_BASHUNIT_COLOR_BOLD}Slowest tests:${_BASHUNIT_COLOR_DEFAULT}"
+
+  local duration name file formatted
+  # -rn on the first (numeric) field; head limits to the requested count.
+  while IFS=$'\t' read -r duration name file; do
+    formatted=$(bashunit::console_results::format_duration "$duration")
+    printf "  %s\t%s (%s)\n" "$formatted" "$name" "$file"
+  done < <(sort -t"$(printf '\t')" -k1 -rn "$PROFILE_OUTPUT_PATH" | head -n "$count")
+
+  echo ""
+
+  rm -f "$PROFILE_OUTPUT_PATH"
+}
+
 function bashunit::console_results::print_skipped_tests_and_reset() {
   if [ -s "$SKIPPED_OUTPUT_PATH" ] && bashunit::env::is_show_skipped_enabled; then
     local total_skipped
