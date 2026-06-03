@@ -63,8 +63,9 @@ function test_supports_wait_n_matches_running_bash_version() {
     expected_rc=0
   fi
 
-  bashunit::runner::_supports_wait_n
-  assert_same "$expected_rc" "$?"
+  local actual_rc=0
+  bashunit::runner::_supports_wait_n || actual_rc=$?
+  assert_same "$expected_rc" "$actual_rc"
 }
 
 function test_wait_for_job_slot_releases_when_background_job_finishes() {
