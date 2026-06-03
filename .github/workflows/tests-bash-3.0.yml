@@ -78,14 +78,22 @@ jobs:
         include:
           - name: "Sequential"
             flags: ""
+            paths: "tests/"
           - name: "Parallel"
             flags: "--parallel"
+            paths: "tests/"
           - name: "Simple"
             flags: "--simple"
+            paths: "tests/"
           - name: "Simple Parallel"
             flags: "--simple --parallel"
+            paths: "tests/"
+          # Strict covers unit + functional on Bash 3.0; the acceptance suite
+          # drives ./bashunit as a subprocess and is exercised strict on Bash 5
+          # (the "Ubuntu - strict" job runs the full tests/).
           - name: "Strict"
             flags: "--simple --parallel --strict"
+            paths: "tests/unit tests/functional"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -113,4 +121,4 @@ jobs:
             -v "$(pwd)":/bashunit \
             -w /bashunit \
             bashunit-bash3 \
-            /opt/bash-3.0/bin/bash ./bashunit ${{ matrix.flags }} tests/
+            /opt/bash-3.0/bin/bash ./bashunit ${{ matrix.flags }} ${{ matrix.paths }}
