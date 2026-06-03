@@ -723,3 +723,28 @@ function test_print_hook_completed_suppressed_in_simple_mode() {
 
   export BASHUNIT_SIMPLE_OUTPUT=$original_simple_output
 }
+
+function test_snapshot_line_diff_marks_changed_lines() {
+  local output
+  output="$(bashunit::console_results::snapshot_line_diff \
+    "$(printf 'alpha\nbeta')" "$(printf 'alpha\ngamma')")"
+
+  assert_contains "- beta" "$output"
+  assert_contains "+ gamma" "$output"
+}
+
+function test_snapshot_line_diff_keeps_common_lines() {
+  local output
+  output="$(bashunit::console_results::snapshot_line_diff \
+    "$(printf 'alpha\nbeta')" "$(printf 'alpha\ngamma')")"
+
+  assert_contains "alpha" "$output"
+}
+
+function test_snapshot_line_diff_handles_extra_actual_lines() {
+  local output
+  output="$(bashunit::console_results::snapshot_line_diff \
+    "$(printf 'alpha')" "$(printf 'alpha\nextra')")"
+
+  assert_contains "+ extra" "$output"
+}
