@@ -129,6 +129,19 @@ function bashunit::runner::format_subshell_output() {
   _BASHUNIT_RUNNER_OUTPUT_OUT=$line
 }
 
+##
+# Appends a profiling record (duration, test name, file) to PROFILE_OUTPUT_PATH.
+# Uses a tab-separated, append-only line so it aggregates correctly across the
+# subshells spawned by parallel runs.
+# Arguments: $1 duration (ms), $2 test name, $3 test file
+##
+function bashunit::runner::record_profile() {
+  local duration=$1
+  local test_name=$2
+  local test_file=$3
+  printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
+}
+
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
   case "$runtime_output" in
@@ -833,6 +846,10 @@ function bashunit::runner::run_test() {
   local end_time=$(bashunit::clock::now)
   local duration_ns=$((end_time - start_time))
   local duration=$((duration_ns / 1000000))
+
+  if bashunit::env::is_profile_enabled; then
+    bashunit::runner::record_profile "$duration" "$interpolated_fn_name" "$test_file"
+  fi
 
   if bashunit::env::is_verbose_enabled; then
     bashunit::runner::print_verbose_test_summary \

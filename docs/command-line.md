@@ -78,6 +78,7 @@ bashunit test tests/ --parallel --simple
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
 | `--fail-on-risky`              | Treat risky tests (no assertions) as failures    |
+| `--profile`                    | Report the slowest tests after a run             |
 | `--no-progress`                | Suppress real-time progress, show only summary   |
 | `--show-output`                | Show test output on failure (default)            |
 | `--no-output-on-failure`       | Hide test output on failure                      |
@@ -391,6 +392,38 @@ bashunit test tests/ --no-output-on-failure
       Debug: Setting up test
       Running command: my_command
       /path/to/test.sh: line 5: my_command: command not found
+```
+:::
+
+### Profile
+
+> `bashunit test --profile`
+
+Report the slowest tests after a run. Each test's wall-clock duration is recorded
+and, once the run finishes, the slowest ones are printed sorted from slowest to
+fastest. Works in both sequential and parallel mode.
+
+The number of entries shown defaults to `10` and can be changed with the
+`BASHUNIT_PROFILE_COUNT` environment variable.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --profile
+```
+```[Output]
+Tests:      10 passed, 10 total
+Assertions: 25 passed, 25 total
+
+ All tests passed
+
+Slowest tests:
+  1.20s  test_slow_database_query (tests/integration_test.sh)
+  340ms  test_http_client_timeout (tests/http_test.sh)
+  12ms   test_parse_config (tests/unit/config_test.sh)
+Time taken: 1.60s
+```
+```bash [Custom count]
+BASHUNIT_PROFILE_COUNT=3 bashunit test tests/ --profile
 ```
 :::
 

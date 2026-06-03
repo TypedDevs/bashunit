@@ -386,6 +386,24 @@ BASHUNIT_FAIL_ON_RISKY=true
 ```
 :::
 
+## Profile
+
+> `BASHUNIT_PROFILE=true|false` · `BASHUNIT_PROFILE_COUNT=<n>`
+
+Report the slowest tests after a run. `false` by default; `BASHUNIT_PROFILE_COUNT` defaults to `10`.
+
+When enabled, each test's duration is recorded and the slowest ones are printed at the end,
+sorted from slowest to fastest. `BASHUNIT_PROFILE_COUNT` limits how many are shown.
+
+Similar as using `--profile` option on the [command line](/command-line#profile).
+
+::: code-group
+```bash [Example]
+BASHUNIT_PROFILE=true
+BASHUNIT_PROFILE_COUNT=5
+```
+:::
+
 ## Failures only
 
 > `BASHUNIT_FAILURES_ONLY=true|false`
