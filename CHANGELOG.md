@@ -9,6 +9,7 @@
 - Project config file `.bashunitrc` (`KEY=value` lines); precedence is CLI flag > env var / `.env` > `.bashunitrc` > default; honors `--skip-env-file` (#681)
 
 ### Fixed
+- `bashunit watch` now forwards `--filter` (and other flags) to each run regardless of position, and no longer mangles forwarded arguments (#682)
 - `bashunit learn` and coverage now create temp directories via `mktemp -d` (no predictable PID-based paths under `/tmp`)
 - `bashunit::parallel::cleanup` refuses to `rm -rf` a `TEMP_DIR_PARALLEL_TEST_SUITE` whose path is not under `*/bashunit/parallel/*`, preventing accidental wipes from env overrides
 

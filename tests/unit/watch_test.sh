@@ -90,3 +90,35 @@ function test_wait_for_change_does_nothing_for_unknown_tool() {
   assert_not_called inotifywait
   assert_not_called fswatch
 }
+
+# bashunit::main::cmd_watch — filter passthrough
+
+function test_cmd_watch_forwards_filter_after_path() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "tests/" "--filter" "my_test")
+
+  assert_contains "tests/" "$output"
+  assert_contains "--filter my_test" "$output"
+}
+
+function test_cmd_watch_extracts_path_when_filter_first() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "--filter" "my_test" "tests/")
+
+  assert_contains "tests/" "$output"
+  assert_contains "--filter my_test" "$output"
+}
+
+function test_cmd_watch_defaults_path_to_dot() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "--filter" "my_test")
+
+  assert_contains "." "$output"
+  assert_contains "--filter my_test" "$output"
+}

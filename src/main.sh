@@ -453,18 +453,40 @@ function bashunit::main::cmd_learn() {
 # Subcommand: watch
 #############################
 function bashunit::main::cmd_watch() {
-  case "${1:-}" in
-  -h | --help)
-    bashunit::console_header::print_watch_help
-    exit 0
-    ;;
-  esac
+  local path=""
+  local -a extra_args=()
 
-  local path="${1:-.}"
-  shift || true
-  local -a extra_args=("$@")
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    -h | --help)
+      bashunit::console_header::print_watch_help
+      exit 0
+      ;;
+    -f | --filter)
+      # Forward the filter flag and its value to the underlying test run
+      extra_args[${#extra_args[@]}]="$1"
+      shift || true
+      if [ $# -gt 0 ]; then
+        extra_args[${#extra_args[@]}]="$1"
+      fi
+      ;;
+    -*)
+      extra_args[${#extra_args[@]}]="$1"
+      ;;
+    *)
+      if [ -z "$path" ]; then
+        path="$1"
+      else
+        extra_args[${#extra_args[@]}]="$1"
+      fi
+      ;;
+    esac
+    shift || true
+  done
 
-  bashunit::watch::run "$path" "${extra_args[@]+\"${extra_args[@]}\"}"
+  [ -z "$path" ] && path="."
+
+  bashunit::watch::run "$path" "${extra_args[@]+"${extra_args[@]}"}"
 }
 
 #############################
