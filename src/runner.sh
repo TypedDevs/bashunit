@@ -12,6 +12,19 @@ function bashunit::runner::restore_workdir() {
   cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
 }
 
+##
+# Whether the running Bash has a reliable `set -o pipefail`. Bash 3.0 shipped a
+# broken pipefail (a failing pipeline can wrongly report success), which makes
+# `--strict` unsound; on 3.0 we fall back to `set -eu` without pipefail.
+# Returns: 0 when pipefail is reliable (Bash >= 3.1), 1 otherwise.
+##
+function bashunit::runner::_supports_reliable_pipefail() {
+  if [ "${BASH_VERSINFO[0]:-0}" -gt 3 ]; then
+    return 0
+  fi
+  [ "${BASH_VERSINFO[0]:-0}" -eq 3 ] && [ "${BASH_VERSINFO[1]:-0}" -ge 1 ]
+}
+
 # Caches BASHUNIT_COVERAGE into _BASHUNIT_COVERAGE_ON ("1"|"0") so hot-path checks
 # avoid a function dispatch per call. Call once after arg parsing; tests that
 # toggle BASHUNIT_COVERAGE mid-run must call this again to refresh.
@@ -887,7 +900,13 @@ function bashunit::runner::run_test() {
 
     # Apply shell mode setting for test execution
     if bashunit::env::is_strict_mode_enabled; then
-      set -euo pipefail
+      set -eu
+      # Bash 3.0 ships a broken pipefail; only enable it where it is reliable.
+      if bashunit::runner::_supports_reliable_pipefail; then
+        set -o pipefail
+      else
+        set +o pipefail
+      fi
     else
       set +euo pipefail
     fi

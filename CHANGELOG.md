@@ -10,6 +10,7 @@
 - Killed tests report the cause: timeout, SIGINT, SIGKILL/OOM, SIGTERM (#683)
 
 ### Fixed
+- `--strict` no longer enables Bash 3.0's broken `pipefail` (which wrongly reports failing pipelines as successful); `set -eu` is still applied, `pipefail` only on Bash >= 3.1
 - `bashunit watch` forwards `--filter` and other flags correctly (#682)
 - `learn` and coverage use `mktemp -d` for temp directories
 - `parallel::cleanup` refuses to `rm -rf` outside `*/bashunit/parallel/*`

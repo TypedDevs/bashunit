@@ -232,3 +232,15 @@ function test_classify_kill_signal_generic_signal() {
 function test_classify_kill_signal_empty_for_normal_exit() {
   assert_empty "$(bashunit::runner::classify_kill_signal 1)"
 }
+
+function test_supports_reliable_pipefail_matches_bash_version() {
+  # Reliable on Bash >= 3.1; Bash 3.0 ships a broken pipefail.
+  local expected_rc=0
+  if [ "${BASH_VERSINFO[0]}" -eq 3 ] && [ "${BASH_VERSINFO[1]}" -eq 0 ]; then
+    expected_rc=1
+  fi
+
+  local actual_rc=0
+  bashunit::runner::_supports_reliable_pipefail || actual_rc=$?
+  assert_same "$expected_rc" "$actual_rc"
+}
