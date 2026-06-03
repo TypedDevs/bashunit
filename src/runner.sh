@@ -194,6 +194,32 @@ function bashunit::runner::detect_runtime_error() {
   printf ''
 }
 
+##
+# Maps a process exit code to a human-readable description when it indicates the
+# test was killed by a signal (128 + signal) or timed out. Returns an empty
+# string for ordinary exit codes. Bash 3.0+ compatible.
+# Arguments: $1 exit code
+##
+function bashunit::runner::classify_kill_signal() {
+  local code=$1
+
+  case "$code" in
+  124) printf 'Timed out (killed by `timeout`)' ;;
+  130) printf 'Interrupted (SIGINT)' ;;
+  137) printf 'Killed (SIGKILL — out of memory or forced termination)' ;;
+  143) printf 'Terminated (SIGTERM — e.g. a timeout)' ;;
+  *)
+    # Generic "killed by signal N" for other 128+N codes (signals 1..64)
+    case "$code" in
+    '' | *[!0-9]*) return 0 ;;
+    esac
+    if [ "$code" -gt 128 ] && [ "$code" -le 192 ]; then
+      printf 'Killed by signal %s' "$((code - 128))"
+    fi
+    ;;
+  esac
+}
+
 function bashunit::runner::print_verbose_test_summary() {
   local test_file=$1
   local fn_name=$2
@@ -945,6 +971,19 @@ function bashunit::runner::run_test() {
     elif [ -z "$error_message" ] && [ -n "$hook_message" ]; then
       error_message="$hook_message"
     fi
+
+    # When the test was killed by a signal (or timed out), replace an empty or
+    # generic "Killed" message with a specific cause.
+    if [ -z "$hook_failure" ]; then
+      local kill_message
+      kill_message=$(bashunit::runner::classify_kill_signal "$test_exit_code")
+      if [ -n "$kill_message" ]; then
+        case "$error_message" in
+        '' | *[Kk]illed* | *[Tt]erminated*) error_message="$kill_message" ;;
+        esac
+      fi
+    fi
+
     bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"
     bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions" "$error_message"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"

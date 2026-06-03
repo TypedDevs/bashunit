@@ -204,3 +204,31 @@ function test_compute_total_assertions_does_not_touch_caller_locals() {
   assert_same "5" "$_BASHUNIT_RUNNER_TOTAL_OUT"
   assert_same "##ASSERTIONS_PASSED=4##ASSERTIONS_FAILED=1" "$test_execution_result"
 }
+
+function test_classify_kill_signal_sigkill_mentions_oom() {
+  local output
+  output="$(bashunit::runner::classify_kill_signal 137)"
+
+  assert_contains "SIGKILL" "$output"
+  assert_contains "memory" "$output"
+}
+
+function test_classify_kill_signal_sigterm() {
+  assert_contains "SIGTERM" "$(bashunit::runner::classify_kill_signal 143)"
+}
+
+function test_classify_kill_signal_timeout() {
+  assert_contains "Timed out" "$(bashunit::runner::classify_kill_signal 124)"
+}
+
+function test_classify_kill_signal_sigint() {
+  assert_contains "SIGINT" "$(bashunit::runner::classify_kill_signal 130)"
+}
+
+function test_classify_kill_signal_generic_signal() {
+  assert_contains "signal 6" "$(bashunit::runner::classify_kill_signal 134)"
+}
+
+function test_classify_kill_signal_empty_for_normal_exit() {
+  assert_empty "$(bashunit::runner::classify_kill_signal 1)"
+}
