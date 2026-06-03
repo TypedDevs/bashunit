@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.37.0](https://github.com/TypedDevs/bashunit/compare/0.36.0...0.37.0) - 2026-06-03
+
 ### Added
 - `--profile` reports the slowest tests (`BASHUNIT_PROFILE_COUNT`, default 10) (#678)
 - Readable snapshot diff when `git` is unavailable (#679)
