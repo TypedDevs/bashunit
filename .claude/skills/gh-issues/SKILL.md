@@ -88,30 +88,50 @@ For each issue in the queue:
    - commit with conventional message + `Closes #<num>` in the body
    - PR opened via `/pr #<num>`
 
-3. After `/gh-issue` returns, wait for CI green on the PR:
+3. **Before pushing**, run the exact command CI's strict job uses — plain
+   sequential runs miss simple-mode and strict-mode bugs that CI rejects:
+   ```bash
+   ./bashunit --parallel --simple --strict tests/
+   ```
+   In `--simple` mode `print_line` emits only a one-char marker, so assert on
+   pure helper functions, not on `print_line` stdout. Under `--strict`
+   (`set -euo pipefail`): no `[ cond ] && assignment` (use `if`), initialise
+   arrays with `=()` and read elements as `${arr[i]:-}`, and never enable
+   `shopt -s extdebug` in the parent shell (isolate it inside a `$()` subshell).
+
+4. After `/gh-issue` returns, wait for CI green on the PR:
    ```bash
    gh pr checks --watch
    ```
-   Fix red checks on the branch before moving on. Bash 3.0 CI fails often — check that job specifically.
+   Fix red checks on the branch before moving on. Bash 3.0 CI fails often —
+   check that job specifically. A red `docker`/registry step is usually a
+   transient Docker Hub timeout, not your code: `gh run rerun <id> --failed`.
 
-4. Merge when allowed:
+5. Merge when allowed:
    ```bash
    gh pr merge --auto --squash --admin
    ```
 
-5. **Close the issue if the squash-merge did not.** GitHub builds the squash commit from the **PR body**, and `/pr` writes `Related #<num>` there (never `Closes`), so the `Closes #<num>` in the branch commit body is lost. After merge:
+6. **Close the issue if the squash-merge did not.** GitHub builds the squash commit from the **PR body**, and `/pr` writes `Related #<num>` there (never `Closes`), so the `Closes #<num>` in the branch commit body is lost. After merge:
    ```bash
    gh issue view <num> --json state -q .state   # still OPEN?
    gh issue close <num> --reason completed -c "Done in #<pr> (merged)."
    ```
-   If the issue belongs to a tracker/epic, tick its checkbox in the parent issue body.
+   If the issue belongs to a tracker/epic, tick its checkbox in the parent
+   issue body. Use `sed` for the tick — bash `${body/- [ ] #N/...}` treats
+   `[ ]` as a glob (it matches a space, not literal brackets) and silently
+   does nothing:
+   ```bash
+   gh issue view <tracker> --json body -q .body \
+     | sed 's/- \[ \] #<num>/- [x] #<num>/' | gh issue edit <tracker> --body-file -
+   ```
 
-6. Sync `main` for next iteration:
+7. Sync `main` for next iteration:
    ```bash
    git checkout main && git fetch origin main && git reset --hard origin/main
    ```
 
-7. Continue with next issue.
+8. Continue with next issue.
 
 ## Stop Conditions
 
