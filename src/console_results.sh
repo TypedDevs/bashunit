@@ -267,6 +267,20 @@ function bashunit::console_results::print_successful_test() {
   bashunit::state::print_line "successful" "$full_line"
 }
 
+##
+# Returns a faint "    at <file>:<line>" suffix (preceded by a newline) pointing
+# at the currently running test function, or an empty string when the location
+# is unknown. Used to append source context to failure output.
+##
+function bashunit::console_results::test_location_suffix() {
+  local location=${_BASHUNIT_TEST_LOCATION:-}
+  if [ -z "$location" ]; then
+    return 0
+  fi
+
+  printf "\n    ${_BASHUNIT_COLOR_FAINT}at %s${_BASHUNIT_COLOR_DEFAULT}" "$location"
+}
+
 function bashunit::console_results::print_failure_message() {
   local test_name=$1
   local failure_message=$2
@@ -277,6 +291,8 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}Message:${_BASHUNIT_COLOR_DEFAULT} \
 ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${test_name}" "${failure_message}")"
+
+  line="$line$(bashunit::console_results::test_location_suffix)"
 
   bashunit::state::print_line "failure" "$line"
 }
@@ -302,6 +318,8 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
       "${extra_key}" "${extra_value}")"
   fi
+
+  line="$line$(bashunit::console_results::test_location_suffix)"
 
   bashunit::state::print_line "failed" "$line"
 }
@@ -476,6 +494,8 @@ function bashunit::console_results::print_error_test() {
       line="$line$(printf "      %s\n" "$output_line")"
     done <<<"$raw_output"
   fi
+
+  line="$line$(bashunit::console_results::test_location_suffix)"
 
   bashunit::state::print_line "error" "$line"
 }

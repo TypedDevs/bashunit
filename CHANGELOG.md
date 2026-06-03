@@ -5,6 +5,7 @@
 ### Added
 - `--profile` reports the slowest tests after a run (count via `BASHUNIT_PROFILE_COUNT`, default 10); works in sequential and parallel mode (#678)
 - Snapshot mismatches show a readable line diff even when `git` is unavailable (expected lines prefixed `-`, actual `+`) (#679)
+- Failure output now includes the originating test `file:line` (`at <file>:<line>`) (#680)
 
 ### Fixed
 - `bashunit learn` and coverage now create temp directories via `mktemp -d` (no predictable PID-based paths under `/tmp`)

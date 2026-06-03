@@ -38,9 +38,41 @@ function bashunit::runner::export_test_identity() {
   local test_file=$1
   local fn_name=$2
   export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
+  bashunit::runner::resolve_test_location "$test_file" "$fn_name"
+  export _BASHUNIT_TEST_LOCATION
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
+  fi
+}
+
+##
+# Resolves "<test_file>:<line>" for a test function and writes it into the
+# global _BASHUNIT_TEST_LOCATION, using `declare -F` under `extdebug` to read
+# the definition line. Falls back to just the file path when the line cannot be
+# determined. Bash 3.0+ compatible. Writes a global slot (no extra subshell).
+# Arguments: $1 test file, $2 function name
+##
+function bashunit::runner::resolve_test_location() {
+  local test_file=$1
+  local fn_name=$2
+
+  # Enable extdebug only inside the command-substitution subshell so it never
+  # leaks into the parent shell — globally toggling extdebug interferes with
+  # `set -e`/DEBUG-trap behavior under --strict.
+  local def line=""
+  def="$(shopt -s extdebug; declare -F "$fn_name" 2>/dev/null)" || true
+
+  # `declare -F` (with extdebug) prints "<name> <line> <file>".
+  if [ -n "$def" ]; then
+    line=${def#* }
+    line=${line%% *}
+  fi
+
+  if [ -n "$line" ]; then
+    _BASHUNIT_TEST_LOCATION="${test_file}:${line}"
+  else
+    _BASHUNIT_TEST_LOCATION="$test_file"
   fi
 }
 

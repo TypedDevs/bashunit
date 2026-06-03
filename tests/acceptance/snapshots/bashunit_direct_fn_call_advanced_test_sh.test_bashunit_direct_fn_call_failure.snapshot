@@ -1,3 +1,4 @@
 [31m✗ Failed[0m: assert same
     [90mExpected[0m [1m'foo'[0m
     [90mbut got [0m [1m'bar'[0m
+    [90mat tests/acceptance/bashunit_direct_fn_call_advanced_test.sh:12[0m

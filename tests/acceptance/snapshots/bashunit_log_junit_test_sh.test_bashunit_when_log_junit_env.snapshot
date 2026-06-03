@@ -3,6 +3,7 @@
 [31m✗ Failed[0m: Failure
     [90mExpected[0m [1m'2'[0m
     [90mbut got [0m [1m'3'[0m
+    [90mat ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh:7[0m
 
 [1mThere was 1 failure:[0m
 
@@ -10,6 +11,7 @@
 |[31m✗ Failed[0m: Failure
 |    [90mExpected[0m [1m'2'[0m
 |    [90mbut got [0m [1m'3'[0m
+|    [90mat ./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh:7[0m
 |    [90mSource:[0m
 |    [90m8:[0m assert_same 2 3
 
