@@ -7,6 +7,30 @@ You need to create a `.env` file in the root directory,
 but you can give it another name if you pass it as an argument to the command with
 `--env` [option](/command-line#environment).
 
+## Config file (.bashunitrc)
+
+As an alternative to a `.env` file, you can place a `.bashunitrc` file in the
+project root with `KEY=value` lines (blank lines and `#` comments are ignored):
+
+```bash
+# .bashunitrc
+BASHUNIT_SHOW_HEADER=false
+BASHUNIT_PARALLEL_RUN=true
+BASHUNIT_PROFILE=true
+```
+
+It is meant for committing sensible project defaults. Precedence, from highest
+to lowest:
+
+1. CLI flags (e.g. `--simple`)
+2. Environment variables and the `.env` file
+3. `.bashunitrc`
+4. Built-in defaults
+
+`.bashunitrc` only fills values that are not already set, so an exported
+environment variable or a `.env` entry always wins. `--skip-env-file` skips
+`.bashunitrc` as well.
+
 ## Default path
 
 > `BASHUNIT_DEFAULT_PATH=directory|file`

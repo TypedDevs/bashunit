@@ -2,8 +2,53 @@
 
 # shellcheck disable=SC2034
 
+##
+# Loads a project config file of `KEY=value` lines (comments with `#` and blank
+# lines are ignored). Each key is only applied when not already set in the
+# environment, so real env vars and CLI flags keep precedence over the file.
+# Surrounding single/double quotes and an optional `export ` prefix are stripped.
+# Arguments: $1 path to the config file
+##
+function bashunit::env::load_config_file() {
+  local file=$1
+  [ -f "$file" ] || return 0
+
+  local line key val
+  while IFS= read -r line || [ -n "$line" ]; do
+    # Trim leading whitespace
+    line=${line#"${line%%[![:space:]]*}"}
+    case "$line" in
+    '' | '#'*) continue ;;
+    esac
+    case "$line" in export\ *) line=${line#export } ;; esac
+    case "$line" in
+    *=*) ;;
+    *) continue ;;
+    esac
+
+    key=${line%%=*}
+    val=${line#*=}
+
+    # Only accept valid shell identifiers (defends the eval below)
+    case "$key" in
+    '' | *[!A-Za-z0-9_]* | [0-9]*) continue ;;
+    esac
+
+    # Strip surrounding matching quotes
+    case "$val" in
+    \"*\") val=${val#\"} val=${val%\"} ;;
+    \'*\') val=${val#\'} val=${val%\'} ;;
+    esac
+
+    # Apply only when unset: env var / CLI flag > config file
+    eval "export $key=\"\${$key:-\$val}\""
+  done <"$file"
+}
+
+# Load project config (lower precedence than env vars, .env and CLI flags).
 # Load .env file (skip if --skip-env-file is used to keep shell environment intact)
 if [ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]; then
+  bashunit::env::load_config_file ".bashunitrc"
   set -o allexport
   # shellcheck source=/dev/null
   [ -f ".env" ] && source .env
