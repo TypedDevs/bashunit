@@ -17,6 +17,7 @@
 
 ### Internal
 - Global-slot return pattern for hot-path helpers; `_BASHUNIT_SPY_*` namespace (#674)
+- Windows acceptance CI: matrix shards now cover every test file (`bashunit_test.sh`, `coverage_*`, `install`, `mock` were silently skipped) and job labels show only the shard name
 
 ### Performance
 - Faster runtime-error detection: single `case` glob (#668)

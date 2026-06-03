@@ -140,6 +140,7 @@ jobs:
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   windows-acceptance:
+    name: "windows-acceptance (${{ matrix.name }})"
     if: github.event_name == 'push'
     timeout-minutes: 10
     runs-on: windows-latest
@@ -148,11 +149,11 @@ jobs:
       matrix:
         include:
           - name: "a-e"
-            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh"
+            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh tests/acceptance/coverage_*_test.sh"
           - name: "f-l"
-            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh"
+            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh tests/acceptance/install*_test.sh"
           - name: "m-z"
-            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/[i-p]*_test.sh"
+            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/bashunit_test.sh tests/acceptance/mock*_test.sh tests/acceptance/parallel*_test.sh"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
