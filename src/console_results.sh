@@ -326,9 +326,79 @@ function bashunit::console_results::print_failed_snapshot_test() {
 
     line="$line$git_diff_output"
     rm "$actual_file"
+  else
+    line="$line$(bashunit::console_results::snapshot_line_diff \
+      "$(cat "$snapshot_file")" "$actual_content")"
   fi
 
   bashunit::state::print_line "failed_snapshot" "$line"
+}
+
+##
+# Renders a readable line-by-line diff between an expected snapshot and the
+# actual content, used as a fallback when git is unavailable. Common lines are
+# shown as context, expected-only lines are prefixed with '-' and actual-only
+# lines with '+'. Bash 3.0+ compatible (no mapfile, no associative arrays).
+# Arguments: $1 expected content, $2 actual content
+##
+function bashunit::console_results::snapshot_line_diff() {
+  local expected=$1
+  local actual=$2
+
+  # Explicit empty-array init so referencing the arrays is safe under `set -u`
+  # on Bash 4.4+ (Bash 3.x is lenient; newer Bash treats an unset array as unbound).
+  local expected_lines=() actual_lines=()
+  local _line=""
+  local i=0
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    expected_lines[i]=$_line
+    i=$((i + 1))
+  done <<EOF
+$expected
+EOF
+  local expected_count=$i
+
+  i=0
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    actual_lines[i]=$_line
+    i=$((i + 1))
+  done <<EOF
+$actual
+EOF
+  local actual_count=$i
+
+  local max=$expected_count
+  if [ "$actual_count" -gt "$max" ]; then
+    max=$actual_count
+  fi
+
+  local out=""
+  i=0
+  while [ "$i" -lt "$max" ]; do
+    local e="" a="" has_e=0 has_a=0
+    if [ "$i" -lt "$expected_count" ]; then
+      e=${expected_lines[i]:-}
+      has_e=1
+    fi
+    if [ "$i" -lt "$actual_count" ]; then
+      a=${actual_lines[i]:-}
+      has_a=1
+    fi
+
+    if [ "$has_e" = 1 ] && [ "$has_a" = 1 ] && [ "$e" = "$a" ]; then
+      out="$out$(printf "\n    ${_BASHUNIT_COLOR_FAINT}  %s${_BASHUNIT_COLOR_DEFAULT}" "$e")"
+    else
+      if [ "$has_e" = 1 ]; then
+        out="$out$(printf "\n    ${_BASHUNIT_COLOR_FAILED}- %s${_BASHUNIT_COLOR_DEFAULT}" "$e")"
+      fi
+      if [ "$has_a" = 1 ]; then
+        out="$out$(printf "\n    ${_BASHUNIT_COLOR_PASSED}+ %s${_BASHUNIT_COLOR_DEFAULT}" "$a")"
+      fi
+    fi
+    i=$((i + 1))
+  done
+
+  printf "%s" "$out"
 }
 
 function bashunit::console_results::print_skipped_test() {
