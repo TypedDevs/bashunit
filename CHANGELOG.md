@@ -3,19 +3,19 @@
 ## Unreleased
 
 ### Added
-- `--profile` reports the slowest tests after a run (count via `BASHUNIT_PROFILE_COUNT`, default 10); works in sequential and parallel mode (#678)
-- Snapshot mismatches show a readable line diff even when `git` is unavailable (expected lines prefixed `-`, actual `+`) (#679)
-- Failure output now includes the originating test `file:line` (`at <file>:<line>`) (#680)
-- Project config file `.bashunitrc` (`KEY=value` lines); precedence is CLI flag > env var / `.env` > `.bashunitrc` > default; honors `--skip-env-file` (#681)
-- Killed tests now report a specific cause instead of a bare "Killed": timeout (124), SIGINT (130), SIGKILL/OOM (137), SIGTERM (143), or "Killed by signal N" (#683)
+- `--profile` reports the slowest tests (`BASHUNIT_PROFILE_COUNT`, default 10) (#678)
+- Readable snapshot diff when `git` is unavailable (#679)
+- Failure output shows the test `file:line` (#680)
+- `.bashunitrc` project config file (#681)
+- Killed tests report the cause: timeout, SIGINT, SIGKILL/OOM, SIGTERM (#683)
 
 ### Fixed
-- `bashunit watch` now forwards `--filter` (and other flags) to each run regardless of position, and no longer mangles forwarded arguments (#682)
-- `bashunit learn` and coverage now create temp directories via `mktemp -d` (no predictable PID-based paths under `/tmp`)
-- `bashunit::parallel::cleanup` refuses to `rm -rf` a `TEMP_DIR_PARALLEL_TEST_SUITE` whose path is not under `*/bashunit/parallel/*`, preventing accidental wipes from env overrides
+- `bashunit watch` forwards `--filter` and other flags correctly (#682)
+- `learn` and coverage use `mktemp -d` for temp directories
+- `parallel::cleanup` refuses to `rm -rf` outside `*/bashunit/parallel/*`
 
 ### Internal
-- Codify global-slot return pattern for hot-path helpers; namespace mock/spy state under `_BASHUNIT_SPY_*` (#674)
+- Global-slot return pattern for hot-path helpers; `_BASHUNIT_SPY_*` namespace (#674)
 
 ### Performance
 - Faster runtime-error detection: single `case` glob (#668)
