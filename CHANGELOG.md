@@ -7,6 +7,7 @@
 - Snapshot mismatches show a readable line diff even when `git` is unavailable (expected lines prefixed `-`, actual `+`) (#679)
 - Failure output now includes the originating test `file:line` (`at <file>:<line>`) (#680)
 - Project config file `.bashunitrc` (`KEY=value` lines); precedence is CLI flag > env var / `.env` > `.bashunitrc` > default; honors `--skip-env-file` (#681)
+- Killed tests now report a specific cause instead of a bare "Killed": timeout (124), SIGINT (130), SIGKILL/OOM (137), SIGTERM (143), or "Killed by signal N" (#683)
 
 ### Fixed
 - `bashunit watch` now forwards `--filter` (and other flags) to each run regardless of position, and no longer mangles forwarded arguments (#682)
