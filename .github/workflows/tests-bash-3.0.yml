@@ -84,6 +84,8 @@ jobs:
             flags: "--simple"
           - name: "Simple Parallel"
             flags: "--simple --parallel"
+          - name: "Strict"
+            flags: "--simple --parallel --strict"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
