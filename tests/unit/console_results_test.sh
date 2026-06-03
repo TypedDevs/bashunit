@@ -748,3 +748,27 @@ function test_snapshot_line_diff_handles_extra_actual_lines() {
 
   assert_contains "+ extra" "$output"
 }
+
+function test_test_location_suffix_when_set() {
+  local original=${_BASHUNIT_TEST_LOCATION:-}
+  export _BASHUNIT_TEST_LOCATION="tests/foo_test.sh:42"
+
+  local output
+  output="$(bashunit::console_results::test_location_suffix)"
+
+  assert_contains "tests/foo_test.sh:42" "$output"
+
+  export _BASHUNIT_TEST_LOCATION="$original"
+}
+
+function test_test_location_suffix_empty_when_unset() {
+  local original=${_BASHUNIT_TEST_LOCATION:-}
+  unset _BASHUNIT_TEST_LOCATION
+
+  local output
+  output="$(bashunit::console_results::test_location_suffix)"
+
+  assert_empty "$output"
+
+  export _BASHUNIT_TEST_LOCATION="$original"
+}

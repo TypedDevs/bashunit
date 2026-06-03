@@ -3,6 +3,7 @@
 [31m✗ Failed[0m: Assert failing
     [90mExpected[0m [1m'1'[0m
     [90mbut got [0m [1m'2'[0m
+    [90mat ./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh:7[0m
 [36m✒ Incomplete[0m: Assert todo and skip[90m    foo[0m
 [33m↷ Skipped[0m: Assert todo and skip[90m    bar[0m
 [33m↷ Skipped[0m: Assert skip and todo[90m    baz[0m
@@ -14,6 +15,7 @@
 |[31m✗ Failed[0m: Assert failing
 |    [90mExpected[0m [1m'1'[0m
 |    [90mbut got [0m [1m'2'[0m
+|    [90mat ./tests/acceptance/fixtures/test_bashunit_with_multiple_failing_tests.sh:7[0m
 |    [90mSource:[0m
 |    [90m8:[0m assert_same 1 2
 |    [90m9:[0m assert_same 3 4

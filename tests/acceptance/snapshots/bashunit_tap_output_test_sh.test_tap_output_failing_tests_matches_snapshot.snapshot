@@ -6,6 +6,7 @@ not ok 3 - Assert failing
   ---
   Expected '1'
   but got  '0'
+  at tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh:12
   ...
 ok 4 - Assert greater and less than
 ok 5 - Assert empty
