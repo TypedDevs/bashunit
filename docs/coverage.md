@@ -14,7 +14,7 @@ bashunit tests/ --coverage
 bashunit tests/ --coverage-paths src/
 ```
 ```bash [Output]
-bashunit - 0.30.0 | Tests: 5
+bashunit - 0.37.0 | Tests: 5
 .....
 
 Tests:      5 passed, 5 total

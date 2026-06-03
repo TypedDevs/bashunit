@@ -12,16 +12,27 @@ export default defineConfig({
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
+    ['meta', { name: 'theme-color', content: '#22c55e' }],
     ['meta', { property: 'og:type', content: 'website' }],
-    ['meta', { property: 'og:image', content: '/og-image.png' }]
+    ['meta', { property: 'og:site_name', content: 'bashunit' }],
+    ['meta', { property: 'og:image', content: 'https://bashunit.typeddevs.com/og-image.png' }],
+    ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+    ['meta', { name: 'twitter:site', content: '@bashunit' }],
+    ['meta', { name: 'twitter:image', content: 'https://bashunit.typeddevs.com/og-image.png' }]
   ],
   transformHead(context) {
     const canonical = context.page.replace(/(index)?\.md$/, '')
+    const url = `https://bashunit.typeddevs.com/${canonical}`
+    const description = context.description || context.frontmatter?.description ||
+      'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.'
 
     return [
       ['meta', { property: 'og:title', content: context.title }],
-      ['meta', { property: 'og:url', content: `https://bashunit.typeddevs.com/${canonical}` }],
-      ['link', { rel: 'canonical', href: `https://bashunit.typeddevs.com/${canonical}` }],
+      ['meta', { property: 'og:description', content: description }],
+      ['meta', { property: 'og:url', content: url }],
+      ['meta', { name: 'twitter:title', content: context.title }],
+      ['meta', { name: 'twitter:description', content: description }],
+      ['link', { rel: 'canonical', href: url }],
     ]
   },
 
@@ -148,5 +159,12 @@ export default defineConfig({
 
   srcExclude: [
     'blog/0000-00-00-template.md'
-  ]
+  ],
+
+  markdown: {
+    image: {
+      // lazy-load + async-decode all markdown images to cut initial page weight
+      lazyLoading: true
+    }
+  }
 })
