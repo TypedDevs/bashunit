@@ -20,7 +20,7 @@ _ORIG_COVERAGE_EXCLUDE=""
 # /tmp to deadlock CI runners. The contracts tested here are
 # deterministic in single-process mode, so the parallel run is not
 # a useful execution context.
-function _skip_when_parallel_or_windows() {
+function _skip_when_unsupported_context() {
   if [ "${BASHUNIT_PARALLEL_RUN:-false}" = "true" ]; then
     bashunit::skip "subshell tracking tests require single-process execution"
     return 0
@@ -28,6 +28,12 @@ function _skip_when_parallel_or_windows() {
   case "$(uname -s 2>/dev/null)" in
   CYGWIN* | MINGW* | MSYS*)
     bashunit::skip "DEBUG trap + set -T behavior is unstable on Git Bash"
+    return 0
+    ;;
+  Darwin*)
+    # The DEBUG-trap recorder does not propagate into subshells on the
+    # macOS system Bash (3.2); this works on Linux for all supported Bash.
+    bashunit::skip "DEBUG trap + set -T does not reach subshells on macOS Bash"
     return 0
     ;;
   esac
@@ -105,7 +111,7 @@ function _run_fixture_under_coverage() {
 }
 
 function test_coverage_records_lines_inside_command_substitution() {
-  _skip_when_parallel_or_windows && return 0
+  _skip_when_unsupported_context && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -125,7 +131,7 @@ EOF
 }
 
 function test_coverage_records_explicit_subshell_block() {
-  _skip_when_parallel_or_windows && return 0
+  _skip_when_unsupported_context && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -147,7 +153,7 @@ EOF
 }
 
 function test_coverage_records_pipeline_lhs() {
-  _skip_when_parallel_or_windows && return 0
+  _skip_when_unsupported_context && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -165,7 +171,7 @@ EOF
 }
 
 function test_coverage_records_process_substitution_consumer() {
-  _skip_when_parallel_or_windows && return 0
+  _skip_when_unsupported_context && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
@@ -186,7 +192,7 @@ EOF
 }
 
 function test_coverage_records_lines_inside_function_called_from_subshell() {
-  _skip_when_parallel_or_windows && return 0
+  _skip_when_unsupported_context && return 0
   local fixture
   fixture=$(mktemp)
   cat >"$fixture" <<'EOF'
