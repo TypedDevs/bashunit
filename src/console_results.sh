@@ -337,10 +337,12 @@ function bashunit::console_results::print_failed_snapshot_test() {
     local actual_file="${snapshot_file}.tmp"
     echo "$actual_content" >"$actual_file"
 
+    # `git diff` exits non-zero when the files differ; guard with `|| true` so
+    # the assignment does not trip `set -e`/`pipefail` under --strict.
     local git_diff_output
     git_diff_output="$(git diff --no-index --word-diff --color=always \
       "$snapshot_file" "$actual_file" 2>/dev/null |
-      tail -n +6 | sed "s/^/    /")"
+      tail -n +6 | sed "s/^/    /")" || true
 
     line="$line$git_diff_output"
     rm "$actual_file"
