@@ -28,14 +28,12 @@ function tear_down_after_script() {
 
 function set_up() {
   rm -f ./lib/bashunit
-  rm -f ./deps/bashunit
-  rm -rf ./tmp_install
+  rm -rf ./tmp_install ./tmp_deps ./tmp_lib
 }
 
 function tear_down() {
   rm -f ./lib/bashunit
-  rm -f ./deps/bashunit
-  rm -rf ./tmp_install
+  rm -rf ./tmp_install ./tmp_deps ./tmp_lib
 }
 
 function test_install_downloads_the_latest_version() {
@@ -75,16 +73,16 @@ function test_install_downloads_in_given_folder() {
     bashunit::skip "curl or wget not installed" && return
   fi
 
-  local installed_bashunit="./deps/bashunit"
+  local installed_bashunit="./tmp_deps/bashunit"
   local output
 
-  output="$(./install.sh deps)"
+  output="$(./install.sh tmp_deps)"
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
   fi
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
-  assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'deps' folder")" "$output"
+  assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'tmp_deps' folder")" "$output"
   assert_file_exists "$installed_bashunit"
 
   # Guard: skip version check if binary is non-functional after download (network flake)
@@ -161,17 +159,17 @@ function test_install_downloads_the_given_version() {
     bashunit::skip "curl or wget not installed" && return
   fi
 
-  local installed_bashunit="./lib/bashunit"
+  local installed_bashunit="./tmp_lib/bashunit"
   local output
 
-  output="$(./install.sh lib 0.9.0)"
+  output="$(./install.sh tmp_lib 0.9.0)"
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
   fi
   local expected
   expected="> Downloading a concrete version: '0.9.0'
-> bashunit has been installed in the 'lib' folder"
+> bashunit has been installed in the 'tmp_lib' folder"
 
   assert_same "$expected" "$output"
 
@@ -229,17 +227,17 @@ function test_install_downloads_the_non_stable_beta_version() {
 
   bashunit::mock date <<<"2023-11-13"
   bashunit::mock tput <<<""
-  local installed_bashunit="./deps/bashunit"
+  local installed_bashunit="./tmp_deps/bashunit"
   local output
 
-  output="$(./install.sh deps beta)"
+  output="$(./install.sh tmp_deps beta)"
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
   fi
   local expected
   expected="> Downloading non-stable version: 'beta'
-> bashunit has been installed in the 'deps' folder"
+> bashunit has been installed in the 'tmp_deps' folder"
 
   assert_contains "$expected" "$output"
 
@@ -249,9 +247,9 @@ function test_install_downloads_the_non_stable_beta_version() {
     "$(printf "\(non-stable\) beta after ([0-9]+\.[0-9]+\.[0-9]+) \[2023-11-13\] 🐍 \#[a-fA-F0-9]{7}")" \
     "$("$installed_bashunit" --version)"
 
-  assert_directory_not_exists "./deps/temp_bashunit"
+  assert_directory_not_exists "./tmp_deps/temp_bashunit"
 
-  file_count_of_deps_directory=$(find ./deps -mindepth 1 -maxdepth 1 -print | wc -l | tr -d ' ')
-  assert_same "$file_count_of_deps_directory" "1"
-  assert_same "$(find ./deps -name 'bashunit')" "./deps/bashunit"
+  file_count_of_tmp_deps_directory=$(find ./tmp_deps -mindepth 1 -maxdepth 1 -print | wc -l | tr -d ' ')
+  assert_same "$file_count_of_tmp_deps_directory" "1"
+  assert_same "$(find ./tmp_deps -name 'bashunit')" "./tmp_deps/bashunit"
 }
