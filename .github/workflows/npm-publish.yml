@@ -18,11 +18,13 @@ jobs:
         with:
           fetch-depth: 1
 
+      # Note: no `registry-url` here on purpose. setup-node's registry-url writes
+      # an .npmrc with `_authToken=${NODE_AUTH_TOKEN}`, which forces token auth and
+      # blocks OIDC. npm publish defaults to registry.npmjs.org anyway.
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          registry-url: https://registry.npmjs.org/
 
       # OIDC trusted publishing (tokenless) requires npm >= 11.5.1.
       # Node 22 (lts/jod) ships npm 10, so upgrade explicitly.
