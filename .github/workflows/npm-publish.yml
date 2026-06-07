@@ -29,7 +29,9 @@ jobs:
       # OIDC trusted publishing (tokenless) requires npm >= 11.5.1.
       # Node 22 (lts/jod) ships npm 10, so upgrade explicitly.
       - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@latest
+        run: |
+          npm install -g npm@latest
+          echo "npm version after upgrade: $(npm -v)"
 
       - name: Build bashunit single-file binary
         shell: bash
@@ -44,4 +46,6 @@ jobs:
       # Configure the trusted publisher once at npmjs.com -> bashunit -> Settings.
       # Provenance is generated automatically.
       - name: Publish to npm
-        run: npm publish --access public
+        run: |
+          echo "publishing with npm $(npm -v)"
+          npm publish --access public
