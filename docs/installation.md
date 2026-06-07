@@ -247,12 +247,21 @@ jobs:
       - run: bashunit tests
 ```
 
-**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`).
-**Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
-
-`verify-checksum` validates the downloaded binary against the release `checksum`
-asset (sha256) and fails the install on any mismatch. Set it to `false` only when
-pinning a release published before checksum assets existed.
+```yaml-vue [install + run]
+# .github/workflows/bashunit-tests.yml
+name: Tests
+on: [pull_request, push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Install and run the suite in a single step via the `args` input.
+      - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
+        with:
+          version: '{{ pkg.version }}'
+          args: tests/ --strict
+```
 
 ```yaml [via install.sh]
 # .github/workflows/bashunit-tests.yml
@@ -282,6 +291,13 @@ jobs:
       - run: npx bashunit tests/
 ```
 :::
+
+**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`), `args` (default empty — when set, runs `bashunit <args>` after installing).
+**Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
+
+`verify-checksum` validates the downloaded binary against the release `checksum`
+asset (sha256) and fails the install on any mismatch. Set it to `false` only when
+pinning a release published before checksum assets existed.
 
 ::: tip
 See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
