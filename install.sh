@@ -44,12 +44,19 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
+  local url="$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit"
   if command -v curl >/dev/null 2>&1; then
-    curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+    curl -fL -O -J "$url" 2>/dev/null
   elif command -v wget >/dev/null 2>&1; then
-    wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+    wget "$url" 2>/dev/null
   else
-    echo "Cannot download bashunit: curl or wget not found."
+    echo "Cannot download bashunit: curl or wget not found." >&2
+    exit 1
+  fi
+
+  if [ ! -f "bashunit" ]; then
+    echo "Error: failed to download bashunit '$TAG' from $url" >&2
+    exit 1
   fi
   chmod u+x "bashunit"
 }

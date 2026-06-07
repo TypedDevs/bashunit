@@ -39,7 +39,10 @@ jobs:
       - name: Verify the binary is installed and runnable
         env:
           BASHUNIT_PATH: ${{ steps.bashunit.outputs.path }}
+          BASHUNIT_INSTALLED_VERSION: ${{ steps.bashunit.outputs.version }}
         run: |
           set -euo pipefail
           test -x "$BASHUNIT_PATH"
-          "$BASHUNIT_PATH" --version
+          test -n "$BASHUNIT_INSTALLED_VERSION"
+          # add-to-path defaults to true, so "bashunit" resolves on PATH
+          bashunit --version

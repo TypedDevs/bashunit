@@ -109,6 +109,18 @@ function test_install_downloads_in_nested_folder() {
   assert_file_exists "$installed_bashunit"
 }
 
+function test_install_fails_loudly_on_unknown_version() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+
+  assert_general_error "$(./install.sh tmp_install 99.99.99 2>&1)"
+  assert_file_not_exists "./tmp_install/bashunit"
+}
+
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     bashunit::skip "no internet connection" && return

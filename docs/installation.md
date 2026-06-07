@@ -239,10 +239,15 @@ jobs:
       # Pin to a commit SHA; the comment tracks the human-readable tag.
       - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
         with:
-          version: '{{ pkg.version }}' # or "latest"
+          version: '{{ pkg.version }}' # or "latest" (default)
           directory: lib               # optional, "lib" by default
-      - run: ./lib/bashunit tests
+          add-to-path: 'true'          # optional, "true" by default
+      # add-to-path puts the binary on $PATH, so just call "bashunit":
+      - run: bashunit tests
 ```
+
+**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`).
+**Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
 
 ```yaml [via install.sh]
 # .github/workflows/bashunit-tests.yml
