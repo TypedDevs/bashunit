@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Official `TypedDevs/bashunit` GitHub Action: composite action to install bashunit, pinnable by commit SHA for immutable, zizmor-friendly installs
+
+### Fixed
+- `install.sh` creates nested target directories (`mkdir -p`), so non-existing parent folders no longer fail the install
+
 ## [0.37.0](https://github.com/TypedDevs/bashunit/compare/0.36.0...0.37.0) - 2026-06-03
 
 ### Added

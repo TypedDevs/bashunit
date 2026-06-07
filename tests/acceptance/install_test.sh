@@ -29,11 +29,13 @@ function tear_down_after_script() {
 function set_up() {
   rm -f ./lib/bashunit
   rm -f ./deps/bashunit
+  rm -rf ./tmp_install
 }
 
 function tear_down() {
   rm -f ./lib/bashunit
   rm -f ./deps/bashunit
+  rm -rf ./tmp_install
 }
 
 function test_install_downloads_the_latest_version() {
@@ -86,6 +88,25 @@ function test_install_downloads_in_given_folder() {
     bashunit::skip "binary non-functional after install (transient network failure)" && return
   fi
   assert_string_starts_with "$(printf "\e[1m\e[32mbashunit\e[0m - ")" "$version"
+}
+
+function test_install_downloads_in_nested_folder() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+
+  local installed_bashunit="./tmp_install/nested/bashunit"
+  local output
+
+  output="$(./install.sh tmp_install/nested)"
+
+  assert_string_ends_with \
+    "$(printf "\n> bashunit has been installed in the 'tmp_install/nested' folder")" \
+    "$output"
+  assert_file_exists "$installed_bashunit"
 }
 
 function test_install_downloads_the_given_version() {

@@ -92,7 +92,7 @@ TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
-[ -d "$DIR" ] || mkdir "$DIR"
+[ -d "$DIR" ] || mkdir -p "$DIR"
 cd "$DIR"
 
 if [[ $VERSION == 'beta' ]]; then

@@ -1,0 +1,45 @@
+name: Test action
+
+on:
+  pull_request:
+    paths:
+      - 'action.yml'
+      - 'install.sh'
+      - '.github/workflows/test-action.yml'
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: test-action-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  test-action:
+    name: "Install via action - ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bashunit via the action
+        id: bashunit
+        uses: ./
+        with:
+          version: latest
+          directory: vendor/bashunit
+
+      - name: Verify the binary is installed and runnable
+        env:
+          BASHUNIT_PATH: ${{ steps.bashunit.outputs.path }}
+        run: |
+          set -euo pipefail
+          test -x "$BASHUNIT_PATH"
+          "$BASHUNIT_PATH" --version

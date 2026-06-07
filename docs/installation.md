@@ -222,7 +222,28 @@ Downloading 'bashunit' to 'lib'...
 
 ## GitHub Actions
 
+The official `TypedDevs/bashunit` action installs the binary in one step.
+Pin it to a commit SHA for an immutable, supply-chain-safe install
+(keeps static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) happy):
+
 ::: code-group
+```yaml-vue [via action]
+# .github/workflows/bashunit-tests.yml
+name: Tests
+on: [pull_request, push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Pin to a commit SHA; the comment tracks the human-readable tag.
+      - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
+        with:
+          version: '{{ pkg.version }}' # or "latest"
+          directory: lib               # optional, "lib" by default
+      - run: ./lib/bashunit tests
+```
+
 ```yaml [via install.sh]
 # .github/workflows/bashunit-tests.yml
 name: Tests

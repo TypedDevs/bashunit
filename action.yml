@@ -1,0 +1,44 @@
+name: Install bashunit
+description: Install the bashunit testing framework binary at a pinned, immutable version.
+author: TypedDevs
+
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  version:
+    description: 'bashunit version to install (e.g. "0.37.0") or "latest".'
+    required: false
+    default: latest
+  directory:
+    description: 'Directory, relative to the workspace, where the bashunit binary is installed.'
+    required: false
+    default: lib
+
+outputs:
+  path:
+    description: Path to the installed bashunit binary, relative to the workspace.
+    value: ${{ steps.install.outputs.path }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        BASHUNIT_VERSION: ${{ inputs.version }}
+        BASHUNIT_DIRECTORY: ${{ inputs.directory }}
+        BASHUNIT_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+
+        target_dir="$BASHUNIT_DIRECTORY"
+        case "$target_dir" in
+          /*) ;;
+          *) target_dir="$GITHUB_WORKSPACE/$target_dir" ;;
+        esac
+
+        "$BASHUNIT_ACTION_PATH/install.sh" "$target_dir" "$BASHUNIT_VERSION"
+
+        echo "path=$BASHUNIT_DIRECTORY/bashunit" >> "$GITHUB_OUTPUT"
