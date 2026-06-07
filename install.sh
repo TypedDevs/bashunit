@@ -148,7 +148,7 @@ elif [[ $# -eq 2 ]]; then
 fi
 
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-LATEST_BASHUNIT_VERSION="0.37.0"
+LATEST_BASHUNIT_VERSION="0.38.0"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"

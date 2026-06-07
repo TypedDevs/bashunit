@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.38.0](https://github.com/TypedDevs/bashunit/compare/0.37.0...0.38.0) - 2026-06-07
+
 ### Added
 - Official `TypedDevs/bashunit` GitHub Action: composite install action, pinnable by commit SHA for immutable installs (`version`, `directory`, `add-to-path`, `verify-checksum` inputs; `path`, `version` outputs) (#695)
 - `install.sh` sha256 checksum verification via `BASHUNIT_VERIFY_CHECKSUM=true`, validating the download against the release `checksum` asset (#695)
