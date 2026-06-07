@@ -24,6 +24,11 @@ jobs:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org/
 
+      # OIDC trusted publishing (tokenless) requires npm >= 11.5.1.
+      # Node 22 (lts/jod) ships npm 10, so upgrade explicitly.
+      - name: Upgrade npm for trusted publishing
+        run: npm install -g npm@latest
+
       - name: Build bashunit single-file binary
         shell: bash
         run: ./build.sh bin
@@ -33,7 +38,8 @@ jobs:
         run: |
           test -x bin/bashunit || { echo "bin/bashunit missing or not executable"; exit 1; }
 
+      # No token: npm authenticates via GitHub OIDC (Trusted Publishing).
+      # Configure the trusted publisher once at npmjs.com -> bashunit -> Settings.
+      # Provenance is generated automatically.
       - name: Publish to npm
-        run: npm publish --access public --provenance
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --access public
