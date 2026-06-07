@@ -46,3 +46,39 @@ jobs:
           test -n "$BASHUNIT_INSTALLED_VERSION"
           # add-to-path defaults to true, so "bashunit" resolves on PATH
           bashunit --version
+
+  run-via-args:
+    name: "Run via args input"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write a passing and a failing sample test
+        run: |
+          mkdir -p sample_tests
+          printf 'function test_passes() { assert_same "1" "1"; }\n' > sample_tests/pass_test.sh
+          printf 'function test_fails() { assert_same "1" "2"; }\n' > sample_tests/fail_test.sh
+
+      - name: Run only the passing test via args (step should pass)
+        uses: ./
+        with:
+          directory: vendor/bashunit
+          args: sample_tests/pass_test.sh
+
+      - name: Run the failing test via args (expected to fail the step)
+        id: failing
+        continue-on-error: true
+        uses: ./
+        with:
+          directory: vendor/bashunit
+          add-to-path: 'false'
+          args: sample_tests/fail_test.sh
+
+      - name: Assert the failing run actually executed and failed
+        env:
+          OUTCOME: ${{ steps.failing.outcome }}
+        run: |
+          set -euo pipefail
+          # If args were ignored (install-only), the step would have succeeded.
+          test "$OUTCOME" = "failure"

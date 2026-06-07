@@ -23,6 +23,10 @@ inputs:
     description: 'Verify the downloaded binary against the release sha256 checksum asset.'
     required: false
     default: 'true'
+  args:
+    description: 'If set, run "bashunit <args>" after installing (e.g. "tests/ --strict"). Empty = install only.'
+    required: false
+    default: ''
 
 outputs:
   path:
@@ -42,6 +46,7 @@ runs:
         BASHUNIT_DIRECTORY: ${{ inputs.directory }}
         BASHUNIT_ADD_TO_PATH: ${{ inputs.add-to-path }}
         BASHUNIT_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
+        BASHUNIT_ARGS: ${{ inputs.args }}
         BASHUNIT_ACTION_PATH: ${{ github.action_path }}
       run: |
         set -euo pipefail
@@ -61,4 +66,11 @@ runs:
 
         if [ "$BASHUNIT_ADD_TO_PATH" = "true" ]; then
           echo "$target_dir" >> "$GITHUB_PATH"
+        fi
+
+        # Optionally run the suite. Word-splitting of $BASHUNIT_ARGS is intentional
+        # so callers can pass multiple CLI arguments as a single string.
+        if [ -n "$BASHUNIT_ARGS" ]; then
+          # shellcheck disable=SC2086
+          "$target_dir/bashunit" $BASHUNIT_ARGS
         fi
