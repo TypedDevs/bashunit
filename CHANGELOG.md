@@ -3,12 +3,12 @@
 ## Unreleased
 
 ### Added
-- Official `TypedDevs/bashunit` GitHub Action: composite action to install bashunit, pinnable by commit SHA for immutable, zizmor-friendly installs (`add-to-path` and `verify-checksum` inputs, `path`/`version` outputs)
-- `install.sh` optional sha256 checksum verification via `BASHUNIT_VERIFY_CHECKSUM=true` (validates the download against the release `checksum` asset)
+- Official `TypedDevs/bashunit` GitHub Action: composite install action, pinnable by commit SHA for immutable installs (`version`, `directory`, `add-to-path`, `verify-checksum` inputs; `path`, `version` outputs) (#695)
+- `install.sh` sha256 checksum verification via `BASHUNIT_VERIFY_CHECKSUM=true`, validating the download against the release `checksum` asset (#695)
 
 ### Fixed
-- `install.sh` creates nested target directories (`mkdir -p`), so non-existing parent folders no longer fail the install
-- `install.sh` now fails loudly (non-zero exit, no bogus binary) when a version cannot be downloaded, instead of silently reporting success
+- `install.sh` fails loudly (non-zero exit, no stub binary) on a failed download and retries transient failures, instead of silently reporting success (#695)
+- `install.sh` creates nested target directories (`mkdir -p`) (#695)
 
 ## [0.37.0](https://github.com/TypedDevs/bashunit/compare/0.36.0...0.37.0) - 2026-06-03
 
