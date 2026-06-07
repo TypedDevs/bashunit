@@ -1,0 +1,64 @@
+name: Install bashunit
+description: Install the bashunit testing framework binary at a pinned, immutable version.
+author: TypedDevs
+
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  version:
+    description: 'bashunit version to install (e.g. "0.37.0") or "latest".'
+    required: false
+    default: latest
+  directory:
+    description: 'Directory, relative to the workspace, where the bashunit binary is installed.'
+    required: false
+    default: lib
+  add-to-path:
+    description: 'Add the install directory to $GITHUB_PATH so you can run "bashunit" directly.'
+    required: false
+    default: 'true'
+  verify-checksum:
+    description: 'Verify the downloaded binary against the release sha256 checksum asset.'
+    required: false
+    default: 'true'
+
+outputs:
+  path:
+    description: Path to the installed bashunit binary, relative to the workspace.
+    value: ${{ steps.install.outputs.path }}
+  version:
+    description: The installed bashunit version (e.g. "0.37.0").
+    value: ${{ steps.install.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        BASHUNIT_VERSION: ${{ inputs.version }}
+        BASHUNIT_DIRECTORY: ${{ inputs.directory }}
+        BASHUNIT_ADD_TO_PATH: ${{ inputs.add-to-path }}
+        BASHUNIT_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
+        BASHUNIT_ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+
+        target_dir="$BASHUNIT_DIRECTORY"
+        case "$target_dir" in
+          /*) ;;
+          *) target_dir="$GITHUB_WORKSPACE/$target_dir" ;;
+        esac
+
+        "$BASHUNIT_ACTION_PATH/install.sh" "$target_dir" "$BASHUNIT_VERSION"
+
+        echo "path=$BASHUNIT_DIRECTORY/bashunit" >> "$GITHUB_OUTPUT"
+
+        version="$(NO_COLOR=1 "$target_dir/bashunit" --version | awk 'NR==1{print $NF}')"
+        echo "version=$version" >> "$GITHUB_OUTPUT"
+
+        if [ "$BASHUNIT_ADD_TO_PATH" = "true" ]; then
+          echo "$target_dir" >> "$GITHUB_PATH"
+        fi

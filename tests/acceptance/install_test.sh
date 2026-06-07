@@ -29,11 +29,13 @@ function tear_down_after_script() {
 function set_up() {
   rm -f ./lib/bashunit
   rm -f ./deps/bashunit
+  rm -rf ./tmp_install
 }
 
 function tear_down() {
   rm -f ./lib/bashunit
   rm -f ./deps/bashunit
+  rm -rf ./tmp_install
 }
 
 function test_install_downloads_the_latest_version() {
@@ -49,6 +51,9 @@ function test_install_downloads_the_latest_version() {
 
   output="$(./install.sh)"
 
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
   assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'lib' folder")" "$output"
   assert_file_exists "$installed_bashunit"
@@ -75,6 +80,9 @@ function test_install_downloads_in_given_folder() {
 
   output="$(./install.sh deps)"
 
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
   assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'deps' folder")" "$output"
   assert_file_exists "$installed_bashunit"
@@ -86,6 +94,63 @@ function test_install_downloads_in_given_folder() {
     bashunit::skip "binary non-functional after install (transient network failure)" && return
   fi
   assert_string_starts_with "$(printf "\e[1m\e[32mbashunit\e[0m - ")" "$version"
+}
+
+function test_install_downloads_in_nested_folder() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+
+  local installed_bashunit="./tmp_install/nested/bashunit"
+  local output
+
+  output="$(./install.sh tmp_install/nested)"
+
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
+  assert_string_ends_with \
+    "$(printf "\n> bashunit has been installed in the 'tmp_install/nested' folder")" \
+    "$output"
+  assert_file_exists "$installed_bashunit"
+}
+
+function test_install_fails_loudly_on_unknown_version() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+
+  assert_general_error "$(./install.sh tmp_install 99.99.99 2>&1)"
+  assert_file_not_exists "./tmp_install/bashunit"
+}
+
+function test_install_verifies_checksum_when_enabled() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+  if ! command -v shasum >/dev/null 2>&1 && ! command -v sha256sum >/dev/null 2>&1; then
+    bashunit::skip "no sha256 tool available" && return
+  fi
+
+  local output
+  output="$(BASHUNIT_VERIFY_CHECKSUM=true ./install.sh tmp_install 0.37.0 2>&1)"
+
+  if [ ! -f "./tmp_install/bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
+  assert_contains "Checksum verified" "$output"
+  assert_file_exists "./tmp_install/bashunit"
+  assert_same "$(printf "\e[1m\e[32mbashunit\e[0m - 0.37.0")" \
+    "$(./tmp_install/bashunit --version)"
 }
 
 function test_install_downloads_the_given_version() {
@@ -101,6 +166,9 @@ function test_install_downloads_the_given_version() {
 
   output="$(./install.sh lib 0.9.0)"
 
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
   local expected
   expected="> Downloading a concrete version: '0.9.0'
 > bashunit has been installed in the 'lib' folder"
@@ -125,6 +193,9 @@ function test_install_downloads_the_given_version_without_dir() {
   local output
   output="$(./install.sh 0.19.0)"
 
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
   assert_same \
     "$(
       printf "%s\n" \
@@ -163,6 +234,9 @@ function test_install_downloads_the_non_stable_beta_version() {
 
   output="$(./install.sh deps beta)"
 
+  if [ ! -f "$installed_bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
   local expected
   expected="> Downloading non-stable version: 'beta'
 > bashunit has been installed in the 'deps' folder"

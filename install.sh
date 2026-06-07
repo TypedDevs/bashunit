@@ -11,6 +11,55 @@ function is_git_installed() {
   command -v git >/dev/null 2>&1
 }
 
+function compute_sha256() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    echo ""
+  fi
+}
+
+# Verify the downloaded 'bashunit' file against the release 'checksum' asset.
+# Arguments: $1 - the bashunit download URL. Exits 1 (and removes the binary)
+# on any failure so a tampered or unverifiable download never looks successful.
+function verify_checksum() {
+  local url=$1
+  local checksum_url="${url%/bashunit}/checksum"
+
+  local expected
+  if command -v curl >/dev/null 2>&1; then
+    expected=$(curl -fsSL --retry 3 --retry-delay 2 "$checksum_url" 2>/dev/null | awk '{print $1}')
+  else
+    expected=$(wget -qO- "$checksum_url" 2>/dev/null | awk '{print $1}')
+  fi
+
+  if [ -z "$expected" ]; then
+    echo "Error: could not download checksum from $checksum_url" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  local actual
+  actual=$(compute_sha256 bashunit)
+  if [ -z "$actual" ]; then
+    echo "Error: no sha256 tool (shasum/sha256sum) available to verify checksum" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  if [ "$actual" != "$expected" ]; then
+    echo "Error: checksum mismatch for bashunit '$TAG'" >&2
+    echo "  expected: $expected" >&2
+    echo "  actual:   $actual" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  echo "> Checksum verified ($actual)"
+}
+
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
 
@@ -44,13 +93,25 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
+  local url="$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit"
   if command -v curl >/dev/null 2>&1; then
-    curl -L -O -J "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+    curl -fL --retry 3 --retry-delay 2 -O -J "$url" 2>/dev/null
   elif command -v wget >/dev/null 2>&1; then
-    wget "$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit" 2>/dev/null
+    wget --tries=3 "$url" 2>/dev/null || wget "$url" 2>/dev/null
   else
-    echo "Cannot download bashunit: curl or wget not found."
+    echo "Cannot download bashunit: curl or wget not found." >&2
+    exit 1
   fi
+
+  if [ ! -f "bashunit" ]; then
+    echo "Error: failed to download bashunit '$TAG' from $url" >&2
+    exit 1
+  fi
+
+  if [ "${BASHUNIT_VERIFY_CHECKSUM:-false}" = "true" ]; then
+    verify_checksum "$url"
+  fi
+
   chmod u+x "bashunit"
 }
 
@@ -92,7 +153,7 @@ TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
 rm -f "$DIR"/bashunit
-[ -d "$DIR" ] || mkdir "$DIR"
+[ -d "$DIR" ] || mkdir -p "$DIR"
 cd "$DIR"
 
 if [[ $VERSION == 'beta' ]]; then

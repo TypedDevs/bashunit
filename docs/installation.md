@@ -222,7 +222,38 @@ Downloading 'bashunit' to 'lib'...
 
 ## GitHub Actions
 
+The official `TypedDevs/bashunit` action installs the binary in one step.
+Pin it to a commit SHA for an immutable, supply-chain-safe install
+(keeps static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) happy):
+
 ::: code-group
+```yaml-vue [via action]
+# .github/workflows/bashunit-tests.yml
+name: Tests
+on: [pull_request, push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Pin to a commit SHA; the comment tracks the human-readable tag.
+      - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
+        with:
+          version: '{{ pkg.version }}' # or "latest" (default)
+          directory: lib               # optional, "lib" by default
+          add-to-path: 'true'          # optional, "true" by default
+          verify-checksum: 'true'      # optional, "true" by default
+      # add-to-path puts the binary on $PATH, so just call "bashunit":
+      - run: bashunit tests
+```
+
+**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`).
+**Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
+
+`verify-checksum` validates the downloaded binary against the release `checksum`
+asset (sha256) and fails the install on any mismatch. Set it to `false` only when
+pinning a release published before checksum assets existed.
+
 ```yaml [via install.sh]
 # .github/workflows/bashunit-tests.yml
 name: Tests
