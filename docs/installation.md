@@ -242,12 +242,17 @@ jobs:
           version: '{{ pkg.version }}' # or "latest" (default)
           directory: lib               # optional, "lib" by default
           add-to-path: 'true'          # optional, "true" by default
+          verify-checksum: 'true'      # optional, "true" by default
       # add-to-path puts the binary on $PATH, so just call "bashunit":
       - run: bashunit tests
 ```
 
-**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`).
+**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`).
 **Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
+
+`verify-checksum` validates the downloaded binary against the release `checksum`
+asset (sha256) and fails the install on any mismatch. Set it to `false` only when
+pinning a release published before checksum assets existed.
 
 ```yaml [via install.sh]
 # .github/workflows/bashunit-tests.yml

@@ -19,6 +19,10 @@ inputs:
     description: 'Add the install directory to $GITHUB_PATH so you can run "bashunit" directly.'
     required: false
     default: 'true'
+  verify-checksum:
+    description: 'Verify the downloaded binary against the release sha256 checksum asset.'
+    required: false
+    default: 'true'
 
 outputs:
   path:
@@ -37,6 +41,7 @@ runs:
         BASHUNIT_VERSION: ${{ inputs.version }}
         BASHUNIT_DIRECTORY: ${{ inputs.directory }}
         BASHUNIT_ADD_TO_PATH: ${{ inputs.add-to-path }}
+        BASHUNIT_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
         BASHUNIT_ACTION_PATH: ${{ github.action_path }}
       run: |
         set -euo pipefail

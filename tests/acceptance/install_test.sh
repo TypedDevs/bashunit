@@ -121,6 +121,26 @@ function test_install_fails_loudly_on_unknown_version() {
   assert_file_not_exists "./tmp_install/bashunit"
 }
 
+function test_install_verifies_checksum_when_enabled() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+  if ! command -v shasum >/dev/null 2>&1 && ! command -v sha256sum >/dev/null 2>&1; then
+    bashunit::skip "no sha256 tool available" && return
+  fi
+
+  local output
+  output="$(BASHUNIT_VERIFY_CHECKSUM=true ./install.sh tmp_install 0.37.0 2>&1)"
+
+  assert_contains "Checksum verified" "$output"
+  assert_file_exists "./tmp_install/bashunit"
+  assert_same "$(printf "\e[1m\e[32mbashunit\e[0m - 0.37.0")" \
+    "$(./tmp_install/bashunit --version)"
+}
+
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     bashunit::skip "no internet connection" && return

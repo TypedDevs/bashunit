@@ -11,6 +11,55 @@ function is_git_installed() {
   command -v git >/dev/null 2>&1
 }
 
+function compute_sha256() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  else
+    echo ""
+  fi
+}
+
+# Verify the downloaded 'bashunit' file against the release 'checksum' asset.
+# Arguments: $1 - the bashunit download URL. Exits 1 (and removes the binary)
+# on any failure so a tampered or unverifiable download never looks successful.
+function verify_checksum() {
+  local url=$1
+  local checksum_url="${url%/bashunit}/checksum"
+
+  local expected
+  if command -v curl >/dev/null 2>&1; then
+    expected=$(curl -fsSL "$checksum_url" 2>/dev/null | awk '{print $1}')
+  else
+    expected=$(wget -qO- "$checksum_url" 2>/dev/null | awk '{print $1}')
+  fi
+
+  if [ -z "$expected" ]; then
+    echo "Error: could not download checksum from $checksum_url" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  local actual
+  actual=$(compute_sha256 bashunit)
+  if [ -z "$actual" ]; then
+    echo "Error: no sha256 tool (shasum/sha256sum) available to verify checksum" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  if [ "$actual" != "$expected" ]; then
+    echo "Error: checksum mismatch for bashunit '$TAG'" >&2
+    echo "  expected: $expected" >&2
+    echo "  actual:   $actual" >&2
+    rm -f bashunit
+    exit 1
+  fi
+
+  echo "> Checksum verified ($actual)"
+}
+
 function build_and_install_beta() {
   echo "> Downloading non-stable version: 'beta'"
 
@@ -58,6 +107,11 @@ function install() {
     echo "Error: failed to download bashunit '$TAG' from $url" >&2
     exit 1
   fi
+
+  if [ "${BASHUNIT_VERIFY_CHECKSUM:-false}" = "true" ]; then
+    verify_checksum "$url"
+  fi
+
   chmod u+x "bashunit"
 }
 
