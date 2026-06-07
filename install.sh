@@ -30,7 +30,7 @@ function verify_checksum() {
 
   local expected
   if command -v curl >/dev/null 2>&1; then
-    expected=$(curl -fsSL "$checksum_url" 2>/dev/null | awk '{print $1}')
+    expected=$(curl -fsSL --retry 3 --retry-delay 2 "$checksum_url" 2>/dev/null | awk '{print $1}')
   else
     expected=$(wget -qO- "$checksum_url" 2>/dev/null | awk '{print $1}')
   fi
@@ -95,9 +95,9 @@ function install() {
 
   local url="$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit"
   if command -v curl >/dev/null 2>&1; then
-    curl -fL -O -J "$url" 2>/dev/null
+    curl -fL --retry 3 --retry-delay 2 -O -J "$url" 2>/dev/null
   elif command -v wget >/dev/null 2>&1; then
-    wget "$url" 2>/dev/null
+    wget --tries=3 "$url" 2>/dev/null || wget "$url" 2>/dev/null
   else
     echo "Cannot download bashunit: curl or wget not found." >&2
     exit 1
