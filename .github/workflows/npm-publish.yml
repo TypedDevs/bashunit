@@ -48,4 +48,5 @@ jobs:
       - name: Publish to npm
         run: |
           echo "publishing with npm $(npm -v)"
-          npm publish --access public
+          echo "OIDC request url present: ${ACTIONS_ID_TOKEN_REQUEST_URL:+yes}${ACTIONS_ID_TOKEN_REQUEST_URL:-NO}"
+          npm publish --access public --loglevel verbose
