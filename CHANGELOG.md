@@ -6,6 +6,7 @@
 - GitHub Action `args` input: when set, runs `bashunit <args>` after installing, so a workflow can install and run the suite in a single step
 - Floating major tag for the GitHub Action: the release process now force-moves `v0` to each release, so workflows can pin `TypedDevs/bashunit@v0` to track the latest release within a major (#700)
 - `bashunit init` now scaffolds a `.github/workflows/tests.yml` CI workflow using the official action (existing files are left untouched) (#702)
+- `--report-junit <file>` flag as an alias of `--log-junit`, for naming parity with `--report-html` (#705)
 
 ### Changed
 - `install.sh` now verifies the release checksum by default (set `BASHUNIT_VERIFY_CHECKSUM=false` to opt out); it soft-skips with a warning when a checksum asset is unavailable unless verification was explicitly requested (#703)

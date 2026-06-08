@@ -61,7 +61,7 @@ bashunit test tests/ --parallel --simple
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
 | `--output <format>`            | Output format (`tap` for TAP version 13)         |
 | `-w, --watch`                  | Watch files and re-run tests on change           |
-| `--log-junit <file>`           | Write JUnit XML report                           |
+| `--log-junit, --report-junit <file>` | Write JUnit XML report                     |
 | `--log-gha <file>`             | Write GitHub Actions workflow-commands log       |
 | `-j, --jobs <N>`               | Run tests in parallel with max N concurrent jobs |
 | `-p, --parallel`               | Run tests in parallel                            |
