@@ -361,11 +361,12 @@ bashunit test tests/ --log-junit results.xml
 bashunit test tests/ --report-html report.html
 ```
 ```bash [GitHub Actions]
-bashunit test tests/ --log-gha gha.log && cat gha.log
+# Stream annotations straight to the runner log:
+bashunit test tests/ --log-gha /dev/stdout
 ```
 :::
 
-The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests. When streamed to stdout on a runner, they appear as inline annotations in the "Files changed" tab of a pull request.
+The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests, including the failing test's `file` and `line`. Point it at `/dev/stdout` (or stream a log file to stdout) on a runner and the failures appear as inline annotations in the "Files changed" tab of a pull request.
 
 ### Show Output on Failure
 

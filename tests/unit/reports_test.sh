@@ -14,6 +14,8 @@ function set_up() {
   _BASHUNIT_REPORTS_TEST_DURATIONS=()
   _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
   _BASHUNIT_REPORTS_TEST_FAILURES=()
+  _BASHUNIT_REPORTS_TEST_LINES=()
+  _BASHUNIT_TEST_LOCATION=""
 
   # Unset report env vars by default
   unset BASHUNIT_LOG_JUNIT
@@ -385,6 +387,36 @@ function test_generate_gha_log_skips_skipped_test() {
   content=$(cat "$_TEMP_OUTPUT_FILE")
 
   assert_empty "$content"
+}
+
+function test_generate_gha_log_includes_line_when_location_known() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+  _BASHUNIT_TEST_LOCATION="tests/foo_test.sh:42"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_fail" "100" "1" "failed" "boom"
+  bashunit::reports::generate_gha_log "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains '::error file=tests/foo_test.sh,line=42,title=test_fail' "$content"
+}
+
+function test_print_gha_annotations_failed_only_to_stdout() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_ok" "100" "1" "passed"
+  bashunit::reports::add_test "tests/foo_test.sh" "test_bad" "100" "1" "failed" "boom"
+  bashunit::reports::add_test "tests/foo_test.sh" "test_risky" "10" "0" "risky"
+
+  local output
+  output=$(bashunit::reports::print_gha_annotations failed-only)
+
+  assert_contains '::error file=tests/foo_test.sh' "$output"
+  assert_not_contains '::warning' "$output"
+  assert_not_contains 'test_risky' "$output"
 }
 
 function test_generate_gha_log_encodes_newlines_in_message() {

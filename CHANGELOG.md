@@ -9,6 +9,7 @@
 
 ### Changed
 - `install.sh` now verifies the release checksum by default (set `BASHUNIT_VERIFY_CHECKSUM=false` to opt out); it soft-skips with a warning when a checksum asset is unavailable unless verification was explicitly requested (#703)
+- `--log-gha` annotations now include the failing test's `line` (`::error file=…,line=…`), so they pin to the exact line in a pull request's "Files changed" tab (#704)
 
 ## [0.38.0](https://github.com/TypedDevs/bashunit/compare/0.37.0...0.38.0) - 2026-06-07
 

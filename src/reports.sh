@@ -7,6 +7,7 @@ _BASHUNIT_REPORTS_TEST_STATUSES=()
 _BASHUNIT_REPORTS_TEST_DURATIONS=()
 _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
 _BASHUNIT_REPORTS_TEST_FAILURES=()
+_BASHUNIT_REPORTS_TEST_LINES=()
 
 function bashunit::reports::add_test_snapshot() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "snapshot"
@@ -47,12 +48,21 @@ function bashunit::reports::add_test() {
   local status="$5"
   local failure_message="${6:-}"
 
+  # Capture the line number from the current test location ("file:line"),
+  # but only when it belongs to this test's file, so a stale location from a
+  # prior test never mislabels this entry.
+  local line=""
+  case "${_BASHUNIT_TEST_LOCATION:-}" in
+    "$file":*) line="${_BASHUNIT_TEST_LOCATION##*:}" ;;
+  esac
+
   _BASHUNIT_REPORTS_TEST_FILES[${#_BASHUNIT_REPORTS_TEST_FILES[@]}]="$file"
   _BASHUNIT_REPORTS_TEST_NAMES[${#_BASHUNIT_REPORTS_TEST_NAMES[@]}]="$test_name"
   _BASHUNIT_REPORTS_TEST_STATUSES[${#_BASHUNIT_REPORTS_TEST_STATUSES[@]}]="$status"
   _BASHUNIT_REPORTS_TEST_ASSERTIONS[${#_BASHUNIT_REPORTS_TEST_ASSERTIONS[@]}]="$assertions"
   _BASHUNIT_REPORTS_TEST_DURATIONS[${#_BASHUNIT_REPORTS_TEST_DURATIONS[@]}]="$duration"
   _BASHUNIT_REPORTS_TEST_FAILURES[${#_BASHUNIT_REPORTS_TEST_FAILURES[@]}]="$failure_message"
+  _BASHUNIT_REPORTS_TEST_LINES[${#_BASHUNIT_REPORTS_TEST_LINES[@]}]="$line"
 }
 
 function bashunit::reports::__xml_escape() {
@@ -131,10 +141,10 @@ function bashunit::reports::__gha_encode() {
   printf '%s' "$text"
 }
 
-function bashunit::reports::generate_gha_log() {
-  local output_file="$1"
-
-  : >"$output_file"
+# Echoes GitHub Actions workflow-command annotations to stdout.
+# Arguments: $1 - "failed-only" to emit just errors (default: all reportable).
+function bashunit::reports::print_gha_annotations() {
+  local only="${1:-all}"
 
   local i
   for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
@@ -142,6 +152,7 @@ function bashunit::reports::generate_gha_log() {
     local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
     local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
     local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
+    local line="${_BASHUNIT_REPORTS_TEST_LINES[$i]:-}"
     local level="" message=""
 
     case "$status" in
@@ -162,10 +173,25 @@ function bashunit::reports::generate_gha_log() {
         ;;
     esac
 
+    if [ "$only" = "failed-only" ] && [ "$status" != "failed" ]; then
+      continue
+    fi
+
+    local location="file=${file}"
+    if [ -n "$line" ]; then
+      location="${location},line=${line}"
+    fi
+
     local encoded_message
     encoded_message=$(bashunit::reports::__gha_encode "$message")
-    echo "::${level} file=${file},title=${name}::${encoded_message}" >>"$output_file"
+    echo "::${level} ${location},title=${name}::${encoded_message}"
   done
+}
+
+function bashunit::reports::generate_gha_log() {
+  local output_file="$1"
+
+  bashunit::reports::print_gha_annotations all >"$output_file"
 }
 
 function bashunit::reports::generate_report_html() {
