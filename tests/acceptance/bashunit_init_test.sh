@@ -33,6 +33,23 @@ function test_bashunit_init_custom_directory() {
   popd >/dev/null
 }
 
+function test_bashunit_init_creates_github_workflow() {
+  pushd "$TMP_DIR" >/dev/null
+  "$BASHUNIT_PATH" init >/tmp/init.log
+  assert_file_exists ".github/workflows/tests.yml"
+  assert_file_contains ".github/workflows/tests.yml" "TypedDevs/bashunit@"
+  popd >/dev/null
+}
+
+function test_bashunit_init_does_not_overwrite_existing_workflow() {
+  pushd "$TMP_DIR" >/dev/null
+  mkdir -p ".github/workflows"
+  echo "custom-workflow" >".github/workflows/tests.yml"
+  "$BASHUNIT_PATH" init >/tmp/init.log
+  assert_file_contains ".github/workflows/tests.yml" "custom-workflow"
+  popd >/dev/null
+}
+
 function test_bashunit_init_updates_env() {
   bashunit::skip "flaky" && return
 

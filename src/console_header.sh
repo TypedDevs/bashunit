@@ -209,6 +209,7 @@ Arguments:
 Creates:
   - bootstrap.sh              Setup file for test configuration
   - example_test.sh           Sample test file to get started
+  - .github/workflows/tests.yml  CI workflow using the official action
 
 Examples:
   bashunit init               Create tests/ directory

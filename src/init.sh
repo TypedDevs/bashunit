@@ -28,6 +28,25 @@ SH
     echo "> Created $example_test"
   fi
 
+  local workflow_dir=".github/workflows"
+  local workflow_file="$workflow_dir/tests.yml"
+  if [ ! -f "$workflow_file" ]; then
+    mkdir -p "$workflow_dir"
+    cat >"$workflow_file" <<SH
+name: Tests
+on: [pull_request, push]
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: TypedDevs/bashunit@v0
+        with:
+          args: $tests_dir
+SH
+    echo "> Created $workflow_file"
+  fi
+
   local env_file=".env"
   local env_line="BASHUNIT_BOOTSTRAP=$bootstrap_file"
   if [ -f "$env_file" ]; then
