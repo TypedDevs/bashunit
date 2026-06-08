@@ -301,6 +301,39 @@ jobs:
 asset (sha256) and fails the install on any mismatch. Set it to `false` only when
 pinning a release published before checksum assets existed.
 
+### Keep the SHA pin fresh automatically
+
+A commit-SHA pin is the most secure, but bumping it by hand is tedious. Let a bot do it
+and keep the `# {{ pkg.version }}` comment as the human-readable tracker.
+
+::: code-group
+```json [Renovate - renovate.json]
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["TypedDevs/bashunit"],
+      "pinDigests": true
+    }
+  ]
+}
+```
+
+```yaml [Dependabot - .github/dependabot.yml]
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+```
+:::
+
+Renovate updates the pinned SHA and refreshes the trailing `# tag` comment in the same PR.
+Dependabot bumps `github-actions` pins on the schedule you set.
+
 ::: tip
 See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
