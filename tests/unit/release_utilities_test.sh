@@ -328,3 +328,15 @@ function test_build_project_dry_run_does_not_execute() {
   assert_contains "DRY-RUN" "$result"
   assert_contains "Would run" "$result"
 }
+
+##########################
+# Major tag test
+##########################
+
+function test_major_tag_returns_v_prefixed_major_for_zero() {
+  assert_same "v0" "$(release::major_tag "0.38.0")"
+}
+
+function test_major_tag_returns_v_prefixed_major_for_one() {
+  assert_same "v1" "$(release::major_tag "1.2.3")"
+}

@@ -223,7 +223,8 @@ Downloading 'bashunit' to 'lib'...
 ## GitHub Actions
 
 The official `TypedDevs/bashunit` action installs the binary in one step.
-Pin it to a commit SHA for an immutable, supply-chain-safe install
+Pin it to the floating major tag `@v0` to track the latest release within a major,
+or to a commit SHA for an immutable, supply-chain-safe install
 (keeps static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) happy):
 
 ::: code-group
@@ -236,8 +237,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      # Pin to a commit SHA; the comment tracks the human-readable tag.
-      - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
+      # @v0 tracks the latest release within the v0 major.
+      # For an immutable pin use a commit SHA: TypedDevs/bashunit@<sha> # {{ pkg.version }}
+      - uses: TypedDevs/bashunit@v0
         with:
           version: '{{ pkg.version }}' # or "latest" (default)
           directory: lib               # optional, "lib" by default
@@ -257,7 +259,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       # Install and run the suite in a single step via the `args` input.
-      - uses: TypedDevs/bashunit@<commit-sha> # {{ pkg.version }}
+      - uses: TypedDevs/bashunit@v0
         with:
           version: '{{ pkg.version }}'
           args: tests/ --strict
