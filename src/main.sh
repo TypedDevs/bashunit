@@ -92,7 +92,7 @@ function bashunit::main::cmd_test() {
       set +o allexport
       shift
       ;;
-    --log-junit)
+    --log-junit | --report-junit)
       export BASHUNIT_LOG_JUNIT="$2"
       shift
       ;;
