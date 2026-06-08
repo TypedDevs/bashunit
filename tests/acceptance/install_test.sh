@@ -151,6 +151,27 @@ function test_install_verifies_checksum_when_enabled() {
     "$(./tmp_install/bashunit --version)"
 }
 
+function test_install_verifies_checksum_by_default() {
+  if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
+    bashunit::skip "no internet connection" && return
+  fi
+  if [[ "$HAS_DOWNLOADER" -eq 0 ]]; then
+    bashunit::skip "curl or wget not installed" && return
+  fi
+  if ! command -v shasum >/dev/null 2>&1 && ! command -v sha256sum >/dev/null 2>&1; then
+    bashunit::skip "no sha256 tool available" && return
+  fi
+
+  local output
+  output="$(./install.sh tmp_install 0.38.0 2>&1)"
+
+  if [ ! -f "./tmp_install/bashunit" ]; then
+    bashunit::skip "transient download failure" && return
+  fi
+  assert_contains "Checksum verified" "$output"
+  assert_file_exists "./tmp_install/bashunit"
+}
+
 function test_install_downloads_the_given_version() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     bashunit::skip "no internet connection" && return

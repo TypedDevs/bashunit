@@ -30,6 +30,13 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
+::: tip Automatic checksum verification
+`install.sh` verifies the download against the release `checksum` asset by default and
+aborts on a mismatch, so a tampered or corrupted download never lands. Set
+`BASHUNIT_VERIFY_CHECKSUM=false` to opt out (e.g. for old releases published before
+checksum assets existed). The manual check below is only needed when you opt out.
+:::
+
 #### Verify
 
 ```bash-vue

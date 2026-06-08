@@ -24,9 +24,30 @@ function compute_sha256() {
 # Verify the downloaded 'bashunit' file against the release 'checksum' asset.
 # Arguments: $1 - the bashunit download URL. Exits 1 (and removes the binary)
 # on any failure so a tampered or unverifiable download never looks successful.
+# Handle an inability to verify (missing sha256 tool or checksum asset).
+# Strict (fails) when the user explicitly opted in; a soft warning otherwise,
+# so installing older releases published before checksum assets existed keeps
+# working while a tampered binary (checksum mismatch) is always rejected.
+function cannot_verify() {
+  local reason=$1
+  if [ "${VERIFY_CHECKSUM_EXPLICIT:-false}" = "true" ]; then
+    echo "Error: $reason" >&2
+    rm -f bashunit
+    exit 1
+  fi
+  echo "> Skipping checksum verification: $reason" >&2
+}
+
 function verify_checksum() {
   local url=$1
   local checksum_url="${url%/bashunit}/checksum"
+
+  local actual
+  actual=$(compute_sha256 bashunit)
+  if [ -z "$actual" ]; then
+    cannot_verify "no sha256 tool (shasum/sha256sum) available to verify checksum"
+    return
+  fi
 
   local expected
   if command -v curl >/dev/null 2>&1; then
@@ -36,17 +57,8 @@ function verify_checksum() {
   fi
 
   if [ -z "$expected" ]; then
-    echo "Error: could not download checksum from $checksum_url" >&2
-    rm -f bashunit
-    exit 1
-  fi
-
-  local actual
-  actual=$(compute_sha256 bashunit)
-  if [ -z "$actual" ]; then
-    echo "Error: no sha256 tool (shasum/sha256sum) available to verify checksum" >&2
-    rm -f bashunit
-    exit 1
+    cannot_verify "could not download checksum from $checksum_url"
+    return
   fi
 
   if [ "$actual" != "$expected" ]; then
@@ -57,7 +69,7 @@ function verify_checksum() {
     exit 1
   fi
 
-  echo "> Checksum verified ($actual)"
+  echo "> Checksum verified ($actual)" >&2
 }
 
 function build_and_install_beta() {
@@ -108,7 +120,7 @@ function install() {
     exit 1
   fi
 
-  if [ "${BASHUNIT_VERIFY_CHECKSUM:-false}" = "true" ]; then
+  if [ "$VERIFY_CHECKSUM" = "true" ]; then
     verify_checksum "$url"
   fi
 
@@ -122,6 +134,15 @@ function install() {
 # Defaults
 DIR="lib"
 VERSION="latest"
+
+# Checksum verification is on by default. Track whether the user set it
+# explicitly so we can be strict on opt-in and lenient on the default.
+if [ -n "${BASHUNIT_VERIFY_CHECKSUM+x}" ]; then
+  VERIFY_CHECKSUM_EXPLICIT="true"
+else
+  VERIFY_CHECKSUM_EXPLICIT="false"
+fi
+VERIFY_CHECKSUM="${BASHUNIT_VERIFY_CHECKSUM:-true}"
 
 function is_version() {
   regex_match "$1" '^[0-9]+\.[0-9]+\.[0-9]+$' || [[ "$1" == "latest" || "$1" == "beta" ]]
