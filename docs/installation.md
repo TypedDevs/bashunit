@@ -1,6 +1,10 @@
 # Installation
 
-**bashunit** ships as a single-file executable. Pick the option that fits your project: `install.sh` (universal), [npm](#npm) (Node.js projects), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), or [bashdep](#bashdep).
+**bashunit** ships as a single-file executable. Pick the option that fits your project: [`install.sh`](#install-sh) (universal), [npm](#npm) (Node.js projects), [GitHub Actions](#github-actions) (recommended for CI), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), or [bashdep](#bashdep).
+
+::: tip Running in CI?
+Use the official [GitHub Actions](#github-actions) step instead of downloading the binary yourself. It pins an immutable version and verifies the release checksum, so a bad download or a tampered/poisoned script fails the build loudly instead of slipping into your repo.
+:::
 
 ## Requirements
 
@@ -222,8 +226,11 @@ Downloading 'bashunit' to 'lib'...
 
 ## GitHub Actions
 
-The official `TypedDevs/bashunit` action installs the binary in one step.
-Pin it to a commit SHA for an immutable, supply-chain-safe install
+The official [`TypedDevs/bashunit`](https://github.com/marketplace/actions/install-bashunit) action
+is the recommended way to run bashunit in CI: it installs the binary in one step at a pinned,
+immutable version and verifies the release checksum — no manual `curl`, and a bad or tampered
+download fails the build instead of landing in your repo.
+Pin it to a commit SHA for the strongest, supply-chain-safe install
 (keeps static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) happy):
 
 ::: code-group
