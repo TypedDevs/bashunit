@@ -536,6 +536,7 @@ function release::sandbox::run() {
   # Show what would happen with push/gh release
   release::log_sandbox "Would push: git push origin main"
   release::log_sandbox "Would push tag: git push origin $VERSION"
+  release::log_sandbox "Would move major tag: git push origin $(release::major_tag "$VERSION") --force"
   release::log_sandbox "Would create GitHub release with assets: bin/bashunit, bin/checksum"
   release::log_sandbox "Would update 'latest' branch"
 
@@ -558,6 +559,19 @@ function release::increment_minor() {
   local major minor
   IFS=. read -r major minor _ <<<"$version"
   echo "$major.$((minor + 1)).0"
+}
+
+##
+# Floating major tag for a version (e.g. "0.38.0" -> "v0").
+# Consumers of the GitHub Action can pin "@v0" to track the latest
+# release within a major without chasing exact patch tags.
+# Arguments: $1 - version (e.g. "0.38.0")
+##
+function release::major_tag() {
+  local version=$1
+  local major
+  IFS=. read -r major _ <<<"$version"
+  echo "v$major"
 }
 
 function release::validate_semver() {
@@ -850,12 +864,20 @@ function release::git_commit_and_tag() {
   git tag "$new_version"
   release::log_success "Created tag $new_version"
 
+  local major_tag
+  major_tag=$(release::major_tag "$new_version")
+  git tag -f "$major_tag" "$new_version"
+  release::log_success "Moved major tag $major_tag -> $new_version"
+
   if release::confirm_action "Do you want to push commit and tag to origin?"; then
     git push origin main
     git push origin "$new_version"
+    git push origin "$major_tag" --force
     release::log_success "Pushed to origin"
   else
-    release::log_warning "Skipping push (run manually: git push origin main && git push origin $new_version)"
+    release::log_warning "Skipping push. Run manually:"
+    release::log_warning "  git push origin main && git push origin $new_version"
+    release::log_warning "  git push origin $major_tag --force"
   fi
 }
 
