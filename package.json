@@ -1,7 +1,7 @@
 {
   "name": "bashunit",
-  "version": "0.39.0",
-  "checksum": "37c228533b5e565147b4daaadfb2a1fe5227aa268de7dc41dd967fa85cab288f",
+  "version": "0.39.1",
+  "checksum": "0cb0153ebcf7198371051332b8e8fce36c47b514eef9bb362148f404837c2e82",
   "description": "A simple testing library for bash scripts.",
   "homepage": "https://bashunit.typeddevs.com",
   "repository": {
