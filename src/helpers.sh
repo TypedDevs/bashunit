@@ -322,10 +322,12 @@ function bashunit::helper::get_latest_tag() {
     return 1
   fi
 
+  # Floating major tags (e.g. v0) are not releases and must not win
   git ls-remote --tags "$BASHUNIT_GIT_REPO" |
     awk '{print $2}' |
     sed 's|^refs/tags/||' |
     grep -v '\^{}' |
+    grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' |
     sort -Vr |
     head -n 1
 }
