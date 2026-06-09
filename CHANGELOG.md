@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.39.0](https://github.com/TypedDevs/bashunit/compare/0.38.0...0.39.0) - 2026-06-09
+
 ### Added
 - GitHub Action `args` input: when set, runs `bashunit <args>` after installing, so a workflow can install and run the suite in a single step
 - Floating major tag for the GitHub Action: the release process now force-moves `v0` to each release, so workflows can pin `TypedDevs/bashunit@v0` to track the latest release within a major (#700)
