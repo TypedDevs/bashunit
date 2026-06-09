@@ -292,6 +292,17 @@ EOF
   unset -f git # remove the mock
 }
 
+function test_get_latest_tag_ignores_floating_major_tags() {
+  bashunit::mock git <<EOF
+fc9aac40eb8e5ad4483f08d79eb678a3650dcf78        refs/tags/0.38.0
+3977be123b0b73cfdf4b4eff46b909f37aa83b3c        refs/tags/0.39.0
+9bb3726a1bf83fb09ca548a398762ab89baaa9b6        refs/tags/v0
+b546c693198870dd75d1a102b94f4ddad6f4f3ea        refs/tags/v0^{}
+EOF
+  assert_same "0.39.0" "$(bashunit::helper::get_latest_tag)"
+  unset -f git # remove the mock
+}
+
 function test_to_run_with_filter_matching_string_in_function_name() {
   local functions
   functions=("test_my_awesome_function" "test_your_awesome_function" "test_so_lala_function")

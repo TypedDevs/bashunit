@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `bashunit upgrade` resolved the floating `v0` Action tag as the latest version, breaking upgrades; it now only considers exact-version tags
+
 ## [0.39.0](https://github.com/TypedDevs/bashunit/compare/0.38.0...0.39.0) - 2026-06-09
 
 ### Added
