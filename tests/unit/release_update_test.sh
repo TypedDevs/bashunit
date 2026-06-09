@@ -103,6 +103,30 @@ function test_update_install_version_changes_version_string() {
   rm -rf "$temp_dir"
 }
 
+function test_update_action_version_changes_only_numeric_default() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  cp "$FIXTURES_DIR/mock_action.yml" "$temp_dir/action.yml"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_action_version "0.31.0" 2>/dev/null
+  )
+
+  local result
+  result=$(cat "$temp_dir/action.yml")
+  # The version default is bumped...
+  assert_contains "default: '0.31.0'" "$result"
+  # ...but non-numeric defaults are left untouched.
+  assert_contains "default: lib" "$result"
+  assert_contains "default: 'true'" "$result"
+  assert_not_contains "default: '0.30.0'" "$result"
+
+  rm -rf "$temp_dir"
+}
+
 function test_update_package_json_version_changes_version_string() {
   local temp_dir
   temp_dir=$(mktemp -d)

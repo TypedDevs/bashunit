@@ -9,6 +9,7 @@
 - `--report-junit <file>` flag as an alias of `--log-junit`, for naming parity with `--report-html` (#705)
 
 ### Changed
+- The GitHub Action's `version` input now defaults to the concrete version pinned at the action ref (bumped by the release process) instead of `latest`, so the installed bashunit version is visible at the call site and pinning the action by SHA pins the version; pass `version: latest` to opt into the build-time tag explicitly
 - `install.sh` now verifies the release checksum by default (set `BASHUNIT_VERIFY_CHECKSUM=false` to opt out); it soft-skips with a warning when a checksum asset is unavailable unless verification was explicitly requested (#703)
 - `--log-gha` annotations now include the failing test's `line` (`::error file=…,line=…`), so they pin to the exact line in a pull request's "Files changed" tab (#704)
 

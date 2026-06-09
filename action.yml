@@ -8,9 +8,9 @@ branding:
 
 inputs:
   version:
-    description: 'bashunit version to install (e.g. "0.37.0") or "latest".'
+    description: 'bashunit version to install (e.g. "0.37.0"). Defaults to the version pinned at this action ref. Pass "latest" to override.'
     required: false
-    default: latest
+    default: '0.38.0'
   directory:
     description: 'Directory, relative to the workspace, where the bashunit binary is installed.'
     required: false
