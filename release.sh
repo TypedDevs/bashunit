@@ -13,7 +13,7 @@ declare -r EXIT_EXECUTION_ERROR=2
 # Constants
 GITHUB_REPO_PATH="TypedDevs/bashunit"
 GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
-RELEASE_FILES=("bashunit" "install.sh" "package.json" "docs/package.json" "CHANGELOG.md")
+RELEASE_FILES=("bashunit" "install.sh" "action.yml" "package.json" "docs/package.json" "CHANGELOG.md")
 
 # Helper function for regex matching (Bash 3.0+ compatible)
 function regex_match() {
@@ -509,6 +509,7 @@ function release::sandbox::run() {
   # Run release steps in sandbox (cd already done in setup_git)
   release::update_bashunit_version "$VERSION"
   release::update_install_version "$VERSION"
+  release::update_action_version "$VERSION"
   release::update_package_json_version "$VERSION"
   release::update_changelog "$VERSION" "$CURRENT_VERSION"
 
@@ -629,6 +630,15 @@ function release::update_install_version() {
     "LATEST_BASHUNIT_VERSION=\"[^\"]*\"" \
     "LATEST_BASHUNIT_VERSION=\"$new_version\"" \
     "LATEST_BASHUNIT_VERSION"
+}
+
+function release::update_action_version() {
+  local new_version=$1
+  release::update_file_pattern \
+    "action.yml" \
+    "default: '[0-9][^']*'" \
+    "default: '$new_version'" \
+    "action.yml default version"
 }
 
 function release::update_package_json_version() {
@@ -1032,6 +1042,9 @@ function release::main() {
 
   release::update_install_version "$VERSION"
   release::state::record_step "update_install_version"
+
+  release::update_action_version "$VERSION"
+  release::state::record_step "update_action_version"
 
   release::update_package_json_version "$VERSION"
   release::state::record_step "update_package_json_version"

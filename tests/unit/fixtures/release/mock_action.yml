@@ -1,0 +1,12 @@
+name: Install bashunit
+inputs:
+  version:
+    description: 'bashunit version to install.'
+    required: false
+    default: '0.30.0'
+  directory:
+    required: false
+    default: lib
+  add-to-path:
+    required: false
+    default: 'true'
