@@ -86,7 +86,7 @@ Examples:
   bashunit doc contains               Show docs for 'contains' assertions
   bashunit init                       Initialize test directory
 
-More info: https://bashunit.typeddevs.com/command-line
+More info: https://bashunit.com/command-line
 EOF
 }
 
@@ -275,7 +275,7 @@ Arguments:
 Note: You can also use 'bashunit test --assert <fn> <args>' (deprecated).
   The 'bashunit assert' subcommand is the recommended approach.
 
-More info: https://bashunit.typeddevs.com/standalone
+More info: https://bashunit.com/standalone
 EOF
 }
 

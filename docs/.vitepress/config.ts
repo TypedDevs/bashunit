@@ -15,14 +15,14 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#22c55e' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'bashunit' }],
-    ['meta', { property: 'og:image', content: 'https://bashunit.typeddevs.com/og-image.png' }],
+    ['meta', { property: 'og:image', content: 'https://bashunit.com/og-image.png' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@bashunit' }],
-    ['meta', { name: 'twitter:image', content: 'https://bashunit.typeddevs.com/og-image.png' }]
+    ['meta', { name: 'twitter:image', content: 'https://bashunit.com/og-image.png' }]
   ],
   transformHead(context) {
     const canonical = context.page.replace(/(index)?\.md$/, '')
-    const url = `https://bashunit.typeddevs.com/${canonical}`
+    const url = `https://bashunit.com/${canonical}`
     const description = context.description || context.frontmatter?.description ||
       'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.'
 
@@ -37,7 +37,7 @@ export default defineConfig({
   },
 
   sitemap: {
-    hostname: 'https://bashunit.typeddevs.com'
+    hostname: 'https://bashunit.com'
   },
 
   themeConfig: {

@@ -39,7 +39,7 @@ It boasts hundreds of assertions and functionalities like spies, mocks, provider
 
 ## Documentation
 
-You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.typeddevs.com).
+You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.com).
 
 ## Requirements
 

@@ -24,4 +24,4 @@ Examples:
   bashunit doc contains               Show docs for 'contains' assertions
   bashunit init                       Initialize test directory
 
-More info: https://bashunit.typeddevs.com/command-line
+More info: https://bashunit.com/command-line

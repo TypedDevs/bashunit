@@ -4,7 +4,7 @@
 
 **bashunit** is a lightweight Bash testing framework (Bash 3.0+) focused on developer experience. Provides assertions, test doubles (spies/mocks), data providers, snapshots, and more.
 
-**Documentation:** https://bashunit.typeddevs.com
+**Documentation:** https://bashunit.com
 
 ## Core Principles
 

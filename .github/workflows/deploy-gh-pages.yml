@@ -1,0 +1,74 @@
+name: Deploy Docs (GitHub Pages)
+
+# Publishes the VitePress docs site to GitHub Pages on the bashunit.com custom
+# domain. The site is fully static; the installer is copied into the site root
+# so `curl -s https://bashunit.com/install.sh | bash` works.
+#
+# Manual one-time setup:
+#   - Repo Settings -> Pages -> Source: "GitHub Actions"
+#   - Repo Settings -> Pages -> Custom domain: bashunit.com (CNAME file is also
+#     committed at docs/public/CNAME so it ships in the build)
+#   - At IONOS, point bashunit.com at GitHub Pages:
+#       apex: A/AAAA records to GitHub Pages IPs
+#       (or CNAME <owner>.github.io for a www host)
+
+on:
+  push:
+    branches:
+      - latest
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: docs/package-lock.json
+
+      - name: Install dependencies
+        working-directory: docs
+        run: npm ci
+
+      - name: Build with VitePress
+        working-directory: docs
+        run: npm run build
+
+      - name: Copy installer into site root
+        run: cp install.sh docs/.vitepress/dist/install.sh
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
