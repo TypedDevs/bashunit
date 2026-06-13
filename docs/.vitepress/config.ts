@@ -147,7 +147,7 @@ export default defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: `Copyright © 2023-present <a href="https://bashunit.com" target="_blank">bashunit</a>`
+      copyright: `Copyright © 2023-present <a href="https://github.com/TypedDevs/bashunit/graphs/contributors" target="_blank">bashunit contributors</a>`
     }
   },
 
