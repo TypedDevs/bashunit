@@ -243,7 +243,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # @v0 tracks the latest release within the v0 major.
       # For an immutable pin use a commit SHA: TypedDevs/bashunit@<sha> # {{ pkg.version }}
       - uses: TypedDevs/bashunit@v0
@@ -264,7 +264,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       # Install and run the suite in a single step via the `args` input.
       - uses: TypedDevs/bashunit@v0
         with:
@@ -280,7 +280,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: curl -s https://bashunit.com/install.sh | bash
       - run: ./lib/bashunit tests
 ```
@@ -293,9 +293,9 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with: { node-version: 22 }
       - run: npm ci
       - run: npx bashunit tests/
 ```
