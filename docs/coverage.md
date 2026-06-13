@@ -86,7 +86,7 @@ For most projects following standard naming conventions, you can simply run `bas
 
 ### Environment Variables
 
-You can also configure coverage via environment variables in your `.env` file:
+You can also configure coverage via [environment variables](/configuration) in your `.env` file:
 
 ```bash
 # Enable coverage
@@ -486,6 +486,12 @@ coverage:
 - `&&`/`||` short-circuit branches outside `if` and loop-entry decisions (`while`/`until`) are not tracked.
 
 See `adrs/adr-007-branch-coverage-mvp.md` for the design rationale and the rejected alternatives.
+
+## Related
+
+- [Command-Line](/command-line) — full reference for CLI flags and options
+- [Configuration](/configuration) — environment variables and config files
+- [Benchmarks](/benchmarks) — measure performance alongside coverage
 
 ## Limitations
 

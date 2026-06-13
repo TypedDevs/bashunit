@@ -4,7 +4,7 @@ description: "Create test doubles in bashunit: use mocks to override functions a
 
 # Test doubles
 
-When creating tests, you might need to override existing function to be able to write isolated tests from external behaviour. To accomplish this, you can use mocks. You can also check that a function was called with certain arguments or even a number of times with a spy.
+Test doubles let you override an existing function to write tests isolated from external behaviour: use mocks to replace a function's output, and spies to assert that a function was called, with which arguments, and how many times.
 
 Temporary files created by spies are isolated per test run, so they work reliably when executing tests in parallel.
 
@@ -256,3 +256,9 @@ function test_failure() {
 }
 ```
 :::
+
+## Related
+
+- [Assertions](/assertions) — the built-in assertion reference
+- [Custom asserts](/custom-asserts) — build your own domain-specific assertions
+- [Common patterns](/common-patterns) — real-world testing patterns

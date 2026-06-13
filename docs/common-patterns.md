@@ -503,7 +503,7 @@ function test_docker_called_with_correct_arguments() {
 
   deploy_image "myapp:v1.0.0"
 
-  assert_have_been_called_with "push myapp:v1.0.0" docker
+  assert_have_been_called_with docker "push myapp:v1.0.0"
 }
 
 function test_deploy_calls_docker_twice() {
@@ -875,3 +875,5 @@ function test_addition() {
 - Learn about [Data Providers](/data-providers) for parameterized testing
 - Check out [Snapshots](/snapshots) for testing complex output
 - Read about [Custom Asserts](/custom-asserts) for domain-specific testing
+- Browse the [Assertions](/assertions) reference for every available check
+- Use [Standalone](/standalone) assertions outside of test files

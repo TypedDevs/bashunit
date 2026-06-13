@@ -4,12 +4,12 @@ description: "Configure bashunit with environment variables and config files to 
 
 # Configuration
 
-Environment configuration to control **bashunit** behavior.
+Environment variables and config files control **bashunit** behavior across your project.
 
 It serves to configure the behavior of bashunit in your project.
 You need to create a `.env` file in the root directory,
 but you can give it another name if you pass it as an argument to the command with
-`--env` [option](/command-line#environment).
+`--env` [option](/command-line#environment-bootstrap).
 
 ## Config file (.bashunitrc)
 
@@ -41,7 +41,7 @@ environment variable or a `.env` entry always wins. `--skip-env-file` skips
 
 Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
 
-If a directory is specified, it will execute tests within files ending in `bench.sh`.
+If a directory is specified, it will execute tests within files ending in `test.sh`.
 When running benchmarks (`--bench`), the same path is used to search for files ending in `bench.sh`.
 
 If you use wildcards, **bashunit** will run any tests it finds.
@@ -67,7 +67,7 @@ Enables simplified output to the console. `false` by default.
 
 Verbose is the default output, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output).
+Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output-style).
 
 ::: code-group
 ```bash [Simple output]
@@ -98,8 +98,9 @@ BASHUNIT_SIMPLE_OUTPUT=false
 Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
 
 ::: warning
-Parallel execution is supported only on **macOS** and **Ubuntu**. On other
-systems bashunit forces sequential execution to avoid inconsistent results.
+Parallel execution is supported on **macOS**, **Ubuntu**, **Alpine**, and
+**Windows**. On other systems bashunit forces sequential execution to avoid
+inconsistent results.
 :::
 
 Similar as using `-p|--parallel` option on the [command line](/command-line#parallel).
@@ -118,7 +119,7 @@ Similar as using `-j|--jobs` option on the [command line](/command-line#jobs).
 
 Force to stop the runner right after encountering one failing test. `false` by default.
 
-Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#stop-on-failure).
+Similar as using `-S|--stop-on-failure` option on the [command line](/command-line#test-options).
 
 ::: tip Assertion behavior
 By default, when an assertion fails within a test, subsequent assertions in the same test are skipped. Use `-R, --run-all` or set `BASHUNIT_STOP_ON_ASSERTION_FAILURE=false` to run all assertions even when one fails.
@@ -301,7 +302,7 @@ file and use `export -f function_name` to make them available in test subshells.
 This is the recommended pattern for sharing functions across tests.
 :::
 
-Similarly, you can use load an additional file via the [command line](/command-line#environment).
+Similarly, you can use load an additional file via the [command line](/command-line#environment-bootstrap).
 
 ::: code-group
 ```bash [Example]
@@ -337,7 +338,7 @@ export API_URL="https://${ENVIRONMENT}.api.example.com"
 ```
 :::
 
-You can also pass arguments inline via the [--env](/command-line#environment) option:
+You can also pass arguments inline via the [--env](/command-line#environment-bootstrap) option:
 
 ```bash
 bashunit --env "tests/bootstrap.sh staging verbose" tests/
@@ -347,7 +348,7 @@ bashunit --env "tests/bootstrap.sh staging verbose" tests/
 
 > `BASHUNIT_DEV_LOG=file`
 
-> See: [Globals > log](/globals#log)
+> See: [Globals > log](/globals#bashunit-log)
 
 ::: code-group
 ```bash [Setup]
@@ -376,7 +377,7 @@ quickly `tail -f` it while the tests run.
 
 Display internal details for each test.
 
-Similarly, you can use the command line option for this: [command line](/command-line#verbose).
+Similarly, you can use the command line option for this: [command line](/command-line#test-options).
 
 ::: code-group
 ```bash [Example]
@@ -390,7 +391,7 @@ BASHUNIT_VERBOSE=true
 
 Suppress all console output. Defaults to `false`.
 
-Similar as using `--no-output` option on the [command line](/command-line#no-output).
+Similar as using `--no-output` option on the [command line](/command-line#test-options).
 
 ::: code-group
 ```bash [Example]
@@ -441,7 +442,7 @@ Only show failures, suppressing passed, skipped, and incomplete tests. `false` b
 When enabled, progress output is suppressed and only failing tests are displayed.
 The final summary still shows all counts (passed/failed/skipped/incomplete).
 
-Similar as using `--failures-only` option on the [command line](/command-line#failures-only).
+Similar as using `--failures-only` option on the [command line](/command-line#test-options).
 
 ::: code-group
 ```bash [Example]
@@ -671,6 +672,13 @@ BASHUNIT_COVERAGE_THRESHOLD_LOW=60
 BASHUNIT_COVERAGE_THRESHOLD_HIGH=90
 ```
 :::
+
+## Related
+
+- [Command line](/command-line) — flags that mirror these settings
+- [Test files](/test-files) — how tests are discovered and named
+- [Coverage](/coverage) — measure how much code your tests exercise
+- [Globals](/globals) — helper functions available in tests
 
 <script setup>
 import pkg from '../package.json'

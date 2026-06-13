@@ -52,3 +52,10 @@ Before submitting your pull request ensure that `npm run build` (run from `docs/
 ## Further reading
 
 For a step‑by‑step introduction check the [quickstart](/quickstart). Detailed usage of individual features is explained throughout the docs site.
+
+## Related
+
+- [Quickstart](/quickstart) - write and run your first test
+- [Installation](/installation) - install bashunit
+- [Command line](/command-line) - CLI flags and options
+- [Examples](/examples) - sample tests and real-world projects

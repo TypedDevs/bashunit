@@ -349,6 +349,13 @@ Dependabot bumps `github-actions` pins on the schedule you set.
 See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
 
+## Related
+
+- [Quickstart](/quickstart) - write and run your first test
+- [Command line](/command-line) - CLI flags and options
+- [Configuration](/configuration) - env vars and config files
+- [Project overview](/project-overview) - repo layout and contributor workflow
+
 <script setup>
 import pkg from '../package.json'
 </script>

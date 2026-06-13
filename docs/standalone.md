@@ -203,3 +203,9 @@ All standard bashunit [assertions](/assertions) are available in standalone mode
 | `line_count` | Check number of lines |
 
 See the full [assertions reference](/assertions) for all available options.
+
+## Related
+
+- [Assertions](/assertions) — full assertion reference
+- [Command-Line](/command-line) — full reference for CLI flags and options
+- [Common Patterns](/common-patterns) — real-world testing recipes
