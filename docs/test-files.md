@@ -1,3 +1,7 @@
+---
+description: "Learn how bashunit discovers and names test files, plus tips for organizing and structuring your bash test suite for clarity and scale."
+---
+
 # Test files
 
 **bashunit** offers a range of features for test files.

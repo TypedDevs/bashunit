@@ -1,3 +1,7 @@
+---
+description: "Reference of bashunit global helper functions in the bashunit:: namespace that improve developer experience when writing and running bash tests."
+---
+
 # Globals
 
 You can use this list of global functions that exists to primarily to improve your developer experience.

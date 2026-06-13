@@ -1,3 +1,7 @@
+---
+description: "Overview of the bashunit project layout, source code, documentation and contributor workflow for the modern bash testing framework."
+---
+
 # Project overview
 
 **bashunit** is a lightweight testing framework for Bash. It focuses on helping developers verify their shell scripts with minimal setup. The library bundles hundreds of assertions and helpers, including spies, mocks and data providers.

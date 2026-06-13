@@ -1,3 +1,7 @@
+---
+description: "Snapshot testing in bashunit: capture and compare command or script output over time to catch unexpected changes in your bash programs."
+---
+
 # Snapshots
 
 Snapshot testing is valuable for verifying the output of commands or scripts over time.

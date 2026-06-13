@@ -1,3 +1,7 @@
+---
+description: "Complete reference of bashunit assertions for testing bash scripts: assert equals, contains, matches, exit codes, files, arrays and more, with examples."
+---
+
 # Assertions
 
 When creating tests, you'll need to verify your commands and functions.

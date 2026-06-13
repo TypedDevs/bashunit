@@ -1,3 +1,7 @@
+---
+description: "Mark bash tests as skipped or incomplete in bashunit to handle cases beyond simple pass or fail and keep your test suite expressive and clear."
+---
+
 # Skipping and incomplete tests
 
 There may be various scenarios where the "passed" and "failed" outcomes for a test are not sufficient.

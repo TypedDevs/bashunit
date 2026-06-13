@@ -1,3 +1,7 @@
+---
+description: "Get started with bashunit in minutes: install the bash testing framework, write your first test, and run it with a simple, intuitive API."
+---
+
 # Quickstart
 
 **bashunit** is a dedicated testing tool crafted specifically for Bash scripts. It empowers you with tests on your Bash codebase, ensuring that your scripts operate reliably and as intended.

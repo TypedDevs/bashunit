@@ -1,6 +1,7 @@
 ---
 # https://vitepress.dev/reference/default-theme-home-page
 layout: home
+description: "bashunit is a fast, simple bash testing framework: assertions, mocks, spies, data providers, snapshots and coverage. Runs on Bash 3.0+ (Linux, macOS, WSL)."
 
 hero:
   name: bashunit

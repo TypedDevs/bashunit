@@ -1,3 +1,7 @@
+---
+description: "Measure bash script execution time with bashunit benchmarks to find performance bottlenecks and enforce performance requirements in your test suite."
+---
+
 # Benchmarks
 
 Measure execution time of your scripts with benchmark functions. Benchmarks help identify performance bottlenecks and ensure your code meets performance requirements.

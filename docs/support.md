@@ -1,3 +1,7 @@
+---
+description: "Get help with bashunit: report issues, ask questions and suggest improvements through the GitHub issue tracker and community channels."
+---
+
 # Support
 
 If you encounter any issues, require clarification, or wish to suggest improvements, the primary avenue for support is through [our GitHub repository's issue tracking system](https://github.com/TypedDevs/bashunit/issues).

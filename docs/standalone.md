@@ -1,3 +1,7 @@
+---
+description: "Use bashunit assertions standalone, outside test files, for integration and end-to-end testing and validating executables and full applications."
+---
+
 # Standalone
 
 Use bashunit assertions outside of test files for integration testing, end-to-end testing, or validating entire applications and executables.

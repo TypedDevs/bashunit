@@ -1,3 +1,7 @@
+---
+description: "Measure code coverage for your bash scripts with bashunit to reveal untested code paths and ensure your test suite exercises critical logic."
+---
+
 # Code Coverage
 
 Code coverage measures how much of your source code is executed when running tests. It helps identify untested code paths and ensures your test suite exercises the important parts of your application.

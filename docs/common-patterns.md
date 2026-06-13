@@ -1,3 +1,7 @@
+---
+description: "Real-world bash testing patterns with bashunit: practical examples for testing functions, scripts, output and edge cases, and when to use each."
+---
+
 # Common Patterns
 
 This guide shows real-world testing patterns to help you write effective tests for your bash scripts. Each pattern includes practical examples and explains when to use it.

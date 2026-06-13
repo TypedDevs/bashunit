@@ -1,3 +1,7 @@
+---
+description: "Write custom assertions in bashunit to extend the testing framework with reusable, project-specific checks for your bash scripts."
+---
+
 # Custom asserts
 
 **bashunit** enables you to extend the language by building your custom assertions. It is ideal for custom domain assertions, which don't need to be in the core library.

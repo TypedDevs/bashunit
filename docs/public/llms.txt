@@ -1,0 +1,35 @@
+# bashunit
+
+> bashunit is a fast, simple testing framework for bash scripts, compatible with Bash 3.0+ (Linux, macOS, and Windows via WSL). It provides assertions, test doubles (mocks and spies), data providers, snapshots, code coverage, and parallel execution, with a focus on developer experience.
+
+## Getting started
+
+- [Quickstart](https://bashunit.com/quickstart): Install bashunit and write and run your first test in minutes.
+- [Installation](https://bashunit.com/installation): Install via install.sh, npm, Brew, MacPorts, or bashdep; runs on Bash 3.0+.
+- [Project overview](https://bashunit.com/project-overview): Repository layout, source code, and contributor workflow.
+
+## Writing tests
+
+- [Assertions](https://bashunit.com/assertions): Full reference of assertions — equals, contains, matches, exit codes, files, and more.
+- [Custom asserts](https://bashunit.com/custom-asserts): Extend bashunit with your own reusable, project-specific assertions.
+- [Test doubles](https://bashunit.com/test-doubles): Mocks to override functions and spies to assert calls and arguments, parallel-safe.
+- [Data providers](https://bashunit.com/data-providers): Run one test with multiple input sets to parameterize your tests.
+- [Snapshots](https://bashunit.com/snapshots): Capture and compare command or script output over time.
+- [Skipping and incomplete tests](https://bashunit.com/skipping-incomplete): Mark tests beyond simple pass or fail.
+- [Test files](https://bashunit.com/test-files): How bashunit discovers and names test files, plus structuring tips.
+- [Globals](https://bashunit.com/globals): Global helper functions in the bashunit:: namespace.
+- [Common patterns](https://bashunit.com/common-patterns): Real-world bash testing patterns with practical examples.
+
+## Running and tooling
+
+- [Command line](https://bashunit.com/command-line): Every CLI flag to run, filter, parallelize, and report tests.
+- [Configuration](https://bashunit.com/configuration): Control output, parallelism, and reporting via env vars and config files.
+- [Code coverage](https://bashunit.com/coverage): Measure how much of your bash scripts your tests exercise.
+- [Benchmarks](https://bashunit.com/benchmarks): Measure script execution time and find performance bottlenecks.
+- [Standalone](https://bashunit.com/standalone): Use assertions outside test files for integration and end-to-end checks.
+
+## More
+
+- [Examples](https://bashunit.com/examples): Sample tests showcasing bashunit features.
+- [Support](https://bashunit.com/support): Report issues, ask questions, and suggest improvements.
+- [Source code (GitHub)](https://github.com/TypedDevs/bashunit): Repository, issues, and releases.

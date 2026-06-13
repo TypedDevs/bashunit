@@ -1,3 +1,7 @@
+---
+description: "Use bashunit data providers to run one test with multiple input sets, keeping bash tests concise, parameterized and easy to maintain."
+---
+
 # Data providers
 
 **bashunit** offers a way to parameterize your test functions with data providers.

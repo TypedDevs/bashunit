@@ -16,15 +16,42 @@ export default defineConfig({
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'bashunit' }],
     ['meta', { property: 'og:image', content: 'https://bashunit.com/og-image.png' }],
+    ['meta', { property: 'og:image:width', content: '1200' }],
+    ['meta', { property: 'og:image:height', content: '630' }],
+    ['meta', { property: 'og:image:alt', content: 'bashunit — a simple testing library for bash scripts' }],
     ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
     ['meta', { name: 'twitter:site', content: '@bashunit' }],
-    ['meta', { name: 'twitter:image', content: 'https://bashunit.com/og-image.png' }]
+    ['meta', { name: 'twitter:image', content: 'https://bashunit.com/og-image.png' }],
+    ['meta', { name: 'twitter:image:alt', content: 'bashunit — a simple testing library for bash scripts' }]
   ],
   transformHead(context) {
     const canonical = context.page.replace(/(index)?\.md$/, '')
     const url = `https://bashunit.com/${canonical}`
     const description = context.description || context.frontmatter?.description ||
       'Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.'
+
+    const isHome = context.page === 'index.md'
+    const jsonLd = isHome
+      ? {
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: 'bashunit',
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: 'Linux, macOS, Windows (WSL)',
+        softwareVersion: pkg.version,
+        url: 'https://bashunit.com',
+        description,
+        license: 'https://opensource.org/licenses/MIT',
+        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }
+      }
+      : {
+        '@context': 'https://schema.org',
+        '@type': 'TechArticle',
+        headline: context.title,
+        description,
+        url,
+        isPartOf: { '@type': 'WebSite', name: 'bashunit', url: 'https://bashunit.com' }
+      }
 
     return [
       ['meta', { property: 'og:title', content: context.title }],
@@ -33,6 +60,7 @@ export default defineConfig({
       ['meta', { name: 'twitter:title', content: context.title }],
       ['meta', { name: 'twitter:description', content: description }],
       ['link', { rel: 'canonical', href: url }],
+      ['script', { type: 'application/ld+json' }, JSON.stringify(jsonLd)],
     ]
   },
 

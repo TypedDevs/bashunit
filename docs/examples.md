@@ -1,3 +1,7 @@
+---
+description: "Browse bashunit examples demonstrating assertions, test doubles, data providers, snapshots and more for testing real bash scripts."
+---
+
 # Examples
 
 ## Demo example

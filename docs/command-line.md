@@ -1,3 +1,7 @@
+---
+description: "bashunit command-line reference: every CLI flag and option to run, filter, parallelize, and report your bash tests from the terminal."
+---
+
 # Command line
 
 **bashunit** uses a subcommand-based CLI. Each command has its own options and behavior.

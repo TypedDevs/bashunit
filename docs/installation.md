@@ -1,3 +1,7 @@
+---
+description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a single-file bash testing framework running on Bash 3.0+ (Linux, macOS, WSL)."
+---
+
 # Installation
 
 **bashunit** ships as a single-file executable. Pick the option that fits your project: `install.sh` (universal), [npm](#npm) (Node.js projects), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), or [bashdep](#bashdep).

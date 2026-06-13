@@ -1,3 +1,7 @@
+---
+description: "Configure bashunit with environment variables and config files to control output, parallelism, reporting and test execution across your project."
+---
+
 # Configuration
 
 Environment configuration to control **bashunit** behavior.
