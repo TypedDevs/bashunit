@@ -4,7 +4,7 @@
 
 ### Changed
 - Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
-- The docs site now deploys to a self-contained Netlify setup (`netlify.toml`); the installer is served from the repo's canonical `install.sh`
+- The docs site now deploys to GitHub Pages on the `bashunit.com` custom domain (`deploy-gh-pages.yml`); the installer is copied into the site root from the repo's canonical `install.sh`
 
 ### Removed
 - The weekly-downloads chart on the docs homepage (its data source was not portable); to be revisited later
