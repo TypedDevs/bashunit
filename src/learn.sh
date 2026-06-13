@@ -1202,7 +1202,7 @@ function test_backup_failure_when_source_missing() {
 ║    ✓ Test exit codes                                           ║
 ║                                                                ║
 ║  Next steps:                                                   ║
-║    • Explore https://bashunit.com                    ║
+║    • Explore https://bashunit.com                              ║
 ║    • Check out /common-patterns for more examples              ║
 ║    • Start testing your own bash scripts!                      ║
 ╚════════════════════════════════════════════════════════════════╝
