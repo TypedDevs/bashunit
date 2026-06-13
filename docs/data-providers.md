@@ -45,7 +45,7 @@ function provider_function() {
 ```
 :::
 
-> **Note**: The previous variant of using `echo` to define data within a data provider
+> **Note**: The previous variant of using `echo` to define data within a data
 > provider is still supported but deprecated, as it does not support empty values or
 > values containing spaces. Prefer using the `bashunit::data_set` function going forward.
 
@@ -150,3 +150,9 @@ Running example_test.sh
 ✓ Passed: Directory exists ('outro', '/var')
 ```
 :::
+
+## Related
+
+- [Test files](/test-files) — `set_up` and `tear_down` lifecycle hooks
+- [Assertions](/assertions) — the built-in assertion reference
+- [Common patterns](/common-patterns) — real-world testing patterns

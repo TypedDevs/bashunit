@@ -77,3 +77,9 @@ Assertions: 2 incomplete, 2 total
 Some tests incomplete
 ```
 :::
+
+## Related
+
+- [Assertions](/assertions) — the built-in assertion reference
+- [Test files](/test-files) — test discovery and lifecycle hooks
+- [Command line](/command-line) — CLI flags and options

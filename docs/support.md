@@ -19,3 +19,9 @@ How to Get Support:
 
 We value our community's feedback and aim to address all concerns in a timely and effective manner.
 Your active participation and constructive feedback play a pivotal role in the continuous improvement of **bashunit**.
+
+## Related
+
+- [Quickstart](/quickstart) - write and run your first test
+- [Installation](/installation) - install bashunit
+- [Project overview](/project-overview) - repo layout and contributor workflow

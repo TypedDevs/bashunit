@@ -4,7 +4,7 @@ description: "Reference of bashunit global helper functions in the bashunit:: na
 
 # Globals
 
-You can use this list of global functions that exists to primarily to improve your developer experience.
+These global helper functions exist primarily to improve your developer experience.
 
 All helper functions use the `bashunit::` namespace prefix to prevent naming collisions with your own code.
 
@@ -100,3 +100,10 @@ See [Custom asserts](/custom-asserts) for full examples.
 
 The `bashunit::spy`, `bashunit::mock`, and `bashunit::unmock` helpers are
 documented in [Test doubles](/test-doubles).
+
+## Related
+
+- [Custom asserts](/custom-asserts) — build your own assertions with these helpers
+- [Assertions](/assertions) — the built-in assertion reference
+- [Test doubles](/test-doubles) — spies and mocks
+- [Configuration](/configuration) — configure the dev log used by `bashunit::log`

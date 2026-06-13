@@ -4,7 +4,7 @@ description: "Learn how bashunit discovers and names test files, plus tips for o
 
 # Test files
 
-**bashunit** offers a range of features for test files.
+**bashunit** discovers, names, and runs test files through a set of conventions and helpers.
 In this section, you'll find information about these features along with some helpful tips.
 
 ## Test file names
@@ -18,7 +18,7 @@ If you're using wildcards for scanning your tests, keep in mind that the initial
 To optimize this, we recommend adding a `test` prefix or suffix to your test file names, and include this identifier in your wildcard pattern too (e.g., `**/*test.sh` or `**/*test.bash`).
 This naming convention not only speeds up the scanning process but also helps you keep your test files organized.
 
-This is useful regardless of whether your test files are located near your production code or share directories with your mocks, stubs, or fixtures.
+This is useful regardless of whether your test files are located near your production code or share directories with your [mocks](/test-doubles), stubs, or fixtures.
 
 ## Test function names
 
@@ -153,3 +153,10 @@ Some tests failed
 
 This guarantees a broken test file always fails the suite, so it never
 passes by absence.
+
+## Related
+
+- [Command line](/command-line) — discover and run test files from the terminal
+- [Configuration](/configuration) — set the default test path and bootstrap file
+- [Assertions](/assertions) — assertions to use inside your test functions
+- [Common patterns](/common-patterns) — real-world testing patterns

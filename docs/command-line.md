@@ -284,9 +284,8 @@ In parallel mode, both test files and individual test functions run concurrently
 for maximum performance.
 
 ::: warning
-Parallel mode is supported on **macOS**, **Ubuntu**, and **Windows**. On other
-systems (like Alpine Linux) the option is automatically disabled due to
-inconsistent results.
+Parallel mode is supported on **macOS**, **Ubuntu**, **Alpine**, and **Windows**.
+On other systems the option is automatically disabled due to inconsistent results.
 :::
 
 ::: tip Opt-out of test-level parallelism
@@ -796,6 +795,13 @@ bashunit bench --help
 bashunit watch --help
 bashunit doc --help
 ```
+
+## Related
+
+- [Configuration](/configuration) — set the same options via env vars and config files
+- [Test files](/test-files) — how bashunit discovers and names test files
+- [Coverage](/coverage) — code coverage tracking
+- [Benchmarks](/benchmarks) — performance benchmarks with `bashunit bench`
 
 <script setup>
 import pkg from '../package.json'

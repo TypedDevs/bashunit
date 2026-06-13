@@ -54,3 +54,10 @@ Sh:erpa is a tool for simplifying script creation. It integrates **bashunit** to
 ### [sqlh](https://gitlab.com/prodigal.knight/sqlite-history.sh)
 
 sqlh is a SQLite-backed shell history alternative with shared history features which works across multiple shells.
+
+## Related
+
+- [Quickstart](/quickstart) - write and run your first test
+- [Common patterns](/common-patterns) - real-world testing patterns
+- [Standalone](/standalone) - assertions outside test files
+- [Assertions](/assertions) - assertion reference

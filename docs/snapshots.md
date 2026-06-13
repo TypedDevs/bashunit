@@ -87,3 +87,9 @@ echo 'Run at ::ignore::' > snapshots/example.snapshot
 # test
 assert_match_snapshot "Run at $(date)"
 ```
+
+## Related
+
+- [Assertions](/assertions) — the built-in assertion reference
+- [Configuration](/configuration) — env vars like `BASHUNIT_SNAPSHOT_PLACEHOLDER`
+- [Test doubles](/test-doubles) — mocks and spies for isolated tests

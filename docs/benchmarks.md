@@ -4,7 +4,7 @@ description: "Measure bash script execution time with bashunit benchmarks to fin
 
 # Benchmarks
 
-Measure execution time of your scripts with benchmark functions. Benchmarks help identify performance bottlenecks and ensure your code meets performance requirements.
+Benchmarks measure the execution time of your scripts with dedicated functions, helping you identify performance bottlenecks and ensure your code meets performance requirements.
 
 ## Quick Start
 
@@ -69,7 +69,7 @@ Run benchmarks using the `bench` command:
 ```
 :::
 
-If no file is provided, bashunit uses `BASHUNIT_DEFAULT_PATH` to locate all `*bench.sh` files.
+If no file is provided, bashunit uses [`BASHUNIT_DEFAULT_PATH`](/configuration) to locate all `*bench.sh` files.
 
 ## Output Formats
 
@@ -184,6 +184,12 @@ function bench_process_data() {
 ### Run Multiple Iterations
 
 Use `@its` >= 3 for more reliable averages, especially for operations with variable timing.
+
+## Related
+
+- [Command-Line](/command-line) — full reference for CLI flags and options
+- [Configuration](/configuration) — environment variables such as `BASHUNIT_DEFAULT_PATH`
+- [Coverage](/coverage) — measure which code paths your tests exercise
 
 <script setup>
 import pkg from '../package.json'

@@ -4,7 +4,7 @@ description: "Write custom assertions in bashunit to extend the testing framewor
 
 # Custom asserts
 
-**bashunit** enables you to extend the language by building your custom assertions. It is ideal for custom domain assertions, which don't need to be in the core library.
+Custom assertions let you extend **bashunit** with your own reusable checks, ideal for domain-specific assertions that don't need to live in the core library.
 
 :::tip
 Check the internal functional tests: `tests/functional/custom_asserts_test.sh` ([link](https://github.com/TypedDevs/bashunit/blob/main/tests/functional/custom_asserts_test.sh))
@@ -85,7 +85,7 @@ function test_api_returns_valid_json() {
 
 ### Composing with existing assertions
 
-Custom assertions can call other bashunit assertions internally:
+Custom assertions can call other [bashunit assertions](/assertions) internally:
 
 ```bash
 function assert_http_success() {
@@ -125,3 +125,9 @@ function assert_positive_number() {
 3. **Use descriptive names**: Name your custom assertions clearly, e.g., `assert_valid_email`, `assert_file_contains_header`.
 
 4. **Keep assertions focused**: Each custom assertion should test one specific condition.
+
+## Related
+
+- [Assertions](/assertions) — the built-in assertion reference
+- [Globals](/globals) — `bashunit::` helper functions
+- [Common patterns](/common-patterns) — real-world testing patterns

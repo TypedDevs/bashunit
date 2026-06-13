@@ -38,6 +38,7 @@ function mock_true() {
 function mock_false() {
   return 1
 }
+```
 :::
 
 ## assert_false
@@ -1503,3 +1504,10 @@ function test_failure() {
 }
 ```
 :::
+
+## Related
+
+- [Custom asserts](/custom-asserts) — build your own domain-specific assertions
+- [Test doubles](/test-doubles) — mocks and spies for isolated tests
+- [Data providers](/data-providers) — run the same assertions over many inputs
+- [Globals](/globals) — `bashunit::` helper functions
