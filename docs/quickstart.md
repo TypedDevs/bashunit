@@ -13,7 +13,7 @@ Pick whichever fits your project. See [installation](/installation) for the comp
 ::: code-group
 ```bash [install.sh]
 # Generates lib/bashunit (single-file executable)
-curl -s https://bashunit.typeddevs.com/install.sh | bash
+curl -s https://bashunit.com/install.sh | bash
 ```
 
 ```bash [npm]
@@ -35,7 +35,7 @@ bashunit tests/
 #   - Restart your computer
 #
 # Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.typeddevs.com/install.sh | bash
+curl -s https://bashunit.com/install.sh | bash
 ```
 :::
 

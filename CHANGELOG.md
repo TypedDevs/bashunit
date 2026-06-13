@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
+
 ## [0.39.1](https://github.com/TypedDevs/bashunit/compare/0.39.0...0.39.1) - 2026-06-09
 
 ### Fixed

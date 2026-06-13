@@ -12,7 +12,7 @@ There is a tool that will generate an executable with the whole library in a sin
 
 ::: code-group
 ```bash [Linux/Mac]
-curl -s https://bashunit.typeddevs.com/install.sh | bash
+curl -s https://bashunit.com/install.sh | bash
 ```
 
 ```bash [Windows]
@@ -24,7 +24,7 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash
 #   - Restart your computer
 #
 # Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.typeddevs.com/install.sh | bash
+curl -s https://bashunit.com/install.sh | bash
 ```
 :::
 
@@ -57,7 +57,7 @@ The installation script can receive arguments (in any order):
 
 ::: code-group
 ```bash [Linux/Mac]
-curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
+curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
 ```
 
 ```bash [Windows]
@@ -69,7 +69,7 @@ curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
 #   - Restart your computer
 #
 # Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.typeddevs.com/install.sh | bash -s [dir] [version]
+curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
 ```
 :::
 
@@ -281,7 +281,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: curl -s https://bashunit.typeddevs.com/install.sh | bash
+      - run: curl -s https://bashunit.com/install.sh | bash
       - run: ./lib/bashunit tests
 ```
 

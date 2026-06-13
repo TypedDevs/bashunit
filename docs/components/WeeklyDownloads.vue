@@ -86,7 +86,7 @@ export default defineComponent({
 
   async mounted() {
     try {
-      const response = await fetch('https://bashunit.typeddevs.com/downloads')
+      const response = await fetch('https://bashunit.com/downloads')
       const data = await response.json()
 
       if (!data) return

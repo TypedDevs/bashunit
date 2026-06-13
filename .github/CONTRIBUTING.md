@@ -328,7 +328,7 @@ function my_function() {
 
 - **New contributors:** [Good first issues](https://github.com/TypedDevs/bashunit/labels/good%20first%20issue)
 - **Questions:** [GitHub Discussions](https://github.com/TypedDevs/bashunit/discussions)
-- **Documentation:** [bashunit.typeddevs.com](https://bashunit.typeddevs.com/)
+- **Documentation:** [bashunit.com](https://bashunit.com/)
 - **Bug reports:** [Create an issue](https://github.com/TypedDevs/bashunit/issues/new/choose)
 - **Feature requests:** [Create an issue](https://github.com/TypedDevs/bashunit/issues/new/choose)
 
