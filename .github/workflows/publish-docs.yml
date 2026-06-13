@@ -1,5 +1,7 @@
 name: Publish Docs
 
+# Legacy Cloudflare deploy for bashunit.typeddevs.com — delete once fully cut over to bashunit.com (GitHub Pages).
+
 on:
   push:
     branches:
