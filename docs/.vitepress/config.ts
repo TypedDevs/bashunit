@@ -1,5 +1,16 @@
 import { defineConfig } from 'vitepress'
+import fs from 'node:fs'
+import path from 'node:path'
 import pkg from '../../package.json'
+
+// Order of pages concatenated into llms-full.txt (full docs for LLM/agent consumption).
+const LLMS_ORDER = [
+  'quickstart', 'installation', 'project-overview',
+  'assertions', 'custom-asserts', 'test-doubles', 'data-providers', 'snapshots',
+  'skipping-incomplete', 'test-files', 'globals', 'common-patterns',
+  'command-line', 'configuration', 'coverage', 'benchmarks', 'standalone',
+  'examples', 'support'
+]
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -66,6 +77,20 @@ export default defineConfig({
 
   sitemap: {
     hostname: 'https://bashunit.com'
+  },
+
+  // Generate /llms-full.txt: the full documentation concatenated for LLMs and agents.
+  buildEnd(siteConfig) {
+    let out = '# bashunit — full documentation\n\n'
+    out += '> Full text of the bashunit docs, concatenated for LLMs and agents.'
+    out += ' Source: https://bashunit.com — see also https://bashunit.com/llms.txt\n'
+    for (const slug of LLMS_ORDER) {
+      const file = path.join(siteConfig.srcDir, `${slug}.md`)
+      if (!fs.existsSync(file)) continue
+      const md = fs.readFileSync(file, 'utf-8').replace(/^---\n[\s\S]*?\n---\n/, '').trim()
+      out += `\n\n---\n\n<!-- Source: https://bashunit.com/${slug} -->\n\n${md}\n`
+    }
+    fs.writeFileSync(path.join(siteConfig.outDir, 'llms-full.txt'), out)
   },
 
   themeConfig: {

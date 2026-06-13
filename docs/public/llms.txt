@@ -33,3 +33,4 @@
 - [Examples](https://bashunit.com/examples): Sample tests showcasing bashunit features.
 - [Support](https://bashunit.com/support): Report issues, ask questions, and suggest improvements.
 - [Source code (GitHub)](https://github.com/TypedDevs/bashunit): Repository, issues, and releases.
+- [Full docs (llms-full.txt)](https://bashunit.com/llms-full.txt): Entire documentation concatenated into a single file.
