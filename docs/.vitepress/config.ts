@@ -199,11 +199,15 @@ export default defineConfig({
     },
 
     footer: {
-      message: 'Released under the MIT License.',
+      message:
+        'Released under the ' +
+        '<a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE"' +
+        ' target="_blank">MIT License</a>.',
       copyright:
-        'Copyright © 2023-present bashunit. ' +
-        '<a href="https://github.com/TypedDevs/bashunit"' +
-        ' target="_blank">Source · GitHub</a>'
+        'Copyright © 2023-present ' +
+        '<a href="https://bashunit.com">bashunit</a>' +
+        ' · <a href="https://github.com/TypedDevs/bashunit"' +
+        ' target="_blank">GitHub</a>'
     }
   },
 
