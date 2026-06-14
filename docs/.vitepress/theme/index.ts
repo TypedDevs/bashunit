@@ -2,12 +2,14 @@
 import { h } from 'vue'
 import Theme from 'vitepress/theme-without-fonts'
 import './style.css'
+import Footer from './Footer.vue'
 
 export default {
   extends: Theme,
   Layout: () => {
     return h(Theme.Layout, null, {
       // https://vitepress.dev/guide/extending-default-theme#layout-slots
+      'layout-bottom': () => h(Footer),
     })
   },
   enhanceApp({ app, router, siteData }) {

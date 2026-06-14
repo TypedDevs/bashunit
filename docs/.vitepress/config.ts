@@ -196,14 +196,6 @@ export default defineConfig({
           )
         }
       }
-    },
-
-    footer: {
-      copyright:
-        'Copyright © 2023-present ' +
-        '<a href="https://bashunit.com">bashunit</a>' +
-        ' · <a href="https://github.com/TypedDevs/bashunit"' +
-        ' target="_blank">GitHub</a>'
     }
   },
 
