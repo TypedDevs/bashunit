@@ -18,6 +18,12 @@ function bashunit::doc::print_asserts() {
   local line
   while IFS='' read -r line || [ -n "$line" ]; do
     fn=$(echo "$line" | sed -n 's/^## \([A-Za-z0-9_]*\).*/\1/p')
+    # Only treat assertion headings as doc entries; skip prose sections
+    # like "## Related" that are part of the documentation page but not asserts.
+    case "$fn" in
+    assert* | bashunit*) ;;
+    *) fn="" ;;
+    esac
     if [ -n "$fn" ]; then
       local _match=0
       if [ -z "$filter" ]; then
