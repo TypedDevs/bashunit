@@ -278,12 +278,9 @@ function test_coverage_flush_buffer_writes_even_when_printf_is_spied() {
   bashunit::coverage::record_line "$test_file" "10"
   bashunit::coverage::record_line "$test_file" "20"
 
-  # A user test spying on the printf builtin must not shadow the coverage
-  # internals: buffered data must still be flushed to disk (see issue #724).
+  # Spying printf must not shadow the coverage write (issue #724)
   bashunit::spy printf
-
   bashunit::coverage::flush_buffer
-
   bashunit::unmock printf
 
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
