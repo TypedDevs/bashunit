@@ -525,7 +525,8 @@ function release::sandbox::run() {
   git add "${RELEASE_FILES[@]}"
   git commit -m "release: $VERSION" -n
   release::log_success "Created commit"
-  git tag "$VERSION"
+  # Annotated + inline message: gpgsign-safe and never opens an editor.
+  git tag -a -m "$VERSION" "$VERSION"
   release::log_success "Created tag $VERSION"
 
   # Generate release notes
@@ -573,6 +574,30 @@ function release::major_tag() {
   local major
   IFS=. read -r major _ <<<"$version"
   echo "v$major"
+}
+
+##
+# Create the version tag and (re)point the floating major tag at the release.
+#
+# Both tags are annotated with an inline message. This is gpgsign-safe: under
+# `tag.gpgsign=true` git signs the annotated tag, and the `-m` message means
+# git never opens an editor (a plain `git tag NAME` would abort with
+# "Please supply the message" in a non-interactive/CI run). The major tag is
+# moved with `-f` and pinned to the dereferenced commit (`^{}`) so it tracks
+# the release commit rather than the version tag object.
+#
+# Arguments: $1 - new version (e.g. 0.40.0)
+# Outputs: the major tag name (e.g. v0) on stdout
+##
+function release::create_tags() {
+  local new_version=$1
+  local major_tag
+  major_tag=$(release::major_tag "$new_version")
+
+  git tag -a -m "$new_version" "$new_version"
+  git tag -f -a -m "$major_tag" "$major_tag" "${new_version}^{}"
+
+  echo "$major_tag"
 }
 
 function release::validate_semver() {
@@ -871,12 +896,9 @@ function release::git_commit_and_tag() {
   git commit -m "release: $new_version" -n
   release::log_success "Created commit"
 
-  git tag "$new_version"
-  release::log_success "Created tag $new_version"
-
   local major_tag
-  major_tag=$(release::major_tag "$new_version")
-  git tag -f "$major_tag" "$new_version"
+  major_tag=$(release::create_tags "$new_version")
+  release::log_success "Created tag $new_version"
   release::log_success "Moved major tag $major_tag -> $new_version"
 
   if release::confirm_action "Do you want to push commit and tag to origin?"; then
