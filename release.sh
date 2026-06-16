@@ -594,8 +594,11 @@ function release::create_tags() {
   local major_tag
   major_tag=$(release::major_tag "$new_version")
 
-  git tag -a -m "$new_version" "$new_version"
-  git tag -f -a -m "$major_tag" "$major_tag" "${new_version}^{}"
+  # Silence git's own stdout ("Updated tag 'v0' (was ...)" when -f replaces an
+  # existing tag) so it cannot leak into this function's stdout, which the
+  # caller captures as the major tag name. Errors still surface on stderr.
+  git tag -a -m "$new_version" "$new_version" >/dev/null
+  git tag -f -a -m "$major_tag" "$major_tag" "${new_version}^{}" >/dev/null
 
   echo "$major_tag"
 }
