@@ -657,7 +657,7 @@ function bashunit::coverage::_ends_with_continuation() {
   case "$lead" in '#'*) return 1 ;; esac
   local trailing="${line##*[!\\]}"
   case "$line" in *[!\\]*) : ;; *) trailing="$line" ;; esac
-  [ $(( ${#trailing} % 2 )) -eq 1 ]
+  [ $((${#trailing} % 2)) -eq 1 ]
 }
 
 # Get all line hits for a file in one pass (performance optimization)
@@ -720,6 +720,11 @@ function bashunit::coverage::get_all_line_hits() {
   for ((ln = 1; ln <= total; ln++)); do
     [ "${counts[ln]:-0}" -gt 0 ] && echo "${ln}:${counts[ln]}"
   done
+
+  # The for loop's exit status leaks the last `[ -gt ]` test, which is 1 when the
+  # final line has no hits; return 0 explicitly so callers under `set -e` (strict
+  # mode) don't treat a successful run as a failure (see #722).
+  return 0
 }
 
 # Get all test hits for a file in one pass (performance optimization)
