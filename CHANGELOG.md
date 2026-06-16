@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.40.0](https://github.com/TypedDevs/bashunit/compare/0.39.1...0.40.0) - 2026-06-16
+
 ### Added
 - `--test-timeout <seconds>` flag and `BASHUNIT_TEST_TIMEOUT` env var to abort a test that runs longer than N seconds, mark it failed and continue. Disabled by default; no external `timeout` needed, works on Bash 3.2+ (#721)
 
