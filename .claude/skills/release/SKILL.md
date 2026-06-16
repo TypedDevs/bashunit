@@ -8,11 +8,10 @@ allowed-tools: Bash, Read, Grep, Glob
 
 # Release
 
-Run pre-release checks and create a new bashunit release.
-
-## Arguments
-
-- `$ARGUMENTS` - Version number (optional, e.g., `0.34.0`). If omitted, auto-increments the minor version.
+Thin reminder around `./release.sh`. The release script owns the whole
+end-to-end flow (version bumps, build, checksum, CHANGELOG, commit, signed
+tags, push, GitHub release, `latest` branch). Don't reimplement those steps
+here — fix `release.sh` if something is missing.
 
 ## Current State
 
@@ -21,88 +20,61 @@ Run pre-release checks and create a new bashunit release.
 - Working tree: !`git status --short`
 - Unreleased changes: !`awk '/^## Unreleased$/,/^## \[/' CHANGELOG.md | head -30`
 
-## Instructions
+## Steps
 
-### 1. Pre-flight validation
-
-Run these checks and report pass/fail for each:
+### 1. Pre-flight
 
 ```bash
-# Tests
-./bashunit tests/
-
-# Static analysis
-make sa
-
-# Linting
-make lint
-
-# Bash 3.0+ compatibility (must return no results)
-grep -rn '\[\[' src/ || true
-grep -rn 'declare -A' src/ || true
-
-# CI status
+./bashunit tests/                 # all green
+make sa && make lint              # static analysis + editorconfig
 gh run list --limit 3 --branch main
 ```
 
-If ANY check fails, stop and report the issue. Do NOT proceed to release.
+Stop and report if anything fails. Don't release on a red main.
 
-### 2. Confirm with user
+### 2. Pick the version
 
-Show a summary:
-- Version: current → new (from `$ARGUMENTS` or auto-incremented)
-- Key changes from CHANGELOG Unreleased section (abbreviated)
-- All checks passed
+`$ARGUMENTS` overrides; otherwise the script auto-increments the minor.
+Bump by the Unreleased section: a `### Added`/feat → minor, only `### Fixed` →
+patch. Confirm the version with the user before publishing.
 
-Ask the user to confirm before proceeding.
-
-### 3. Execute release
+### 3. Preview, then publish
 
 ```bash
-./release.sh $ARGUMENTS
+./release.sh <version> --dry-run   # preview; changes nothing
+./release.sh <version> --force     # publish (non-interactive)
 ```
 
-If `$ARGUMENTS` is empty, run `./release.sh` (auto-increments minor version).
+Notes:
+- `--dry-run` release notes look "off" (they show the previous version's
+  section) because the CHANGELOG isn't actually rewritten in a dry run. The
+  real run converts `## Unreleased` → `## [<version>]` first, so the published
+  notes are correct. Not a bug.
+- Tagging is gpgsign-safe: `release::create_tags` makes annotated, `-m`
+  tags (signed when `tag.gpgsign=true`) and pins `v0` to the release commit
+  (`^{}`). No manual tagging needed.
+- npm publishes automatically via `.github/workflows/npm-publish.yml` on the
+  GitHub `release: published` event.
 
-The script handles everything interactively: version bumps, build, commit, tag, GitHub release, and docs deployment.
-
-**Important:** The script uses interactive prompts (`read`) that may be skipped when run from Claude. If the script skips the commit, tag, push, or GitHub release steps, complete them manually:
+### 4. Verify the published artifacts
 
 ```bash
-# Commit the release changes
-git add CHANGELOG.md bashunit install.sh package.json
-git commit -m "chore(release): <version>"
-
-# Tag
-git tag -a <version> -m "<version>"
-
-# Push
-git push origin main --tags
-
-# Create GitHub release with BOTH binary and checksum as assets
-gh release create <version> bin/bashunit bin/checksum \
-  --title "<version>" \
-  --notes-file /tmp/bashunit-release-notes-<version>.md
-
-# Update latest branch for docs deployment
-git checkout latest && git rebase <version> \
-  && git push origin latest --force && git checkout main
+gh release view <version>                       # assets: bin/bashunit + bin/checksum
+gh run list --workflow npm-publish.yml --limit 1
+git log --oneline -1 origin/latest             # latest branch advanced (docs deploy)
 ```
 
-### 4. Post-release
+Confirm the npm version and the install.sh checksum match, then report the
+release URL.
 
-After the script completes, verify:
-```bash
-git log --oneline -1
-git tag --list --sort=-v:refname | head -1
-```
+## Recovery
 
-Report the release URL to the user.
+`./release.sh --rollback` restores files from the most recent backup if a run
+fails mid-way.
 
 ## Example Usage
 
 ```
 /release
-/release 0.34.0
-/release 1.0.0
+/release 0.40.0
 ```

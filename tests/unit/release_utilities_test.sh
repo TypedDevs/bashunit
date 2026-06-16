@@ -340,3 +340,68 @@ function test_major_tag_returns_v_prefixed_major_for_zero() {
 function test_major_tag_returns_v_prefixed_major_for_one() {
   assert_same "v1" "$(release::major_tag "1.2.3")"
 }
+
+##########################
+# create_tags tests
+##########################
+
+# Builds a throwaway git repo with one commit and returns its path.
+# tag.gpgsign is left false so the test needs no GPG key, while still
+# exercising the annotated/-m behavior that keeps tagging gpgsign-safe.
+function _create_tags_setup_repo() {
+  local repo
+  repo="$(mktemp -d)"
+  (
+    cd "$repo" || exit 1
+    git init -q
+    git config user.email "test@bashunit.dev"
+    git config user.name "bashunit test"
+    git config commit.gpgsign false
+    git config tag.gpgsign false
+    git commit -q --allow-empty -m "initial"
+  )
+  echo "$repo"
+}
+
+function test_create_tags_creates_an_annotated_version_tag() {
+  local repo origin
+  repo="$(_create_tags_setup_repo)"
+  origin="$(pwd)"
+
+  cd "$repo" || return 1
+  release::create_tags "0.40.0" >/dev/null
+  # An annotated tag is a tag object; a lightweight tag resolves to a commit.
+  assert_same "tag" "$(git cat-file -t 0.40.0)"
+  assert_contains "0.40.0" "$(git tag -l --format='%(contents)' 0.40.0)"
+
+  cd "$origin" || return 1
+  rm -rf "$repo"
+}
+
+function test_create_tags_moves_major_tag_to_release_commit() {
+  local repo origin
+  repo="$(_create_tags_setup_repo)"
+  origin="$(pwd)"
+
+  cd "$repo" || return 1
+  release::create_tags "0.40.0" >/dev/null
+  assert_same "tag" "$(git cat-file -t v0)"
+  # v0 must point at the release commit, not the version tag object.
+  assert_same "$(git rev-parse HEAD)" "$(git rev-parse 'v0^{commit}')"
+
+  cd "$origin" || return 1
+  rm -rf "$repo"
+}
+
+function test_create_tags_returns_major_tag_name() {
+  local repo origin result
+  repo="$(_create_tags_setup_repo)"
+  origin="$(pwd)"
+
+  cd "$repo" || return 1
+  result="$(release::create_tags '0.40.0')"
+  assert_same "v0" "$result"
+
+  cd "$origin" || return 1
+  rm -rf "$repo"
+}
