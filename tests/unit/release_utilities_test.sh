@@ -405,3 +405,21 @@ function test_create_tags_returns_major_tag_name() {
   cd "$origin" || return 1
   rm -rf "$repo"
 }
+
+# Regression: when the major tag already exists, `git tag -f` prints
+# "Updated tag 'v0' (was ...)" to stdout. That must not leak into the
+# returned major tag name (it previously did, producing an invalid push
+# refspec during a real release).
+function test_create_tags_returns_clean_name_when_major_tag_already_exists() {
+  local repo origin result
+  repo="$(_create_tags_setup_repo)"
+  origin="$(pwd)"
+
+  cd "$repo" || return 1
+  git tag v0 # pre-existing major tag -> -f takes the update path
+  result="$(release::create_tags '0.40.0')"
+  assert_same "v0" "$result" # exactly "v0", no "Updated tag ..." noise
+
+  cd "$origin" || return 1
+  rm -rf "$repo"
+}
