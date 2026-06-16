@@ -3,19 +3,19 @@
 ## Unreleased
 
 ### Added
-- `--test-timeout <seconds>` flag and `BASHUNIT_TEST_TIMEOUT` env var: abort an individual test that runs longer than the given number of seconds, report it as a failure and keep running the rest. Disabled by default (`0`); needs no external `timeout` command and works on Bash 3.2+ (#721)
+- `--test-timeout <seconds>` flag and `BASHUNIT_TEST_TIMEOUT` env var to abort a test that runs longer than N seconds, mark it failed and continue. Disabled by default; no external `timeout` needed, works on Bash 3.2+ (#721)
 
 ### Fixed
-- A test that exited non-zero no longer poisons the exit code of subsequent tests in the same file (the per-test exit code was accumulated instead of reset)
-- Coverage report now counts backslash line-continuation lines as covered: a multi-line statement's hit is propagated forward across its continuation chain, so the lines after a trailing `\` are no longer reported as uncovered (#722)
-- Spying or mocking the `printf` builtin no longer breaks coverage collection: the coverage buffer is now flushed with `builtin printf`, so a test double can no longer shadow the write and silently drop all coverage data for that test (#724)
+- A non-zero test exit no longer leaks into later tests in the same file (per-test exit code is now reset)
+- Coverage now counts backslash line-continuation lines as covered (#722)
+- Spying/mocking the `printf` builtin no longer breaks coverage collection: the buffer is flushed with `builtin printf` (#724)
 
 ### Changed
-- Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
-- The docs site now deploys to GitHub Pages on the `bashunit.com` custom domain (`deploy-gh-pages.yml`); the installer is copied into the site root from the repo's canonical `install.sh`
+- URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` redirects)
+- Docs site deploys to GitHub Pages on the `bashunit.com` custom domain (`deploy-gh-pages.yml`)
 
 ### Removed
-- The weekly-downloads chart on the docs homepage (its data source was not portable); to be revisited later
+- Weekly-downloads chart on the docs homepage (non-portable data source)
 
 ## [0.39.1](https://github.com/TypedDevs/bashunit/compare/0.39.0...0.39.1) - 2026-06-09
 
