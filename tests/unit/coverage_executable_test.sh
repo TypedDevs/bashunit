@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2317
+# shellcheck disable=SC1003 # intentional literal trailing backslashes in test inputs
 
 # Save original coverage state to restore after tests
 _ORIG_COVERAGE_DATA_FILE=""
@@ -282,4 +283,98 @@ function test_coverage_is_executable_line_returns_false_for_done_with_append_red
   local result
   result=$(bashunit::coverage::is_executable_line '  done >> /tmp/out.log' 2 && echo "yes" || echo "no")
   assert_equals "no" "$result"
+}
+
+# --- _ends_with_continuation (#722) -----------------------------------------
+
+function test_coverage_ends_with_continuation_true_for_single_trailing_backslash() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation 'echo foo \' && echo "yes" || echo "no")
+  assert_equals "yes" "$result"
+}
+
+function test_coverage_ends_with_continuation_true_for_indented_continuation() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation '  some_command --flag \' && echo "yes" || echo "no")
+  assert_equals "yes" "$result"
+}
+
+function test_coverage_ends_with_continuation_false_for_no_backslash() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation 'echo foo' && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_ends_with_continuation_false_for_escaped_backslash() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation 'echo foo \\' && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_ends_with_continuation_true_for_three_backslashes() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation 'echo foo \\\' && echo "yes" || echo "no")
+  assert_equals "yes" "$result"
+}
+
+function test_coverage_ends_with_continuation_false_for_trailing_whitespace_after_backslash() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation 'echo foo \ ' && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_ends_with_continuation_false_for_comment_line() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation '# a trailing slash in a comment \' && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+function test_coverage_ends_with_continuation_false_for_empty_line() {
+  local result
+  result=$(bashunit::coverage::_ends_with_continuation '' && echo "yes" || echo "no")
+  assert_equals "no" "$result"
+}
+
+# --- get_all_line_hits continuation propagation (#722) ----------------------
+
+function test_coverage_get_all_line_hits_propagates_across_continuation_chain() {
+  local dir
+  dir=$(mktemp -d)
+  _BASHUNIT_COVERAGE_DATA_FILE="${dir}/coverage.data"
+
+  local src="${dir}/script.sh"
+  printf '%s\n' 'echo start \' '  middle \' '  end' 'echo other' >"$src"
+
+  # Start line (1) hit twice, standalone line (4) hit once.
+  printf '%s\n' "${src}:1" "${src}:1" "${src}:4" >"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::get_all_line_hits "$src")
+
+  local expected
+  expected=$(printf '%s\n' "1:2" "2:2" "3:2" "4:1")
+
+  rm -rf "$dir" 2>/dev/null || true
+  _BASHUNIT_COVERAGE_DATA_FILE=""
+
+  assert_equals "$expected" "$result"
+}
+
+function test_coverage_get_all_line_hits_does_not_propagate_without_continuation() {
+  local dir
+  dir=$(mktemp -d)
+  _BASHUNIT_COVERAGE_DATA_FILE="${dir}/coverage.data"
+
+  local src="${dir}/script.sh"
+  printf '%s\n' 'echo one' 'echo two' >"$src"
+
+  printf '%s\n' "${src}:1" >"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::get_all_line_hits "$src")
+
+  rm -rf "$dir" 2>/dev/null || true
+  _BASHUNIT_COVERAGE_DATA_FILE=""
+
+  assert_equals "1:1" "$result"
 }
