@@ -647,8 +647,27 @@ function bashunit::coverage::compute_file_coverage() {
   echo "${executable}:${hit}"
 }
 
+# Detect whether a source line ends with a Bash line-continuation, i.e. an
+# odd number of unescaped trailing backslashes with no trailing whitespace.
+# Comment lines never continue. Used to propagate coverage hits from a
+# statement's starting line to its continuation lines (see #722).
+function bashunit::coverage::_ends_with_continuation() {
+  local line="$1"
+  local lead="${line#"${line%%[![:space:]]*}"}"
+  case "$lead" in '#'*) return 1 ;; esac
+  local trailing="${line##*[!\\]}"
+  case "$line" in *[!\\]*) : ;; *) trailing="$line" ;; esac
+  [ $(( ${#trailing} % 2 )) -eq 1 ]
+}
+
 # Get all line hits for a file in one pass (performance optimization)
 # Output format: one "lineno:count" per line
+#
+# Bash's DEBUG trap attributes a multi-line statement's execution to the line
+# where the statement starts; backslash continuation lines never receive their
+# own hit. To match the report's expectation that continuation lines are
+# covered, the start line's count is propagated forward across the
+# continuation chain (see #722).
 function bashunit::coverage::get_all_line_hits() {
   local file="$1"
 
@@ -656,13 +675,51 @@ function bashunit::coverage::get_all_line_hits() {
     return
   fi
 
-  # Extract all lines for this file, count occurrences of each line number
-  local count lineno
-  grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null |
-    cut -d: -f2 | sort | uniq -c |
-    while read -r count lineno; do
-      echo "${lineno}:${count}"
-    done
+  # Extract all lines for this file, count occurrences of each line number.
+  local -a counts=()
+  local count lineno maxln=0
+  while read -r count lineno; do
+    if [ -n "$lineno" ]; then
+      counts[lineno]=$count
+      [ "$lineno" -gt "$maxln" ] && maxln=$lineno
+    fi
+  done < <(grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null |
+    cut -d: -f2 | sort | uniq -c)
+
+  if [ "$maxln" -eq 0 ]; then
+    return
+  fi
+
+  # Read the source so continuation lines can be detected.
+  local -a src=()
+  local _i=0 _l
+  while IFS= read -r _l || [ -n "$_l" ]; do
+    src[_i]="$_l"
+    ((++_i))
+  done <"$file"
+
+  local total=$_i
+  [ "$maxln" -gt "$total" ] && total=$maxln
+
+  # Propagate each start line's count forward across its continuation chain.
+  local carry=0 idx h
+  for ((idx = 1; idx <= total; idx++)); do
+    h=${counts[idx]:-0}
+    if [ "$carry" -gt 0 ] && [ "$h" -lt "$carry" ]; then
+      h=$carry
+      counts[idx]=$h
+    fi
+    if [ "$h" -gt 0 ] && bashunit::coverage::_ends_with_continuation "${src[idx - 1]:-}"; then
+      carry=$h
+    else
+      carry=0
+    fi
+  done
+
+  local ln
+  for ((ln = 1; ln <= total; ln++)); do
+    [ "${counts[ln]:-0}" -gt 0 ] && echo "${ln}:${counts[ln]}"
+  done
 }
 
 # Get all test hits for a file in one pass (performance optimization)

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Coverage report now counts backslash line-continuation lines as covered: a multi-line statement's hit is propagated forward across its continuation chain, so the lines after a trailing `\` are no longer reported as uncovered (#722)
+
 ### Changed
 - Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
 - The docs site now deploys to GitHub Pages on the `bashunit.com` custom domain (`deploy-gh-pages.yml`); the installer is copied into the site root from the repo's canonical `install.sh`
