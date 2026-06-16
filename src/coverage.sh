@@ -330,11 +330,13 @@ function bashunit::coverage::flush_buffer() {
     test_hits_file="${_BASHUNIT_COVERAGE_TEST_HITS_FILE}.$$"
   fi
 
-  # Write buffered data in a single I/O operation
-  printf '%s' "$_BASHUNIT_COVERAGE_BUFFER" >>"$data_file"
+  # Write buffered data in a single I/O operation.
+  # Use `builtin printf` so a user test spying/mocking the printf builtin
+  # cannot shadow the coverage write and silently drop data (see issue #724).
+  builtin printf '%s' "$_BASHUNIT_COVERAGE_BUFFER" >>"$data_file"
 
   if [ -n "$_BASHUNIT_COVERAGE_HITS_BUFFER" ]; then
-    printf '%s' "$_BASHUNIT_COVERAGE_HITS_BUFFER" >>"$test_hits_file"
+    builtin printf '%s' "$_BASHUNIT_COVERAGE_HITS_BUFFER" >>"$test_hits_file"
   fi
 
   # Reset buffer
