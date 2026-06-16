@@ -268,6 +268,36 @@ function test_coverage_record_line_writes_to_file() {
   assert_contains "$test_file:20" "$content"
 }
 
+function test_coverage_flush_buffer_writes_even_when_printf_is_spied() {
+  BASHUNIT_COVERAGE="true"
+  BASHUNIT_COVERAGE_PATHS="/"
+  BASHUNIT_COVERAGE_EXCLUDE=""
+  bashunit::coverage::init
+
+  local test_file="/some/path/script.sh"
+  bashunit::coverage::record_line "$test_file" "10"
+  bashunit::coverage::record_line "$test_file" "20"
+
+  # A user test spying on the printf builtin must not shadow the coverage
+  # internals: buffered data must still be flushed to disk (see issue #724).
+  bashunit::spy printf
+
+  bashunit::coverage::flush_buffer
+
+  bashunit::unmock printf
+
+  local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"
+  if bashunit::parallel::is_enabled; then
+    data_file="${_BASHUNIT_COVERAGE_DATA_FILE}.$$"
+  fi
+
+  local content
+  content=$(cat "$data_file")
+
+  assert_contains "$test_file:10" "$content"
+  assert_contains "$test_file:20" "$content"
+}
+
 function test_coverage_cleanup_removes_temp_files() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init

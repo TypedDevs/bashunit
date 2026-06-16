@@ -4,6 +4,7 @@
 
 ### Fixed
 - Coverage report now counts backslash line-continuation lines as covered: a multi-line statement's hit is propagated forward across its continuation chain, so the lines after a trailing `\` are no longer reported as uncovered (#722)
+- Spying or mocking the `printf` builtin no longer breaks coverage collection: the coverage buffer is now flushed with `builtin printf`, so a test double can no longer shadow the write and silently drop all coverage data for that test (#724)
 
 ### Changed
 - Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
