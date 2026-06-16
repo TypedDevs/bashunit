@@ -95,6 +95,43 @@ function test_is_dev_mode_disabled_when_dev_log_empty() {
   assert_successful_code 0
 }
 
+# @data_provider provide_test_timeout_enabled
+function test_is_test_timeout_enabled(){
+  local value="$1"
+  local expected="$2"
+
+  local original="${BASHUNIT_TEST_TIMEOUT:-0}"
+  export BASHUNIT_TEST_TIMEOUT="$value"
+
+  if bashunit::env::is_test_timeout_enabled; then
+    local actual="enabled"
+  else
+    local actual="disabled"
+  fi
+
+  export BASHUNIT_TEST_TIMEOUT="$original"
+  assert_equals "$expected" "$actual"
+}
+
+function provide_test_timeout_enabled() {
+  bashunit::data_set "0" "disabled"
+  bashunit::data_set "" "disabled"
+  bashunit::data_set "abc" "disabled"
+  bashunit::data_set "1" "enabled"
+  bashunit::data_set "5" "enabled"
+}
+
+function test_test_timeout_secs_returns_the_configured_value() {
+  local original="${BASHUNIT_TEST_TIMEOUT:-0}"
+  export BASHUNIT_TEST_TIMEOUT="7"
+
+  local result
+  result=$(bashunit::env::test_timeout_secs)
+
+  export BASHUNIT_TEST_TIMEOUT="$original"
+  assert_equals "7" "$result"
+}
+
 function test_is_tap_output_enabled_when_format_is_tap() {
   local original="$BASHUNIT_OUTPUT_FORMAT"
   export BASHUNIT_OUTPUT_FORMAT="tap"
