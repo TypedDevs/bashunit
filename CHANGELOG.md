@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+### Added
+- `--test-timeout <seconds>` flag and `BASHUNIT_TEST_TIMEOUT` env var: abort an individual test that runs longer than the given number of seconds, report it as a failure and keep running the rest. Disabled by default (`0`); needs no external `timeout` command and works on Bash 3.2+ (#721)
+
 ### Fixed
+- A test that exited non-zero no longer poisons the exit code of subsequent tests in the same file (the per-test exit code was accumulated instead of reset)
 - Coverage report now counts backslash line-continuation lines as covered: a multi-line statement's hit is propagated forward across its continuation chain, so the lines after a trailing `\` are no longer reported as uncovered (#722)
 - Spying or mocking the `printf` builtin no longer breaks coverage collection: the coverage buffer is now flushed with `builtin printf`, so a test double can no longer shadow the write and silently drop all coverage data for that test (#724)
 

@@ -115,6 +115,8 @@ _BASHUNIT_DEFAULT_OUTPUT_FORMAT=""
 _BASHUNIT_DEFAULT_FAIL_ON_RISKY="false"
 _BASHUNIT_DEFAULT_PROFILE="false"
 _BASHUNIT_DEFAULT_PROFILE_COUNT="10"
+# Per-test timeout in seconds (0 = disabled)
+_BASHUNIT_DEFAULT_TEST_TIMEOUT="0"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=0}"
@@ -140,6 +142,7 @@ _BASHUNIT_DEFAULT_PROFILE_COUNT="10"
 : "${BASHUNIT_FAIL_ON_RISKY:=${FAIL_ON_RISKY:=$_BASHUNIT_DEFAULT_FAIL_ON_RISKY}}"
 : "${BASHUNIT_PROFILE:=${PROFILE:=$_BASHUNIT_DEFAULT_PROFILE}}"
 : "${BASHUNIT_PROFILE_COUNT:=${PROFILE_COUNT:=$_BASHUNIT_DEFAULT_PROFILE_COUNT}}"
+: "${BASHUNIT_TEST_TIMEOUT:=${TEST_TIMEOUT:=$_BASHUNIT_DEFAULT_TEST_TIMEOUT}}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -149,6 +152,24 @@ fi
 
 function bashunit::env::is_parallel_run_enabled() {
   [ "$BASHUNIT_PARALLEL_RUN" = "true" ]
+}
+
+##
+# Whether a per-test timeout is configured (a positive integer number of seconds).
+# Returns: 0 when enabled, 1 otherwise.
+##
+function bashunit::env::is_test_timeout_enabled() {
+  case "${BASHUNIT_TEST_TIMEOUT:-0}" in
+  '' | *[!0-9]*) return 1 ;;
+  esac
+  [ "${BASHUNIT_TEST_TIMEOUT:-0}" -gt 0 ]
+}
+
+##
+# Prints the configured per-test timeout in seconds (0 when disabled).
+##
+function bashunit::env::test_timeout_secs() {
+  printf '%s' "${BASHUNIT_TEST_TIMEOUT:-0}"
 }
 
 function bashunit::env::is_show_header_enabled() {

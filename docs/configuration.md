@@ -127,6 +127,30 @@ By default, when an assertion fails within a test, subsequent assertions in the 
 The `--stop-on-failure` flag is separate – it stops the entire test runner after a failing **test**, while assertion-level stopping happens within each test.
 :::
 
+## Test timeout
+
+> `BASHUNIT_TEST_TIMEOUT=<seconds>`
+
+Abort an individual test if it runs longer than the given number of seconds,
+report it as a failure and keep running the remaining tests. `0` (disabled) by
+default. Useful to stop a run from hanging forever on a blocked test, such as a
+mock left without an implementation.
+
+The value is expressed in whole seconds and applies per test (set up and tear
+down included). It needs no external `timeout` command and works on Bash 3.2+,
+including the default macOS Bash.
+
+Similar as using `--test-timeout` option on the [command line](/command-line#test-timeout).
+
+::: code-group
+```bash [Enable a 5s timeout]
+BASHUNIT_TEST_TIMEOUT=5
+```
+```bash [Disabled (default)]
+BASHUNIT_TEST_TIMEOUT=0
+```
+:::
+
 ## Stop on assertion failure
 
 > `BASHUNIT_STOP_ON_ASSERTION_FAILURE=true|false`

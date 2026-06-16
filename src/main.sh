@@ -74,6 +74,10 @@ function bashunit::main::cmd_test() {
     --no-parallel)
       export BASHUNIT_PARALLEL_RUN=false
       ;;
+    --test-timeout)
+      export BASHUNIT_TEST_TIMEOUT="$2"
+      shift
+      ;;
     -w | --watch)
       export BASHUNIT_WATCH_MODE=true
       ;;
