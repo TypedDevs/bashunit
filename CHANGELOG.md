@@ -7,6 +7,7 @@
 
 ### Fixed
 - A test that exited non-zero no longer poisons the exit code of subsequent tests in the same file (the per-test exit code was accumulated instead of reset)
+- Coverage report now counts backslash line-continuation lines as covered: a multi-line statement's hit is propagated forward across its continuation chain, so the lines after a trailing `\` are no longer reported as uncovered (#722)
 
 ### Changed
 - Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
