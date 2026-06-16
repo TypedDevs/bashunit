@@ -75,6 +75,7 @@ bashunit test tests/ --parallel --simple
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
 | `-S, --stop-on-failure`        | Stop on first failure                            |
+| `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -430,6 +431,34 @@ Time taken: 1.60s
 BASHUNIT_PROFILE_COUNT=3 bashunit test tests/ --profile
 ```
 :::
+
+### Test Timeout
+
+> `bashunit test --test-timeout <seconds>`
+
+Abort an individual test if it runs longer than the given number of seconds and
+report it as a failure, then continue with the remaining tests. This protects a
+run from hanging forever on a blocked test — for example a mock that was never
+given an implementation and waits on input that never arrives.
+
+The timeout is **disabled by default** (`0`). It applies per test (set up and
+tear down included) and is expressed in whole seconds. It needs no external
+`timeout` command and works on Bash 3.2+ (including the default macOS Bash).
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --test-timeout 5
+```
+```[Output]
+✗ Error: Test hangs forever
+    Test timed out after 5s
+
+Tests:      1 passed, 1 failed, 2 total
+```
+:::
+
+It can also be set via the `BASHUNIT_TEST_TIMEOUT` environment variable (see
+[configuration](/configuration#test-timeout)).
 
 ### No Progress
 

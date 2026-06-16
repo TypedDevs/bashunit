@@ -843,6 +843,147 @@ function bashunit::runner::render_running_file_header() {
   fi
 }
 
+# Result slots for the timeout-aware execution path (see run_with_timeout).
+_BASHUNIT_RUNNER_EXEC_OUT=""
+_BASHUNIT_RUNNER_TIMED_OUT="false"
+
+##
+# Runs a single test inside the capture subshell: sets up the EXIT trap that
+# encodes assertion counts/exit code, runs set_up, applies the shell mode and
+# finally invokes the test function. Meant to be called from a subshell (either
+# the `$(...)` capture or a backgrounded job), so its `set`/`trap`/`exit` calls
+# stay isolated. Emits the test stdout (with stderr merged) followed by the
+# encoded context from cleanup_on_exit.
+# Arguments: $1 test file, $2 function name, $@ test args
+##
+function bashunit::runner::execute_test_body() {
+  local test_file=$1
+  shift
+  local fn_name=$1
+  shift
+
+  # Save subshell stdout to FD 5 so the EXIT trap can restore it.
+  # When set -e kills the subshell during a redirected block in
+  # execute_test_hook, the redirect leaks into the EXIT trap,
+  # causing export_subshell_context output to be lost.
+  exec 5>&1
+  # shellcheck disable=SC2064
+  trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
+  bashunit::state::initialize_assertions_count
+
+  if bashunit::env::is_login_shell_enabled; then
+    bashunit::runner::source_login_shell_profiles
+  fi
+
+  # Enable coverage tracking early to include set_up/tear_down hooks
+  if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
+    bashunit::coverage::enable_trap
+  fi
+
+  # Run set_up and capture exit code without || to preserve errexit behavior
+  # shellcheck disable=SC2030
+  _BASHUNIT_SETUP_COMPLETED=false
+  local setup_exit_code=0
+  bashunit::runner::run_set_up "$test_file"
+  setup_exit_code=$?
+  _BASHUNIT_SETUP_COMPLETED=true
+  if [ $setup_exit_code -ne 0 ]; then
+    exit $setup_exit_code
+  fi
+
+  # Apply shell mode setting for test execution
+  if bashunit::env::is_strict_mode_enabled; then
+    set -eu
+    # Bash 3.0 ships a broken pipefail; only enable it where it is reliable.
+    if bashunit::runner::_supports_reliable_pipefail; then
+      set -o pipefail
+    else
+      set +o pipefail
+    fi
+  else
+    set +euo pipefail
+  fi
+
+  # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
+  # points to the original std-output.
+  "$fn_name" "$@" 2>&1
+}
+
+##
+# Prints an encoded subshell result for a test that timed out: empty assertion
+# counters and exit code 124 (the conventional "timed out" code, already mapped
+# by classify_kill_signal). The empty TEST_HOOK_MESSAGE/TITLE/OUTPUT fields would
+# base64-encode to an empty string anyway, so the line is emitted directly rather
+# than mutating the shared _BASHUNIT_* globals (it mirrors the layout produced by
+# bashunit::state::export_subshell_context). Bash 3.0+ compatible.
+##
+function bashunit::runner::build_timeout_result() {
+  printf '%s' "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0\
+##ASSERTIONS_INCOMPLETE=0##ASSERTIONS_SNAPSHOT=0##TEST_EXIT_CODE=124\
+##TEST_HOOK_FAILURE=##TEST_HOOK_MESSAGE=##TEST_TITLE=##TEST_OUTPUT=##"
+}
+
+##
+# Runs the test body with a watchdog that kills it after BASHUNIT_TEST_TIMEOUT
+# seconds. The body runs as a backgrounded job in its own process group (set -m)
+# so the watchdog can SIGTERM/SIGKILL the whole tree — a hanging test usually
+# blocks in a child process, which signalling the subshell alone cannot reach.
+# Writes the captured result to _BASHUNIT_RUNNER_EXEC_OUT and "true"/"false" to
+# _BASHUNIT_RUNNER_TIMED_OUT. Bash 3.0+ compatible (validated on Bash 3.2).
+# Arguments: $1 test file, $2 function name, $@ test args
+##
+function bashunit::runner::run_with_timeout() {
+  local test_file=$1
+  shift
+  local fn_name=$1
+  shift
+  local secs
+  secs=$(bashunit::env::test_timeout_secs)
+
+  # NOTE: these must NOT use bashunit::temp_file — that prefixes the current
+  # test id, and cleanup_on_exit (run inside the test subshell) would unlink
+  # them via cleanup_testcase_temp_files before we read them back here.
+  local tmp_dir="${BASHUNIT_TEMP_DIR:-${TMPDIR:-/tmp}}"
+  local out_file marker_file
+  out_file="$("$MKTEMP" "$tmp_dir/bashunit_timeout_out.XXXXXXX")"
+  marker_file="$("$MKTEMP" "$tmp_dir/bashunit_timeout_marker.XXXXXXX")"
+  rm -f "$marker_file"
+
+  # Both jobs run in their own process group (set -m) so each can be killed as a
+  # whole tree. The body MUST run in an explicit ( ) subshell: a backgrounded { }
+  # group does not run its EXIT trap on normal completion, which would drop the
+  # encoded assertion context. The watchdog's fds are detached from the caller so
+  # a lingering `sleep` can never hold a captured stdout pipe open.
+  set -m
+  (bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@") >"$out_file" 2>&1 &
+  local test_pid=$!
+  (
+    sleep "$secs"
+    : >"$marker_file"
+    kill -TERM -"$test_pid" 2>/dev/null
+    sleep 0.3
+    kill -KILL -"$test_pid" 2>/dev/null
+  ) </dev/null >/dev/null 2>&1 &
+  local watchdog_pid=$!
+  set +m
+
+  wait "$test_pid" 2>/dev/null
+  # Tear down the watchdog group (its `sleep` child included) so it cannot fire
+  # late or block the caller.
+  kill -TERM -"$watchdog_pid" 2>/dev/null
+  wait "$watchdog_pid" 2>/dev/null
+
+  if [ -f "$marker_file" ]; then
+    _BASHUNIT_RUNNER_TIMED_OUT="true"
+    _BASHUNIT_RUNNER_EXEC_OUT="$(bashunit::runner::build_timeout_result)"
+  else
+    _BASHUNIT_RUNNER_TIMED_OUT="false"
+    _BASHUNIT_RUNNER_EXEC_OUT="$(cat "$out_file" 2>/dev/null)"
+  fi
+
+  rm -f "$out_file" "$marker_file"
+}
+
 function bashunit::runner::run_test() {
   local start_time
   start_time=$(bashunit::clock::now)
@@ -868,54 +1009,15 @@ function bashunit::runner::run_test() {
   # This means that FD 3 now points to wherever the std-output was pointing.
   exec 3>&1
 
-  local test_execution_result=$(
-    # Save subshell stdout to FD 5 so the EXIT trap can restore it.
-    # When set -e kills the subshell during a redirected block in
-    # execute_test_hook, the redirect leaks into the EXIT trap,
-    # causing export_subshell_context output to be lost.
-    exec 5>&1
-    # shellcheck disable=SC2064
-    trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
-    bashunit::state::initialize_assertions_count
-
-    if bashunit::env::is_login_shell_enabled; then
-      bashunit::runner::source_login_shell_profiles
-    fi
-
-    # Enable coverage tracking early to include set_up/tear_down hooks
-    if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
-      bashunit::coverage::enable_trap
-    fi
-
-    # Run set_up and capture exit code without || to preserve errexit behavior
-    # shellcheck disable=SC2030
-    _BASHUNIT_SETUP_COMPLETED=false
-    local setup_exit_code=0
-    bashunit::runner::run_set_up "$test_file"
-    setup_exit_code=$?
-    _BASHUNIT_SETUP_COMPLETED=true
-    if [ $setup_exit_code -ne 0 ]; then
-      exit $setup_exit_code
-    fi
-
-    # Apply shell mode setting for test execution
-    if bashunit::env::is_strict_mode_enabled; then
-      set -eu
-      # Bash 3.0 ships a broken pipefail; only enable it where it is reliable.
-      if bashunit::runner::_supports_reliable_pipefail; then
-        set -o pipefail
-      else
-        set +o pipefail
-      fi
-    else
-      set +euo pipefail
-    fi
-
-    # 2>&1: Redirects the std-error (FD 2) to the std-output (FD 1).
-    # points to the original std-output.
-    "$fn_name" "$@" 2>&1
-
-  )
+  local test_execution_result
+  local timed_out="false"
+  if bashunit::env::is_test_timeout_enabled; then
+    bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
+    test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
+    timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
+  else
+    test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
+  fi
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
@@ -950,6 +1052,10 @@ function bashunit::runner::run_test() {
   local runtime_error
   runtime_error=$(bashunit::runner::detect_runtime_error "$runtime_output")
 
+  # parse_result accumulates _BASHUNIT_TEST_EXIT_CODE; reset it so each test's
+  # exit code is read in isolation (a non-zero/timed-out test must not poison
+  # the next one).
+  _BASHUNIT_TEST_EXIT_CODE=0
   bashunit::runner::parse_result "$fn_name" "$test_execution_result" "$@"
 
   local test_exit_code="$_BASHUNIT_TEST_EXIT_CODE"
@@ -1001,6 +1107,11 @@ function bashunit::runner::run_test() {
         '' | *[Kk]illed* | *[Tt]erminated*) error_message="$kill_message" ;;
         esac
       fi
+    fi
+
+    # A test that exceeded BASHUNIT_TEST_TIMEOUT gets a clear, specific message.
+    if [ "$timed_out" = "true" ]; then
+      error_message="Test timed out after $(bashunit::env::test_timeout_secs)s"
     fi
 
     bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"

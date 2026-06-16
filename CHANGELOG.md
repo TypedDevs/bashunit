@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- `--test-timeout <seconds>` flag and `BASHUNIT_TEST_TIMEOUT` env var: abort an individual test that runs longer than the given number of seconds, report it as a failure and keep running the rest. Disabled by default (`0`); needs no external `timeout` command and works on Bash 3.2+ (#721)
+
+### Fixed
+- A test that exited non-zero no longer poisons the exit code of subsequent tests in the same file (the per-test exit code was accumulated instead of reset)
+
 ### Changed
 - Documentation and project URLs now point to the new primary domain `bashunit.com` (old `bashunit.typeddevs.com` continues to work as a redirect)
 - The docs site now deploys to GitHub Pages on the `bashunit.com` custom domain (`deploy-gh-pages.yml`); the installer is copied into the site root from the repo's canonical `install.sh`
