@@ -2,6 +2,26 @@
 
 # shellcheck disable=SC2155
 
+function test_strip_ansi_plain_text_is_unchanged() {
+  assert_same "hello world" "$(bashunit::str::strip_ansi "hello world")"
+}
+
+function test_strip_ansi_removes_color_codes() {
+  local colored=$(printf "\033[32mok\033[0m")
+
+  assert_same "ok" "$(bashunit::str::strip_ansi "$colored")"
+}
+
+function test_strip_ansi_removes_control_chars() {
+  local tabbed=$(printf "a\tb")
+
+  assert_same "ab" "$(bashunit::str::strip_ansi "$tabbed")"
+}
+
+function test_strip_ansi_empty_input() {
+  assert_same "" "$(bashunit::str::strip_ansi "")"
+}
+
 function test_rpad_default_width_padding_and_empty_left_text() {
   export TERMINAL_WIDTH=30
 

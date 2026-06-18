@@ -3,6 +3,16 @@
 # Strip ANSI escape codes and control characters
 function bashunit::str::strip_ansi() {
   local input="$1"
+  # Fast path: plain text with no backslash (echo -e no-op) and no control
+  # bytes (nothing for sed to strip) passes through unchanged. Avoids forking
+  # echo+sed on the common case, which runs twice per assert_equals.
+  case "$input" in
+  *\\* | *[[:cntrl:]]*) ;;
+  *)
+    echo -e "$input"
+    return
+    ;;
+  esac
   echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g'
 }
 
