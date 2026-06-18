@@ -126,6 +126,18 @@ function test_helper_find_test_function_name_from_nested_function() {
   assert_same "test_helper_find_test_function_name_from_nested_function" "$found_name"
 }
 
+function test_helper_find_test_function_name_detects_camelcase_frame() {
+  # A camelCase frame (testXxx) must be detected, not just snake_case (test_xxx)
+  testCamelCaseInner() {
+    bashunit::helper::find_test_function_name
+  }
+
+  local found_name
+  found_name="$(testCamelCaseInner)"
+
+  assert_same "testCamelCaseInner" "$found_name"
+}
+
 function test_helper_find_test_function_name_from_deeply_nested() {
   # Test from deeply nested functions
   _level3() {

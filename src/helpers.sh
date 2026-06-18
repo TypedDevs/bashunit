@@ -16,14 +16,14 @@ function bashunit::helper::find_test_function_name() {
   local i
   for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
     local fn="${FUNCNAME[$i]}"
-    # Check if function starts with "test_" or "test" followed by uppercase
-    local _re='^test[A-Z]'
-    local _is_test=false
-    case "$fn" in test_*) _is_test=true ;; esac
-    if [ "$_is_test" = true ] || [ "$(echo "$fn" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
+    # Check if function starts with "test_" or "test" followed by uppercase.
+    # Pure-bash globs avoid forking echo+grep on every call-stack frame (hot path).
+    case "$fn" in
+    test_* | test[A-Z]*)
       echo "$fn"
       return
-    fi
+      ;;
+    esac
   done
   # No test function found, use fallback (caller of the assertion)
   # FUNCNAME[0] = bashunit::helper::find_test_function_name
