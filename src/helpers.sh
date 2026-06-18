@@ -100,6 +100,17 @@ function bashunit::helper::escape_single_quotes() {
 function bashunit::helper::interpolate_function_name() {
   local function_name="$1"
   shift
+
+  # Placeholders look like "::N::", so a name without "::" can never interpolate.
+  # Short-circuit to skip the per-arg escape_single_quotes forks in that case.
+  case "$function_name" in
+  *::*) ;;
+  *)
+    echo "$function_name"
+    return
+    ;;
+  esac
+
   local -a args
   local args_count=$#
   args=("$@")

@@ -321,6 +321,13 @@ function test_interpolate_fn_name() {
   assert_same "test_name_'bar'_foo" "$result"
 }
 
+function test_interpolate_fn_name_without_placeholder_ignores_args() {
+  local result
+  result="$(bashunit::helper::interpolate_function_name "test_plain_name" "bar" "baz")"
+
+  assert_same "test_plain_name" "$result"
+}
+
 function test_normalize_test_function_name_with_interpolation() {
   local fn="test_returns_value_::1::_and_::2::_given"
   # shellcheck disable=SC2155
