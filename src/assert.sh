@@ -254,11 +254,6 @@ function assert_contains() {
   local -a actual_arr
   actual_arr=("${@:2}")
   local label_override=""
-  local label_override=""
-  local label_override=""
-  local label_override=""
-  local label_override=""
-  local label_override=""
   local actual
   actual=$(printf '%s\n' "${actual_arr[@]}")
 
