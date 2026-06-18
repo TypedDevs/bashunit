@@ -483,17 +483,25 @@ function bashunit::helper::parse_file_path_filter() {
     filter="${input#*::}"
     ;;
   *)
-    # Check for :number syntax (line number filter)
-    local _re='^(.+):([0-9]+)$'
-    if [ "$(echo "$input" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
-      file_path=$(echo "$input" | sed -nE 's/^(.+):([0-9]+)$/\1/p')
-      local line_number
-      line_number=$(echo "$input" | sed -nE 's/^(.+):([0-9]+)$/\2/p')
-      # Line number will be resolved to function name later
-      filter="__line__:${line_number}"
-    else
+    # Check for :number syntax (line number filter): a non-empty path, a
+    # colon, then digits to the end of string. Pure-bash parameter expansion
+    # avoids forking grep+sed.
+    local line_number="${input##*:}"
+    local maybe_path="${input%:*}"
+    case "$line_number" in
+    '' | *[!0-9]*)
       file_path="$input"
-    fi
+      ;;
+    *)
+      if [ -n "$maybe_path" ] && [ "$maybe_path" != "$input" ]; then
+        # Line number will be resolved to function name later
+        file_path="$maybe_path"
+        filter="__line__:${line_number}"
+      else
+        file_path="$input"
+      fi
+      ;;
+    esac
     ;;
   esac
 

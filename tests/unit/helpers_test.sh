@@ -421,6 +421,20 @@ function test_parse_file_path_filter_with_line_number() {
   assert_same "__line__:42" "$filter"
 }
 
+function test_parse_file_path_filter_colon_followed_by_non_number() {
+  local result
+  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:foo") || true
+
+  local file_path filter
+  {
+    read -r file_path || true
+    read -r filter || true
+  } <<<"$result"
+
+  assert_same "tests/unit/example_test.sh:foo" "$file_path"
+  assert_same "" "$filter"
+}
+
 function test_parse_file_path_filter_with_colon_in_path() {
   local result
   result=$(bashunit::helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func") || true
