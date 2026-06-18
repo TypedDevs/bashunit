@@ -22,6 +22,21 @@ function test_strip_ansi_empty_input() {
   assert_same "" "$(bashunit::str::strip_ansi "")"
 }
 
+function test_strip_ansi_glob_chars_are_unchanged() {
+  # Glob metacharacters must not trigger the control-char slow path
+  assert_same "a*b?c[d]" "$(bashunit::str::strip_ansi "a*b?c[d]")"
+}
+
+function test_strip_ansi_percent_is_unchanged() {
+  assert_same "100% done" "$(bashunit::str::strip_ansi "100% done")"
+}
+
+function test_strip_ansi_backslash_escape_is_expanded_then_stripped() {
+  # A literal backslash sends input through the slow path, where echo -e
+  # expands "\t" to a tab and sed then strips it as a control char
+  assert_same "col1col2" "$(bashunit::str::strip_ansi "col1\\tcol2")"
+}
+
 function test_rpad_default_width_padding_and_empty_left_text() {
   export TERMINAL_WIDTH=30
 
