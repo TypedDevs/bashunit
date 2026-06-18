@@ -806,11 +806,19 @@ function assert_line_count() {
   if [ -z "$input_str" ]; then
     local actual=0
   else
-    local actual
-    actual=$(echo "$input_str" | wc -l | tr -d '[:blank:]')
-    local additional_new_lines
-    additional_new_lines=$(grep -o '\\n' <<<"$input_str" | wc -l | tr -d '[:blank:]')
-    actual=$((actual + additional_new_lines))
+    # Count lines without forking: one line plus each real newline, plus each
+    # literal "\n" (backslash-n) escape, which counts as an extra line break.
+    local actual=1
+    local _rest="$input_str"
+    while [ "$_rest" != "${_rest#*$'\n'}" ]; do
+      _rest="${_rest#*$'\n'}"
+      actual=$((actual + 1))
+    done
+    _rest="$input_str"
+    while [ "$_rest" != "${_rest#*\\n}" ]; do
+      _rest="${_rest#*\\n}"
+      actual=$((actual + 1))
+    done
   fi
 
   if [ "$expected" != "$actual" ]; then
