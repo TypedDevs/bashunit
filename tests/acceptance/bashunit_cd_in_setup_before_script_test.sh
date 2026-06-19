@@ -8,10 +8,6 @@ function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
-function strip_ansi() {
-  sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g'
-}
-
 function test_subsequent_tests_run_when_set_up_before_script_changes_directory() {
   local first_file=./tests/acceptance/fixtures/test_cd_in_setup_before_script_first.sh
   local second_file=./tests/acceptance/fixtures/test_cd_in_setup_before_script_second.sh

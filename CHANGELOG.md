@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Faster test execution: removed per-assertion and per-result subprocess forks on hot paths (test-function-name detection, ANSI stripping in `assert_equals`, spy index parsing, `file:line` filter parsing, result-line padding). Behaviour is unchanged
+
 ## [0.40.0](https://github.com/TypedDevs/bashunit/compare/0.39.1...0.40.0) - 2026-06-16
 
 ### Added

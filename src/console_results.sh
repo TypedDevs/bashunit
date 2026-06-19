@@ -261,7 +261,7 @@ function bashunit::console_results::print_successful_test() {
     else
       time_display="${duration}ms"
     fi
-    full_line="$(printf "%s\n" "$(bashunit::str::rpad "$line" "$time_display")")"
+    full_line="$(bashunit::str::rpad "$line" "$time_display")"
   fi
 
   bashunit::state::print_line "successful" "$full_line"
@@ -471,7 +471,7 @@ function bashunit::console_results::print_risky_test() {
   if bashunit::env::is_show_execution_time_enabled; then
     local time_display
     time_display=$(bashunit::console_results::format_duration "$duration")
-    full_line="$(printf "%s\n" "$(bashunit::str::rpad "$line" "$time_display")")"
+    full_line="$(bashunit::str::rpad "$line" "$time_display")"
   fi
 
   bashunit::state::print_line "risky" "$full_line"

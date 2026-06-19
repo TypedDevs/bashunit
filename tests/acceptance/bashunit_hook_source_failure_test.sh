@@ -5,10 +5,6 @@ function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
-function strip_ansi() {
-  sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g'
-}
-
 function test_bashunit_when_tear_down_sources_nonexistent_file() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_teardown_sources_nonexistent_file.sh
 

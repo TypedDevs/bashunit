@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Strips ANSI escape sequences from stdin. Shared by acceptance tests that
+# compare rendered CLI output against plain-text expectations.
+function strip_ansi() {
+  sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g'
+}
+
 function mock_non_existing_fn() {
   return 127
 }

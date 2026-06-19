@@ -3,6 +3,16 @@
 # Strip ANSI escape codes and control characters
 function bashunit::str::strip_ansi() {
   local input="$1"
+  # Fast path: plain text with no backslash (echo -e no-op) and no control
+  # bytes (nothing for sed to strip) passes through unchanged. Avoids forking
+  # echo+sed on the common case, which runs twice per assert_equals.
+  case "$input" in
+  *\\* | *[[:cntrl:]]*) ;;
+  *)
+    echo -e "$input"
+    return
+    ;;
+  esac
   echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g'
 }
 
@@ -28,41 +38,42 @@ function bashunit::str::rpad() {
     is_truncated=true
   fi
 
-  # Rebuild the text with ANSI codes intact, preserving the truncation
-  local result_left_text=""
-  local i=0
-  local j=0
-  while [ $i -lt ${#clean_left_text} ] && [ $j -lt ${#left_text} ]; do
-    local char="${clean_left_text:$i:1}"
-    local original_char="${left_text:$j:1}"
-
-    # If the current character is part of an ANSI sequence, skip it and copy it
-    if [ "$original_char" = $'\x1b' ]; then
-      while [ "${left_text:$j:1}" != "m" ] && [ $j -lt ${#left_text} ]; do
-        result_left_text="$result_left_text${left_text:$j:1}"
-        ((++j))
-      done
-      result_left_text="$result_left_text${left_text:$j:1}" # Append the final 'm'
-      ((++j))
-    elif [ "$char" = "$original_char" ]; then
-      # Match the actual character
-      result_left_text="$result_left_text$char"
-      ((++i))
-      ((++j))
-    else
-      ((++j))
-    fi
-  done
-
+  local result_left_text
   local remaining_space
   if $is_truncated; then
+    # Rebuild char-by-char with ANSI codes intact, applying the truncation.
+    result_left_text=""
+    local i=0
+    local j=0
+    while [ $i -lt ${#clean_left_text} ] && [ $j -lt ${#left_text} ]; do
+      local char="${clean_left_text:$i:1}"
+      local original_char="${left_text:$j:1}"
+
+      # If the current character is part of an ANSI sequence, skip it and copy it
+      if [ "$original_char" = $'\x1b' ]; then
+        while [ "${left_text:$j:1}" != "m" ] && [ $j -lt ${#left_text} ]; do
+          result_left_text="$result_left_text${left_text:$j:1}"
+          ((++j))
+        done
+        result_left_text="$result_left_text${left_text:$j:1}" # Append the final 'm'
+        ((++j))
+      elif [ "$char" = "$original_char" ]; then
+        # Match the actual character
+        result_left_text="$result_left_text$char"
+        ((++i))
+        ((++j))
+      else
+        ((++j))
+      fi
+    done
     result_left_text="$result_left_text..."
     # 1: due to a blank space
     # 3: due to the appended ...
     remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1 - 3))
   else
-    # Copy any remaining characters after the truncation point
-    result_left_text="$result_left_text${left_text:$j}"
+    # Not truncated: the visible text fits, so the original (ANSI intact) is
+    # already correct — skip the per-character rebuild entirely.
+    result_left_text="$left_text"
     remaining_space=$((width_padding - ${#clean_left_text} - ${#right_word} - 1))
   fi
 

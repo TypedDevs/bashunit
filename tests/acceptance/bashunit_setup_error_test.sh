@@ -5,10 +5,6 @@ function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
 }
 
-function strip_ansi() {
-  sed -E 's/\x1B\[[0-9;]*[A-Za-z]//g'
-}
-
 function test_bashunit_when_set_up_errors() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_setup_errors.sh
   local fixture=$test_file

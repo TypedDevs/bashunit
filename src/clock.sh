@@ -22,11 +22,15 @@ function bashunit::clock::_choose_impl() {
   if ! bashunit::check_os::is_macos && ! bashunit::check_os::is_alpine; then
     local result
     result=$(date +%s%N 2>/dev/null)
-    if [ "$(echo "$result" | "$GREP" -cv 'N' || true)" -gt 0 ] \
-      && [ "$(echo "$result" | "$GREP" -cE '^[0-9]+$' || true)" -gt 0 ]; then
+    # A pure-digit result means %N expanded; a literal "N" (unsupported date)
+    # contains a non-digit, so the digits-only check alone is sufficient.
+    case "$result" in
+    '' | *[!0-9]*) ;;
+    *)
       _BASHUNIT_CLOCK_NOW_IMPL="date"
       return 0
-    fi
+      ;;
+    esac
   fi
 
   # 3. Try Perl with Time::HiRes

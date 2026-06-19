@@ -321,6 +321,13 @@ function test_interpolate_fn_name() {
   assert_same "test_name_'bar'_foo" "$result"
 }
 
+function test_interpolate_fn_name_without_placeholder_ignores_args() {
+  local result
+  result="$(bashunit::helper::interpolate_function_name "test_plain_name" "bar" "baz")"
+
+  assert_same "test_plain_name" "$result"
+}
+
 function test_normalize_test_function_name_with_interpolation() {
   local fn="test_returns_value_::1::_and_::2::_given"
   # shellcheck disable=SC2155
@@ -419,6 +426,20 @@ function test_parse_file_path_filter_with_line_number() {
 
   assert_same "tests/unit/example_test.sh" "$file_path"
   assert_same "__line__:42" "$filter"
+}
+
+function test_parse_file_path_filter_colon_followed_by_non_number() {
+  local result
+  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:foo") || true
+
+  local file_path filter
+  {
+    read -r file_path || true
+    read -r filter || true
+  } <<<"$result"
+
+  assert_same "tests/unit/example_test.sh:foo" "$file_path"
+  assert_same "" "$filter"
 }
 
 function test_parse_file_path_filter_with_colon_in_path() {

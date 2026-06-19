@@ -115,10 +115,15 @@ function assert_have_been_called_with() {
   shift
 
   local index=""
-  if [ "$(echo "${!#}" | "$GREP" -cE '^[0-9]+$' || true)" -gt 0 ]; then
+  # A trailing all-digits arg selects the nth recorded call. Pure-bash glob
+  # avoids forking echo+grep on every assertion.
+  case "${!#}" in
+  '' | *[!0-9]*) ;;
+  *)
     index=${!#}
     set -- "${@:1:$#-1}"
-  fi
+    ;;
+  esac
 
   local expected="$*"
 

@@ -89,9 +89,22 @@ function bashunit::runner::resolve_test_location() {
   fi
 }
 
+# Writes the interpolated test-function name into _BASHUNIT_RUNNER_INTERP_OUT.
+# Arguments: $1 fn_name, $@ test arguments
 function bashunit::runner::apply_interpolated_title() {
   local fn_name=$1
   shift
+
+  # Only "::N::"-style names interpolate; skip the capture fork for the rest.
+  case "$fn_name" in
+  *::*) ;;
+  *)
+    bashunit::state::reset_current_test_interpolated_function_name
+    _BASHUNIT_RUNNER_INTERP_OUT=$fn_name
+    return
+    ;;
+  esac
+
   local interpolated
   interpolated="$(bashunit::helper::interpolate_function_name "$fn_name" "$@")"
   if [ "$interpolated" != "$fn_name" ]; then
@@ -99,7 +112,7 @@ function bashunit::runner::apply_interpolated_title() {
   else
     bashunit::state::reset_current_test_interpolated_function_name
   fi
-  printf '%s' "$interpolated"
+  _BASHUNIT_RUNNER_INTERP_OUT=$interpolated
 }
 
 # Hot-path result helpers below return their value via a dedicated global slot
@@ -117,6 +130,7 @@ _BASHUNIT_RUNNER_FIELD_OUT=""
 _BASHUNIT_RUNNER_TOTAL_OUT=""
 _BASHUNIT_RUNNER_TYPE_OUT=""
 _BASHUNIT_RUNNER_OUTPUT_OUT=""
+_BASHUNIT_RUNNER_INTERP_OUT=""
 
 # Writes the value of an encoded field (##KEY=value##) into _BASHUNIT_RUNNER_FIELD_OUT.
 # Arguments: $1 test_execution_result, $2 key
@@ -997,8 +1011,8 @@ function bashunit::runner::run_test() {
   bashunit::runner::export_test_identity "$test_file" "$fn_name"
 
   bashunit::state::reset_test_title
-  local interpolated_fn_name
-  interpolated_fn_name=$(bashunit::runner::apply_interpolated_title "$fn_name" "$@")
+  bashunit::runner::apply_interpolated_title "$fn_name" "$@"
+  local interpolated_fn_name=$_BASHUNIT_RUNNER_INTERP_OUT
   local current_assertions_failed="$_BASHUNIT_ASSERTIONS_FAILED"
   local current_assertions_snapshot="$_BASHUNIT_ASSERTIONS_SNAPSHOT"
   local current_assertions_incomplete="$_BASHUNIT_ASSERTIONS_INCOMPLETE"
