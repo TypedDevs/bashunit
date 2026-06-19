@@ -26,25 +26,45 @@
 <h1 align="center">A simple testing framework for bash scripts</h1>
 
 <p align="center">
-    Test your bash scripts in the fastest and simplest way, discover the most modern bash testing framework.
+    Test your bash scripts in the fastest and simplest way.
 </p>
 
-## Description
+## Why bashunit
 
-**bashunit** is a comprehensive and lightweight testing framework for Bash, focused on the development experience.
-It boasts hundreds of assertions and functionalities like spies, mocks, providers and more, offers concise and clear documentation, and has a very active community.
+A lightweight, fast testing framework for **Bash 3.0+**, focused on developer experience.
+It ships hundreds of assertions plus spies, mocks, data providers, snapshots and more.
+
+## Quick start
+
+Install the latest version into your project:
+
+```bash
+curl -s https://bashunit.com/install.sh | bash
+```
+
+Write a test in `tests/example_test.sh`:
+
+```bash
+#!/usr/bin/env bash
+
+function test_bashunit_is_working() {
+  assert_same "bashunit is working" "bashunit is working"
+}
+```
+
+Run it:
+
+```bash
+./lib/bashunit tests/
+```
+
+Prefer learning by doing? Run `./lib/bashunit learn` for an interactive tutorial.
 
 ## Documentation
 
-You can find the complete documentation for **bashunit** online, including installation instructions and the various features it provides, in the [official bashunit documentation](https://bashunit.com).
-
-## Requirements
-
-bashunit requires **Bash 3.0** or newer.
+Full documentation, covering installation options, every feature and examples, lives at [bashunit.com](https://bashunit.com).
 
 ## Contribute
 
-You are welcome to contribute reporting issues, sharing ideas,
-or with your pull requests.
-
-Make sure to read our [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) where you will find, among other things, how to set up your environment with the various tools we use to develop this framework.
+Issues, ideas and pull requests are welcome.
+See the [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) to set up your environment.
