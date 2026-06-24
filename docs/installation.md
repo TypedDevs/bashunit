@@ -345,6 +345,9 @@ updates:
 Renovate updates the pinned SHA and refreshes the trailing `# tag` comment in the same PR.
 Dependabot bumps `github-actions` pins on the schedule you set.
 
+Either way you get bashunit updates as routine pull requests — no manual re-pinning or
+`curl | bash` bumps to remember. Review the PR, let CI run, merge.
+
 ::: tip
 See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
