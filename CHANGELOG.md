@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `watch` subcommand failed with `bashunit::watch::run: command not found` in the released binary because `src/watch.sh` was missing from the build; it is now bundled (#735)
+
 ### Changed
 - Faster test execution by removing subprocess forks from hot paths (no behaviour change)
 

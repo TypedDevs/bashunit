@@ -107,6 +107,7 @@ function build::dependencies() {
     "src/helpers.sh"
     "src/test_title.sh"
     "src/upgrade.sh"
+    "src/watch.sh"
     "src/assertions.sh"
     "src/reports.sh"
     "src/runner.sh"
