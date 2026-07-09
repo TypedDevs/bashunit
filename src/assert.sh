@@ -918,3 +918,15 @@ function assert_string_not_matches_format() {
 
   bashunit::state::add_assertions_passed
 }
+
+function assert_array_length() {
+  local expected_len=$1
+  shift
+  local actual_len=$#
+  if [[ "$actual_len" -eq "$expected_len" ]]; then
+    state::add_assertions_passed
+  else
+    state::add_assertions_failed
+    console_results::print_failed_test "assert_array_length" "$actual_len" "expected length $expected_len" "got length $actual_len"
+  fi
+}
