@@ -193,6 +193,11 @@ function test_fails_assert_file_not_contains() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_file_permissions() {
+  # Windows (Git Bash) fakes POSIX permissions, so chmod/stat are unreliable there.
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+
   local file="/tmp/test_successful_assert_file_permissions_$$"
   touch "$file"
   chmod 600 "$file"
@@ -204,6 +209,10 @@ function test_successful_assert_file_permissions() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_file_permissions_accepts_leading_zero() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+
   local file="/tmp/test_assert_file_permissions_leading_zero_$$"
   touch "$file"
   chmod 755 "$file"
@@ -215,6 +224,10 @@ function test_successful_assert_file_permissions_accepts_leading_zero() {
 
 # shellcheck disable=SC2155
 function test_unsuccessful_assert_file_permissions() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+
   local file="/tmp/test_unsuccessful_assert_file_permissions_$$"
   touch "$file"
   chmod 600 "$file"
