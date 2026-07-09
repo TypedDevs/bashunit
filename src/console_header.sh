@@ -113,6 +113,7 @@ Options:
   -p, --parallel              Run tests in parallel (unlimited concurrency)
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
+  --report-tap <file>         Write TAP version 13 report
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
   --output <format>           Output format: tap (TAP version 13)

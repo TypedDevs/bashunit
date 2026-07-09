@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--report-tap <file>` writes a TAP version 13 report to a file (complements the streaming `--output tap`) (#740)
 - `assert_within_delta <expected> <actual> <delta>` asserts a number is within a tolerance of another; supports floats (#744)
 - `assert_array_length <n> <array>` asserts an array has exactly `n` elements (#743)
 - `assert_file_permissions <mode> <file>` asserts a file's octal permission mode (`644`, `0755`); portable across GNU/BSD `stat` (#742)
