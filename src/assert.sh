@@ -918,3 +918,21 @@ function assert_string_not_matches_format() {
 
   bashunit::state::add_assertions_passed
 }
+
+function assert_file_permissions() {
+  local expected_mode=$1
+  local file=$2
+  if [[ ! -e "$file" ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "assert_file_permissions" "$file" "file exists" "missing"
+    return
+  fi
+  local actual
+  actual=$(stat -c '%a' "$file" 2>/dev/null || stat -f '%OLp' "$file" 2>/dev/null)
+  if [[ "$actual" == "$expected_mode" ]]; then
+    state::add_assertions_passed
+  else
+    state::add_assertions_failed
+    console_results::print_failed_test "assert_file_permissions" "$actual" "mode $expected_mode" "got $actual"
+  fi
+}
