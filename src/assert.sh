@@ -918,3 +918,24 @@ function assert_string_not_matches_format() {
 
   bashunit::state::add_assertions_passed
 }
+
+function assert_within_delta() {
+  local expected=$1
+  local actual=$2
+  local delta=$3
+  if ! [[ "$expected" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] \
+    || ! [[ "$actual" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] \
+    || ! [[ "$delta" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]]; then
+    state::add_assertions_failed
+    console_results::print_failed_test "assert_within_delta" "non-numeric input" "expected numeric args" "got: $expected $actual $delta"
+    return
+  fi
+  if awk -v e="$expected" -v a="$actual" -v d="$delta" 'BEGIN{ x=a-e; if(x<0)x=-x; exit !(x<=d) }'; then
+    state::add_assertions_passed
+  else
+    local diff
+    diff=$(awk -v e="$expected" -v a="$actual" 'BEGIN{ x=a-e; if(x<0)x=-x; print x }')
+    state::add_assertions_failed
+    console_results::print_failed_test "assert_within_delta" "$actual" "within delta $delta of $expected" "diff=$diff"
+  fi
+}

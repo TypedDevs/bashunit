@@ -1538,3 +1538,7 @@ function test_failure() {
 - [Test doubles](/test-doubles) — mocks and spies for isolated tests
 - [Data providers](/data-providers) — run the same assertions over many inputs
 - [Globals](/globals) — `bashunit::` helper functions
+
+### assert_within_delta
+
+`assert_within_delta <expected> <actual> <delta>`
