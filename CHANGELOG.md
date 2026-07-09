@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `assert_file_permissions <mode> <file>` asserts a file's octal permission mode (`644`, `0755`); portable across GNU/BSD `stat` (#742)
+
 ### Fixed
 - `watch` subcommand failed with `bashunit::watch::run: command not found` in the released binary because `src/watch.sh` was missing from the build; it is now bundled (#735)
 

@@ -190,3 +190,49 @@ function test_fails_assert_file_not_contains() {
 
   rm "$file"
 }
+
+# shellcheck disable=SC2155
+function test_successful_assert_file_permissions() {
+  local file="/tmp/test_successful_assert_file_permissions_$$"
+  touch "$file"
+  chmod 600 "$file"
+
+  assert_empty "$(assert_file_permissions "600" "$file")"
+
+  rm "$file"
+}
+
+# shellcheck disable=SC2155
+function test_successful_assert_file_permissions_accepts_leading_zero() {
+  local file="/tmp/test_assert_file_permissions_leading_zero_$$"
+  touch "$file"
+  chmod 755 "$file"
+
+  assert_empty "$(assert_file_permissions "0755" "$file")"
+
+  rm "$file"
+}
+
+# shellcheck disable=SC2155
+function test_unsuccessful_assert_file_permissions() {
+  local file="/tmp/test_unsuccessful_assert_file_permissions_$$"
+  touch "$file"
+  chmod 600 "$file"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert file permissions" "$file" "to have permissions 644" "but got 600")" \
+    "$(assert_file_permissions "644" "$file")"
+
+  rm "$file"
+}
+
+function test_unsuccessful_assert_file_permissions_when_file_does_not_exist() {
+  local file="a_random_file_that_will_not_exist"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert file permissions when file does not exist" \
+    "$file" "to have permissions 644" "but the file does not exist")" \
+    "$(assert_file_permissions "644" "$file")"
+}
