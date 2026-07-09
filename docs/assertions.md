@@ -361,6 +361,25 @@ function test_failure() {
 ```
 :::
 
+## assert_within_delta
+> `assert_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` of `expected`
+(i.e. `|actual - expected| > delta`). Supports floating-point values.
+Useful for timing or measured values where exact equality is too strict.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_within_delta "3.14159" "3.14" "0.01"
+}
+
+function test_failure() {
+  assert_within_delta "100" "105" "3"
+}
+```
+:::
+
 ## assert_date_equals
 > `assert_date_equals "expected" "actual"`
 

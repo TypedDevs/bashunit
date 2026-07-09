@@ -792,6 +792,61 @@ function assert_greater_or_equal_than() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# Whether a value looks like a number (integer or decimal, optional sign).
+# Returns: 0 when numeric, 1 otherwise.
+##
+function bashunit::assert::_is_numeric() {
+  local value="$1"
+  case "$value" in
+  '' | *[!0-9.+-]*) return 1 ;;
+  esac
+  # Must contain at least one digit (rejects ".", "-", "+").
+  case "$value" in
+  *[0-9]*) return 0 ;;
+  esac
+  return 1
+}
+
+##
+# Asserts the actual value is within +/- delta of the expected value:
+# |actual - expected| <= delta. Supports floats via bashunit::math::calculate.
+# Arguments: $1 - expected, $2 - actual, $3 - delta
+##
+function assert_within_delta() {
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+  local actual="$2"
+  local delta="$3"
+  local label
+  label="$(bashunit::assert::label)"
+
+  if ! bashunit::assert::_is_numeric "$expected" ||
+    ! bashunit::assert::_is_numeric "$actual" ||
+    ! bashunit::assert::_is_numeric "$delta"; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "${expected} ${actual} ${delta}" "to all be numeric" "but got a non-numeric value"
+    return
+  fi
+
+  local diff
+  diff="$(bashunit::math::calculate "$expected - $actual")"
+  case "$diff" in
+  -*) diff="${diff#-}" ;;
+  esac
+
+  if [ "$(bashunit::math::calculate "$diff <= $delta")" != "1" ]; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "${actual}" "to be within ${delta} of" "${expected}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
 function assert_line_count() {
   bashunit::assert::should_skip && return 0
   local IFS=$' \t\n'
