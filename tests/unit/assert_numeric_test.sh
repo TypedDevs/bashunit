@@ -125,3 +125,30 @@ function test_unsuccessful_assert_greater_or_equal_than() {
     "Unsuccessful assert greater or equal than" "1" "to be greater or equal than" "3")" \
     "$(assert_greater_or_equal_than "3" "1")"
 }
+
+function test_successful_assert_within_delta() {
+  assert_empty "$(assert_within_delta "3.14159" "3.14" "0.01")"
+}
+
+function test_successful_assert_within_delta_with_a_negative_difference() {
+  assert_empty "$(assert_within_delta "100" "105" "10")"
+}
+
+function test_successful_assert_within_delta_when_equal() {
+  assert_empty "$(assert_within_delta "42" "42" "0")"
+}
+
+function test_unsuccessful_assert_within_delta() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert within delta" "105" "to be within 3 of" "100")" \
+    "$(assert_within_delta "100" "105" "3")"
+}
+
+function test_unsuccessful_assert_within_delta_with_a_non_numeric_value() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert within delta with a non numeric value" \
+    "abc 105 3" "to all be numeric" "but got a non-numeric value")" \
+    "$(assert_within_delta "abc" "105" "3")"
+}

@@ -150,6 +150,15 @@ Reports an error if `actual` is not greater than or equal to `expected`.
 - assert_less_or_equal_than is the inverse of this assertion and takes the same arguments.
 
 
+## assert_within_delta
+--------------
+> `assert_within_delta "expected" "actual" "delta"`
+
+Reports an error if `actual` is not within `delta` of `expected`
+(i.e. `|actual - expected| > delta`). Supports floating-point values.
+Useful for timing or measured values where exact equality is too strict.
+
+
 ## assert_date_equals
 --------------
 > `assert_date_equals "expected" "actual"`
