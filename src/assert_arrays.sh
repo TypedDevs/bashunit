@@ -78,6 +78,30 @@ function assert_array_contains() {
   bashunit::state::add_assertions_passed
 }
 
+function assert_array_length() {
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+  local test_fn
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+  shift
+
+  # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
+  # expanding "$@" into an array with zero elements is an unbound-variable error.
+  local actual_length="$#"
+
+  if [ "$expected" != "$actual_length" ]; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "$*" "to have length ${expected}" "but got ${actual_length}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
 function assert_array_not_contains() {
   bashunit::assert::should_skip && return 0
 

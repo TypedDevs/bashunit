@@ -254,6 +254,13 @@ Reports an error if `needle` is not an element of `haystack`.
 - assert_array_not_contains is the inverse of this assertion and takes the same arguments.
 
 
+## assert_array_length
+--------------
+> `assert_array_length "expected_length" "array"`
+
+Reports an error if `array` does not have exactly `expected_length` elements.
+
+
 ## assert_successful_code
 --------------
 > `assert_successful_code`

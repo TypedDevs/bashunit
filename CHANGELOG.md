@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_array_length <n> <array>` asserts an array has exactly `n` elements (#743)
 - `assert_file_permissions <mode> <file>` asserts a file's octal permission mode (`644`, `0755`); portable across GNU/BSD `stat` (#742)
 
 ### Fixed
