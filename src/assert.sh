@@ -920,22 +920,44 @@ function assert_string_not_matches_format() {
 }
 
 function assert_within_delta() {
-  local expected=$1
-  local actual=$2
-  local delta=$3
-  if ! [[ "$expected" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] \
-    || ! [[ "$actual" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]] \
-    || ! [[ "$delta" =~ ^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$ ]]; then
-    state::add_assertions_failed
-    console_results::print_failed_test "assert_within_delta" "non-numeric input" "expected numeric args" "got: $expected $actual $delta"
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+  local actual="$2"
+  local delta="$3"
+  local label_override="${4:-}"
+
+  local label
+  label="$(bashunit::assert::label "${label_override:-}")"
+
+  local numeric_regex='^-?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?$'
+  local value
+  for value in "$expected" "$actual" "$delta"; do
+    if [ "$(printf '%s' "$value" | "$GREP" -cE "$numeric_regex" || true)" -eq 0 ]; then
+      bashunit::assert::mark_failed
+      bashunit::console_results::print_failed_test \
+        "${label}" "all arguments to be numeric" "got" "'${expected}' '${actual}' '${delta}'"
+      return
+    fi
+  done
+
+  if ! awk -v d="$delta" 'BEGIN { exit !(d >= 0) }'; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "delta to be non-negative" "got" "${delta}"
     return
   fi
-  if awk -v e="$expected" -v a="$actual" -v d="$delta" 'BEGIN{ x=a-e; if(x<0)x=-x; exit !(x<=d) }'; then
-    state::add_assertions_passed
-  else
-    local diff
-    diff=$(awk -v e="$expected" -v a="$actual" 'BEGIN{ x=a-e; if(x<0)x=-x; print x }')
-    state::add_assertions_failed
-    console_results::print_failed_test "assert_within_delta" "$actual" "within delta $delta of $expected" "diff=$diff"
+
+  if awk -v e="$expected" -v a="$actual" -v d="$delta" \
+    'BEGIN { x = a - e; if (x < 0) x = -x; exit !(x <= d) }'; then
+    bashunit::state::add_assertions_passed
+    return
   fi
+
+  local diff
+  diff="$(awk -v e="$expected" -v a="$actual" \
+    'BEGIN { x = a - e; if (x < 0) x = -x; print x }')"
+  bashunit::assert::mark_failed
+  bashunit::console_results::print_failed_test \
+    "${label}" "${actual}" "to be within delta ${delta} of" "${expected}" "diff" "${diff}"
 }

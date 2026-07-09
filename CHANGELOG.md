@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_within_delta <expected> <actual> <delta>` asserts two numbers are approximately equal within an absolute tolerance; useful for floating-point comparisons (#744)
 - `assert_file_permissions <mode> <file>` asserts a file's octal permission mode (`644`, `0755`); portable across GNU/BSD `stat` (#742)
 
 ### Fixed

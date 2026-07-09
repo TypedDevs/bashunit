@@ -361,6 +361,25 @@ function test_failure() {
 ```
 :::
 
+## assert_within_delta
+> `assert_within_delta "expected" "actual" "delta"`
+
+Reports an error if the absolute difference between `actual` and `expected` is greater than `delta`.
+Useful for comparing floating-point numbers that are only approximately equal.
+All three arguments must be numeric and `delta` must be non-negative.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_within_delta "3.14" "3.14159" "0.01"
+}
+
+function test_failure() {
+  assert_within_delta "105" "100" "1"
+}
+```
+:::
+
 ## assert_date_equals
 > `assert_date_equals "expected" "actual"`
 
@@ -1538,7 +1557,3 @@ function test_failure() {
 - [Test doubles](/test-doubles) — mocks and spies for isolated tests
 - [Data providers](/data-providers) — run the same assertions over many inputs
 - [Globals](/globals) — `bashunit::` helper functions
-
-### assert_within_delta
-
-`assert_within_delta <expected> <actual> <delta>`

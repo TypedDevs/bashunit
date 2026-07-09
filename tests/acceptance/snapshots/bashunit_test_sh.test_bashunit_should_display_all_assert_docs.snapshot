@@ -150,6 +150,15 @@ Reports an error if `actual` is not greater than or equal to `expected`.
 - assert_less_or_equal_than is the inverse of this assertion and takes the same arguments.
 
 
+## assert_within_delta
+--------------
+> `assert_within_delta "expected" "actual" "delta"`
+
+Reports an error if the absolute difference between `actual` and `expected` is greater than `delta`.
+Useful for comparing floating-point numbers that are only approximately equal.
+All three arguments must be numeric and `delta` must be non-negative.
+
+
 ## assert_date_equals
 --------------
 > `assert_date_equals "expected" "actual"`
@@ -598,5 +607,3 @@ Reports an error if `command` completes in `threshold_ms` milliseconds or less. 
 
 Unambiguously reports an error message. Useful for reporting specific message
 when testing situations not covered by any `assert_*` functions.
-
-
