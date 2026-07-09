@@ -149,3 +149,54 @@ function assert_file_not_contains() {
 
   bashunit::state::add_assertions_passed
 }
+
+##
+# Normalizes an octal file mode to its decimal value, dropping leading zeros
+# (so "0755" and "755" compare equal). Echoes nothing on invalid octal input.
+# Arguments: $1 - octal mode string
+##
+function bashunit::assert::_octal_to_decimal() {
+  local mode="$1"
+  case "$mode" in
+  '' | *[!0-7]*) return 1 ;;
+  esac
+  printf '%d' "$((8#$mode))"
+}
+
+##
+# Asserts a file has the expected octal permission mode (e.g. "644", "0755").
+# Arguments: $1 - expected octal mode, $2 - file path
+##
+function assert_file_permissions() {
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+  local file="$2"
+  local test_fn
+  test_fn="$(bashunit::helper::find_test_function_name)"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+
+  if [ ! -e "$file" ]; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "${file}" "to have permissions ${expected}" "but the file does not exist"
+    return
+  fi
+
+  local actual
+  actual="$(stat -c '%a' "$file" 2>/dev/null || stat -f '%Lp' "$file" 2>/dev/null)"
+
+  local expected_dec actual_dec
+  expected_dec="$(bashunit::assert::_octal_to_decimal "$expected")"
+  actual_dec="$(bashunit::assert::_octal_to_decimal "$actual")"
+
+  if [ "$expected_dec" != "$actual_dec" ]; then
+    bashunit::assert::mark_failed
+    bashunit::console_results::print_failed_test \
+      "${label}" "${file}" "to have permissions ${expected}" "but got ${actual}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}

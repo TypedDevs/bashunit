@@ -340,6 +340,15 @@ Reports an error if `file` does not contains the search string.
 - assert_file_not_contains is the inverse of this assertion and takes the same arguments.
 
 
+## assert_file_permissions
+--------------
+> `assert_file_permissions "mode" "file"`
+
+Reports an error if `file` does not have the expected octal permission `mode`
+(e.g. `644`, `0755`). A leading zero is optional (`0755` and `755` are equal).
+Works on both Linux (GNU `stat`) and macOS (BSD `stat`).
+
+
 ## assert_is_file
 --------------
 > `assert_is_file "file"`
@@ -589,3 +598,5 @@ Reports an error if `command` completes in `threshold_ms` milliseconds or less. 
 
 Unambiguously reports an error message. Useful for reporting specific message
 when testing situations not covered by any `assert_*` functions.
+
+

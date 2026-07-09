@@ -830,6 +830,33 @@ function test_failure() {
 ```
 :::
 
+## assert_file_permissions
+> `assert_file_permissions "mode" "file"`
+
+Reports an error if `file` does not have the expected octal permission `mode`
+(e.g. `644`, `0755`). A leading zero is optional (`0755` and `755` are equal).
+Works on both Linux (GNU `stat`) and macOS (BSD `stat`).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local file="/tmp/file-path.txt"
+  touch "$file"
+  chmod 600 "$file"
+
+  assert_file_permissions "600" "$file"
+}
+
+function test_failure() {
+  local file="/tmp/file-path.txt"
+  touch "$file"
+  chmod 644 "$file"
+
+  assert_file_permissions "600" "$file"
+}
+```
+:::
+
 ## assert_is_file
 > `assert_is_file "file"`
 
