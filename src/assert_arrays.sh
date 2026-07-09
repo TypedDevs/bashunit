@@ -88,13 +88,14 @@ function assert_array_length() {
   label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
   shift
 
-  local -a actual=("$@")
-  local actual_length="${#actual[@]}"
+  # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
+  # expanding "$@" into an array with zero elements is an unbound-variable error.
+  local actual_length="$#"
 
   if [ "$expected" != "$actual_length" ]; then
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test \
-      "${label}" "${actual[*]:-}" "to have length ${expected}" "but got ${actual_length}"
+      "${label}" "$*" "to have length ${expected}" "but got ${actual_length}"
     return
   fi
 
