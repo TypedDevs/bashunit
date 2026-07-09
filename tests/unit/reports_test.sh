@@ -21,6 +21,7 @@ function set_up() {
   unset BASHUNIT_LOG_JUNIT
   unset BASHUNIT_REPORT_HTML
   unset BASHUNIT_LOG_GHA
+  unset BASHUNIT_REPORT_TAP
 
   # Create temp file for output tests
   _TEMP_OUTPUT_FILE=$(mktemp)
@@ -450,6 +451,73 @@ function test_generate_gha_log_strips_ansi_color_codes() {
 
   assert_contains 'expected green got red' "$content"
   assert_not_contains $'\033[' "$content"
+}
+
+function test_add_test_tracks_when_tap_report_enabled() {
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "file.sh" "test_name" "100" "3" "passed"
+
+  assert_same "1" "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+}
+
+function test_generate_report_tap_creates_valid_header_and_plan() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_one" "100" "2" "passed"
+  bashunit::reports::add_test "test.sh" "test_two" "100" "2" "passed"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains "TAP version 13" "$content"
+  assert_contains "1..2" "$content"
+}
+
+function test_generate_report_tap_ok_for_passed_test() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_one" "100" "2" "passed"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains "ok 1 - test_one" "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
+function test_generate_report_tap_not_ok_for_failed_test() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_bad" "100" "2" "failed" "expected 1 got 2"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains "not ok 1 - test_bad" "$content"
+  assert_contains "expected 1 got 2" "$content"
+}
+
+function test_generate_report_tap_skip_directive_for_skipped_test() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_skip" "0" "0" "skipped"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains "ok 1 - test_skip # SKIP" "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
+function test_generate_report_tap_todo_directive_for_incomplete_test() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_todo" "0" "0" "incomplete"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains "ok 1 - test_todo # TODO" "$(cat "$_TEMP_OUTPUT_FILE")"
 }
 
 function test_generate_report_html_applies_status_css_classes() {

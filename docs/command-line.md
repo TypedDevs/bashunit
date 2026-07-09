@@ -71,6 +71,7 @@ bashunit test tests/ --parallel --simple
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
 | `-r, --report-html <file>`     | Write HTML report                                |
+| `--report-tap <file>`          | Write TAP version 13 report to a file            |
 | `-R, --run-all`                | Run all assertions (don't stop on first failure) |
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
