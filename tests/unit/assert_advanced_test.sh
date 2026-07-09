@@ -126,9 +126,9 @@ function test_successful_assert_array_length() {
 }
 
 function test_successful_assert_array_length_with_empty_array() {
-  local empty=()
-
-  assert_empty "$(assert_array_length 0 "${empty[@]}")"
+  # Passing no elements (expanding an empty array under `set -u` is an
+  # "unbound variable" error on Bash 3.2, so we call it with just the length).
+  assert_empty "$(assert_array_length 0)"
 }
 
 function test_unsuccessful_assert_array_length() {
