@@ -118,6 +118,29 @@ function test_unsuccessful_assert_array_not_contains() {
     "$(assert_array_not_contains "123" "${distros[@]}")"
 }
 
+function test_successful_assert_array_length() {
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
+
+  assert_empty "$(assert_array_length 3 "${distros[@]}")"
+}
+
+function test_successful_assert_array_length_with_empty_array() {
+  local empty=()
+
+  assert_empty "$(assert_array_length 0 "${empty[@]}")"
+}
+
+function test_unsuccessful_assert_array_length() {
+  local distros
+  distros=(Ubuntu 123 Linux\ Mint)
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert array length" "Ubuntu 123 Linux Mint" "to have length 2" "but got 3")" \
+    "$(assert_array_length 2 "${distros[@]}")"
+}
+
 function test_successful_assert_arrays_equal() {
   local expected_values
   expected_values=(Ubuntu 123 Linux\ Mint)

@@ -613,6 +613,27 @@ function test_failure() {
 ```
 :::
 
+## assert_array_length
+> `assert_array_length "expected_length" "array"`
+
+Reports an error if `array` does not have exactly `expected_length` elements.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  local haystack=(foo bar baz)
+
+  assert_array_length 3 "${haystack[@]}"
+}
+
+function test_failure() {
+  local haystack=(foo bar baz)
+
+  assert_array_length 2 "${haystack[@]}"
+}
+```
+:::
+
 ## assert_successful_code
 > `assert_successful_code`
 
