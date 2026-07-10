@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--random-order` flag with `--seed <n>` / `BASHUNIT_SEED` to randomize test file and function execution order (surfaces inter-test coupling); the seed is printed for replay and the shuffle is reproducible and works with `--parallel`. Disabled by default (#738)
 - `--retry <n>` flag and `BASHUNIT_RETRY` env var to re-run a failed test up to N extra times (flaky-test mitigation); passes if any attempt passes, annotates tests that only passed on retry, and works with `--parallel` and `--stop-on-failure`. Disabled by default (#737)
 - `--report-tap <file>` writes a TAP version 13 report to a file (complements the streaming `--output tap`) (#740)
 - `assert_within_delta <expected> <actual> <delta>` asserts a number is within a tolerance of another; supports floats (#744)

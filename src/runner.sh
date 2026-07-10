@@ -333,6 +333,16 @@ function bashunit::runner::load_test_files() {
   local -a scripts_ids=()
   local scripts_ids_count=0
 
+  # Randomize file execution order (deterministic for the resolved seed).
+  if bashunit::env::is_random_order_enabled; then
+    local -a _shuffled_files=()
+    local _sf
+    while IFS= read -r _sf; do
+      [ -n "$_sf" ] && _shuffled_files[${#_shuffled_files[@]}]=$_sf
+    done < <(printf '%s\n' "${files[@]+"${files[@]}"}" | bashunit::math::shuffle "$(bashunit::env::seed)")
+    files=("${_shuffled_files[@]+"${_shuffled_files[@]}"}")
+  fi
+
   bashunit::runner::sync_coverage_flag
 
   # Initialize coverage tracking if enabled
@@ -721,6 +731,23 @@ function bashunit::runner::call_test_functions() {
       functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
       functions_to_run_count=$tag_filtered_count
     fi
+  fi
+
+  # Randomize function order within this file. The seed is mixed with a stable
+  # per-file value (cksum of the path) so different files get different orders
+  # while staying reproducible for the resolved seed.
+  if bashunit::env::is_random_order_enabled && [ "$functions_to_run_count" -gt 1 ]; then
+    local _base _crc _fn_seed
+    _base=$(bashunit::env::seed)
+    _crc=$(printf '%s' "$script" | cksum | cut -d' ' -f1)
+    _fn_seed=$(((_base + _crc) & 2147483647))
+    local -a _shuffled_fns=()
+    local _sfn
+    while IFS= read -r _sfn; do
+      [ -n "$_sfn" ] && _shuffled_fns[${#_shuffled_fns[@]}]=$_sfn
+    done < <(printf '%s\n' "${functions_to_run[@]+"${functions_to_run[@]}"}" | bashunit::math::shuffle "$_fn_seed")
+    functions_to_run=("${_shuffled_fns[@]+"${_shuffled_fns[@]}"}")
+    functions_to_run_count=${#functions_to_run[@]}
   fi
 
   if [ "$functions_to_run_count" -le 0 ]; then

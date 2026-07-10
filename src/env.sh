@@ -121,6 +121,10 @@ _BASHUNIT_DEFAULT_PROFILE_COUNT="10"
 _BASHUNIT_DEFAULT_TEST_TIMEOUT="0"
 # Extra attempts for a failed test (0 = no retry)
 _BASHUNIT_DEFAULT_RETRY="0"
+# Randomize test execution order to surface inter-test coupling
+_BASHUNIT_DEFAULT_RANDOM_ORDER="false"
+# Seed for --random-order (empty = generate one and print it)
+_BASHUNIT_DEFAULT_SEED=""
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=0}"
@@ -150,6 +154,10 @@ _BASHUNIT_DEFAULT_RETRY="0"
 # No bare RETRY alias on purpose: it is too generic and would pick up unrelated
 # environment values. Only BASHUNIT_RETRY configures retries.
 : "${BASHUNIT_RETRY:=$_BASHUNIT_DEFAULT_RETRY}"
+# Single alias on purpose: bare RANDOM_ORDER/SEED are too generic and would pick
+# up unrelated environment values.
+: "${BASHUNIT_RANDOM_ORDER:=$_BASHUNIT_DEFAULT_RANDOM_ORDER}"
+: "${BASHUNIT_SEED:=$_BASHUNIT_DEFAULT_SEED}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -191,6 +199,17 @@ function bashunit::env::retry_count() {
     ;;
   esac
   printf '%s' "${BASHUNIT_RETRY:-0}"
+}
+
+function bashunit::env::is_random_order_enabled() {
+  [ "$BASHUNIT_RANDOM_ORDER" = "true" ]
+}
+
+##
+# Prints the configured random-order seed (empty when none set yet).
+##
+function bashunit::env::seed() {
+  printf '%s' "${BASHUNIT_SEED:-}"
 }
 
 function bashunit::env::is_show_header_enabled() {

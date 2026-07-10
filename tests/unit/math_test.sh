@@ -72,3 +72,35 @@ function test_calculate_fallback_to_bash_arithmetic_for_decimal() {
 
   assert_equals "30" "$result"
 }
+
+function test_shuffle_is_deterministic_for_a_given_seed() {
+  local first second
+  first=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 12345)
+  second=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 12345)
+
+  assert_equals "$first" "$second"
+}
+
+function test_shuffle_differs_for_different_seeds() {
+  local one two
+  one=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 1)
+  two=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 2)
+
+  assert_not_equals "$one" "$two"
+}
+
+function test_shuffle_preserves_all_items() {
+  local shuffled_sorted input_sorted
+  shuffled_sorted=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 7 | sort)
+  input_sorted=$(printf '%s\n' a b c d e f g h | sort)
+
+  assert_equals "$input_sorted" "$shuffled_sorted"
+}
+
+function test_shuffle_actually_reorders_for_a_known_seed() {
+  local original shuffled
+  original=$(printf '%s\n' a b c d e f g h)
+  shuffled=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 12345)
+
+  assert_not_equals "$original" "$shuffled"
+}
