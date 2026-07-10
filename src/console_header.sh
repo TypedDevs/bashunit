@@ -16,6 +16,16 @@ function bashunit::console_header::print_version_with_env() {
   fi
 }
 
+##
+# Prints the seed used to randomize test order, so a failing run can be replayed
+# with `--seed <n>`.
+##
+function bashunit::console_header::print_random_order_seed() {
+  local seed=$1
+  printf "%sRandomized with seed:%s %s\n" \
+    "${_BASHUNIT_COLOR_INCOMPLETE}" "${_BASHUNIT_COLOR_DEFAULT}" "$seed"
+}
+
 function bashunit::console_header::print_version() {
   local filter=${1:-}
   shift || true
@@ -121,6 +131,8 @@ Options:
   -S, --stop-on-failure       Stop on first failure
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)
   --retry <n>                 Re-run a failed test up to N extra times (0 = off)
+  --random-order              Randomize test execution order
+  --seed <n>                  Seed for --random-order (reproducible shuffle)
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output

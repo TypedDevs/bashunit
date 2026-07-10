@@ -173,6 +173,28 @@ BASHUNIT_RETRY=0
 ```
 :::
 
+## Random order
+
+> `BASHUNIT_RANDOM_ORDER=true|false` and `BASHUNIT_SEED=<n>`
+
+Randomize the order of test files and of the tests within each file to surface
+hidden inter-test coupling. Disabled by default. `BASHUNIT_SEED` pins the
+shuffle so a run can be replayed; when unset, a seed is generated and printed in
+the run header. Composes with `--parallel`.
+
+Similar as using `--random-order` / `--seed` options on the
+[command line](/command-line#random-order).
+
+::: code-group
+```bash [Reproducible shuffle]
+BASHUNIT_RANDOM_ORDER=true
+BASHUNIT_SEED=12345
+```
+```bash [Disabled (default)]
+BASHUNIT_RANDOM_ORDER=false
+```
+:::
+
 ## Stop on assertion failure
 
 > `BASHUNIT_STOP_ON_ASSERTION_FAILURE=true|false`

@@ -78,6 +78,8 @@ bashunit test tests/ --parallel --simple
 | `-S, --stop-on-failure`        | Stop on first failure                            |
 | `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
 | `--retry <n>`                  | Re-run a failed test up to N extra times         |
+| `--random-order`               | Randomize test execution order                   |
+| `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -489,6 +491,34 @@ Tests:      1 passed, 1 total
 
 It can also be set via the `BASHUNIT_RETRY` environment variable (see
 [configuration](/configuration#retry)).
+
+### Random order
+
+> `bashunit test --random-order [--seed <n>]`
+
+Randomize the order in which test files and the tests within each file run, to
+surface hidden inter-test coupling (leaked globals, shared temp files, ordering
+dependencies). Disabled by default.
+
+When enabled and no `--seed` is given, a seed is generated and printed in the
+run header so a failing run can be replayed exactly with `--seed <n>`. The same
+seed always produces the same order, and it composes with `--parallel`. `--seed`
+on its own (without `--random-order`) has no effect.
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --random-order
+```
+```[Output]
+Randomized with seed: 12345
+
+# replay the exact same order:
+bashunit test tests/ --random-order --seed 12345
+```
+:::
+
+It can also be set via the `BASHUNIT_SEED` environment variable (see
+[configuration](/configuration#random-order)).
 
 ### No Progress
 

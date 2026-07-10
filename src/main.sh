@@ -82,6 +82,13 @@ function bashunit::main::cmd_test() {
       export BASHUNIT_RETRY="$2"
       shift
       ;;
+    --random-order)
+      export BASHUNIT_RANDOM_ORDER=true
+      ;;
+    --seed)
+      export BASHUNIT_SEED="$2"
+      shift
+      ;;
     -w | --watch)
       export BASHUNIT_WATCH_MODE=true
       ;;
@@ -694,6 +701,17 @@ function bashunit::main::exec_tests() {
     printf "TAP version 13\n"
   else
     bashunit::console_header::print_version_with_env "$filter" "${test_files[@]}"
+  fi
+
+  # Resolve the shuffle seed once (generating one if absent) so it can be printed
+  # for replay and inherited by parallel test-file subshells.
+  if bashunit::env::is_random_order_enabled; then
+    if [ -z "${BASHUNIT_SEED:-}" ]; then
+      export BASHUNIT_SEED=$RANDOM
+    fi
+    if ! bashunit::env::is_tap_output_enabled; then
+      bashunit::console_header::print_random_order_seed "$BASHUNIT_SEED"
+    fi
   fi
 
   if bashunit::env::is_verbose_enabled; then
