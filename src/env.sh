@@ -125,6 +125,9 @@ _BASHUNIT_DEFAULT_RETRY="0"
 _BASHUNIT_DEFAULT_RANDOM_ORDER="false"
 # Seed for --random-order (empty = generate one and print it)
 _BASHUNIT_DEFAULT_SEED=""
+# Shard <index>/<total> to split the suite across runners (empty = disabled)
+_BASHUNIT_DEFAULT_SHARD_INDEX=""
+_BASHUNIT_DEFAULT_SHARD_TOTAL=""
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=0}"
@@ -158,6 +161,8 @@ _BASHUNIT_DEFAULT_SEED=""
 # up unrelated environment values.
 : "${BASHUNIT_RANDOM_ORDER:=$_BASHUNIT_DEFAULT_RANDOM_ORDER}"
 : "${BASHUNIT_SEED:=$_BASHUNIT_DEFAULT_SEED}"
+: "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
+: "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -210,6 +215,18 @@ function bashunit::env::is_random_order_enabled() {
 ##
 function bashunit::env::seed() {
   printf '%s' "${BASHUNIT_SEED:-}"
+}
+
+function bashunit::env::is_shard_enabled() {
+  [ -n "${BASHUNIT_SHARD_INDEX:-}" ] && [ -n "${BASHUNIT_SHARD_TOTAL:-}" ]
+}
+
+function bashunit::env::shard_index() {
+  printf '%s' "${BASHUNIT_SHARD_INDEX:-}"
+}
+
+function bashunit::env::shard_total() {
+  printf '%s' "${BASHUNIT_SHARD_TOTAL:-}"
 }
 
 function bashunit::env::is_show_header_enabled() {

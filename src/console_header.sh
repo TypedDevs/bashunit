@@ -133,6 +133,7 @@ Options:
   --retry <n>                 Re-run a failed test up to N extra times (0 = off)
   --random-order              Randomize test execution order
   --seed <n>                  Seed for --random-order (reproducible shuffle)
+  --shard <i>/<n>             Run shard i of n (split the suite across runners)
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
