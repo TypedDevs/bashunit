@@ -78,6 +78,10 @@ function bashunit::main::cmd_test() {
       export BASHUNIT_TEST_TIMEOUT="$2"
       shift
       ;;
+    --retry)
+      export BASHUNIT_RETRY="$2"
+      shift
+      ;;
     -w | --watch)
       export BASHUNIT_WATCH_MODE=true
       ;;

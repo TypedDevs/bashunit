@@ -120,6 +120,7 @@ Options:
   -R, --run-all               Run all assertions (don't stop on first failure)
   -S, --stop-on-failure       Stop on first failure
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)
+  --retry <n>                 Re-run a failed test up to N extra times (0 = off)
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output

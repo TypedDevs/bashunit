@@ -96,7 +96,7 @@ function test_is_dev_mode_disabled_when_dev_log_empty() {
 }
 
 # @data_provider provide_test_timeout_enabled
-function test_is_test_timeout_enabled(){
+function test_is_test_timeout_enabled() {
   local value="$1"
   local expected="$2"
 
@@ -130,6 +130,28 @@ function test_test_timeout_secs_returns_the_configured_value() {
 
   export BASHUNIT_TEST_TIMEOUT="$original"
   assert_equals "7" "$result"
+}
+
+function test_retry_count_returns_the_configured_value() {
+  local original="${BASHUNIT_RETRY:-0}"
+  export BASHUNIT_RETRY="3"
+
+  local result
+  result=$(bashunit::env::retry_count)
+
+  export BASHUNIT_RETRY="$original"
+  assert_equals "3" "$result"
+}
+
+function test_retry_count_treats_non_numeric_as_zero() {
+  local original="${BASHUNIT_RETRY:-0}"
+  export BASHUNIT_RETRY="abc"
+
+  local result
+  result=$(bashunit::env::retry_count)
+
+  export BASHUNIT_RETRY="$original"
+  assert_equals "0" "$result"
 }
 
 function test_is_tap_output_enabled_when_format_is_tap() {

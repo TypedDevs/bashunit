@@ -119,6 +119,8 @@ _BASHUNIT_DEFAULT_PROFILE="false"
 _BASHUNIT_DEFAULT_PROFILE_COUNT="10"
 # Per-test timeout in seconds (0 = disabled)
 _BASHUNIT_DEFAULT_TEST_TIMEOUT="0"
+# Extra attempts for a failed test (0 = no retry)
+_BASHUNIT_DEFAULT_RETRY="0"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=0}"
@@ -145,6 +147,9 @@ _BASHUNIT_DEFAULT_TEST_TIMEOUT="0"
 : "${BASHUNIT_PROFILE:=${PROFILE:=$_BASHUNIT_DEFAULT_PROFILE}}"
 : "${BASHUNIT_PROFILE_COUNT:=${PROFILE_COUNT:=$_BASHUNIT_DEFAULT_PROFILE_COUNT}}"
 : "${BASHUNIT_TEST_TIMEOUT:=${TEST_TIMEOUT:=$_BASHUNIT_DEFAULT_TEST_TIMEOUT}}"
+# No bare RETRY alias on purpose: it is too generic and would pick up unrelated
+# environment values. Only BASHUNIT_RETRY configures retries.
+: "${BASHUNIT_RETRY:=$_BASHUNIT_DEFAULT_RETRY}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -172,6 +177,20 @@ function bashunit::env::is_test_timeout_enabled() {
 ##
 function bashunit::env::test_timeout_secs() {
   printf '%s' "${BASHUNIT_TEST_TIMEOUT:-0}"
+}
+
+##
+# Prints the number of extra attempts for a failed test (0 = no retry).
+# A non-numeric value is treated as 0.
+##
+function bashunit::env::retry_count() {
+  case "${BASHUNIT_RETRY:-0}" in
+  '' | *[!0-9]*)
+    printf '%s' "0"
+    return
+    ;;
+  esac
+  printf '%s' "${BASHUNIT_RETRY:-0}"
 }
 
 function bashunit::env::is_show_header_enabled() {

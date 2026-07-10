@@ -131,6 +131,14 @@ _BASHUNIT_RUNNER_TOTAL_OUT=""
 _BASHUNIT_RUNNER_TYPE_OUT=""
 _BASHUNIT_RUNNER_OUTPUT_OUT=""
 _BASHUNIT_RUNNER_INTERP_OUT=""
+_BASHUNIT_RUNNER_COUNTS_FAILED_OUT=0
+_BASHUNIT_RUNNER_COUNTS_PASSED_OUT=0
+_BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT=0
+_BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT=0
+_BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=0
+_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=0
+# Suffix appended to a passed-test line when it only passed after retrying.
+_BASHUNIT_RETRY_NOTE=""
 
 # Writes the value of an encoded field (##KEY=value##) into _BASHUNIT_RUNNER_FIELD_OUT.
 # Arguments: $1 test_execution_result, $2 key
@@ -1000,7 +1008,6 @@ function bashunit::runner::run_with_timeout() {
 
 function bashunit::runner::run_test() {
   local start_time
-  start_time=$(bashunit::clock::now)
 
   local test_file="$1"
   shift
@@ -1025,13 +1032,37 @@ function bashunit::runner::run_test() {
 
   local test_execution_result
   local timed_out="false"
-  if bashunit::env::is_test_timeout_enabled; then
-    bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
-    test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
-    timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
-  else
-    test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
-  fi
+  local retry_max
+  retry_max=$(bashunit::env::retry_count)
+  local retries_used=0
+  # Retry wraps ONLY execution: a failed attempt is judged from its encoded
+  # result without committing, so the parse/report/counter path below still runs
+  # exactly once (on the final attempt) and nothing is double-counted. Each fork
+  # in --parallel retries itself before writing its single .result file.
+  while :; do
+    start_time=$(bashunit::clock::now)
+    if bashunit::env::is_test_timeout_enabled; then
+      bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
+      test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
+      timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
+    else
+      test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
+    fi
+
+    local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
+    local attempt_runtime_error
+    attempt_runtime_error=$(bashunit::runner::detect_runtime_error "$attempt_runtime_output")
+    bashunit::runner::extract_result_counts "$test_execution_result"
+    # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
+    # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
+    if [ -z "$attempt_runtime_error" ] &&
+      [ "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT" -eq 0 ] &&
+      [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -eq 0 ]; then
+      break
+    fi
+    [ "$retries_used" -ge "$retry_max" ] && break
+    retries_used=$((retries_used + 1))
+  done
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
@@ -1220,6 +1251,11 @@ function bashunit::runner::run_test() {
     return
   fi
 
+  # A test that only passed after retrying is annotated so flakiness stays visible.
+  _BASHUNIT_RETRY_NOTE=""
+  if [ "$retries_used" -gt 0 ]; then
+    _BASHUNIT_RETRY_NOTE=" (retry $retries_used/$retry_max)"
+  fi
   # In failures-only mode, suppress successful test output
   if ! bashunit::env::is_failures_only_enabled; then
     if [ "$fn_name" = "$interpolated_fn_name" ]; then
@@ -1228,6 +1264,7 @@ function bashunit::runner::run_test() {
       bashunit::console_results::print_successful_test "${label}" "$duration"
     fi
   fi
+  _BASHUNIT_RETRY_NOTE=""
   bashunit::state::add_tests_passed
   bashunit::reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   bashunit::internal_log "Test passed" "$label"
@@ -1412,9 +1449,14 @@ function bashunit::runner::parse_result_parallel() {
 }
 
 # shellcheck disable=SC2295
-function bashunit::runner::parse_result_sync() {
-  local fn_name=$1
-  local execution_result=$2
+##
+# Parses the encoded per-test result's last line into the counts out-slots
+# (_BASHUNIT_RUNNER_COUNTS_*_OUT). Pure read: never mutates the cumulative
+# _BASHUNIT_ASSERTIONS_* / _BASHUNIT_TEST_EXIT_CODE state, so the retry loop can
+# judge an attempt's outcome without committing it.
+##
+function bashunit::runner::extract_result_counts() {
+  local execution_result=$1
 
   local result_line
   result_line="${execution_result##*$'\n'}"
@@ -1453,22 +1495,36 @@ function bashunit::runner::parse_result_sync() {
     ;;
   esac
 
+  _BASHUNIT_RUNNER_COUNTS_FAILED_OUT=$assertions_failed
+  _BASHUNIT_RUNNER_COUNTS_PASSED_OUT=$assertions_passed
+  _BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT=$assertions_skipped
+  _BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT=$assertions_incomplete
+  _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=$assertions_snapshot
+  _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=$test_exit_code
+}
+
+function bashunit::runner::parse_result_sync() {
+  local fn_name=$1
+  local execution_result=$2
+
+  bashunit::runner::extract_result_counts "$execution_result"
+
   bashunit::internal_log "[SYNC]" "fn_name:$fn_name" "execution_result:$execution_result"
 
-  _BASHUNIT_ASSERTIONS_PASSED=$((_BASHUNIT_ASSERTIONS_PASSED + assertions_passed))
-  _BASHUNIT_ASSERTIONS_FAILED=$((_BASHUNIT_ASSERTIONS_FAILED + assertions_failed))
-  _BASHUNIT_ASSERTIONS_SKIPPED=$((_BASHUNIT_ASSERTIONS_SKIPPED + assertions_skipped))
-  _BASHUNIT_ASSERTIONS_INCOMPLETE=$((_BASHUNIT_ASSERTIONS_INCOMPLETE + assertions_incomplete))
-  _BASHUNIT_ASSERTIONS_SNAPSHOT=$((_BASHUNIT_ASSERTIONS_SNAPSHOT + assertions_snapshot))
-  _BASHUNIT_TEST_EXIT_CODE=$((_BASHUNIT_TEST_EXIT_CODE + test_exit_code))
+  _BASHUNIT_ASSERTIONS_PASSED=$((_BASHUNIT_ASSERTIONS_PASSED + _BASHUNIT_RUNNER_COUNTS_PASSED_OUT))
+  _BASHUNIT_ASSERTIONS_FAILED=$((_BASHUNIT_ASSERTIONS_FAILED + _BASHUNIT_RUNNER_COUNTS_FAILED_OUT))
+  _BASHUNIT_ASSERTIONS_SKIPPED=$((_BASHUNIT_ASSERTIONS_SKIPPED + _BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT))
+  _BASHUNIT_ASSERTIONS_INCOMPLETE=$((_BASHUNIT_ASSERTIONS_INCOMPLETE + _BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT))
+  _BASHUNIT_ASSERTIONS_SNAPSHOT=$((_BASHUNIT_ASSERTIONS_SNAPSHOT + _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT))
+  _BASHUNIT_TEST_EXIT_CODE=$((_BASHUNIT_TEST_EXIT_CODE + _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT))
 
   bashunit::internal_log "result_summary" \
-    "failed:$assertions_failed" \
-    "passed:$assertions_passed" \
-    "skipped:$assertions_skipped" \
-    "incomplete:$assertions_incomplete" \
-    "snapshot:$assertions_snapshot" \
-    "exit_code:$test_exit_code"
+    "failed:$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" \
+    "passed:$_BASHUNIT_RUNNER_COUNTS_PASSED_OUT" \
+    "skipped:$_BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT" \
+    "incomplete:$_BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT" \
+    "snapshot:$_BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT" \
+    "exit_code:$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT"
 }
 
 function bashunit::runner::write_failure_result_output() {

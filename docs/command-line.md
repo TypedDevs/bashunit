@@ -77,6 +77,7 @@ bashunit test tests/ --parallel --simple
 | `--detailed`                   | Detailed output (default)                        |
 | `-S, --stop-on-failure`        | Stop on first failure                            |
 | `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
+| `--retry <n>`                  | Re-run a failed test up to N extra times         |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -460,6 +461,34 @@ Tests:      1 passed, 1 failed, 2 total
 
 It can also be set via the `BASHUNIT_TEST_TIMEOUT` environment variable (see
 [configuration](/configuration#test-timeout)).
+
+### Retry
+
+> `bashunit test --retry <n>`
+
+Re-run a **failed** test up to `n` extra times and report it as passed if any
+attempt passes; it only fails once every attempt has failed. This mitigates
+flaky tests (timing, network or filesystem races) in CI without hiding a test
+that is consistently broken.
+
+Retry is **disabled by default** (`0`). A test that recovered on retry is
+annotated so the flakiness stays visible, retries apply per test, and it works
+together with `--parallel` and `--stop-on-failure` (a test that recovers on
+retry does not trigger stop-on-failure).
+
+::: code-group
+```bash [Example]
+bashunit test tests/ --retry 2
+```
+```[Output]
+✓ Passed: A flaky test (retry 1/2)
+
+Tests:      1 passed, 1 total
+```
+:::
+
+It can also be set via the `BASHUNIT_RETRY` environment variable (see
+[configuration](/configuration#retry)).
 
 ### No Progress
 

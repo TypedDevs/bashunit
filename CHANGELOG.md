@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--retry <n>` flag and `BASHUNIT_RETRY` env var to re-run a failed test up to N extra times (flaky-test mitigation); passes if any attempt passes, annotates tests that only passed on retry, and works with `--parallel` and `--stop-on-failure`. Disabled by default (#737)
 - `--report-tap <file>` writes a TAP version 13 report to a file (complements the streaming `--output tap`) (#740)
 - `assert_within_delta <expected> <actual> <delta>` asserts a number is within a tolerance of another; supports floats (#744)
 - `assert_array_length <n> <array>` asserts an array has exactly `n` elements (#743)
