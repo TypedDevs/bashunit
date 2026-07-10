@@ -155,6 +155,43 @@ function test_compute_total_assertions_treats_missing_counters_as_zero() {
   assert_same "2" "$_BASHUNIT_RUNNER_TOTAL_OUT"
 }
 
+# Builds a one-line encoded test result like execute_test_body emits.
+# Args: failed passed skipped incomplete snapshot exit_code
+function build_encoded_result() {
+  local out="##ASSERTIONS_FAILED=$1##ASSERTIONS_PASSED=$2"
+  out="$out##ASSERTIONS_SKIPPED=$3##ASSERTIONS_INCOMPLETE=$4"
+  out="$out##ASSERTIONS_SNAPSHOT=$5##TEST_EXIT_CODE=$6##"
+  printf '%s' "$out"
+}
+
+function test_extract_result_counts_writes_counts_to_slots() {
+  bashunit::runner::extract_result_counts "$(build_encoded_result 2 3 0 0 0 5)"
+
+  assert_same "2" "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT"
+  assert_same "3" "$_BASHUNIT_RUNNER_COUNTS_PASSED_OUT"
+  assert_same "5" "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT"
+}
+
+function test_extract_result_counts_does_not_mutate_cumulative_state() {
+  local before_failed="$_BASHUNIT_ASSERTIONS_FAILED"
+  local before_exit="$_BASHUNIT_TEST_EXIT_CODE"
+
+  bashunit::runner::extract_result_counts "$(build_encoded_result 9 9 0 0 0 1)"
+
+  assert_same "$before_failed" "$_BASHUNIT_ASSERTIONS_FAILED"
+  assert_same "$before_exit" "$_BASHUNIT_TEST_EXIT_CODE"
+}
+
+function test_extract_result_counts_reads_only_the_last_line() {
+  local result
+  result="user output mentioning ASSERTIONS_FAILED=7 should be ignored
+$(build_encoded_result 1 0 0 0 0 0)"
+
+  bashunit::runner::extract_result_counts "$result"
+
+  assert_same "1" "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT"
+}
+
 function test_extract_subshell_type_strips_brackets_into_slot() {
   bashunit::runner::extract_subshell_type "[failed] something happened"
 

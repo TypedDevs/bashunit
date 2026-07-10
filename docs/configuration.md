@@ -151,6 +151,28 @@ BASHUNIT_TEST_TIMEOUT=0
 ```
 :::
 
+## Retry
+
+> `BASHUNIT_RETRY=<n>`
+
+Re-run a failed test up to `n` extra times and report it as passed if any
+attempt passes; it fails only after every attempt fails. `0` (disabled) by
+default. Mitigates flaky tests in CI without hiding a consistently broken one; a
+test that recovers on retry is annotated so the flakiness stays visible.
+
+Applies per test and works together with `--parallel` and `--stop-on-failure`.
+
+Similar as using `--retry` option on the [command line](/command-line#retry).
+
+::: code-group
+```bash [Retry up to 2 times]
+BASHUNIT_RETRY=2
+```
+```bash [Disabled (default)]
+BASHUNIT_RETRY=0
+```
+:::
+
 ## Stop on assertion failure
 
 > `BASHUNIT_STOP_ON_ASSERTION_FAILURE=true|false`

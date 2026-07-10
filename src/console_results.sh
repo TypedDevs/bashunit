@@ -244,6 +244,10 @@ function bashunit::console_results::print_successful_test() {
       "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name" "$quoted_args")
   fi
 
+  # Retry annotation (e.g. " (retry 1/2)") set by the runner when a test only
+  # passed after retrying; empty in the common no-retry path.
+  line="${line}${_BASHUNIT_RETRY_NOTE:-}"
+
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
     local time_display
