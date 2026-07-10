@@ -124,6 +124,7 @@ Options:
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report
   --report-tap <file>         Write TAP version 13 report
+  --report-json <file>        Write machine-readable JSON report
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
   --output <format>           Output format: tap (TAP version 13)

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--report-json <file>` writes machine-readable JSON results (summary counts + per-test records) with pure-Bash string escaping (no `jq` dependency) (#741)
 - `--shard <index>/<total>` to run a deterministic, round-robin subset of the test files so a suite can be split across parallel CI runners (union of all shards is the full suite, no overlap); validates input and composes with `--parallel` (#739)
 - `--random-order` flag with `--seed <n>` / `BASHUNIT_SEED` to randomize test file and function execution order (surfaces inter-test coupling); the seed is printed for replay and the shuffle is reproducible and works with `--parallel`. Disabled by default (#738)
 - `--retry <n>` flag and `BASHUNIT_RETRY` env var to re-run a failed test up to N extra times (flaky-test mitigation); passes if any attempt passes, annotates tests that only passed on retry, and works with `--parallel` and `--stop-on-failure`. Disabled by default (#737)

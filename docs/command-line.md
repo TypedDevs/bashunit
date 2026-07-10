@@ -72,6 +72,7 @@ bashunit test tests/ --parallel --simple
 | `--no-parallel`                | Run tests sequentially                           |
 | `-r, --report-html <file>`     | Write HTML report                                |
 | `--report-tap <file>`          | Write TAP version 13 report to a file            |
+| `--report-json <file>`         | Write machine-readable JSON report to a file     |
 | `-R, --run-all`                | Run all assertions (don't stop on first failure) |
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
@@ -373,9 +374,26 @@ bashunit test tests/ --report-html report.html
 # Stream annotations straight to the runner log:
 bashunit test tests/ --log-gha /dev/stdout
 ```
+```bash [JSON]
+bashunit test tests/ --report-json report.json
+```
 :::
 
 The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests, including the failing test's `file` and `line`. Point it at `/dev/stdout` (or stream a log file to stdout) on a runner and the failures appear as inline annotations in the "Files changed" tab of a pull request.
+
+The `--report-json` flag writes machine-readable results for scripts, dashboards and bots. Strings are escaped in pure Bash, so no `jq` is needed to produce it. Its schema is:
+
+```json
+{
+  "summary": { "total": 3, "passed": 2, "failed": 1, "skipped": 0, "incomplete": 0, "duration_ms": 42 },
+  "tests": [
+    { "file": "tests/math_test.sh", "name": "it adds", "status": "passed", "duration_ms": 5, "message": "" },
+    { "file": "tests/math_test.sh", "name": "it divides", "status": "failed", "duration_ms": 3, "message": "Expected 2 but got 3" }
+  ]
+}
+```
+
+`status` is one of `passed`, `failed`, `skipped`, `incomplete` (`snapshot` and `risky` are also emitted per test and counted as passed in the summary). Like the other file reporters, per-test rows come from a sequential run; under `--parallel` the file is still valid JSON.
 
 ### Show Output on Failure
 
