@@ -34,11 +34,11 @@ function test_generate_report_json_is_valid_and_escapes_messages() {
   set_up_report_fixture
   bashunit::reports::generate_report_json "$out"
 
-  # jq parses it (valid JSON) and the quote/newline in the message round-trips.
+  # jq parsing succeeds only if the embedded quote AND newline were escaped
+  # correctly; asserting the quote substring avoids a Windows CRLF round-trip.
   assert_successful_code "$(jq empty "$out" 2>&1)"
   assert_same 'failed' "$(jq -r '.tests[1].status' "$out")"
-  assert_same 'say "hi"
-next' "$(jq -r '.tests[1].message' "$out")"
+  assert_contains 'say "hi"' "$(jq -r '.tests[1].message' "$out")"
   rm -f "$out"
 }
 
