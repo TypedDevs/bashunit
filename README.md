@@ -68,3 +68,16 @@ Full documentation, covering installation options, every feature and examples, l
 
 Issues, ideas and pull requests are welcome.
 See the [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) to set up your environment.
+
+## Assert helpers (quick reference)
+
+| Helper | Example | When |
+| --- | --- | --- |
+| `assert_equals` | `assert_equals "a" "$got"` | exact string/value |
+| `assert_not_equals` | `assert_not_equals "x" "$got"` | inequality |
+| `assert_true` / `assert_false` | `assert_true "$flag"` | booleans |
+| `assert_array_contains` | `assert_array_contains "x" "${arr[@]}"` | membership |
+| `assert_successful_code` | `assert_successful_code $?` | exit status |
+
+See the full assert catalog in the project docs for newer helpers (length, delta, file permissions, etc.).
+
