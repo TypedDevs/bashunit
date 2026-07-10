@@ -158,6 +158,10 @@ function bashunit::main::cmd_test() {
       export BASHUNIT_REPORT_TAP="$2"
       shift
       ;;
+    --report-json)
+      export BASHUNIT_REPORT_JSON="$2"
+      shift
+      ;;
     --no-output)
       export BASHUNIT_NO_OUTPUT=true
       ;;
@@ -820,6 +824,10 @@ function bashunit::main::exec_tests() {
 
   if [ -n "$BASHUNIT_REPORT_TAP" ]; then
     bashunit::reports::generate_report_tap "$BASHUNIT_REPORT_TAP"
+  fi
+
+  if [ -n "$BASHUNIT_REPORT_JSON" ]; then
+    bashunit::reports::generate_report_json "$BASHUNIT_REPORT_JSON"
   fi
 
   # Generate coverage report if enabled
