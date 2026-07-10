@@ -3,7 +3,6 @@ name: pr
 description: Push branch and create a GitHub PR with concise, issue-linked description
 user-invocable: true
 argument-hint: "[#issue]"
-disable-model-invocation: true
 allowed-tools: Bash, Read, Grep, Glob
 ---
 
