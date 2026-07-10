@@ -80,6 +80,7 @@ bashunit test tests/ --parallel --simple
 | `--retry <n>`                  | Re-run a failed test up to N extra times         |
 | `--random-order`               | Randomize test execution order                   |
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
+| `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -519,6 +520,32 @@ bashunit test tests/ --random-order --seed 12345
 
 It can also be set via the `BASHUNIT_SEED` environment variable (see
 [configuration](/configuration#random-order)).
+
+### Shard
+
+> `bashunit test --shard <index>/<total>`
+
+Run a deterministic subset (shard) of the test files, so a large suite can be
+split across parallel CI machines. `index` is 1-based (`1 <= index <= total`);
+invalid input exits non-zero with an error. Files are assigned round-robin, so
+the union of all shards is the full suite with no overlap. Composes with
+`--parallel` (shard first on each runner, then parallelize the slice).
+
+::: code-group
+```bash [Split across 4 runners]
+bashunit test tests/ --shard 1/4
+bashunit test tests/ --shard 2/4
+bashunit test tests/ --shard 3/4
+bashunit test tests/ --shard 4/4
+```
+```yaml [GitHub Actions matrix]
+strategy:
+  matrix:
+    shard: [1, 2, 3, 4]
+steps:
+  - run: ./bashunit tests/ --shard ${{ matrix.shard }}/4
+```
+:::
 
 ### No Progress
 

@@ -1,5 +1,36 @@
 #!/usr/bin/env bash
 
+##
+# Validates a `--shard <index>/<total>` spec and exports the parts, or prints an
+# error and exits non-zero. Requires numeric index/total with 1 <= index <= total.
+##
+function bashunit::main::set_shard_or_exit() {
+  local spec="${1:-}"
+  local index total
+  case "$spec" in
+  */*)
+    index="${spec%%/*}"
+    total="${spec##*/}"
+    ;;
+  *)
+    index=""
+    total=""
+    ;;
+  esac
+  case "$index" in '' | *[!0-9]*) index="" ;; esac
+  case "$total" in '' | *[!0-9]*) total="" ;; esac
+
+  if [ -z "$index" ] || [ -z "$total" ] ||
+    [ "$total" -lt 1 ] || [ "$index" -lt 1 ] || [ "$index" -gt "$total" ]; then
+    printf "%sError: --shard must be <index>/<total> with 1 <= index <= total (e.g. 1/4).%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+  fi
+
+  export BASHUNIT_SHARD_INDEX="$index"
+  export BASHUNIT_SHARD_TOTAL="$total"
+}
+
 #############################
 # Subcommand: test
 #############################
@@ -87,6 +118,10 @@ function bashunit::main::cmd_test() {
       ;;
     --seed)
       export BASHUNIT_SEED="$2"
+      shift
+      ;;
+    --shard)
+      bashunit::main::set_shard_or_exit "$2"
       shift
       ;;
     -w | --watch)
@@ -680,6 +715,26 @@ function bashunit::main::exec_tests() {
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1
+  fi
+
+  # Split the suite across runners: keep the files whose position matches this
+  # shard (round-robin), so all shards together cover the whole suite with no
+  # overlap. An empty shard (more shards than files) is valid and runs nothing.
+  if bashunit::env::is_shard_enabled; then
+    local _shard_index _shard_total
+    _shard_index=$(bashunit::env::shard_index)
+    _shard_total=$(bashunit::env::shard_total)
+    local -a _sharded=()
+    local _i=0
+    while [ "$_i" -lt "$test_files_count" ]; do
+      if [ "$((_i % _shard_total))" -eq "$((_shard_index - 1))" ]; then
+        _sharded[${#_sharded[@]}]="${test_files[_i]}"
+      fi
+      _i=$((_i + 1))
+    done
+    test_files=("${_sharded[@]+"${_sharded[@]}"}")
+    test_files_count=${#test_files[@]}
+    bashunit::internal_log "shard" "index:$_shard_index" "total:$_shard_total" "files:$test_files_count"
   fi
 
   # Trap SIGINT (Ctrl-C) and call the cleanup function
