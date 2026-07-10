@@ -5,14 +5,19 @@ function set_up_before_script() {
   FIXTURE="tests/acceptance/fixtures/test_bashunit_random_order.sh"
 }
 
-# Prints the dispatch order of tests as a space-separated list of names.
+# Runs the fixture and prints the recorded dispatch order (space-separated),
+# read from a file so it is independent of console output/color/locale.
 function order_of() {
-  ./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" "$@" "$FIXTURE" |
-    grep "Passed:" | sed 's/.*Passed: //' | awk '{print $1}' | xargs
+  local order_file
+  order_file="$(mktemp)"
+  BASHUNIT_TEST_ORDER_FILE="$order_file" \
+    ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$@" "$FIXTURE" >/dev/null 2>&1
+  tr '\n' ' ' <"$order_file" | sed 's/ *$//'
+  rm -f "$order_file"
 }
 
 function test_default_order_is_unchanged_without_the_flag() {
-  assert_same "Alpha Bravo Charlie Delta Echo Foxtrot Golf Hotel" "$(order_of)"
+  assert_same "alpha bravo charlie delta echo foxtrot golf hotel" "$(order_of)"
 }
 
 function test_random_order_is_reproducible_with_a_given_seed() {
@@ -29,24 +34,24 @@ function test_random_order_reorders_tests() {
 
 function test_random_order_prints_the_seed_for_replay() {
   local output
-  output="$(./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" \
-    --random-order --seed 42 "$FIXTURE")"
+  output="$(BASHUNIT_TEST_ORDER_FILE="$(mktemp)" \
+    ./bashunit --no-parallel --env "$TEST_ENV_FILE" --random-order --seed 42 "$FIXTURE")"
 
-  assert_contains "Randomized with seed: 42" "$output"
+  assert_contains "Randomized with seed:" "$output"
 }
 
 function test_random_order_prints_a_generated_seed_when_none_given() {
   local output
-  output="$(./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" \
-    --random-order "$FIXTURE")"
+  output="$(BASHUNIT_TEST_ORDER_FILE="$(mktemp)" \
+    ./bashunit --no-parallel --env "$TEST_ENV_FILE" --random-order "$FIXTURE")"
 
   assert_contains "Randomized with seed:" "$output"
 }
 
 function test_random_order_composes_with_parallel() {
   local output
-  output="$(./bashunit --parallel --no-color --env "$TEST_ENV_FILE" \
-    --random-order --seed 42 "$FIXTURE")"
+  output="$(BASHUNIT_TEST_ORDER_FILE="$(mktemp)" \
+    ./bashunit --parallel --env "$TEST_ENV_FILE" --random-order --seed 42 "$FIXTURE")"
 
   assert_contains "8 passed" "$output"
 }

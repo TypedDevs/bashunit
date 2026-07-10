@@ -1,43 +1,48 @@
 #!/usr/bin/env bash
 
-# Each test echoes an order marker so acceptance tests can read the dispatch
-# order from the output independently of timing/formatting.
+# Each test appends its name to an order file, so acceptance tests can read the
+# dispatch order from the filesystem instead of parsing console output (which
+# varies with color, output mode, TTY and locale).
+function record_order() {
+  printf '%s\n' "$1" >>"${BASHUNIT_TEST_ORDER_FILE:?order file required}"
+}
+
 function test_alpha() {
-  echo "ORDER:alpha"
+  record_order alpha
   assert_same 1 1
 }
 
 function test_bravo() {
-  echo "ORDER:bravo"
+  record_order bravo
   assert_same 1 1
 }
 
 function test_charlie() {
-  echo "ORDER:charlie"
+  record_order charlie
   assert_same 1 1
 }
 
 function test_delta() {
-  echo "ORDER:delta"
+  record_order delta
   assert_same 1 1
 }
 
 function test_echo() {
-  echo "ORDER:echo"
+  record_order echo
   assert_same 1 1
 }
 
 function test_foxtrot() {
-  echo "ORDER:foxtrot"
+  record_order foxtrot
   assert_same 1 1
 }
 
 function test_golf() {
-  echo "ORDER:golf"
+  record_order golf
   assert_same 1 1
 }
 
 function test_hotel() {
-  echo "ORDER:hotel"
+  record_order hotel
   assert_same 1 1
 }
