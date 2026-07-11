@@ -118,6 +118,20 @@ function test_detect_runtime_error_matches_unexpected_eof() {
   assert_same "line 5: unexpected EOF while looking for matching" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
 }
 
+function test_decode_subshell_output_writes_empty_for_empty_marker() {
+  bashunit::runner::decode_subshell_output "pre##TEST_OUTPUT=_BASHUNIT_EMPTY_##ASSERTIONS_PASSED=1"
+
+  assert_empty "$_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT"
+}
+
+function test_decode_subshell_output_decodes_non_empty_output_to_slot() {
+  local encoded
+  encoded="$(bashunit::helper::encode_base64 "hello output")"
+  bashunit::runner::decode_subshell_output "pre##TEST_OUTPUT=${encoded}##ASSERTIONS_PASSED=1"
+
+  assert_same "hello output" "$_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT"
+}
+
 function test_extract_encoded_field_writes_value_to_slot() {
   bashunit::runner::extract_encoded_field \
     "preamble##TEST_TITLE=hello world##ASSERTIONS_PASSED=1" "TEST_TITLE"

@@ -138,6 +138,7 @@ _BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT=0
 _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=0
 _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=0
 _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
+_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
 # Suffix appended to a passed-test line when it only passed after retrying.
 _BASHUNIT_RETRY_NOTE=""
 
@@ -1131,7 +1132,8 @@ function bashunit::runner::run_test() {
       "$test_file" "$fn_name" "$duration" "$test_execution_result"
   fi
 
-  local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
+  bashunit::runner::decode_subshell_output "$test_execution_result"
+  local subshell_output=$_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT
 
   if [ -n "$subshell_output" ]; then
     bashunit::runner::extract_subshell_type "$subshell_output"
@@ -1367,12 +1369,20 @@ function bashunit::runner::cleanup_on_exit() {
   bashunit::state::export_subshell_context
 }
 
+# Writes the decoded subshell output into _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT.
+# The empty case (a passing test with no captured output) short-circuits with
+# no subshell at all; only the non-empty path pays the base64 fork (#762/#764).
+# Arguments: $1 test_execution_result
 function bashunit::runner::decode_subshell_output() {
   local test_execution_result="$1"
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-  bashunit::helper::decode_base64 "$test_output_base64"
+  if [ -z "$test_output_base64" ] || [ "$test_output_base64" = "_BASHUNIT_EMPTY_" ]; then
+    _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
+    return
+  fi
+  _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT="$(bashunit::helper::decode_base64 "$test_output_base64")"
 }
 
 function bashunit::runner::is_simple_progress_output() {
