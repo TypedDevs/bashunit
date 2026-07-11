@@ -549,6 +549,10 @@ function bashunit::helper::get_function_line_number() {
   echo "$line_number"
 }
 
+# Writes a sanitized, process-unique id into _BASHUNIT_HELPER_ID_OUT.
+# Return-slot form so the per-test caller avoids a $(...) capture fork (#764).
+# Arguments: $1 basename
+_BASHUNIT_HELPER_ID_OUT=""
 function bashunit::helper::generate_id() {
   local basename="$1"
   # Inline normalize_variable_name + random_str to avoid two forks per call.
@@ -565,9 +569,9 @@ function bashunit::helper::generate_id() {
     for ((_i = 0; _i < 6; _i++)); do
       _suffix="$_suffix${_chars:RANDOM%${#_chars}:1}"
     done
-    echo "${sanitized}_$$_${_suffix}"
+    _BASHUNIT_HELPER_ID_OUT="${sanitized}_$$_${_suffix}"
   else
-    echo "${sanitized}_$$"
+    _BASHUNIT_HELPER_ID_OUT="${sanitized}_$$"
   fi
 }
 

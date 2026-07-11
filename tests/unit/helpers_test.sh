@@ -131,9 +131,8 @@ function test_generate_id_uses_pid_suffix_when_not_parallel() {
   local _orig="${BASHUNIT_PARALLEL_RUN-}"
   export BASHUNIT_PARALLEL_RUN=false
 
-  local id
-  id="$(bashunit::helper::generate_id "test_foo")"
-  assert_same "test_foo_$$" "$id"
+  bashunit::helper::generate_id "test_foo"
+  assert_same "test_foo_$$" "$_BASHUNIT_HELPER_ID_OUT"
 
   export BASHUNIT_PARALLEL_RUN="$_orig"
 }
@@ -142,9 +141,10 @@ function test_generate_id_appends_random_suffix_when_parallel() {
   local _orig="${BASHUNIT_PARALLEL_RUN-}"
   export BASHUNIT_PARALLEL_RUN=true
 
-  local id1 id2
-  id1="$(bashunit::helper::generate_id "test_foo")"
-  id2="$(bashunit::helper::generate_id "test_foo")"
+  bashunit::helper::generate_id "test_foo"
+  local id1="$_BASHUNIT_HELPER_ID_OUT"
+  bashunit::helper::generate_id "test_foo"
+  local id2="$_BASHUNIT_HELPER_ID_OUT"
 
   assert_matches "^test_foo_${$}_[a-zA-Z0-9]{6}$" "$id1"
   assert_matches "^test_foo_${$}_[a-zA-Z0-9]{6}$" "$id2"
@@ -156,12 +156,11 @@ function test_generate_id_sanitizes_basename() {
   local _orig="${BASHUNIT_PARALLEL_RUN-}"
   export BASHUNIT_PARALLEL_RUN=false
 
-  local id
-  id="$(bashunit::helper::generate_id "my-file.sh")"
-  assert_same "my_file_sh_$$" "$id"
+  bashunit::helper::generate_id "my-file.sh"
+  assert_same "my_file_sh_$$" "$_BASHUNIT_HELPER_ID_OUT"
 
-  id="$(bashunit::helper::generate_id "123start")"
-  assert_same "_123start_$$" "$id"
+  bashunit::helper::generate_id "123start"
+  assert_same "_123start_$$" "$_BASHUNIT_HELPER_ID_OUT"
 
   export BASHUNIT_PARALLEL_RUN="$_orig"
 }

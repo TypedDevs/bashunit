@@ -50,7 +50,8 @@ function bashunit::runner::source_login_shell_profiles() {
 function bashunit::runner::export_test_identity() {
   local test_file=$1
   local fn_name=$2
-  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
+  bashunit::helper::generate_id "$fn_name"
+  export BASHUNIT_CURRENT_TEST_ID="$_BASHUNIT_HELPER_ID_OUT"
   bashunit::runner::resolve_test_location "$test_file" "$fn_name"
   export _BASHUNIT_TEST_LOCATION
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
@@ -369,7 +370,8 @@ function bashunit::runner::load_test_files() {
       continue
     fi
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${test_file}")"
+    bashunit::helper::generate_id "${test_file}"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
     bashunit::internal_log "Loading file" "$test_file"
@@ -494,7 +496,8 @@ function bashunit::runner::load_bench_files() {
   for bench_file in "${files[@]+"${files[@]}"}"; do
     [ -f "$bench_file" ] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${bench_file}")"
+    bashunit::helper::generate_id "${bench_file}"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
