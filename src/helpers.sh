@@ -149,8 +149,8 @@ function bashunit::helper::encode_base64() {
 function bashunit::helper::decode_base64() {
   local value="$1"
 
-  # Handle empty string marker
-  if [ "$value" = "_BASHUNIT_EMPTY_" ]; then
+  # Empty input decodes to empty; short-circuit to skip the base64 fork (#762).
+  if [ -z "$value" ] || [ "$value" = "_BASHUNIT_EMPTY_" ]; then
     printf ''
     return
   fi
