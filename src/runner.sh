@@ -137,6 +137,7 @@ _BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT=0
 _BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT=0
 _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=0
 _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=0
+_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
 # Suffix appended to a passed-test line when it only passed after retrying.
 _BASHUNIT_RETRY_NOTE=""
 
@@ -209,8 +210,13 @@ function bashunit::runner::record_profile() {
   printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
 }
 
+# Writes the detected runtime-error message (empty when none) into
+# _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT. Return-slot form avoids a per-test fork
+# on the hot path (#764).
+# Arguments: $1 runtime_output
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
+  _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
   case "$runtime_output" in
   *"command not found"* | *"unbound variable"* | *"permission denied"* | \
     *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
@@ -222,11 +228,9 @@ function bashunit::runner::detect_runtime_error() {
     *"too many arguments"* | *"value too great"* | \
     *"not a valid identifier"* | *"unexpected EOF"*)
     local runtime_error="${runtime_output#*: }"
-    printf '%s' "${runtime_error//$'\n'/}"
-    return 0
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
     ;;
   esac
-  printf ''
 }
 
 ##
@@ -1094,8 +1098,8 @@ function bashunit::runner::run_test() {
     fi
 
     local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-    local attempt_runtime_error
-    attempt_runtime_error=$(bashunit::runner::detect_runtime_error "$attempt_runtime_output")
+    bashunit::runner::detect_runtime_error "$attempt_runtime_output"
+    local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
     bashunit::runner::extract_result_counts "$test_execution_result"
     # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
     # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
@@ -1139,10 +1143,11 @@ function bashunit::runner::run_test() {
     fi
   fi
 
-  local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-
-  local runtime_error
-  runtime_error=$(bashunit::runner::detect_runtime_error "$runtime_output")
+  # Reuse the final attempt's values (the loop always runs at least once and
+  # its locals persist in this function scope), instead of recomputing and
+  # forking detect_runtime_error a second time (#764).
+  local runtime_output=$attempt_runtime_output
+  local runtime_error=$attempt_runtime_error
 
   # parse_result accumulates _BASHUNIT_TEST_EXIT_CODE; reset it so each test's
   # exit code is read in isolation (a non-zero/timed-out test must not poison
