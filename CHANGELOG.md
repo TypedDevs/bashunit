@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.41.0](https://github.com/TypedDevs/bashunit/compare/0.40.0...0.41.0) - 2026-07-11
+
 ### Added
 - `--retry <n>` / `BASHUNIT_RETRY` re-runs a failed test up to N times; passes if any attempt passes, annotates retried tests, and works with `--parallel` and `--stop-on-failure` (#737)
 - `--random-order` with `--seed <n>` / `BASHUNIT_SEED` randomizes test file and function order to surface inter-test coupling; prints the seed for reproducible replay and works with `--parallel` (#738)
