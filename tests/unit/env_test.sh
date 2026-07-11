@@ -188,6 +188,26 @@ function test_retry_count_treats_non_numeric_as_zero() {
   assert_equals "0" "$result"
 }
 
+function test_resolve_retry_count_writes_configured_value_to_global() {
+  local original="${BASHUNIT_RETRY:-0}"
+  export BASHUNIT_RETRY="3"
+
+  bashunit::env::resolve_retry_count
+
+  export BASHUNIT_RETRY="$original"
+  assert_equals "3" "$_BASHUNIT_RETRY_VALIDATED"
+}
+
+function test_resolve_retry_count_writes_zero_for_non_numeric_to_global() {
+  local original="${BASHUNIT_RETRY:-0}"
+  export BASHUNIT_RETRY="abc"
+
+  bashunit::env::resolve_retry_count
+
+  export BASHUNIT_RETRY="$original"
+  assert_equals "0" "$_BASHUNIT_RETRY_VALIDATED"
+}
+
 function test_is_tap_output_enabled_when_format_is_tap() {
   local original="$BASHUNIT_OUTPUT_FORMAT"
   export BASHUNIT_OUTPUT_FORMAT="tap"

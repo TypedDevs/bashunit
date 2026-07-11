@@ -1082,8 +1082,8 @@ function bashunit::runner::run_test() {
 
   local test_execution_result
   local timed_out="false"
-  local retry_max
-  retry_max=$(bashunit::env::retry_count)
+  bashunit::env::resolve_retry_count
+  local retry_max=$_BASHUNIT_RETRY_VALIDATED
   local retries_used=0
   local measure_duration=false
   bashunit::runner::needs_test_duration && measure_duration=true

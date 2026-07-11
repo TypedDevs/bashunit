@@ -199,14 +199,20 @@ function bashunit::env::test_timeout_secs() {
 # Prints the number of extra attempts for a failed test (0 = no retry).
 # A non-numeric value is treated as 0.
 ##
-function bashunit::env::retry_count() {
+# Validates BASHUNIT_RETRY into the integer global _BASHUNIT_RETRY_VALIDATED.
+# In-shell (no fork) so the per-test hot path can read the global instead of
+# capturing retry_count in a $(...) subshell every test (#764).
+_BASHUNIT_RETRY_VALIDATED=0
+function bashunit::env::resolve_retry_count() {
   case "${BASHUNIT_RETRY:-0}" in
-  '' | *[!0-9]*)
-    printf '%s' "0"
-    return
-    ;;
+  '' | *[!0-9]*) _BASHUNIT_RETRY_VALIDATED=0 ;;
+  *) _BASHUNIT_RETRY_VALIDATED="${BASHUNIT_RETRY:-0}" ;;
   esac
-  printf '%s' "${BASHUNIT_RETRY:-0}"
+}
+
+function bashunit::env::retry_count() {
+  bashunit::env::resolve_retry_count
+  printf '%s' "$_BASHUNIT_RETRY_VALIDATED"
 }
 
 function bashunit::env::is_random_order_enabled() {
