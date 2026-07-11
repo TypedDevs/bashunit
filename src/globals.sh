@@ -73,7 +73,10 @@ function bashunit::cleanup_testcase_temp_files() {
     # ${matches[0]:-} handles both under set -u, and [ -e ] is false in each
     # case. temp_file runs in a $(...) subshell, so a global flag could not
     # reach this trap; checking the filesystem is the only reliable signal.
-    local matches=("$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*)
+    # Declare and assign separately: bash 3.0 does not expand a compound array
+    # assignment attached to `local`, it stores the literal "(glob)" instead.
+    local matches
+    matches=("$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*)
     [ -e "${matches[0]:-}" ] && rm -rf "${matches[@]}"
   fi
 }
