@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Faster test execution: removed avoidable subshell forks from the per-test hot path (runtime-error detection, subshell-output decode, name normalization, test-id generation, retry-count lookup, and the passing-test line are now fork-free), and per-test temp-file cleanup no longer forks `rm` when the test created none (`rm` 102 -> 2 on a 100-test file). No behaviour change (#764)
 - Per-test execution time now defaults to `auto` (`BASHUNIT_SHOW_EXECUTION_TIME=true|false|auto`): shown when the shell has a fork-free clock (Bash 5.0+, GNU `date`), hidden when measuring would fork an interpreter (e.g. Bash 3.2 on macOS, which falls back to `perl`). This removes ~2 `perl` forks per test on those shells. `--profile`, `--verbose`, reports, and `=true` still measure. See `adrs/adr-008-auto-skip-per-test-timing.md` (#765)
 - Faster test execution: each test file's data-provider annotations are scanned once and cached, replacing a per-test `grep`+`sed` probe with a pure-bash lookup (no behaviour change) (#763)
 - Faster test execution: skip the base64 encode fork for a test's empty title, hook message and output (the common case), and short-circuit decoding of empty fields (no behaviour change) (#762)
