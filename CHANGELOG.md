@@ -3,14 +3,14 @@
 ## Unreleased
 
 ### Added
-- `--report-json <file>` writes machine-readable JSON results (summary counts + per-test records) with pure-Bash string escaping (no `jq` dependency) (#741)
-- `--shard <index>/<total>` to run a deterministic, round-robin subset of the test files so a suite can be split across parallel CI runners (union of all shards is the full suite, no overlap); validates input and composes with `--parallel` (#739)
-- `--random-order` flag with `--seed <n>` / `BASHUNIT_SEED` to randomize test file and function execution order (surfaces inter-test coupling); the seed is printed for replay and the shuffle is reproducible and works with `--parallel`. Disabled by default (#738)
-- `--retry <n>` flag and `BASHUNIT_RETRY` env var to re-run a failed test up to N extra times (flaky-test mitigation); passes if any attempt passes, annotates tests that only passed on retry, and works with `--parallel` and `--stop-on-failure`. Disabled by default (#737)
-- `--report-tap <file>` writes a TAP version 13 report to a file (complements the streaming `--output tap`) (#740)
-- `assert_within_delta <expected> <actual> <delta>` asserts a number is within a tolerance of another; supports floats (#744)
+- `--retry <n>` / `BASHUNIT_RETRY` re-runs a failed test up to N times; passes if any attempt passes, annotates retried tests, and works with `--parallel` and `--stop-on-failure` (#737)
+- `--random-order` with `--seed <n>` / `BASHUNIT_SEED` randomizes test file and function order to surface inter-test coupling; prints the seed for reproducible replay and works with `--parallel` (#738)
+- `--shard <index>/<total>` runs a deterministic, non-overlapping subset of the test files to split a suite across parallel CI runners; composes with `--parallel` (#739)
+- `--report-tap <file>` writes a TAP v13 report to a file (complements the streaming `--output tap`) (#740)
+- `--report-json <file>` writes results as JSON (summary counts + per-test records); no `jq` dependency (#741)
+- `assert_file_permissions <mode> <file>` asserts a file's octal permission mode; portable across GNU/BSD `stat` (#742)
 - `assert_array_length <n> <array>` asserts an array has exactly `n` elements (#743)
-- `assert_file_permissions <mode> <file>` asserts a file's octal permission mode (`644`, `0755`); portable across GNU/BSD `stat` (#742)
+- `assert_within_delta <expected> <actual> <delta>` asserts a number is within a tolerance; supports floats (#744)
 
 ### Fixed
 - `watch` subcommand failed with `bashunit::watch::run: command not found` in the released binary because `src/watch.sh` was missing from the build; it is now bundled (#735)
