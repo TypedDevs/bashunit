@@ -33,15 +33,18 @@ function bashunit::reports::add_test_failed() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "failed" "$5"
 }
 
+# Returns 0 when any report output is requested.
+function bashunit::reports::is_enabled() {
+  [ -n "${BASHUNIT_LOG_JUNIT:-}" ] ||
+    [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
+    [ -n "${BASHUNIT_LOG_GHA:-}" ] ||
+    [ -n "${BASHUNIT_REPORT_TAP:-}" ] ||
+    [ -n "${BASHUNIT_REPORT_JSON:-}" ]
+}
+
 function bashunit::reports::add_test() {
   # Skip tracking when no report output is requested
-  {
-    [ -n "${BASHUNIT_LOG_JUNIT:-}" ] ||
-      [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
-      [ -n "${BASHUNIT_LOG_GHA:-}" ] ||
-      [ -n "${BASHUNIT_REPORT_TAP:-}" ] ||
-      [ -n "${BASHUNIT_REPORT_JSON:-}" ]
-  } || return 0
+  bashunit::reports::is_enabled || return 0
 
   local file="$1"
   local test_name="$2"

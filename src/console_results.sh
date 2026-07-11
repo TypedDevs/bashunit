@@ -133,7 +133,7 @@ function bashunit::console_results::render_result() {
 }
 
 function bashunit::console_results::print_execution_time() {
-  if ! bashunit::env::is_show_execution_time_enabled; then
+  if ! bashunit::env::is_total_execution_time_enabled; then
     return
   fi
 

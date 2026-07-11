@@ -1037,8 +1037,19 @@ function bashunit::runner::run_with_timeout() {
   rm -f "$out_file" "$marker_file"
 }
 
+# Per-test duration is consumed by --profile, --verbose, report files, and the
+# execution-time display. When none are active we can skip the clock reads,
+# which matters when the clock forks an interpreter (#765).
+function bashunit::runner::needs_test_duration() {
+  bashunit::env::is_profile_enabled && return 0
+  bashunit::env::is_verbose_enabled && return 0
+  bashunit::reports::is_enabled && return 0
+  bashunit::env::is_show_execution_time_enabled && return 0
+  return 1
+}
+
 function bashunit::runner::run_test() {
-  local start_time
+  local start_time=0
 
   local test_file="$1"
   shift
@@ -1066,12 +1077,14 @@ function bashunit::runner::run_test() {
   local retry_max
   retry_max=$(bashunit::env::retry_count)
   local retries_used=0
+  local measure_duration=false
+  bashunit::runner::needs_test_duration && measure_duration=true
   # Retry wraps ONLY execution: a failed attempt is judged from its encoded
   # result without committing, so the parse/report/counter path below still runs
   # exactly once (on the final attempt) and nothing is double-counted. Each fork
   # in --parallel retries itself before writing its single .result file.
   while :; do
-    start_time=$(bashunit::clock::now)
+    [ "$measure_duration" = true ] && start_time=$(bashunit::clock::now)
     if bashunit::env::is_test_timeout_enabled; then
       bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
       test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
@@ -1098,9 +1111,12 @@ function bashunit::runner::run_test() {
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
 
-  local end_time=$(bashunit::clock::now)
-  local duration_ns=$((end_time - start_time))
-  local duration=$((duration_ns / 1000000))
+  local duration=0
+  if [ "$measure_duration" = true ]; then
+    local end_time
+    end_time=$(bashunit::clock::now)
+    duration=$(((end_time - start_time) / 1000000))
+  fi
 
   if bashunit::env::is_profile_enabled; then
     bashunit::runner::record_profile "$duration" "$interpolated_fn_name" "$test_file"

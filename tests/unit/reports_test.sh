@@ -37,6 +37,28 @@ function tear_down() {
   unset BASHUNIT_LOG_GHA
 }
 
+function _reports_is_enabled_state() {
+  local state="disabled"
+  if bashunit::reports::is_enabled; then
+    state="enabled"
+  fi
+  echo "$state"
+}
+
+function test_reports_is_enabled_false_when_no_report_configured() {
+  unset BASHUNIT_LOG_JUNIT BASHUNIT_REPORT_HTML BASHUNIT_LOG_GHA BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON
+  assert_same "disabled" "$(_reports_is_enabled_state)"
+}
+
+function test_reports_is_enabled_true_when_a_report_is_configured() {
+  unset BASHUNIT_LOG_JUNIT BASHUNIT_REPORT_HTML BASHUNIT_LOG_GHA BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON
+  export BASHUNIT_REPORT_JSON="$_TEMP_OUTPUT_FILE"
+  local state
+  state="$(_reports_is_enabled_state)"
+  unset BASHUNIT_REPORT_JSON
+  assert_same "enabled" "$state"
+}
+
 # Mock functions for report generation tests
 function _mock_state_functions() {
   function bashunit::state::get_tests_passed() { echo "5"; }
