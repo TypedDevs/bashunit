@@ -41,8 +41,9 @@ function bashunit::helper::normalize_test_function_name() {
   local original_fn_name="${1-}"
   local interpolated_fn_name="${2-}"
 
-  local custom_title
-  custom_title="$(bashunit::state::get_test_title)"
+  # Read the reserved-namespace state globals directly (the accessors just echo
+  # them) to avoid a nested subshell fork on this per-test hot path (#764).
+  local custom_title="${_BASHUNIT_TEST_TITLE:-}"
   if [ -n "$custom_title" ]; then
     echo "$custom_title"
     return
@@ -51,8 +52,7 @@ function bashunit::helper::normalize_test_function_name() {
   if [ -z "${interpolated_fn_name-}" ]; then
     case "${original_fn_name}" in
     *"::"*)
-      local state_interpolated_fn_name
-      state_interpolated_fn_name="$(bashunit::state::get_current_test_interpolated_function_name)"
+      local state_interpolated_fn_name="${_BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME:-}"
 
       if [ -n "$state_interpolated_fn_name" ]; then
         interpolated_fn_name="$state_interpolated_fn_name"
