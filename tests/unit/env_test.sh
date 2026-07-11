@@ -71,6 +71,40 @@ function provide_boolean_flags_false() {
   bashunit::data_set "BASHUNIT_COVERAGE" "bashunit::env::is_coverage_enabled"
 }
 
+function _show_execution_time_state() {
+  local value="$1"
+  local impl="$2"
+  local original="$BASHUNIT_SHOW_EXECUTION_TIME"
+  local original_impl="$_BASHUNIT_CLOCK_NOW_IMPL"
+  export BASHUNIT_SHOW_EXECUTION_TIME="$value"
+  _BASHUNIT_CLOCK_NOW_IMPL="$impl"
+
+  local state="disabled"
+  if bashunit::env::is_show_execution_time_enabled; then
+    state="enabled"
+  fi
+
+  export BASHUNIT_SHOW_EXECUTION_TIME="$original"
+  _BASHUNIT_CLOCK_NOW_IMPL="$original_impl"
+  echo "$state"
+}
+
+function test_show_execution_time_auto_is_enabled_when_clock_is_cheap() {
+  assert_same "enabled" "$(_show_execution_time_state "auto" "shell")"
+}
+
+function test_show_execution_time_auto_is_disabled_when_clock_is_expensive() {
+  assert_same "disabled" "$(_show_execution_time_state "auto" "perl")"
+}
+
+function test_show_execution_time_true_is_enabled_even_when_clock_is_expensive() {
+  assert_same "enabled" "$(_show_execution_time_state "true" "perl")"
+}
+
+function test_show_execution_time_false_is_disabled_even_when_clock_is_cheap() {
+  assert_same "disabled" "$(_show_execution_time_state "false" "shell")"
+}
+
 function test_is_dev_mode_enabled_when_dev_log_set() {
   local original="$BASHUNIT_DEV_LOG"
   export BASHUNIT_DEV_LOG="/tmp/dev.log"

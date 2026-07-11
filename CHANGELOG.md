@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Per-test execution time now defaults to `auto` (`BASHUNIT_SHOW_EXECUTION_TIME=true|false|auto`): shown when the shell has a fork-free clock (Bash 5.0+, GNU `date`), hidden when measuring would fork an interpreter (e.g. Bash 3.2 on macOS, which falls back to `perl`). This removes ~2 `perl` forks per test on those shells. `--profile`, `--verbose`, reports, and `=true` still measure. See `adrs/adr-008-auto-skip-per-test-timing.md` (#765)
 - Faster test execution: each test file's data-provider annotations are scanned once and cached, replacing a per-test `grep`+`sed` probe with a pure-bash lookup (no behaviour change) (#763)
 
 ## [0.41.0](https://github.com/TypedDevs/bashunit/compare/0.40.0...0.41.0) - 2026-07-11

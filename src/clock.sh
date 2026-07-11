@@ -79,6 +79,16 @@ function bashunit::clock::_choose_impl() {
   return 1
 }
 
+# Returns 0 when the chosen clock impl forks an interpreter (perl/python/node/
+# powershell), so callers can skip optional timing to avoid a per-read fork (#765).
+function bashunit::clock::is_expensive() {
+  [ -n "$_BASHUNIT_CLOCK_NOW_IMPL" ] || bashunit::clock::_choose_impl >/dev/null 2>&1 || true
+  case "$_BASHUNIT_CLOCK_NOW_IMPL" in
+  perl | python | node | powershell) return 0 ;;
+  *) return 1 ;;
+  esac
+}
+
 function bashunit::clock::now() {
   if [ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]; then
     bashunit::clock::_choose_impl || return 1

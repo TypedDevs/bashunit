@@ -264,9 +264,11 @@ BASHUNIT_HEADER_ASCII_ART=true
 
 ## Show execution time
 
-> `BASHUNIT_SHOW_EXECUTION_TIME=true|false`
+> `BASHUNIT_SHOW_EXECUTION_TIME=true|false|auto`
 
-Specify if you want to display the execution time after running **bashunit**. `true` by default.
+Specify if you want to display the per-test execution time after running **bashunit**. `auto` by default.
+
+`auto` shows per-test times when the shell has a fork-free high-resolution clock (Bash 5.0+ via `EPOCHREALTIME`, or GNU `date`), and hides them when measuring a test would require forking an interpreter (for example the default Bash 3.2 on macOS, which falls back to `perl`). This keeps a plain run fast on those shells. Set `true` to always measure and show per-test times (paying that cost), or `false` to always hide them. `--profile`, `--verbose`, and the `--report-*`/`--log-junit` reports always measure regardless of this setting.
 
 The time format adapts based on duration:
 - Under 1 second: displayed in milliseconds (e.g., `14 ms`)

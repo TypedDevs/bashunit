@@ -152,3 +152,29 @@ function test_runtime_in_milliseconds_when_empty_time() {
 
   assert_empty "$(bashunit::clock::total_runtime_in_milliseconds)"
 }
+
+function test_clock_is_expensive_true_for_interpreter_impls() {
+  local impl result=""
+  for impl in perl python node powershell; do
+    _BASHUNIT_CLOCK_NOW_IMPL="$impl"
+    if bashunit::clock::is_expensive; then
+      result="$result $impl:yes"
+    else
+      result="$result $impl:no"
+    fi
+  done
+  assert_same " perl:yes python:yes node:yes powershell:yes" "$result"
+}
+
+function test_clock_is_expensive_false_for_native_impls() {
+  local impl result=""
+  for impl in shell date date-seconds; do
+    _BASHUNIT_CLOCK_NOW_IMPL="$impl"
+    if bashunit::clock::is_expensive; then
+      result="$result $impl:yes"
+    else
+      result="$result $impl:no"
+    fi
+  done
+  assert_same " shell:no date:no date-seconds:no" "$result"
+}

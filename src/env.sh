@@ -100,7 +100,8 @@ _BASHUNIT_DEFAULT_SHOW_HEADER="true"
 _BASHUNIT_DEFAULT_HEADER_ASCII_ART="false"
 _BASHUNIT_DEFAULT_SIMPLE_OUTPUT="false"
 _BASHUNIT_DEFAULT_STOP_ON_FAILURE="false"
-_BASHUNIT_DEFAULT_SHOW_EXECUTION_TIME="true"
+# "auto" shows per-test times only when the clock is fork-free (#765).
+_BASHUNIT_DEFAULT_SHOW_EXECUTION_TIME="auto"
 _BASHUNIT_DEFAULT_VERBOSE="false"
 _BASHUNIT_DEFAULT_BENCH_MODE="false"
 _BASHUNIT_DEFAULT_NO_OUTPUT="false"
@@ -248,7 +249,18 @@ function bashunit::env::is_stop_on_failure_enabled() {
 }
 
 function bashunit::env::is_show_execution_time_enabled() {
-  [ "$BASHUNIT_SHOW_EXECUTION_TIME" = "true" ]
+  case "$BASHUNIT_SHOW_EXECUTION_TIME" in
+  true) return 0 ;;
+  auto) ! bashunit::clock::is_expensive ;;
+  *) return 1 ;;
+  esac
+}
+
+# The total "Time taken" footer costs two clock reads per run (negligible), so it
+# stays visible in "auto" mode even when per-test timing is skipped; only an
+# explicit "false" hides it (#765).
+function bashunit::env::is_total_execution_time_enabled() {
+  [ "$BASHUNIT_SHOW_EXECUTION_TIME" != "false" ]
 }
 
 function bashunit::env::is_dev_mode_enabled() {
