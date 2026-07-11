@@ -67,7 +67,17 @@ function bashunit::temp_dir() {
 function bashunit::cleanup_testcase_temp_files() {
   bashunit::internal_log "cleanup_testcase_temp_files"
   if [ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]; then
-    rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*
+    # Probe the glob in pure bash first: most tests create no temp file, so
+    # skipping the rm avoids a fork per test (#764). A non-matching glob either
+    # stays literal (nullglob off) or yields an empty array (nullglob on);
+    # ${matches[0]:-} handles both under set -u, and [ -e ] is false in each
+    # case. temp_file runs in a $(...) subshell, so a global flag could not
+    # reach this trap; checking the filesystem is the only reliable signal.
+    # Declare and assign separately: bash 3.0 does not expand a compound array
+    # assignment attached to `local`, it stores the literal "(glob)" instead.
+    local matches
+    matches=("$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*)
+    [ -e "${matches[0]:-}" ] && rm -rf "${matches[@]}"
   fi
 }
 

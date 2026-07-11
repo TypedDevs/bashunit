@@ -21,7 +21,10 @@ function bashunit::watch::is_available() {
 function bashunit::watch::run() {
   local path="${1:-.}"
   shift
-  local extra_args=("$@")
+  # Declare and assign separately: bash 3.0 does not expand a compound array
+  # assignment attached to `local`, it collapses "$@" into one literal element.
+  local extra_args
+  extra_args=("$@")
 
   local tool
   tool=$(bashunit::watch::is_available)

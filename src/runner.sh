@@ -50,7 +50,8 @@ function bashunit::runner::source_login_shell_profiles() {
 function bashunit::runner::export_test_identity() {
   local test_file=$1
   local fn_name=$2
-  export BASHUNIT_CURRENT_TEST_ID="$(bashunit::helper::generate_id "$fn_name")"
+  bashunit::helper::generate_id "$fn_name"
+  export BASHUNIT_CURRENT_TEST_ID="$_BASHUNIT_HELPER_ID_OUT"
   bashunit::runner::resolve_test_location "$test_file" "$fn_name"
   export _BASHUNIT_TEST_LOCATION
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
@@ -137,6 +138,8 @@ _BASHUNIT_RUNNER_COUNTS_SKIPPED_OUT=0
 _BASHUNIT_RUNNER_COUNTS_INCOMPLETE_OUT=0
 _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=0
 _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=0
+_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
+_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
 # Suffix appended to a passed-test line when it only passed after retrying.
 _BASHUNIT_RETRY_NOTE=""
 
@@ -209,8 +212,13 @@ function bashunit::runner::record_profile() {
   printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
 }
 
+# Writes the detected runtime-error message (empty when none) into
+# _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT. Return-slot form avoids a per-test fork
+# on the hot path (#764).
+# Arguments: $1 runtime_output
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
+  _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
   case "$runtime_output" in
   *"command not found"* | *"unbound variable"* | *"permission denied"* | \
     *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
@@ -222,11 +230,9 @@ function bashunit::runner::detect_runtime_error() {
     *"too many arguments"* | *"value too great"* | \
     *"not a valid identifier"* | *"unexpected EOF"*)
     local runtime_error="${runtime_output#*: }"
-    printf '%s' "${runtime_error//$'\n'/}"
-    return 0
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
     ;;
   esac
-  printf ''
 }
 
 ##
@@ -364,7 +370,8 @@ function bashunit::runner::load_test_files() {
       continue
     fi
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${test_file}")"
+    bashunit::helper::generate_id "${test_file}"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
     bashunit::internal_log "Loading file" "$test_file"
@@ -489,7 +496,8 @@ function bashunit::runner::load_bench_files() {
   for bench_file in "${files[@]+"${files[@]}"}"; do
     [ -f "$bench_file" ] || continue
     unset BASHUNIT_CURRENT_TEST_ID
-    export BASHUNIT_CURRENT_SCRIPT_ID="$(bashunit::helper::generate_id "${bench_file}")"
+    bashunit::helper::generate_id "${bench_file}"
+    export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     # shellcheck source=/dev/null
     source "$bench_file"
     # Update function cache after sourcing new bench file
@@ -1074,8 +1082,8 @@ function bashunit::runner::run_test() {
 
   local test_execution_result
   local timed_out="false"
-  local retry_max
-  retry_max=$(bashunit::env::retry_count)
+  bashunit::env::resolve_retry_count
+  local retry_max=$_BASHUNIT_RETRY_VALIDATED
   local retries_used=0
   local measure_duration=false
   bashunit::runner::needs_test_duration && measure_duration=true
@@ -1094,8 +1102,8 @@ function bashunit::runner::run_test() {
     fi
 
     local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-    local attempt_runtime_error
-    attempt_runtime_error=$(bashunit::runner::detect_runtime_error "$attempt_runtime_output")
+    bashunit::runner::detect_runtime_error "$attempt_runtime_output"
+    local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
     bashunit::runner::extract_result_counts "$test_execution_result"
     # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
     # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
@@ -1127,7 +1135,8 @@ function bashunit::runner::run_test() {
       "$test_file" "$fn_name" "$duration" "$test_execution_result"
   fi
 
-  local subshell_output=$(bashunit::runner::decode_subshell_output "$test_execution_result")
+  bashunit::runner::decode_subshell_output "$test_execution_result"
+  local subshell_output=$_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT
 
   if [ -n "$subshell_output" ]; then
     bashunit::runner::extract_subshell_type "$subshell_output"
@@ -1139,10 +1148,11 @@ function bashunit::runner::run_test() {
     fi
   fi
 
-  local runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-
-  local runtime_error
-  runtime_error=$(bashunit::runner::detect_runtime_error "$runtime_output")
+  # Reuse the final attempt's values (the loop always runs at least once and
+  # its locals persist in this function scope), instead of recomputing and
+  # forking detect_runtime_error a second time (#764).
+  local runtime_output=$attempt_runtime_output
+  local runtime_error=$attempt_runtime_error
 
   # parse_result accumulates _BASHUNIT_TEST_EXIT_CODE; reset it so each test's
   # exit code is read in isolation (a non-zero/timed-out test must not poison
@@ -1362,12 +1372,20 @@ function bashunit::runner::cleanup_on_exit() {
   bashunit::state::export_subshell_context
 }
 
+# Writes the decoded subshell output into _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT.
+# The empty case (a passing test with no captured output) short-circuits with
+# no subshell at all; only the non-empty path pays the base64 fork (#762/#764).
+# Arguments: $1 test_execution_result
 function bashunit::runner::decode_subshell_output() {
   local test_execution_result="$1"
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-  bashunit::helper::decode_base64 "$test_output_base64"
+  if [ -z "$test_output_base64" ] || [ "$test_output_base64" = "_BASHUNIT_EMPTY_" ]; then
+    _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
+    return
+  fi
+  _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT="$(bashunit::helper::decode_base64 "$test_output_base64")"
 }
 
 function bashunit::runner::is_simple_progress_output() {

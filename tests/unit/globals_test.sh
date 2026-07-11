@@ -79,6 +79,35 @@ function test_globals_temp_dir_in_test_function() {
   assert_directory_not_exists "$temp_dir"
 }
 
+function test_globals_cleanup_testcase_skips_and_preserves_others_when_none_created() {
+  local original_id="${BASHUNIT_CURRENT_TEST_ID:-}"
+  # A test id with no temp files of its own exercises the pure-bash skip path.
+  export BASHUNIT_CURRENT_TEST_ID="ghost_${$}_noexist"
+  local unrelated="$BASHUNIT_TEMP_DIR/unrelated_${$}.keep"
+  : >"$unrelated"
+
+  bashunit::cleanup_testcase_temp_files
+
+  assert_file_exists "$unrelated"
+  rm -f "$unrelated"
+  export BASHUNIT_CURRENT_TEST_ID="$original_id"
+}
+
+function test_globals_cleanup_testcase_skip_path_is_safe_under_nullglob() {
+  local original_id="${BASHUNIT_CURRENT_TEST_ID:-}"
+  export BASHUNIT_CURRENT_TEST_ID="ghost_${$}_noexist"
+
+  # With nullglob on the non-matching glob yields an empty array; the skip must
+  # not trip set -u on ${matches[0]}.
+  shopt -s nullglob
+  bashunit::cleanup_testcase_temp_files
+  local status=$?
+  shopt -u nullglob
+
+  assert_successful_code "$status"
+  export BASHUNIT_CURRENT_TEST_ID="$original_id"
+}
+
 function test_globals_temp_dir_and_file_in_script() {
   assert_directory_exists "$SCRIPT_TEMP_DIR"
   assert_file_exists "$SCRIPT_TEMP_FILE"
