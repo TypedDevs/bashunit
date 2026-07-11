@@ -4,6 +4,7 @@
 
 ### Changed
 - Faster test execution: each test file's data-provider annotations are scanned once and cached, replacing a per-test `grep`+`sed` probe with a pure-bash lookup (no behaviour change) (#763)
+- Faster test execution: skip the base64 encode fork for a test's empty title, hook message and output (the common case), and short-circuit decoding of empty fields (no behaviour change) (#762)
 
 ## [0.41.0](https://github.com/TypedDevs/bashunit/compare/0.40.0...0.41.0) - 2026-07-11
 

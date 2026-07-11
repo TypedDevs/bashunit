@@ -228,23 +228,36 @@ function bashunit::state::initialize_assertions_count() {
   _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
 }
 
+# base64-encodes a field, writing the result into _BASHUNIT_STATE_ENCODED_OUT.
+# Empty values (the common case for title/hook message, and output on a passing
+# test) encode to an empty field with no base64 fork (#762). base64 of "" is ""
+# anyway, so this stays wire-compatible.
+_BASHUNIT_STATE_ENCODED_OUT=""
+function bashunit::state::encode_field() {
+  local value=$1
+  if [ -z "$value" ]; then
+    _BASHUNIT_STATE_ENCODED_OUT=""
+    return
+  fi
+  if [ "$_BASHUNIT_BASE64_WRAP_FLAG" = true ]; then
+    # Alpine requires the -w 0 option to avoid wrapping
+    _BASHUNIT_STATE_ENCODED_OUT=$(echo -n "$value" | base64 -w 0)
+  else
+    _BASHUNIT_STATE_ENCODED_OUT=$(echo -n "$value" | base64)
+  fi
+}
+
 function bashunit::state::export_subshell_context() {
   local encoded_test_output
   local encoded_test_title
-
   local encoded_test_hook_message
 
-  if [ "$_BASHUNIT_BASE64_WRAP_FLAG" = true ]; then
-    # Alpine requires the -w 0 option to avoid wrapping
-    encoded_test_output=$(echo -n "$_BASHUNIT_TEST_OUTPUT" | base64 -w 0)
-    encoded_test_title=$(echo -n "$_BASHUNIT_TEST_TITLE" | base64 -w 0)
-    encoded_test_hook_message=$(echo -n "$_BASHUNIT_TEST_HOOK_MESSAGE" | base64 -w 0)
-  else
-    # macOS and others: default base64 without wrapping
-    encoded_test_output=$(echo -n "$_BASHUNIT_TEST_OUTPUT" | base64)
-    encoded_test_title=$(echo -n "$_BASHUNIT_TEST_TITLE" | base64)
-    encoded_test_hook_message=$(echo -n "$_BASHUNIT_TEST_HOOK_MESSAGE" | base64)
-  fi
+  bashunit::state::encode_field "$_BASHUNIT_TEST_OUTPUT"
+  encoded_test_output=$_BASHUNIT_STATE_ENCODED_OUT
+  bashunit::state::encode_field "$_BASHUNIT_TEST_TITLE"
+  encoded_test_title=$_BASHUNIT_STATE_ENCODED_OUT
+  bashunit::state::encode_field "$_BASHUNIT_TEST_HOOK_MESSAGE"
+  encoded_test_hook_message=$_BASHUNIT_STATE_ENCODED_OUT
 
   cat <<EOF
 ##ASSERTIONS_FAILED=$_BASHUNIT_ASSERTIONS_FAILED\

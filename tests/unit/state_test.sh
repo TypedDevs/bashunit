@@ -292,6 +292,34 @@ function test_export_assertions_count() {
     "$export_assertions_count"
 }
 
+function test_encode_field_returns_empty_for_empty_value() {
+  bashunit::state::encode_field ""
+  assert_same "" "$_BASHUNIT_STATE_ENCODED_OUT"
+}
+
+function test_encode_field_round_trips_a_plain_value() {
+  bashunit::state::encode_field "hello world"
+  assert_same "hello world" "$(bashunit::helper::decode_base64 "$_BASHUNIT_STATE_ENCODED_OUT")"
+}
+
+function test_encode_field_round_trips_a_multiline_value() {
+  local value
+  value="$(printf 'line one\nline two')"
+  bashunit::state::encode_field "$value"
+  assert_same "$value" "$(bashunit::helper::decode_base64 "$_BASHUNIT_STATE_ENCODED_OUT")"
+}
+
+function test_encode_field_round_trips_a_value_with_ansi_codes() {
+  local value
+  value="$(printf '\033[31mred\033[0m')"
+  bashunit::state::encode_field "$value"
+  assert_same "$value" "$(bashunit::helper::decode_base64 "$_BASHUNIT_STATE_ENCODED_OUT")"
+}
+
+function test_decode_base64_returns_empty_for_empty_value() {
+  assert_same "" "$(bashunit::helper::decode_base64 "")"
+}
+
 function test_calculate_total_assertions() {
   local input="##ASSERTIONS_FAILED=1\
   ##ASSERTIONS_PASSED=2\
