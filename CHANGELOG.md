@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Faster test execution: each test file's data-provider annotations are scanned once and cached, replacing a per-test `grep`+`sed` probe with a pure-bash lookup (no behaviour change) (#763)
+
 ## [0.41.0](https://github.com/TypedDevs/bashunit/compare/0.40.0...0.41.0) - 2026-07-11
 
 ### Added

@@ -225,6 +225,51 @@ function test_get_provider_data_should_returns_empty_when_not_exists_provider_fu
     "$(bashunit::helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
 }
 
+FIXTURE_PROVIDER_MAP="$(dirname "${BASH_SOURCE[0]}")/fixtures/provider_map/sample_providers.sh"
+
+function provider_for() {
+  bashunit::helper::build_provider_map "$1"
+  bashunit::helper::provider_for_function "$2"
+  echo "$_BASHUNIT_PROVIDER_FN_OUT"
+}
+
+function test_provider_map_resolves_at_annotation() {
+  assert_same "provide_at_form" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_with_at_annotation")"
+}
+
+function test_provider_map_resolves_plain_annotation_without_at() {
+  assert_same "provide_plain_form" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_without_at")"
+}
+
+function test_provider_map_resolves_annotation_two_lines_above_function() {
+  assert_same "provide_two_lines_up" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_annotation_two_lines_up")"
+}
+
+function test_provider_map_resolves_shared_provider_for_both_functions() {
+  assert_same "provide_shared" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_shares_provider_one")"
+  assert_same "provide_shared" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_shares_provider_two")"
+}
+
+function test_provider_map_returns_empty_when_function_has_no_provider() {
+  assert_same "" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_without_provider")"
+}
+
+function test_provider_map_returns_empty_for_unknown_function() {
+  assert_same "" \
+    "$(provider_for "$FIXTURE_PROVIDER_MAP" "test_does_not_exist")"
+}
+
+function test_provider_map_returns_empty_for_unreadable_script() {
+  assert_same "" \
+    "$(provider_for "/no/such/path/nope_test.sh" "test_with_at_annotation")"
+}
+
 function test_left_trim() {
   assert_same "foo" "$(bashunit::helper::trim "       foo")"
 }

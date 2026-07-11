@@ -767,22 +767,17 @@ function bashunit::runner::call_test_functions() {
   local -a parsed_data=()
   local parsed_data_count=0
 
+  # Scan the file once; per-test provider lookups below are pure-bash (#763).
+  bashunit::helper::build_provider_map "$script"
+
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
     fi
 
-    provider_data=()
-    provider_data_count=0
-    local line
-    while IFS=" " read -r line; do
-      [ -z "$line" ] && continue
-      provider_data[provider_data_count]="$line"
-      provider_data_count=$((provider_data_count + 1))
-    done <<<"$(bashunit::helper::get_provider_data "$fn_name" "$script")"
-
-    # No data provider found
-    if [ "$provider_data_count" -eq 0 ]; then
+    # No data provider found: run once without forking to capture provider output.
+    bashunit::helper::provider_for_function "$fn_name"
+    if [ -z "$_BASHUNIT_PROVIDER_FN_OUT" ]; then
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
         bashunit::runner::run_test "$script" "$fn_name" &
@@ -792,6 +787,15 @@ function bashunit::runner::call_test_functions() {
       unset -v fn_name
       continue
     fi
+
+    provider_data=()
+    provider_data_count=0
+    local line
+    while IFS=" " read -r line; do
+      [ -z "$line" ] && continue
+      provider_data[provider_data_count]="$line"
+      provider_data_count=$((provider_data_count + 1))
+    done <<<"$(bashunit::helper::execute_function_if_exists "$_BASHUNIT_PROVIDER_FN_OUT")"
 
     # Execute the test function for each line of data
     local data
