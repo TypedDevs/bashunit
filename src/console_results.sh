@@ -227,9 +227,11 @@ function bashunit::console_results::print_successful_test() {
   local duration=${1:-"0"}
   shift
 
+  # Pure-bash concatenation (the printf only did %s substitution) to avoid a
+  # $(...) fork per passing test (#764).
   local line
   if [ -z "$*" ]; then
-    line=$(printf "%s✓ Passed%s: %s" "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name")
+    line="${_BASHUNIT_COLOR_PASSED}✓ Passed${_BASHUNIT_COLOR_DEFAULT}: ${test_name}"
   else
     local quoted_args=""
     local arg
@@ -240,8 +242,7 @@ function bashunit::console_results::print_successful_test() {
         quoted_args="$quoted_args, '$arg'"
       fi
     done
-    line=$(printf "%s✓ Passed%s: %s (%s)" \
-      "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_DEFAULT" "$test_name" "$quoted_args")
+    line="${_BASHUNIT_COLOR_PASSED}✓ Passed${_BASHUNIT_COLOR_DEFAULT}: ${test_name} (${quoted_args})"
   fi
 
   # Retry annotation (e.g. " (retry 1/2)") set by the runner when a test only
