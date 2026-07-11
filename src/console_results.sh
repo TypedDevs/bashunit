@@ -372,7 +372,11 @@ function bashunit::console_results::snapshot_line_diff() {
 
   # Explicit empty-array init so referencing the arrays is safe under `set -u`
   # on Bash 4.4+ (Bash 3.x is lenient; newer Bash treats an unset array as unbound).
-  local expected_lines=() actual_lines=()
+  # Declare and assign separately: bash 3.0 does not expand a compound array
+  # assignment attached to `local`, it stores the literal "()" as element 0.
+  local expected_lines actual_lines
+  expected_lines=()
+  actual_lines=()
   local _line=""
   local i=0
   while IFS= read -r _line || [ -n "$_line" ]; do
