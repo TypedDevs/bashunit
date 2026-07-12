@@ -155,10 +155,10 @@ function assert_equals() {
   local actual="$2"
   local label_override="${3:-}"
 
-  local actual_cleaned
-  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
-  local expected_cleaned
-  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  bashunit::str::strip_ansi_to_slot "$actual"
+  local actual_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
+  bashunit::str::strip_ansi_to_slot "$expected"
+  local expected_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
 
   if [ "$expected_cleaned" != "$actual_cleaned" ]; then
     local label
@@ -178,10 +178,10 @@ function assert_not_equals() {
   local actual="$2"
   local label_override="${3:-}"
 
-  local actual_cleaned
-  actual_cleaned=$(bashunit::str::strip_ansi "$actual")
-  local expected_cleaned
-  expected_cleaned=$(bashunit::str::strip_ansi "$expected")
+  bashunit::str::strip_ansi_to_slot "$actual"
+  local actual_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
+  bashunit::str::strip_ansi_to_slot "$expected"
+  local expected_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
 
   if [ "$expected_cleaned" = "$actual_cleaned" ]; then
     local label

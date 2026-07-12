@@ -6,6 +6,31 @@ function test_strip_ansi_plain_text_is_unchanged() {
   assert_same "hello world" "$(bashunit::str::strip_ansi "hello world")"
 }
 
+function test_strip_ansi_to_slot_plain_text_fast_path() {
+  bashunit::str::strip_ansi_to_slot "hello world"
+
+  assert_same "hello world" "$_BASHUNIT_STR_STRIPPED_OUT"
+}
+
+function test_strip_ansi_to_slot_removes_color_codes() {
+  local colored=$(printf "\033[32mok\033[0m")
+
+  bashunit::str::strip_ansi_to_slot "$colored"
+
+  assert_same "ok" "$_BASHUNIT_STR_STRIPPED_OUT"
+}
+
+function test_strip_ansi_to_slot_does_not_shadow_caller_input_local() {
+  # Regression: passing a value equal to the helper's own internal local name
+  # must round-trip unchanged (dynamic-scoping trap, see bash-style.md).
+  local input="caller-owned"
+
+  bashunit::str::strip_ansi_to_slot "input"
+
+  assert_same "input" "$_BASHUNIT_STR_STRIPPED_OUT"
+  assert_same "caller-owned" "$input"
+}
+
 function test_strip_ansi_removes_color_codes() {
   local colored=$(printf "\033[32mok\033[0m")
 
