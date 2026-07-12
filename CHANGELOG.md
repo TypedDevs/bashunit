@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `--test-timeout` no longer intermittently reports a fast test as timed out. The watchdog's process-group kill could miss when `set -m` had not made the backgrounded subshell a group leader, leaving it to sleep the full timeout and fire against an already-finished test; it is now signalled by pid directly and skips marking a test that already completed
+
 ### Added
 - `--jobs auto` (and `-j auto`) caps parallel concurrency at the detected CPU core count, portable across Linux/macOS/BSD (`nproc`, then `sysctl`, then `getconf`, falling back to 4). The default stays unlimited (`--jobs 0`) (#766)
 

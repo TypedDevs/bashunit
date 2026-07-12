@@ -1020,6 +1020,10 @@ function bashunit::runner::run_with_timeout() {
   local test_pid=$!
   (
     sleep "$secs"
+    # Only a still-running test can have timed out. Without this guard a watchdog
+    # that outlived a missed teardown (see below) would mark an already-finished
+    # fast test as timed out.
+    kill -0 "$test_pid" 2>/dev/null || exit 0
     : >"$marker_file"
     kill -TERM -"$test_pid" 2>/dev/null
     sleep 0.3
@@ -1029,8 +1033,12 @@ function bashunit::runner::run_with_timeout() {
   set +m
 
   wait "$test_pid" 2>/dev/null
-  # Tear down the watchdog group (its `sleep` child included) so it cannot fire
-  # late or block the caller.
+  # Stop the watchdog by its pid AND its group. `set -m` does not reliably make a
+  # backgrounded subshell a group leader in a non-interactive shell, so the
+  # group-only kill intermittently misses, letting the watchdog sleep its full
+  # timeout and fire against a test that already passed. The direct-pid signal is
+  # always deliverable; the group signal also reaps the `sleep` child.
+  kill -TERM "$watchdog_pid" 2>/dev/null
   kill -TERM -"$watchdog_pid" 2>/dev/null
   wait "$watchdog_pid" 2>/dev/null
 
