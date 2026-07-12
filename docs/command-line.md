@@ -67,7 +67,7 @@ bashunit test tests/ --parallel --simple
 | `-w, --watch`                  | Watch files and re-run tests on change           |
 | `--log-junit, --report-junit <file>` | Write JUnit XML report                     |
 | `--log-gha <file>`             | Write GitHub Actions workflow-commands log       |
-| `-j, --jobs <N>`               | Run tests in parallel with max N concurrent jobs |
+| `-j, --jobs <N\|auto>`         | Run tests in parallel with max N concurrent jobs (`auto` = CPU cores) |
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
 | `-r, --report-html <file>`     | Write HTML report                                |
@@ -314,22 +314,24 @@ run sequentially.
 
 ### Jobs
 
-> `bashunit test -j|--jobs <N>`
+> `bashunit test -j|--jobs <N|auto>`
 
 Run tests in parallel with a maximum of N concurrent jobs. This implicitly
 enables parallel mode.
 
 Use this to limit CPU usage on CI or machines with constrained resources.
+Pass `auto` to cap concurrency at the number of detected CPU cores.
 
 ::: code-group
 ```bash [Example]
 bashunit test tests/ --jobs 4
+bashunit test tests/ --jobs auto
 ```
 :::
 
 ::: tip
 `--jobs 0` (the default) means unlimited concurrency, which is equivalent to
-`--parallel`.
+`--parallel`. `--jobs auto` caps at the detected CPU core count.
 :::
 
 ### Output Style

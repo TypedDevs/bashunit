@@ -119,7 +119,7 @@ Options:
   --tag <name>                Only run tests with matching @tag (repeatable, OR logic)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
   --log-junit, --report-junit <file>  Write JUnit XML report
-  -j, --jobs <N>              Run tests in parallel with max N concurrent jobs
+  -j, --jobs <N|auto>         Run tests in parallel with max N concurrent jobs ("auto" = CPU cores)
   -p, --parallel              Run tests in parallel (unlimited concurrency)
   --no-parallel               Run tests sequentially
   -r, --report-html <file>    Write HTML report

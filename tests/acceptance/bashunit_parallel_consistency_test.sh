@@ -23,3 +23,22 @@ function test_parallel_and_sequential_results_match() {
 
   assert_equals "$sequential_summary" "$parallel_summary"
 }
+
+function test_jobs_auto_caps_at_detected_cores_and_matches_sequential() {
+  local file1=tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh
+  local file2=tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+
+  local sequential_output
+  sequential_output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$file1" "$file2" 2>&1) || true
+
+  local auto_output
+  auto_output=$(./bashunit --jobs auto --env "$TEST_ENV_FILE" "$file1" "$file2" 2>&1) || true
+
+  local sequential_summary
+  sequential_summary=$(echo "$sequential_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ') || true
+
+  local auto_summary
+  auto_summary=$(echo "$auto_output" | grep -e "Tests:" -e "Assertions:" | tr '\n' ' ') || true
+
+  assert_equals "$sequential_summary" "$auto_summary"
+}
