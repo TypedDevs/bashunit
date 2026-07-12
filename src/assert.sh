@@ -830,15 +830,15 @@ function assert_within_delta() {
   local expected="$1"
   local actual="$2"
   local delta="$3"
-  bashunit::assert::label_to_slot
-  local label=$_BASHUNIT_ASSERT_LABEL_OUT
 
   if ! bashunit::assert::_is_numeric "$expected" ||
     ! bashunit::assert::_is_numeric "$actual" ||
     ! bashunit::assert::_is_numeric "$delta"; then
+    bashunit::assert::label_to_slot
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test \
-      "${label}" "${expected} ${actual} ${delta}" "to all be numeric" "but got a non-numeric value"
+      "${_BASHUNIT_ASSERT_LABEL_OUT}" "${expected} ${actual} ${delta}" \
+      "to all be numeric" "but got a non-numeric value"
     return
   fi
 
@@ -849,9 +849,10 @@ function assert_within_delta() {
   esac
 
   if [ "$(bashunit::math::calculate "$diff <= $delta")" != "1" ]; then
+    bashunit::assert::label_to_slot
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test \
-      "${label}" "${actual}" "to be within ${delta} of" "${expected}"
+      "${_BASHUNIT_ASSERT_LABEL_OUT}" "${actual}" "to be within ${delta} of" "${expected}"
     return
   fi
 

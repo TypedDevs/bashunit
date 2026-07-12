@@ -38,8 +38,8 @@ function bashunit::str::rpad() {
   fi
 
   # Remove ANSI escape sequences (non-visible characters) for length calculation
-  # shellcheck disable=SC2155
-  local clean_left_text=$(bashunit::str::strip_ansi "$left_text")
+  bashunit::str::strip_ansi_to_slot "$left_text"
+  local clean_left_text=$_BASHUNIT_STR_STRIPPED_OUT
 
   local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."
