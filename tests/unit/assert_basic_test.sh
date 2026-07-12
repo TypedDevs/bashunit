@@ -74,6 +74,29 @@ function test_run_command_or_eval_runs_function_not_treated_as_alias() {
   assert_successful_code "$?"
 }
 
+function test_run_command_or_eval_name_value_is_not_defined_as_alias() {
+  # Regression: "name=value" must NOT be probed with `alias` (it would define
+  # the alias and wrongly succeed). It has to be run directly and fail.
+  bashunit::run_command_or_eval "bashunit_x=1"
+  local exit_code=$?
+
+  local side_effect="absent"
+  if alias bashunit_x >/dev/null 2>&1; then
+    side_effect="defined"
+  fi
+
+  assert_not_same "0" "$exit_code"
+  assert_same "absent" "$side_effect"
+}
+
+function test_run_command_or_eval_multiword_command_is_not_treated_as_alias() {
+  # A multi-word string can never be an alias name: run it directly.
+  bashunit::run_command_or_eval "bashunit_missing_cmd --flag"
+  local exit_code=$?
+
+  assert_not_same "0" "$exit_code"
+}
+
 function test_unsuccessful_assert_true_on_function() {
   assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert true on function" \
     "command or function with zero exit code" \

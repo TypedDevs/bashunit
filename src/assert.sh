@@ -117,6 +117,13 @@ function bashunit::run_command_or_eval() {
   eval\ * | eval)
     eval "${cmd#eval }" &>/dev/null
     ;;
+  *[=[:space:]]* | "")
+    # An alias name never contains "=" or whitespace, so this can't be an alias
+    # invocation: run it directly. Guarding here also stops `alias -- "$cmd"`
+    # below from *defining* an alias as a side effect when "$cmd" looks like
+    # "name=value" (which would wrongly succeed).
+    "$cmd" &>/dev/null
+    ;;
   *)
     # Detect aliases with the `alias` builtin instead of forking
     # `command -v | grep`: it exits 0 only for a defined alias, matching the
