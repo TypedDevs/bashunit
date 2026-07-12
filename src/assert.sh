@@ -118,7 +118,10 @@ function bashunit::run_command_or_eval() {
     eval "${cmd#eval }" &>/dev/null
     ;;
   *)
-    if [ "$(command -v "$cmd" | "$GREP" -cE '^alias' || true)" -gt 0 ]; then
+    # Detect aliases with the `alias` builtin instead of forking
+    # `command -v | grep`: it exits 0 only for a defined alias, matching the
+    # old `^alias` check for functions/binaries/unknown commands (all non-zero).
+    if alias -- "$cmd" >/dev/null 2>&1; then
       eval "$cmd" &>/dev/null
     else
       "$cmd" &>/dev/null

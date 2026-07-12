@@ -43,6 +43,37 @@ function test_successful_assert_true_on_function() {
   assert_empty "$(assert_true ls)"
 }
 
+function test_run_command_or_eval_runs_alias() {
+  shopt -s expand_aliases
+  # shellcheck disable=SC2139
+  alias bashunit_alias_ok='return 0'
+
+  bashunit::run_command_or_eval "bashunit_alias_ok"
+
+  assert_successful_code "$?"
+  unalias bashunit_alias_ok
+}
+
+function test_run_command_or_eval_runs_alias_non_zero() {
+  shopt -s expand_aliases
+  # shellcheck disable=SC2139
+  alias bashunit_alias_ko='return 3'
+
+  bashunit::run_command_or_eval "bashunit_alias_ko"
+  local exit_code=$?
+
+  assert_same "3" "$exit_code"
+  unalias bashunit_alias_ko
+}
+
+function test_run_command_or_eval_runs_function_not_treated_as_alias() {
+  bashunit_fn_ok() { return 0; }
+
+  bashunit::run_command_or_eval "bashunit_fn_ok"
+
+  assert_successful_code "$?"
+}
+
 function test_unsuccessful_assert_true_on_function() {
   assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful assert true on function" \
     "command or function with zero exit code" \
