@@ -22,6 +22,23 @@ function test_normalize_test_function_name_one_word() {
   assert_same "Word" "$(bashunit::helper::normalize_test_function_name "word")"
 }
 
+function test_normalize_test_function_name_to_slot_writes_slot() {
+  bashunit::helper::normalize_test_function_name_to_slot "test_some_logic"
+
+  assert_same "Some logic" "$_BASHUNIT_HELPER_NORMALIZED_OUT"
+}
+
+function test_normalize_test_function_name_to_slot_does_not_shadow_internal_local() {
+  # Regression: passing a value equal to the helper's own internal local name
+  # ("result") must not corrupt the output (dynamic-scoping trap, see bash-style.md).
+  local result="caller-owned"
+
+  bashunit::helper::normalize_test_function_name_to_slot "result"
+
+  assert_same "Result" "$_BASHUNIT_HELPER_NORMALIZED_OUT"
+  assert_same "caller-owned" "$result"
+}
+
 function test_normalize_test_function_name_snake_case() {
   assert_same "Some logic" "$(bashunit::helper::normalize_test_function_name "test_some_logic")"
 }

@@ -1,19 +1,30 @@
 #!/usr/bin/env bash
 
-# Strip ANSI escape codes and control characters
-function bashunit::str::strip_ansi() {
+_BASHUNIT_STR_STRIPPED_OUT=""
+
+# Strip ANSI escape codes and control characters, writing the result into the
+# global slot _BASHUNIT_STR_STRIPPED_OUT (no fork on the plain-text fast path).
+# Callers on hot paths (assert_equals/assert_not_equals) use this to avoid the
+# per-call command-substitution fork. See bash-style.md (return-slot pattern).
+function bashunit::str::strip_ansi_to_slot() {
   local input="$1"
   # Fast path: plain text with no backslash (echo -e no-op) and no control
-  # bytes (nothing for sed to strip) passes through unchanged. Avoids forking
-  # echo+sed on the common case, which runs twice per assert_equals.
+  # bytes (nothing for sed to strip) passes through unchanged, zero forks.
   case "$input" in
   *\\* | *[[:cntrl:]]*) ;;
   *)
-    echo -e "$input"
+    _BASHUNIT_STR_STRIPPED_OUT=$input
     return
     ;;
   esac
-  echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g'
+  _BASHUNIT_STR_STRIPPED_OUT=$(echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g')
+}
+
+# Strip ANSI escape codes and control characters, echoing the result.
+# Thin wrapper over the return-slot variant for callers that want stdout.
+function bashunit::str::strip_ansi() {
+  bashunit::str::strip_ansi_to_slot "$1"
+  echo "$_BASHUNIT_STR_STRIPPED_OUT"
 }
 
 function bashunit::str::rpad() {
@@ -27,8 +38,8 @@ function bashunit::str::rpad() {
   fi
 
   # Remove ANSI escape sequences (non-visible characters) for length calculation
-  # shellcheck disable=SC2155
-  local clean_left_text=$(bashunit::str::strip_ansi "$left_text")
+  bashunit::str::strip_ansi_to_slot "$left_text"
+  local clean_left_text=$_BASHUNIT_STR_STRIPPED_OUT
 
   local is_truncated=false
   # If the visible left text exceeds the padding, truncate it and add "..."
