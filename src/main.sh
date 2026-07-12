@@ -99,7 +99,13 @@ function bashunit::main::cmd_test() {
       ;;
     -j | --jobs)
       export BASHUNIT_PARALLEL_RUN=true
-      export BASHUNIT_PARALLEL_JOBS="$2"
+      # "auto" caps at the detected core count; wait_for_job_slot needs an
+      # integer, so resolve it here rather than leaking the string downstream.
+      if [ "$2" = "auto" ]; then
+        export BASHUNIT_PARALLEL_JOBS="$(bashunit::check_os::nproc)"
+      else
+        export BASHUNIT_PARALLEL_JOBS="$2"
+      fi
       shift
       ;;
     --no-parallel)

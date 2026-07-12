@@ -77,3 +77,32 @@ function test_not_alpine_is_not_busybox() {
   assert_general_error "$(bashunit::check_os::is_alpine)"
   assert_general_error "$(bashunit::check_os::is_busybox)"
 }
+
+function test_nproc_uses_nproc_when_available() {
+  bashunit::mock nproc echo "8"
+
+  assert_same "8" "$(bashunit::check_os::nproc)"
+}
+
+function test_nproc_falls_back_to_sysctl_when_nproc_unavailable() {
+  bashunit::mock nproc mock_false
+  bashunit::mock sysctl echo "6"
+
+  assert_same "6" "$(bashunit::check_os::nproc)"
+}
+
+function test_nproc_defaults_to_four_when_no_detector_available() {
+  bashunit::mock nproc mock_false
+  bashunit::mock sysctl mock_false
+  bashunit::mock getconf mock_false
+
+  assert_same "4" "$(bashunit::check_os::nproc)"
+}
+
+function test_nproc_defaults_to_four_when_output_is_not_numeric() {
+  bashunit::mock nproc echo "not-a-number"
+  bashunit::mock sysctl mock_false
+  bashunit::mock getconf mock_false
+
+  assert_same "4" "$(bashunit::check_os::nproc)"
+}
