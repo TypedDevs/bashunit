@@ -114,6 +114,35 @@ function test_helper_find_test_function_name_finds_test() {
   assert_same "test_helper_find_test_function_name_finds_test" "$found_name"
 }
 
+function test_helper_find_test_function_name_to_slot_finds_test() {
+  bashunit::helper::find_test_function_name_to_slot
+
+  assert_same "test_helper_find_test_function_name_to_slot_finds_test" "$_BASHUNIT_HELPER_TESTFN_OUT"
+}
+
+function test_helper_find_test_function_name_to_slot_does_not_shadow_internal_local() {
+  # Regression: a caller local named "fn" (helper internal) must survive the call.
+  local fn="caller-owned"
+
+  bashunit::helper::find_test_function_name_to_slot
+
+  assert_same "test_helper_find_test_function_name_to_slot_does_not_shadow_internal_local" \
+    "$_BASHUNIT_HELPER_TESTFN_OUT"
+  assert_same "caller-owned" "$fn"
+}
+
+function test_assert_label_to_slot_uses_custom_label() {
+  bashunit::assert::label_to_slot "my custom label"
+
+  assert_same "my custom label" "$_BASHUNIT_ASSERT_LABEL_OUT"
+}
+
+function test_assert_label_to_slot_derives_from_test_name() {
+  bashunit::assert::label_to_slot ""
+
+  assert_same "Assert label to slot derives from test name" "$_BASHUNIT_ASSERT_LABEL_OUT"
+}
+
 function test_helper_find_test_function_name_from_nested_function() {
   # Test that bashunit::helper::find_test_function_name works from nested functions
   _inner_function() {

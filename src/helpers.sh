@@ -11,6 +11,29 @@ declare -r BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 #
 # @return string The test function name, or fallback function name
 #
+_BASHUNIT_HELPER_TESTFN_OUT=""
+
+#
+# Return-slot variant of find_test_function_name: writes the result into
+# _BASHUNIT_HELPER_TESTFN_OUT with no fork. Must be called at the SAME stack
+# depth the echoing version would be captured at, so the fallback_depth default
+# keeps pointing at the caller of the assertion (see the echoing wrapper below).
+#
+function bashunit::helper::find_test_function_name_to_slot() {
+  local fallback_depth="${1:-2}"
+  local i
+  for ((i = 0; i < ${#FUNCNAME[@]}; i++)); do
+    local fn="${FUNCNAME[$i]}"
+    case "$fn" in
+    test_* | test[A-Z]*)
+      _BASHUNIT_HELPER_TESTFN_OUT=$fn
+      return
+      ;;
+    esac
+  done
+  _BASHUNIT_HELPER_TESTFN_OUT=${FUNCNAME[$fallback_depth]:-}
+}
+
 function bashunit::helper::find_test_function_name() {
   local fallback_depth="${1:-2}"
   local i
@@ -37,7 +60,17 @@ function bashunit::helper::find_test_function_name() {
 #
 # @return string Eg: "Some logic camelCase"
 #
-function bashunit::helper::normalize_test_function_name() {
+_BASHUNIT_HELPER_NORMALIZED_OUT=""
+
+#
+# Return-slot variant of normalize_test_function_name: writes the result into
+# _BASHUNIT_HELPER_NORMALIZED_OUT with no fork, removing the command-substitution
+# fork at the (failure-path) call sites in the assertion layer.
+#
+# @param $1 string Eg: "test_some_logic_camelCase"
+# @param $2 string Optional interpolated name
+#
+function bashunit::helper::normalize_test_function_name_to_slot() {
   local original_fn_name="${1-}"
   local interpolated_fn_name="${2-}"
 
@@ -45,7 +78,7 @@ function bashunit::helper::normalize_test_function_name() {
   # them) to avoid a nested subshell fork on this per-test hot path (#764).
   local custom_title="${_BASHUNIT_TEST_TITLE:-}"
   if [ -n "$custom_title" ]; then
-    echo "$custom_title"
+    _BASHUNIT_HELPER_NORMALIZED_OUT=$custom_title
     return
   fi
 
@@ -88,7 +121,17 @@ function bashunit::helper::normalize_test_function_name() {
   esac
   result="${first_char}${result:1}"
 
-  echo "$result"
+  _BASHUNIT_HELPER_NORMALIZED_OUT=$result
+}
+
+#
+# @param $1 string Eg: "test_some_logic_camelCase"
+#
+# @return string Eg: "Some logic camelCase"
+#
+function bashunit::helper::normalize_test_function_name() {
+  bashunit::helper::normalize_test_function_name_to_slot "${1-}" "${2-}"
+  echo "$_BASHUNIT_HELPER_NORMALIZED_OUT"
 }
 
 function bashunit::helper::escape_single_quotes() {
