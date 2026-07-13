@@ -1100,7 +1100,10 @@ function bashunit::runner::run_test() {
   # exactly once (on the final attempt) and nothing is double-counted. Each fork
   # in --parallel retries itself before writing its single .result file.
   while :; do
-    [ "$measure_duration" = true ] && start_time=$(bashunit::clock::now)
+    if [ "$measure_duration" = true ]; then
+      bashunit::clock::now_to_slot
+      start_time=$_BASHUNIT_CLOCK_NOW_OUT
+    fi
     if bashunit::env::is_test_timeout_enabled; then
       bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
       test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
@@ -1129,8 +1132,8 @@ function bashunit::runner::run_test() {
 
   local duration=0
   if [ "$measure_duration" = true ]; then
-    local end_time
-    end_time=$(bashunit::clock::now)
+    bashunit::clock::now_to_slot
+    local end_time=$_BASHUNIT_CLOCK_NOW_OUT
     duration=$(((end_time - start_time) / 1000000))
   fi
 
