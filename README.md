@@ -60,6 +60,25 @@ Run it:
 
 Prefer learning by doing? Run `./lib/bashunit learn` for an interactive tutorial.
 
+## Assertions at a glance
+
+bashunit ships ~60 assertions across many families. One representative example per family
+(full catalog and signatures at [bashunit.com/assertions](https://bashunit.com/assertions)):
+
+| Family | Example |
+|---|---|
+| Equality & truth | [`assert_equals "foo" "$actual"`](https://bashunit.com/assertions#assert-equals) |
+| Strings | [`assert_string_starts_with "Hello" "$greeting"`](https://bashunit.com/assertions#assert-string-starts-with) |
+| Exit codes | [`assert_exit_code "1"`](https://bashunit.com/assertions#assert-exit-code) (checks `$?` of the previous command) |
+| Numeric | [`assert_greater_than "1" "$count"`](https://bashunit.com/assertions#assert-greater-than) |
+| Arrays | [`assert_array_length 3 "${my_array[@]}"`](https://bashunit.com/assertions#assert-array-length) |
+| Files & dirs | [`assert_file_permissions 644 "$file"`](https://bashunit.com/assertions#assert-file-permissions) |
+| JSON (needs `jq`) | [`assert_json_contains ".name" "bashunit" "$json"`](https://bashunit.com/assertions#assert-json-contains) |
+| Dates | [`assert_date_before "2026-01-01" "$date"`](https://bashunit.com/assertions#assert-date-before) |
+| Duration | [`assert_duration_less_than "echo hello" 500`](https://bashunit.com/assertions#assert-duration-less-than) |
+| Snapshots | [`assert_match_snapshot "$(my_cmd)"`](https://bashunit.com/assertions#assert-match-snapshot) |
+| Test doubles | [`assert_have_been_called_times 2 my_fn`](https://bashunit.com/assertions#assert-have-been-called-times) |
+
 ## Documentation
 
 Full documentation, covering installation options, every feature and examples, lives at [bashunit.com](https://bashunit.com).
