@@ -6,6 +6,7 @@
 - `--test-timeout` no longer intermittently reports a fast test as timed out. The watchdog's process-group kill could miss when `set -m` had not made the backgrounded subshell a group leader, leaving it to sleep the full timeout and fire against an already-finished test; it is now signalled by pid directly and skips marking a test that already completed
 
 ### Added
+- Coverage badge: a `coverage.yml` CI workflow dogfoods `--coverage` on every push to `main`, uploads `coverage/lcov.info` as an artifact, and publishes a shields.io endpoint badge (now shown in the README) to an orphan `badges` branch — no third-party coverage service. The engine's own meta-tests are excluded from the measured run to avoid double-instrumenting `src/coverage.sh` (#754)
 - `--jobs auto` (and `-j auto`) caps parallel concurrency at the detected CPU core count, portable across Linux/macOS/BSD (`nproc`, then `sysctl`, then `getconf`, falling back to 4). The default stays unlimited (`--jobs 0`) (#766)
 
 ### Changed
