@@ -30,7 +30,10 @@ jobs:
   coverage:
     name: "Measure and publish coverage"
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    # Coverage instruments every executed line across the whole unit suite, so
+    # the run is inherently heavy. This is a nightly, non-blocking job, so a
+    # generous timeout is free insurance against slow runners.
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v4
