@@ -415,6 +415,10 @@ function bashunit::runner::load_test_files() {
       done
       functions_for_script="${_early_filtered# }"
     fi
+    # Replay filtering: keep only the functions recorded as failing last run.
+    if bashunit::rerun::is_enabled && bashunit::rerun::has_entries; then
+      functions_for_script=$(bashunit::rerun::filter_functions "$test_file" "$functions_for_script")
+    fi
     if [ -z "$functions_for_script" ]; then
       bashunit::runner::clean_set_up_and_tear_down_after_script
       bashunit::runner::restore_workdir
@@ -1204,6 +1208,7 @@ function bashunit::runner::run_test() {
 
   if [ -n "$runtime_error" ] || [ "$test_exit_code" -ne 0 ]; then
     bashunit::state::add_tests_failed
+    bashunit::rerun::record "$test_file" "$fn_name"
     local error_message="$runtime_error"
     if [ -n "$hook_failure" ] && [ -n "$hook_message" ]; then
       error_message="$hook_message"
@@ -1245,6 +1250,7 @@ function bashunit::runner::run_test() {
 
   if [ "$current_assertions_failed" != "$_BASHUNIT_ASSERTIONS_FAILED" ]; then
     bashunit::state::add_tests_failed
+    bashunit::rerun::record "$test_file" "$fn_name"
     bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
     local assertion_runtime_output
     assertion_runtime_output="$(
@@ -1297,6 +1303,7 @@ function bashunit::runner::run_test() {
     if bashunit::env::is_fail_on_risky_enabled; then
       local risky_msg="Test has no assertions (risky)"
       bashunit::state::add_tests_failed
+      bashunit::rerun::record "$test_file" "$fn_name"
       bashunit::console_results::print_error_test "$fn_name" "$risky_msg"
       bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$risky_msg"
       bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$risky_msg"

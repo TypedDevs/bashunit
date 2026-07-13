@@ -82,6 +82,7 @@ bashunit test tests/ --parallel --simple
 | `--random-order`               | Randomize test execution order                   |
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
+| `--rerun-failed`               | Replay only the tests that failed on the last run |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -564,6 +565,45 @@ strategy:
     shard: [1, 2, 3, 4]
 steps:
   - run: ./bashunit tests/ --shard ${{ matrix.shard }}/4
+```
+:::
+
+### Rerun failed
+
+> `bashunit test --rerun-failed`
+
+Replay only the tests that failed on the **previous** run — the fastest
+edit-run loop after a red suite.
+
+Every run records its failing tests as `<test_file>:<function_name>` lines in
+`.bashunit/last-failed` under the working directory (one write at the end of a
+run, so a plain `fail`, then `--rerun-failed` works without planning ahead). A
+fully green run clears the cache. With `--rerun-failed`, discovery is restricted
+to the recorded files and each file is filtered to the recorded functions; if
+the cache is missing or empty, bashunit prints a short notice and runs the full
+suite.
+
+Add `.bashunit/` to your `.gitignore`:
+
+```bash [.gitignore]
+.bashunit/
+```
+
+Notes:
+
+- Works with `--parallel` (same cache format).
+- Composes with `--filter`/`--tag` — both filters apply (intersection).
+- Data-provider tests record the base function name once; replaying runs all its
+  data rows.
+- Entries pointing at deleted files or functions are skipped, not fatal.
+
+::: code-group
+```bash [Rerun only what just failed]
+bashunit test tests/            # some tests fail
+bashunit test --rerun-failed    # replay just those
+```
+```bash [Env variable]
+BASHUNIT_RERUN_FAILED=true bashunit test tests/
 ```
 :::
 

@@ -21,6 +21,7 @@ coverage/
 local/
 tmp/
 dev.log
+.bashunit/
 .release-state/
 
 # ai
