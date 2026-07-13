@@ -302,6 +302,47 @@ ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
   bashunit::state::print_line "failure" "$line"
 }
 
+##
+# Renders a git word-diff of two files, indented, and echoes it. Colorized
+# unless --no-color is active. Empty when git is unavailable or files match.
+# Shared by the snapshot-failure and multiline assert-failure renderers.
+# Arguments: $1 expected file path, $2 actual file path
+##
+function bashunit::console_results::render_diff() {
+  local expected_file=$1
+  local actual_file=$2
+
+  if ! bashunit::dependencies::has_git; then
+    return 0
+  fi
+
+  local color_flag="--color=always"
+  if bashunit::env::is_no_color_enabled; then
+    color_flag="--color=never"
+  fi
+
+  # `git diff` exits non-zero when the files differ; the `|| true` keeps that
+  # from tripping `set -e`/`pipefail` under --strict. `tail -n +6` drops git's
+  # header lines; `sed` indents the body.
+  git diff --no-index --word-diff "$color_flag" \
+    "$expected_file" "$actual_file" 2>/dev/null |
+    tail -n +6 | sed "s/^/    /" || true
+}
+
+##
+# Echoes a value's first line, appending an ellipsis when it spans several
+# lines. Used to keep the inline quoted value on one line when a diff follows.
+##
+function bashunit::console_results::first_line_ellipsis() {
+  local text=$1
+  local first="${text%%$'\n'*}"
+  if [ "$first" != "$text" ]; then
+    printf '%s…' "$first"
+  else
+    printf '%s' "$text"
+  fi
+}
+
 function bashunit::console_results::print_failed_test() {
   local function_name=$1
   local expected=$2
@@ -310,12 +351,41 @@ function bashunit::console_results::print_failed_test() {
   local extra_key=${5-}
   local extra_value=${6-}
 
+  # For multiline values, render a unified diff below the header (git required,
+  # opt out with BASHUNIT_NO_DIFF). Single-line output stays byte-identical.
+  local show_diff=false
+  case "$expected$actual" in
+  *$'\n'*)
+    if bashunit::env::is_diff_enabled && bashunit::dependencies::has_git; then
+      show_diff=true
+    fi
+    ;;
+  esac
+
+  local display_expected=$expected
+  local display_actual=$actual
+  if [ "$show_diff" = true ]; then
+    display_expected="$(bashunit::console_results::first_line_ellipsis "$expected")"
+    display_actual="$(bashunit::console_results::first_line_ellipsis "$actual")"
+  fi
+
   local line
   line="$(printf "\
 ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
     ${_BASHUNIT_COLOR_FAINT}Expected${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
-    "${function_name}" "${expected}" "${failure_condition_message}" "${actual}")"
+    "${function_name}" "${display_expected}" "${failure_condition_message}" "${display_actual}")"
+
+  if [ "$show_diff" = true ]; then
+    local _expected_file _actual_file
+    _expected_file="$(bashunit::temp_file diff_expected)"
+    _actual_file="$(bashunit::temp_file diff_actual)"
+    printf '%s\n' "$expected" >"$_expected_file"
+    printf '%s\n' "$actual" >"$_actual_file"
+    line="$line
+$(bashunit::console_results::render_diff "$_expected_file" "$_actual_file")"
+    rm -f "$_expected_file" "$_actual_file"
+  fi
 
   if [ -n "$extra_key" ]; then
     line="$line$(printf "\
@@ -342,14 +412,7 @@ function bashunit::console_results::print_failed_snapshot_test() {
     local actual_file="${snapshot_file}.tmp"
     echo "$actual_content" >"$actual_file"
 
-    # `git diff` exits non-zero when the files differ; guard with `|| true` so
-    # the assignment does not trip `set -e`/`pipefail` under --strict.
-    local git_diff_output
-    git_diff_output="$(git diff --no-index --word-diff --color=always \
-      "$snapshot_file" "$actual_file" 2>/dev/null |
-      tail -n +6 | sed "s/^/    /")" || true
-
-    line="$line$git_diff_output"
+    line="$line$(bashunit::console_results::render_diff "$snapshot_file" "$actual_file")"
     rm "$actual_file"
   else
     line="$line$(bashunit::console_results::snapshot_line_diff \

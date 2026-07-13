@@ -562,6 +562,32 @@ BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
 ```
 :::
 
+## Diff on multiline failures
+
+> `BASHUNIT_NO_DIFF=true|false`
+
+When an `assert_equals`/`assert_same` failure involves a multiline value,
+bashunit renders a git word-diff below the `Expected/but got` header so the
+difference is easy to spot; the inline values are truncated to their first line
+while the diff is shown. Requires git (falls back to the plain output when it is
+unavailable), respects `--no-color`, and never affects single-line failures or
+machine reports (JUnit/TAP/JSON). `false` by default — set `BASHUNIT_NO_DIFF=true`
+to always print the full raw values instead.
+
+::: code-group
+```[Output example]
+✗ Failed: My test function
+    Expected 'alpha…'
+    but got  'alpha…'
+    alpha
+    [-beta-]{+DELTA+}
+    gamma
+```
+```bash [.env to disable]
+BASHUNIT_NO_DIFF=true
+```
+:::
+
 ## Color output
 
 > `NO_COLOR=1`
