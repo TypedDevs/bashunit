@@ -1186,15 +1186,16 @@ function bashunit::runner::run_test() {
   [ -n "$encoded_hook_message" ] && hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
 
   bashunit::set_test_title "$test_title"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  bashunit::helper::normalize_test_function_name_to_slot "$fn_name" "$interpolated_fn_name"
+  local label=$_BASHUNIT_HELPER_NORMALIZED_OUT
   bashunit::state::reset_test_title
   bashunit::state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"
   if [ -n "$hook_failure" ]; then
-    failure_label="$(bashunit::helper::normalize_test_function_name "$hook_failure")"
+    bashunit::helper::normalize_test_function_name_to_slot "$hook_failure"
+    failure_label=$_BASHUNIT_HELPER_NORMALIZED_OUT
     failure_function="$hook_failure"
   fi
 
