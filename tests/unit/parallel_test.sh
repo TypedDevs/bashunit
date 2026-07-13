@@ -12,6 +12,9 @@ function set_up_before_script() {
 function set_up() {
   original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_PARALLEL_RUN=true
+  # Start each test unresolved so is_enabled recomputes from the per-test
+  # env/OS mocks (the global persists across tests in this no-parallel file).
+  _BASHUNIT_PARALLEL_ENABLED=""
 
   # Create isolated temp directory for tests
   _TEST_TEMP_DIR=$(mktemp -d)
@@ -130,6 +133,37 @@ function test_parallel_disabled_on_unsupported_os() {
   bashunit::mock bashunit::check_os::is_alpine mock_false
 
   assert_general_error "$(bashunit::parallel::is_enabled)"
+}
+
+function test_resolve_enabled_caches_true_for_supported_os() {
+  _BASHUNIT_PARALLEL_ENABLED=""
+  bashunit::mock bashunit::check_os::is_macos mock_true
+
+  bashunit::parallel::resolve_enabled
+
+  assert_same "true" "$_BASHUNIT_PARALLEL_ENABLED"
+}
+
+function test_resolve_enabled_caches_false_when_env_off() {
+  _BASHUNIT_PARALLEL_ENABLED=""
+  export BASHUNIT_PARALLEL_RUN=false
+  bashunit::mock bashunit::check_os::is_macos mock_true
+
+  bashunit::parallel::resolve_enabled
+
+  assert_same "false" "$_BASHUNIT_PARALLEL_ENABLED"
+}
+
+function test_is_enabled_reads_resolved_global_without_recomputing() {
+  # A cached "true" wins even when the live OS checks would say false,
+  # proving is_enabled is a pure global read once resolved.
+  _BASHUNIT_PARALLEL_ENABLED=true
+  bashunit::mock bashunit::check_os::is_windows mock_false
+  bashunit::mock bashunit::check_os::is_macos mock_false
+  bashunit::mock bashunit::check_os::is_ubuntu mock_false
+  bashunit::mock bashunit::check_os::is_alpine mock_false
+
+  assert_successful_code "$(bashunit::parallel::is_enabled)"
 }
 
 # === init/cleanup tests ===

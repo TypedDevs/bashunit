@@ -669,6 +669,9 @@ function test_print_hook_completed_output_milliseconds() {
   local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
   export BASHUNIT_PARALLEL_RUN=false
+  # Recompute is_enabled from this test's env, not a cache inherited from a
+  # --parallel meta-run of the suite.
+  _BASHUNIT_PARALLEL_ENABLED=""
   export TERMINAL_WIDTH=80
 
   local output
@@ -685,6 +688,9 @@ function test_print_hook_completed_output_seconds() {
   local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
   export BASHUNIT_PARALLEL_RUN=false
+  # Recompute is_enabled from this test's env, not a cache inherited from a
+  # --parallel meta-run of the suite.
+  _BASHUNIT_PARALLEL_ENABLED=""
   export TERMINAL_WIDTH=80
 
   local output
@@ -701,6 +707,9 @@ function test_print_hook_completed_output_minutes() {
   local original_parallel_run=$BASHUNIT_PARALLEL_RUN
   export BASHUNIT_SIMPLE_OUTPUT=false
   export BASHUNIT_PARALLEL_RUN=false
+  # Recompute is_enabled from this test's env, not a cache inherited from a
+  # --parallel meta-run of the suite.
+  _BASHUNIT_PARALLEL_ENABLED=""
   export TERMINAL_WIDTH=80
 
   local output
