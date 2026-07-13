@@ -11,7 +11,7 @@ function test_multiline_failure_renders_a_word_diff() {
   fi
 
   local output
-  output=$(./bashunit --no-parallel --no-color --filter multiline "$FIXTURE" 2>&1) || true
+  output=$(./bashunit --no-parallel --no-color --skip-env-file --filter multiline "$FIXTURE" 2>&1) || true
 
   assert_contains "[-beta-]{+DELTA+}" "$output"
   assert_contains "alpha…" "$output"
@@ -19,7 +19,7 @@ function test_multiline_failure_renders_a_word_diff() {
 
 function test_no_diff_env_keeps_full_multiline_values() {
   local output
-  output=$(BASHUNIT_NO_DIFF=true ./bashunit --no-parallel --no-color --filter multiline "$FIXTURE" 2>&1) || true
+  output=$(BASHUNIT_NO_DIFF=true ./bashunit --no-parallel --no-color --skip-env-file --filter multiline "$FIXTURE" 2>&1) || true
 
   assert_not_contains "[-beta-]" "$output"
   assert_not_contains "alpha…" "$output"
@@ -29,7 +29,7 @@ function test_no_diff_env_keeps_full_multiline_values() {
 
 function test_single_line_failure_stays_inline_without_diff() {
   local output
-  output=$(./bashunit --no-parallel --no-color --filter single_line "$FIXTURE" 2>&1) || true
+  output=$(./bashunit --no-parallel --no-color --skip-env-file --filter single_line "$FIXTURE" 2>&1) || true
 
   assert_contains "'expected_value'" "$output"
   assert_contains "'actual_value'" "$output"
