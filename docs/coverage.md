@@ -489,13 +489,14 @@ See `adrs/adr-007-branch-coverage-mvp.md` for the design rationale and the rejec
 
 ## This repo's own coverage
 
-bashunit dogfoods its own coverage engine. On every push to `main`, the
+bashunit dogfoods its own coverage engine. The
 [`coverage.yml`](https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/coverage.yml)
-workflow runs `--coverage` over the unit suite, uploads the `coverage/lcov.info`
-report as a build artifact, and publishes the total percentage as a
-[shields.io endpoint](https://shields.io/badges/endpoint-badge) badge (shown in the
-README). It is a real-world example of wiring the coverage engine into CI without a
-third-party coverage service.
+workflow runs nightly (and on manual dispatch), measuring `--coverage` over the unit
+suite, uploading the `coverage/lcov.info` report as a build artifact, and publishing
+the total percentage as a [shields.io endpoint](https://shields.io/badges/endpoint-badge)
+badge (shown in the README). It is an optional, non-blocking job — it never runs on push
+or pull requests, so it is not a status check on any commit. A real-world example of
+wiring the coverage engine into CI without a third-party coverage service.
 
 Note the workflow excludes the engine's own meta-tests (`tests/unit/coverage_*_test.sh`)
 from the measured run: executing them under `--coverage` double-instruments

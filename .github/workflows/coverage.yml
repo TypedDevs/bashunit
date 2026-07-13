@@ -1,19 +1,22 @@
 name: Coverage
 
-# Dogfoods bashunit's own --coverage engine. On every push to main it measures
-# how much of src/ the unit suite exercises, uploads the LCOV report as a build
-# artifact, and publishes a shields.io endpoint badge to the orphan `badges`
-# branch (which the README badge reads). It runs only on main / manual dispatch,
-# so a failure here never gates pull-request checks.
+# Dogfoods bashunit's own --coverage engine. Nightly (and on manual dispatch) it
+# measures how much of src/ the unit suite exercises, uploads the LCOV report as
+# a build artifact, and publishes a shields.io endpoint badge to the orphan
+# `badges` branch (which the README badge reads).
+#
+# This is an OPTIONAL, non-blocking job: it never runs on push or pull_request,
+# so it is not a status check on any commit and cannot gate merges. Coverage is
+# CPU-heavy, so a scheduled cadence keeps it off the critical path.
 #
 # The coverage engine's own meta-tests (tests/unit/coverage_*_test.sh) are
 # excluded from the measured run: executing them under --coverage double-
 # instruments src/coverage.sh and corrupts their assertions.
 
 on:
-  push:
-    branches:
-      - main
+  schedule:
+    # Nightly at 04:17 UTC (odd minute to avoid the top-of-hour scheduler rush).
+    - cron: "17 4 * * *"
   workflow_dispatch:
 
 permissions:
