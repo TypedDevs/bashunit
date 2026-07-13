@@ -130,6 +130,9 @@ function bashunit::main::cmd_test() {
       bashunit::main::set_shard_or_exit "$2"
       shift
       ;;
+    --rerun-failed)
+      export BASHUNIT_RERUN_FAILED=true
+      ;;
     -w | --watch)
       export BASHUNIT_WATCH_MODE=true
       ;;
@@ -337,6 +340,30 @@ function bashunit::main::cmd_test() {
       if [ -z "$filter" ] && [ -n "$inline_filter" ]; then
         filter="$inline_filter"
       fi
+    fi
+  fi
+
+  # --rerun-failed: restrict discovery to the files recorded as failing last
+  # run. Function-level filtering happens in the runner; --filter/--tag still
+  # apply on top. With no recorded failures, fall back to the full suite.
+  if [ -z "$assert_fn" ] && bashunit::rerun::is_enabled; then
+    bashunit::rerun::load
+    if bashunit::rerun::has_entries; then
+      local -a _rerun_files=()
+      local _rerun_file
+      while IFS= read -r _rerun_file; do
+        [ -z "$_rerun_file" ] && continue
+        # Skip entries pointing at deleted files, don't crash.
+        [ -f "$_rerun_file" ] || continue
+        _rerun_files[${#_rerun_files[@]}]="$_rerun_file"
+      done < <(bashunit::rerun::files)
+      if [ "${#_rerun_files[@]}" -gt 0 ]; then
+        args=("${_rerun_files[@]}")
+        args_count=${#args[@]}
+      fi
+    else
+      printf "%sNo previously failing tests recorded; running the full suite.%s\n" \
+        "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
     fi
   fi
 
@@ -870,6 +897,9 @@ function bashunit::main::exec_tests() {
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup
   fi
+
+  # Persist this run's failing tests so a later --rerun-failed can replay them.
+  bashunit::rerun::persist
 
   bashunit::internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code

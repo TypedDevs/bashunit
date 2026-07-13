@@ -110,6 +110,7 @@ function build::dependencies() {
     "src/watch.sh"
     "src/assertions.sh"
     "src/reports.sh"
+    "src/rerun.sh"
     "src/runner.sh"
     "src/benchmark.sh"
     "src/init.sh"

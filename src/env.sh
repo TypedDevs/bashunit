@@ -466,6 +466,9 @@ SKIPPED_OUTPUT_PATH=$("$MKTEMP")
 INCOMPLETE_OUTPUT_PATH=$("$MKTEMP")
 RISKY_OUTPUT_PATH=$("$MKTEMP")
 PROFILE_OUTPUT_PATH=$("$MKTEMP")
+# Collects "<test_file>:<function_name>" for every failing test in a run so the
+# next --rerun-failed can replay just those. Shared across parallel subshells.
+RERUN_FAILED_OUTPUT_PATH=$("$MKTEMP")
 
 # Initialize temp directory once at startup for performance
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
