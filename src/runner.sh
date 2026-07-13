@@ -764,19 +764,19 @@ function bashunit::runner::call_test_functions() {
 
   bashunit::helper::check_duplicate_functions "$script" || true
 
-  # Check if test file opts out of test-level parallelism
-  local allow_test_parallel=true
-  if grep -q "^# bashunit: no-parallel-tests" "$script" 2>/dev/null; then
-    allow_test_parallel=false
-  fi
-
   local -a provider_data=()
   local provider_data_count=0
   local -a parsed_data=()
   local parsed_data_count=0
 
   # Scan the file once; per-test provider lookups below are pure-bash (#763).
+  # The same pass also detects the no-parallel-tests opt-out (#774).
   bashunit::helper::build_provider_map "$script"
+
+  local allow_test_parallel=true
+  if [ "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL" = true ]; then
+    allow_test_parallel=false
+  fi
 
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
