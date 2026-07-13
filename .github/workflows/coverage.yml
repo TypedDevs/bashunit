@@ -27,7 +27,7 @@ jobs:
   coverage:
     name: "Measure and publish coverage"
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,10 +41,14 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y jq
 
       - name: Run coverage on the unit suite
+        # Coverage instrumentation is CPU-heavy; --parallel --jobs auto keeps the
+        # run well under the job timeout on the multi-core runner. Parallel LCOV
+        # aggregation is deterministic (same total as a sequential run).
         run: |
           files=$(ls tests/unit/*_test.sh | grep -v '/coverage_')
           # shellcheck disable=SC2086
-          ./bashunit --coverage --coverage-report coverage/lcov.info --coverage-paths src $files
+          ./bashunit --coverage --parallel --jobs auto \
+            --coverage-report coverage/lcov.info --coverage-paths src $files
 
       - name: Upload LCOV report
         uses: actions/upload-artifact@v4
