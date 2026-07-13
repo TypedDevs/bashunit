@@ -764,19 +764,19 @@ function bashunit::runner::call_test_functions() {
 
   bashunit::helper::check_duplicate_functions "$script" || true
 
-  # Check if test file opts out of test-level parallelism
-  local allow_test_parallel=true
-  if grep -q "^# bashunit: no-parallel-tests" "$script" 2>/dev/null; then
-    allow_test_parallel=false
-  fi
-
   local -a provider_data=()
   local provider_data_count=0
   local -a parsed_data=()
   local parsed_data_count=0
 
   # Scan the file once; per-test provider lookups below are pure-bash (#763).
+  # The same pass also detects the no-parallel-tests opt-out (#774).
   bashunit::helper::build_provider_map "$script"
+
+  local allow_test_parallel=true
+  if [ "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL" = true ]; then
+    allow_test_parallel=false
+  fi
 
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
@@ -1100,7 +1100,10 @@ function bashunit::runner::run_test() {
   # exactly once (on the final attempt) and nothing is double-counted. Each fork
   # in --parallel retries itself before writing its single .result file.
   while :; do
-    [ "$measure_duration" = true ] && start_time=$(bashunit::clock::now)
+    if [ "$measure_duration" = true ]; then
+      bashunit::clock::now_to_slot
+      start_time=$_BASHUNIT_CLOCK_NOW_OUT
+    fi
     if bashunit::env::is_test_timeout_enabled; then
       bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
       test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
@@ -1129,8 +1132,8 @@ function bashunit::runner::run_test() {
 
   local duration=0
   if [ "$measure_duration" = true ]; then
-    local end_time
-    end_time=$(bashunit::clock::now)
+    bashunit::clock::now_to_slot
+    local end_time=$_BASHUNIT_CLOCK_NOW_OUT
     duration=$(((end_time - start_time) / 1000000))
   fi
 
@@ -1186,15 +1189,16 @@ function bashunit::runner::run_test() {
   [ -n "$encoded_hook_message" ] && hook_message="$(bashunit::helper::decode_base64 "$encoded_hook_message")"
 
   bashunit::set_test_title "$test_title"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$fn_name" "$interpolated_fn_name")"
+  bashunit::helper::normalize_test_function_name_to_slot "$fn_name" "$interpolated_fn_name"
+  local label=$_BASHUNIT_HELPER_NORMALIZED_OUT
   bashunit::state::reset_test_title
   bashunit::state::reset_current_test_interpolated_function_name
 
   local failure_label="$label"
   local failure_function="$fn_name"
   if [ -n "$hook_failure" ]; then
-    failure_label="$(bashunit::helper::normalize_test_function_name "$hook_failure")"
+    bashunit::helper::normalize_test_function_name_to_slot "$hook_failure"
+    failure_label=$_BASHUNIT_HELPER_NORMALIZED_OUT
     failure_function="$hook_failure"
   fi
 

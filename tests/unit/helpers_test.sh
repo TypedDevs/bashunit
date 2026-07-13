@@ -286,6 +286,28 @@ function test_provider_map_returns_empty_for_unreadable_script() {
     "$(provider_for "/no/such/path/nope_test.sh" "test_with_at_annotation")"
 }
 
+function test_build_provider_map_flags_no_parallel_marker() {
+  local file
+  file="$(mktemp)"
+  printf '#!/usr/bin/env bash\n# bashunit: no-parallel-tests\nfunction test_foo() { :; }\n' >"$file"
+
+  bashunit::helper::build_provider_map "$file"
+
+  assert_same "true" "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL"
+  rm -f "$file"
+}
+
+function test_build_provider_map_no_parallel_marker_defaults_false() {
+  local file
+  file="$(mktemp)"
+  printf '#!/usr/bin/env bash\nfunction test_foo() { :; }\n' >"$file"
+
+  bashunit::helper::build_provider_map "$file"
+
+  assert_same "false" "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL"
+  rm -f "$file"
+}
+
 function test_left_trim() {
   assert_same "foo" "$(bashunit::helper::trim "       foo")"
 }

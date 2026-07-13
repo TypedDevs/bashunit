@@ -751,6 +751,10 @@ function bashunit::main::exec_tests() {
   trap 'bashunit::main::cleanup' SIGINT
   trap '[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ] && bashunit::main::handle_stop_on_failure_sync' EXIT
 
+  # Resolve parallel mode once now that --parallel/--no-parallel are parsed, so
+  # the per-test is_enabled reads a global instead of re-checking env + OS.
+  bashunit::parallel::resolve_enabled
+
   if bashunit::env::is_parallel_run_enabled && ! bashunit::parallel::is_enabled; then
     printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_BASHUNIT_COLOR_INCOMPLETE}"
     printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"

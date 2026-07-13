@@ -342,6 +342,9 @@ _BASHUNIT_PROVIDER_MAP_SCRIPT=""
 _BASHUNIT_PROVIDER_MAP_FNS=()
 _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
 _BASHUNIT_PROVIDER_FN_OUT=""
+# Set true when the scanned file carries the "# bashunit: no-parallel-tests"
+# opt-out; detected in the same awk pass to avoid a per-file grep fork (#774).
+_BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
 
 #
 # Resolves a script path, applying the issue #529 working-dir fallback.
@@ -377,6 +380,7 @@ function bashunit::helper::build_provider_map() {
     _BASHUNIT_PROVIDER_MAP_SCRIPT="$1"
     _BASHUNIT_PROVIDER_MAP_FNS=()
     _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
+    _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
     return
   fi
 
@@ -387,18 +391,26 @@ function bashunit::helper::build_provider_map() {
   _BASHUNIT_PROVIDER_MAP_SCRIPT="$script"
   _BASHUNIT_PROVIDER_MAP_FNS=()
   _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
+  _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
 
   local count=0
   local fn provider
   # Single awk pass emits "<fn>\t<provider>" for every function whose
   # definition is at most two lines below a `# @data_provider` (or
   # `# data_provider`) annotation, mirroring the previous grep -B2 + sed.
+  # A reserved sentinel fn name carries the no-parallel-tests flag out of the
+  # single awk pass; real fn names are identifiers so they never collide.
   while IFS=$'\t' read -r fn provider; do
     [ -z "$fn" ] && continue
+    if [ "$fn" = "@@no_parallel@@" ]; then
+      [ "$provider" = "1" ] && _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=true
+      continue
+    fi
     _BASHUNIT_PROVIDER_MAP_FNS[count]="$fn"
     _BASHUNIT_PROVIDER_MAP_PROVIDERS[count]="$provider"
     count=$((count + 1))
   done < <(awk '
+    /^# bashunit: no-parallel-tests/ { no_parallel = 1; next }
     /^[[:space:]]*#[[:space:]]*@?data_provider[[:space:]]+/ {
       p = $0
       sub(/^[[:space:]]*#[[:space:]]*@?data_provider[[:space:]]+/, "", p)
@@ -420,6 +432,7 @@ function bashunit::helper::build_provider_map() {
         pending = ""
       }
     }
+    END { printf "@@no_parallel@@\t%d\n", no_parallel }
   ' "$script" 2>/dev/null)
 }
 

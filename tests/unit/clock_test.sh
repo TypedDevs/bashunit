@@ -100,11 +100,32 @@ function test_now_on_osx_without_perl() {
 
   mock_macos
   bashunit::mock bashunit::dependencies::has_perl mock_false
-  bashunit::mock bashunit::clock::shell_time <<<"1727708708.326957"
+  local EPOCHREALTIME="1727708708.326957"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
   assert_same "1727708708326957000" "$(bashunit::clock::now)"
+}
+
+function test_now_to_slot_shell_branch_computes_from_epochrealtime() {
+  local EPOCHREALTIME="1727708708.326957"
+
+  bashunit::clock::now_to_slot
+
+  assert_same "1727708708326957000" "$_BASHUNIT_CLOCK_NOW_OUT"
+}
+
+function test_now_to_slot_date_seconds_branch() {
+  mock_unknown_linux_os
+  bashunit::mock perl mock_non_existing_fn
+  bashunit::mock bashunit::dependencies::has_python mock_false
+  bashunit::mock bashunit::dependencies::has_node mock_false
+  bashunit::mock bashunit::clock::shell_time mock_non_existing_fn
+  bashunit::mock date 'mock_date_seconds "$@"'
+
+  bashunit::clock::now_to_slot
+
+  assert_same "1727768951000000000" "$_BASHUNIT_CLOCK_NOW_OUT"
 }
 
 function test_runtime_in_milliseconds_when_not_empty_time() {
@@ -116,7 +137,7 @@ function test_runtime_in_milliseconds_when_not_empty_time() {
 }
 
 function test_now_prefers_shell_time_over_perl() {
-  bashunit::mock bashunit::clock::shell_time <<<"1234.567890"
+  local EPOCHREALTIME="1234.567890"
   bashunit::mock perl <<<"999999999999"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
@@ -125,7 +146,7 @@ function test_now_prefers_shell_time_over_perl() {
 }
 
 function test_now_handles_shell_time_with_comma_decimal_separator() {
-  bashunit::mock bashunit::clock::shell_time <<<"1234,567890"
+  local EPOCHREALTIME="1234,567890"
 
   assert_same "1234567890000" "$(bashunit::clock::now)"
 }

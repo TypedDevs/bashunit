@@ -89,44 +89,55 @@ function bashunit::clock::is_expensive() {
   esac
 }
 
-function bashunit::clock::now() {
+_BASHUNIT_CLOCK_NOW_OUT=""
+
+# Return-slot variant of bashunit::clock::now: writes the current time in
+# nanoseconds into _BASHUNIT_CLOCK_NOW_OUT. The `shell` branch reads
+# EPOCHREALTIME directly (folding in shell_time) so the per-test hot path pays
+# no command-substitution fork on Bash 5.0+; `date-seconds` forks once instead
+# of twice. Interpreter/`date` branches keep a single internal fork.
+# Returns: 0 on success, 1 when no clock implementation is available.
+function bashunit::clock::now_to_slot() {
   if [ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]; then
     bashunit::clock::_choose_impl || return 1
   fi
 
   case "$_BASHUNIT_CLOCK_NOW_IMPL" in
   perl)
-    perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)'
+    _BASHUNIT_CLOCK_NOW_OUT="$(perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)')"
     ;;
   python)
-    python - <<'EOF'
+    _BASHUNIT_CLOCK_NOW_OUT="$(
+      python - <<'EOF'
 import time, sys
 sys.stdout.write(str(int(time.time() * 1000000000)))
 EOF
+    )"
     ;;
   node)
-    node -e 'process.stdout.write((BigInt(Date.now()) * 1000000n).toString())'
+    _BASHUNIT_CLOCK_NOW_OUT="$(node -e 'process.stdout.write((BigInt(Date.now()) * 1000000n).toString())')"
     ;;
   powershell)
-    powershell -Command "\
+    _BASHUNIT_CLOCK_NOW_OUT="$(powershell -Command "\
         \$unixEpoch = [DateTime]'1970-01-01 00:00:00';\
         \$now = [DateTime]::UtcNow;\
         \$ticksSinceEpoch = (\$now - \$unixEpoch).Ticks;\
         \$nanosecondsSinceEpoch = \$ticksSinceEpoch * 100;\
         Write-Output \$nanosecondsSinceEpoch\
-      "
+      ")"
     ;;
   date)
-    date +%s%N
+    _BASHUNIT_CLOCK_NOW_OUT="$(date +%s%N)"
     ;;
   date-seconds)
     local seconds
     seconds=$(date +%s)
-    echo "$((seconds * 1000000000))"
+    _BASHUNIT_CLOCK_NOW_OUT="$((seconds * 1000000000))"
     ;;
   shell)
-    # shellcheck disable=SC2155
-    local shell_time="$(bashunit::clock::shell_time)"
+    # Read EPOCHREALTIME directly (no shell_time subshell) on the hot path;
+    # both '.' and ',' decimal separators are handled for locale portability.
+    local shell_time="${EPOCHREALTIME:-}"
     local seconds="${shell_time%%[.,]*}"
     local microseconds="${shell_time#*[.,]}"
     if [ "$seconds" = "$shell_time" ]; then
@@ -137,13 +148,18 @@ EOF
     microseconds="${microseconds:0:6}"
     microseconds="${microseconds#"${microseconds%%[!0]*}"}"
     microseconds="${microseconds:-0}"
-    echo "$(( (seconds * 1000000000) + (microseconds * 1000) ))"
+    _BASHUNIT_CLOCK_NOW_OUT="$(((seconds * 1000000000) + (microseconds * 1000)))"
     ;;
   *)
     bashunit::clock::_choose_impl || return 1
-    bashunit::clock::now
+    bashunit::clock::now_to_slot
     ;;
   esac
+}
+
+function bashunit::clock::now() {
+  bashunit::clock::now_to_slot || return 1
+  echo "$_BASHUNIT_CLOCK_NOW_OUT"
 }
 
 function bashunit::clock::shell_time() {
