@@ -714,9 +714,104 @@ function bashunit::helper::find_function_at_line() {
   echo "$best_match"
 }
 
+# Tags map for the most recently scanned script. Mirrors the provider map
+# (build_provider_map): scanning a file once and caching each test-function ->
+# comma-separated tags pair replaces a per-test grep/sed backward walk with a
+# pure-bash lookup on the hot path when `--tag`/`--exclude-tag` is used (#773).
+_BASHUNIT_TAGS_MAP_SCRIPT=""
+_BASHUNIT_TAGS_MAP_FNS=()
+_BASHUNIT_TAGS_MAP_TAGS=()
+_BASHUNIT_TAGS_OUT=""
+
+#
+# Scans a script once and caches its test-function -> tags pairs.
+# Memoized by resolved path, so repeated calls for the same file do not rescan.
+#
+# @param $1 string Path to the test script
+#
+function bashunit::helper::build_tags_map() {
+  local script=$1
+  # Handle directory changes in set_up_before_script (issue #529)
+  if [ ! -f "$script" ] && [ -n "${BASHUNIT_WORKING_DIR:-}" ]; then
+    script="$BASHUNIT_WORKING_DIR/$script"
+  fi
+
+  if [ ! -f "$script" ]; then
+    # Unreadable path: reset to an empty map keyed to this argument so a
+    # follow-up lookup returns empty without rescanning.
+    _BASHUNIT_TAGS_MAP_SCRIPT="$1"
+    _BASHUNIT_TAGS_MAP_FNS=()
+    _BASHUNIT_TAGS_MAP_TAGS=()
+    return
+  fi
+
+  if [ "$script" = "$_BASHUNIT_TAGS_MAP_SCRIPT" ]; then
+    return
+  fi
+
+  _BASHUNIT_TAGS_MAP_SCRIPT="$script"
+  _BASHUNIT_TAGS_MAP_FNS=()
+  _BASHUNIT_TAGS_MAP_TAGS=()
+
+  local count=0
+  local fn tags
+  # Single awk pass emits "<fn>\t<tags>" for every function that carries at
+  # least one `# @tag <name>` comment in the contiguous comment block directly
+  # above its definition, mirroring the previous per-function backward walk.
+  # Tags accumulate nearest-to-the-function first (same order the old walk
+  # produced). A blank or non-comment line breaks the association; other
+  # comment lines keep the block open. Both `function test_x` and `test_x()`
+  # definition styles are recognised.
+  while IFS=$'\t' read -r fn tags; do
+    [ -z "$fn" ] && continue
+    _BASHUNIT_TAGS_MAP_FNS[count]="$fn"
+    _BASHUNIT_TAGS_MAP_TAGS[count]="$tags"
+    count=$((count + 1))
+  done < <(awk '
+    /^[[:space:]]*#[[:space:]]*@tag[[:space:]]/ {
+      t = $0
+      sub(/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+/, "", t)
+      tags = (tags == "" ? t : t "," tags)
+      next
+    }
+    /^[[:space:]]*#/ { next }
+    /^[[:space:]]*(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/ {
+      fn = $0
+      sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
+      sub(/[[:space:]]*\(\).*/, "", fn)
+      if (tags != "") printf "%s\t%s\n", fn, tags
+      tags = ""
+      next
+    }
+    { tags = "" }
+  ' "$script" 2>/dev/null)
+}
+
+#
+# Pure-bash lookup against the cached tags map.
+# Writes the comma-separated tags (or empty) into _BASHUNIT_TAGS_OUT.
+#
+# @param $1 string Test-function name
+#
+function bashunit::helper::tags_for_function() {
+  local function_name=$1
+  local i=0
+  local total=${#_BASHUNIT_TAGS_MAP_FNS[@]}
+  while [ "$i" -lt "$total" ]; do
+    if [ "${_BASHUNIT_TAGS_MAP_FNS[i]}" = "$function_name" ]; then
+      _BASHUNIT_TAGS_OUT="${_BASHUNIT_TAGS_MAP_TAGS[i]}"
+      return
+    fi
+    i=$((i + 1))
+  done
+  _BASHUNIT_TAGS_OUT=""
+}
+
 #
 # Extracts @tag annotations for a specific function from a test file.
-# Looks for comment lines `# @tag <name>` immediately above the function definition.
+# Thin wrapper over the cached tags map, kept for callers that want the tags
+# on stdout. Hot-path call sites use build_tags_map + tags_for_function to
+# avoid the subshell fork.
 #
 # @param $1 string Function name
 # @param $2 string Script file path
@@ -724,56 +819,9 @@ function bashunit::helper::find_function_at_line() {
 # @return string Comma-separated list of tags, or empty if none
 #
 function bashunit::helper::get_tags_for_function() {
-  local function_name="$1"
-  local script="$2"
-
-  if [ ! -f "$script" ] && [ -n "${BASHUNIT_WORKING_DIR:-}" ]; then
-    script="$BASHUNIT_WORKING_DIR/$script"
-  fi
-
-  if [ ! -f "$script" ]; then
-    return
-  fi
-
-  # Find the line number of the function definition
-  local fn_line_num
-  fn_line_num=$(grep -n -E "(function[[:space:]]+)?${function_name}[[:space:]]*\(\)" "$script" 2>/dev/null | head -1)
-  if [ -z "$fn_line_num" ]; then
-    return
-  fi
-  fn_line_num="${fn_line_num%%:*}"
-
-  # Walk backwards from the line above the function, collecting @tag comments
-  local tags=""
-  local check_line=$((fn_line_num - 1))
-  while [ "$check_line" -ge 1 ]; do
-    local content
-    content=$(sed -n "${check_line}p" "$script")
-    local _re='^[[:space:]]*#[[:space:]]*@tag[[:space:]]'
-    if [ "$(echo "$content" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
-      local tag_name
-      tag_name=$(echo "$content" | sed -nE 's/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+//p')
-      if [ -n "$tag_name" ]; then
-        if [ -z "$tags" ]; then
-          tags="$tag_name"
-        else
-          tags="$tags,$tag_name"
-        fi
-      fi
-    elif [ "$(echo "$content" | "$GREP" -cE '^[[:space:]]*#' || true)" -gt 0 ]; then
-      # Other comment line, keep walking
-      :
-    elif [ "$(echo "$content" | "$GREP" -cE '^[[:space:]]*$' || true)" -gt 0 ]; then
-      # Empty line, stop looking
-      break
-    else
-      # Non-comment, non-empty line, stop
-      break
-    fi
-    check_line=$((check_line - 1))
-  done
-
-  echo "$tags"
+  bashunit::helper::build_tags_map "$2"
+  bashunit::helper::tags_for_function "$1"
+  echo "$_BASHUNIT_TAGS_OUT"
 }
 
 #

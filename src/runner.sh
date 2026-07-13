@@ -404,12 +404,12 @@ function bashunit::runner::load_test_files() {
     functions_for_script=$(bashunit::runner::functions_for_script "$test_file" "$filtered_functions")
     # Apply tag filtering to the early check as well
     if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
+      bashunit::helper::build_tags_map "$test_file"
       local _early_filtered=""
       local _early_fn
       for _early_fn in $functions_for_script; do
-        local _early_tags
-        _early_tags=$(bashunit::helper::get_tags_for_function "$_early_fn" "$test_file")
-        if bashunit::helper::function_matches_tags "$_early_tags" "$tag_filter" "$exclude_tag_filter"; then
+        bashunit::helper::tags_for_function "$_early_fn"
+        if bashunit::helper::function_matches_tags "$_BASHUNIT_TAGS_OUT" "$tag_filter" "$exclude_tag_filter"; then
           _early_filtered="$_early_filtered $_early_fn"
         fi
       done
@@ -725,13 +725,13 @@ function bashunit::runner::call_test_functions() {
 
     # Apply tag filtering if --tag or --exclude-tag was specified
     if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
+      bashunit::helper::build_tags_map "$script"
       local -a tag_filtered=()
       local tag_filtered_count=0
       local _tf_fn
       for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-        local fn_tags
-        fn_tags=$(bashunit::helper::get_tags_for_function "$_tf_fn" "$script")
-        if bashunit::helper::function_matches_tags "$fn_tags" "$tag_filter" "$exclude_tag_filter"; then
+        bashunit::helper::tags_for_function "$_tf_fn"
+        if bashunit::helper::function_matches_tags "$_BASHUNIT_TAGS_OUT" "$tag_filter" "$exclude_tag_filter"; then
           tag_filtered[tag_filtered_count]="$_tf_fn"
           tag_filtered_count=$((tag_filtered_count + 1))
         fi
