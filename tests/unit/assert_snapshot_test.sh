@@ -60,6 +60,50 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
   assert_matches "Expected to match the snapshot" "$actual"
 }
 
+function test_assert_match_snapshot_strips_carriage_returns_from_actual() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_strips_cr_actual.snapshot"
+  printf 'Line1\nLine2\n' >"$snapshot_path"
+
+  # ANSI-C quoting (Bash 3.0 safe; printf -v is 3.1+) keeps the raw \r bytes
+  local actual=$'Line1\r\nLine2\r\n'
+  assert_empty "$(assert_match_snapshot "$actual" "$snapshot_path")"
+}
+
+function test_assert_match_snapshot_matches_snapshot_file_with_crlf_endings() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_snapshot_crlf.snapshot"
+  printf 'Line1\r\nLine2\r\n' >"$snapshot_path"
+
+  assert_empty "$(assert_match_snapshot "$(printf 'Line1\nLine2')" "$snapshot_path")"
+}
+
+function test_assert_match_snapshot_strips_trailing_newlines_from_actual() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_trailing_newlines.snapshot"
+  printf 'Line1\nLine2\n' >"$snapshot_path"
+
+  local actual=$'Line1\nLine2\n\n\n'
+  assert_empty "$(assert_match_snapshot "$actual" "$snapshot_path")"
+}
+
+function test_assert_match_snapshot_ignore_colors_matches_plain_input() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_ignore_colors_plain.snapshot"
+  printf 'Plain text\n' >"$snapshot_path"
+
+  assert_empty "$(assert_match_snapshot_ignore_colors "Plain text" "$snapshot_path")"
+}
+
+function test_assert_match_snapshot_ignore_colors_strips_ansi_and_cr() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/assert_snapshot_test_sh.test_ignore_colors_ansi.snapshot"
+  printf 'Colored line\n' >"$snapshot_path"
+
+  local colored=$'\e[31mColored\e[0m line\r'
+  assert_empty "$(assert_match_snapshot_ignore_colors "$colored" "$snapshot_path")"
+}
+
 function test_assert_match_snapshot_with_placeholder() {
   if ! bashunit::dependencies::has_perl; then
     bashunit::skip "perl not available" && return

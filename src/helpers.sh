@@ -320,7 +320,13 @@ function bashunit::helper::find_files_recursive() {
   fi
 }
 
-function bashunit::helper::normalize_variable_name() {
+_BASHUNIT_HELPER_VARNAME_OUT=""
+
+# Return-slot variant of normalize_variable_name: writes the result into
+# _BASHUNIT_HELPER_VARNAME_OUT with no fork, for hot-path callers that would
+# otherwise capture it with a command substitution (e.g. snapshot path
+# resolution, which calls it twice per assertion).
+function bashunit::helper::normalize_variable_name_to_slot() {
   local input_string="$1"
   local normalized_string="${input_string//[^a-zA-Z0-9_]/_}"
 
@@ -332,7 +338,12 @@ function bashunit::helper::normalize_variable_name() {
   *) normalized_string="_$normalized_string" ;;
   esac
 
-  builtin echo "$normalized_string"
+  _BASHUNIT_HELPER_VARNAME_OUT=$normalized_string
+}
+
+function bashunit::helper::normalize_variable_name() {
+  bashunit::helper::normalize_variable_name_to_slot "$1"
+  builtin echo "$_BASHUNIT_HELPER_VARNAME_OUT"
 }
 
 # Provider map for the most recently scanned script. Scanning a file once and

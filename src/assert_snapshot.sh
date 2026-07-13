@@ -1,11 +1,25 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
+# Strips all carriage returns, then any trailing newlines, entirely in bash.
+# Reproduces the previous `$(echo -n "$in" | tr -d '\r')` (command substitution
+# drops trailing newlines) without the two forks. Result in _snapshot_normalized.
+function bashunit::snapshot::normalize_actual() {
+  local normalized="${1//$'\r'/}"
+  while [ "${normalized%$'\n'}" != "$normalized" ]; do
+    normalized="${normalized%$'\n'}"
+  done
+  _snapshot_normalized=$normalized
+}
+
 function assert_match_snapshot() {
-  local actual=$(echo -n "$1" | tr -d '\r')
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual "$1"
+  local actual=$_snapshot_normalized
+  bashunit::helper::find_test_function_name_to_slot
+  local test_fn=$_BASHUNIT_HELPER_TESTFN_OUT
+  bashunit::snapshot::resolve_file "${2:-}" "$test_fn"
+  local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
 
   if [ ! -f "$snapshot_file" ]; then
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
@@ -16,10 +30,21 @@ function assert_match_snapshot() {
 }
 
 function assert_match_snapshot_ignore_colors() {
-  local actual=$(echo -n "$1" | sed 's/\x1B\[[0-9;]*[mK]//g' | tr -d '\r')
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local snapshot_file=$(bashunit::snapshot::resolve_file "${2:-}" "$test_fn")
+  # Only fork sed when the input actually carries an escape sequence; plain,
+  # colorless output takes a pure-bash fast path. The sed pattern is kept
+  # identical to the historic one (strip `\x1B[...[mK]` only) so on-disk
+  # snapshots stay byte-compatible.
+  local stripped=$1
+  case "$stripped" in
+  *$'\e'*) stripped=$(printf '%s' "$stripped" | sed 's/\x1B\[[0-9;]*[mK]//g') ;;
+  esac
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual "$stripped"
+  local actual=$_snapshot_normalized
+  bashunit::helper::find_test_function_name_to_slot
+  local test_fn=$_BASHUNIT_HELPER_TESTFN_OUT
+  bashunit::snapshot::resolve_file "${2:-}" "$test_fn"
+  local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
 
   if [ ! -f "$snapshot_file" ]; then
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
@@ -52,18 +77,35 @@ function bashunit::snapshot::match_with_placeholder() {
   fi
 }
 
+# Writes the resolved snapshot path into _BASHUNIT_SNAPSHOT_FILE_OUT (no fork).
+# Derives the path from BASH_SOURCE[2] using parameter expansion instead of
+# dirname/basename, keeping the exact string the previous version produced.
+_BASHUNIT_SNAPSHOT_FILE_OUT=""
 function bashunit::snapshot::resolve_file() {
   local file_hint="$1"
   local func_name="$2"
 
   if [ -n "$file_hint" ]; then
-    echo "$file_hint"
-  else
-    local dir="./$(dirname "${BASH_SOURCE[2]}")/snapshots"
-    local test_file="$(bashunit::helper::normalize_variable_name "$(basename "${BASH_SOURCE[2]}")")"
-    local name="$(bashunit::helper::normalize_variable_name "$func_name").snapshot"
-    echo "${dir}/${test_file}.${name}"
+    _BASHUNIT_SNAPSHOT_FILE_OUT=$file_hint
+    return
   fi
+
+  # dirname via parameter expansion. `dirname "foo.sh"` (no slash) is ".", which
+  # `${src%/*}` cannot yield, so special-case the slashless path.
+  local src="${BASH_SOURCE[2]}"
+  local dir_part
+  case "$src" in
+  */*) dir_part="${src%/*}" ;;
+  *) dir_part="." ;;
+  esac
+  local base_part="${src##*/}"
+
+  bashunit::helper::normalize_variable_name_to_slot "$base_part"
+  local test_file=$_BASHUNIT_HELPER_VARNAME_OUT
+  bashunit::helper::normalize_variable_name_to_slot "$func_name"
+  local name="$_BASHUNIT_HELPER_VARNAME_OUT.snapshot"
+
+  _BASHUNIT_SNAPSHOT_FILE_OUT="./${dir_part}/snapshots/${test_file}.${name}"
 }
 
 function bashunit::snapshot::initialize() {
@@ -79,8 +121,12 @@ function bashunit::snapshot::compare() {
   local snapshot_path="$2"
   local func_name="$3"
 
+  # `$(<file)` reads without forking cat/tr; command substitution drops trailing
+  # newlines exactly like the previous `$(tr -d '\r' <file)`. Strip the carriage
+  # returns in bash afterwards.
   local snapshot
-  snapshot=$(tr -d '\r' <"$snapshot_path")
+  snapshot=$(<"$snapshot_path")
+  snapshot="${snapshot//$'\r'/}"
 
   if ! bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"; then
     local label=$(bashunit::helper::normalize_test_function_name "$func_name")
