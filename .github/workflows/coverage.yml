@@ -1,0 +1,80 @@
+name: Coverage
+
+# Dogfoods bashunit's own --coverage engine. On every push to main it measures
+# how much of src/ the unit suite exercises, uploads the LCOV report as a build
+# artifact, and publishes a shields.io endpoint badge to the orphan `badges`
+# branch (which the README badge reads). It runs only on main / manual dispatch,
+# so a failure here never gates pull-request checks.
+#
+# The coverage engine's own meta-tests (tests/unit/coverage_*_test.sh) are
+# excluded from the measured run: executing them under --coverage double-
+# instruments src/coverage.sh and corrupts their assertions.
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coverage-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: "Measure and publish coverage"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Run coverage on the unit suite
+        run: |
+          files=$(ls tests/unit/*_test.sh | grep -v '/coverage_')
+          # shellcheck disable=SC2086
+          ./bashunit --coverage --coverage-report coverage/lcov.info --coverage-paths src $files
+
+      - name: Upload LCOV report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-lcov
+          path: coverage/lcov.info
+          if-no-files-found: error
+
+      - name: Publish coverage badge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pct=$(bash tools/coverage_percent.sh coverage/lcov.info)
+          color=red
+          if   [ "$pct" -ge 90 ]; then color=brightgreen
+          elif [ "$pct" -ge 75 ]; then color=green
+          elif [ "$pct" -ge 60 ]; then color=yellowgreen
+          elif [ "$pct" -ge 40 ]; then color=yellow
+          elif [ "$pct" -ge 20 ]; then color=orange
+          fi
+          echo "Coverage: ${pct}% (${color})"
+          mkdir -p badge
+          printf '{"schemaVersion":1,"label":"coverage","message":"%s%%","color":"%s"}\n' \
+            "$pct" "$color" > badge/coverage.json
+          cat badge/coverage.json
+          cd badge
+          git init -q
+          git checkout -q -b badges
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add coverage.json
+          git commit -q -m "chore(coverage): update badge to ${pct}%"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" badges

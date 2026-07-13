@@ -487,6 +487,20 @@ coverage:
 
 See `adrs/adr-007-branch-coverage-mvp.md` for the design rationale and the rejected alternatives.
 
+## This repo's own coverage
+
+bashunit dogfoods its own coverage engine. On every push to `main`, the
+[`coverage.yml`](https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/coverage.yml)
+workflow runs `--coverage` over the unit suite, uploads the `coverage/lcov.info`
+report as a build artifact, and publishes the total percentage as a
+[shields.io endpoint](https://shields.io/badges/endpoint-badge) badge (shown in the
+README). It is a real-world example of wiring the coverage engine into CI without a
+third-party coverage service.
+
+Note the workflow excludes the engine's own meta-tests (`tests/unit/coverage_*_test.sh`)
+from the measured run: executing them under `--coverage` double-instruments
+`src/coverage.sh` and corrupts their assertions.
+
 ## Related
 
 - [Command-Line](/command-line) — full reference for CLI flags and options
