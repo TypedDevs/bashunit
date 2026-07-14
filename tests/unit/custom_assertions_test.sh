@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 
-# Custom assertion that uses fail internally
+# Custom assertion that uses fail internally.
+# jq-free on purpose: this scaffolding only needs to route a failure through
+# bashunit::fail deterministically; depending on the external jq binary made the
+# test flaky on the macOS CI runner while the pure-bash sibling tests never were.
 function _assert_valid_json() {
   local json="$1"
 
-  if ! echo "$json" | jq . >/dev/null 2>&1; then
+  case "$json" in
+  '{'*'}' | '['*']') bashunit::state::add_assertions_passed ;;
+  *)
     bashunit::fail "Invalid json: $json"
     return
-  fi
-
-  bashunit::state::add_assertions_passed
+    ;;
+  esac
 }
 
 # Custom assertion that uses bashunit::assertion_failed
