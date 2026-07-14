@@ -352,6 +352,33 @@ Either way you get bashunit updates as routine pull requests — no manual re-pi
 See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
 :::
 
+## Shell completion
+
+bashunit ships tab-completion scripts for bash and zsh under
+[`completions/`](https://github.com/TypedDevs/bashunit/tree/main/completions)
+— subcommands, all `test` flags (with value hints like `--jobs auto` and
+`--output tap`), and the assertion names after `bashunit assert`.
+
+::: code-group
+```bash [bash]
+# With bash-completion installed (path may vary by OS):
+cp completions/bashunit.bash /usr/local/etc/bash_completion.d/bashunit
+
+# Or source it directly from your ~/.bashrc:
+source /path/to/bashunit/completions/bashunit.bash
+```
+```zsh [zsh]
+# Copy into any directory in your $fpath, e.g.:
+cp completions/_bashunit /usr/local/share/zsh/site-functions/_bashunit
+
+# then restart zsh (or reinitialize completions):
+autoload -Uz compinit && compinit
+```
+:::
+
+The scripts are kept honest by an anti-drift test in CI: adding a flag to
+bashunit without updating the completions fails the build.
+
 ## Related
 
 - [Quickstart](/quickstart) - write and run your first test
