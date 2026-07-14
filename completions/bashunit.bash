@@ -45,6 +45,8 @@ assert_string_not_matches_format assert_string_not_starts_with \
 assert_string_starts_with assert_successful_code assert_true \
 assert_unsuccessful_code assert_within_delta"
 
+# compgen output is split into COMPREPLY words on purpose; mapfile/read -a would need bash 4+.
+# shellcheck disable=SC2207
 _bashunit_completions() {
   local cur prev
   COMPREPLY=()

@@ -33,6 +33,8 @@ function completions_bash_flags() {
 # Flags advertised by the zsh completion script: strip [descriptions], then
 # collect every -x/--long token.
 function completions_zsh_flags() {
+  # Each punctuation char maps to a space (char-by-char); the repeated spaces are intentional.
+  # shellcheck disable=SC2020
   sed 's/\[[^]]*\]//g' "$ZSH_COMPLETION_FILE" |
     tr '{}(),"'"'"':' '      ' | tr ' \t' '\n\n' |
     grep -E '^--?[a-zA-Z][a-zA-Z0-9-]*$' |
