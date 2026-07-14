@@ -213,22 +213,29 @@ function bashunit::helper::check_duplicate_functions() {
     script="$BASHUNIT_WORKING_DIR/$script"
   fi
 
-  local filtered_lines
-  filtered_lines=$(grep -E '^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*\s*\(\)\s*\{' "$script")
-
-  local function_names
-  function_names=$(echo "$filtered_lines" | awk '{
-    for (i=1; i<=NF; i++) {
-      if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
-        gsub(/\(\)/, "", $i)
-        print $i
-        break
+  # One awk pass over the file finds each test-function definition and emits only
+  # the names seen more than once, folding the former grep + awk + sort + uniq
+  # chain into a single awk + sort (#761).
+  local duplicates
+  duplicates=$(awk '
+    /^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{/ {
+      for (i = 1; i <= NF; i++) {
+        if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
+          name = $i
+          gsub(/\(\)/, "", name)
+          if (++seen[name] == 2) {
+            dup[name] = 1
+          }
+          break
+        }
       }
     }
-  }')
-
-  local duplicates
-  duplicates=$(echo "$function_names" | sort | uniq -d)
+    END {
+      for (name in dup) {
+        print name
+      }
+    }
+  ' "$script" | sort)
   if [ -n "$duplicates" ]; then
     bashunit::state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
