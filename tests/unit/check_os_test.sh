@@ -78,6 +78,14 @@ function test_not_alpine_is_not_busybox() {
   assert_general_error "$(bashunit::check_os::is_busybox)"
 }
 
+function test_module_load_detects_os_with_a_single_uname_call() {
+  bashunit::spy uname
+
+  source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
+
+  assert_have_been_called_times 1 uname
+}
+
 function test_nproc_uses_nproc_when_available() {
   bashunit::mock nproc echo "8"
 
