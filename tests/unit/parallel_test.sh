@@ -82,6 +82,32 @@ function test_wait_for_job_slot_releases_when_background_job_finishes() {
   assert_successful_code "$?"
 }
 
+function test_count_running_jobs_reflects_started_jobs() {
+  bashunit::runner::_count_running_jobs
+  local before=$_BASHUNIT_RUNNER_RUNNING_JOBS_OUT
+
+  sleep 30 &
+  local p1=$!
+  sleep 30 &
+  local p2=$!
+
+  bashunit::runner::_count_running_jobs
+  local after=$_BASHUNIT_RUNNER_RUNNING_JOBS_OUT
+
+  kill "$p1" "$p2" 2>/dev/null || true
+  wait "$p1" "$p2" 2>/dev/null || true
+
+  assert_same "2" "$((after - before))"
+}
+
+function test_count_running_jobs_is_zero_with_no_background_jobs() {
+  # A fresh subshell has no running jobs, so the count must be exactly 0.
+  local out
+  out=$(bashunit::runner::_count_running_jobs && echo "$_BASHUNIT_RUNNER_RUNNING_JOBS_OUT")
+
+  assert_same "0" "$out"
+}
+
 # === is_enabled tests ===
 
 function test_parallel_enabled_on_windows() {

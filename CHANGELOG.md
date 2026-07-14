@@ -13,6 +13,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Faster test execution: removed the remaining round-2 fork leftovers — `wait_for_job_slot` counts running background jobs without forking `wc` on every poll (145 -> 0 `wc` forks across a small parallel run), and `check_duplicate_functions` folds its per-file grep+awk+sort+uniq scan into a single awk pass. No behaviour change (#761)
 - `assert_equals`/`assert_same` failures with multiline values now render a git word-diff below the header (requires git, opt out with `BASHUNIT_NO_DIFF=true`, respects `--no-color`); machine reports keep the raw values (#777)
 - Faster `assert_match_snapshot`: fork-free success path, byte-compatible snapshots; 500 snapshot assertions ~7.5s -> ~3.0s on bash 3.2 (#775)
 - Faster `--tag`/`--exclude-tag`: per-file `# @tag` annotations scanned once and cached; 100 tagged tests ~2.92s -> ~0.68s on bash 3.2 (#773)

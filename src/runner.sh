@@ -294,6 +294,22 @@ function bashunit::runner::_supports_wait_n() {
   return 1
 }
 
+_BASHUNIT_RUNNER_RUNNING_JOBS_OUT=0
+
+# Counts running background jobs into _BASHUNIT_RUNNER_RUNNING_JOBS_OUT. `jobs -pr`
+# still needs one command substitution, but the line count is pure-bash, so this
+# drops the extra `wc` fork per poll iteration on the parallel hot path (#761).
+function bashunit::runner::_count_running_jobs() {
+  local running
+  running=$(jobs -pr)
+  if [ -z "$running" ]; then
+    _BASHUNIT_RUNNER_RUNNING_JOBS_OUT=0
+    return
+  fi
+  local newlines="${running//[!$'\n']/}"
+  _BASHUNIT_RUNNER_RUNNING_JOBS_OUT=$((${#newlines} + 1))
+}
+
 function bashunit::runner::wait_for_job_slot() {
   local max_jobs="${BASHUNIT_PARALLEL_JOBS:-0}"
   if [ "$max_jobs" -le 0 ]; then
@@ -302,8 +318,10 @@ function bashunit::runner::wait_for_job_slot() {
 
   if bashunit::runner::_supports_wait_n; then
     # Bash 4.3+: block until any child exits. No polling, no sleep latency.
-    while [ "$(jobs -r | wc -l)" -ge "$max_jobs" ]; do
+    bashunit::runner::_count_running_jobs
+    while [ "$_BASHUNIT_RUNNER_RUNNING_JOBS_OUT" -ge "$max_jobs" ]; do
       wait -n 2>/dev/null || break
+      bashunit::runner::_count_running_jobs
     done
     return 0
   fi
@@ -313,9 +331,8 @@ function bashunit::runner::wait_for_job_slot() {
   local delay="0.05"
   local iterations=0
   while true; do
-    local running_jobs
-    running_jobs=$(jobs -r | wc -l)
-    if [ "$running_jobs" -lt "$max_jobs" ]; then
+    bashunit::runner::_count_running_jobs
+    if [ "$_BASHUNIT_RUNNER_RUNNING_JOBS_OUT" -lt "$max_jobs" ]; then
       break
     fi
     sleep "$delay"

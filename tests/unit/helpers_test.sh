@@ -144,6 +144,20 @@ function test_check_duplicate_functions_without_function_keyword() {
   assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
+function test_check_duplicate_functions_reports_each_duplicate_name_sorted() {
+  local file names
+  file="$(bashunit::current_dir)/fixtures/multiple_duplicate_functions.sh"
+
+  # Isolate the state mutation in a subshell; report the stored duplicate names.
+  names=$(
+    bashunit::helper::check_duplicate_functions "$file" >/dev/null 2>&1 || true
+    bashunit::state::get_duplicated_function_names
+  )
+
+  assert_same "test_alpha
+test_beta" "$names"
+}
+
 function test_generate_id_uses_pid_suffix_when_not_parallel() {
   local _orig="${BASHUNIT_PARALLEL_RUN-}"
   export BASHUNIT_PARALLEL_RUN=false
