@@ -1,0 +1,115 @@
+#compdef bashunit
+# zsh completion for bashunit
+#
+# Install: copy this file as _bashunit into a directory in your $fpath, e.g.
+#   cp completions/_bashunit /usr/local/share/zsh/site-functions/_bashunit
+# then restart zsh (or reinitialize completions with compinit).
+#
+# Kept in sync with src/main.sh by tests/unit/completions_test.sh (anti-drift).
+
+_bashunit() {
+  local curcontext="$curcontext" ret=1
+
+  # `bashunit assert <fn>` completes the public assertion names.
+  if (( CURRENT == 3 )) && [ "${words[2]}" = "assert" ]; then
+    local -a assert_fns
+    assert_fns=(
+      assert_array_contains assert_array_length assert_array_not_contains
+      assert_arrays_equal assert_command_not_found assert_contains
+      assert_contains_ignore_case assert_date_after assert_date_before
+      assert_date_equals assert_date_within_delta assert_date_within_range
+      assert_directory_exists assert_directory_not_exists assert_duration
+      assert_duration_greater_than assert_duration_less_than assert_empty
+      assert_equals assert_exec assert_exit_code assert_false
+      assert_file_contains assert_file_exists assert_file_not_contains
+      assert_file_not_exists assert_file_permissions assert_files_equals
+      assert_files_not_equals assert_general_error assert_greater_or_equal_than
+      assert_greater_than assert_is_directory assert_is_directory_empty
+      assert_is_directory_not_empty assert_is_directory_not_readable
+      assert_is_directory_not_writable assert_is_directory_readable
+      assert_is_directory_writable assert_is_file assert_is_file_empty
+      assert_json_contains assert_json_equals assert_json_key_exists
+      assert_less_or_equal_than assert_less_than assert_line_count
+      assert_match_snapshot assert_match_snapshot_ignore_colors assert_matches
+      assert_not_contains assert_not_empty assert_not_equals assert_not_matches
+      assert_not_same assert_same assert_string_ends_with
+      assert_string_matches_format assert_string_not_ends_with
+      assert_string_not_matches_format assert_string_not_starts_with
+      assert_string_starts_with assert_successful_code assert_true
+      assert_unsuccessful_code assert_within_delta
+    )
+    compadd -a assert_fns
+    return 0
+  fi
+
+  if (( CURRENT == 2 )); then
+    local -a subcommands
+    subcommands=(
+      'test:Run tests (default command)'
+      'bench:Run benchmarks'
+      'doc:Display assertion documentation'
+      'init:Initialize a new test directory'
+      'learn:Start interactive tutorial'
+      'upgrade:Upgrade bashunit to latest version'
+      'assert:Run standalone assertion'
+      'watch:Watch files and rerun tests on change'
+    )
+    _describe 'bashunit command' subcommands && ret=0
+  fi
+
+  _arguments \
+    '(-a --assert)'{-a,--assert}'[Run a standalone assert function]:function:' \
+    '(-e --env --boot)'{-e,--env,--boot}'[Load a custom env/bootstrap file]:file:_files' \
+    '(-f --filter)'{-f,--filter}'[Only run tests matching the name]:name:' \
+    '--tag[Only run tests with matching @tag]:tag:' \
+    '--exclude-tag[Skip tests with matching @tag]:tag:' \
+    '--log-junit[Write JUnit XML report]:file:_files' \
+    '--report-junit[Write JUnit XML report]:file:_files' \
+    '--log-gha[Write GitHub Actions workflow-commands log]:file:_files' \
+    '(-j --jobs)'{-j,--jobs}'[Max N parallel jobs, or auto]:jobs:(auto)' \
+    '(-p --parallel)'{-p,--parallel}'[Run tests in parallel]' \
+    '--no-parallel[Run tests sequentially]' \
+    '(-r --report-html)'{-r,--report-html}'[Write HTML report]:file:_files' \
+    '--report-tap[Write TAP version 13 report]:file:_files' \
+    '--report-json[Write machine-readable JSON report]:file:_files' \
+    '(-s --simple)'{-s,--simple}'[Simple output with dots]' \
+    '--detailed[Detailed output, the default]' \
+    '--output[Output format]:format:(tap)' \
+    '(-R --run-all)'{-R,--run-all}'[Run all assertions without stopping on first failure]' \
+    '(-S --stop-on-failure)'{-S,--stop-on-failure}'[Stop on first failure]' \
+    '--test-timeout[Fail a test running longer than N seconds]:seconds:' \
+    '--retry[Rerun a failed test up to N extra times]:count:' \
+    '--random-order[Randomize test execution order]' \
+    '--seed[Seed for random order]:seed:' \
+    '--shard[Run shard i of n]:shard:' \
+    '--rerun-failed[Replay only the tests that failed on the last run]' \
+    '(-vvv --verbose)'{-vvv,--verbose}'[Show execution details]' \
+    '--debug[Enable shell debug mode]::file:_files' \
+    '--no-output[Suppress all output]' \
+    '--failures-only[Only show failures]' \
+    '--fail-on-risky[Treat tests without assertions as failures]' \
+    '--profile[Report the slowest tests]' \
+    '--no-progress[Suppress real-time progress]' \
+    '--show-output[Show test output on failure]' \
+    '--no-output-on-failure[Hide test output on failure]' \
+    '--show-skipped[Show skipped tests summary]' \
+    '--show-incomplete[Show incomplete tests summary]' \
+    '--strict[Enable strict shell mode]' \
+    '--skip-env-file[Skip .env loading]' \
+    '(-l --login)'{-l,--login}'[Run tests in login shell context]' \
+    '(-w --watch)'{-w,--watch}'[Watch for changes and rerun tests]' \
+    '--no-color[Disable colored output]' \
+    '--coverage[Enable code coverage tracking]' \
+    '--coverage-paths[Paths to track]:paths:_files' \
+    '--coverage-exclude[Coverage exclusion patterns]:pattern:' \
+    '--coverage-report[LCOV output path]:file:_files' \
+    '--coverage-report-html[Generate HTML coverage report]::dir:_files' \
+    '--coverage-min[Minimum coverage threshold]:percent:' \
+    '--no-coverage-report[Console coverage output only]' \
+    '(-h --help)'{-h,--help}'[Show help message]' \
+    '*:path:_files' && ret=0
+
+  return ret
+}
+
+_bashunit "$@"

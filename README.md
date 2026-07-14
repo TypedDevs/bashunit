@@ -83,6 +83,8 @@ bashunit ships ~60 assertions across many families. One representative example p
 
 Full documentation, covering installation options, every feature and examples, lives at [bashunit.com](https://bashunit.com).
 
+Shell tab-completion for bash and zsh is available under [`completions/`](completions/) — see the [installation docs](https://bashunit.com/installation#shell-completion).
+
 ## Contribute
 
 Issues, ideas and pull requests are welcome.
