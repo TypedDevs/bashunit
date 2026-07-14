@@ -90,9 +90,25 @@ jobs:
         run: make test
 
   macos:
-    name: "macOS - latest"
+    name: "macOS - ${{ matrix.name }}"
     runs-on: macos-latest
     timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "functional"
+            test_path: "tests/functional/*_test.sh"
+          - name: "unit a-b"
+            test_path: "tests/unit/[a-b]*_test.sh"
+          - name: "unit c + coverage"
+            test_path: "tests/unit/c*_test.sh"
+          - name: "unit d-g"
+            test_path: "tests/unit/[d-g]*_test.sh"
+          - name: "unit h-p"
+            test_path: "tests/unit/[h-p]*_test.sh"
+          - name: "unit q-z"
+            test_path: "tests/unit/[q-z]*_test.sh"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -103,7 +119,34 @@ jobs:
         run: cp .env.example .env
 
       - name: Run Tests
-        run: make test
+        run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
+
+  macos-acceptance:
+    name: "macOS - acceptance (${{ matrix.name }})"
+    if: github.event_name == 'push'
+    runs-on: macos-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "a-e"
+            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh tests/acceptance/coverage_*_test.sh"
+          - name: "f-l"
+            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh tests/acceptance/install*_test.sh"
+          - name: "m-z"
+            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/bashunit_test.sh tests/acceptance/mock*_test.sh tests/acceptance/parallel*_test.sh"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Config
+        run: cp .env.example .env
+
+      - name: Run Tests
+        run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   windows:
     name: "Windows - ${{ matrix.name }}"
