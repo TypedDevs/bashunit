@@ -40,8 +40,6 @@ function bashunit::check_os::is_nixos() {
   grep -q '^ID=nixos' /etc/os-release 2>/dev/null
 }
 
-_BASHUNIT_UNAME="$(uname)"
-
 function bashunit::check_os::is_linux() {
   [ "$_BASHUNIT_UNAME" = "Linux" ]
 }
