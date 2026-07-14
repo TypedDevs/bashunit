@@ -1,21 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-_ERROR_LOG=temp_error.log
-
-function tear_down() {
-  rm -f "$_ERROR_LOG"
-}
-
 function test_redirect_error_with_log() {
-  exec 2>&3 2>$_ERROR_LOG
+  # A per-test temp file, not a fixed name in CWD: under --parallel a shared
+  # filename races concurrent workers and intermittently reads empty/stale data.
+  local error_log
+  error_log=$(bashunit::temp_file redirect_error)
+  exec 2>&3 2>"$error_log"
 
   local exit_code=0
   _="$(render_into_error_fd_and_exit "arg1" "arg2")" || exit_code=$?
   assert_same 1 "$exit_code"
 
   local error_output
-  error_output=$(<$_ERROR_LOG)
+  error_output=$(<"$error_log")
   assert_same "arg1 arg2" "$error_output"
 }
 
