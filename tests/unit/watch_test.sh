@@ -21,44 +21,38 @@ function test_is_available_returns_fswatch_when_inotifywait_missing() {
   assert_equals "fswatch" "$(bashunit::watch::is_available)"
 }
 
-function test_is_available_returns_empty_when_no_tool_found() {
+function test_is_available_returns_polling_when_no_tool_found() {
   bashunit::mock bashunit::watch::_command_exists mock_false
 
-  assert_empty "$(bashunit::watch::is_available)"
+  assert_equals "polling" "$(bashunit::watch::is_available)"
 }
 
 ############################
-# bashunit::watch::run — error path (no tool)
-# run() calls exit 1, so we must capture it in a subshell
+# bashunit::watch::run — polling fallback (no inotifywait/fswatch)
+# run() loops forever, so mock wait_for_change to exit and break the loop.
 ############################
 
-function test_run_exits_nonzero_when_no_tool_available() {
-  bashunit::mock bashunit::watch::is_available echo ""
-
-  local exit_code=0
-  (bashunit::watch::run "tests/" >/dev/null 2>&1) || exit_code=$?
-
-  assert_greater_than "0" "$exit_code"
-}
-
-function test_run_error_message_mentions_required_tools() {
-  bashunit::mock bashunit::watch::is_available echo ""
+function test_run_falls_back_to_polling_when_no_tool() {
+  bashunit::mock bashunit::watch::is_available echo "polling"
+  bashunit::mock bashunit::watch::run_tests true
+  function bashunit::watch::wait_for_change() { exit 0; }
 
   local output
-  output=$(bashunit::watch::run "tests/" 2>&1) || true
+  output=$( (bashunit::watch::run "tests/") 2>&1)
 
-  assert_contains "inotifywait" "$output"
+  assert_contains "polling" "$output"
+}
+
+function test_run_polling_notice_keeps_install_hints() {
+  bashunit::mock bashunit::watch::is_available echo "polling"
+  bashunit::mock bashunit::watch::run_tests true
+  function bashunit::watch::wait_for_change() { exit 0; }
+
+  local output
+  output=$( (bashunit::watch::run "tests/") 2>&1)
+
+  assert_contains "inotify-tools" "$output"
   assert_contains "fswatch" "$output"
-}
-
-function test_run_error_message_includes_install_hints() {
-  bashunit::mock bashunit::watch::is_available echo ""
-
-  local output
-  output=$(bashunit::watch::run "tests/" 2>&1) || true
-
-  assert_contains "apt install inotify-tools" "$output"
-  assert_contains "brew install fswatch" "$output"
 }
 
 ############################

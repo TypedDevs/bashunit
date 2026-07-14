@@ -14,7 +14,7 @@ function bashunit::watch::is_available() {
   elif bashunit::watch::_command_exists fswatch; then
     echo "fswatch"
   else
-    echo ""
+    echo "polling"
   fi
 }
 
@@ -29,16 +29,12 @@ function bashunit::watch::run() {
   local tool
   tool=$(bashunit::watch::is_available)
 
-  if [ -z "$tool" ]; then
-    printf "%sError: watch mode requires 'inotifywait' (Linux) or 'fswatch' (macOS).%s\n" \
-      "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
-    printf "  Linux:  sudo apt install inotify-tools\n"
-    printf "  macOS:  brew install fswatch\n"
-    exit 1
+  if [ "$tool" = "polling" ]; then
+    bashunit::watch::_print_polling_notice "$path"
+  else
+    printf "%sbashunit --watch%s  watching: %s\n\n" \
+      "${_BASHUNIT_COLOR_PASSED}" "${_BASHUNIT_COLOR_DEFAULT}" "$path"
   fi
-
-  printf "%sbashunit --watch%s  watching: %s\n\n" \
-    "${_BASHUNIT_COLOR_PASSED}" "${_BASHUNIT_COLOR_DEFAULT}" "$path"
 
   # Run once immediately before entering the watch loop
   bashunit::watch::run_tests "$path" "${extra_args[@]+"${extra_args[@]}"}"
@@ -59,11 +55,42 @@ function bashunit::watch::run_tests() {
   return $?
 }
 
+function bashunit::watch::_print_polling_notice() {
+  local path="$1"
+  printf "%sbashunit --watch%s  polling: %s (every %ss)\n\n" \
+    "${_BASHUNIT_COLOR_PASSED}" "${_BASHUNIT_COLOR_DEFAULT}" \
+    "$path" "${BASHUNIT_WATCH_INTERVAL:-2}"
+  printf "  No 'inotifywait' or 'fswatch' found; using pure-shell polling.\n"
+  printf "  Install one for instant triggers:\n"
+  printf "    Linux:  sudo apt install inotify-tools\n"
+  printf "    macOS:  brew install fswatch\n\n"
+}
+
+# Lists watched *.sh files modified since the sentinel file was touched.
+# Non-empty output means a rerun is due. `find -newer` is POSIX and avoids the
+# GNU/BSD `stat` flag divergence.
+function bashunit::watch::_poll_changes() {
+  local sentinel="$1"
+  local path="$2"
+  find "$path" -name '*.sh' -newer "$sentinel" -print 2>/dev/null
+}
+
 function bashunit::watch::wait_for_change() {
   local tool="$1"
   local path="$2"
 
   case "$tool" in
+  polling)
+    local sentinel
+    sentinel="$(bashunit::temp_dir watch)/sentinel"
+    while true; do
+      : >"$sentinel"
+      sleep "${BASHUNIT_WATCH_INTERVAL:-2}"
+      if [ -n "$(bashunit::watch::_poll_changes "$sentinel" "$path")" ]; then
+        return 0
+      fi
+    done
+    ;;
   inotifywait)
     inotifywait \
       --quiet \
