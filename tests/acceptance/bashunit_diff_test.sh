@@ -19,7 +19,8 @@ function test_multiline_failure_renders_a_word_diff() {
 
 function test_no_diff_env_keeps_full_multiline_values() {
   local output
-  output=$(BASHUNIT_NO_DIFF=true ./bashunit --no-parallel --no-color --skip-env-file --filter multiline "$FIXTURE" 2>&1) || true
+  output=$(BASHUNIT_NO_DIFF=true ./bashunit --no-parallel --no-color --skip-env-file \
+    --filter multiline "$FIXTURE" 2>&1) || true
 
   assert_not_contains "[-beta-]" "$output"
   assert_not_contains "alpha…" "$output"
