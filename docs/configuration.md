@@ -215,6 +215,20 @@ BASHUNIT_STOP_ON_ASSERTION_FAILURE=true
 ```
 :::
 
+## Watch polling interval
+
+> `BASHUNIT_WATCH_INTERVAL=<seconds>`
+
+Seconds between checks for the pure-shell polling loop used by watch mode when
+neither `inotifywait` nor `fswatch` is installed. `2` by default. Must be a
+positive integer; any other value falls back to the default.
+
+::: code-group
+```bash [Poll every 5 seconds]
+BASHUNIT_WATCH_INTERVAL=5
+```
+:::
+
 ## Show header
 
 > `BASHUNIT_SHOW_HEADER=true|false`

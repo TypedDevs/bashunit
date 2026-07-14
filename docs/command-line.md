@@ -777,6 +777,13 @@ Dedicated watch subcommand that uses **OS file-event notifications** (no
 polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
 by `bashunit test` is also accepted here.
 
+When neither `inotifywait` nor `fswatch` is installed, it no longer fails:
+it falls back to a **pure-shell polling loop** and prints a one-line notice.
+Polling checks every `BASHUNIT_WATCH_INTERVAL` seconds (default `2`) using
+`find -newer`, so it detects created and modified `.sh` files; deleted files
+are not detected on the fallback path. Install one of the tools above for
+instant, event-driven triggers.
+
 ::: code-group
 ```bash [Examples]
 # Watch current directory
@@ -793,17 +800,13 @@ bashunit watch tests/ --simple
 ```
 :::
 
-::: warning Requirements
+::: tip Recommended for instant triggers
 - **Linux:** `inotifywait` (`sudo apt install inotify-tools`)
 - **macOS:** `fswatch` (`brew install fswatch`)
 
-If the required tool is not installed, bashunit prints a clear installation hint
-and exits with a non-zero code.
-:::
-
-::: tip
-If you cannot install `inotifywait` or `fswatch`, use the portable
-[`-w/--watch`](#watch-mode) flag on `bashunit test` instead (uses polling).
+Without either tool, bashunit degrades to polling (see above) instead of
+failing. The portable [`-w/--watch`](#watch-mode) flag on `bashunit test`
+also uses polling.
 :::
 
 ## doc

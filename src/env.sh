@@ -45,6 +45,19 @@ function bashunit::env::load_config_file() {
   done <"$file"
 }
 
+##
+# Echoes $1 when it is a positive integer, otherwise echoes the default $2.
+# Arguments: $1 candidate value, $2 fallback default
+##
+function bashunit::env::positive_int_or_default() {
+  local value="$1"
+  local default="$2"
+  case "$value" in
+  '' | *[!0-9]* | 0) echo "$default" ;;
+  *) echo "$value" ;;
+  esac
+}
+
 # Load project config (lower precedence than env vars, .env and CLI flags).
 # Load .env file (skip if --skip-env-file is used to keep shell environment intact)
 if [ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]; then
@@ -83,6 +96,12 @@ _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH="80"
 : "${BASHUNIT_REPORT_HTML:=${REPORT_HTML:=$_BASHUNIT_DEFAULT_REPORT_HTML}}"
 : "${BASHUNIT_REPORT_TAP:=${REPORT_TAP:=$_BASHUNIT_DEFAULT_REPORT_TAP}}"
 : "${BASHUNIT_REPORT_JSON:=${REPORT_JSON:=$_BASHUNIT_DEFAULT_REPORT_JSON}}"
+
+# Watch mode polling interval (seconds) used by the pure-shell fallback
+_BASHUNIT_DEFAULT_WATCH_INTERVAL="2"
+: "${BASHUNIT_WATCH_INTERVAL:=${WATCH_INTERVAL:=$_BASHUNIT_DEFAULT_WATCH_INTERVAL}}"
+BASHUNIT_WATCH_INTERVAL=$(bashunit::env::positive_int_or_default \
+  "$BASHUNIT_WATCH_INTERVAL" "$_BASHUNIT_DEFAULT_WATCH_INTERVAL")
 
 # Coverage
 : "${BASHUNIT_COVERAGE:=${COVERAGE:=$_BASHUNIT_DEFAULT_COVERAGE}}"
