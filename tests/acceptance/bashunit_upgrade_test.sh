@@ -69,11 +69,19 @@ function test_upgrade_when_a_new_version_found() {
   fi
 
   local output
-  output="$($TMP_BIN upgrade 2>/dev/null)"
+  output="$($TMP_BIN upgrade 2>&1)"
 
-  if [[ -z "$output" ]]; then
-    bashunit::skip "upgrade produced no output (transient network failure)" && return
-  fi
+  # Real-network test: skip on the non-regression outcomes (no output, tag/download
+  # failure, or a no-op when latest already equals the built version) so a flaky
+  # network doesn't fail CI; a genuine upgrade regression still hits the asserts.
+  case "$output" in
+  '' | \
+    *"Failed to resolve latest"* | \
+    *"Failed to download"* | \
+    *"You are already on latest version"*)
+    bashunit::skip "upgrade could not run (transient network/env)" && return
+    ;;
+  esac
 
   assert_contains "> Upgrading bashunit to latest version" "$output"
   assert_contains "> bashunit upgraded successfully to latest version $LATEST_VERSION" "$output"
