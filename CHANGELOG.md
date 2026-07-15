@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- `bashunit::helper::get_function_line_number` no longer disables `extdebug` for its caller: it enables the option only inside a subshell (also dropping an `awk` fork)
 - `--test-timeout` no longer intermittently reports a fast test as timed out; the watchdog now signals by pid and skips a test that already completed
 
 ### Added

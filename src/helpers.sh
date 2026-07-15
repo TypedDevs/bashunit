@@ -615,12 +615,16 @@ function bashunit::helper::load_bench_files() {
 function bashunit::helper::get_function_line_number() {
   local fn_name=$1
 
-  shopt -s extdebug
-  local line_number
-  line_number=$(declare -F "$fn_name" | awk '{print $2}')
-  shopt -u extdebug
-
-  echo "$line_number"
+  # Enable extdebug only inside the subshell so the caller's setting is not
+  # clobbered. With extdebug, `declare -F` prints "<name> <line> <file>"; parse
+  # the line number with shell word-splitting instead of forking awk.
+  local declaration
+  declaration=$(
+    shopt -s extdebug
+    declare -F "$fn_name"
+  )
+  declaration="${declaration#* }"
+  echo "${declaration%% *}"
 }
 
 # Writes a sanitized, process-unique id into _BASHUNIT_HELPER_ID_OUT.
