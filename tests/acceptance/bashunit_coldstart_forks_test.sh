@@ -45,3 +45,23 @@ function test_coldstart_selects_clock_impl_without_a_probe_fork() {
 
   assert_less_or_equal_than 1 "$interp_forks"
 }
+
+# Regression guard for the base64 `-w` capability probe. It used to pipe
+# `base64 --help` into a `grep -c -- -w` fork at load; a shell `case` match on
+# the captured help text needs no fork. A cold start must not fork `grep` to
+# detect base64 wrapping (nothing else forks grep at cold start).
+function test_coldstart_does_not_fork_grep_to_detect_base64_wrap() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --version 2>&1 >/dev/null)"
+
+  # Count real `grep` process executions (resolved absolute path with args).
+  # `command -v grep` is a builtin and never shows as an executed command line.
+  local grep_forks
+  grep_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +/[^ ]*grep ' || true)"
+
+  assert_equals 0 "$grep_forks"
+}
