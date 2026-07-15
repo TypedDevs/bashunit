@@ -54,3 +54,34 @@ function test_running_tests_does_not_fork_cat_per_test() {
 
   assert_less_or_equal_than 1 "$cat_forks"
 }
+
+# Regression guard: rendering the "Source:" assert-line context of a failing
+# test must not fork `sed` once per line of the test function's body. The body
+# is read in a single pass now, so the `sed` fork count does not grow with the
+# function length (a 20-line body used to cost ~20 `sed` forks here).
+function test_failure_source_context_does_not_fork_sed_per_line() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local fixture="$dir/long_fail_test.sh"
+  {
+    echo 'function test_long_fail() {'
+    local i
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
+      echo "  assert_same \"$i\" \"$i\""
+    done
+    echo '  assert_same "expected" "actual"'
+    echo '}'
+  } >"$fixture"
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --no-parallel "$fixture" 2>&1 >/dev/null)"
+
+  local sed_forks
+  sed_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +/?[a-z/]*sed ' || true)"
+
+  assert_less_than 10 "$sed_forks"
+}

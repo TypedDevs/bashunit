@@ -1670,27 +1670,30 @@ function bashunit::runner::get_failure_source_context() {
   local file=$1
   local fn_line=$2
 
-  local end_line start_line
-  end_line=$(wc -l <"$file")
-  start_line=$((fn_line + 1))
-
-  local line_text line_num assert_lines=""
-  line_num=$start_line
-  while [ "$line_num" -le "$end_line" ]; do
-    line_text=$(sed -n "${line_num}p" "$file")
-    # Stop at the closing brace of the function
-    if [ "$(echo "$line_text" | "$GREP" -cE '^[[:space:]]*\}[[:space:]]*$' || true)" -gt 0 ]; then
+  # Read the file once (a bash builtin loop) instead of forking `sed` to fetch
+  # each line and `grep` to test each line for the closing brace. The fork count
+  # no longer grows with the function length.
+  local line_text line_num=0 assert_lines="" stripped trimmed
+  while IFS= read -r line_text || [ -n "$line_text" ]; do
+    line_num=$((line_num + 1))
+    # Skip everything up to and including the function definition line.
+    if [ "$line_num" -le "$fn_line" ]; then
+      continue
+    fi
+    # Stop at the closing brace of the function (a line that is only `}`).
+    stripped="${line_text#"${line_text%%[![:space:]]*}"}"
+    stripped="${stripped%"${stripped##*[![:space:]]}"}"
+    if [ "$stripped" = "}" ]; then
       break
     fi
     # Collect lines containing assert calls
     case "$line_text" in
     *assert_* | *assert\ *)
-      local trimmed="${line_text#"${line_text%%[![:space:]]*}"}"
+      trimmed="${line_text#"${line_text%%[![:space:]]*}"}"
       assert_lines="${assert_lines}\n    ${_BASHUNIT_COLOR_FAINT}${line_num}:${_BASHUNIT_COLOR_DEFAULT} ${trimmed}"
       ;;
     esac
-    line_num=$((line_num + 1))
-  done
+  done <"$file"
 
   if [ -n "$assert_lines" ]; then
     echo -e "\n    ${_BASHUNIT_COLOR_FAINT}Source:${_BASHUNIT_COLOR_DEFAULT}${assert_lines}"

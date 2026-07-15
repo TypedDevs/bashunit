@@ -13,6 +13,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Faster failure rendering: the "Source:" assert-line context of a failing test reads the test-function body in a single pass instead of forking `sed` per line and `grep` per line to find the closing brace (a 20-line body dropped from ~46 to ~2 forks here). No behaviour change
 - Faster test runs: each test's subshell result payload is emitted with `printf` (a builtin) instead of a `cat <<EOF` heredoc, removing one `cat` fork per test. No behaviour change
 - Faster cold start: the run-output scratch directory and the shared temp directory are created with a single `mkdir -p` call instead of one fork each (2 -> 1 `mkdir` forks per cold start). No behaviour change
 - Faster test runs: the runner detects a failed source (syntax error / unexpected EOF) and discovery detects the `.bash` pattern variant with shell `case` matches instead of `grep` forks (2 -> 0 `grep` forks per sourced test file). No behaviour change
