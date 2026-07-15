@@ -494,7 +494,6 @@ MKTEMP="$(command -v mktemp)"
 # not be pre-created. The random suffix keeps the directory unique across
 # recursive and parallel invocations, matching TEMP_DIR_PARALLEL_TEST_SUITE.
 _BASHUNIT_RUN_OUTPUT_DIR="${TMPDIR:-/tmp}/bashunit/run/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
-mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null || true
 FAILURES_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/failures"
 SKIPPED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/skipped"
 INCOMPLETE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/incomplete"
@@ -504,9 +503,11 @@ PROFILE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/profile"
 # next --rerun-failed can replay just those. Shared across parallel subshells.
 RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
 
-# Initialize temp directory once at startup for performance
+# Shared temp directory, initialized once at startup for performance.
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
-mkdir -p "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
+
+# Create both scratch directories in a single `mkdir -p` fork.
+mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
 
 if bashunit::env::is_dev_mode_enabled; then
   bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
