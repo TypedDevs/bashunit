@@ -65,3 +65,20 @@ function test_coldstart_does_not_fork_grep_to_detect_base64_wrap() {
 
   assert_equals 0 "$grep_forks"
 }
+
+# Regression guard: cold start creates its two scratch directories (the run
+# output dir and the shared temp dir) with a single `mkdir -p` call instead of
+# one fork each.
+function test_coldstart_creates_scratch_dirs_with_one_mkdir() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --version 2>&1 >/dev/null)"
+
+  local mkdir_forks
+  mkdir_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +/?[a-z/]*mkdir ' || true)"
+
+  assert_less_or_equal_than 1 "$mkdir_forks"
+}
