@@ -262,7 +262,11 @@ function bashunit::state::export_subshell_context() {
   bashunit::state::encode_field "$_BASHUNIT_TEST_HOOK_MESSAGE"
   encoded_test_hook_message=$_BASHUNIT_STATE_ENCODED_OUT
 
-  cat <<EOF
+  # Emit the encoded result payload with `printf` (a builtin) instead of a
+  # `cat <<EOF` heredoc: this runs once per test, so avoiding the fork removes
+  # one process per test. The `\`-continued string keeps the per-field layout
+  # and produces the exact same single line the heredoc did.
+  local payload="\
 ##ASSERTIONS_FAILED=$_BASHUNIT_ASSERTIONS_FAILED\
 ##ASSERTIONS_PASSED=$_BASHUNIT_ASSERTIONS_PASSED\
 ##ASSERTIONS_SKIPPED=$_BASHUNIT_ASSERTIONS_SKIPPED\
@@ -272,8 +276,8 @@ function bashunit::state::export_subshell_context() {
 ##TEST_HOOK_FAILURE=$_BASHUNIT_TEST_HOOK_FAILURE\
 ##TEST_HOOK_MESSAGE=$encoded_test_hook_message\
 ##TEST_TITLE=$encoded_test_title\
-##TEST_OUTPUT=$encoded_test_output##
-EOF
+##TEST_OUTPUT=$encoded_test_output##"
+  printf '%s\n' "$payload"
 }
 
 function bashunit::state::calculate_total_assertions() {

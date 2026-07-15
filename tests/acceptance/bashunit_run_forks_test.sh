@@ -26,3 +26,31 @@ function test_running_a_test_file_does_not_fork_grep() {
 
   assert_equals 0 "$grep_forks"
 }
+
+# Regression guard: exporting a test's subshell result must not fork `cat`. It
+# used to emit the encoded result payload with a `cat <<EOF` heredoc — one fork
+# per test — which `printf` (a builtin) does without forking. Four independent
+# tests must therefore fork `cat` far fewer than four times.
+function test_running_tests_does_not_fork_cat_per_test() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local fixture="$dir/cat_forks_test.sh"
+  {
+    echo 'function test_a() { assert_true true; }'
+    echo 'function test_b() { assert_true true; }'
+    echo 'function test_c() { assert_true true; }'
+    echo 'function test_d() { assert_true true; }'
+  } >"$fixture"
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --no-parallel "$fixture" 2>&1 >/dev/null)"
+
+  local cat_forks
+  cat_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +/?[a-z/]*cat( |$)' || true)"
+
+  assert_less_or_equal_than 1 "$cat_forks"
+}
