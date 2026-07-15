@@ -300,13 +300,13 @@ function bashunit::helper::find_files_recursive() {
   local path="${1%%/}"
   local pattern="${2:-*[tT]est.sh}"
 
+  # When the pattern targets *.sh test files, also match the .bash variant. Both
+  # the plain `*test.sh` and the default glob `*[tT]est.sh` end in `.sh`; a case
+  # match on either (no grep fork) is enough to decide.
   local alt_pattern=""
-  local _re='\[tT\]est\.sh$'
-  local _pattern_match=false
-  case "$pattern" in *test.sh) _pattern_match=true ;; esac
-  if [ "$_pattern_match" = true ] || [ "$(echo "$pattern" | "$GREP" -cE "$_re" || true)" -gt 0 ]; then
-    alt_pattern="${pattern%.sh}.bash"
-  fi
+  case "$pattern" in
+  *test.sh | *'[tT]est.sh') alt_pattern="${pattern%.sh}.bash" ;;
+  esac
 
   local _has_glob=false
   case "$path" in *"*"*) _has_glob=true ;; esac

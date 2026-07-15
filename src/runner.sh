@@ -402,8 +402,17 @@ function bashunit::runner::load_test_files() {
       source_err="$(cat "$source_err_file")"
     fi
     rm -f "$source_err_file"
-    if [ "$source_status" -ne 0 ] || [ "$(printf '%s' "$source_err" |
-      "$GREP" -cE 'syntax error|unexpected EOF' || true)" -gt 0 ]; then
+    # A non-zero source status, or a syntax-error line on stderr, means the file
+    # failed to load. Match the captured stderr with `case` (no grep fork).
+    local source_failed=false
+    if [ "$source_status" -ne 0 ]; then
+      source_failed=true
+    else
+      case "$source_err" in
+      *"syntax error"* | *"unexpected EOF"*) source_failed=true ;;
+      esac
+    fi
+    if [ "$source_failed" = true ]; then
       local message="$source_err"
       [ -z "$message" ] && message="Failed to source '$test_file' (exit $source_status)"
       bashunit::runner::record_file_hook_failure \
