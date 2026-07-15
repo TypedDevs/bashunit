@@ -23,3 +23,25 @@ function test_coldstart_does_not_fork_mktemp_per_scratch_file() {
 
   assert_less_than 1 "$mktemp_forks"
 }
+
+# Regression guard for the clock cold start. Selecting the `perl` clock impl used
+# to fork perl twice: once for an empty `Time::HiRes` probe and once for the
+# first real time read. Choosing an interpreter impl must cost at most one fork
+# now (the probe reads the actual time and seeds it for the first read). On
+# platforms that pick a fork-free/`date` clock (e.g. Linux) this is zero.
+function test_coldstart_selects_clock_impl_without_a_probe_fork() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --version 2>&1 >/dev/null)"
+
+  # Count real interpreter executions used by the clock (perl/python/node) at
+  # cold start. `command -v <interp>` is a shell builtin and never appears as an
+  # executed command line, so it is not counted.
+  local interp_forks
+  interp_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +(perl|python|node) ' || true)"
+
+  assert_less_or_equal_than 1 "$interp_forks"
+}
