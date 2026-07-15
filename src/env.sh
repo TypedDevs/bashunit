@@ -486,14 +486,23 @@ TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
 CAT="$(command -v cat)"
 GREP="$(command -v grep)"
 MKTEMP="$(command -v mktemp)"
-FAILURES_OUTPUT_PATH=$("$MKTEMP")
-SKIPPED_OUTPUT_PATH=$("$MKTEMP")
-INCOMPLETE_OUTPUT_PATH=$("$MKTEMP")
-RISKY_OUTPUT_PATH=$("$MKTEMP")
-PROFILE_OUTPUT_PATH=$("$MKTEMP")
+# Deferred-output scratch files. Each used to be its own `mktemp` fork; at ~258
+# nested cold starts in the acceptance suite that is ~1.5k forks and dominates
+# cold-start cost (#798). Derive them from one run-unique directory instead:
+# `bashunit::random_str` is fork-free and every consumer appends with `>>` (which
+# creates the file lazily) or guards reads with `[ -s ... ]`, so the files need
+# not be pre-created. The random suffix keeps the directory unique across
+# recursive and parallel invocations, matching TEMP_DIR_PARALLEL_TEST_SUITE.
+_BASHUNIT_RUN_OUTPUT_DIR="${TMPDIR:-/tmp}/bashunit/run/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
+mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null || true
+FAILURES_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/failures"
+SKIPPED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/skipped"
+INCOMPLETE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/incomplete"
+RISKY_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/risky"
+PROFILE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/profile"
 # Collects "<test_file>:<function_name>" for every failing test in a run so the
 # next --rerun-failed can replay just those. Shared across parallel subshells.
-RERUN_FAILED_OUTPUT_PATH=$("$MKTEMP")
+RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
 
 # Initialize temp directory once at startup for performance
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
