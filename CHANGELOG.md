@@ -13,6 +13,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Faster test runs: the runner detects a failed source (syntax error / unexpected EOF) and discovery detects the `.bash` pattern variant with shell `case` matches instead of `grep` forks (2 -> 0 `grep` forks per sourced test file). No behaviour change
 - Faster cold start: the base64 `-w` capability is detected with a shell `case` on `base64 --help` instead of piping into a `grep` fork (1 -> 0 `grep` forks per cold start). Same detection, no behaviour change
 - Faster cold start: selecting the `perl` clock reads the time once instead of an empty `Time::HiRes` probe followed by a separate first read (2 -> 1 `perl` fork per cold start on bash 3.2 / macOS). No behaviour change
 - Faster cold start: the deferred-output scratch files (failures/skipped/incomplete/risky/profile/rerun) now share one run-unique directory instead of forking `mktemp` once each (6 -> 0 `mktemp` forks per cold start; ~62ms -> ~50ms per nested run on bash 3.2). No behaviour change (#798)
