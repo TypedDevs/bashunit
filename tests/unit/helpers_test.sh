@@ -586,3 +586,26 @@ function test_find_function_at_line_nonexistent_file() {
   bashunit::helper::find_function_at_line "/nonexistent/file.sh" 10 2>/dev/null || exit_code=$?
   assert_same 1 "$exit_code"
 }
+
+function test_get_function_line_number_returns_the_definition_line() {
+  # shellcheck disable=SC2317  # invoked indirectly via declare -F
+  function _bashunit_line_fixture() { :; }
+
+  local line
+  line="$(bashunit::helper::get_function_line_number _bashunit_line_fixture)"
+
+  assert_matches '^[0-9]+$' "$line"
+}
+
+function test_get_function_line_number_preserves_caller_extdebug() {
+  # extdebug is toggled inside a subshell so the assertion never enables it in
+  # the test runner's shell. The helper must not turn it off for its caller.
+  local state
+  state=$(
+    shopt -s extdebug
+    bashunit::helper::get_function_line_number test_get_function_line_number_preserves_caller_extdebug >/dev/null
+    if shopt -q extdebug; then echo "on"; else echo "off"; fi
+  )
+
+  assert_same "on" "$state"
+}
