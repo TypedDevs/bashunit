@@ -13,6 +13,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Faster cold start: selecting the `perl` clock reads the time once instead of an empty `Time::HiRes` probe followed by a separate first read (2 -> 1 `perl` fork per cold start on bash 3.2 / macOS). No behaviour change
 - Faster cold start: the deferred-output scratch files (failures/skipped/incomplete/risky/profile/rerun) now share one run-unique directory instead of forking `mktemp` once each (6 -> 0 `mktemp` forks per cold start; ~62ms -> ~50ms per nested run on bash 3.2). No behaviour change (#798)
 - Faster cold start: `check_os` detects the OS with a single `uname` fork at load instead of two (matters across the acceptance suite's nested `bashunit` runs). No behaviour change (#798)
 - Faster test execution: removed the remaining round-2 fork leftovers — `wait_for_job_slot` counts running background jobs without forking `wc` on every poll (145 -> 0 `wc` forks across a small parallel run), and `check_duplicate_functions` folds its per-file grep+awk+sort+uniq scan into a single awk pass. No behaviour change (#761)

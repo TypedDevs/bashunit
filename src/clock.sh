@@ -33,12 +33,23 @@ function bashunit::clock::_choose_impl() {
     esac
   fi
 
-  # 3. Try Perl with Time::HiRes
+  # 3. Try Perl with Time::HiRes. Probe by reading the actual time (not an empty
+  # `-e ""`) so the pending first read reuses this fork instead of paying a
+  # second one; a non-digit/empty result means perl or Time::HiRes is missing, so
+  # fall through. The value is seeded into the return slot for now_to_slot.
   attempts[attempts_count]="Perl"
   attempts_count=$((attempts_count + 1))
-  if bashunit::dependencies::has_perl && perl -MTime::HiRes -e "" &>/dev/null; then
-    _BASHUNIT_CLOCK_NOW_IMPL="perl"
-    return 0
+  if bashunit::dependencies::has_perl; then
+    local perl_now
+    perl_now="$(perl -MTime::HiRes -e 'printf("%.0f\n", Time::HiRes::time() * 1000000000)' 2>/dev/null)"
+    case "$perl_now" in
+    '' | *[!0-9]*) ;;
+    *)
+      _BASHUNIT_CLOCK_NOW_IMPL="perl"
+      _BASHUNIT_CLOCK_NOW_OUT="$perl_now"
+      return 0
+      ;;
+    esac
   fi
 
   # 4. Try Python 3 with time module
@@ -99,7 +110,14 @@ _BASHUNIT_CLOCK_NOW_OUT=""
 # Returns: 0 on success, 1 when no clock implementation is available.
 function bashunit::clock::now_to_slot() {
   if [ -z "$_BASHUNIT_CLOCK_NOW_IMPL" ]; then
+    _BASHUNIT_CLOCK_NOW_OUT=""
     bashunit::clock::_choose_impl || return 1
+    # _choose_impl may have already read the current time while selecting an
+    # interpreter impl (e.g. perl); reuse that value for this first read instead
+    # of forking a second interpreter.
+    if [ -n "$_BASHUNIT_CLOCK_NOW_OUT" ]; then
+      return 0
+    fi
   fi
 
   case "$_BASHUNIT_CLOCK_NOW_IMPL" in
