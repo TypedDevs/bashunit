@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 
-# Cache base64 -w flag support (Alpine needs -w 0, macOS does not support -w)
-if [ "$(base64 --help 2>&1 | "$GREP" -c -- "-w" || true)" -gt 0 ]; then
-  _BASHUNIT_BASE64_WRAP_FLAG=true
-else
-  _BASHUNIT_BASE64_WRAP_FLAG=false
-fi
+# Cache base64 -w flag support (Alpine needs -w 0, macOS does not support -w).
+# Scrape `base64 --help` once and match with a shell `case` instead of piping
+# into a `grep` fork — same detection, one fewer fork per cold start.
+_bashunit_base64_help="$(base64 --help 2>&1 || true)"
+case "$_bashunit_base64_help" in
+*-w*) _BASHUNIT_BASE64_WRAP_FLAG=true ;;
+*) _BASHUNIT_BASE64_WRAP_FLAG=false ;;
+esac
+unset _bashunit_base64_help
 
 _BASHUNIT_TESTS_PASSED=0
 _BASHUNIT_TESTS_FAILED=0
