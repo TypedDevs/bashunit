@@ -15,6 +15,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Faster test runs: the data-provider map is built once per file in the main shell (the header's test count reads a return slot instead of a `$(...)` capture, so the cache survives for the runner) — one awk scan per file instead of two
 - Faster test runs: stripping ANSI codes from short colored strings is pure bash now, so aligning the per-test execution time (shown on systems with a fork-free clock, e.g. Linux) no longer forks `sed` once per passing test
 - Faster parallel runs: publishing each test's result file no longer forks `basename`, `mkdir` and an `echo | tr | sed` pipeline per test — the suite dir name is parameter expansion, the dir is pre-created once per file before workers spawn, and arg sanitizing is skipped without provider args (a 10-test parallel run dropped from 61 to 21 forks). No behaviour change
 - Faster test runs: listing all defined functions uses the `compgen -A function` builtin instead of forking `declare -F | awk` (three call sites; 5 -> 3 `awk` forks per test file). No behaviour change

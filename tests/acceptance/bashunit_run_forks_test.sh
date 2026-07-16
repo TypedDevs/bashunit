@@ -126,8 +126,9 @@ function test_running_a_test_file_does_not_fork_sort() {
 
 # Regression guard: listing all defined functions must use the `compgen -A
 # function` builtin, not a `declare -F | awk` fork. The remaining awk budget of
-# a plain run is the per-file file scans (data-provider map, which runs in both
-# the counting subshell and the runner, plus the duplicate-name check).
+# a single-file run is one data-provider scan (built once in the main shell so
+# the header-count subshell and the runner both hit the cache) plus the
+# duplicate-name check.
 function test_running_a_test_file_stays_within_the_awk_fork_budget() {
   if bashunit::check_os::is_windows; then
     bashunit::skip "PATH shims are unreliable under Git Bash" && return
@@ -155,7 +156,7 @@ function test_running_a_test_file_stays_within_the_awk_fork_budget() {
     awk_forks="$(grep -c . "$count_file" || true)"
   fi
 
-  assert_less_or_equal_than 3 "$awk_forks"
+  assert_less_or_equal_than 2 "$awk_forks"
 }
 
 # Regression guard: a run must remove its run-output scratch directory on exit.
