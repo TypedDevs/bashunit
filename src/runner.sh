@@ -597,14 +597,42 @@ function bashunit::runner::functions_for_script() {
   local script="$1"
   local all_fn_names="$2"
 
-  # Filter the names down to the ones defined in the script, sort them by line number
-  shopt -s extdebug
+  # Resolve "<name> <line> <file>" for the given names, enabling extdebug only
+  # inside the capture subshell so the caller's setting is untouched.
+  local declarations
   # shellcheck disable=SC2086
-  declare -F $all_fn_names |
-    awk -v s="$script" '$3 == s {print $1" " $2}' |
-    sort -k2 -n |
-    awk '{print $1}'
-  shopt -u extdebug
+  declarations=$(
+    shopt -s extdebug
+    declare -F $all_fn_names 2>/dev/null
+  )
+
+  # Keep the functions defined in this script, insertion-sorted by definition
+  # line. Pure bash: the old `awk | sort | awk` pipeline cost three forks and
+  # ran twice per file, while a file's function list is small (tens of names).
+  local -a fns=()
+  local -a fn_lines=()
+  local count=0
+  local name line file i
+  while read -r name line file; do
+    [ "$file" = "$script" ] || continue
+    i=$count
+    while [ "$i" -gt 0 ] && [ "${fn_lines[i - 1]}" -gt "$line" ]; do
+      fns[i]=${fns[i - 1]}
+      fn_lines[i]=${fn_lines[i - 1]}
+      i=$((i - 1))
+    done
+    fns[i]=$name
+    fn_lines[i]=$line
+    count=$((count + 1))
+  done <<EOF
+$declarations
+EOF
+
+  i=0
+  while [ "$i" -lt "$count" ]; do
+    echo "${fns[i]}"
+    i=$((i + 1))
+  done
 }
 
 function bashunit::runner::parse_data_provider_args() {
