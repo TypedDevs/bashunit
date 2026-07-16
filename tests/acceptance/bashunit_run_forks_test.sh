@@ -123,3 +123,37 @@ function test_running_a_test_file_does_not_fork_sort() {
 
   assert_equals 0 "$sort_forks"
 }
+
+# Regression guard: listing all defined functions must use the `compgen -A
+# function` builtin, not a `declare -F | awk` fork. The remaining awk budget of
+# a plain run is the per-file file scans (data-provider map, which runs in both
+# the counting subshell and the runner, plus the duplicate-name check).
+function test_running_a_test_file_stays_within_the_awk_fork_budget() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local real_awk
+  real_awk="$(command -v awk)"
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/count"
+  {
+    echo '#!/usr/bin/env bash'
+    echo "echo x >> \"$count_file\""
+    echo "exec \"$real_awk\" \"\$@\""
+  } >"$dir/awk"
+  chmod +x "$dir/awk"
+
+  local fixture="$dir/awk_budget_test.sh"
+  printf 'function test_ok() { assert_true true; }\n' >"$fixture"
+
+  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1
+
+  local awk_forks=0
+  if [ -f "$count_file" ]; then
+    awk_forks="$(grep -c . "$count_file" || true)"
+  fi
+
+  assert_less_or_equal_than 3 "$awk_forks"
+}
