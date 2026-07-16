@@ -71,8 +71,15 @@ function bashunit::snapshot::match_with_placeholder() {
       exit($input =~ /$r/s ? 0 : 1);
     ' && return 0 || return 1
   else
-    local fallback=$(printf '%s' "$snapshot" | sed -e "s|$placeholder|.*|g" -e 's/[][\.^$*+?{}|()]/\\&/g')
-    fallback="^${fallback}$"
+    # No perl: build the pattern exactly like the perl branch — swap the
+    # placeholder for a token that survives escaping, escape the regex
+    # metacharacters, then turn the token into `.*`. (The previous order,
+    # escaping after inserting `.*`, escaped the `.*` itself and broke every
+    # fallback match.) grep matches line-by-line, so unlike the perl branch a
+    # placeholder cannot span multiple lines here.
+    local fallback="${snapshot//$placeholder/$token}"
+    fallback=$(printf '%s' "$fallback" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
+    fallback="^${fallback//$token/.*}$"
     echo "$actual" | grep -Eq "$fallback" && return 0 || return 1
   fi
 }

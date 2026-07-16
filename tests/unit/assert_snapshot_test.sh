@@ -157,6 +157,12 @@ function test_snapshot_placeholder_matches_variable_middle() {
 }
 
 function test_snapshot_placeholder_spans_multiple_lines() {
+  # Only the perl matcher can span lines; the grep fallback (e.g. Alpine
+  # without perl) matches line-by-line and documents that limitation.
+  if ! command -v perl >/dev/null 2>&1; then
+    bashunit::skip "multi-line placeholders need perl" && return
+  fi
+
   local snapshot=$'start\n::ignore::\nend'
   local actual=$'start\nanything\nat all\nend'
 
