@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Every run cleans up its run-output scratch directory on exit (test runs, `--version`/`--help`/subcommand exits, and Ctrl-C); previously each invocation leaked one directory under `$TMPDIR/bashunit/run/`. Sourcing errors are captured in that directory too, saving a `mktemp` and an `rm` fork per test file
 - `bashunit::helper::get_function_line_number` no longer disables `extdebug` for its caller: it enables the option only inside a subshell (also dropping an `awk` fork)
 - `--test-timeout` no longer intermittently reports a fast test as timed out; the watchdog now signals by pid and skips a test that already completed
 

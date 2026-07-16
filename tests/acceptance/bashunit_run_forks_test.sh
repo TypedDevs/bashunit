@@ -157,3 +157,28 @@ function test_running_a_test_file_stays_within_the_awk_fork_budget() {
 
   assert_less_or_equal_than 3 "$awk_forks"
 }
+
+# Regression guard: a run must remove its run-output scratch directory on exit.
+# The directory (introduced in #801 under $TMPDIR/bashunit/run/) had no cleanup,
+# leaking one empty directory per bashunit invocation. Point the nested run at a
+# private TMPDIR so the check is deterministic and parallel-safe.
+function test_run_removes_its_run_output_dir() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local fixture="$dir/leak_probe_test.sh"
+  printf 'function test_ok() { assert_true true; }\n' >"$fixture"
+
+  TMPDIR="$dir" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1
+  # Early-exit paths (no test run) must clean up via the EXIT trap.
+  TMPDIR="$dir" ./bashunit --version >/dev/null 2>&1
+
+  local leftover=0
+  if [ -d "$dir/bashunit/run" ]; then
+    local entry
+    for entry in "$dir/bashunit/run"/*/*; do
+      [ -e "$entry" ] && leftover=$((leftover + 1))
+    done
+  fi
+
+  assert_equals 0 "$leftover"
+}

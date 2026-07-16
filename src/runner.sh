@@ -392,8 +392,11 @@ function bashunit::runner::load_test_files() {
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
     bashunit::internal_log "Loading file" "$test_file"
+    # Files are sourced sequentially in this loop (parallel workers fork after),
+    # so a fixed path in the run dir is safe: `2>` truncates it per file and the
+    # run-dir cleanup removes it, saving a mktemp and an rm fork per file.
     local source_err_file source_err source_status
-    source_err_file="$(bashunit::temp_file "source_err")"
+    source_err_file="$_BASHUNIT_RUN_OUTPUT_DIR/source_err"
     # shellcheck source=/dev/null
     source "$test_file" 2>"$source_err_file"
     source_status=$?
@@ -401,7 +404,6 @@ function bashunit::runner::load_test_files() {
     if [ -s "$source_err_file" ]; then
       source_err="$(cat "$source_err_file")"
     fi
-    rm -f "$source_err_file"
     # A non-zero source status, or a syntax-error line on stderr, means the file
     # failed to load. Match the captured stderr with `case` (no grep fork).
     local source_failed=false
