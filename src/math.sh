@@ -19,8 +19,14 @@ function bashunit::math::calculate() {
     ;;
   esac
 
-  # Remove leading zeros from integers
-  expr=$(echo "$expr" | sed -E 's/\b0*([1-9][0-9]*)/\1/g')
+  # Remove leading zeros from integers so $((...)) does not read them as octal.
+  # Only fork sed when a leading zero is actually present — the common callers
+  # (clock durations) never produce one, so the no-bc path stays fork-free.
+  case "$expr" in
+  0[0-9]* | *[!0-9.]0[0-9]*)
+    expr=$(echo "$expr" | sed -E 's/\b0*([1-9][0-9]*)/\1/g')
+    ;;
+  esac
 
   local result=$((expr))
   echo "$result"
