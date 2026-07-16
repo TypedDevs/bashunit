@@ -8,9 +8,6 @@
     <a href="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml">
         <img src="https://github.com/TypedDevs/bashunit/actions/workflows/linter.yml/badge.svg" alt="Editorconfig checker">
     </a>
-    <a href="https://github.com/TypedDevs/bashunit/actions/workflows/coverage.yml">
-        <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/TypedDevs/bashunit/badges/coverage.json" alt="Coverage">
-    </a>
     <a href="https://github.com/TypedDevs/bashunit/blob/main/LICENSE">
         <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT Software License">
     </a>

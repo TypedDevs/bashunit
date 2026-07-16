@@ -3,42 +3,22 @@
 ## Unreleased
 
 ### Fixed
-- `assert_match_snapshot` placeholders (`::ignore::`) now work on systems without perl: the grep fallback escaped its own wildcard and never matched. Placeholders spanning multiple lines still need perl (grep matches line-by-line)
-- Every run cleans up its run-output scratch directory on exit (test runs, `--version`/`--help`/subcommand exits, and Ctrl-C); previously each invocation leaked one directory under `$TMPDIR/bashunit/run/`. Sourcing errors are captured in that directory too, saving a `mktemp` and an `rm` fork per test file
-- `bashunit::helper::get_function_line_number` no longer disables `extdebug` for its caller: it enables the option only inside a subshell (also dropping an `awk` fork)
-- `--test-timeout` no longer intermittently reports a fast test as timed out; the watchdog now signals by pid and skips a test that already completed
+- Snapshot placeholders (`::ignore::`) now work on systems without perl; multi-line placeholders still need perl (#823)
+- Runs no longer leak a scratch directory under `$TMPDIR/bashunit/run/` — it is removed on exit, including `--version`/`--help`, subcommands and Ctrl-C (#811)
+- `bashunit::helper::get_function_line_number` no longer disables `extdebug` for its caller (#808)
+- `--test-timeout` no longer intermittently reports a fast test as timed out; the watchdog signals by pid and skips a test that already completed
 
 ### Added
 - `watch` subcommand no longer fails when neither `inotifywait` nor `fswatch` is installed — it falls back to pure-shell polling (interval via `BASHUNIT_WATCH_INTERVAL`, default `2`s) instead of exiting (#779)
 - Shell tab-completion scripts for bash and zsh under `completions/` (subcommands, `test` flags with value hints, assertion names), kept in sync by an anti-drift CI test (#778)
 - `--rerun-failed` (`BASHUNIT_RERUN_FAILED`) replays only the previously failing tests, recorded in `.bashunit/last-failed`; composes with `--filter`/`--tag`/`--parallel` and falls back to the full suite when empty (add `.bashunit/` to `.gitignore`) (#776)
-- Optional nightly `coverage.yml` workflow publishes a shields.io coverage badge (now in the README) from `--coverage` over the unit suite; schedule/manual only, never gates merges (#754)
+- Optional nightly `coverage.yml` workflow publishes a shields.io coverage badge from `--coverage` over the unit suite; schedule/manual only, never gates merges (#754)
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
-- Faster test runs: the data-provider map is built once per file in the main shell (the header's test count reads a return slot instead of a `$(...)` capture, so the cache survives for the runner) — one awk scan per file instead of two
-- Faster test runs: stripping ANSI codes from short colored strings is pure bash now, so aligning the per-test execution time (shown on systems with a fork-free clock, e.g. Linux) no longer forks `sed` once per passing test
-- Faster parallel runs: publishing each test's result file no longer forks `basename`, `mkdir` and an `echo | tr | sed` pipeline per test — the suite dir name is parameter expansion, the dir is pre-created once per file before workers spawn, and arg sanitizing is skipped without provider args (a 10-test parallel run dropped from 61 to 21 forks). No behaviour change
-- Faster test runs: listing all defined functions uses the `compgen -A function` builtin instead of forking `declare -F | awk` (three call sites; 5 -> 3 `awk` forks per test file). No behaviour change
-- Faster test runs: ordering a file's test functions by definition line is pure bash now instead of an `awk | sort | awk` pipeline that ran twice per file, and the duplicate-function check sorts its (usually empty) result inside awk instead of piping through `sort` (9 -> 5 forks per test file). No behaviour change
-- Faster failure rendering: the "Source:" assert-line context of a failing test reads the test-function body in a single pass instead of forking `sed` per line and `grep` per line to find the closing brace (a 20-line body dropped from ~46 to ~2 forks here). No behaviour change
-- Faster test runs: each test's subshell result payload is emitted with `printf` (a builtin) instead of a `cat <<EOF` heredoc, removing one `cat` fork per test. No behaviour change
-- Faster cold start: the run-output scratch directory and the shared temp directory are created with a single `mkdir -p` call instead of one fork each (2 -> 1 `mkdir` forks per cold start). No behaviour change
-- Faster test runs: the runner detects a failed source (syntax error / unexpected EOF) and discovery detects the `.bash` pattern variant with shell `case` matches instead of `grep` forks (2 -> 0 `grep` forks per sourced test file). No behaviour change
-- Faster cold start: the base64 `-w` capability is detected with a shell `case` on `base64 --help` instead of piping into a `grep` fork (1 -> 0 `grep` forks per cold start). Same detection, no behaviour change
-- Faster cold start: selecting the `perl` clock reads the time once instead of an empty `Time::HiRes` probe followed by a separate first read (2 -> 1 `perl` fork per cold start on bash 3.2 / macOS). No behaviour change
-- Faster cold start: the deferred-output scratch files (failures/skipped/incomplete/risky/profile/rerun) now share one run-unique directory instead of forking `mktemp` once each (6 -> 0 `mktemp` forks per cold start; ~62ms -> ~50ms per nested run on bash 3.2). No behaviour change (#798)
-- Faster cold start: `check_os` detects the OS with a single `uname` fork at load instead of two (matters across the acceptance suite's nested `bashunit` runs). No behaviour change (#798)
-- Faster test execution: removed the remaining round-2 fork leftovers — `wait_for_job_slot` counts running background jobs without forking `wc` on every poll (145 -> 0 `wc` forks across a small parallel run), and `check_duplicate_functions` folds its per-file grep+awk+sort+uniq scan into a single awk pass. No behaviour change (#761)
-- `assert_equals`/`assert_same` failures with multiline values now render a git word-diff below the header (requires git, opt out with `BASHUNIT_NO_DIFF=true`, respects `--no-color`); machine reports keep the raw values (#777)
-- Faster `assert_match_snapshot`: fork-free success path, byte-compatible snapshots; 500 snapshot assertions ~7.5s -> ~3.0s on bash 3.2 (#775)
-- Faster `--tag`/`--exclude-tag`: per-file `# @tag` annotations scanned once and cached; 100 tagged tests ~2.92s -> ~0.68s on bash 3.2 (#773)
-- Faster tests: removed the remaining `run_test` hot-path forks (fork-free clock/label, parallel mode resolved once) (#774)
-- Faster tests: removed per-assertion subshell forks; 100x10 `assert_equals` ~1.50s -> ~0.76s on bash 3.2 (#772)
-- Faster tests: removed avoidable per-test forks (error detection, decoding, cleanup); `rm` 102 -> 2 on a 100-test file (#764)
+- Major performance work with no behaviour change: assertions, per-test execution, per-file discovery, cold start and parallel result publishing are now (near) fork-free, snapshots and `--tag` scans are cached, and quadratic failure rendering is single-pass. Benchmarks on bash 3.2: 100x10 `assert_equals` ~1.50s -> ~0.76s, 500 snapshot assertions ~7.5s -> ~3.0s, 100 tagged tests ~2.92s -> ~0.68s, and bashunit's own acceptance suite ~61s -> ~17s (#761-#764, #772-#775, #798, #801-#807, #809, #810, #813, #817)
 - Per-test timing now defaults to `auto` (`BASHUNIT_SHOW_EXECUTION_TIME=true|false|auto`): shown only when the clock is fork-free, avoiding `perl` forks on bash 3.2; `--profile`/`--verbose`/reports still measure (see `adrs/adr-008-auto-skip-per-test-timing.md`) (#765)
-- Faster tests: per-file data-provider annotations scanned once and cached (#763)
-- Faster tests: skip the base64 encode fork for a test's empty title, hook message, and output (#762)
+- `assert_equals`/`assert_same` failures with multiline values now render a git word-diff below the header (requires git, opt out with `BASHUNIT_NO_DIFF=true`, respects `--no-color`); machine reports keep the raw values (#777)
 
 ## [0.41.0](https://github.com/TypedDevs/bashunit/compare/0.40.0...0.41.0) - 2026-07-11
 
