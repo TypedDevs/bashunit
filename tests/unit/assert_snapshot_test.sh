@@ -128,3 +128,76 @@ function test_assert_snapshot_with_custom_placeholder() {
   export BASHUNIT_SNAPSHOT_PLACEHOLDER='__ANY__'
   assert_empty "$(assert_match_snapshot "Value 42" "$snapshot_path")"
 }
+
+# --- internals ---------------------------------------------------------------
+
+function test_snapshot_normalize_actual_strips_cr_and_trailing_newlines() {
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual $'line1\r\nline2\r\n\n\n'
+
+  assert_same $'line1\nline2' "$_snapshot_normalized"
+}
+
+function test_snapshot_normalize_actual_keeps_inner_blank_lines() {
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual $'a\n\nb\n'
+
+  assert_same $'a\n\nb' "$_snapshot_normalized"
+}
+
+function test_snapshot_placeholder_matches_variable_middle() {
+  local snapshot=$'Version: ::ignore:: (stable)'
+  local actual=$'Version: 1.2.3-rc4 (stable)'
+
+  assert_successful_code "$(
+    bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"
+    echo $?
+  )"
+  bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"
+}
+
+function test_snapshot_placeholder_spans_multiple_lines() {
+  local snapshot=$'start\n::ignore::\nend'
+  local actual=$'start\nanything\nat all\nend'
+
+  bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"
+  assert_successful_code $?
+}
+
+function test_snapshot_placeholder_rejects_nonmatching_fixed_text() {
+  local snapshot=$'Version: ::ignore:: (stable)'
+  local actual=$'Release: 1.2.3 (stable)'
+
+  local status=0
+  bashunit::snapshot::match_with_placeholder "$actual" "$snapshot" || status=$?
+  assert_same 1 "$status"
+}
+
+function test_snapshot_placeholder_escapes_regex_metacharacters() {
+  # Literal regex chars in the snapshot must match themselves, not act as regex.
+  local snapshot=$'value: [a-z]+ ::ignore::'
+  local actual_literal=$'value: [a-z]+ tail'
+  local actual_regexy=$'value: abc tail'
+
+  bashunit::snapshot::match_with_placeholder "$actual_literal" "$snapshot"
+  assert_successful_code $?
+
+  local status=0
+  bashunit::snapshot::match_with_placeholder "$actual_regexy" "$snapshot" || status=$?
+  assert_same 1 "$status"
+}
+
+function test_snapshot_placeholder_honours_custom_placeholder() {
+  local snapshot=$'id=<<ANY>> done'
+  local actual=$'id=12345 done'
+
+  BASHUNIT_SNAPSHOT_PLACEHOLDER="<<ANY>>" \
+    bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"
+  assert_successful_code $?
+}
+
+function test_snapshot_resolve_file_uses_explicit_hint_verbatim() {
+  bashunit::snapshot::resolve_file "/tmp/custom.snapshot" "test_whatever"
+
+  assert_same "/tmp/custom.snapshot" "$_BASHUNIT_SNAPSHOT_FILE_OUT"
+}
