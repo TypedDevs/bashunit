@@ -548,7 +548,7 @@ function bashunit::helper::find_total_tests() {
       # shellcheck source=/dev/null
       source "$file"
       local all_fn_names
-      all_fn_names=$(declare -F | awk '{print $3}')
+      all_fn_names=$(compgen -A function)
       local filtered_functions
       filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$all_fn_names") || true
 

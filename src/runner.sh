@@ -421,8 +421,8 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::restore_workdir
       continue
     fi
-    # Update function cache after sourcing new test file
-    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    # Update function cache after sourcing new test file (compgen is a builtin)
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(compgen -A function)
     # Check if any tests match the filter before rendering header or running hooks
     local filtered_functions
     filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
@@ -530,8 +530,8 @@ function bashunit::runner::load_bench_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     # shellcheck source=/dev/null
     source "$bench_file"
-    # Update function cache after sourcing new bench file
-    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(declare -F | awk '{print $3}')
+    # Update function cache after sourcing new bench file (compgen is a builtin)
+    _BASHUNIT_CACHED_ALL_FUNCTIONS=$(compgen -A function)
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
     bashunit::runner::run_set_up_before_script "$bench_file"
     local setup_before_script_status=$?
