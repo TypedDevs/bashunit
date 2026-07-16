@@ -219,10 +219,12 @@ function test_parallel_result_publishing_does_not_fork_per_test() {
 
   PATH="$dir:$PATH" ./bashunit --parallel "$fixture" >/dev/null 2>&1
 
-  local forks=0
+  # Assert on the shim log's content, not a count: a failure then names the
+  # offending binary directly in the test output.
+  local forked=""
   if [ -f "$count_file" ]; then
-    forks="$(grep -c . "$count_file" || true)"
+    forked="$(sort "$count_file" | uniq -c | tr -d '\n')"
   fi
 
-  assert_equals 0 "$forks"
+  assert_equals "" "$forked"
 }
