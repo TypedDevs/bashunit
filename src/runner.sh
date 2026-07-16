@@ -838,6 +838,14 @@ function bashunit::runner::call_test_functions() {
     allow_test_parallel=false
   fi
 
+  # Pre-create the file's result dir before spawning test workers: they all
+  # publish into it, and checking `[ -d ]` inside a worker races its siblings
+  # (every worker would still pay the mkdir fork).
+  if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
+    local _suite_base="${script##*/}"
+    mkdir -p "${TEMP_DIR_PARALLEL_TEST_SUITE}/${_suite_base%.sh}" 2>/dev/null || true
+  fi
+
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
     if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
       break
@@ -1560,11 +1568,19 @@ function bashunit::runner::parse_result_parallel() {
   local -a args
   args=("$@")
 
-  local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/$(basename "$test_file" .sh)"
-  mkdir -p "$test_suite_dir"
+  # This runs once per test in every parallel worker, so avoid per-test forks:
+  # derive the suite dir name with parameter expansion (no basename), only
+  # mkdir when the dir is missing (first test of the file wins the race,
+  # `-p` makes the losers no-ops), and skip arg sanitizing entirely for the
+  # common no-provider-args case.
+  local test_suite_base="${test_file##*/}"
+  local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/${test_suite_base%.sh}"
+  [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
 
-  local sanitized_args
-  sanitized_args=$(echo "${args[*]+"${args[*]}"}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+  local sanitized_args=""
+  if [ -n "${args[*]+"${args[*]}"}" ]; then
+    sanitized_args=$(echo "${args[*]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
+  fi
   local template
   if [ -z "$sanitized_args" ]; then
     template="${fn_name}.XXXXXX"
