@@ -39,7 +39,11 @@ function bashunit::console_header::print_version() {
     # Skip counting in parallel+simple mode for faster startup
     total_tests=0
   else
-    total_tests=$(bashunit::helper::find_total_tests "$filter" "$@")
+    # Read via the return slot, not $(...): the capture subshell would discard
+    # the provider-map cache find_total_tests builds per file, forcing the
+    # runner to re-scan each file with a second awk fork.
+    bashunit::helper::find_total_tests "$filter" "$@" >/dev/null
+    total_tests=$_BASHUNIT_HELPER_TOTAL_TESTS_OUT
   fi
 
   if bashunit::env::is_header_ascii_art_enabled; then

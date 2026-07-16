@@ -526,10 +526,15 @@ function bashunit::helper::get_latest_tag() {
     head -n 1
 }
 
+# Also written by find_total_tests so a main-shell caller can read the count
+# without a $() capture (which would discard the provider-map cache built here).
+_BASHUNIT_HELPER_TOTAL_TESTS_OUT=0
+
 function bashunit::helper::find_total_tests() {
   local filter=${1:-}
   shift || true
 
+  _BASHUNIT_HELPER_TOTAL_TESTS_OUT=0
   if [ $# -eq 0 ]; then
     echo 0
     return
@@ -542,6 +547,12 @@ function bashunit::helper::find_total_tests() {
     if [ ! -f "$file" ]; then
       continue
     fi
+
+    # Build the provider map in THIS shell before the counting subshell: the
+    # subshell inherits it (its own build call becomes a cache hit), and when
+    # the caller runs in the main shell the runner's later build for the same
+    # file is a cache hit too — one awk scan per file instead of two.
+    bashunit::helper::build_provider_map "$file"
 
     local file_count
     file_count=$( (
@@ -590,6 +601,7 @@ function bashunit::helper::find_total_tests() {
     total_count=$((total_count + file_count))
   done
 
+  _BASHUNIT_HELPER_TOTAL_TESTS_OUT=$total_count
   echo "$total_count"
 }
 
