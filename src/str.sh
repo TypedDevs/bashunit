@@ -47,7 +47,7 @@ function bashunit::str::strip_ansi_to_slot() {
           # Same finals sed strips; anything else keeps its printable residue
           # (the ESC itself falls to the control-byte sweep, exactly like sed).
           m* | K*) rest="${rest#?}" ;;
-          *) out="$out[$params" ;;
+          *) out="${out}[${params}" ;;
           esac
           ;;
         *)

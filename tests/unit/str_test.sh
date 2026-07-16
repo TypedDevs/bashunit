@@ -143,12 +143,14 @@ function test_strip_ansi_to_slot_long_input_matches_short_path() {
   # produce identical output for the same (repeated) colored payload.
   local unit="\033[31mred\033[0m plain "
   local long_input=""
-  local i
-  for i in $(seq 1 100); do long_input="${long_input}${unit}"; done
-  long_input="$(printf '%b' "$long_input")"
-
   local short_expected=""
-  for i in $(seq 1 100); do short_expected="${short_expected}red plain "; done
+  local n=100
+  while [ "$n" -gt 0 ]; do
+    long_input="${long_input}${unit}"
+    short_expected="${short_expected}red plain "
+    n=$((n - 1))
+  done
+  long_input="$(printf '%b' "$long_input")"
 
   bashunit::str::strip_ansi_to_slot "$long_input"
 
