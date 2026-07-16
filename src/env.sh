@@ -509,6 +509,28 @@ BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
 # Create both scratch directories in a single `mkdir -p` fork.
 mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
 
+# Removes this run's scratch directory (guarded like parallel::cleanup so a
+# broken variable can never turn the rm loose elsewhere). Called at the end of
+# a run and on SIGINT; without it every invocation leaks one directory.
+function bashunit::env::cleanup_run_output_dir() {
+  local target="$_BASHUNIT_RUN_OUTPUT_DIR"
+  case "$target" in
+  */bashunit/run/*)
+    rm -rf "$target"
+    ;;
+  *)
+    bashunit::internal_log "env::cleanup_run_output_dir" "refused unsafe path:$target"
+    return 1
+    ;;
+  esac
+}
+
+# Cover early-exit paths (--version, --help, doc, init, ...). The test-run path
+# replaces this trap in main.sh and calls the cleanup explicitly instead; child
+# subshells never inherit EXIT traps, so a parallel worker cannot remove the
+# directory mid-run.
+trap 'bashunit::env::cleanup_run_output_dir' EXIT
+
 if bashunit::env::is_dev_mode_enabled; then
   bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
 fi

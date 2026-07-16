@@ -901,6 +901,9 @@ function bashunit::main::exec_tests() {
   # Persist this run's failing tests so a later --rerun-failed can replay them.
   bashunit::rerun::persist
 
+  # The rerun cache is read from the run dir above, so clean up only after it.
+  bashunit::env::cleanup_run_output_dir
+
   bashunit::internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
 }
@@ -945,6 +948,7 @@ function bashunit::main::cleanup() {
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup
   fi
+  bashunit::env::cleanup_run_output_dir
   exit 1
 }
 
@@ -962,6 +966,7 @@ function bashunit::main::handle_stop_on_failure_sync() {
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup
   fi
+  bashunit::env::cleanup_run_output_dir
   exit 1
 }
 
