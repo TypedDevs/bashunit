@@ -9,8 +9,10 @@ paths:
 bashunit's dominant runtime cost on Bash 3.2 (macOS) is **process forks**, not
 shell execution. A fork costs ~1-3ms; the acceptance suite spawns ~258 nested
 `./bashunit` runs, so one avoidable fork per file or per test multiplies fast.
-PRs #801-#811 removed the per-test and cold-start forks; this file records how
-to measure and the traps found, so future work starts from evidence.
+PRs #801-#817 removed the per-test, per-file and cold-start forks (the full
+`--parallel` acceptance suite went from ~61s to ~17s wall, CPU time halved);
+this file records how to measure and the traps found, so future work starts
+from evidence.
 
 ## Measuring: shim census is ground truth, traces overcount
 
@@ -75,12 +77,15 @@ only** — toggling it in the caller's shell clobbers caller state (#808).
 
 ## Current budgets (Bash 3.2 macOS)
 
-**Sequential 1-test file run:** ~3 `awk` (provider map ×2 — the counting
-subshell can't share its cache with the runner — plus the duplicate check),
-`perl` ×2 clock reads (start/end; no `EPOCHREALTIME` before Bash 5), 1 `base64`
-capability probe, 1 `mkdir`, 1 `tput`. Per-test cost is fork-free. Cold start
-~50ms, ~31ms of which is sourcing `src/` (irreducible without lazy-loading,
-rejected in #798).
+**Sequential 1-test file run:** 2 `awk` (provider map — built once in the main
+shell since #817, the header count reads a return slot so the cache survives
+into the runner — plus the duplicate check), `perl` ×2 clock reads (start/end;
+no `EPOCHREALTIME` before Bash 5), 1 `base64` capability probe, 1 `mkdir`,
+1 `tput`. Per-test cost is fork-free. Cold start ~45-50ms, ~31ms of which is
+sourcing `src/` (irreducible without lazy-loading, rejected in #798).
+`--coverage` adds ~3 forks per unique file first seen by the DEBUG trap
+(decision-cache miss: grep|head + dirname) — bounded by file count, nightly
+non-gating workflow, not worth chasing.
 
 **Parallel 10-test file run (CI's mode):** ~21 forks — 10 `mktemp` (one per
 test: the unique result file; deterministic names collide because different
