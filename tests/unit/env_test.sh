@@ -318,3 +318,147 @@ function test_print_verbose_outputs_env_var_names() {
 
   export BASHUNIT_VERBOSE="$original"
 }
+
+# --- load_config_file parser -------------------------------------------------
+# Each test runs the parser in a subshell so exported keys never leak into the
+# suite's environment.
+
+function test_load_config_file_ignores_comments_and_blank_lines() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  {
+    echo "# a comment"
+    echo ""
+    echo "   # indented comment"
+    echo "BU_TEST_RC_PLAIN=value1"
+  } >"$rc"
+
+  local out
+  out=$(
+    unset BU_TEST_RC_PLAIN
+    bashunit::env::load_config_file "$rc"
+    echo "${BU_TEST_RC_PLAIN:-unset}"
+  )
+
+  assert_same "value1" "$out"
+}
+
+function test_load_config_file_strips_export_prefix_and_quotes() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  {
+    echo 'export BU_TEST_RC_EXPORTED="double quoted"'
+    echo "BU_TEST_RC_SINGLE='single quoted'"
+  } >"$rc"
+
+  local out
+  out=$(
+    unset BU_TEST_RC_EXPORTED BU_TEST_RC_SINGLE
+    bashunit::env::load_config_file "$rc"
+    echo "${BU_TEST_RC_EXPORTED:-unset}|${BU_TEST_RC_SINGLE:-unset}"
+  )
+
+  assert_same "double quoted|single quoted" "$out"
+}
+
+function test_load_config_file_existing_environment_wins() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  echo "BU_TEST_RC_PRECEDENCE=from-file" >"$rc"
+
+  local out
+  out=$(
+    export BU_TEST_RC_PRECEDENCE="from-env"
+    bashunit::env::load_config_file "$rc"
+    echo "$BU_TEST_RC_PRECEDENCE"
+  )
+
+  assert_same "from-env" "$out"
+}
+
+function test_load_config_file_skips_invalid_identifiers() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  {
+    echo "BU-DASHED=nope"
+    echo "1LEADING_DIGIT=nope"
+    echo "not a kv line"
+    echo "BU_TEST_RC_VALID=yes"
+  } >"$rc"
+
+  local out
+  out=$(
+    unset BU_TEST_RC_VALID
+    bashunit::env::load_config_file "$rc"
+    echo "${BU_TEST_RC_VALID:-unset}"
+  )
+
+  assert_same "yes" "$out"
+}
+
+function test_load_config_file_does_not_execute_values() {
+  # The parser evals an export line; a command substitution in the value must
+  # be stored as literal text, never executed. The identifier guard must also
+  # reject keys carrying shell metacharacters.
+  local rc marker
+  rc="$(bashunit::temp_file "rc")"
+  marker="$(bashunit::temp_dir)/rc_injection_marker"
+  {
+    echo "BU_TEST_RC_CMDSUB=\$(touch $marker)"
+    echo "BU_TEST_RC_EVIL; touch $marker=x"
+  } >"$rc"
+
+  local out
+  out=$(
+    unset BU_TEST_RC_CMDSUB
+    bashunit::env::load_config_file "$rc"
+    echo "${BU_TEST_RC_CMDSUB:-unset}"
+  )
+
+  assert_same "\$(touch $marker)" "$out"
+  assert_file_not_exists "$marker"
+}
+
+function test_load_config_file_missing_file_is_a_noop() {
+  local out
+  out=$(
+    bashunit::env::load_config_file "/nonexistent/.bashunitrc"
+    echo "ok $?"
+  )
+
+  assert_same "ok 0" "$out"
+}
+
+# --- cleanup_run_output_dir ---------------------------------------------------
+
+function test_cleanup_run_output_dir_removes_the_run_dir() {
+  local base
+  base="$(bashunit::temp_dir)/bashunit/run/OSX/testrun1"
+  mkdir -p "$base"
+  touch "$base/failures"
+
+  local out
+  out=$(
+    _BASHUNIT_RUN_OUTPUT_DIR="$base"
+    bashunit::env::cleanup_run_output_dir
+    [ ! -d "$base" ] && echo "removed"
+  )
+
+  assert_same "removed" "$out"
+}
+
+function test_cleanup_run_output_dir_refuses_paths_outside_the_run_tree() {
+  local dir
+  dir="$(bashunit::temp_dir)/precious_data"
+  mkdir -p "$dir"
+  touch "$dir/keep"
+
+  local status=0
+  (
+    _BASHUNIT_RUN_OUTPUT_DIR="$dir"
+    bashunit::env::cleanup_run_output_dir >/dev/null 2>&1
+  ) || status=$?
+
+  assert_same 1 "$status"
+  assert_file_exists "$dir/keep"
+}
