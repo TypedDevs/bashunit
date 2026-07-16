@@ -89,11 +89,18 @@ pre_commit/run:
 test/parallel: $(TEST_SCRIPTS)
 	@bash ./bashunit --parallel --simple $(TEST_SCRIPTS)
 
+# sa: xargs (unlike `find -exec {} \;`) propagates shellcheck's exit code, so
+# findings actually fail the target; the excludes mirror the CI workflow's
+# SHELLCHECK_OPTS for local/CI parity. One file per invocation (like CI's
+# action) because shellcheck 0.11.0 can crash on multi-file batches with -x;
+# -P 4 keeps the wall time reasonable.
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
-	@find . -name "*.sh" -not -path "./local/*" -exec shellcheck -xC {} \; && printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
+	@find . -name "*.sh" -not -path "./local/*" -print0 \
+		| xargs -0 -n 1 -P 4 shellcheck -xC -e SC1091 -e SC2155 -e SC2016 \
+		&& printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
 
 lint:
