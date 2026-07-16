@@ -53,6 +53,8 @@ fork class; they are the RED test of the TDD cycle.
 | small-list `awk \| sort \| awk` | pure-bash filter + insertion sort | #809 (tens of items only) |
 | N × `mktemp` scratch files | one run-unique dir + fixed names, lazy `>>` creation | #801, #811 |
 | probe fork + first-use fork | probe does the real work and seeds the return slot | #802 (clock perl) |
+| per-worker `mkdir -p` | parent pre-creates before spawning workers (`[ -d ]` inside a worker races its siblings) | #813 |
+| sanitize-args pipeline on empty input | guard: skip the pipeline when the input is empty | #813 |
 
 `shopt -s extdebug` for `declare -F`: enable it **inside the capture subshell
 only** — toggling it in the caller's shell clobbers caller state (#808).
@@ -71,10 +73,19 @@ only** — toggling it in the caller's shell clobbers caller state (#808).
 - **`tput cols` at startup**: returns 80 on non-tty; snapshots depend on that
   width. Not removable.
 
-## Current budgets (plain 1-test file run, Bash 3.2 macOS)
+## Current budgets (Bash 3.2 macOS)
 
-~3 `awk` (provider map ×2 — the counting subshell can't share its cache with
-the runner — plus the duplicate check), 1 `perl` ×2 clock reads (start/end;
-no `EPOCHREALTIME` before Bash 5), 1 `base64` capability probe, 1 `mkdir`,
-1 `tput`. Per-test cost is fork-free. Cold start ~50ms, ~31ms of which is
-sourcing `src/` (irreducible without lazy-loading, rejected in #798).
+**Sequential 1-test file run:** ~3 `awk` (provider map ×2 — the counting
+subshell can't share its cache with the runner — plus the duplicate check),
+`perl` ×2 clock reads (start/end; no `EPOCHREALTIME` before Bash 5), 1 `base64`
+capability probe, 1 `mkdir`, 1 `tput`. Per-test cost is fork-free. Cold start
+~50ms, ~31ms of which is sourcing `src/` (irreducible without lazy-loading,
+rejected in #798).
+
+**Parallel 10-test file run (CI's mode):** ~21 forks — 10 `mktemp` (one per
+test: the unique result file; deterministic names collide because different
+provider args can sanitize identically and workers can't make unique tokens on
+Bash 3 — subshells inherit `$$` and the `RANDOM` state, and `BASHPID` is 4.0+),
+3 `mkdir`, 4 `rm`, 3 `awk` (#813; was 61). `wait_for_job_slot` already uses
+`wait -n` on Bash 4.3+ and an adaptive sleep-poll fallback — don't "fix" it.
+The spinner forks `sleep` ~1/s on non-tty; not worth chasing.
