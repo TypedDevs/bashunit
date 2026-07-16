@@ -85,3 +85,41 @@ function test_failure_source_context_does_not_fork_sed_per_line() {
 
   assert_less_than 10 "$sed_forks"
 }
+
+# Regression guard: ordering a file's test functions by definition line used to
+# pipe `declare -F` through `awk | sort | awk` — and the pipeline ran twice per
+# file. The ordering is pure bash now, so a plain run forks `sort` zero times.
+# Counted with a PATH shim (a `bash -x` trace would also count re-echoed test
+# output, inflating the numbers).
+function test_running_a_test_file_does_not_fork_sort() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local real_sort
+  real_sort="$(command -v sort)"
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/count"
+  {
+    echo '#!/usr/bin/env bash'
+    echo "echo x >> \"$count_file\""
+    echo "exec \"$real_sort\" \"\$@\""
+  } >"$dir/sort"
+  chmod +x "$dir/sort"
+
+  local fixture="$dir/sort_forks_test.sh"
+  {
+    echo 'function test_zz_first() { assert_true true; }'
+    echo 'function test_aa_second() { assert_true true; }'
+  } >"$fixture"
+
+  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1
+
+  local sort_forks=0
+  if [ -f "$count_file" ]; then
+    sort_forks="$(grep -c . "$count_file" || true)"
+  fi
+
+  assert_equals 0 "$sort_forks"
+}

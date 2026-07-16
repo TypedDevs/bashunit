@@ -215,7 +215,9 @@ function bashunit::helper::check_duplicate_functions() {
 
   # One awk pass over the file finds each test-function definition and emits only
   # the names seen more than once, folding the former grep + awk + sort + uniq
-  # chain into a single awk + sort (#761).
+  # chain into a single awk (#761). The END block insertion-sorts the (tiny,
+  # usually empty) duplicate list itself, so no `sort` fork is needed to keep
+  # the output deterministic.
   local duplicates
   duplicates=$(awk '
     /^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{/ {
@@ -231,11 +233,24 @@ function bashunit::helper::check_duplicate_functions() {
       }
     }
     END {
+      n = 0
       for (name in dup) {
-        print name
+        names[++n] = name
+      }
+      for (i = 2; i <= n; i++) {
+        v = names[i]
+        j = i - 1
+        while (j >= 1 && names[j] > v) {
+          names[j + 1] = names[j]
+          j--
+        }
+        names[j + 1] = v
+      }
+      for (i = 1; i <= n; i++) {
+        print names[i]
       }
     }
-  ' "$script" | sort)
+  ' "$script")
   if [ -n "$duplicates" ]; then
     bashunit::state::set_duplicated_functions_merged "$script" "$duplicates"
     return 1
