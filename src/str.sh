@@ -17,6 +17,50 @@ function bashunit::str::strip_ansi_to_slot() {
     return
     ;;
   esac
+  # Pure-bash path for short strings without backslashes: display lines (e.g.
+  # the per-test "✓ Passed … 3ms" alignment on systems whose clock is fork-free)
+  # land here, so a colored line does not cost a sed fork per test. Strip
+  # CSI sequences segment-wise, then sweep remaining control bytes; the size
+  # guard avoids bash's quadratic pattern-substitution on large captures and
+  # `*\\*` still defers to `echo -e` semantics below.
+  case "$input" in
+  *\\*) ;;
+  *)
+    if [ "${#input}" -le 1024 ]; then
+      local out="" rest="$input" params
+      while :; do
+        case "$rest" in
+        *$'\x1b'\[*)
+          out="$out${rest%%$'\x1b'\[*}"
+          rest="${rest#*$'\x1b'\[}"
+          params=""
+          while :; do
+            case "$rest" in
+            [0-9\;]*)
+              params="$params${rest%"${rest#?}"}"
+              rest="${rest#?}"
+              ;;
+            *) break ;;
+            esac
+          done
+          case "$rest" in
+          # Same finals sed strips; anything else keeps its printable residue
+          # (the ESC itself falls to the control-byte sweep, exactly like sed).
+          m* | K*) rest="${rest#?}" ;;
+          *) out="$out[$params" ;;
+          esac
+          ;;
+        *)
+          out="$out$rest"
+          break
+          ;;
+        esac
+      done
+      _BASHUNIT_STR_STRIPPED_OUT=${out//[[:cntrl:]]/}
+      return
+    fi
+    ;;
+  esac
   _BASHUNIT_STR_STRIPPED_OUT=$(echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g')
 }
 
