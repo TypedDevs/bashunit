@@ -128,3 +128,31 @@ function test_rpad_width_smaller_than_right_word() {
 
   assert_same "... verylongword" "$actual"
 }
+
+function test_strip_ansi_to_slot_removes_erase_codes_and_control_chars() {
+  local input
+  input="$(printf '\033[2K\033[1;32mok\033[0m\tdone\r')"
+
+  bashunit::str::strip_ansi_to_slot "$input"
+
+  assert_same "okdone" "$_BASHUNIT_STR_STRIPPED_OUT"
+}
+
+function test_strip_ansi_to_slot_long_input_matches_short_path() {
+  # Inputs beyond the pure-bash size guard take the sed path; both paths must
+  # produce identical output for the same (repeated) colored payload.
+  local unit="\033[31mred\033[0m plain "
+  local long_input=""
+  local short_expected=""
+  local n=100
+  while [ "$n" -gt 0 ]; do
+    long_input="${long_input}${unit}"
+    short_expected="${short_expected}red plain "
+    n=$((n - 1))
+  done
+  long_input="$(printf '%b' "$long_input")"
+
+  bashunit::str::strip_ansi_to_slot "$long_input"
+
+  assert_same "$short_expected" "$_BASHUNIT_STR_STRIPPED_OUT"
+}

@@ -182,3 +182,49 @@ function test_run_removes_its_run_output_dir() {
 
   assert_equals 0 "$leftover"
 }
+
+# Regression guard for the parallel per-test result path. Publishing each
+# test's result file used to fork `basename` (suite dir name), `mkdir -p`
+# (suite dir, per test) and an `echo | tr | sed` pipeline (arg sanitizing, even
+# with no args) — ~4 forks per test in the mode CI runs everything in. The dir
+# name is parameter expansion now, mkdir is guarded by a `[ -d ]` builtin check,
+# and arg sanitizing is skipped when there are no provider args.
+function test_parallel_result_publishing_does_not_fork_per_test() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/count"
+  local bin
+  for bin in basename tr sed; do
+    local real_bin
+    real_bin="$(command -v "$bin")"
+    {
+      echo '#!/usr/bin/env bash'
+      echo "echo $bin >> \"$count_file\""
+      echo "exec \"$real_bin\" \"\$@\""
+    } >"$dir/$bin"
+    chmod +x "$dir/$bin"
+  done
+
+  local fixture="$dir/parallel_forks_test.sh"
+  {
+    echo 'function test_a() { assert_true true; }'
+    echo 'function test_b() { assert_true true; }'
+    echo 'function test_c() { assert_true true; }'
+    echo 'function test_d() { assert_true true; }'
+  } >"$fixture"
+
+  PATH="$dir:$PATH" ./bashunit --parallel "$fixture" >/dev/null 2>&1
+
+  # Assert on the shim log's content, not a count: a failure then names the
+  # offending binary directly in the test output.
+  local forked=""
+  if [ -f "$count_file" ]; then
+    forked="$(sort "$count_file" | uniq -c | tr -d '\n')"
+  fi
+
+  assert_equals "" "$forked"
+}
