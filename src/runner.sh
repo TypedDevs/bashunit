@@ -400,6 +400,12 @@ function bashunit::runner::load_test_files() {
     # shellcheck source=/dev/null
     source "$test_file" 2>"$source_err_file"
     source_status=$?
+    # A test file may enable `set -euo pipefail` at its top level; sourcing
+    # runs that in THIS shell, so a later non-zero status in the loop (e.g. a
+    # failing set_up_before_script) would kill the whole run mid-suite with no
+    # summary. Strictness is applied per-test in execute_test_body — reset the
+    # runner loop to its set +euo invariant (see main.sh exec_tests) (#836).
+    set +euo pipefail
     source_err=""
     if [ -s "$source_err_file" ]; then
       source_err="$(cat "$source_err_file")"
@@ -462,21 +468,25 @@ function bashunit::runner::load_test_files() {
     bashunit::runner::run_set_up_before_script "$test_file"
     local setup_before_script_status=$?
     if [ $setup_before_script_status -ne 0 ]; then
-      # Count the test functions that couldn't run due to set_up_before_script failure
-      # and add them as failed (minus 1 since the hook failure already counts as 1)
-      local filtered_functions
-      filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-      if [ -n "$filtered_functions" ]; then
+      # Count the test functions that couldn't run due to set_up_before_script
+      # failure and add them as failed (minus 1 since the hook failure already
+      # counts as 1). Use this file's own function list — scanning the cached
+      # ALL-functions set would also count fns left over from earlier files
+      # and inflate the totals (#836).
+      if [ -n "$functions_for_script" ]; then
         # Bash 3.0 compatible: separate declaration and assignment for arrays
         local functions_to_run
         # shellcheck disable=SC2206
-        functions_to_run=($filtered_functions)
+        functions_to_run=($functions_for_script)
         local additional_failures=$((${#functions_to_run[@]} - 1))
         local i
         for ((i = 0; i < additional_failures; i++)); do
           bashunit::state::add_tests_failed
         done
       fi
+      # Same cleanup as the success path: without it the file's test functions
+      # leak into the next iteration's counts and the main shell (#829, #836).
+      bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
       bashunit::runner::clean_set_up_and_tear_down_after_script
       if ! bashunit::parallel::is_enabled; then
         bashunit::cleanup_script_temp_files
@@ -537,6 +547,9 @@ function bashunit::runner::load_bench_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     # shellcheck source=/dev/null
     source "$bench_file"
+    # Reset the loop's shell-mode invariant; a bench file may set -euo at top
+    # level and sourcing runs that in this shell (see the test loop) (#836).
+    set +euo pipefail
     # Update function cache after sourcing new bench file (compgen is a builtin)
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(compgen -A function)
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook
@@ -1847,14 +1860,32 @@ function bashunit::runner::execute_file_hook() {
   if bashunit::env::is_strict_mode_enabled; then
     set -uo pipefail
   fi
-  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +Eu +o pipefail; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+  # The trap returns from the function where the failure occurred (early-exit
+  # semantics for intermediate failing commands) — but only when that frame is
+  # NOT this executor: on Bash >= 4 the trap also fires HERE when the hook call
+  # itself returns non-zero, and an unconditional return skipped
+  # record_file_hook_failure entirely (silent failures, off-by-one counts, #836).
+  # shellcheck disable=SC2154
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?
+    if [ "${FUNCNAME[0]:-}" != "bashunit::runner::execute_file_hook" ]; then
+      set +Eu +o pipefail
+      trap - ERR
+      return $_BASHUNIT_HOOK_ERR_STATUS
+    fi' ERR
 
   {
     "$hook_name"
   } >"$hook_output_file" 2>&1
+  # Real exit status of the hook, read from $? (this function runs without -e,
+  # so a failing compound does not exit). The ERR-trap global alone is not
+  # enough: a hook ending in a failing `cmd && var=x` guard returns non-zero
+  # without ever firing the trap (&& lists are ERR-exempt), which silently
+  # swallowed the failure (#836).
+  status=$?
+  if [ "$status" -eq 0 ]; then
+    status=$_BASHUNIT_HOOK_ERR_STATUS
+  fi
 
-  # Capture exit status from global variable and clean up
-  status=$_BASHUNIT_HOOK_ERR_STATUS
   trap - ERR
   set +Eu +o pipefail
 
@@ -1952,14 +1983,27 @@ function bashunit::runner::execute_test_hook() {
   if bashunit::env::is_strict_mode_enabled; then
     set -uo pipefail
   fi
-  trap '_BASHUNIT_HOOK_ERR_STATUS=$?; set +Eu +o pipefail; trap - ERR; return $_BASHUNIT_HOOK_ERR_STATUS' ERR
+  # See the twin comment in execute_file_hook: conditional return keeps the
+  # early-exit semantics for intermediate failures without silently returning
+  # from THIS executor when the trap re-fires here on Bash >= 4 (#836).
+  # shellcheck disable=SC2154
+  trap '_BASHUNIT_HOOK_ERR_STATUS=$?
+    if [ "${FUNCNAME[0]:-}" != "bashunit::runner::execute_test_hook" ]; then
+      set +Eu +o pipefail
+      trap - ERR
+      return $_BASHUNIT_HOOK_ERR_STATUS
+    fi' ERR
 
   {
     "$hook_name"
   } >"$hook_output_file" 2>&1
+  # Real hook status from $?; the trap global alone misses failing
+  # `cmd && var=x` guards (&& lists are ERR-exempt) (#836).
+  status=$?
+  if [ "$status" -eq 0 ]; then
+    status=$_BASHUNIT_HOOK_ERR_STATUS
+  fi
 
-  # Capture exit status from global variable and clean up
-  status=$_BASHUNIT_HOOK_ERR_STATUS
   trap - ERR
   set +Eu +o pipefail
 

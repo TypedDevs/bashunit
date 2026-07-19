@@ -8,14 +8,14 @@ function set_up_before_script() {
 
 function test_bashunit_terminates_a_hanging_test_with_timeout() {
   local output
-  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 1 "$FIXTURE")"
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 1 "$FIXTURE")" || true
 
   assert_contains "Test timed out after 1s" "$output"
 }
 
 function test_bashunit_keeps_running_tests_after_a_timed_out_one() {
   local output
-  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 1 "$FIXTURE")"
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 1 "$FIXTURE")" || true
 
   # The fast test still ran and passed and the run reached its summary instead
   # of hanging forever on the blocked test.
