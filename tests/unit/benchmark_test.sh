@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2329 # Mock functions are invoked indirectly by tested code
 
-function set_up_before_script() {
-  source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
-}
-
 function set_up() {
   SCRIPT="tests/benchmark/fixtures/bashunit_sleep_bench.sh"
 }

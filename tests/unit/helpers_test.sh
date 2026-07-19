@@ -435,9 +435,11 @@ function test_normalize_test_function_name_with_interpolation() {
 }
 
 function helpers_test::find_total_in_subshell() {
-  # "bashunit::helper::find_total_tests" needs the "data_set" function, so we have to source globals.sh first
+  # "bashunit::helper::find_total_tests" needs the "data_set" function, so we have to source globals.sh first.
+  # Paths are cwd-relative (repo root), not $BASHUNIT_ROOT_DIR: under `build.sh --verify`
+  # the running binary's root dir has no src/ (#834).
   bash -c 'source src/globals.sh; source "$1"; shift; bashunit::helper::find_total_tests "$@"' \
-    bash "$BASHUNIT_ROOT_DIR/src/helpers.sh" "$@"
+    bash "src/helpers.sh" "$@"
 }
 
 function test_find_total_tests_no_files() {

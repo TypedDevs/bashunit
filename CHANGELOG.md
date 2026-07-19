@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Fixed
+- `--stop-on-failure`, `--log-junit`, `--report-html`, `--report-tap` and `--report-json` no longer leak into nested bashunit runs via the environment: a script under test that itself calls bashunit used to inherit the parent's stop-on-failure mode (aborting before the rerun cache was written) and overwrite the parent's report files (#834)
+- `./bashunit bench` works again when running from a repository checkout: the dev entrypoint never sourced `src/benchmark.sh`, so every bench run crashed with `command not found` (the built binary was unaffected) (#834)
+- `./build.sh --verify` now exits non-zero when the built binary fails the test suite — previously a red verification run still reported success to CI. The gate exposed that verification had been silently crashing mid-suite since 2025-06: six test files resolved repo paths through the running binary's root dir, which has no `src/` in a build folder; they now resolve paths relative to the test file or repo cwd (#834)
 - Snapshot placeholders (`::ignore::`) now work on systems without perl; multi-line placeholders still need perl (#823)
 - Runs no longer leak a scratch directory under `$TMPDIR/bashunit/run/` — it is removed on exit, including `--version`/`--help`, subcommands and Ctrl-C (#811)
 - `bashunit::helper::get_function_line_number` no longer disables `extdebug` for its caller (#808)
@@ -16,6 +19,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- `build.sh` hardened: runs under `set -euo pipefail`, derives the embed list from the entrypoint's `source` order (single source of truth), guards against duplicate embeds and missing doc markers, drops `eval`, and gates every build behind `bash -n` (#834)
 - `bashunit doc` no longer forks an `echo | sed` pipe per line of the assertion docs: a single awk pass prints the same bytes in ~50ms instead of ~5s (#832)
 - Multi-file runs are no longer quadratic in file count: each file's test functions are unset once the file has been processed, so test subshells stop forking an ever-growing shell. bashunit's own 63-file unit suite: ~64s -> ~22s sequential, ~26s -> ~7s parallel (#829)
 - Major performance work with no behaviour change: assertions, per-test execution, per-file discovery, cold start and parallel result publishing are now (near) fork-free, snapshots and `--tag` scans are cached, and quadratic failure rendering is single-pass. Benchmarks on bash 3.2: 100x10 `assert_equals` ~1.50s -> ~0.76s, 500 snapshot assertions ~7.5s -> ~3.0s, 100 tagged tests ~2.92s -> ~0.68s, and bashunit's own acceptance suite ~61s -> ~17s (#761-#764, #772-#775, #798, #801-#807, #809, #810, #813, #817)

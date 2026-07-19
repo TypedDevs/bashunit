@@ -30,8 +30,15 @@ function test_globals_current_filename() {
   assert_same "globals_test.sh" "$(bashunit::current_filename)"
 }
 
+# Indirection keeps the observed caller frame inside this file: called directly
+# from a test, caller_filename reports the framework's own source layout, which
+# differs between a repo checkout (./src) and the built single-file binary (#834).
+function globals_test::call_caller_filename() {
+  bashunit::caller_filename
+}
+
 function test_globals_caller_filename() {
-  assert_same "./src" "$(bashunit::caller_filename)"
+  assert_same "tests/unit" "$(globals_test::call_caller_filename)"
 }
 
 function test_globals_caller_line() {
