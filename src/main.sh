@@ -27,8 +27,10 @@ function bashunit::main::set_shard_or_exit() {
     exit 1
   fi
 
-  export BASHUNIT_SHARD_INDEX="$index"
-  export BASHUNIT_SHARD_TOTAL="$total"
+  BASHUNIT_SHARD_INDEX="$index"
+  export -n BASHUNIT_SHARD_INDEX
+  BASHUNIT_SHARD_TOTAL="$total"
+  export -n BASHUNIT_SHARD_TOTAL
 }
 
 #############################
@@ -46,7 +48,18 @@ function bashunit::main::cmd_test() {
   local assert_fn=""
   local _bashunit_coverage_opt_set=false
 
-  # Parse test-specific options
+  # Parse test-specific options.
+  #
+  # Flag branches assign WITHOUT export and strip the export attribute with
+  # `export -n`: run-mode flags are this-process-only. Everything that reads
+  # them (runner, reporters, parallel workers) runs in this shell or its
+  # subshells, which inherit unexported variables — while exec'd children
+  # (nested bashunit runs: bashunit's own acceptance suite under
+  # `build.sh --verify`, or a user's script under test that calls bashunit)
+  # must NOT inherit the parent's flags (#834, #837). The explicit `export -n`
+  # also clears an export attribute stamped by an allexport .env load.
+  # Pair any newly exported-by-necessity flag with a comment naming the exec'd
+  # consumer, and extend tests/acceptance/fixtures/flag_env_leak/leak_probe.sh.
   while [ $# -gt 0 ]; do
     case "$1" in
     -a | --assert)
@@ -74,13 +87,16 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     -s | --simple)
-      export BASHUNIT_SIMPLE_OUTPUT=true
+      BASHUNIT_SIMPLE_OUTPUT=true
+      export -n BASHUNIT_SIMPLE_OUTPUT
       ;;
     --detailed)
-      export BASHUNIT_SIMPLE_OUTPUT=false
+      BASHUNIT_SIMPLE_OUTPUT=false
+      export -n BASHUNIT_SIMPLE_OUTPUT
       ;;
     --output)
-      export BASHUNIT_OUTPUT_FORMAT="$2"
+      BASHUNIT_OUTPUT_FORMAT="$2"
+      export -n BASHUNIT_OUTPUT_FORMAT
       shift
       ;;
     --debug)
@@ -101,35 +117,44 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_STOP_ON_FAILURE
       ;;
     -p | --parallel)
-      export BASHUNIT_PARALLEL_RUN=true
+      BASHUNIT_PARALLEL_RUN=true
+      export -n BASHUNIT_PARALLEL_RUN
       ;;
     -j | --jobs)
-      export BASHUNIT_PARALLEL_RUN=true
+      BASHUNIT_PARALLEL_RUN=true
+      export -n BASHUNIT_PARALLEL_RUN
       # "auto" caps at the detected core count; wait_for_job_slot needs an
       # integer, so resolve it here rather than leaking the string downstream.
       if [ "$2" = "auto" ]; then
-        export BASHUNIT_PARALLEL_JOBS="$(bashunit::check_os::nproc)"
+        BASHUNIT_PARALLEL_JOBS="$(bashunit::check_os::nproc)"
+        export -n BASHUNIT_PARALLEL_JOBS
       else
-        export BASHUNIT_PARALLEL_JOBS="$2"
+        BASHUNIT_PARALLEL_JOBS="$2"
+        export -n BASHUNIT_PARALLEL_JOBS
       fi
       shift
       ;;
     --no-parallel)
-      export BASHUNIT_PARALLEL_RUN=false
+      BASHUNIT_PARALLEL_RUN=false
+      export -n BASHUNIT_PARALLEL_RUN
       ;;
     --test-timeout)
-      export BASHUNIT_TEST_TIMEOUT="$2"
+      BASHUNIT_TEST_TIMEOUT="$2"
+      export -n BASHUNIT_TEST_TIMEOUT
       shift
       ;;
     --retry)
-      export BASHUNIT_RETRY="$2"
+      BASHUNIT_RETRY="$2"
+      export -n BASHUNIT_RETRY
       shift
       ;;
     --random-order)
-      export BASHUNIT_RANDOM_ORDER=true
+      BASHUNIT_RANDOM_ORDER=true
+      export -n BASHUNIT_RANDOM_ORDER
       ;;
     --seed)
-      export BASHUNIT_SEED="$2"
+      BASHUNIT_SEED="$2"
+      export -n BASHUNIT_SEED
       shift
       ;;
     --shard)
@@ -137,17 +162,20 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --rerun-failed)
-      export BASHUNIT_RERUN_FAILED=true
+      BASHUNIT_RERUN_FAILED=true
+      export -n BASHUNIT_RERUN_FAILED
       ;;
     -w | --watch)
-      export BASHUNIT_WATCH_MODE=true
+      BASHUNIT_WATCH_MODE=true
+      export -n BASHUNIT_WATCH_MODE
       ;;
     -e | --env | --boot)
       # Support: --env "bootstrap.sh arg1 arg2"
       local boot_file="${2%% *}"
       local boot_args="${2#* }"
       if [ "$boot_args" != "$2" ]; then
-        export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        export -n BASHUNIT_BOOTSTRAP_ARGS
       fi
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
@@ -169,7 +197,8 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --log-gha)
-      export BASHUNIT_LOG_GHA="$2"
+      BASHUNIT_LOG_GHA="$2"
+      export -n BASHUNIT_LOG_GHA
       shift
       ;;
     -r | --report-html)
@@ -188,50 +217,64 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --no-output)
-      export BASHUNIT_NO_OUTPUT=true
+      BASHUNIT_NO_OUTPUT=true
+      export -n BASHUNIT_NO_OUTPUT
       ;;
     -vvv | --verbose)
-      export BASHUNIT_VERBOSE=true
+      BASHUNIT_VERBOSE=true
+      export -n BASHUNIT_VERBOSE
       ;;
     -h | --help)
       bashunit::console_header::print_test_help
       exit 0
       ;;
     --show-skipped)
-      export BASHUNIT_SHOW_SKIPPED=true
+      BASHUNIT_SHOW_SKIPPED=true
+      export -n BASHUNIT_SHOW_SKIPPED
       ;;
     --show-incomplete)
-      export BASHUNIT_SHOW_INCOMPLETE=true
+      BASHUNIT_SHOW_INCOMPLETE=true
+      export -n BASHUNIT_SHOW_INCOMPLETE
       ;;
     --failures-only)
-      export BASHUNIT_FAILURES_ONLY=true
+      BASHUNIT_FAILURES_ONLY=true
+      export -n BASHUNIT_FAILURES_ONLY
       ;;
     --fail-on-risky)
-      export BASHUNIT_FAIL_ON_RISKY=true
+      BASHUNIT_FAIL_ON_RISKY=true
+      export -n BASHUNIT_FAIL_ON_RISKY
       ;;
     --profile)
-      export BASHUNIT_PROFILE=true
+      BASHUNIT_PROFILE=true
+      export -n BASHUNIT_PROFILE
       ;;
     --show-output)
-      export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true
+      BASHUNIT_SHOW_OUTPUT_ON_FAILURE=true
+      export -n BASHUNIT_SHOW_OUTPUT_ON_FAILURE
       ;;
     --no-output-on-failure)
-      export BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
+      BASHUNIT_SHOW_OUTPUT_ON_FAILURE=false
+      export -n BASHUNIT_SHOW_OUTPUT_ON_FAILURE
       ;;
     --no-progress)
-      export BASHUNIT_NO_PROGRESS=true
+      BASHUNIT_NO_PROGRESS=true
+      export -n BASHUNIT_NO_PROGRESS
       ;;
     --strict)
-      export BASHUNIT_STRICT_MODE=true
+      BASHUNIT_STRICT_MODE=true
+      export -n BASHUNIT_STRICT_MODE
       ;;
     -R | --run-all)
-      export BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
+      BASHUNIT_STOP_ON_ASSERTION_FAILURE=false
+      export -n BASHUNIT_STOP_ON_ASSERTION_FAILURE
       ;;
     --skip-env-file)
-      export BASHUNIT_SKIP_ENV_FILE=true
+      BASHUNIT_SKIP_ENV_FILE=true
+      export -n BASHUNIT_SKIP_ENV_FILE
       ;;
     -l | --login)
-      export BASHUNIT_LOGIN_SHELL=true
+      BASHUNIT_LOGIN_SHELL=true
+      export -n BASHUNIT_LOGIN_SHELL
       ;;
     --no-color)
       # shellcheck disable=SC2034
@@ -400,7 +443,8 @@ function bashunit::main::cmd_test() {
     # Disable coverage for assert mode - it's meant for running single assertions,
     # not tracking code coverage. This also prevents issues when parent bashunit
     # runs with coverage and calls subprocess bashunit with -a flag.
-    export BASHUNIT_COVERAGE=false
+    BASHUNIT_COVERAGE=false
+    export -n BASHUNIT_COVERAGE
     bashunit::main::exec_assert "$assert_fn" ${args+"${args[@]}"}
   else
     if [ "${BASHUNIT_WATCH_MODE:-false}" = true ]; then
@@ -431,7 +475,8 @@ function bashunit::main::cmd_bench() {
   local -a args=()
   local args_count=0
 
-  export BASHUNIT_BENCH_MODE=true
+  BASHUNIT_BENCH_MODE=true
+  export -n BASHUNIT_BENCH_MODE
 
   # Parse bench-specific options
   while [ $# -gt 0 ]; do
@@ -441,17 +486,20 @@ function bashunit::main::cmd_bench() {
       shift
       ;;
     -s | --simple)
-      export BASHUNIT_SIMPLE_OUTPUT=true
+      BASHUNIT_SIMPLE_OUTPUT=true
+      export -n BASHUNIT_SIMPLE_OUTPUT
       ;;
     --detailed)
-      export BASHUNIT_SIMPLE_OUTPUT=false
+      BASHUNIT_SIMPLE_OUTPUT=false
+      export -n BASHUNIT_SIMPLE_OUTPUT
       ;;
     -e | --env | --boot)
       # Support: --env "bootstrap.sh arg1 arg2"
       local boot_file="${2%% *}"
       local boot_args="${2#* }"
       if [ "$boot_args" != "$2" ]; then
-        export BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
+        export -n BASHUNIT_BOOTSTRAP_ARGS
       fi
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
@@ -462,13 +510,16 @@ function bashunit::main::cmd_bench() {
       shift
       ;;
     -vvv | --verbose)
-      export BASHUNIT_VERBOSE=true
+      BASHUNIT_VERBOSE=true
+      export -n BASHUNIT_VERBOSE
       ;;
     --skip-env-file)
-      export BASHUNIT_SKIP_ENV_FILE=true
+      BASHUNIT_SKIP_ENV_FILE=true
+      export -n BASHUNIT_SKIP_ENV_FILE
       ;;
     -l | --login)
-      export BASHUNIT_LOGIN_SHELL=true
+      BASHUNIT_LOGIN_SHELL=true
+      export -n BASHUNIT_LOGIN_SHELL
       ;;
     --no-color)
       # shellcheck disable=SC2034
@@ -819,7 +870,8 @@ function bashunit::main::exec_tests() {
   # for replay and inherited by parallel test-file subshells.
   if bashunit::env::is_random_order_enabled; then
     if [ -z "${BASHUNIT_SEED:-}" ]; then
-      export BASHUNIT_SEED=$RANDOM
+      BASHUNIT_SEED=$RANDOM
+      export -n BASHUNIT_SEED
     fi
     if ! bashunit::env::is_tap_output_enabled; then
       bashunit::console_header::print_random_order_seed "$BASHUNIT_SEED"
