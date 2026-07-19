@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- `--stop-on-failure`, `--log-junit`, `--report-html`, `--report-tap` and `--report-json` no longer leak into nested bashunit runs via the environment: a script under test that itself calls bashunit used to inherit the parent's stop-on-failure mode (aborting before the rerun cache was written) and overwrite the parent's report files (#834)
 - `./bashunit bench` works again when running from a repository checkout: the dev entrypoint never sourced `src/benchmark.sh`, so every bench run crashed with `command not found` (the built binary was unaffected) (#834)
 - `./build.sh --verify` now exits non-zero when the built binary fails the test suite — previously a red verification run still reported success to CI. The gate exposed that verification had been silently crashing mid-suite since 2025-06: six test files resolved repo paths through the running binary's root dir, which has no `src/` in a build folder; they now resolve paths relative to the test file or repo cwd (#834)
 - Snapshot placeholders (`::ignore::`) now work on systems without perl; multi-line placeholders still need perl (#823)
