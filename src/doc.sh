@@ -44,9 +44,11 @@ function bashunit::doc::print_asserts() {
         }
         if ($0 ~ /^::: code-group/) next
 
-        # Remove markdown link brackets and anchor tags
+        # Remove markdown link brackets and anchor tags. The bracket class
+        # uses the POSIX []][ idiom: busybox awk (Alpine) rejects
+        # backslash-escaped brackets inside a bracket expression.
         line = $0
-        gsub(/[\[\]]/, "", line)
+        gsub(/[][]/, "", line)
         gsub(/ *\(#[-a-z0-9]+\)/, "", line)
         doc = doc line "\n"
       }
