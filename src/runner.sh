@@ -430,6 +430,9 @@ function bashunit::runner::load_test_files() {
     filtered_functions=$(bashunit::helper::get_functions_to_run "test" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
     local functions_for_script
     functions_for_script=$(bashunit::runner::functions_for_script "$test_file" "$filtered_functions")
+    # Full pre-tag/rerun list: these are unset once the file has been
+    # processed, whatever subset actually runs (#829).
+    local _script_fns_to_clean="$functions_for_script"
     # Apply tag filtering to the early check as well
     if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
       bashunit::helper::build_tags_map "$test_file"
@@ -448,6 +451,7 @@ function bashunit::runner::load_test_files() {
       functions_for_script=$(bashunit::rerun::filter_functions "$test_file" "$functions_for_script")
     fi
     if [ -z "$functions_for_script" ]; then
+      bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
       bashunit::runner::clean_set_up_and_tear_down_after_script
       bashunit::runner::restore_workdir
       continue
@@ -492,6 +496,7 @@ function bashunit::runner::load_test_files() {
         "$exclude_tag_filter" "$_cached_fns"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
+    bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
     bashunit::runner::clean_set_up_and_tear_down_after_script
     if ! bashunit::parallel::is_enabled; then
       bashunit::cleanup_script_temp_files
@@ -2064,6 +2069,24 @@ function bashunit::runner::run_tear_down_after_script() {
   fi
 
   return $status
+}
+
+##
+# Unset a file's test functions once the file has been processed.
+#
+# Test files are sourced into the main shell, and their functions used to stay
+# defined for the whole run: every test's $() subshell then forked an
+# ever-growing shell, making multi-file runs quadratic in file count (#829).
+# In parallel mode the file's workers have already forked (with their own copy
+# of the functions) by the time this runs, so unsetting here is race-free.
+# Arguments: $1 - whitespace-separated test function names
+##
+function bashunit::runner::clean_script_test_functions() {
+  local IFS=$' \t\n'
+  local fn
+  for fn in $1; do
+    unset -f "$fn" 2>/dev/null || true
+  done
 }
 
 function bashunit::runner::clean_set_up_and_tear_down_after_script() {
