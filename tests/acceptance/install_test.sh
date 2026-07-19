@@ -284,3 +284,23 @@ function test_install_downloads_the_non_stable_beta_version() {
   assert_same "$file_count_of_tmp_deps_directory" "1"
   assert_same "$(find ./tmp_deps -name 'bashunit')" "./tmp_deps/bashunit"
 }
+
+# Regression guard for #840: a failed `git clone` in the beta path must abort
+# with a non-zero exit — it used to cascade (failed cd, build.sh executed in
+# the caller's directory, missing copy) and still print the success message.
+function test_install_beta_aborts_when_clone_fails() {
+  local shim_dir
+  shim_dir="$(bashunit::temp_dir)"
+  printf '#!/usr/bin/env bash\nexit 128\n' >"$shim_dir/git"
+  chmod +x "$shim_dir/git"
+
+  local output
+  local exit_code=0
+  output="$(PATH="$shim_dir:$PATH" ./install.sh tmp_install beta 2>&1)" || exit_code=$?
+
+  assert_not_equals 0 "$exit_code"
+  assert_not_contains "has been installed" "$output"
+  assert_file_not_exists "./tmp_install/bashunit"
+  assert_directory_not_exists "./tmp_install/bin"
+  assert_directory_not_exists "./tmp_install/temp_bashunit"
+}
