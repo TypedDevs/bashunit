@@ -81,7 +81,11 @@ function test_not_alpine_is_not_busybox() {
 function test_module_load_detects_os_with_a_single_uname_call() {
   bashunit::spy uname
 
-  source "$BASHUNIT_ROOT_DIR/src/check_os.sh"
+  # Resolve src relative to this test file, not the running binary:
+  # under `build.sh --verify` the built bashunit lives in a folder
+  # without src/, and sourcing through $BASHUNIT_ROOT_DIR crashed
+  # the whole verification run (silently, until #834 gated it).
+  source "$(dirname "${BASH_SOURCE[0]}")/../../src/check_os.sh"
 
   assert_have_been_called_times 1 uname
 }

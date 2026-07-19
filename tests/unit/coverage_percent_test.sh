@@ -3,7 +3,9 @@
 # Tests for tools/coverage_percent.sh: extract a single rounded coverage
 # percentage from an LCOV report by summing the per-section LH/LF records.
 
-COVERAGE_PERCENT_SCRIPT="${BASHUNIT_ROOT_DIR:-.}/tools/coverage_percent.sh"
+# cwd-relative (repo root), not $BASHUNIT_ROOT_DIR: under `build.sh --verify`
+# the running binary's root dir has no tools/ (#834).
+COVERAGE_PERCENT_SCRIPT="tools/coverage_percent.sh"
 
 function test_coverage_percent_sums_lh_over_lf() {
   local lcov

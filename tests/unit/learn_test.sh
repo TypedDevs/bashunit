@@ -11,8 +11,9 @@ set -euo pipefail
 function _learn_in_sandbox() {
   local sandbox root_dir
   sandbox="$(bashunit::temp_dir)"
-  # BASHUNIT_ROOT_DIR may be relative (e.g. "."); resolve it before cd-ing away.
-  root_dir="$(cd "$BASHUNIT_ROOT_DIR" && pwd)"
+  # Resolve the repo root from this test file, not $BASHUNIT_ROOT_DIR: under
+  # `build.sh --verify` the running binary's root dir has no src/ (#834).
+  root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
   (
     cd "$sandbox" &&
       HOME="$sandbox" bash -c '
