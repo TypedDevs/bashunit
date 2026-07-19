@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2155
-# shellcheck disable=SC2164
+# Fail fast: no step after a failed download/clone/build/copy may run, and the
+# success message must be unreachable on any failure path (#840).
+set -euo pipefail
 
 # Helper function for regex matching (Bash 3.0+ compatible)
 function regex_match() {
@@ -49,11 +50,13 @@ function verify_checksum() {
     return
   fi
 
+  # `|| true`: a failed download must reach the cannot_verify fallback below,
+  # not die on set -e / pipefail.
   local expected
   if command -v curl >/dev/null 2>&1; then
-    expected=$(curl -fsSL --retry 3 --retry-delay 2 "$checksum_url" 2>/dev/null | awk '{print $1}')
+    expected=$(curl -fsSL --retry 3 --retry-delay 2 "$checksum_url" 2>/dev/null | awk '{print $1}') || true
   else
-    expected=$(wget -qO- "$checksum_url" 2>/dev/null | awk '{print $1}')
+    expected=$(wget -qO- "$checksum_url" 2>/dev/null | awk '{print $1}') || true
   fi
 
   if [ -z "$expected" ]; then
@@ -80,20 +83,32 @@ function build_and_install_beta() {
     exit 1
   fi
 
-  git clone --depth 1 --no-tags "$BASHUNIT_GIT_REPO" temp_bashunit 2>/dev/null
+  # Explicit guard even under set -e: a failed clone must never cascade into
+  # `cd` failing and build.sh executing in the caller's directory (#840).
+  if ! git clone --depth 1 --no-tags "$BASHUNIT_GIT_REPO" temp_bashunit 2>/dev/null; then
+    echo "Error: failed to clone $BASHUNIT_GIT_REPO" >&2
+    rm -rf temp_bashunit
+    exit 1
+  fi
   cd temp_bashunit
   ./build.sh bin >/dev/null
-  local latest_commit=$(git rev-parse --short=7 HEAD)
-  # shellcheck disable=SC2103
+  local latest_commit
+  latest_commit=$(git rev-parse --short=7 HEAD)
   cd ..
 
-  local beta_version=$(printf "(non-stable) beta after %s [%s] 🐍 #%s" \
+  local beta_version
+  beta_version=$(printf "(non-stable) beta after %s [%s] 🐍 #%s" \
     "$LATEST_BASHUNIT_VERSION" \
     "$(date +'%Y-%m-%d')" \
     "$latest_commit")
 
-  sed -i -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' temp_bashunit/bin/bashunit
+  # Portable in-place edit: BSD sed treats the argument after -i as a backup
+  # suffix, so `sed -i -e` leaves a stray `bashunit-e` file behind.
+  sed -e 's/BASHUNIT_VERSION=".*"/BASHUNIT_VERSION="'"$beta_version"'"/g' \
+    temp_bashunit/bin/bashunit >temp_bashunit/bin/bashunit.tmp
+  mv temp_bashunit/bin/bashunit.tmp temp_bashunit/bin/bashunit
   cp temp_bashunit/bin/bashunit ./
+  chmod u+x ./bashunit
   rm -rf temp_bashunit
 }
 
@@ -105,11 +120,13 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
+  # `|| true`: a failed download must reach the explicit file check below with
+  # its clear error message, not die silently on set -e.
   local url="$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit"
   if command -v curl >/dev/null 2>&1; then
-    curl -fL --retry 3 --retry-delay 2 -O -J "$url" 2>/dev/null
+    curl -fL --retry 3 --retry-delay 2 -O -J "$url" 2>/dev/null || true
   elif command -v wget >/dev/null 2>&1; then
-    wget --tries=3 "$url" 2>/dev/null || wget "$url" 2>/dev/null
+    wget --tries=3 "$url" 2>/dev/null || wget "$url" 2>/dev/null || true
   else
     echo "Cannot download bashunit: curl or wget not found." >&2
     exit 1
