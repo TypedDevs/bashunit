@@ -16,6 +16,7 @@
 - `--jobs auto` / `-j auto` caps parallel concurrency at the CPU core count (portable across Linux/macOS/BSD); the default stays unlimited (#766)
 
 ### Changed
+- Multi-file runs are no longer quadratic in file count: each file's test functions are unset once the file has been processed, so test subshells stop forking an ever-growing shell. bashunit's own 63-file unit suite: ~64s -> ~22s sequential, ~26s -> ~7s parallel (#829)
 - Major performance work with no behaviour change: assertions, per-test execution, per-file discovery, cold start and parallel result publishing are now (near) fork-free, snapshots and `--tag` scans are cached, and quadratic failure rendering is single-pass. Benchmarks on bash 3.2: 100x10 `assert_equals` ~1.50s -> ~0.76s, 500 snapshot assertions ~7.5s -> ~3.0s, 100 tagged tests ~2.92s -> ~0.68s, and bashunit's own acceptance suite ~61s -> ~17s (#761-#764, #772-#775, #798, #801-#807, #809, #810, #813, #817)
 - Per-test timing now defaults to `auto` (`BASHUNIT_SHOW_EXECUTION_TIME=true|false|auto`): shown only when the clock is fork-free, avoiding `perl` forks on bash 3.2; `--profile`/`--verbose`/reports still measure (see `adrs/adr-008-auto-skip-per-test-timing.md`) (#765)
 - `assert_equals`/`assert_same` failures with multiline values now render a git word-diff below the header (requires git, opt out with `BASHUNIT_NO_DIFF=true`, respects `--no-color`); machine reports keep the raw values (#777)
