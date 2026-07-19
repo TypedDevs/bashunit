@@ -78,7 +78,7 @@ function test_failure_source_context_does_not_fork_sed_per_line() {
   } >"$fixture"
 
   local trace
-  trace="$(PS4='+ ' bash -x ./bashunit --no-parallel "$fixture" 2>&1 >/dev/null)"
+  trace="$(PS4='+ ' bash -x ./bashunit --no-parallel "$fixture" 2>&1 >/dev/null)" || true
 
   local sed_forks
   sed_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +/?[a-z/]*sed ' || true)"

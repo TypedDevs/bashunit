@@ -39,7 +39,7 @@ function test_bashunit_without_retry_a_flaky_test_fails() {
   export BASHUNIT_RETRY_FIXTURE_PASS_ON=2
   local output
   output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" \
-    --retry 0 --filter test_a_flaky "$FIXTURE")"
+    --retry 0 --filter test_a_flaky "$FIXTURE")" || true
 
   assert_contains "1 failed" "$output"
   assert_same "1" "$(cat "$COUNTER_FILE")"
@@ -49,7 +49,7 @@ function test_bashunit_retry_gives_up_after_exhausting_attempts() {
   export BASHUNIT_RETRY_FIXTURE_PASS_ON=99
   local output
   output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" \
-    --retry 2 --filter test_a_flaky "$FIXTURE")"
+    --retry 2 --filter test_a_flaky "$FIXTURE")" || true
 
   # Counted once, not once per attempt.
   assert_contains "1 failed" "$output"

@@ -77,7 +77,11 @@ function bashunit::cleanup_testcase_temp_files() {
     # assignment attached to `local`, it stores the literal "(glob)" instead.
     local matches
     matches=("$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}"_*)
-    [ -e "${matches[0]:-}" ] && rm -rf "${matches[@]}"
+    # if-form, not `[ ] && rm`: as the function's last statement the skip path
+    # would return 1, which is a death sentence for callers under set -e (#836)
+    if [ -e "${matches[0]:-}" ]; then
+      rm -rf "${matches[@]}"
+    fi
   fi
 }
 

@@ -4,14 +4,15 @@ function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
   FIXTURE="tests/acceptance/fixtures/test_bashunit_report_json.sh"
   JQ_AVAILABLE=false
-  command -v jq >/dev/null 2>&1 && JQ_AVAILABLE=true
+  # `|| true` so a jq-less box means "skip", not "hook failed" (#836)
+  { command -v jq >/dev/null 2>&1 && JQ_AVAILABLE=true; } || true
 }
 
 function test_report_json_writes_valid_json_with_correct_counts() {
   if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local report
   report="$(mktemp)"
-  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1 || true
 
   assert_successful_code "$(jq empty "$report" 2>&1)"
   assert_same "2" "$(jq '.summary.total' "$report")"
@@ -24,7 +25,7 @@ function test_report_json_escapes_special_characters_in_messages() {
   if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local report
   report="$(mktemp)"
-  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1 || true
 
   # A double quote inside the failure message must round-trip as valid JSON.
   local message
@@ -39,7 +40,7 @@ function test_report_json_is_valid_json_under_parallel() {
   if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local report
   report="$(mktemp)"
-  ./bashunit --parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1
+  ./bashunit --parallel --env "$TEST_ENV_FILE" --report-json "$report" "$FIXTURE" >/dev/null 2>&1 || true
 
   assert_successful_code "$(jq empty "$report" 2>&1)"
   rm -f "$report"
@@ -49,7 +50,7 @@ function test_report_json_is_not_written_without_the_flag() {
   local report
   report="$(mktemp)"
   rm -f "$report"
-  ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$FIXTURE" >/dev/null 2>&1
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$FIXTURE" >/dev/null 2>&1 || true
 
   assert_file_not_exists "$report"
 }

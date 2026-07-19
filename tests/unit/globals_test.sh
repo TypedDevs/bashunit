@@ -93,7 +93,7 @@ function test_globals_cleanup_testcase_skips_and_preserves_others_when_none_crea
   local unrelated="$BASHUNIT_TEMP_DIR/unrelated_${$}.keep"
   : >"$unrelated"
 
-  bashunit::cleanup_testcase_temp_files
+  bashunit::cleanup_testcase_temp_files || true
 
   assert_file_exists "$unrelated"
   rm -f "$unrelated"
@@ -107,8 +107,8 @@ function test_globals_cleanup_testcase_skip_path_is_safe_under_nullglob() {
   # With nullglob on the non-matching glob yields an empty array; the skip must
   # not trip set -u on ${matches[0]}.
   shopt -s nullglob
-  bashunit::cleanup_testcase_temp_files
-  local status=$?
+  local status=0
+  bashunit::cleanup_testcase_temp_files || status=$?
   shopt -u nullglob
 
   assert_successful_code "$status"

@@ -351,7 +351,9 @@ function bashunit::env::is_no_color_enabled() {
 }
 
 function bashunit::env::is_diff_enabled() {
-  [ "$BASHUNIT_NO_DIFF" != "true" ]
+  # :- guard: a user (or test) may have unset BASHUNIT_NO_DIFF; a bare read
+  # dies under set -u (--strict) (#836)
+  [ "${BASHUNIT_NO_DIFF:-}" != "true" ]
 }
 
 ##

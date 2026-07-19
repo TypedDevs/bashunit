@@ -59,8 +59,8 @@ function test_run_command_or_eval_runs_alias_non_zero() {
   # shellcheck disable=SC2139
   alias bashunit_alias_ko='return 3'
 
-  bashunit::run_command_or_eval "bashunit_alias_ko"
-  local exit_code=$?
+  local exit_code=0
+  bashunit::run_command_or_eval "bashunit_alias_ko" || exit_code=$?
 
   assert_same "3" "$exit_code"
   unalias bashunit_alias_ko
@@ -77,8 +77,8 @@ function test_run_command_or_eval_runs_function_not_treated_as_alias() {
 function test_run_command_or_eval_name_value_is_not_defined_as_alias() {
   # Regression: "name=value" must NOT be probed with `alias` (it would define
   # the alias and wrongly succeed). It has to be run directly and fail.
-  bashunit::run_command_or_eval "bashunit_x=1"
-  local exit_code=$?
+  local exit_code=0
+  bashunit::run_command_or_eval "bashunit_x=1" || exit_code=$?
 
   local side_effect="absent"
   if alias bashunit_x >/dev/null 2>&1; then
@@ -91,8 +91,8 @@ function test_run_command_or_eval_name_value_is_not_defined_as_alias() {
 
 function test_run_command_or_eval_multiword_command_is_not_treated_as_alias() {
   # A multi-word string can never be an alias name: run it directly.
-  bashunit::run_command_or_eval "bashunit_missing_cmd --flag"
-  local exit_code=$?
+  local exit_code=0
+  bashunit::run_command_or_eval "bashunit_missing_cmd --flag" || exit_code=$?
 
   assert_not_same "0" "$exit_code"
 }
