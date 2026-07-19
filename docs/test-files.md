@@ -99,7 +99,7 @@ Running tests/example_test.sh
 
 This visibility helps identify slow setup operations that may impact test run time.
 
-If any command inside `set_up_before_script` fails, bashunit halts the file immediately and reports the error (including the failing command and location) before any test functions run. This ensures misconfigured environments or missing dependencies surface clearly during setup.
+If `set_up_before_script` fails — any failing command, or the function returning a non-zero status (watch out for a trailing `cmd && var=value` guard: when `cmd` fails, the guard is the hook's return value) — bashunit reports the hook error, marks **every test in the file as failed** (they are included in the totals), and continues with the next test file. The rest of the suite always runs, and the failure is attributed to the hook rather than surfacing as mysterious individual test errors. If you want a missing optional dependency to skip tests instead of failing them, end the hook with an explicit success, e.g. `command -v jq >/dev/null 2>&1 && HAS_JQ=true; return 0` — then call `bashunit::skip` inside the tests.
 
 ::: code-group
 ```bash [Example]
