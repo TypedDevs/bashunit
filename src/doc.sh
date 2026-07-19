@@ -9,58 +9,47 @@ function bashunit::doc::get_embedded_docs() {
   # __BASHUNIT_EMBEDDED_DOCS_END__
 }
 
+# Single awk pass over the embedded docs: the previous line-by-line shell loop
+# forked an `echo | sed` pipe per line (~3.2k forks, ~5s for the ~1.6k-line
+# docs page); one awk fork does the same work in milliseconds (#832).
 function bashunit::doc::print_asserts() {
   local filter="${1:-}"
-  local docstring=""
-  local fn=""
-  local should_print=0
 
-  local line
-  while IFS='' read -r line || [ -n "$line" ]; do
-    fn=$(echo "$line" | sed -n 's/^## \([A-Za-z0-9_]*\).*/\1/p')
-    # Only treat assertion headings as doc entries; skip prose sections
-    # like "## Related" that are part of the documentation page but not asserts.
-    case "$fn" in
-    assert* | bashunit*) ;;
-    *) fn="" ;;
-    esac
-    if [ -n "$fn" ]; then
-      local _match=0
-      if [ -z "$filter" ]; then
-        _match=1
-      else
-        case "$fn" in *"$filter"*) _match=1 ;; esac
-      fi
-      if [ "$_match" -eq 1 ]; then
-        should_print=1
-        echo "$line"
-        docstring=""
-      else
-        should_print=0
-      fi
-      continue
-    fi
+  bashunit::doc::get_embedded_docs | awk -v filter="$filter" '
+    {
+      if ($0 ~ /^## /) {
+        # Heading word: the leading [A-Za-z0-9_]* run after "## ". Only
+        # assert*/bashunit* headings are doc entries; prose headings like
+        # "## Related" fall through and are treated as regular content.
+        fn = substr($0, 4)
+        sub(/[^A-Za-z0-9_].*$/, "", fn)
+        if (fn ~ /^(assert|bashunit)/) {
+          if (filter == "" || index(fn, filter) > 0) {
+            should_print = 1
+            print $0
+            doc = ""
+          } else {
+            should_print = 0
+          }
+          next
+        }
+      }
 
-    if ((should_print)); then
-      # Check for code fence using pattern matching instead of regex
-      # Avoids backtick escaping issues in Bash 3.0
-      case "$line" in
-      '```'*)
-        echo "--------------"
-        echo "$docstring"
-        should_print=0
-        continue
-        ;;
-      esac
+      if (should_print) {
+        if ($0 ~ /^```/) {
+          print "--------------"
+          print doc
+          should_print = 0
+          next
+        }
+        if ($0 ~ /^::: code-group/) next
 
-      case "$line" in
-      "::: code-group"*) continue ;;
-      esac
-
-      # Remove markdown link brackets and anchor tags
-      line="${line//[\[\]]/}"
-      line="$(sed -E 's/ *\(#[-a-z0-9]+\)//g' <<<"$line")"
-      docstring="$docstring$line"$'\n'
-    fi
-  done <<<"$(bashunit::doc::get_embedded_docs)"
+        # Remove markdown link brackets and anchor tags
+        line = $0
+        gsub(/[\[\]]/, "", line)
+        gsub(/ *\(#[-a-z0-9]+\)/, "", line)
+        doc = doc line "\n"
+      }
+    }
+  '
 }
