@@ -42,10 +42,13 @@ export BASHUNIT_WORKING_DIR
 for arg in "$@"; do
   case "$arg" in
   --skip-env-file)
-    export BASHUNIT_SKIP_ENV_FILE=true
+    # this-process-only (see the flag-parse loop in src/main.sh) (#837)
+    BASHUNIT_SKIP_ENV_FILE=true
+    export -n BASHUNIT_SKIP_ENV_FILE
     ;;
   -l | --login)
-    export BASHUNIT_LOGIN_SHELL=true
+    BASHUNIT_LOGIN_SHELL=true
+    export -n BASHUNIT_LOGIN_SHELL
     ;;
   --no-color)
     # shellcheck disable=SC2034
