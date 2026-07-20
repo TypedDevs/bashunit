@@ -148,16 +148,8 @@ function bashunit::state::add_test_output() {
   _BASHUNIT_TEST_OUTPUT="$_BASHUNIT_TEST_OUTPUT$1"
 }
 
-function bashunit::state::get_test_exit_code() {
-  echo "$_BASHUNIT_TEST_EXIT_CODE"
-}
-
 function bashunit::state::set_test_exit_code() {
   _BASHUNIT_TEST_EXIT_CODE="$1"
-}
-
-function bashunit::state::get_test_title() {
-  echo "$_BASHUNIT_TEST_TITLE"
 }
 
 function bashunit::state::set_test_title() {
@@ -168,10 +160,6 @@ function bashunit::state::reset_test_title() {
   _BASHUNIT_TEST_TITLE=""
 }
 
-function bashunit::state::get_current_test_interpolated_function_name() {
-  echo "$_BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME"
-}
-
 function bashunit::state::set_current_test_interpolated_function_name() {
   _BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME="$1"
 }
@@ -180,32 +168,12 @@ function bashunit::state::reset_current_test_interpolated_function_name() {
   _BASHUNIT_CURRENT_TEST_INTERPOLATED_NAME=""
 }
 
-function bashunit::state::get_test_hook_failure() {
-  echo "$_BASHUNIT_TEST_HOOK_FAILURE"
-}
-
 function bashunit::state::set_test_hook_failure() {
   _BASHUNIT_TEST_HOOK_FAILURE="$1"
 }
 
-function bashunit::state::reset_test_hook_failure() {
-  _BASHUNIT_TEST_HOOK_FAILURE=""
-}
-
-function bashunit::state::get_test_hook_message() {
-  echo "$_BASHUNIT_TEST_HOOK_MESSAGE"
-}
-
 function bashunit::state::set_test_hook_message() {
   _BASHUNIT_TEST_HOOK_MESSAGE="$1"
-}
-
-function bashunit::state::reset_test_hook_message() {
-  _BASHUNIT_TEST_HOOK_MESSAGE=""
-}
-
-function bashunit::state::is_assertion_failed_in_test() {
-  ((_BASHUNIT_ASSERTION_FAILED_IN_TEST))
 }
 
 function bashunit::state::mark_assertion_failed_in_test() {
