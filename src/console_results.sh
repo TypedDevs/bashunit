@@ -143,29 +143,13 @@ function bashunit::console_results::print_execution_time() {
   time="${time%%.*}"
   time="${time:-0}"
 
-  if [ "$time" -lt 1000 ]; then
-    printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
-      "Time taken: ${time}ms"
-    return
-  fi
-
-  local time_in_seconds=$((time / 1000))
-
-  if [ "$time_in_seconds" -ge 60 ]; then
-    local minutes=$((time_in_seconds / 60))
-    local seconds=$((time_in_seconds % 60))
-    printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
-      "Time taken: ${minutes}m ${seconds}s"
-    return
-  fi
-
-  local integer_part=$((time / 1000))
-  local decimal_part=$(( (time % 1000) / 10 ))
-  local formatted_seconds
-  formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
+  # Reuse the shared ms formatter (Xm Ys / X.XXs / Xms) instead of re-deriving it;
+  # this runs once per run, so the command-substitution fork is negligible.
+  local formatted
+  formatted=$(bashunit::console_results::format_duration "$time")
 
   printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
-    "Time taken: ${formatted_seconds}s"
+    "Time taken: ${formatted}"
 }
 
 function bashunit::console_results::format_duration() {
