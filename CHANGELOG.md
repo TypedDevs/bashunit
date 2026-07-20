@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.42.0](https://github.com/TypedDevs/bashunit/compare/0.41.0...0.42.0) - 2026-07-20
+
 ### Fixed
 - A failing `set_up_before_script`/`set_up` now fails every test in the file with the hook's error, keeps the totals consistent, and lets the suite continue — a strict test file can no longer abort the whole run mid-suite (#836)
 - Run-mode flags (`--parallel`, `--simple`, `--strict`, `--retry`, `--seed`, report paths, …) no longer leak through the environment into nested bashunit runs, so a script under test that calls bashunit gets default behavior; `BASHUNIT_*=…` configuration is unchanged (#834, #837)
