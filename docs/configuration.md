@@ -195,6 +195,29 @@ BASHUNIT_RANDOM_ORDER=false
 ```
 :::
 
+## Rerun failed
+
+> `BASHUNIT_RERUN_FAILED=true|false`
+
+Replay only the tests that failed on the previous run instead of the whole
+suite. Disabled by default. Every run records its failing tests to
+`.bashunit/last-failed` (add `.bashunit/` to your `.gitignore`), so enabling
+this replays exactly those; a fully green run clears the cache, and an empty
+cache falls back to running everything. Composes with `--filter`, `--tag` and
+`--parallel`.
+
+Similar as using `--rerun-failed` option on the
+[command line](/command-line#rerun-failed).
+
+::: code-group
+```bash [Replay last failures]
+BASHUNIT_RERUN_FAILED=true
+```
+```bash [Disabled (default)]
+BASHUNIT_RERUN_FAILED=false
+```
+:::
+
 ## Stop on assertion failure
 
 > `BASHUNIT_STOP_ON_ASSERTION_FAILURE=true|false`
@@ -273,6 +296,40 @@ __               _                   _    // [!code hl]
 ```bash [.env]
 BASHUNIT_SHOW_HEADER=true
 BASHUNIT_HEADER_ASCII_ART=true
+```
+:::
+
+## Show skipped
+
+> `BASHUNIT_SHOW_SKIPPED=true|false`
+
+Show a summary of skipped tests at the end of the run. Disabled by default.
+
+Similar as using `--show-skipped` option on the [command line](/command-line).
+
+::: code-group
+```bash [Show skipped]
+BASHUNIT_SHOW_SKIPPED=true
+```
+```bash [Disabled (default)]
+BASHUNIT_SHOW_SKIPPED=false
+```
+:::
+
+## Show incomplete
+
+> `BASHUNIT_SHOW_INCOMPLETE=true|false`
+
+Show a summary of incomplete tests at the end of the run. Disabled by default.
+
+Similar as using `--show-incomplete` option on the [command line](/command-line).
+
+::: code-group
+```bash [Show incomplete]
+BASHUNIT_SHOW_INCOMPLETE=true
+```
+```bash [Disabled (default)]
+BASHUNIT_SHOW_INCOMPLETE=false
 ```
 :::
 
