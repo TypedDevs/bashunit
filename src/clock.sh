@@ -195,16 +195,6 @@ function bashunit::clock::total_runtime_in_milliseconds() {
   fi
 }
 
-function bashunit::clock::total_runtime_in_nanoseconds() {
-  local end_time
-  end_time=$(bashunit::clock::now)
-  if [ -n "$end_time" ]; then
-    bashunit::math::calculate "$end_time - $_BASHUNIT_START_TIME"
-  else
-    echo ""
-  fi
-}
-
 function bashunit::clock::init() {
   _BASHUNIT_START_TIME=$(bashunit::clock::now)
 }
