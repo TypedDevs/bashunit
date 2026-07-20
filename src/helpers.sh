@@ -857,23 +857,6 @@ function bashunit::helper::tags_for_function() {
 }
 
 #
-# Extracts @tag annotations for a specific function from a test file.
-# Thin wrapper over the cached tags map, kept for callers that want the tags
-# on stdout. Hot-path call sites use build_tags_map + tags_for_function to
-# avoid the subshell fork.
-#
-# @param $1 string Function name
-# @param $2 string Script file path
-#
-# @return string Comma-separated list of tags, or empty if none
-#
-function bashunit::helper::get_tags_for_function() {
-  bashunit::helper::build_tags_map "$2"
-  bashunit::helper::tags_for_function "$1"
-  echo "$_BASHUNIT_TAGS_OUT"
-}
-
-#
 # Checks if a function's tags match the include/exclude filters.
 # Include uses OR logic (any match passes).
 # Exclude uses OR logic (any match fails).
