@@ -105,10 +105,8 @@ function assert_date_equals() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -ne "$expected" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to be equal to" "${expected}"
     return
@@ -126,10 +124,8 @@ function assert_date_before() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -ge "$expected" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to be before" "${expected}"
     return
@@ -147,10 +143,8 @@ function assert_date_after() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -le "$expected" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to be after" "${expected}"
     return
@@ -170,10 +164,8 @@ function assert_date_within_range() {
   actual="$(bashunit::date::to_epoch "$3")"
 
   if [ "$actual" -lt "$from" ] || [ "$actual" -gt "$to" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to be between" "${from} and ${to}"
     return
@@ -197,10 +189,8 @@ function assert_date_within_delta() {
   fi
 
   if [ "$diff" -gt "$delta" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${actual}" "to be within" "${delta} seconds of ${expected}"
     return

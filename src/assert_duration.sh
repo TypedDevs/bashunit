@@ -27,10 +27,8 @@ function assert_duration() {
   elapsed_ms=$(bashunit::duration::measure_ms "$command")
 
   if [ "$elapsed_ms" -gt "$threshold_ms" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${threshold_ms}" "to complete within (ms)" "${command}"
     return
@@ -49,10 +47,8 @@ function assert_duration_less_than() {
   elapsed_ms=$(bashunit::duration::measure_ms "$command")
 
   if [ "$elapsed_ms" -ge "$threshold_ms" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${threshold_ms}" "to complete within (ms)" "${command}"
     return
@@ -71,10 +67,8 @@ function assert_duration_greater_than() {
   elapsed_ms=$(bashunit::duration::measure_ms "$command")
 
   if [ "$elapsed_ms" -le "$threshold_ms" ]; then
-    local test_fn
-    test_fn="$(bashunit::helper::find_test_function_name)"
-    local label
-    label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+    bashunit::assert::label_to_slot
+    local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
     bashunit::console_results::print_failed_test "${label}" "${threshold_ms}" "to take at least (ms)" "${command}"
     return
