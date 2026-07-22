@@ -569,8 +569,6 @@ function bashunit::helper::find_total_tests() {
         local -a functions_to_run=()
         # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
-        # shellcheck disable=SC2034
-        local -a provider_data=()
         local provider_data_count=0
         local fn_name line
         # Scan once; functions without a provider count as 1 with no fork (#763).
