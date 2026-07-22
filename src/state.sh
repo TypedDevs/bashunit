@@ -10,6 +10,13 @@ case "$_bashunit_base64_help" in
 esac
 unset _bashunit_base64_help
 
+# Wire sentinel for an empty base64 payload. base64 of "" is "", which gets lost
+# in line parsing, so encode_base64 emits this token and both decode sites map it
+# back to "". Single source of truth keeps the encode (helpers.sh) and decode
+# (helpers.sh, runner.sh) sides byte-identical.
+# shellcheck disable=SC2034 # read cross-file in helpers.sh and runner.sh
+_BASHUNIT_BASE64_EMPTY_SENTINEL="_BASHUNIT_EMPTY_"
+
 _BASHUNIT_TESTS_PASSED=0
 _BASHUNIT_TESTS_FAILED=0
 _BASHUNIT_TESTS_SKIPPED=0

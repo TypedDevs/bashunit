@@ -1482,7 +1482,7 @@ function bashunit::runner::decode_subshell_output() {
 
   local test_output_base64="${test_execution_result##*##TEST_OUTPUT=}"
   test_output_base64="${test_output_base64%%##*}"
-  if [ -z "$test_output_base64" ] || [ "$test_output_base64" = "_BASHUNIT_EMPTY_" ]; then
+  if [ -z "$test_output_base64" ] || [ "$test_output_base64" = "$_BASHUNIT_BASE64_EMPTY_SENTINEL" ]; then
     _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
     return
   fi

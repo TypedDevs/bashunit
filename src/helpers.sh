@@ -176,7 +176,7 @@ function bashunit::helper::encode_base64() {
 
   # Handle empty string specially - base64 of "" is "", which gets lost in line parsing
   if [ -z "$value" ]; then
-    printf '%s' "_BASHUNIT_EMPTY_"
+    printf '%s' "$_BASHUNIT_BASE64_EMPTY_SENTINEL"
     return
   fi
 
@@ -193,7 +193,7 @@ function bashunit::helper::decode_base64() {
   local value="$1"
 
   # Empty input decodes to empty; short-circuit to skip the base64 fork (#762).
-  if [ -z "$value" ] || [ "$value" = "_BASHUNIT_EMPTY_" ]; then
+  if [ -z "$value" ] || [ "$value" = "$_BASHUNIT_BASE64_EMPTY_SENTINEL" ]; then
     printf ''
     return
   fi
