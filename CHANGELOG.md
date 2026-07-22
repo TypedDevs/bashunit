@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Core string assertions (`assert_contains`/`assert_not_contains`, `assert_matches`/`assert_not_matches`, `assert_string_starts_with`/`assert_string_ends_with` and their negations) no longer fork a subshell per call to join their arguments; a fork-free join with identical behaviour replaces it (#844)
+
 ## [0.42.0](https://github.com/TypedDevs/bashunit/compare/0.41.0...0.42.0) - 2026-07-20
 
 ### Fixed
