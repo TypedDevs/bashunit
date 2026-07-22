@@ -142,6 +142,28 @@ function test_unsuccessful_assert_string_not_ends_with() {
     "$(assert_string_not_ends_with "bar" "foobar")"
 }
 
+# Characterization: the haystack join must strip trailing newlines (the behavior
+# $(printf '%s\n' ...) gave), preserve internal newlines, and join multiple args
+# with newlines. These pin the contract the fork-free join must keep.
+function test_assert_contains_ignores_trailing_newlines_in_haystack() {
+  assert_empty "$(assert_contains "bar" "$(printf 'foobar')"$'\n')"
+  assert_empty "$(assert_contains "bar" "foobar"$'\n\n\n')"
+}
+
+function test_assert_string_ends_with_ignores_trailing_newlines_in_haystack() {
+  assert_empty "$(assert_string_ends_with "bar" "foobar"$'\n')"
+  assert_empty "$(assert_string_ends_with "bar" "foobar"$'\n\n\n')"
+}
+
+function test_assert_contains_preserves_internal_newlines_in_haystack() {
+  assert_empty "$(assert_contains "b" "a"$'\n'"b"$'\n'"c")"
+}
+
+function test_assert_contains_joins_multiple_haystack_args_with_newlines() {
+  assert_empty "$(assert_contains "b" "a" "b" "c")"
+  assert_empty "$(assert_string_ends_with "c" "a" "b" "c")"
+}
+
 function test_assert_string_start_end_with_special_chars() {
   assert_empty "$(assert_string_starts_with "foo." "foo.bar")"
   assert_empty "$(assert_string_ends_with ".bar" "foo.bar")"
