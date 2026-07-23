@@ -431,6 +431,15 @@ Reports an error if `expected` and `actual` are not equals.
 - assert_files_not_equals is the inverse of this assertion and takes the same arguments.
 
 
+## assert_not_equals
+--------------
+> `assert_not_equals "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
+
+- assert_equals is the inverse of this assertion and takes the same arguments.
+
+
 ## assert_not_same
 --------------
 > `assert_not_same "expected" "actual"`
@@ -614,5 +623,3 @@ Reports an error if `command` completes in `threshold_ms` milliseconds or less. 
 
 Unambiguously reports an error message. Useful for reporting specific message
 when testing situations not covered by any `assert_*` functions.
-
-

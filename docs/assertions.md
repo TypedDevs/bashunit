@@ -1103,6 +1103,25 @@ function test_failure() {
 ```
 :::
 
+## assert_not_equals
+> `assert_not_equals "expected" "actual"`
+
+Reports an error if the two variables `expected` and `actual` are equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
+
+- [assert_equals](#assert-equals) is the inverse of this assertion and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_not_equals "foo" "bar"
+}
+
+function test_failure() {
+  assert_not_equals "foo" "foo"
+}
+```
+:::
+
 ## assert_not_same
 > `assert_not_same "expected" "actual"`
 
