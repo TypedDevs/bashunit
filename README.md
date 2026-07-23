@@ -59,7 +59,7 @@ Prefer learning by doing? Run `./lib/bashunit learn` for an interactive tutorial
 
 ## Assertions at a glance
 
-bashunit ships ~60 assertions across many families. One representative example per family
+bashunit ships ~70 assertions across many families. One representative example per family
 (full catalog and signatures at [bashunit.com/assertions](https://bashunit.com/assertions)):
 
 | Family | Example |
@@ -73,8 +73,8 @@ bashunit ships ~60 assertions across many families. One representative example p
 | JSON (needs `jq`) | [`assert_json_contains ".name" "bashunit" "$json"`](https://bashunit.com/assertions#assert-json-contains) |
 | Dates | [`assert_date_before "2026-01-01" "$date"`](https://bashunit.com/assertions#assert-date-before) |
 | Duration | [`assert_duration_less_than "echo hello" 500`](https://bashunit.com/assertions#assert-duration-less-than) |
-| Snapshots | [`assert_match_snapshot "$(my_cmd)"`](https://bashunit.com/assertions#assert-match-snapshot) |
-| Test doubles | [`assert_have_been_called_times 2 my_fn`](https://bashunit.com/assertions#assert-have-been-called-times) |
+| Snapshots | [`assert_match_snapshot "$(my_cmd)"`](https://bashunit.com/snapshots#assert-match-snapshot) |
+| Test doubles | [`assert_have_been_called_times 2 my_fn`](https://bashunit.com/test-doubles#assert-have-been-called-times) |
 
 ## Documentation
 
