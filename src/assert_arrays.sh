@@ -56,10 +56,8 @@ function assert_array_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+  bashunit::assert::label_to_slot
+  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
 
   local -a actual
@@ -82,10 +80,8 @@ function assert_array_length() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+  bashunit::assert::label_to_slot
+  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
 
   # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
@@ -106,10 +102,8 @@ function assert_array_not_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+  bashunit::assert::label_to_slot
+  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
   local -a actual
   actual=("$@")

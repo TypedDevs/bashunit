@@ -31,9 +31,8 @@ function bashunit::assert::label_to_slot() {
 _BASHUNIT_ASSERT_JOINED_OUT=""
 
 # Join positional args into _BASHUNIT_ASSERT_JOINED_OUT with no fork.
-# Mirrors $(printf '%s\n' "$@"): joins with newlines and strips trailing
-# newlines, so callers that match on the result behave exactly as the previous
-# command-substitution did.
+# Output matches $(printf '%s\n' "$@") exactly: newline-joined, trailing
+# newlines stripped (as command substitution strips them).
 function bashunit::assert::join_to_slot() {
   local IFS=$'\n'
   local joined="$*"

@@ -176,7 +176,7 @@ function bashunit::helper::encode_base64() {
 
   # Handle empty string specially - base64 of "" is "", which gets lost in line parsing
   if [ -z "$value" ]; then
-    printf '%s' "_BASHUNIT_EMPTY_"
+    printf '%s' "$_BASHUNIT_BASE64_EMPTY_SENTINEL"
     return
   fi
 
@@ -193,7 +193,7 @@ function bashunit::helper::decode_base64() {
   local value="$1"
 
   # Empty input decodes to empty; short-circuit to skip the base64 fork (#762).
-  if [ -z "$value" ] || [ "$value" = "_BASHUNIT_EMPTY_" ]; then
+  if [ -z "$value" ] || [ "$value" = "$_BASHUNIT_BASE64_EMPTY_SENTINEL" ]; then
     printf ''
     return
   fi
@@ -569,8 +569,6 @@ function bashunit::helper::find_total_tests() {
         local -a functions_to_run=()
         # shellcheck disable=SC2206
         functions_to_run=($filtered_functions)
-        # shellcheck disable=SC2034
-        local -a provider_data=()
         local provider_data_count=0
         local fn_name line
         # Scan once; functions without a provider count as 1 with no fork (#763).

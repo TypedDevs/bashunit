@@ -11,10 +11,8 @@ function bashunit::assertion_failed() {
   local actual=$2
   local failure_condition_message=${3:-"but got "}
 
-  local test_fn
-  test_fn="$(bashunit::helper::find_test_function_name)"
-  local label
-  label="$(bashunit::helper::normalize_test_function_name "$test_fn")"
+  bashunit::assert::label_to_slot
+  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   bashunit::assert::mark_failed
   bashunit::console_results::print_failed_test "${label}" "${expected}" \
     "$failure_condition_message" "${actual}"
