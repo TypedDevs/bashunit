@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-# intentionally blank
+# Intentionally empty: discovery tests only match this file by path.

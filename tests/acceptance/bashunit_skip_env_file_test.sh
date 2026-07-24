@@ -27,8 +27,7 @@ function test_skip_env_file_via_flag() {
 }
 
 function test_without_skip_env_file_loads_dotenv() {
-  # Without --skip-env-file, the .env should be loaded
-  # This test verifies normal behavior still works
+  # Without --skip-env-file, the .env is loaded (the default path).
   local output
   output=$(./bashunit --no-parallel --simple --env "$TEST_ENV_FILE" \
     tests/acceptance/fixtures/test_bashunit_when_a_test_passes.sh 2>&1) || true

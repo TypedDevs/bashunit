@@ -1072,7 +1072,7 @@ function bashunit::main::exec_assert() {
     args[last_index]="$inner_exit_code"
     ;;
   *)
-    # Add more cases here for other assert_* handlers if needed
+    # Every other assertion takes its argument as-is; no rewriting needed.
     ;;
   esac
 

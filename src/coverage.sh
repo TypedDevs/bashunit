@@ -876,8 +876,9 @@ function bashunit::coverage::_is_case_pattern_line() {
 
 # Extract branch points from a Bash file.
 # Output format: <decision_line>|<kind>|<arm_start>:<arm_end>[,<arm_start>:<arm_end>]...
-# kind ∈ {if, case}
-# Scope: if/elif/else chains and case patterns. See adrs/adr-007-branch-coverage-mvp.md.
+# kind ∈ {if, case, loop}
+# Scope: if/elif/else chains, case patterns and loop bodies.
+# See adrs/adr-007-branch-coverage-mvp.md.
 # The handlers below operate on the per-construct state arrays that
 # extract_branches keeps as locals. Bash 3.0 has dynamic scoping for
 # `local` vars, so the helpers see and mutate the caller's state

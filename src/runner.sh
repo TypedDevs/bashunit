@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
-# Pre-compiled regex pattern for parsing test result assertions
+# Regex matching the encoded ##KEY=value## counters of a per-test result line.
+# Guarded on "already set" because the readonly would abort a re-source of this
+# file (the acceptance suite sources bashunit into an already-loaded shell).
 if [ -z "${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x}" ]; then
   declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##'\
 'ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##'\
