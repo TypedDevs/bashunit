@@ -5,6 +5,9 @@
 ### Added
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
+### Fixed
+- `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true`; the actual default has been `auto` since #765. It now also lists the 15 supported variables it was missing (`BASHUNIT_REPORT_TAP`, `BASHUNIT_REPORT_JSON`, `BASHUNIT_OUTPUT_FORMAT`, `BASHUNIT_NO_PROGRESS`, `BASHUNIT_SHOW_OUTPUT_ON_FAILURE`, `BASHUNIT_PARALLEL_JOBS`, `BASHUNIT_SKIP_ENV_FILE`, `BASHUNIT_TEST_TIMEOUT`, `BASHUNIT_RETRY`, `BASHUNIT_RANDOM_ORDER`, `BASHUNIT_SEED`, `BASHUNIT_SHARD_INDEX`, `BASHUNIT_SHARD_TOTAL`, `BASHUNIT_WATCH_INTERVAL`, `BASHUNIT_COVERAGE_SHOW_LINE_HITS`). No behaviour change
+
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
 ### Added
