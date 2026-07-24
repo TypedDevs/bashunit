@@ -574,7 +574,11 @@ function assert_exit_code() {
 
   local expected_exit_code="$1"
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # State the PASS condition and negate it. `[ -eq ]` exits 2 (not 1) on a
+  # non-integer operand, so the old `[ -ne ]` form read that error as "equal"
+  # and counted the assertion as passed. Negating makes unparseable input
+  # fail closed, matching the `! [ -lt ]` form of the comparison assertions.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::label_to_slot "${label_override:-}"
     local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
@@ -592,7 +596,8 @@ function assert_successful_code() {
 
   local expected_exit_code=0
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::label_to_slot "${label_override:-}"
     local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
@@ -609,7 +614,8 @@ function assert_unsuccessful_code() {
   local label_override=""
   bashunit::assert::should_skip && return 0
 
-  if [ "$actual_exit_code" -eq 0 ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -ne 0 ]; then
     bashunit::assert::label_to_slot "${label_override:-}"
     local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
@@ -627,7 +633,8 @@ function assert_general_error() {
 
   local expected_exit_code=1
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::label_to_slot "${label_override:-}"
     local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
@@ -646,7 +653,8 @@ function assert_command_not_found() {
 
   local expected_exit_code=127
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::label_to_slot "${label_override:-}"
     local label=$_BASHUNIT_ASSERT_LABEL_OUT
     bashunit::assert::mark_failed
