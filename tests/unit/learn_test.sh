@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# src/learn.sh had no tests at all. These cover its non-interactive core: the
-# progress persistence and the environment lifecycle. LEARN_PROGRESS_FILE is a
-# readonly resolved from $HOME at source time, so each test sources learn.sh in
-# a fresh shell with HOME pointed at an isolated directory — the suite's own
-# already-sourced copy (bound to the real $HOME) is never exercised.
+# Covers the non-interactive core of src/learn.sh: progress persistence and the
+# environment lifecycle. LEARN_PROGRESS_FILE is a readonly resolved from $HOME at
+# source time, so each test sources learn.sh in a fresh shell with HOME pointed
+# at an isolated directory — the suite's own already-sourced copy (bound to the
+# real $HOME) is never exercised.
 
 # Runs a snippet against a freshly-sourced learn.sh inside an isolated HOME/CWD.
 function _learn_in_sandbox() {
