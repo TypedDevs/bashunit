@@ -13,6 +13,7 @@
 - bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created. Previously the run continued with every failure/skip collector writing nowhere, so a failing suite still exited non-zero but lost its assertion detail and leaked raw `src/runner.sh: line N: ...: Not a directory` errors instead of reporting the cause
 - A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead
 - `release.sh` reports a failed rollback as failed instead of always printing "Rollback complete", and aborts when neither the tar nor the `cp` sandbox copy produced a usable project copy
+- `assert_arrays_equal` no longer reports the internal label `Bashunit::assert::label` when it fails outside a test function (for example from a `set_up` hook); it now reports `Assert arrays equal`, matching every other assertion
 
 ### Removed
 - Dead internal code with no remaining callers: the pre-cache fallback branch of the runner's `call_test_functions` (unreachable since the per-file function list became mandatory), `bashunit::state::calculate_total_assertions` (superseded by `bashunit::runner::compute_total_assertions`), `bashunit::coverage::get_line_hits` (superseded by `bashunit::coverage::get_all_line_hits`), `bashunit::helper::trim` and `bashunit::dependencies::has_adjtimex`. All are internal (sub-namespaced) helpers, not part of the documented public API

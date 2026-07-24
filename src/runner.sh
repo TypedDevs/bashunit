@@ -228,6 +228,23 @@ function bashunit::runner::record_profile() {
   printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
 }
 
+##
+# Honours --stop-on-failure once a test has been recorded as failed. A parallel
+# worker raises the shared flag file (the dispatcher checks it between tests)
+# rather than exiting, since exiting would only kill the worker. A sequential
+# run exits with EXIT_CODE_STOP_ON_FAILURE, which main.sh's EXIT trap turns
+# into the final summary. No-op when the flag is off.
+##
+function bashunit::runner::halt_if_stop_on_failure() {
+  bashunit::env::is_stop_on_failure_enabled || return 0
+
+  if bashunit::parallel::is_enabled; then
+    bashunit::parallel::mark_stop_on_failure
+  else
+    exit "$EXIT_CODE_STOP_ON_FAILURE"
+  fi
+}
+
 # Writes the detected runtime-error message (empty when none) into
 # _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT. Return-slot form avoids a per-test fork
 # on the hot path (#764).
@@ -1310,13 +1327,7 @@ function bashunit::runner::run_test() {
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
 
-    if bashunit::env::is_stop_on_failure_enabled; then
-      if bashunit::parallel::is_enabled; then
-        bashunit::parallel::mark_stop_on_failure
-      else
-        exit "$EXIT_CODE_STOP_ON_FAILURE"
-      fi
-    fi
+    bashunit::runner::halt_if_stop_on_failure
     return
   fi
 
@@ -1333,13 +1344,7 @@ function bashunit::runner::run_test() {
 
     bashunit::internal_log "Test failed" "$label"
 
-    if bashunit::env::is_stop_on_failure_enabled; then
-      if bashunit::parallel::is_enabled; then
-        bashunit::parallel::mark_stop_on_failure
-      else
-        exit "$EXIT_CODE_STOP_ON_FAILURE"
-      fi
-    fi
+    bashunit::runner::halt_if_stop_on_failure
     return
   fi
 
@@ -1380,13 +1385,7 @@ function bashunit::runner::run_test() {
       bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$risky_msg"
       bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$risky_msg"
       bashunit::internal_log "Test failed (risky)" "$label"
-      if bashunit::env::is_stop_on_failure_enabled; then
-        if bashunit::parallel::is_enabled; then
-          bashunit::parallel::mark_stop_on_failure
-        else
-          exit "$EXIT_CODE_STOP_ON_FAILURE"
-        fi
-      fi
+      bashunit::runner::halt_if_stop_on_failure
       return
     fi
     bashunit::state::add_tests_risky
