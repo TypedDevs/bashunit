@@ -522,8 +522,39 @@ RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
 # Shared temp directory, initialized once at startup for performance.
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
 
-# Create both scratch directories in a single `mkdir -p` fork.
-mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
+##
+# Creates both scratch directories in a single `mkdir -p` fork.
+#
+# This must not fail silently: every deferred-output collector (failures,
+# skipped, incomplete, risky, rerun) and every `temp_file`/`temp_dir` call
+# writes under these paths, and each of them appends with `>>` or guards reads
+# with `[ -s ]`. Without the directories those writes are all no-ops, so a red
+# suite would render as a green one — the worst possible failure mode for a
+# test runner. Abort with an actionable message instead.
+#
+# Arguments: $1 run output dir, $2 shared temp dir
+# Returns: 0 when both directories exist, 1 otherwise (message on stderr)
+##
+function bashunit::env::create_scratch_dirs() {
+  local run_dir=$1
+  local temp_dir=$2
+
+  # `mkdir -p` may race a sibling bashunit on the shared temp dir, so its exit
+  # code alone is not conclusive; the postcondition below is what decides. Its
+  # stderr is deliberately NOT silenced, so a real failure stays visible.
+  mkdir -p "$run_dir" "$temp_dir" || true
+
+  local dir
+  for dir in "$run_dir" "$temp_dir"; do
+    if [ ! -d "$dir" ]; then
+      printf 'bashunit: cannot create the scratch directory: %s\n' "$dir" >&2
+      printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
+      return 1
+    fi
+  done
+}
+
+bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" || exit 1
 
 # Removes this run's scratch directory (guarded like parallel::cleanup so a
 # broken variable can never turn the rm loose elsewhere). Called at the end of

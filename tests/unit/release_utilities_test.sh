@@ -176,6 +176,41 @@ function test_rollback_restore_files_restores_nested_paths() {
   rm -rf "$temp_dir"
 }
 
+function test_rollback_auto_reports_success_when_files_are_restored() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local output
+  output=$(
+    cd "$temp_dir" || return
+    echo "original content" >testfile.txt
+    release::backup::init
+    release::backup::save_file "testfile.txt"
+    echo "modified content" >testfile.txt
+    release::rollback::auto 2>&1
+  )
+
+  assert_contains "Rollback complete" "$output"
+  assert_not_contains "Rollback FAILED" "$output"
+  rm -rf "$temp_dir"
+}
+
+function test_rollback_auto_reports_failure_when_files_cannot_be_restored() {
+  local temp_dir
+  temp_dir=$(mktemp -d)
+
+  local output
+  output=$(
+    cd "$temp_dir" || return
+    BACKUP_DIR=""
+    release::rollback::auto 2>&1
+  )
+
+  assert_contains "Rollback FAILED" "$output"
+  assert_not_contains "Rollback complete" "$output"
+  rm -rf "$temp_dir"
+}
+
 ##########################
 # Pre-flight check tests
 ##########################

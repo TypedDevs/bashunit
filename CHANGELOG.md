@@ -7,6 +7,9 @@
 
 ### Fixed
 - `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true`; the actual default has been `auto` since #765. It now also lists the 15 supported variables it was missing (`BASHUNIT_REPORT_TAP`, `BASHUNIT_REPORT_JSON`, `BASHUNIT_OUTPUT_FORMAT`, `BASHUNIT_NO_PROGRESS`, `BASHUNIT_SHOW_OUTPUT_ON_FAILURE`, `BASHUNIT_PARALLEL_JOBS`, `BASHUNIT_SKIP_ENV_FILE`, `BASHUNIT_TEST_TIMEOUT`, `BASHUNIT_RETRY`, `BASHUNIT_RANDOM_ORDER`, `BASHUNIT_SEED`, `BASHUNIT_SHARD_INDEX`, `BASHUNIT_SHARD_TOTAL`, `BASHUNIT_WATCH_INTERVAL`, `BASHUNIT_COVERAGE_SHOW_LINE_HITS`). No behaviour change
+- bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created. Previously the run continued with every failure/skip collector writing nowhere, so a failing suite still exited non-zero but lost its assertion detail and leaked raw `src/runner.sh: line N: ...: Not a directory` errors instead of reporting the cause
+- A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead
+- `release.sh` reports a failed rollback as failed instead of always printing "Rollback complete", and aborts when neither the tar nor the `cp` sandbox copy produced a usable project copy
 
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 

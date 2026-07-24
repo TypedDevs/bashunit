@@ -1,8 +1,26 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
+##
+# Returns to the directory bashunit was started from, undoing any `cd` a test
+# file performed in `set_up_before_script` (#532).
+#
+# A failure here is not recoverable: every later test file is discovered and
+# sourced through a path relative to this directory, so silently staying put
+# would drop the remaining files from the run without a single error. Abort
+# loudly instead.
+#
+# Arguments: $1 (optional) directory to restore, defaults to BASHUNIT_WORKING_DIR
+##
 function bashunit::runner::restore_workdir() {
-  cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
+  local target="${1:-${BASHUNIT_WORKING_DIR:-}}"
+  if cd "$target" 2>/dev/null; then
+    return 0
+  fi
+
+  printf "%sError: cannot restore the working directory '%s'. Aborting run.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED:-}" "$target" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+  exit 1
 }
 
 ##
