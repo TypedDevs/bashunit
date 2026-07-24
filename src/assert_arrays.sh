@@ -3,9 +3,6 @@
 function assert_arrays_equal() {
   bashunit::assert::should_skip && return 0
 
-  local label
-  label="$(bashunit::assert::label)"
-
   local -a expected_values=()
   local -a actual_values=()
   local found_separator=false
@@ -25,15 +22,12 @@ function assert_arrays_equal() {
   done
 
   if [ "$found_separator" = false ]; then
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "$label" "--" "but got " "missing array separator"
+    bashunit::assert::fail_with "" "--" "but got " "missing array separator"
     return
   fi
 
   if [ "${#expected_values[@]}" -ne "${#actual_values[@]}" ]; then
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "$label" "${expected_values[*]}" "but got " "${actual_values[*]}" \
+    bashunit::assert::fail_with "" "${expected_values[*]}" "but got " "${actual_values[*]}" \
       "Expected length" "${#expected_values[@]}, actual length ${#actual_values[@]}"
     return
   fi
@@ -41,9 +35,7 @@ function assert_arrays_equal() {
   local index
   for ((index = 0; index < ${#expected_values[@]}; index++)); do
     if [ "${expected_values[$index]}" != "${actual_values[$index]}" ]; then
-      bashunit::assert::mark_failed
-      bashunit::console_results::print_failed_test \
-        "$label" "${expected_values[*]}" "but got " "${actual_values[*]}" \
+      bashunit::assert::fail_with "" "${expected_values[*]}" "but got " "${actual_values[*]}" \
         "Different index" "$index"
       return
     fi
@@ -56,19 +48,15 @@ function assert_array_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  bashunit::assert::label_to_slot
-  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
 
   local -a actual
   actual=("$@")
 
   case "${actual[*]:-}" in
-  *"$expected"*)
-    ;;
+  *"$expected"*) ;;
   *)
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to contain" "${expected}"
+    bashunit::assert::fail_with "" "${actual[*]}" "to contain" "${expected}"
     return
     ;;
   esac
@@ -80,8 +68,6 @@ function assert_array_length() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  bashunit::assert::label_to_slot
-  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
 
   # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
@@ -89,9 +75,7 @@ function assert_array_length() {
   local actual_length="$#"
 
   if [ "$expected" != "$actual_length" ]; then
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "$*" "to have length ${expected}" "but got ${actual_length}"
+    bashunit::assert::fail_with "" "$*" "to have length ${expected}" "but got ${actual_length}"
     return
   fi
 
@@ -102,16 +86,13 @@ function assert_array_not_contains() {
   bashunit::assert::should_skip && return 0
 
   local expected="$1"
-  bashunit::assert::label_to_slot
-  local label=$_BASHUNIT_ASSERT_LABEL_OUT
   shift
   local -a actual
   actual=("$@")
 
   case "${actual[*]:-}" in
   *"$expected"*)
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual[*]}" "to not contain" "${expected}"
+    bashunit::assert::fail_with "" "${actual[*]}" "to not contain" "${expected}"
     return
     ;;
   esac

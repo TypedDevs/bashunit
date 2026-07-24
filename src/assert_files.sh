@@ -6,10 +6,7 @@ function assert_file_exists() {
   local expected="$1"
 
   if [ ! -f "$expected" ]; then
-    bashunit::assert::label_to_slot "${3:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "to exist but" "do not exist"
+    bashunit::assert::fail_with "${3:-}" "${expected}" "to exist but" "do not exist"
     return
   fi
 
@@ -22,10 +19,7 @@ function assert_file_not_exists() {
   local expected="$1"
 
   if [ -f "$expected" ]; then
-    bashunit::assert::label_to_slot "${3:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not exist but" "the file exists"
+    bashunit::assert::fail_with "${3:-}" "${expected}" "to not exist but" "the file exists"
     return
   fi
 
@@ -38,10 +32,7 @@ function assert_is_file() {
   local expected="$1"
 
   if [ ! -f "$expected" ]; then
-    bashunit::assert::label_to_slot "${3:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be a file" "but is not a file"
+    bashunit::assert::fail_with "${3:-}" "${expected}" "to be a file" "but is not a file"
     return
   fi
 
@@ -54,10 +45,7 @@ function assert_is_file_empty() {
   local expected="$1"
 
   if [ -s "$expected" ]; then
-    bashunit::assert::label_to_slot "${3:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "to be empty" "but is not empty"
+    bashunit::assert::fail_with "${3:-}" "${expected}" "to be empty" "but is not empty"
     return
   fi
 
@@ -71,11 +59,7 @@ function assert_files_equals() {
   local actual="$2"
 
   if [ "$(diff -u "$expected" "$actual")" != '' ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+    bashunit::assert::fail_with "" "${expected}" "Compared" "${actual}" \
       "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
     return
   fi
@@ -90,11 +74,7 @@ function assert_files_not_equals() {
   local actual="$2"
 
   if [ "$(diff -u "$expected" "$actual")" = '' ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "Compared" "${actual}" \
+    bashunit::assert::fail_with "" "${expected}" "Compared" "${actual}" \
       "Diff" "Files are equals"
     return
   fi
@@ -109,11 +89,7 @@ function assert_file_contains() {
   local string="$2"
 
   if ! grep -F -q "$string" "$file"; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-
-    bashunit::console_results::print_failed_test "${label}" "${file}" "to contain" "${string}"
+    bashunit::assert::fail_with "" "${file}" "to contain" "${string}"
     return
   fi
 
@@ -127,11 +103,7 @@ function assert_file_not_contains() {
   local string="$2"
 
   if grep -q "$string" "$file"; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-
-    bashunit::console_results::print_failed_test "${label}" "${file}" "to not contain" "${string}"
+    bashunit::assert::fail_with "" "${file}" "to not contain" "${string}"
     return
   fi
 
@@ -160,13 +132,10 @@ function assert_file_permissions() {
 
   local expected="$1"
   local file="$2"
-  bashunit::assert::label_to_slot
-  local label=$_BASHUNIT_ASSERT_LABEL_OUT
 
   if [ ! -e "$file" ]; then
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "${file}" "to have permissions ${expected}" "but the file does not exist"
+    bashunit::assert::fail_with "" "${file}" \
+      "to have permissions ${expected}" "but the file does not exist"
     return
   fi
 
@@ -178,9 +147,8 @@ function assert_file_permissions() {
   actual_dec="$(bashunit::assert::_octal_to_decimal "$actual")"
 
   if [ "$expected_dec" != "$actual_dec" ]; then
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "${file}" "to have permissions ${expected}" "but got ${actual}"
+    bashunit::assert::fail_with "" "${file}" \
+      "to have permissions ${expected}" "but got ${actual}"
     return
   fi
 
