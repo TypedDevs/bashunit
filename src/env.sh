@@ -312,6 +312,50 @@ function bashunit::env::is_internal_log_enabled() {
   [ "$BASHUNIT_INTERNAL_LOG" = "true" ]
 }
 
+##
+# Dev-log writers.
+#
+# They live next to BASHUNIT_DEV_LOG/BASHUNIT_INTERNAL_LOG and their predicates
+# rather than in globals.sh: env.sh is the lowest layer and logs from its own
+# source-time code, so keeping the writers here removes the env.sh <-> globals.sh
+# call cycle instead of papering over it with a duplicated predicate.
+##
+function bashunit::current_timestamp() {
+  date +"%Y-%m-%d %H:%M:%S"
+}
+
+# shellcheck disable=SC2145
+function bashunit::log() {
+  if ! bashunit::env::is_dev_mode_enabled; then
+    return
+  fi
+
+  local level="$1"
+  shift
+
+  case "$level" in
+  info | INFO) level="INFO" ;;
+  debug | DEBUG) level="DEBUG" ;;
+  warning | WARNING) level="WARNING" ;;
+  critical | CRITICAL) level="CRITICAL" ;;
+  error | ERROR) level="ERROR" ;;
+  *)
+    set -- "$level $@"
+    level="INFO"
+    ;;
+  esac
+
+  echo "$(bashunit::current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
+}
+
+function bashunit::internal_log() {
+  if ! bashunit::env::is_dev_mode_enabled || ! bashunit::env::is_internal_log_enabled; then
+    return
+  fi
+
+  echo "$(bashunit::current_timestamp) [INTERNAL]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
+}
+
 function bashunit::env::is_verbose_enabled() {
   [ "$BASHUNIT_VERBOSE" = "true" ]
 }

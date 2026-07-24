@@ -535,7 +535,7 @@ function bashunit::runner::load_test_files() {
     wait
     bashunit::runner::spinner &
     local spinner_pid=$!
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" 2>/dev/null || true
     kill "$spinner_pid" 2>/dev/null || true
