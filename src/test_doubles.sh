@@ -62,8 +62,18 @@ function bashunit::spy() {
   export "_BASHUNIT_SPY_${variable}_TIMES_FILE"="$times_file"
   export "_BASHUNIT_SPY_${variable}_PARAMS_FILE"="$params_file"
 
+  # An all-digits second argument is an exit code; anything else non-empty is a
+  # replacement implementation. The `case` glob is the Bash 3.0 form of the old
+  # `[[ =~ ^[0-9]+$ ]]` (identical domain: a value is all-digits iff it is
+  # non-empty and contains no non-digit) and it keeps the interpolation below
+  # provably numeric, so `return $exit_code_or_impl` cannot inject shell syntax.
   local body_suffix=""
-  if [[ "$exit_code_or_impl" =~ ^[0-9]+$ ]]; then
+  local _is_exit_code=false
+  case "$exit_code_or_impl" in
+  '' | *[!0-9]*) ;;
+  *) _is_exit_code=true ;;
+  esac
+  if [ "$_is_exit_code" = true ]; then
     body_suffix="return $exit_code_or_impl"
   elif [ -n "$exit_code_or_impl" ]; then
     body_suffix="$exit_code_or_impl \"\$@\""
