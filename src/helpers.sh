@@ -326,10 +326,22 @@ function bashunit::helper::find_files_recursive() {
   local _has_glob=false
   case "$path" in *"*"*) _has_glob=true ;; esac
   if [ "$_has_glob" = true ]; then
+    # Expand the glob into an array WITHOUT `eval`: setting IFS to the empty
+    # string disables field splitting, so the unquoted expansion below performs
+    # pathname expansion only. `eval "find $path ..."` also word-split on spaces,
+    # which turned "my dir/*" into the two roots "my" and "dir/*". A non-matching
+    # glob stays literal (nullglob is off), matching the previous behaviour of
+    # handing the unexpanded pattern to find.
+    local _old_ifs=$IFS
+    IFS=''
+    local _roots
+    # shellcheck disable=SC2206 # pathname expansion is the point; IFS='' blocks splitting
+    _roots=($path)
+    IFS=$_old_ifs
     if [ -n "$alt_pattern" ]; then
-      eval "find $path -type f \( -name \"$pattern\" -o -name \"$alt_pattern\" \)" | sort -u
+      find "${_roots[@]}" -type f \( -name "$pattern" -o -name "$alt_pattern" \) | sort -u
     else
-      eval "find $path -type f -name \"$pattern\"" | sort -u
+      find "${_roots[@]}" -type f -name "$pattern" | sort -u
     fi
   elif [ -d "$path" ]; then
     if [ -n "$alt_pattern" ]; then
