@@ -336,3 +336,34 @@ function test_functions_for_script_preserves_caller_extdebug_state() {
 
   assert_same "on" "$state"
 }
+
+# --- restore_workdir ----------------------------------------------------------
+
+function test_restore_workdir_returns_to_the_given_directory() {
+  local target
+  target="$(bashunit::temp_dir)"
+
+  local landed
+  landed=$(
+    cd / || exit 1
+    bashunit::runner::restore_workdir "$target"
+    pwd -P
+  )
+
+  assert_same "$(cd "$target" && pwd -P)" "$landed"
+}
+
+function test_restore_workdir_aborts_loudly_when_the_directory_is_gone() {
+  local gone
+  gone="$(bashunit::temp_dir)/removed"
+
+  local status=0
+  local output
+  # `$(...)` is already a subshell, so the function's `exit 1` ends the capture
+  # rather than the test.
+  output="$(bashunit::runner::restore_workdir "$gone" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "cannot restore the working directory" "$output"
+  assert_contains "$gone" "$output"
+}

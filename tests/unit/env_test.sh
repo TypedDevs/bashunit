@@ -462,3 +462,42 @@ function test_cleanup_run_output_dir_refuses_paths_outside_the_run_tree() {
   assert_same 1 "$status"
   assert_file_exists "$dir/keep"
 }
+
+# --- create_scratch_dirs ------------------------------------------------------
+
+function test_create_scratch_dirs_creates_both_directories() {
+  local base
+  base="$(bashunit::temp_dir)"
+
+  bashunit::env::create_scratch_dirs "$base/run/OSX/abc123" "$base/tmp"
+
+  assert_directory_exists "$base/run/OSX/abc123"
+  assert_directory_exists "$base/tmp"
+}
+
+function test_create_scratch_dirs_is_idempotent() {
+  local base
+  base="$(bashunit::temp_dir)"
+  bashunit::env::create_scratch_dirs "$base/run/OSX/abc123" "$base/tmp"
+
+  local status=0
+  bashunit::env::create_scratch_dirs "$base/run/OSX/abc123" "$base/tmp" || status=$?
+
+  assert_same 0 "$status"
+}
+
+function test_create_scratch_dirs_fails_loudly_when_a_directory_cannot_be_created() {
+  local base
+  base="$(bashunit::temp_dir)"
+  # A regular file in the middle of the path makes `mkdir -p` fail on every
+  # platform, without relying on permission bits (faked on Git Bash).
+  printf 'not a directory\n' >"$base/blocker"
+
+  local status=0
+  local output
+  output="$(bashunit::env::create_scratch_dirs "$base/blocker/run" "$base/tmp" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "cannot create the scratch directory" "$output"
+  assert_contains "$base/blocker/run" "$output"
+}

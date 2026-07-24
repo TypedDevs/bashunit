@@ -5,6 +5,11 @@
 ### Added
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
+### Fixed
+- bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created, instead of continuing with every failure/skip collector silently writing nowhere — a red suite could previously render as green on a read-only or full `TMPDIR`
+- A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead
+- `release.sh` reports a failed rollback as failed instead of always printing "Rollback complete", and aborts when neither the tar nor the `cp` sandbox copy produced a usable project copy
+
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
 ### Added
