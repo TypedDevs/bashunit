@@ -82,7 +82,22 @@ Deferred (potential follow-ups):
 * Synthetic "implicit-else" outcomes for `if/elif` chains without an explicit `else`.
 * Per-sub-expression decisions inside `if A && B`.
 * `&&` / `||` short-circuit branches outside `if`.
-* Loop-entry decisions (`while`/`until`).
+
+## Update (2026-07-24): loop-body branches
+
+Loop constructs (`while`/`until`/`for`/`select`) are now emitted as **single-arm**
+branch points (`<line>|loop|<body_start>:<body_end>`), extending the same static
++ line-hit-inference model with no runtime-cost change. The body arm is "taken"
+iff an executable line inside it was hit — i.e. the loop ran at least once — so a
+never-entered loop body surfaces as an uncovered zero-iteration branch. Every
+`done`-closed opener (including `select`) pushes a loop frame so `done` pairs
+with the correct opener when nested.
+
+Still deferred, and for the same root reason — the DEBUG trap records **line**
+hits, not sub-line outcomes: same-line short-circuit guards (`[ cond ] && action`,
+`... || action`) cannot be measured, because both outcomes share one line. Those
+require a finer-grained mechanism (see the coverage-tracing-engine spike) rather
+than the line-range model.
 
 ## Links
 

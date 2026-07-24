@@ -940,6 +940,23 @@ function bashunit::coverage::_branch_open_case_pattern() {
   case_in_pattern[idx]=1
 }
 
+# A loop (while/until/for/select) is a single-arm branch: its body. The arm is
+# taken iff the loop ran at least once (an executable body line was hit); a
+# never-taken body is an uncovered zero-iteration branch. Every `done`-closed
+# construct must push so `done` pairs with the right opener when nested.
+function bashunit::coverage::_branch_push_loop() {
+  local lineno=$1
+  loop_decision_line[loop_depth]=$lineno
+  loop_arm_start[loop_depth]=$((lineno + 1))
+  loop_depth=$((loop_depth + 1))
+}
+
+function bashunit::coverage::_branch_emit_loop() {
+  local lineno=$1 idx=$((loop_depth - 1))
+  echo "${loop_decision_line[$idx]}|loop|${loop_arm_start[$idx]}:$((lineno - 1))"
+  loop_depth=$idx
+}
+
 function bashunit::coverage::extract_branches() {
   local file="$1"
 
@@ -958,6 +975,8 @@ function bashunit::coverage::extract_branches() {
   local if_depth=0
   local -a case_decision_line=() case_arms=() case_arm_start=() case_in_pattern=()
   local case_depth=0
+  local -a loop_decision_line=() loop_arm_start=()
+  local loop_depth=0
 
   local lineno=0 line trimmed first
   while [ "$lineno" -lt "$total_lines" ]; do
@@ -981,6 +1000,12 @@ function bashunit::coverage::extract_branches() {
     'case') bashunit::coverage::_branch_push_case "$lineno" ;;
     'esac')
       [ "$case_depth" -gt 0 ] && bashunit::coverage::_branch_emit_case "$lineno"
+      ;;
+    'while' | 'until' | 'for' | 'select')
+      bashunit::coverage::_branch_push_loop "$lineno"
+      ;;
+    'done')
+      [ "$loop_depth" -gt 0 ] && bashunit::coverage::_branch_emit_loop "$lineno"
       ;;
     *)
       [ "$case_depth" -eq 0 ] && continue
