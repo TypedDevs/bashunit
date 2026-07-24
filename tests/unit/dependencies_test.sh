@@ -7,13 +7,6 @@ function test_has_perl_search_path_for_perl() {
   assert_have_been_called_with command "-v perl"
 }
 
-function test_has_adjtimex() {
-  bashunit::spy command
-  bashunit::dependencies::has_adjtimex
-
-  assert_have_been_called_with command "-v adjtimex"
-}
-
 function test_has_bc() {
   bashunit::spy command
 

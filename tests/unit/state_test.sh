@@ -320,18 +320,6 @@ function test_decode_base64_returns_empty_for_empty_value() {
   assert_same "" "$(bashunit::helper::decode_base64 "")"
 }
 
-function test_calculate_total_assertions() {
-  local input="##ASSERTIONS_FAILED=1\
-  ##ASSERTIONS_PASSED=2\
-  ##ASSERTIONS_SKIPPED=3\
-  ##ASSERTIONS_INCOMPLETE=4\
-  ##ASSERTIONS_SNAPSHOT=5\
-  ##TEST_EXIT_CODE=0\
-  ##TEST_OUTPUT=3zhbEncodedBase64##"
-
-  assert_same 15 "$(bashunit::state::calculate_total_assertions "$input")"
-}
-
 # --- print_tap_line -----------------------------------------------------------
 # Each capture runs in $(...) so mutating _BASHUNIT_TOTAL_TESTS_COUNT never
 # leaks into the suite's own counters.

@@ -9,10 +9,6 @@ function bashunit::dependencies::has_powershell() {
   command -v powershell >/dev/null 2>&1
 }
 
-function bashunit::dependencies::has_adjtimex() {
-  command -v adjtimex >/dev/null 2>&1
-}
-
 function bashunit::dependencies::has_bc() {
   command -v bc >/dev/null 2>&1
 }

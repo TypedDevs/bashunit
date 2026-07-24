@@ -363,7 +363,6 @@ function test_render_execution_time_on_osx_with_perl() {
 
   local render_result
   mock_macos
-  bashunit::mock bashunit::dependencies::has_adjtimex mock_false
   bashunit::mock bashunit::dependencies::has_perl mock_true
   _BASHUNIT_START_TIME="1726393394574382186"
   bashunit::mock perl <<<"1726393394574372186"

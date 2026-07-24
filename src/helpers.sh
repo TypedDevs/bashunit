@@ -501,16 +501,6 @@ function bashunit::helper::get_provider_data() {
   fi
 }
 
-function bashunit::helper::trim() {
-  local input_string="$1"
-  local trimmed_string
-
-  trimmed_string="${input_string#"${input_string%%[![:space:]]*}"}"
-  trimmed_string="${trimmed_string%"${trimmed_string##*[![:space:]]}"}"
-
-  echo "$trimmed_string"
-}
-
 function bashunit::helper::get_latest_tag() {
   if ! bashunit::dependencies::has_git; then
     return 1

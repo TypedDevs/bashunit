@@ -382,21 +382,6 @@ function bashunit::state::aggregate_parallel_results() {
     "snapshot:$total_snapshot"
 }
 
-function bashunit::state::calculate_total_assertions() {
-  local input="$1"
-  local total=0
-
-  local numbers
-  numbers=$(echo "$input" | grep -oE '##ASSERTIONS_\w+=[0-9]+' | grep -oE '[0-9]+')
-
-  local number
-  for number in $numbers; do
-    total=$((total + number))
-  done
-
-  echo $total
-}
-
 function bashunit::state::print_line() {
   # shellcheck disable=SC2034
   local type=$1
