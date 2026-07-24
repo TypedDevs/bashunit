@@ -61,6 +61,11 @@ _BASHUNIT_ASSERT_JOINED_OUT=""
 # Join positional args into _BASHUNIT_ASSERT_JOINED_OUT with no fork.
 # Output matches $(printf '%s\n' "$@") exactly: newline-joined, trailing
 # newlines stripped (as command substitution strips them).
+# Callers pass their variadic "actual" as "${arr[@]+"${arr[@]}"}": an assertion
+# invoked with no actual value leaves that array empty, and a bare
+# "${arr[@]}" on an empty array is an unbound-variable error under `set -u`
+# (i.e. --strict) on Bash < 4.4. The guard makes an empty actual join to ""
+# on every supported Bash instead of aborting the test only on Bash 3.x.
 function bashunit::assert::join_to_slot() {
   local IFS=$'\n'
   local joined="$*"
@@ -297,7 +302,7 @@ function assert_contains() {
   local -a actual_arr
   actual_arr=("${@:2}")
   local label_override=""
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -344,7 +349,7 @@ function assert_not_contains() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -364,7 +369,7 @@ function assert_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
@@ -390,7 +395,7 @@ function assert_not_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   # Check both line-by-line and with newlines collapsed for cross-line patterns
@@ -569,7 +574,11 @@ function assert_exit_code() {
 
   local expected_exit_code="$1"
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # State the PASS condition and negate it. `[ -eq ]` exits 2 (not 1) on a
+  # non-integer operand, so the old `[ -ne ]` form read that error as "equal"
+  # and counted the assertion as passed. Negating makes unparseable input
+  # fail closed, matching the `! [ -lt ]` form of the comparison assertions.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
@@ -584,7 +593,8 @@ function assert_successful_code() {
 
   local expected_exit_code=0
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::fail_with "${label_override:-}" \
       "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -598,7 +608,8 @@ function assert_unsuccessful_code() {
   local label_override=""
   bashunit::assert::should_skip && return 0
 
-  if [ "$actual_exit_code" -eq 0 ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -ne 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual_exit_code}" "to be non-zero" "but was 0"
     return
   fi
@@ -613,7 +624,8 @@ function assert_general_error() {
 
   local expected_exit_code=1
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::fail_with "${label_override:-}" \
       "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -629,7 +641,8 @@ function assert_command_not_found() {
 
   local expected_exit_code=127
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
     bashunit::assert::fail_with "${label_override:-}" \
       "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
@@ -646,7 +659,7 @@ function assert_string_starts_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -685,7 +698,7 @@ function assert_string_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -707,7 +720,7 @@ function assert_string_not_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in

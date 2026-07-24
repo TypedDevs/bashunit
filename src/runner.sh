@@ -189,9 +189,17 @@ function bashunit::runner::compute_total_assertions() {
   incomplete="${incomplete%%##*}"
   snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
   snapshot="${snapshot%%##*}"
+  # A result that never reached the payload (a SIGKILLed subshell, raw stderr)
+  # leaves every ##KEY= strip a no-op, so these fields hold arbitrary text. That
+  # text is not "0" to `$(( ))`: it is a fatal arithmetic syntax error that
+  # aborts the run. One `case` over the concatenation costs no fork and keeps
+  # the happy path (all digits, or empty for an absent counter) untouched.
+  case "$failed$passed$skipped$incomplete$snapshot" in
+  *[!0-9]*) failed=0 passed=0 skipped=0 incomplete=0 snapshot=0 ;;
+  esac
   local total
-  total=$((${failed:-0} + ${passed:-0} + ${skipped:-0}))
-  total=$((total + ${incomplete:-0} + ${snapshot:-0}))
+  total=$((failed + passed + skipped))
+  total=$((total + incomplete + snapshot))
   _BASHUNIT_RUNNER_TOTAL_OUT=$total
 }
 
