@@ -114,7 +114,14 @@ BASHUNIT_COVERAGE_THRESHOLD_HIGH=80  # Green above this, yellow between
 # Optional text-report blocks (off by default, opt-in for verbose runs)
 BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true   # Print per-function coverage
 BASHUNIT_COVERAGE_SHOW_UNCOVERED=true   # Print missed line ranges per file
+BASHUNIT_COVERAGE_SHOW_LINE_HITS=true   # Print per-line execution counts (lineno:count)
 ```
+
+Per-line execution counts are always written to the LCOV report as the count
+field of each `DA:<line>,<count>` record (consumable by `genhtml`, Codecov and
+Coveralls). `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` additionally surfaces them
+in the text report as a `Line Hits` block listing each covered line as
+`<lineno>:<count>` per file.
 
 ## Examples
 

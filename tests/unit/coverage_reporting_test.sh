@@ -147,6 +147,61 @@ EOF
   rm -f "$temp_file" "$report_file"
 }
 
+function test_coverage_report_lcov_da_records_carry_execution_counts() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "hot"
+echo "once"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  # Line 2 executed three times, line 3 once.
+  printf '%s:2\n%s:2\n%s:2\n%s:3\n' \
+    "$temp_file" "$temp_file" "$temp_file" "$temp_file" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local report_file
+  report_file=$(mktemp)
+  bashunit::coverage::report_lcov "$report_file"
+  local content
+  content=$(cat "$report_file")
+
+  # DA counts are the real per-line execution counts, not a boolean.
+  assert_contains "DA:2,3" "$content"
+  assert_contains "DA:3,1" "$content"
+
+  rm -f "$temp_file" "$report_file"
+}
+
+function test_coverage_report_text_line_hits_lists_covered_lines_with_counts() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "hot"
+echo "cold"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  printf '%s:2\n%s:2\n%s:2\n' "$temp_file" "$temp_file" "$temp_file" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local output
+  output=$(bashunit::coverage::report_text_line_hits)
+
+  assert_contains "Line Hits" "$output"
+  # Covered line 2 ran three times.
+  assert_contains "2:3" "$output"
+
+  rm -f "$temp_file"
+}
+
 function test_coverage_report_lcov_completes_under_set_e() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init
