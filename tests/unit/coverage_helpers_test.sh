@@ -244,31 +244,3 @@ EOF
 
   rm -f "$temp_file"
 }
-
-# === Line hits tests ===
-
-function test_coverage_get_line_hits_returns_zero_when_no_file() {
-  _BASHUNIT_COVERAGE_DATA_FILE=""
-
-  local result
-  result=$(bashunit::coverage::get_line_hits "/path/to/file.sh" 10)
-
-  assert_equals "0" "$result"
-}
-
-function test_coverage_get_line_hits_counts_correctly() {
-  BASHUNIT_COVERAGE="true"
-  bashunit::coverage::init
-
-  local test_file="/test/script.sh"
-  {
-    echo "${test_file}:5"
-    echo "${test_file}:5"
-    echo "${test_file}:5"
-  } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
-
-  local result
-  result=$(bashunit::coverage::get_line_hits "$test_file" 5)
-
-  assert_equals "3" "$result"
-}

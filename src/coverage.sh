@@ -604,20 +604,6 @@ function bashunit::coverage::get_hit_lines() {
   echo "$count"
 }
 
-function bashunit::coverage::get_line_hits() {
-  local file="$1"
-  local lineno="$2"
-
-  if [ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
-    echo "0"
-    return
-  fi
-
-  local count
-  count=$("$GREP" -c "^${file}:${lineno}$" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null) || count=0
-  echo "$count"
-}
-
 # Compute executable + hit counts for a file in a single source-file pass.
 # Reuses get_all_line_hits to avoid scanning the coverage data per line.
 # Output format: "executable:hit"
