@@ -44,6 +44,16 @@ function test_strict_mode_fails_on_unset_variable_in_set_up() {
   assert_contains "failed" "$output"
 }
 
+function test_strict_mode_reports_an_omitted_variadic_actual_as_a_plain_failure() {
+  local output
+  output=$(BASHUNIT_STRICT_MODE=true ./bashunit --no-parallel --simple --skip-env-file --env "$TEST_ENV_FILE" \
+    tests/acceptance/fixtures/strict_mode_variadic_actual_omitted.sh 2>&1) || true
+
+  assert_not_contains "unbound variable" "$output"
+  assert_contains "to contain" "$output"
+  assert_contains "to start with" "$output"
+}
+
 function test_cli_flag_overrides_env_var() {
   local output
   output=$(BASHUNIT_STRICT_MODE=false ./bashunit \

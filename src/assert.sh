@@ -33,6 +33,11 @@ _BASHUNIT_ASSERT_JOINED_OUT=""
 # Join positional args into _BASHUNIT_ASSERT_JOINED_OUT with no fork.
 # Output matches $(printf '%s\n' "$@") exactly: newline-joined, trailing
 # newlines stripped (as command substitution strips them).
+# Callers pass their variadic "actual" as "${arr[@]+"${arr[@]}"}": an assertion
+# invoked with no actual value leaves that array empty, and a bare
+# "${arr[@]}" on an empty array is an unbound-variable error under `set -u`
+# (i.e. --strict) on Bash < 4.4. The guard makes an empty actual join to ""
+# on every supported Bash instead of aborting the test only on Bash 3.x.
 function bashunit::assert::join_to_slot() {
   local IFS=$'\n'
   local joined="$*"
@@ -287,7 +292,7 @@ function assert_contains() {
   local -a actual_arr
   actual_arr=("${@:2}")
   local label_override=""
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -340,7 +345,7 @@ function assert_not_contains() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -363,7 +368,7 @@ function assert_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
@@ -389,7 +394,7 @@ function assert_not_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   # Check both line-by-line and with newlines collapsed for cross-line patterns
@@ -674,7 +679,7 @@ function assert_string_starts_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -719,7 +724,7 @@ function assert_string_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
@@ -744,7 +749,7 @@ function assert_string_not_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
