@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
+
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
 ### Added

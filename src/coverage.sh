@@ -1178,6 +1178,11 @@ function bashunit::coverage::report_text() {
     bashunit::coverage::report_text_uncovered
   fi
 
+  # Optional per-line execution counts (gated on BASHUNIT_COVERAGE_SHOW_LINE_HITS)
+  if [ "${BASHUNIT_COVERAGE_SHOW_LINE_HITS:-false}" = "true" ]; then
+    bashunit::coverage::report_text_line_hits
+  fi
+
   # Show report location if generated
   if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
     echo ""
@@ -1261,6 +1266,49 @@ function bashunit::coverage::report_text_uncovered() {
     out="$_BASHUNIT_RANGES_OUT"
 
     printf "%s%s:%s%s\n" "$color" "$display_file" "$out" "$reset"
+  done < <(bashunit::coverage::get_tracked_files)
+}
+
+# Per-line execution hit counts, gated on BASHUNIT_COVERAGE_SHOW_LINE_HITS=true.
+# Lists each covered executable line as "<lineno>:<count>", where count is the
+# number of times the line ran (the same value LCOV emits in its DA records).
+function bashunit::coverage::report_text_line_hits() {
+  local IFS=$' \t\n'
+  local file
+  local printed_header=false
+  while IFS= read -r file; do
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+    local -a hits_by_line=()
+    local _hl_ln _hl_cnt
+    while IFS=: read -r _hl_ln _hl_cnt; do
+      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
+    done < <(bashunit::coverage::get_all_line_hits "$file")
+
+    local -a hit_specs=()
+    local _hc=0
+    local lineno=0 line
+    while IFS= read -r line || [ -n "$line" ]; do
+      lineno=$((lineno + 1))
+      bashunit::coverage::is_executable_line "$line" "$lineno" || continue
+      local lh="${hits_by_line[$lineno]:-0}"
+      if [ "$lh" -gt 0 ]; then
+        hit_specs[_hc]="${lineno}:${lh}"
+        _hc=$((_hc + 1))
+      fi
+    done <"$file"
+
+    [ "$_hc" -eq 0 ] && continue
+
+    if [ "$printed_header" != "true" ]; then
+      echo ""
+      echo "Line Hits"
+      echo "---------"
+      printed_header=true
+    fi
+
+    local display_file="${file#"$(pwd)"/}"
+    printf "%s: %s\n" "$display_file" "${hit_specs[*]}"
   done < <(bashunit::coverage::get_tracked_files)
 }
 
