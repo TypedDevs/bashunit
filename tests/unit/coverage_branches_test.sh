@@ -46,7 +46,86 @@ function tear_down() {
 
 # extract_branches output format:
 #   <decision_line>|<kind>|<arm_start>:<arm_end>[,<arm_start>:<arm_end>]...
-# kind ∈ {if, case}
+# kind ∈ {if, case, loop}
+# A loop is a single-arm branch: the body range, taken iff the loop ran at
+# least once (any executable body line was hit).
+
+function test_extract_branches_finds_while_loop() {
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+while [ "$i" -lt 3 ]; do
+  echo "$i"
+done
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_branches "$fixture")
+
+  assert_contains "2|loop|3:3" "$result"
+
+  rm -f "$fixture"
+}
+
+function test_extract_branches_finds_for_loop() {
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+for x in 1 2 3; do
+  echo "$x"
+done
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_branches "$fixture")
+
+  assert_contains "2|loop|3:3" "$result"
+
+  rm -f "$fixture"
+}
+
+function test_extract_branches_finds_until_loop() {
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+until [ "$ok" = "yes" ]; do
+  ok=$(check)
+done
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_branches "$fixture")
+
+  assert_contains "2|loop|3:3" "$result"
+
+  rm -f "$fixture"
+}
+
+function test_extract_branches_finds_nested_loops() {
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+for x in 1 2; do
+  while [ "$x" -gt 0 ]; do
+    echo hi
+    x=$((x - 1))
+  done
+done
+EOF
+
+  local result
+  result=$(bashunit::coverage::extract_branches "$fixture")
+
+  # Inner while (line 3) body on 4-5; outer for (line 2) body on 3-6.
+  assert_contains "3|loop|4:5" "$result"
+  assert_contains "2|loop|3:6" "$result"
+
+  rm -f "$fixture"
+}
 
 function test_extract_branches_finds_simple_if_else() {
   local fixture
@@ -205,6 +284,54 @@ EOF
 
   assert_contains "2|0|0|0" "$result"
   assert_contains "2|0|1|0" "$result"
+
+  rm -f "$fixture"
+}
+
+function test_compute_branch_hits_marks_loop_body_taken_when_iterated() {
+  bashunit::coverage::init
+
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+while [ "$i" -lt 3 ]; do
+  echo "$i"
+done
+EOF
+
+  echo "$fixture" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  # The loop body (line 3) ran at least once.
+  echo "${fixture}:3" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+
+  local result
+  result=$(bashunit::coverage::compute_branch_hits "$fixture")
+
+  # Single-arm loop branch on line 2, arm taken.
+  assert_contains "2|0|0|1" "$result"
+
+  rm -f "$fixture"
+}
+
+function test_compute_branch_hits_marks_loop_body_not_taken_on_zero_iterations() {
+  bashunit::coverage::init
+
+  local fixture
+  fixture=$(mktemp)
+  cat >"$fixture" <<'EOF'
+#!/usr/bin/env bash
+while [ "$i" -lt 3 ]; do
+  echo "$i"
+done
+EOF
+
+  echo "$fixture" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  # No hits recorded: the loop never iterated (zero-iteration branch uncovered).
+
+  local result
+  result=$(bashunit::coverage::compute_branch_hits "$fixture")
+
+  assert_contains "2|0|0|0" "$result"
 
   rm -f "$fixture"
 }

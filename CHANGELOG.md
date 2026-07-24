@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Branch coverage now reports loop constructs (`while`/`until`/`for`/`select`): the loop body is a single-arm branch, marked covered only when the loop ran at least once, so a never-entered zero-iteration loop surfaces as an uncovered branch (#855)
+
 ### Changed
 - Core string assertions (`assert_contains`/`assert_not_contains`, `assert_matches`/`assert_not_matches`, `assert_string_starts_with`/`assert_string_ends_with` and their negations) no longer fork a subshell per call to join their arguments; a fork-free join with identical behaviour replaces it (#844)
 - The array, date, duration, json, files and folders assertions now resolve their failure label through the fork-free slot helper instead of a per-call command substitution — same labels, fewer forks
