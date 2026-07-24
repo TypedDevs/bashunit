@@ -55,6 +55,20 @@ function bashunit::parallel::aggregate_test_results() {
       exit_code="${exit_code%%##*}"
       exit_code=${exit_code:-0}
 
+      # A truncated or non-payload .result line leaves every ##KEY= strip a
+      # no-op, so these fields hold arbitrary text. `$(( ))` on such text is a
+      # fatal arithmetic syntax error and `[ -gt ]` reports "integer expression
+      # expected", so an unreadable result must degrade to zeros rather than
+      # abort the aggregation. One `case` over the concatenation, no fork.
+      case "$failed$passed$skipped$incomplete$snapshot$exit_code" in
+      *[!0-9]*)
+        failed=0 passed=0 skipped=0 incomplete=0 snapshot=0
+        # An unparseable result is a failed test, not a silently passing one.
+        exit_code=1
+        bashunit::internal_log "aggregate_test_results" "unparseable result file:$result_file"
+        ;;
+      esac
+
       # Add to the total counts
       total_failed=$((total_failed + failed))
       total_passed=$((total_passed + passed))

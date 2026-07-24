@@ -159,6 +159,20 @@ function test_compute_total_assertions_treats_missing_counters_as_zero() {
   assert_same "2" "$_BASHUNIT_RUNNER_TOTAL_OUT"
 }
 
+# Without the digits guard the ##KEY= strips are no-ops on a non-payload result,
+# so the raw text reaches $(( )) and raises a fatal arithmetic syntax error.
+function test_compute_total_assertions_treats_a_non_payload_result_as_zero() {
+  bashunit::runner::compute_total_assertions "bash: line 3: syntax error near unexpected token"
+
+  assert_same "0" "$_BASHUNIT_RUNNER_TOTAL_OUT"
+}
+
+function test_compute_total_assertions_treats_a_non_numeric_counter_as_zero() {
+  bashunit::runner::compute_total_assertions "##ASSERTIONS_PASSED=2##ASSERTIONS_FAILED=oops"
+
+  assert_same "0" "$_BASHUNIT_RUNNER_TOTAL_OUT"
+}
+
 # Builds a one-line encoded test result like execute_test_body emits.
 # Args: failed passed skipped incomplete snapshot exit_code
 function build_encoded_result() {

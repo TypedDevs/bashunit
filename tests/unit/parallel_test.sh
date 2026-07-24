@@ -326,6 +326,27 @@ function test_aggregate_sets_snapshot_assertion_count() {
   assert_same "4" "$snapshot"
 }
 
+# A .result file that never received the encoded payload leaves every ##KEY=
+# strip a no-op, so the raw text would reach $(( )) and abort the aggregation
+# with an arithmetic syntax error. It must degrade to zeros and count as failed.
+function test_aggregate_treats_an_unparseable_result_file_as_a_failed_test() {
+  _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
+    "bash: line 3: syntax error near unexpected token"
+
+  local result passed failed tests_failed
+  result=$(
+    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    echo "$_BASHUNIT_ASSERTIONS_PASSED $_BASHUNIT_ASSERTIONS_FAILED $(bashunit::state::get_tests_failed)"
+  )
+  IFS=' ' read -r passed failed tests_failed <<EOF
+$result
+EOF
+
+  assert_same "0" "$passed"
+  assert_same "0" "$failed"
+  assert_same "1" "$tests_failed"
+}
+
 function test_aggregate_sums_multiple_result_files() {
   _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
     "##ASSERTIONS_PASSED=5##ASSERTIONS_FAILED=1##TEST_EXIT_CODE=0##"
