@@ -419,7 +419,7 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [ -z "$cols" ] && command -v tput >/dev/null; then
+  if command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 

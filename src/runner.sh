@@ -502,13 +502,9 @@ function bashunit::runner::load_test_files() {
     local _cached_fns="$functions_for_script"
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
-      bashunit::runner::call_test_functions \
-        "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter" "$_cached_fns" 2>/dev/null &
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" 2>/dev/null &
     else
-      bashunit::runner::call_test_functions \
-        "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter" "$_cached_fns"
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
@@ -775,54 +771,26 @@ function bashunit::runner::parse_data_provider_args() {
   done
 }
 
+##
+# Runs the given test functions of a script (sequentially, or one background
+# worker per test under --parallel).
+# Arguments: $1 script path, $2 space-separated test function names, already
+# filter/tag/rerun-filtered by load_test_files (never empty: the caller skips
+# the file when no function survives filtering).
+##
 function bashunit::runner::call_test_functions() {
   local script="$1"
-  local filter="$2"
-  local tag_filter="${3:-}"
-  local exclude_tag_filter="${4:-}"
-  local cached_functions="${5:-}"
+  local cached_functions="${2:-}"
   local IFS=$' \t\n'
   local -a functions_to_run=()
   local functions_to_run_count=0
 
-  if [ -n "$cached_functions" ]; then
-    # Use pre-computed function list from load_test_files (already tag-filtered)
-    local _fn
-    for _fn in $cached_functions; do
-      [ -z "$_fn" ] && continue
-      functions_to_run[functions_to_run_count]="$_fn"
-      functions_to_run_count=$((functions_to_run_count + 1))
-    done
-  else
-    # Fallback: compute function list (for direct calls without cache)
-    local prefix="test"
-    local filtered_functions
-    filtered_functions=$(bashunit::helper::get_functions_to_run \
-      "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-    local _fn
-    while IFS= read -r _fn; do
-      [ -z "$_fn" ] && continue
-      functions_to_run[functions_to_run_count]="$_fn"
-      functions_to_run_count=$((functions_to_run_count + 1))
-    done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
-
-    # Apply tag filtering if --tag or --exclude-tag was specified
-    if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
-      bashunit::helper::build_tags_map "$script"
-      local -a tag_filtered=()
-      local tag_filtered_count=0
-      local _tf_fn
-      for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-        bashunit::helper::tags_for_function "$_tf_fn"
-        if bashunit::helper::function_matches_tags "$_BASHUNIT_TAGS_OUT" "$tag_filter" "$exclude_tag_filter"; then
-          tag_filtered[tag_filtered_count]="$_tf_fn"
-          tag_filtered_count=$((tag_filtered_count + 1))
-        fi
-      done
-      functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
-      functions_to_run_count=$tag_filtered_count
-    fi
-  fi
+  local _fn
+  for _fn in $cached_functions; do
+    [ -z "$_fn" ] && continue
+    functions_to_run[functions_to_run_count]="$_fn"
+    functions_to_run_count=$((functions_to_run_count + 1))
+  done
 
   # Randomize function order within this file. The seed is mixed with a stable
   # per-file value (cksum of the path) so different files get different orders

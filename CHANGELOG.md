@@ -5,6 +5,12 @@
 ### Added
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
+### Changed
+- The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
+
+### Removed
+- Dead internal code with no remaining callers: the pre-cache fallback branch of the runner's `call_test_functions` (unreachable since the per-file function list became mandatory), `bashunit::state::calculate_total_assertions` (superseded by `bashunit::runner::compute_total_assertions`), `bashunit::coverage::get_line_hits` (superseded by `bashunit::coverage::get_all_line_hits`), `bashunit::helper::trim` and `bashunit::dependencies::has_adjtimex`. All are internal (sub-namespaced) helpers, not part of the documented public API
+
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
 ### Added

@@ -322,18 +322,6 @@ function test_build_provider_map_no_parallel_marker_defaults_false() {
   rm -f "$file"
 }
 
-function test_left_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "       foo")"
-}
-
-function test_right_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "foo       ")"
-}
-
-function test_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "    foo   ")"
-}
-
 function test_find_files_recursive_given_file() {
   local path
   path="$(bashunit::current_dir)/fixtures/tests/example1_test.sh"
