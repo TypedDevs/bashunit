@@ -5,6 +5,9 @@
 ### Added
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
+### Fixed
+- `assert_arrays_equal` no longer reports the internal label `Bashunit::assert::label` when it fails outside a test function (for example from a `set_up` hook); it now reports `Assert arrays equal`, matching every other assertion
+
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
 ### Added
