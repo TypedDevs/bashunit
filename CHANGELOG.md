@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
+
 ### Added
 - Branch coverage now reports loop constructs (`while`/`until`/`for`/`select`): the loop body is a single-arm branch, marked covered only when the loop ran at least once, so a never-entered zero-iteration loop surfaces as an uncovered branch (#855)
 
