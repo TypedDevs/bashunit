@@ -5,6 +5,7 @@
 ### Changed
 - Core string assertions (`assert_contains`/`assert_not_contains`, `assert_matches`/`assert_not_matches`, `assert_string_starts_with`/`assert_string_ends_with` and their negations) no longer fork a subshell per call to join their arguments; a fork-free join with identical behaviour replaces it (#844)
 - The array, date, duration, json, files and folders assertions now resolve their failure label through the fork-free slot helper instead of a per-call command substitution — same labels, fewer forks
+- Parallel test workers name their per-test result file by a per-suite ordinal instead of `mktemp` + `mv`, removing two forks per test (plus the `echo \| tr \| sed` arg sanitizing for data-provider tests) with identical result aggregation (#851)
 
 ## [0.42.0](https://github.com/TypedDevs/bashunit/compare/0.41.0...0.42.0) - 2026-07-20
 

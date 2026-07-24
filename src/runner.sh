@@ -140,6 +140,11 @@ _BASHUNIT_RUNNER_COUNTS_SNAPSHOT_OUT=0
 _BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT=0
 _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
 _BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT=""
+# Per-suite ordinal for naming a parallel worker's `.result` file. Set by
+# call_test_functions (single-threaded dispatch) just before each backgrounded
+# run_test; the fork inherits the value, so every test in a file gets a unique,
+# collision-free name in its per-suite dir without forking mktemp/mv.
+_BASHUNIT_RUNNER_RESULT_ORDINAL=0
 # Suffix appended to a passed-test line when it only passed after retrying.
 _BASHUNIT_RETRY_NOTE=""
 
@@ -846,6 +851,8 @@ function bashunit::runner::call_test_functions() {
   local provider_data_count=0
   local -a parsed_data=()
   local parsed_data_count=0
+  # Monotonic within this file; names each parallel worker's .result file.
+  local _test_ordinal=0
 
   # Scan the file once; per-test provider lookups below are pure-bash (#763).
   # The same pass also detects the no-parallel-tests opt-out (#774).
@@ -874,6 +881,8 @@ function bashunit::runner::call_test_functions() {
     if [ -z "$_BASHUNIT_PROVIDER_FN_OUT" ]; then
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
+        _test_ordinal=$((_test_ordinal + 1))
+        _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test "$script" "$fn_name" &
       else
         bashunit::runner::run_test "$script" "$fn_name"
@@ -904,6 +913,8 @@ function bashunit::runner::call_test_functions() {
       done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
+        _test_ordinal=$((_test_ordinal + 1))
+        _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
@@ -1581,39 +1592,16 @@ function bashunit::runner::parse_result_parallel() {
   local fn_name=$1
   shift
   local execution_result=$1
-  shift
-  local IFS=$' \t\n'
-  local -a args
-  args=("$@")
-
   # This runs once per test in every parallel worker, so avoid per-test forks:
   # derive the suite dir name with parameter expansion (no basename), only
   # mkdir when the dir is missing (first test of the file wins the race,
-  # `-p` makes the losers no-ops), and skip arg sanitizing entirely for the
-  # common no-provider-args case.
+  # `-p` makes the losers no-ops), and name the result file by the per-suite
+  # ordinal the dispatcher assigned — unique without forking mktemp or mv.
   local test_suite_base="${test_file##*/}"
   local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/${test_suite_base%.sh}"
   [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
 
-  local sanitized_args=""
-  if [ -n "${args[*]+"${args[*]}"}" ]; then
-    sanitized_args=$(echo "${args[*]}" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-|-$//')
-  fi
-  local template
-  if [ -z "$sanitized_args" ]; then
-    template="${fn_name}.XXXXXX"
-  else
-    template="${fn_name}-${sanitized_args}.XXXXXX"
-  fi
-
-  local unique_test_result_file
-  if unique_test_result_file=$("$MKTEMP" -p "$test_suite_dir" "$template" 2>/dev/null); then
-    true
-  else
-    unique_test_result_file=$("$MKTEMP" "$test_suite_dir/$template")
-  fi
-  mv "$unique_test_result_file" "${unique_test_result_file}.result"
-  unique_test_result_file="${unique_test_result_file}.result"
+  local unique_test_result_file="${test_suite_dir}/${_BASHUNIT_RUNNER_RESULT_ORDINAL}.result"
 
   bashunit::internal_log "[PARA]" "fn_name:$fn_name" "execution_result:$execution_result"
 

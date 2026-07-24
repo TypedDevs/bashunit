@@ -186,10 +186,12 @@ function test_run_removes_its_run_output_dir() {
 
 # Regression guard for the parallel per-test result path. Publishing each
 # test's result file used to fork `basename` (suite dir name), `mkdir -p`
-# (suite dir, per test) and an `echo | tr | sed` pipeline (arg sanitizing, even
-# with no args) — ~4 forks per test in the mode CI runs everything in. The dir
-# name is parameter expansion now, mkdir is guarded by a `[ -d ]` builtin check,
-# and arg sanitizing is skipped when there are no provider args.
+# (suite dir, per test), an `echo | tr | sed` pipeline (arg sanitizing, even
+# with no args) and a final `mv` (adding the `.result` suffix to the mktemp
+# name) — ~5 forks per test in the mode CI runs everything in. The dir name is
+# parameter expansion now, mkdir is guarded by a `[ -d ]` builtin check, arg
+# sanitizing is skipped when there are no provider args, and the result file is
+# named by a per-suite ordinal (no mktemp, no mv).
 function test_parallel_result_publishing_does_not_fork_per_test() {
   if bashunit::check_os::is_windows; then
     bashunit::skip "PATH shims are unreliable under Git Bash" && return
@@ -199,7 +201,7 @@ function test_parallel_result_publishing_does_not_fork_per_test() {
   dir="$(bashunit::temp_dir)"
   local count_file="$dir/count"
   local bin
-  for bin in basename tr sed; do
+  for bin in basename tr sed mv; do
     local real_bin
     real_bin="$(command -v "$bin")"
     {

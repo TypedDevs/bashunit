@@ -87,10 +87,14 @@ sourcing `src/` (irreducible without lazy-loading, rejected in #798).
 (decision-cache miss: grep|head + dirname) — bounded by file count, nightly
 non-gating workflow, not worth chasing.
 
-**Parallel 10-test file run (CI's mode):** ~21 forks — 10 `mktemp` (one per
-test: the unique result file; deterministic names collide because different
-provider args can sanitize identically and workers can't make unique tokens on
-Bash 3 — subshells inherit `$$` and the `RANDOM` state, and `BASHPID` is 4.0+),
-3 `mkdir`, 4 `rm`, 3 `awk` (#813; was 61). `wait_for_job_slot` already uses
-`wait -n` on Bash 4.3+ and an adaptive sleep-poll fallback — don't "fix" it.
-The spinner forks `sleep` ~1/s on non-tty; not worth chasing.
+**Parallel 10-test file run (CI's mode):** ~11 forks — 3 `mkdir`, 4 `rm`,
+3 `awk` (#813; was 61). The per-test result file is named by a per-suite
+ordinal the single-threaded dispatcher assigns just before each `&` (the fork
+inherits it), so it costs **no** `mktemp` + `mv` per test (#851; was 10
+`mktemp` + 10 `mv`). This replaced the old sanitized-test-name scheme, whose
+deterministic names could collide (different provider args sanitize identically)
+because Bash 3 workers can't mint a unique token — subshells inherit `$$` and
+the `RANDOM` state, and `BASHPID` is 4.0+; an ordinal sidesteps that entirely.
+`wait_for_job_slot` already uses `wait -n` on Bash 4.3+ and an adaptive
+sleep-poll fallback — don't "fix" it. The spinner forks `sleep` ~1/s on
+non-tty; not worth chasing.
