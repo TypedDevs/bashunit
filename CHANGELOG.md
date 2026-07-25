@@ -14,6 +14,7 @@
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
 
 ### Fixed
+- An unknown option is now rejected with a clear error and a non-zero exit instead of being silently filed under test paths. A mistyped flag used to degrade the run while still reporting success: `bashunit --parralel tests/` ran sequentially and exited `0`, and `bashunit --filterr foo tests/` swallowed both the flag and its value and ran the whole suite. Applies to `test` and `bench`; the `assert` subcommand parses its own arguments and is unchanged (#871)
 - The quickstart's sample output showed durations as `16 ms` / `90 ms`; bashunit prints `16ms` / `90ms`
 - `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true`; the actual default has been `auto` since #765
 - bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created. Previously the run continued with every failure/skip collector writing nowhere, so a failing suite still exited non-zero but lost its assertion detail and leaked raw `src/runner.sh: line N: ...: Not a directory` errors instead of reporting the cause
