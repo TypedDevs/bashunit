@@ -31,7 +31,7 @@ All must pass. Run 3-5 times to catch flaky tests.
 ```bash
 make sa           # ShellCheck — zero warnings
 make lint         # EditorConfig — clean
-shfmt -l .        # Check formatting (don't modify)
+# NB: no shfmt gate — it conflicts with .editorconfig here; make lint is the authority
 ```
 
 ### 4. Documentation

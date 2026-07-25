@@ -83,7 +83,7 @@ Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
 
 12. **Quality checks** after each refactor:
     ```bash
-    make sa && make lint && shfmt -w .
+    make sa && make lint
     ```
 
 ### Phase 4: Ship
