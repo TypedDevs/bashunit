@@ -1177,6 +1177,16 @@ function bashunit::main::exec_assert() {
     fi
   fi
 
+  # Every assertion needs at least one argument. Without this guard args_count is
+  # 0, so the last_index below is -1: Bash 3.x has no negative subscripts, so the
+  # expansion failed with a raw `bad array subscript` and the run still exited 0
+  # (#877).
+  if [ "$args_count" -lt 1 ]; then
+    printf "%sError: assert %s requires at least one argument.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "$original_assert_fn" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+  fi
+
   # Get the last argument safely by calculating the array length
   local last_index=$((args_count - 1))
   local last_arg="${args[$last_index]}"
