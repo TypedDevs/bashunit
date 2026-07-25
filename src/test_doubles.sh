@@ -7,6 +7,22 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 # A test that does `local foo_times_file=...` is harmless because the helper
 # resolves `_BASHUNIT_SPY_foo_TIMES_FILE` instead.
 
+_BASHUNIT_SPY_TIMES_OUT=0
+
+# Reads the recorded call count for $1 into _BASHUNIT_SPY_TIMES_OUT (0 when
+# never spied/called). Shared by the call-count assertions instead of each
+# repeating the "resolve times file, cat it, default to 0" sequence.
+function bashunit::spy::times_to_slot() {
+  local command="$1"
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
+  _BASHUNIT_SPY_TIMES_OUT=0
+  if [ -f "${!file_var-}" ]; then
+    _BASHUNIT_SPY_TIMES_OUT=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
+  fi
+}
+
 function bashunit::unmock() {
   local command=$1
 
@@ -102,13 +118,8 @@ function bashunit::spy() {
 
 function assert_have_been_called() {
   local command=$1
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
-  local times=0
-  if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
-  fi
+  bashunit::spy::times_to_slot "$command"
+  local times=$_BASHUNIT_SPY_TIMES_OUT
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
   if [ "$times" -eq 0 ]; then
@@ -165,13 +176,8 @@ function assert_have_been_called_with() {
 function assert_have_been_called_times() {
   local expected_count=$1
   local command=$2
-  local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
-  local times=0
-  if [ -f "${!file_var-}" ]; then
-    times=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
-  fi
+  bashunit::spy::times_to_slot "$command"
+  local times=$_BASHUNIT_SPY_TIMES_OUT
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
   if [ "$times" -ne "$expected_count" ]; then
     bashunit::state::add_assertions_failed
@@ -192,15 +198,12 @@ function assert_have_been_called_nth_with() {
 
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
-  local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
   label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
 
-  local times=0
-  if [ -f "${!times_file_var-}" ]; then
-    times=$(cat "${!times_file_var}" 2>/dev/null || builtin echo 0)
-  fi
+  bashunit::spy::times_to_slot "$command"
+  local times=$_BASHUNIT_SPY_TIMES_OUT
 
   if [ "$nth" -gt "$times" ]; then
     bashunit::state::add_assertions_failed

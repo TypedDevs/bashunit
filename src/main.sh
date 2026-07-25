@@ -69,6 +69,14 @@ function bashunit::main::validate_config_or_exit() {
     bashunit::main::require_non_negative_int_or_exit \
       "${BASHUNIT_COVERAGE_MIN}" "BASHUNIT_COVERAGE_MIN (--coverage-min)"
   fi
+  # Env-only (no CLI flag). Compared with `[ -ge ]` in
+  # bashunit::coverage::get_coverage_class, which errors instead of returning
+  # false on a non-integer operand, leaking a raw shell error into the
+  # coverage report and silently mis-bucketing every file's class (#879).
+  bashunit::main::require_non_negative_int_or_exit \
+    "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}" "BASHUNIT_COVERAGE_THRESHOLD_LOW"
+  bashunit::main::require_non_negative_int_or_exit \
+    "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}" "BASHUNIT_COVERAGE_THRESHOLD_HIGH"
 
   if [ -n "${BASHUNIT_SEED:-}" ]; then
     bashunit::main::require_non_negative_int_or_exit "${BASHUNIT_SEED}" "BASHUNIT_SEED (--seed)"
@@ -1168,7 +1176,6 @@ function bashunit::main::exec_assert() {
 
   local assert_fn=$original_assert_fn
 
-  # Check if the function exists
   if ! type "$assert_fn" >/dev/null 2>&1; then
     assert_fn="assert_$assert_fn"
     if ! type "$assert_fn" >/dev/null 2>&1; then
@@ -1187,14 +1194,12 @@ function bashunit::main::exec_assert() {
     exit 1
   fi
 
-  # Get the last argument safely by calculating the array length
   local last_index=$((args_count - 1))
   local last_arg="${args[$last_index]}"
   local output=""
   local inner_exit_code=0
   local bashunit_exit_code=0
 
-  # Handle different assert_* functions
   case "$assert_fn" in
   assert_exit_code)
     output=$(bashunit::main::handle_assert_exit_code "$last_arg")
@@ -1213,10 +1218,8 @@ function bashunit::main::exec_assert() {
     assert_fn="assert_same"
   fi
 
-  # Set a friendly test title for CLI assert command output
   bashunit::state::set_test_title "assert ${original_assert_fn#assert_}"
 
-  # Run the assertion function and write into stderr
   "$assert_fn" "${args[@]}" 1>&2
   bashunit_exit_code=$?
 
@@ -1258,7 +1261,6 @@ function bashunit::main::exec_multi_assert() {
   local cmd="$1"
   shift
 
-  # Require at least one assertion
   if [ $# -lt 1 ]; then
     printf "%sError: Multi-assertion mode requires at least one assertion.%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" 1>&2
@@ -1266,7 +1268,6 @@ function bashunit::main::exec_multi_assert() {
     return 1
   fi
 
-  # Check that assertions come in pairs (assertion + arg)
   if [ $# -lt 2 ] || [ $(($# % 2)) -ne 0 ]; then
     local assertion_name="${1:-}"
     printf "%sError: Missing argument for assertion '%s'.%s\n" \
@@ -1274,18 +1275,15 @@ function bashunit::main::exec_multi_assert() {
     return 1
   fi
 
-  # Execute command and capture output + exit code
   local stdout
   local cmd_exit_code
   stdout=$(eval "$cmd" 2>&1)
   cmd_exit_code=$?
 
-  # Print stdout for user visibility
   if [ -n "$stdout" ]; then
     echo "$stdout" 1>&1
   fi
 
-  # Parse and execute assertions in pairs
   local overall_result=0
   while [ $# -gt 0 ]; do
     local assertion_name="$1"
@@ -1299,7 +1297,6 @@ function bashunit::main::exec_multi_assert() {
 
     shift 2
 
-    # Resolve assertion function name
     local assert_fn="$assertion_name"
     if ! type "$assert_fn" &>/dev/null; then
       assert_fn="assert_$assertion_name"
@@ -1310,10 +1307,8 @@ function bashunit::main::exec_multi_assert() {
       fi
     fi
 
-    # Set test title for this assertion
     bashunit::state::set_test_title "assert ${assertion_name#assert_}"
 
-    # Execute assertion with appropriate argument
     if bashunit::main::is_exit_code_assertion "$assertion_name"; then
       # Exit code assertion: pass expected value and captured exit code
       "$assert_fn" "$assertion_arg" "" "$cmd_exit_code" 1>&2

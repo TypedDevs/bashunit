@@ -252,6 +252,24 @@ function test_spy_with_impl_calls_custom_function() {
   assert_same "custom output" "$output"
 }
 
+function test_spy_times_to_slot_reports_zero_when_never_spied() {
+  bashunit::spy::times_to_slot "never_spied_command"
+
+  assert_same "0" "$_BASHUNIT_SPY_TIMES_OUT"
+}
+
+function test_spy_times_to_slot_reports_recorded_call_count() {
+  bashunit::spy ps
+
+  ps
+  ps
+  ps
+
+  bashunit::spy::times_to_slot ps
+
+  assert_same "3" "$_BASHUNIT_SPY_TIMES_OUT"
+}
+
 function test_spy_with_impl_records_calls_and_delegates() {
   custom_ps_impl() {
     builtin echo "delegated"

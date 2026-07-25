@@ -115,6 +115,26 @@ function test_coverage_get_coverage_class_boundary_low() {
   assert_equals "medium" "$result"
 }
 
+# _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH/_LOW (env.sh) are the single source
+# of truth for the threshold defaults. When the BASHUNIT_COVERAGE_THRESHOLD_*
+# env vars are unset, get_coverage_class must fall back to those same globals
+# rather than an independently hardcoded number, so the two never drift apart.
+function test_coverage_get_coverage_class_falls_back_to_the_default_high_threshold_when_unset() {
+  local result
+  unset BASHUNIT_COVERAGE_THRESHOLD_HIGH
+  unset BASHUNIT_COVERAGE_THRESHOLD_LOW
+  result=$(bashunit::coverage::get_coverage_class "$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH")
+  assert_equals "high" "$result"
+}
+
+function test_coverage_get_coverage_class_falls_back_to_the_default_low_threshold_when_unset() {
+  local result
+  unset BASHUNIT_COVERAGE_THRESHOLD_HIGH
+  unset BASHUNIT_COVERAGE_THRESHOLD_LOW
+  result=$(bashunit::coverage::get_coverage_class "$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW")
+  assert_equals "medium" "$result"
+}
+
 # === Percentage calculation tests ===
 
 function test_coverage_calculate_percentage_basic() {

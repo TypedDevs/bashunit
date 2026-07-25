@@ -143,7 +143,7 @@ function bashunit::benchmark::print_results() {
       continue
     fi
 
-    if [ "$avg" -le "$max_ms" ]; then
+    if bashunit::math::is_le "$avg" "$max_ms"; then
       local raw="≤ ${max_ms}"
       local padded
       padded=$(printf "%14s" "$raw")
