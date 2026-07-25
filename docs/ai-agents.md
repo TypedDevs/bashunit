@@ -101,9 +101,15 @@ actually make against this API:
   `assert_general_error "" "" "$exit_code"`. With no arguments at all they read `$?`.
 - Capture an exit code before asserting, or `set -e` will kill the test first:
   `local ec=0; my_command || ec=$?`
-- Use `$(temp_file)` / `$(temp_dir)` for scratch files — they are cleaned up
-  automatically and are safe under `--parallel`.
-- Never call the network in a test. Use `mock` / `spy` for external commands.
+- **Helpers are namespaced, assertions are not.** `assert_*` is bare; every helper needs
+  the prefix: `bashunit::temp_dir`, `bashunit::temp_file`, `bashunit::mock`,
+  `bashunit::spy`. The unprefixed form is `command not found`, not an alias.
+- Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` for scratch files — they are
+  cleaned up automatically and are safe under `--parallel`.
+- Never call the network in a test. Use `bashunit::mock` / `bashunit::spy` instead.
+- Spy assertion argument order is inconsistent — check, don't guess:
+  `assert_have_been_called_times <count> <spy>` but
+  `assert_have_been_called_with <spy> <expected> [call_index]`.
 - Do not delete a shared fixture in `tear_down_after_script`: under `--parallel` the
   file's tests may still be running, and they will vanish from the totals silently.
 - Assertions are listed at https://bashunit.com/assertions — do not invent names.

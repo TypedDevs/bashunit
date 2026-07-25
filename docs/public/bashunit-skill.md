@@ -18,7 +18,7 @@ Files end in `_test.sh`, functions start with `test_`:
 #!/usr/bin/env bash
 
 function set_up() {           # before each test (optional)
-  TARGET_DIR="$(temp_dir)"
+  TARGET_DIR="$(bashunit::temp_dir)"
 }
 
 function test_it_writes_the_header() {
@@ -95,8 +95,19 @@ local out; out=$(failing_command)   # WRONG under set -e
 **A test with no assertions passes.** Always assert something. Run
 `bashunit --fail-on-risky tests/` to turn that into a failure.
 
-**Use `$(temp_file)` and `$(temp_dir)`** for scratch paths. They are cleaned up
-automatically and are safe under `--parallel`.
+**Helpers and doubles are namespaced; assertions are not.** `assert_*` is called bare,
+but every helper needs the `bashunit::` prefix. The bare form is not an alias — it is a
+`command not found` at runtime:
+
+```bash
+d="$(bashunit::temp_dir)"    # correct
+d="$(temp_dir)"              # WRONG — command not found
+bashunit::spy send_email     # correct
+spy send_email               # WRONG — command not found
+```
+
+**Use `$(bashunit::temp_file)` and `$(bashunit::temp_dir)`** for scratch paths. They are
+cleaned up automatically and are safe under `--parallel`.
 
 **Do not delete shared fixtures in `tear_down_after_script`.** Under `--parallel` that
 file's tests may still be running; they crash and disappear from the totals without
@@ -107,11 +118,19 @@ reporting a failure.
 ## Test doubles
 
 ```bash
-mock curl echo "fixed response"      # replace behaviour
-spy send_email                       # record calls, keep behaviour
-assert_have_been_called_times 2 send_email
-assert_have_been_called_with "--to a@b.c" send_email
+bashunit::mock date echo "2024-05-01"   # replace behaviour
+bashunit::spy send_email                # record calls, keep behaviour
+
+assert_have_been_called send_email
+assert_have_been_called_times 2 send_email          # count first, then spy
+assert_have_been_called_with send_email "--to a@b.c"  # spy first, then expected
+assert_have_been_called_with send_email "--to a@b.c" 1   # ...of call #1
+assert_have_been_called_nth_with 1 send_email "--to a@b.c"
 ```
+
+The argument order is **not** consistent between these: `_times` takes the count first,
+`_with` takes the spy first. Getting it backwards produces a failed assertion, not an
+error, so check it against this list rather than guessing.
 
 ## Data providers
 
