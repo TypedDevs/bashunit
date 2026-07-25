@@ -25,6 +25,30 @@ function bashunit::main::require_non_negative_int_or_exit() {
 }
 
 ##
+# Exits non-zero unless the path can be written: either it already exists and is
+# writable, or its parent directory exists and is writable. Reports are produced
+# after the suite has finished, so an unwritable destination used to surface as a
+# raw redirect error on a run that had already reported success (#875).
+# Arguments: $1 - path, $2 - the setting name to quote in the error
+##
+function bashunit::main::require_writable_path_or_exit() {
+  local path=$1
+  local parent=${1%/*}
+  [ "$parent" = "$1" ] && parent="."
+  [ -z "$parent" ] && parent="/"
+
+  if [ -e "$path" ]; then
+    [ -w "$path" ] && return 0
+  elif [ -d "$parent" ] && [ -w "$parent" ]; then
+    return 0
+  fi
+
+  printf "%sError: %s cannot be written: '%s'.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED}" "$2" "$path" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+  exit 1
+}
+
+##
 # Validates the resolved configuration and exits non-zero on a bad value.
 # Runs after flag parsing so it covers both the flags and the BASHUNIT_* env
 # vars, which bypass the parser entirely. The numeric settings are compared with
@@ -45,6 +69,19 @@ function bashunit::main::validate_config_or_exit() {
     bashunit::main::require_non_negative_int_or_exit \
       "${BASHUNIT_COVERAGE_MIN}" "BASHUNIT_COVERAGE_MIN (--coverage-min)"
   fi
+
+  if [ -n "${BASHUNIT_SEED:-}" ]; then
+    bashunit::main::require_non_negative_int_or_exit "${BASHUNIT_SEED}" "BASHUNIT_SEED (--seed)"
+  fi
+
+  local _report_var _report_path
+  for _report_var in BASHUNIT_LOG_JUNIT BASHUNIT_LOG_GHA BASHUNIT_REPORT_HTML \
+    BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON; do
+    _report_path=${!_report_var:-}
+    if [ -n "$_report_path" ]; then
+      bashunit::main::require_writable_path_or_exit "$_report_path" "$_report_var"
+    fi
+  done
 
   # Only TAP is implemented; an unrecognised name used to fall back to the
   # default renderer without a word, so `--output tpa` looked like it worked.
@@ -234,6 +271,13 @@ function bashunit::main::cmd_test() {
       if [ "$boot_args" != "$2" ]; then
         BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
         export -n BASHUNIT_BOOTSTRAP_ARGS
+      fi
+      # A missing bootstrap used to leak a raw `source` error, abort the rest of
+      # the parse and exit 0 with no tests run at all (#875).
+      if [ ! -f "$boot_file" ] || [ ! -r "$boot_file" ]; then
+        printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED}" "$boot_file" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+        exit 1
       fi
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
@@ -567,6 +611,13 @@ function bashunit::main::cmd_bench() {
       if [ "$boot_args" != "$2" ]; then
         BASHUNIT_BOOTSTRAP_ARGS="$boot_args"
         export -n BASHUNIT_BOOTSTRAP_ARGS
+      fi
+      # A missing bootstrap used to leak a raw `source` error, abort the rest of
+      # the parse and exit 0 with no tests run at all (#875).
+      if [ ! -f "$boot_file" ] || [ ! -r "$boot_file" ]; then
+        printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED}" "$boot_file" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+        exit 1
       fi
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
