@@ -8,9 +8,13 @@
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
 ### Changed
+- `bashunit doc` and the [Assertions](https://bashunit.com/assertions) reference now cover all 71 assertions instead of 64. The two snapshot assertions and all five spy assertions were documented only on their own pages, so `bashunit doc` — the command the docs tell agents to use so they do not invent names — listed no spy assertion at all
+- The [Assertions](https://bashunit.com/assertions) page opens with a grouped quick-reference table linking every assertion, instead of running straight into the first entry of a 1,700-line catalogue
+- The docs sidebar outline now lists `h3` headings as well as `h2`. Per-flag and per-pattern detail lives at `h3` (27 headings on Command line, 24 on Common patterns, 23 on Coverage) and was hidden from the "On this page" navigation
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
 
 ### Fixed
+- The quickstart's sample output showed durations as `16 ms` / `90 ms`; bashunit prints `16ms` / `90ms`
 - `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true`; the actual default has been `auto` since #765
 - bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created. Previously the run continued with every failure/skip collector writing nowhere, so a failing suite still exited non-zero but lost its assertion detail and leaked raw `src/runner.sh: line N: ...: Not a directory` errors instead of reporting the cause
 - A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead

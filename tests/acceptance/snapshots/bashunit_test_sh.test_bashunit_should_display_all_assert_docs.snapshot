@@ -617,6 +617,61 @@ Reports an error if `command` takes `threshold_ms` milliseconds or more to execu
 Reports an error if `command` completes in `threshold_ms` milliseconds or less. Useful for verifying that a command takes at least a minimum amount of time.
 
 
+## assert_match_snapshot
+--------------
+> `assert_match_snapshot "actual" "snapshot_file"`
+
+Reports an error if `actual` differs from the stored snapshot. On the first run no snapshot exists, so one is written from `actual` and the assertion passes — review and commit that file.
+
+Pass `snapshot_file` to share one snapshot between tests; by default each test gets its own, named after the test function.
+
+See Snapshots(/snapshots) for the full workflow, including how to update a snapshot after an intentional change.
+
+
+## assert_match_snapshot_ignore_colors
+--------------
+> `assert_match_snapshot_ignore_colors "actual" "snapshot_file"`
+
+Same as assert_match_snapshot, but strips ANSI escape sequences from `actual` before comparing. Use it for commands whose colouring depends on the terminal.
+
+
+## assert_have_been_called
+--------------
+> `assert_have_been_called "command"`
+
+Reports an error if the spied `command` was never called. Requires `bashunit::spy command` first — see Test doubles(/test-doubles).
+
+
+## assert_have_been_called_with
+--------------
+> `assert_have_been_called_with "command" "expected_args" nth`
+
+Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one.
+
+Note the argument order: the spy comes first here, but *second* in assert_have_been_called_times.
+
+
+## assert_have_been_called_times
+--------------
+> `assert_have_been_called_times "expected_count" "command"`
+
+Reports an error if the spied `command` was not called exactly `expected_count` times. The count comes **first**, the spy second.
+
+
+## assert_have_been_called_nth_with
+--------------
+> `assert_have_been_called_nth_with "nth" "command" "expected_args"`
+
+Reports an error if call number `nth` of the spied `command` did not receive `expected_args`. Calls are numbered from 1.
+
+
+## assert_not_called
+--------------
+> `assert_not_called "command"`
+
+Reports an error if the spied `command` was called at all. The inverse of assert_have_been_called.
+
+
 ## bashunit::fail
 --------------
 > `bashunit::fail "failure message"`
