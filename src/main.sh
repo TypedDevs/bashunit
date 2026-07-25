@@ -11,6 +11,54 @@ function bashunit::main::abort_unknown_option() {
 }
 
 ##
+# Exits non-zero unless the value is a non-negative integer.
+# Arguments: $1 - value, $2 - the setting name to quote in the error
+##
+function bashunit::main::require_non_negative_int_or_exit() {
+  case "$1" in
+  '' | *[!0-9]*)
+    printf "%sError: %s must be a non-negative integer, got '%s'.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "$2" "$1" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
+}
+
+##
+# Validates the resolved configuration and exits non-zero on a bad value.
+# Runs after flag parsing so it covers both the flags and the BASHUNIT_* env
+# vars, which bypass the parser entirely. The numeric settings are compared with
+# `[ -lt ]`, which errors instead of returning false on a non-integer operand: the
+# job-slot poll looped forever and the rest silently dropped the setting (#873).
+##
+function bashunit::main::validate_config_or_exit() {
+  if [ "${BASHUNIT_PARALLEL_JOBS:-0}" != "0" ]; then
+    bashunit::main::require_non_negative_int_or_exit \
+      "${BASHUNIT_PARALLEL_JOBS}" "BASHUNIT_PARALLEL_JOBS (--jobs)"
+  fi
+  bashunit::main::require_non_negative_int_or_exit \
+    "${BASHUNIT_RETRY:-0}" "BASHUNIT_RETRY (--retry)"
+  bashunit::main::require_non_negative_int_or_exit \
+    "${BASHUNIT_TEST_TIMEOUT:-0}" "BASHUNIT_TEST_TIMEOUT (--test-timeout)"
+  # Empty is the documented "no minimum" default, so only a set value is checked.
+  if [ -n "${BASHUNIT_COVERAGE_MIN:-}" ]; then
+    bashunit::main::require_non_negative_int_or_exit \
+      "${BASHUNIT_COVERAGE_MIN}" "BASHUNIT_COVERAGE_MIN (--coverage-min)"
+  fi
+
+  # Only TAP is implemented; an unrecognised name used to fall back to the
+  # default renderer without a word, so `--output tpa` looked like it worked.
+  case "${BASHUNIT_OUTPUT_FORMAT:-}" in
+  '' | tap) ;;
+  *)
+    printf "%sError: unsupported output format '%s' for --output. Supported: tap.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_OUTPUT_FORMAT}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
+}
+
+##
 # Validates a `--shard <index>/<total>` spec and exports the parts, or prints an
 # error and exits non-zero. Requires numeric index/total with 1 <= index <= total.
 ##
@@ -353,6 +401,8 @@ function bashunit::main::cmd_test() {
     esac
     shift
   done
+
+  bashunit::main::validate_config_or_exit
 
   # Auto-enable coverage when any coverage output option is specified
   if [ "$_bashunit_coverage_opt_set" = true ]; then
