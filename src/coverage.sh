@@ -610,11 +610,7 @@ function bashunit::coverage::get_hit_lines() {
 function bashunit::coverage::compute_file_coverage() {
   local file="$1"
 
-  local -a hits_by_line=()
-  local hit_lineno hit_count
-  while IFS=: read -r hit_lineno hit_count; do
-    [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
-  done < <(bashunit::coverage::get_all_line_hits "$file")
+  bashunit::coverage::load_hits_by_line "$file"
 
   local executable=0 hit=0 lineno=0 line line_hits
   local -a cv_lines=()
@@ -628,7 +624,7 @@ function bashunit::coverage::compute_file_coverage() {
     ((++lineno))
     bashunit::coverage::is_executable_line "$line" "$lineno" || continue
     ((++executable))
-    line_hits=${hits_by_line[lineno]:-0}
+    line_hits=${_BASHUNIT_COVERAGE_HITS_BY_LINE[lineno]:-0}
     [ "$line_hits" -gt 0 ] && ((++hit))
   done
 
@@ -713,6 +709,26 @@ function bashunit::coverage::get_all_line_hits() {
   # final line has no hits; return 0 explicitly so callers under `set -e` (strict
   # mode) don't treat a successful run as a failure (see #722).
   return 0
+}
+
+# Populates the shared _BASHUNIT_COVERAGE_HITS_BY_LINE array (sparse, keyed by
+# line number -> hit count) from get_all_line_hits for $1.
+#
+# Seven call sites used to repeat this "while IFS=: read ... done < <(get_all_line_hits)"
+# parse loop into their own `local -a hits_by_line`. Bash 3.0 cannot return an
+# array from a function or pass one by reference, and copying a sparse array
+# with `local -a x=("${src[@]}")` silently renumbers it from 0, which would
+# corrupt the line-number keys -- so this loader writes one shared global
+# instead (return-slot pattern, see bash-style.md). Callers must consume the
+# result before the next call; there is no adjacent-call isolation.
+declare -a _BASHUNIT_COVERAGE_HITS_BY_LINE
+function bashunit::coverage::load_hits_by_line() {
+  local file="$1"
+  _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+  local hl_lineno hl_count
+  while IFS=: read -r hl_lineno hl_count; do
+    [ -n "$hl_lineno" ] && _BASHUNIT_COVERAGE_HITS_BY_LINE[hl_lineno]=$hl_count
+  done < <(bashunit::coverage::get_all_line_hits "$file")
 }
 
 # Get all test hits for a file in one pass (performance optimization)
@@ -1012,17 +1028,18 @@ function bashunit::coverage::extract_branches() {
 }
 
 # Sets _BASHUNIT_ARM_TAKEN_OUT to 1 iff any executable line in
-# [arm_start..arm_end] has a recorded hit, else 0. Caller must have
-# populated the hits_by_line and src_lines arrays in scope; Bash 3.0
-# cannot pass arrays into a function. Result is returned via the
-# global to avoid a per-arm subshell.
+# [arm_start..arm_end] has a recorded hit, else 0. Reads hit counts from
+# the shared _BASHUNIT_COVERAGE_HITS_BY_LINE global (see
+# load_hits_by_line); caller must have populated the src_lines array in
+# scope -- Bash 3.0 cannot pass arrays into a function. Result is
+# returned via the global to avoid a per-arm subshell.
 _BASHUNIT_ARM_TAKEN_OUT=0
 function bashunit::coverage::_arm_taken() {
   local arm_start="$1" arm_end="$2" ln
   for ((ln = arm_start; ln <= arm_end; ln++)); do
     bashunit::coverage::is_executable_line \
       "${src_lines[$((ln - 1))]:-}" "$ln" || continue
-    if [ "${hits_by_line[$ln]:-0}" -gt 0 ]; then
+    if [ "${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}" -gt 0 ]; then
       _BASHUNIT_ARM_TAKEN_OUT=1
       return
     fi
@@ -1039,11 +1056,7 @@ function bashunit::coverage::_arm_taken() {
 function bashunit::coverage::compute_branch_hits() {
   local file="$1"
 
-  local -a hits_by_line=()
-  local _hl_ln _hl_cnt
-  while IFS=: read -r _hl_ln _hl_cnt; do
-    [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
-  done < <(bashunit::coverage::get_all_line_hits "$file")
+  bashunit::coverage::load_hits_by_line "$file"
 
   local -a src_lines=()
   local _sli=0 _sl
@@ -1218,11 +1231,7 @@ function bashunit::coverage::report_text_uncovered() {
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local -a hits_by_line=()
-    local _hl_ln _hl_cnt
-    while IFS=: read -r _hl_ln _hl_cnt; do
-      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
-    done < <(bashunit::coverage::get_all_line_hits "$file")
+    bashunit::coverage::load_hits_by_line "$file"
 
     local -a uncovered_lines=()
     local _ucount=0
@@ -1230,7 +1239,7 @@ function bashunit::coverage::report_text_uncovered() {
     while IFS= read -r line || [ -n "$line" ]; do
       lineno=$((lineno + 1))
       bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-      local lh="${hits_by_line[$lineno]:-0}"
+      local lh="${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}"
       if [ "$lh" -eq 0 ]; then
         uncovered_lines[_ucount]="$lineno"
         _ucount=$((_ucount + 1))
@@ -1266,11 +1275,7 @@ function bashunit::coverage::report_text_line_hits() {
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local -a hits_by_line=()
-    local _hl_ln _hl_cnt
-    while IFS=: read -r _hl_ln _hl_cnt; do
-      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
-    done < <(bashunit::coverage::get_all_line_hits "$file")
+    bashunit::coverage::load_hits_by_line "$file"
 
     local -a hit_specs=()
     local _hc=0
@@ -1278,7 +1283,7 @@ function bashunit::coverage::report_text_line_hits() {
     while IFS= read -r line || [ -n "$line" ]; do
       lineno=$((lineno + 1))
       bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-      local lh="${hits_by_line[$lineno]:-0}"
+      local lh="${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}"
       if [ "$lh" -gt 0 ]; then
         hit_specs[_hc]="${lineno}:${lh}"
         _hc=$((_hc + 1))
@@ -1311,11 +1316,7 @@ function bashunit::coverage::report_text_functions() {
     functions_data=$(bashunit::coverage::extract_functions "$file")
     [ -z "$functions_data" ] && continue
 
-    local -a hits_by_line=()
-    local _hl_ln _hl_cnt
-    while IFS=: read -r _hl_ln _hl_cnt; do
-      [ -n "$_hl_ln" ] && hits_by_line[_hl_ln]=$_hl_cnt
-    done < <(bashunit::coverage::get_all_line_hits "$file")
+    bashunit::coverage::load_hits_by_line "$file"
 
     local -a file_lines=()
     local _fli=0 _fl
@@ -1345,7 +1346,7 @@ function bashunit::coverage::report_text_functions() {
         bashunit::coverage::is_executable_line \
           "${file_lines[$((ln - 1))]:-}" "$ln" || continue
         fn_executable=$((fn_executable + 1))
-        [ "${hits_by_line[$ln]:-0}" -gt 0 ] && fn_hit=$((fn_hit + 1))
+        [ "${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}" -gt 0 ] && fn_hit=$((fn_hit + 1))
       done
 
       fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
@@ -1377,11 +1378,7 @@ function bashunit::coverage::report_lcov() {
 
       echo "SF:$file"
 
-      local -a hits_by_line=()
-      local hit_lineno hit_count
-      while IFS=: read -r hit_lineno hit_count; do
-        [ -n "$hit_lineno" ] && hits_by_line[hit_lineno]=$hit_count
-      done < <(bashunit::coverage::get_all_line_hits "$file")
+      bashunit::coverage::load_hits_by_line "$file"
 
       # Function records (FN/FNDA/FNF/FNH). Emit FN lines as we walk
       # and buffer the matching FNDA lines for emission after, per
@@ -1396,7 +1393,7 @@ function bashunit::coverage::report_lcov() {
 
         any_hit=0
         for ((fln = fn_start; fln <= fn_end; fln++)); do
-          if [ "${hits_by_line[$fln]:-0}" -gt 0 ]; then
+          if [ "${_BASHUNIT_COVERAGE_HITS_BY_LINE[$fln]:-0}" -gt 0 ]; then
             any_hit=1
             break
           fi
@@ -1436,7 +1433,7 @@ function bashunit::coverage::report_lcov() {
         ((++lineno))
         bashunit::coverage::is_executable_line "$line" "$lineno" || continue
         ((++executable))
-        local lh="${hits_by_line[$lineno]:-0}"
+        local lh="${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}"
         [ "$lh" -gt 0 ] && ((++hit))
         echo "DA:${lineno},${lh}"
       done
@@ -1921,11 +1918,7 @@ function bashunit::coverage::generate_file_html() {
   local uncovered=$((executable - hit))
 
   # Pre-load all line hits into indexed array (performance optimization)
-  local -a hits_by_line=()
-  local _ln _cnt
-  while IFS=: read -r _ln _cnt; do
-    hits_by_line[_ln]=$_cnt
-  done < <(bashunit::coverage::get_all_line_hits "$file")
+  bashunit::coverage::load_hits_by_line "$file"
 
   # Pre-load all file lines into indexed array (avoids sed per line)
   local -a file_lines=()
@@ -2206,7 +2199,7 @@ EOF
           ln_content="${file_lines[$((ln - 1))]:-}"
           if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
             ((++fn_executable))
-            local ln_hits=${hits_by_line[$ln]:-0}
+            local ln_hits=${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}
             if [ "$ln_hits" -gt 0 ]; then
               ((++fn_hit))
             fi
@@ -2269,7 +2262,7 @@ EOF
 
       if bashunit::coverage::is_executable_line "$line" "$lineno"; then
         # O(1) lookup from pre-loaded array
-        local hits=${hits_by_line[$lineno]:-0}
+        local hits=${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}
 
         if [ "$hits" -gt 0 ]; then
           row_class="covered"
