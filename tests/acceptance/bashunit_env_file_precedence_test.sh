@@ -25,9 +25,9 @@ function test_an_empty_env_entry_does_not_override_an_exported_value() {
   printf 'BASHUNIT_OUTPUT_FORMAT=\n' >"$WORK_DIR/.env"
 
   local output
-  pushd "$WORK_DIR" >/dev/null
+  pushd "$WORK_DIR" >/dev/null || return 1
   output=$(BASHUNIT_OUTPUT_FORMAT=tap "$BASHUNIT_PATH" . 2>&1) || true
-  popd >/dev/null
+  popd >/dev/null || return 1
 
   assert_contains "TAP version 13" "$output"
 }
@@ -36,9 +36,9 @@ function test_a_non_empty_env_entry_still_applies() {
   printf 'BASHUNIT_OUTPUT_FORMAT=tap\n' >"$WORK_DIR/.env"
 
   local output
-  pushd "$WORK_DIR" >/dev/null
+  pushd "$WORK_DIR" >/dev/null || return 1
   output=$("$BASHUNIT_PATH" . 2>&1) || true
-  popd >/dev/null
+  popd >/dev/null || return 1
 
   assert_contains "TAP version 13" "$output"
 }
@@ -49,9 +49,9 @@ function test_a_non_empty_env_entry_applies_over_an_empty_exported_value() {
   printf 'BASHUNIT_OUTPUT_FORMAT=tap\n' >"$WORK_DIR/.env"
 
   local output
-  pushd "$WORK_DIR" >/dev/null
-  output=$(BASHUNIT_OUTPUT_FORMAT= "$BASHUNIT_PATH" . 2>&1) || true
-  popd >/dev/null
+  pushd "$WORK_DIR" >/dev/null || return 1
+  output=$(BASHUNIT_OUTPUT_FORMAT='' "$BASHUNIT_PATH" . 2>&1) || true
+  popd >/dev/null || return 1
 
   assert_contains "TAP version 13" "$output"
 }
@@ -60,9 +60,9 @@ function test_env_file_still_sets_a_value_the_caller_did_not_provide() {
   printf 'BASHUNIT_OUTPUT_FORMAT=tap\n' >"$WORK_DIR/.env"
 
   local output
-  pushd "$WORK_DIR" >/dev/null
+  pushd "$WORK_DIR" >/dev/null || return 1
   output=$("$BASHUNIT_PATH" . 2>&1) || true
-  popd >/dev/null
+  popd >/dev/null || return 1
 
   assert_contains "ok 1 - Ok" "$output"
 }
