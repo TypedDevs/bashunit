@@ -21,6 +21,35 @@ function test_bashunit_assert_subcommand_non_existing_function() {
   assert_command_not_found "" "" "$exit_code"
 }
 
+# args_count was 0, so `${args[-1]}` expanded to a negative subscript: a raw
+# `bad array subscript` on Bash 3.x, and the run still exited 0 (#877).
+function test_bashunit_assert_subcommand_without_arguments() {
+  local output
+  local exit_code
+  output=$(./bashunit assert equals 2>&1) && exit_code=$? || exit_code=$?
+
+  assert_general_error "" "" "$exit_code"
+  assert_not_contains "bad array subscript" "$output"
+  assert_contains "equals" "$output"
+}
+
+function test_bashunit_assert_subcommand_without_arguments_for_a_code_assertion() {
+  local output
+  local exit_code
+  output=$(./bashunit assert successful_code 2>&1) && exit_code=$? || exit_code=$?
+
+  assert_general_error "" "" "$exit_code"
+  assert_not_contains "bad array subscript" "$output"
+}
+
+function test_bashunit_assert_subcommand_still_accepts_a_single_argument() {
+  local output
+  local exit_code
+  output=$(./bashunit assert empty "" 2>&1) && exit_code=$? || exit_code=$?
+
+  assert_successful_code "" "" "$exit_code"
+}
+
 function test_bashunit_assert_subcommand_failure() {
   local exit_code
   ./bashunit --no-parallel assert equals "foo" "bar" 2>&1 && exit_code=$? || exit_code=$?
