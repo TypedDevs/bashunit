@@ -33,6 +33,37 @@ function bashunit::math::calculate() {
 }
 
 ##
+# Numeric <= comparison that tolerates decimal operands. Plain `[ -le ]`
+# exits 2 ("integer expression expected") on a fractional value instead of
+# comparing it, which silently mis-reports the wrong side as failing (see
+# bashunit::benchmark::print_results, whose `@max_ms` annotation allows
+# decimals). Mirrors bashunit::math::calculate's bc > awk > integer fallback
+# chain.
+# Arguments: $1 - left operand, $2 - right operand
+# Returns: 0 when $1 <= $2, 1 otherwise
+##
+function bashunit::math::is_le() {
+  local left="$1"
+  local right="$2"
+
+  if bashunit::dependencies::has_bc; then
+    [ "$(echo "$left <= $right" | bc)" = "1" ]
+    return
+  fi
+
+  if bashunit::dependencies::has_awk; then
+    awk -v a="$left" -v b="$right" 'BEGIN { exit !(a <= b) }'
+    return
+  fi
+
+  # Downgrade to integer comparison by stripping decimals, matching
+  # bashunit::math::calculate's no-bc/no-awk fallback.
+  left=$(echo "$left" | sed -E 's/([0-9]+)\.[0-9]+/\1/g')
+  right=$(echo "$right" | sed -E 's/([0-9]+)\.[0-9]+/\1/g')
+  [ "$left" -le "$right" ]
+}
+
+##
 # Deterministically shuffles stdin lines (one item per line) with a Fisher-Yates
 # driven by a seeded LCG (glibc constants). Same seed + same input always yields
 # the same permutation, so a randomized run can be replayed via its seed.

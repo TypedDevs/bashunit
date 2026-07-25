@@ -199,6 +199,30 @@ function test_print_results_outputs_failing_threshold_status() {
   assert_contains "> 100" "$output"
 }
 
+# `@max_ms` accepts decimals (the parse_annotations regex is `[0-9.][0-9.]*`,
+# and add_result's own test above stores an avg of "42.5"), but plain `[ -le ]`
+# errors on a fractional operand instead of comparing it: the well-under-budget
+# row below used to print a stray "integer expression expected" line and always
+# fall through to the ">" (failing) branch regardless of the real average (#880).
+function test_print_results_outputs_passing_threshold_status_with_decimal_max_ms() {
+  function bashunit::env::is_bench_mode_enabled() { return 0; }
+  function bashunit::env::is_simple_output_enabled() { return 1; }
+  function bashunit::console_results::print_execution_time() { :; }
+  function bashunit::print_line() { :; }
+
+  _BASHUNIT_BENCH_NAMES=("fast_fn")
+  _BASHUNIT_BENCH_REVS=("1")
+  _BASHUNIT_BENCH_ITS=("1")
+  _BASHUNIT_BENCH_AVERAGES=("10")
+  _BASHUNIT_BENCH_MAX_MILLIS=("100.5")
+
+  local output
+  output=$(bashunit::benchmark::print_results 2>&1)
+
+  assert_contains "≤ 100.5" "$output"
+  assert_not_contains "integer expression expected" "$output"
+}
+
 function test_print_results_adds_newline_in_simple_mode() {
   function bashunit::env::is_bench_mode_enabled() { return 0; }
   function bashunit::env::is_simple_output_enabled() { return 0; }
