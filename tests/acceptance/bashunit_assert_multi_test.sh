@@ -5,7 +5,6 @@ function set_up() {
   export BASHUNIT_SIMPLE_OUTPUT=false
 }
 
-# Test multi-assertion mode
 function test_multi_assert_exit_code_and_contains() {
   ./bashunit assert "echo 'some error' && exit 1" exit_code "1" contains "some error" 2>&1
   assert_successful_code

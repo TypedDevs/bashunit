@@ -14,14 +14,10 @@ function tear_down() {
 }
 
 function test_bashunit_init_creates_structure() {
-  # switch into a clean temporary directory
   pushd "$TMP_DIR" >/dev/null
-  # generate test scaffolding
   "$BASHUNIT_PATH" init >/tmp/init.log
-  # perform the assertions
   assert_file_exists "tests/example_test.sh"
   assert_file_exists "tests/bootstrap.sh"
-  # return to the original working directory
   popd >/dev/null
 }
 
