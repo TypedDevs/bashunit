@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Breaking
+- The minimum supported bash is now **3.2**, up from 3.0. 3.2 is the version macOS ships, which is the reason for supporting an old bash at all; 3.0 (2004) and 3.1 (2005) have no practical install base. They also lack `printf -v` and `+=`, and predate the 3.2 change to `[[ =~ ]]` quoting — so at a 3.0 floor a regex match behaves *differently across supported versions*, which is worse than not supporting them. The runtime gate previously compared only the major version, so any 3.x was accepted regardless of the declared minimum; it now checks the minor and refuses 3.0/3.1 with a clear message. CI builds and tests against a real bash 3.2 instead of 3.0
+
 ### Added
 - Docs: an [Agentic coding](https://bashunit.com/ai-agents) page covering machine-readable results (`--report-json`, `--output tap`), the flags that keep an AI agent's edit-run loop tight (`--filter`, `--rerun-failed`, `--test-timeout`), and the API traps that make generated tests pass for the wrong reason. It also surfaces `llms.txt` / `llms-full.txt`, which were already published but linked from nowhere
 - A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md) for Claude Code and other tools that load a `SKILL.md`

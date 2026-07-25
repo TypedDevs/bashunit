@@ -6,17 +6,38 @@ paths:
 
 # Bash Style & Compatibility Rules
 
-## Bash 3.0+ Compatibility (Critical)
+## Bash 3.2+ Compatibility (Critical)
 
-bashunit must work on **Bash 3.0+** (macOS default). These features are **prohibited**:
+bashunit must work on **Bash 3.2+** — the bash macOS ships, and the reason for
+supporting an old bash at all. Bash 3.0/3.1 are not supported: they predate
+`printf -v` and `+=`, and predate the 3.2 change to `[[ =~ ]]` quoting, so a
+regex match would behave differently across "supported" versions.
+
+These are **version-breaking** above the floor and are prohibited. They are
+enforced mechanically by `tests/unit/bash_compatibility_test.sh`, which greps
+`src/` regardless of test coverage:
 
 | Feature | Bash ver | Alternative |
 |---------|----------|-------------|
 | `declare -A` (associative arrays) | 4.0+ | Parallel indexed arrays |
-| `[[ ]]` (test operator) | — | `[ ]` with `=` not `==` |
 | `${var,,}` / `${var^^}` (case) | 4.0+ | `tr '[:upper:]' '[:lower:]'` |
 | `${array[-1]}` (negative index) | 4.3+ | `${array[${#array[@]}-1]}` |
 | `&>>` (append both) | 4.0+ | `>> file 2>&1` |
+| `BASHPID` | 4.0+ | fork (`mktemp`) or an assigned ordinal |
+| `mapfile` / `readarray` | 4.0+ | `while IFS= read -r` |
+| `declare -n` / `local -n` (nameref) | 4.3+ | Return-slot pattern (below) |
+| `coproc` | 4.0+ | — |
+| `${var@Q}` (transformations) | 4.4+ | — |
+
+### Style, not compatibility
+
+These are **house style**, not version constraints. Do not justify them as
+Bash 3 requirements, and do not add them to the compatibility gate:
+
+| Convention | Reality |
+|------------|---------|
+| Prefer `[ ]` over `[[ ]]` | `[[ ]]` works on every supported bash, including 3.0 (verified against a real build) |
+| Avoid `printf -v` | Works on 3.1+; the real objection is that it resolves against the *dynamic* scope, like `eval "$name=..."` |
 
 ## Coding Conventions
 
