@@ -27,13 +27,19 @@ It is meant for committing sensible project defaults. Precedence, from highest
 to lowest:
 
 1. CLI flags (e.g. `--simple`)
-2. Environment variables and the `.env` file
-3. `.bashunitrc`
-4. Built-in defaults
+2. `.env` entries that have a value
+3. Environment variables
+4. `.bashunitrc`
+5. Built-in defaults
 
-`.bashunitrc` only fills values that are not already set, so an exported
-environment variable or a `.env` entry always wins. `--skip-env-file` skips
-`.bashunitrc` as well.
+An entry left **empty** in `.env` means "not configured here" and does not
+override the environment, so `BASHUNIT_OUTPUT_FORMAT=tap ./bashunit` keeps
+working even when `.env` lists that name. Give the entry a value and it takes
+effect for the whole project, overriding the ambient environment — that is what a
+committed project config is for.
+
+`.bashunitrc` only fills values that are not already set, so anything above it
+always wins. `--skip-env-file` skips both `.env` and `.bashunitrc`.
 
 ## Default path
 

@@ -80,10 +80,11 @@ function test_bashunit_fails_when_parallel_jobs_env_var_is_not_a_number() {
 function test_bashunit_fails_when_coverage_threshold_high_env_var_is_not_a_number() {
   local ec=0
   local output
-  # --skip-env-file is required: .env / .env.example both list these two names,
-  # and an allexport `source .env` turns an empty listing into an unconditional
-  # assignment that overrides the exported value under test (#865).
-  output=$(BASHUNIT_COVERAGE_THRESHOLD_HIGH=abc ./bashunit --skip-env-file --coverage "$TEST_FILE" 2>&1) || ec=$?
+  # .env / .env.example both list this name with an empty value. That used to
+  # override the exported value and this test needed --skip-env-file to work;
+  # since #865 an empty entry no longer clobbers the caller, so the real path is
+  # exercised here.
+  output=$(BASHUNIT_COVERAGE_THRESHOLD_HIGH=abc ./bashunit --coverage "$TEST_FILE" 2>&1) || ec=$?
 
   assert_general_error "" "" "$ec"
   assert_contains "BASHUNIT_COVERAGE_THRESHOLD_HIGH" "$output"
@@ -92,8 +93,8 @@ function test_bashunit_fails_when_coverage_threshold_high_env_var_is_not_a_numbe
 function test_bashunit_fails_when_coverage_threshold_low_env_var_is_not_a_number() {
   local ec=0
   local output
-  # See the note above: .env would otherwise override the value under test.
-  output=$(BASHUNIT_COVERAGE_THRESHOLD_LOW=abc ./bashunit --skip-env-file --coverage "$TEST_FILE" 2>&1) || ec=$?
+  # See the note above.
+  output=$(BASHUNIT_COVERAGE_THRESHOLD_LOW=abc ./bashunit --coverage "$TEST_FILE" 2>&1) || ec=$?
 
   assert_general_error "" "" "$ec"
   assert_contains "BASHUNIT_COVERAGE_THRESHOLD_LOW" "$output"

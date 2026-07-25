@@ -100,12 +100,17 @@ test/parallel: $(TEST_SCRIPTS)
 # the target lints the repo N+1 times and appears to hang), and its "*.sh" glob
 # never sees the extensionless entrypoint or the bin/ scripts. `find` remains
 # the fallback outside a git checkout.
+#
+# --others --exclude-standard includes files that are new and not yet staged:
+# without it a brand-new script is invisible to `make sa` and only fails once CI
+# lints it, which is exactly backwards.
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
 	@{ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
-		git ls-files -z "*.sh" bashunit bin/pre-commit bin/create-pr; \
+		git ls-files -z --cached --others --exclude-standard \
+			"*.sh" bashunit bin/pre-commit bin/create-pr; \
 	else \
 		find . -name "*.sh" -not -path "./local/*" -not -path "./.claude/worktrees/*" -print0; \
 	fi; } \
