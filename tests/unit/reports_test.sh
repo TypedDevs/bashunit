@@ -69,7 +69,7 @@ function _mock_state_functions() {
   function bashunit::clock::total_runtime_in_milliseconds() { echo "1234"; }
 }
 
-# === Existing test ===
+# === No-report-output short circuit ===
 
 function test_add_test_skips_tracking_without_report_output() {
   local before after

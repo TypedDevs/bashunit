@@ -33,7 +33,7 @@ bashunit (entry)          sources all src/*.sh; version gate; early flag scan
             │                               parallel: + write .result via mktemp
             └─ console_results::print_successful_test / _failed_ / …
                 └─ str::rpad + strip_ansi   align per-test time (pure bash)
-   └─ [--parallel] wait; parallel::aggregate_test_results over *.result files
+   └─ [--parallel] wait; state::aggregate_parallel_results over *.result files
    └─ console_results::render_result        totals; deferred failure/skip blocks
    └─ rerun::persist; env::cleanup_run_output_dir; exit code
 ```

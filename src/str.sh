@@ -2,6 +2,20 @@
 
 _BASHUNIT_STR_STRIPPED_OUT=""
 
+# Fork-free random alphanumeric string. Lives in this leaf module (not globals.sh)
+# because env.sh calls it at source time to build the run-unique scratch paths:
+# a helper used by the lowest layer must not sit above it.
+function bashunit::random_str() {
+  local length=${1:-6}
+  local chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  local str=''
+  local i
+  for ((i = 0; i < length; i++)); do
+    str="$str${chars:RANDOM%${#chars}:1}"
+  done
+  echo "$str"
+}
+
 # Strip ANSI escape codes and control characters, writing the result into the
 # global slot _BASHUNIT_STR_STRIPPED_OUT (no fork on the plain-text fast path).
 # Callers on hot paths (assert_equals/assert_not_equals) use this to avoid the

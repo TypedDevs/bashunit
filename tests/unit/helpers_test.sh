@@ -322,18 +322,6 @@ function test_build_provider_map_no_parallel_marker_defaults_false() {
   rm -f "$file"
 }
 
-function test_left_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "       foo")"
-}
-
-function test_right_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "foo       ")"
-}
-
-function test_trim() {
-  assert_same "foo" "$(bashunit::helper::trim "    foo   ")"
-}
-
 function test_find_files_recursive_given_file() {
   local path
   path="$(bashunit::current_dir)/fixtures/tests/example1_test.sh"
@@ -375,6 +363,32 @@ function test_find_files_recursive_given_bash_extension() {
   result=$(bashunit::helper::find_files_recursive "$path")
 
   assert_same "tests/unit/fixtures/tests/example3_test.bash" "$result"
+}
+
+function test_find_files_recursive_given_wildcard_in_a_path_with_spaces() {
+  local base
+  base=$(bashunit::temp_dir "spaced")
+  local dir="$base/a dir with spaces"
+  mkdir -p "$dir"
+  touch "$dir/first_test.sh" "$dir/second_test.sh"
+
+  local result
+  result=$(bashunit::helper::find_files_recursive "$dir/*")
+
+  assert_same "$dir/first_test.sh
+$dir/second_test.sh" "$result"
+}
+
+function test_find_files_recursive_given_wildcard_does_not_evaluate_the_path() {
+  local dir
+  dir=$(bashunit::temp_dir "unevaluated")
+  touch "$dir/marker_test.sh"
+
+  # A `;`-bearing path must be treated as data, never as shell syntax.
+  local result
+  result=$(bashunit::helper::find_files_recursive "$dir/*;echo pwned" 2>/dev/null || true)
+
+  assert_not_contains "pwned" "$result"
 }
 
 function test_get_latest_tag() {

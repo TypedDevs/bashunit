@@ -247,20 +247,13 @@ EOF
 
 # === Line hits tests ===
 
-function test_coverage_get_line_hits_returns_zero_when_no_file() {
-  _BASHUNIT_COVERAGE_DATA_FILE=""
-
-  local result
-  result=$(bashunit::coverage::get_line_hits "/path/to/file.sh" 10)
-
-  assert_equals "0" "$result"
-}
-
-function test_coverage_get_line_hits_counts_correctly() {
+function test_coverage_get_all_line_hits_counts_per_line() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init
 
-  local test_file="/test/script.sh"
+  local test_file
+  test_file="$(bashunit::temp_file coverage_line_hits).sh"
+  printf 'echo one\necho two\necho three\necho four\necho five\n' >"$test_file"
   {
     echo "${test_file}:5"
     echo "${test_file}:5"
@@ -268,7 +261,9 @@ function test_coverage_get_line_hits_counts_correctly() {
   } >>"$_BASHUNIT_COVERAGE_DATA_FILE"
 
   local result
-  result=$(bashunit::coverage::get_line_hits "$test_file" 5)
+  result=$(bashunit::coverage::get_all_line_hits "$test_file")
 
-  assert_equals "3" "$result"
+  rm -f "$test_file"
+
+  assert_equals "5:3" "$result"
 }

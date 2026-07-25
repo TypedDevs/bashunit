@@ -850,8 +850,9 @@ function bashunit::main::exec_tests() {
   bashunit::parallel::resolve_enabled
 
   if bashunit::env::is_parallel_run_enabled && ! bashunit::parallel::is_enabled; then
-    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu and Windows.\n" "${_BASHUNIT_COLOR_INCOMPLETE}"
-    printf "For other OS (like Alpine), --parallel is not enabled due to inconsistent results,\n"
+    printf "%sWarning: Parallel tests are supported on macOS, Ubuntu, Alpine and Windows.\n" \
+      "${_BASHUNIT_COLOR_INCOMPLETE}"
+    printf "On other systems --parallel is not enabled due to inconsistent results,\n"
     printf "particularly involving race conditions.%s " "${_BASHUNIT_COLOR_DEFAULT}"
     printf "%sFallback using --no-parallel%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
@@ -1072,7 +1073,7 @@ function bashunit::main::exec_assert() {
     args[last_index]="$inner_exit_code"
     ;;
   *)
-    # Add more cases here for other assert_* handlers if needed
+    # Every other assertion takes its argument as-is; no rewriting needed.
     ;;
   esac
 

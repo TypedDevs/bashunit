@@ -17,10 +17,7 @@ function assert_json_key_exists() {
 
   local result
   if ! result=$(printf '%s' "$json" | jq -e "$key" 2>/dev/null) || [ "$result" = "null" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${json}" "to have key" "${key}"
+    bashunit::assert::fail_with "" "${json}" "to have key" "${key}"
     return
   fi
 
@@ -37,18 +34,12 @@ function assert_json_contains() {
 
   local result
   if ! result=$(printf '%s' "$json" | jq -e -r "$key" 2>/dev/null) || [ "$result" = "null" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${json}" "to have key" "${key}"
+    bashunit::assert::fail_with "" "${json}" "to have key" "${key}"
     return
   fi
 
   if [ "$result" != "$expected" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${result}"
+    bashunit::assert::fail_with "" "${expected}" "but got " "${result}"
     return
   fi
 
@@ -68,10 +59,7 @@ function assert_json_equals() {
   actual_sorted=$(printf '%s' "$actual" | jq -S '.' 2>/dev/null)
 
   if [ "$expected_sorted" != "$actual_sorted" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
+    bashunit::assert::fail_with "" "${expected}" "but got " "${actual}"
     return
   fi
 

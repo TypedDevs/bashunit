@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-# This function returns the embedded assertions.md content.
-# During development, it reads from the file.
-# During build, this function is replaced with actual content.
+# Returns the assertions.md content. In a repo checkout it reads the file;
+# build.sh swaps everything between the two marker comments below for a heredoc
+# holding the docs verbatim, so the single-file binary needs no docs/ directory.
+# The markers are load-bearing: build::embed_docs aborts if either is missing.
 function bashunit::doc::get_embedded_docs() {
   # __BASHUNIT_EMBEDDED_DOCS_START__
   cat "$BASHUNIT_ROOT_DIR/docs/assertions.md"

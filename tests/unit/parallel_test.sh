@@ -240,7 +240,7 @@ function test_must_stop_on_failure_returns_false_when_no_file() {
   assert_general_error "$(bashunit::parallel::must_stop_on_failure)"
 }
 
-# === aggregate_test_results tests ===
+# === aggregate_parallel_results tests ===
 
 function _create_result_file() {
   local dir="$1"
@@ -255,7 +255,7 @@ function test_aggregate_handles_no_result_files() {
   mkdir -p "$TEMP_DIR_PARALLEL_TEST_SUITE/script1"
 
   local output
-  output=$(bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE")
+  output=$(bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE")
 
   assert_contains "No tests found" "$output"
 }
@@ -267,7 +267,7 @@ function test_aggregate_sets_passed_assertion_count() {
   # Run in subshell to isolate state changes
   local passed
   passed=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_PASSED"
   )
 
@@ -280,7 +280,7 @@ function test_aggregate_sets_failed_assertion_count() {
 
   local failed
   failed=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_FAILED"
   )
 
@@ -293,7 +293,7 @@ function test_aggregate_sets_skipped_assertion_count() {
 
   local skipped
   skipped=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_SKIPPED"
   )
 
@@ -306,7 +306,7 @@ function test_aggregate_sets_incomplete_assertion_count() {
 
   local incomplete
   incomplete=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_INCOMPLETE"
   )
 
@@ -319,11 +319,37 @@ function test_aggregate_sets_snapshot_assertion_count() {
 
   local snapshot
   snapshot=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_SNAPSHOT"
   )
 
   assert_same "4" "$snapshot"
+}
+
+# A .result file that never received the encoded payload leaves every ##KEY=
+# strip a no-op, so the raw text would reach $(( )) and abort the aggregation
+# with an arithmetic syntax error. It must degrade to zeros and count as failed.
+function test_aggregate_treats_an_unparseable_result_file_as_a_failed_test() {
+  _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
+    "bash: line 3: syntax error near unexpected token"
+
+  # get_tests_failed is cumulative for the whole run, so assert the delta this
+  # aggregation adds — an absolute value would also count any earlier failure.
+  local before
+  before=$(bashunit::state::get_tests_failed)
+
+  local result passed failed tests_failed
+  result=$(
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    echo "$_BASHUNIT_ASSERTIONS_PASSED $_BASHUNIT_ASSERTIONS_FAILED $(bashunit::state::get_tests_failed)"
+  )
+  IFS=' ' read -r passed failed tests_failed <<EOF
+$result
+EOF
+
+  assert_same "0" "$passed"
+  assert_same "0" "$failed"
+  assert_same "1" "$((tests_failed - before))"
 }
 
 function test_aggregate_sums_multiple_result_files() {
@@ -334,7 +360,7 @@ function test_aggregate_sums_multiple_result_files() {
 
   local result passed failed
   result=$(
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
     echo "$_BASHUNIT_ASSERTIONS_PASSED $_BASHUNIT_ASSERTIONS_FAILED"
   )
   IFS=' ' read -r passed failed <<EOF

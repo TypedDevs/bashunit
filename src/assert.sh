@@ -15,17 +15,45 @@ _BASHUNIT_ASSERT_LABEL_OUT=""
 
 # Resolve assertion label into the slot _BASHUNIT_ASSERT_LABEL_OUT with no fork:
 # use custom label if provided, otherwise derive from the test function name.
-# Must be called at the same stack depth as the echoing wrapper so the test-frame
-# fallback keeps resolving against the caller of the assertion.
+#
+# $2 is the frame to fall back to when no test_* function is on the stack. It
+# defaults to 2 (the caller of this function), so any wrapper that adds a frame
+# between the assertion and this call must pass its own depth -- otherwise the
+# fallback reports the wrapper's name instead of the assertion's.
+# Arguments: $1 - custom label (optional), $2 - fallback depth (default 2)
 function bashunit::assert::label_to_slot() {
   local custom_label="${1:-}"
+  local fallback_depth="${2:-2}"
   if [ -n "$custom_label" ]; then
     _BASHUNIT_ASSERT_LABEL_OUT=$custom_label
     return
   fi
-  bashunit::helper::find_test_function_name_to_slot
+  bashunit::helper::find_test_function_name_to_slot "$fallback_depth"
   bashunit::helper::normalize_test_function_name_to_slot "$_BASHUNIT_HELPER_TESTFN_OUT"
   _BASHUNIT_ASSERT_LABEL_OUT=$_BASHUNIT_HELPER_NORMALIZED_OUT
+}
+
+##
+# Reports an assertion failure: resolves the label, marks the assertion failed
+# and prints the standard "Expected / <condition>" block. Collapses the
+# label_to_slot + mark_failed + print_failed_test sequence every assertion
+# repeats.
+#
+# The fallback depth is 3, not label_to_slot's default 2, to account for this
+# extra stack frame: when no test_* frame is on the stack the label must still
+# resolve to the *assertion* that called this helper. Guarded by the
+# "labelled with its own name" tests in
+# tests/acceptance/bashunit_hook_failure_test.sh.
+#
+# Arguments: $1 - label override (empty to derive), $2 - expected, $3 - failure
+#            condition message, $4 - actual, $5 - extra key (optional),
+#            $6 - extra value (optional)
+##
+function bashunit::assert::fail_with() {
+  bashunit::assert::label_to_slot "${1:-}" 3
+  bashunit::assert::mark_failed
+  bashunit::console_results::print_failed_test \
+    "$_BASHUNIT_ASSERT_LABEL_OUT" "${2-}" "${3-}" "${4-}" "${5-}" "${6-}"
 }
 
 _BASHUNIT_ASSERT_JOINED_OUT=""
@@ -33,6 +61,11 @@ _BASHUNIT_ASSERT_JOINED_OUT=""
 # Join positional args into _BASHUNIT_ASSERT_JOINED_OUT with no fork.
 # Output matches $(printf '%s\n' "$@") exactly: newline-joined, trailing
 # newlines stripped (as command substitution strips them).
+# Callers pass their variadic "actual" as "${arr[@]+"${arr[@]}"}": an assertion
+# invoked with no actual value leaves that array empty, and a bare
+# "${arr[@]}" on an empty array is an unbound-variable error under `set -u`
+# (i.e. --strict) on Bash < 4.4. The guard makes an empty actual join to ""
+# on every supported Bash instead of aborting the test only on Bash 3.x.
 function bashunit::assert::join_to_slot() {
   local IFS=$'\n'
   local joined="$*"
@@ -171,10 +204,7 @@ function assert_same() {
   local label_override="${3:-}"
 
   if [ "$expected" != "$actual" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "but got " "${actual}"
+    bashunit::assert::fail_with "${label_override:-}" "${expected}" "but got " "${actual}"
     return
   fi
 
@@ -194,10 +224,7 @@ function assert_equals() {
   local expected_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
 
   if [ "$expected_cleaned" != "$actual_cleaned" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "but got " "${actual_cleaned}"
+    bashunit::assert::fail_with "${label_override:-}" "${expected_cleaned}" "but got " "${actual_cleaned}"
     return
   fi
 
@@ -217,10 +244,7 @@ function assert_not_equals() {
   local expected_cleaned=$_BASHUNIT_STR_STRIPPED_OUT
 
   if [ "$expected_cleaned" = "$actual_cleaned" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected_cleaned}" "to not be" "${actual_cleaned}"
+    bashunit::assert::fail_with "${label_override:-}" "${expected_cleaned}" "to not be" "${actual_cleaned}"
     return
   fi
 
@@ -234,10 +258,7 @@ function assert_empty() {
   local label_override="${2:-}"
 
   if [ "$expected" != "" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "to be empty" "but got " "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "to be empty" "but got " "${expected}"
     return
   fi
 
@@ -251,10 +272,7 @@ function assert_not_empty() {
   local label_override="${2:-}"
 
   if [ "$expected" = "" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "to not be empty" "but got " "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "to not be empty" "but got " "${expected}"
     return
   fi
 
@@ -269,10 +287,7 @@ function assert_not_same() {
   local label_override="${3:-}"
 
   if [ "$expected" = "$actual" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${expected}" "to not be" "${actual}"
+    bashunit::assert::fail_with "${label_override:-}" "${expected}" "to not be" "${actual}"
     return
   fi
 
@@ -287,16 +302,13 @@ function assert_contains() {
   local -a actual_arr
   actual_arr=("${@:2}")
   local label_override=""
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   *"$expected"*) ;;
   *)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to contain" "${expected}"
     return
     ;;
   esac
@@ -321,10 +333,7 @@ function assert_contains_ignore_case() {
   case "$actual_lower" in
   *"$expected_lower"*) ;;
   *)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to contain" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to contain" "${expected}"
     return
     ;;
   esac
@@ -340,15 +349,12 @@ function assert_not_contains() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   *"$expected"*)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not contain" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not contain" "${expected}"
     return
     ;;
   esac
@@ -363,7 +369,7 @@ function assert_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
@@ -389,16 +395,13 @@ function assert_not_matches() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   # Check both line-by-line and with newlines collapsed for cross-line patterns
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -gt 0 ] ||
     [ "$(printf '%s' "$actual" | tr '\n' ' ' | "$GREP" -cE "$expected" || true)" -gt 0 ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not match" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not match" "${expected}"
     return
   fi
 
@@ -557,10 +560,7 @@ function assert_exec() {
   fi
 
   if [ "$failed" -eq 1 ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "$label" "$expected_desc" "but got " "$actual_desc"
+    bashunit::assert::fail_with "${label_override:-}" "$expected_desc" "but got " "$actual_desc"
     return
   fi
 
@@ -574,11 +574,12 @@ function assert_exit_code() {
 
   local expected_exit_code="$1"
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be" "${expected_exit_code}"
+  # State the PASS condition and negate it. `[ -eq ]` exits 2 (not 1) on a
+  # non-integer operand, so the old `[ -ne ]` form read that error as "equal"
+  # and counted the assertion as passed. Negating makes unparseable input
+  # fail closed, matching the `! [ -lt ]` form of the comparison assertions.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
+    bashunit::assert::fail_with "${label_override:-}" "${actual_exit_code}" "to be" "${expected_exit_code}"
     return
   fi
 
@@ -592,12 +593,10 @@ function assert_successful_code() {
 
   local expected_exit_code=0
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
+    bashunit::assert::fail_with "${label_override:-}" \
+      "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -609,11 +608,9 @@ function assert_unsuccessful_code() {
   local label_override=""
   bashunit::assert::should_skip && return 0
 
-  if [ "$actual_exit_code" -eq 0 ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual_exit_code}" "to be non-zero" "but was 0"
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -ne 0 ]; then
+    bashunit::assert::fail_with "${label_override:-}" "${actual_exit_code}" "to be non-zero" "but was 0"
     return
   fi
 
@@ -627,12 +624,10 @@ function assert_general_error() {
 
   local expected_exit_code=1
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
+    bashunit::assert::fail_with "${label_override:-}" \
+      "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -646,12 +641,10 @@ function assert_command_not_found() {
 
   local expected_exit_code=127
 
-  if [ "$actual_exit_code" -ne "$expected_exit_code" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${label}" "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
+  # Negated pass condition: see assert_exit_code.
+  if ! [ "$actual_exit_code" -eq "$expected_exit_code" ]; then
+    bashunit::assert::fail_with "${label_override:-}" \
+      "${actual_exit_code}" "to be exactly" "${expected_exit_code}"
     return
   fi
 
@@ -666,16 +659,13 @@ function assert_string_starts_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   "$expected"*) ;;
   *)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to start with" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to start with" "${expected}"
     return
     ;;
   esac
@@ -692,10 +682,7 @@ function assert_string_not_starts_with() {
 
   case "$actual" in
   "$expected"*)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not start with" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not start with" "${expected}"
     return
     ;;
   esac
@@ -711,16 +698,13 @@ function assert_string_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   *"$expected") ;;
   *)
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to end with" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to end with" "${expected}"
     return
     ;;
   esac
@@ -736,15 +720,12 @@ function assert_string_not_ends_with() {
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
-  bashunit::assert::join_to_slot "${actual_arr[@]}"
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   *"$expected")
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not end with" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not end with" "${expected}"
     return
     ;;
   esac
@@ -760,10 +741,7 @@ function assert_less_than() {
   local label_override="${3:-}"
 
   if ! [ "$actual" -lt "$expected" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be less than" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less than" "${expected}"
     return
   fi
 
@@ -778,10 +756,7 @@ function assert_less_or_equal_than() {
   local label_override="${3:-}"
 
   if ! [ "$actual" -le "$expected" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be less or equal than" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less or equal than" "${expected}"
     return
   fi
 
@@ -796,10 +771,7 @@ function assert_greater_than() {
   local label_override="${3:-}"
 
   if ! [ "$actual" -gt "$expected" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be greater than" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater than" "${expected}"
     return
   fi
 
@@ -814,10 +786,7 @@ function assert_greater_or_equal_than() {
   local label_override="${3:-}"
 
   if ! [ "$actual" -ge "$expected" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be greater or equal than" "${expected}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater or equal than" "${expected}"
     return
   fi
 
@@ -855,10 +824,7 @@ function assert_within_delta() {
   if ! bashunit::assert::_is_numeric "$expected" ||
     ! bashunit::assert::_is_numeric "$actual" ||
     ! bashunit::assert::_is_numeric "$delta"; then
-    bashunit::assert::label_to_slot
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${_BASHUNIT_ASSERT_LABEL_OUT}" "${expected} ${actual} ${delta}" \
+    bashunit::assert::fail_with "" "${expected} ${actual} ${delta}" \
       "to all be numeric" "but got a non-numeric value"
     return
   fi
@@ -870,10 +836,7 @@ function assert_within_delta() {
   esac
 
   if [ "$(bashunit::math::calculate "$diff <= $delta")" != "1" ]; then
-    bashunit::assert::label_to_slot
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test \
-      "${_BASHUNIT_ASSERT_LABEL_OUT}" "${actual}" "to be within ${delta} of" "${expected}"
+    bashunit::assert::fail_with "" "${actual}" "to be within ${delta} of" "${expected}"
     return
   fi
 
@@ -910,11 +873,7 @@ function assert_line_count() {
   fi
 
   if [ "$expected" != "$actual" ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${input_str}" \
+    bashunit::assert::fail_with "${label_override:-}" "${input_str}" \
       "to contain number of lines equal to" "${expected}" \
       "but found" "${actual}"
     return
@@ -976,10 +935,7 @@ function assert_string_matches_format() {
   regex="$(bashunit::format_to_regex "$format")"
 
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$regex" || true)" -eq 0 ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to match format" "${format}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to match format" "${format}"
     return
   fi
 
@@ -997,10 +953,7 @@ function assert_string_not_matches_format() {
   regex="$(bashunit::format_to_regex "$format")"
 
   if [ "$(printf '%s' "$actual" | "$GREP" -cE "$regex" || true)" -gt 0 ]; then
-    bashunit::assert::label_to_slot "${label_override:-}"
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to not match format" "${format}"
+    bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not match format" "${format}"
     return
   fi
 

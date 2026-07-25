@@ -86,6 +86,8 @@ _BASHUNIT_DEFAULT_COVERAGE_REPORT_HTML=""
 _BASHUNIT_DEFAULT_COVERAGE_MIN=""
 _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW="50"
 _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH="80"
+# Per-line execution counts in the text coverage report (#856)
+_BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS="false"
 
 : "${BASHUNIT_DEFAULT_PATH:=${DEFAULT_PATH:=$_BASHUNIT_DEFAULT_DEFAULT_PATH}}"
 : "${BASHUNIT_DEV_LOG:=${DEV_LOG:=$_BASHUNIT_DEFAULT_DEV_LOG}}"
@@ -112,9 +114,15 @@ BASHUNIT_WATCH_INTERVAL=$(bashunit::env::positive_int_or_default \
 : "${BASHUNIT_COVERAGE_MIN:=${COVERAGE_MIN:=$_BASHUNIT_DEFAULT_COVERAGE_MIN}}"
 : "${BASHUNIT_COVERAGE_THRESHOLD_LOW:=${COVERAGE_THRESHOLD_LOW:=$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}}"
 : "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:=${COVERAGE_THRESHOLD_HIGH:=$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}}"
+# No bare COVERAGE_SHOW_LINE_HITS alias: registering the default here is a
+# no-op consolidation, whereas adding the alias would widen the public API.
+# bashunit::coverage keeps its :- guard for callers that unset it.
+: "${BASHUNIT_COVERAGE_SHOW_LINE_HITS:=$_BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS}"
 
 # Booleans
 _BASHUNIT_DEFAULT_PARALLEL_RUN="false"
+# Worker cap for --parallel (0 = unbounded)
+_BASHUNIT_DEFAULT_PARALLEL_JOBS="0"
 _BASHUNIT_DEFAULT_SHOW_HEADER="true"
 _BASHUNIT_DEFAULT_HEADER_ASCII_ART="false"
 _BASHUNIT_DEFAULT_SIMPLE_OUTPUT="false"
@@ -151,9 +159,11 @@ _BASHUNIT_DEFAULT_SEED=""
 # Shard <index>/<total> to split the suite across runners (empty = disabled)
 _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
+# Replay only the tests recorded as failing by the previous run
+_BASHUNIT_DEFAULT_RERUN_FAILED="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
-: "${BASHUNIT_PARALLEL_JOBS:=0}"
+: "${BASHUNIT_PARALLEL_JOBS:=$_BASHUNIT_DEFAULT_PARALLEL_JOBS}"
 : "${BASHUNIT_SHOW_HEADER:=${SHOW_HEADER:=$_BASHUNIT_DEFAULT_SHOW_HEADER}}"
 : "${BASHUNIT_HEADER_ASCII_ART:=${HEADER_ASCII_ART:=$_BASHUNIT_DEFAULT_HEADER_ASCII_ART}}"
 : "${BASHUNIT_SIMPLE_OUTPUT:=${SIMPLE_OUTPUT:=$_BASHUNIT_DEFAULT_SIMPLE_OUTPUT}}"
@@ -187,6 +197,10 @@ _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 : "${BASHUNIT_SEED:=$_BASHUNIT_DEFAULT_SEED}"
 : "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
 : "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
+# No bare RERUN_FAILED alias, same reasoning as RETRY/SEED above. The default
+# lives here rather than inline in rerun.sh so every BASHUNIT_* default has one
+# home; bashunit::rerun::is_enabled keeps its :- guard for callers that unset it.
+: "${BASHUNIT_RERUN_FAILED:=$_BASHUNIT_DEFAULT_RERUN_FAILED}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -296,6 +310,50 @@ function bashunit::env::is_dev_mode_enabled() {
 
 function bashunit::env::is_internal_log_enabled() {
   [ "$BASHUNIT_INTERNAL_LOG" = "true" ]
+}
+
+##
+# Dev-log writers.
+#
+# They live next to BASHUNIT_DEV_LOG/BASHUNIT_INTERNAL_LOG and their predicates
+# rather than in globals.sh: env.sh is the lowest layer and logs from its own
+# source-time code, so keeping the writers here removes the env.sh <-> globals.sh
+# call cycle instead of papering over it with a duplicated predicate.
+##
+function bashunit::current_timestamp() {
+  date +"%Y-%m-%d %H:%M:%S"
+}
+
+# shellcheck disable=SC2145
+function bashunit::log() {
+  if ! bashunit::env::is_dev_mode_enabled; then
+    return
+  fi
+
+  local level="$1"
+  shift
+
+  case "$level" in
+  info | INFO) level="INFO" ;;
+  debug | DEBUG) level="DEBUG" ;;
+  warning | WARNING) level="WARNING" ;;
+  critical | CRITICAL) level="CRITICAL" ;;
+  error | ERROR) level="ERROR" ;;
+  *)
+    set -- "$level $@"
+    level="INFO"
+    ;;
+  esac
+
+  echo "$(bashunit::current_timestamp) [$level]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
+}
+
+function bashunit::internal_log() {
+  if ! bashunit::env::is_dev_mode_enabled || ! bashunit::env::is_internal_log_enabled; then
+    return
+  fi
+
+  echo "$(bashunit::current_timestamp) [INTERNAL]: $* #${BASH_SOURCE[1]}:${BASH_LINENO[0]}" >>"$BASHUNIT_DEV_LOG"
 }
 
 function bashunit::env::is_verbose_enabled() {
@@ -419,7 +477,7 @@ function bashunit::env::active_internet_connection() {
 function bashunit::env::find_terminal_width() {
   local cols=""
 
-  if [ -z "$cols" ] && command -v tput >/dev/null; then
+  if command -v tput >/dev/null; then
     cols=$(tput cols 2>/dev/null)
   fi
 
@@ -508,8 +566,39 @@ RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
 # Shared temp directory, initialized once at startup for performance.
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
 
-# Create both scratch directories in a single `mkdir -p` fork.
-mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" 2>/dev/null || true
+##
+# Creates both scratch directories in a single `mkdir -p` fork.
+#
+# This must not fail silently: every deferred-output collector (failures,
+# skipped, incomplete, risky, rerun) and every `temp_file`/`temp_dir` call
+# writes under these paths, and each of them appends with `>>` or guards reads
+# with `[ -s ]`. Without the directories those writes are all no-ops, so a red
+# suite would render as a green one — the worst possible failure mode for a
+# test runner. Abort with an actionable message instead.
+#
+# Arguments: $1 run output dir, $2 shared temp dir
+# Returns: 0 when both directories exist, 1 otherwise (message on stderr)
+##
+function bashunit::env::create_scratch_dirs() {
+  local run_dir=$1
+  local temp_dir=$2
+
+  # `mkdir -p` may race a sibling bashunit on the shared temp dir, so its exit
+  # code alone is not conclusive; the postcondition below is what decides. Its
+  # stderr is deliberately NOT silenced, so a real failure stays visible.
+  mkdir -p "$run_dir" "$temp_dir" || true
+
+  local dir
+  for dir in "$run_dir" "$temp_dir"; do
+    if [ ! -d "$dir" ]; then
+      printf 'bashunit: cannot create the scratch directory: %s\n' "$dir" >&2
+      printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
+      return 1
+    fi
+  done
+}
+
+bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" || exit 1
 
 # Removes this run's scratch directory (guarded like parallel::cleanup so a
 # broken variable can never turn the rm loose elsewhere). Called at the end of

@@ -152,23 +152,38 @@ function bashunit::console_results::print_execution_time() {
     "Time taken: ${formatted}"
 }
 
-function bashunit::console_results::format_duration() {
+_BASHUNIT_CONSOLE_DURATION_OUT=""
+
+##
+# Writes a human-readable duration (Xm Ys / X.XXs / Xms) into
+# _BASHUNIT_CONSOLE_DURATION_OUT. Fork-free, so per-test render paths can format
+# a duration without a $(...) capture.
+# Arguments: $1 - duration in milliseconds
+##
+function bashunit::console_results::format_duration_to_slot() {
   local duration_ms="$1"
 
   if [ "$duration_ms" -ge 60000 ]; then
     local time_in_seconds=$((duration_ms / 1000))
     local minutes=$((time_in_seconds / 60))
     local seconds=$((time_in_seconds % 60))
-    echo "${minutes}m ${seconds}s"
+    _BASHUNIT_CONSOLE_DURATION_OUT="${minutes}m ${seconds}s"
   elif [ "$duration_ms" -ge 1000 ]; then
     local integer_part=$((duration_ms / 1000))
-    local decimal_part=$(( (duration_ms % 1000) / 10 ))
-    local formatted_seconds
-    formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
-    echo "${formatted_seconds}s"
+    local decimal_part=$(((duration_ms % 1000) / 10))
+    # Pad the hundredths by hand: printf would cost a fork on this hot path.
+    if [ "$decimal_part" -lt 10 ]; then
+      decimal_part="0${decimal_part}"
+    fi
+    _BASHUNIT_CONSOLE_DURATION_OUT="${integer_part}.${decimal_part}s"
   else
-    echo "${duration_ms}ms"
+    _BASHUNIT_CONSOLE_DURATION_OUT="${duration_ms}ms"
   fi
+}
+
+function bashunit::console_results::format_duration() {
+  bashunit::console_results::format_duration_to_slot "$1"
+  echo "$_BASHUNIT_CONSOLE_DURATION_OUT"
 }
 
 function bashunit::console_results::print_hook_completed() {
@@ -235,22 +250,8 @@ function bashunit::console_results::print_successful_test() {
 
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
-    local time_display
-    if [ "$duration" -ge 60000 ]; then
-      local time_in_seconds=$((duration / 1000))
-      local minutes=$((time_in_seconds / 60))
-      local seconds=$((time_in_seconds % 60))
-      time_display="${minutes}m ${seconds}s"
-    elif [ "$duration" -ge 1000 ]; then
-      local integer_part=$((duration / 1000))
-      local decimal_part=$(( (duration % 1000) / 10 ))
-      local formatted_seconds
-      formatted_seconds=$(printf "%d.%02d" "$integer_part" "$decimal_part")
-      time_display="${formatted_seconds}s"
-    else
-      time_display="${duration}ms"
-    fi
-    full_line="$(bashunit::str::rpad "$line" "$time_display")"
+    bashunit::console_results::format_duration_to_slot "$duration"
+    full_line="$(bashunit::str::rpad "$line" "$_BASHUNIT_CONSOLE_DURATION_OUT")"
   fi
 
   bashunit::state::print_line "successful" "$full_line"

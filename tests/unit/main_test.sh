@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# First unit tests for src/main.sh: pin set_shard_or_exit's validation, which
-# guards --shard's slice arithmetic against off-by-one specs. It exits the
-# shell on invalid input, so every call runs inside a subshell.
+# Pins set_shard_or_exit's validation, which guards --shard's slice arithmetic
+# against off-by-one specs. It exits the shell on invalid input, so every call
+# runs inside a subshell.
 
 function _shard_status() {
   (

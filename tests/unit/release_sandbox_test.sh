@@ -94,6 +94,29 @@ function test_sandbox_create_excludes_release_state() {
   cd "$original_dir" || return
 }
 
+function test_sandbox_create_aborts_when_no_copy_method_produced_a_usable_copy() {
+  local original_dir
+  original_dir=$(pwd)
+
+  local status=0
+  local output
+  output=$(
+    cd "$FIXTURE_DIR" || exit 0
+    # Force both copy methods to fail: the sandbox then stays empty, which used
+    # to go unnoticed until a later step rehearsed against nothing.
+    bashunit::mock tar false
+    bashunit::mock cp false
+    release::sandbox::create 2>&1
+  ) || status=$?
+
+  # release.sh's EXIT_* constants are `declare -r` at its top level, which makes
+  # them function-local when release.sh is sourced from set_up_before_script.
+  assert_same 2 "$status"
+  assert_contains "Failed to copy the project into the sandbox" "$output"
+
+  cd "$original_dir" || return
+}
+
 function test_sandbox_setup_git_initializes_repo() {
   if ! command -v git >/dev/null 2>&1; then
     bashunit::skip "git not available" && return

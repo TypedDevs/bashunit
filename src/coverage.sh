@@ -604,20 +604,6 @@ function bashunit::coverage::get_hit_lines() {
   echo "$count"
 }
 
-function bashunit::coverage::get_line_hits() {
-  local file="$1"
-  local lineno="$2"
-
-  if [ ! -f "$_BASHUNIT_COVERAGE_DATA_FILE" ]; then
-    echo "0"
-    return
-  fi
-
-  local count
-  count=$("$GREP" -c "^${file}:${lineno}$" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null) || count=0
-  echo "$count"
-}
-
 # Compute executable + hit counts for a file in a single source-file pass.
 # Reuses get_all_line_hits to avoid scanning the coverage data per line.
 # Output format: "executable:hit"
@@ -876,8 +862,9 @@ function bashunit::coverage::_is_case_pattern_line() {
 
 # Extract branch points from a Bash file.
 # Output format: <decision_line>|<kind>|<arm_start>:<arm_end>[,<arm_start>:<arm_end>]...
-# kind ∈ {if, case}
-# Scope: if/elif/else chains and case patterns. See adrs/adr-007-branch-coverage-mvp.md.
+# kind ∈ {if, case, loop}
+# Scope: if/elif/else chains, case patterns and loop bodies.
+# See adrs/adr-007-branch-coverage-mvp.md.
 # The handlers below operate on the per-construct state arrays that
 # extract_branches keeps as locals. Bash 3.0 has dynamic scoping for
 # `local` vars, so the helpers see and mutate the caller's state

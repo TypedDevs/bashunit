@@ -326,8 +326,15 @@ function release::rollback::restore_files() {
 
 function release::rollback::auto() {
   release::log_error "Release failed. Initiating rollback..."
-  release::rollback::restore_files || true
-  release::log_info "Rollback complete. Files restored to pre-release state."
+  # `if` (not `|| true`) so a failed restore is reported as such: announcing
+  # "Rollback complete" over a restore that never happened sends the operator
+  # away from a half-released working tree.
+  if release::rollback::restore_files; then
+    release::log_info "Rollback complete. Files restored to pre-release state."
+  else
+    release::log_error "Rollback FAILED: files were not restored from backup."
+    release::log_error "The working tree may be left in a half-released state."
+  fi
   release::log_info "Manual rollback command if needed: ./release.sh --rollback"
 }
 
@@ -399,6 +406,20 @@ function release::sandbox::create() {
     rm -rf "$SANDBOX_DIR/.git" "$SANDBOX_DIR/.release-state" \
       "$SANDBOX_DIR/node_modules" "$SANDBOX_DIR/.tasks" "$SANDBOX_DIR/tmp"
     release::log_verbose "Copied project files to sandbox (cp)"
+  fi
+
+  # Neither copy method reports a conclusive exit code (the tar pipe silences
+  # its own stderr, and `cp -r` may trip over transient files), so assert the
+  # postcondition explicitly. A sandbox rehearsal on an empty directory would
+  # otherwise "pass" every step it never actually ran.
+  if [ ! -f "$SANDBOX_DIR/bashunit" ]; then
+    release::log_error "Failed to copy the project into the sandbox: $SANDBOX_DIR"
+    release::log_error "Neither the tar pipe nor the cp fallback produced a usable copy."
+    # Default the constant: when release.sh is sourced from a function (the unit
+    # tests do), its top-level `declare -r` is function-local and long gone by
+    # now — a bare `exit $EXIT_EXECUTION_ERROR` would then exit 0 and turn this
+    # fatal error into a silent pass.
+    exit "${EXIT_EXECUTION_ERROR:-2}"
   fi
 }
 

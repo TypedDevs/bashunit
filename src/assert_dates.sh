@@ -105,10 +105,7 @@ function assert_date_equals() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -ne "$expected" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be equal to" "${expected}"
+    bashunit::assert::fail_with "" "${actual}" "to be equal to" "${expected}"
     return
   fi
 
@@ -124,10 +121,7 @@ function assert_date_before() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -ge "$expected" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be before" "${expected}"
+    bashunit::assert::fail_with "" "${actual}" "to be before" "${expected}"
     return
   fi
 
@@ -143,10 +137,7 @@ function assert_date_after() {
   actual="$(bashunit::date::to_epoch "$2")"
 
   if [ "$actual" -le "$expected" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be after" "${expected}"
+    bashunit::assert::fail_with "" "${actual}" "to be after" "${expected}"
     return
   fi
 
@@ -164,10 +155,7 @@ function assert_date_within_range() {
   actual="$(bashunit::date::to_epoch "$3")"
 
   if [ "$actual" -lt "$from" ] || [ "$actual" -gt "$to" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be between" "${from} and ${to}"
+    bashunit::assert::fail_with "" "${actual}" "to be between" "${from} and ${to}"
     return
   fi
 
@@ -189,10 +177,7 @@ function assert_date_within_delta() {
   fi
 
   if [ "$diff" -gt "$delta" ]; then
-    bashunit::assert::label_to_slot
-    local label=$_BASHUNIT_ASSERT_LABEL_OUT
-    bashunit::assert::mark_failed
-    bashunit::console_results::print_failed_test "${label}" "${actual}" "to be within" "${delta} seconds of ${expected}"
+    bashunit::assert::fail_with "" "${actual}" "to be within" "${delta} seconds of ${expected}"
     return
   fi
 

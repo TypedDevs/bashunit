@@ -1,15 +1,26 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2155
 
-# Pre-compiled regex pattern for parsing test result assertions
-if [ -z "${_BASHUNIT_RUNNER_PARSE_RESULT_REGEX+x}" ]; then
-  declare -r _BASHUNIT_RUNNER_PARSE_RESULT_REGEX='ASSERTIONS_FAILED=([0-9]*)##'\
-'ASSERTIONS_PASSED=([0-9]*)##ASSERTIONS_SKIPPED=([0-9]*)##'\
-'ASSERTIONS_INCOMPLETE=([0-9]*)##ASSERTIONS_SNAPSHOT=([0-9]*)##TEST_EXIT_CODE=([0-9]*)'
-fi
-
+##
+# Returns to the directory bashunit was started from, undoing any `cd` a test
+# file performed in `set_up_before_script` (#532).
+#
+# A failure here is not recoverable: every later test file is discovered and
+# sourced through a path relative to this directory, so silently staying put
+# would drop the remaining files from the run without a single error. Abort
+# loudly instead.
+#
+# Arguments: $1 (optional) directory to restore, defaults to BASHUNIT_WORKING_DIR
+##
 function bashunit::runner::restore_workdir() {
-  cd "$BASHUNIT_WORKING_DIR" 2>/dev/null || true
+  local target="${1:-${BASHUNIT_WORKING_DIR:-}}"
+  if cd "$target" 2>/dev/null; then
+    return 0
+  fi
+
+  printf "%sError: cannot restore the working directory '%s'. Aborting run.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED:-}" "$target" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+  exit 1
 }
 
 ##
@@ -178,9 +189,17 @@ function bashunit::runner::compute_total_assertions() {
   incomplete="${incomplete%%##*}"
   snapshot="${test_execution_result##*##ASSERTIONS_SNAPSHOT=}"
   snapshot="${snapshot%%##*}"
+  # A result that never reached the payload (a SIGKILLed subshell, raw stderr)
+  # leaves every ##KEY= strip a no-op, so these fields hold arbitrary text. That
+  # text is not "0" to `$(( ))`: it is a fatal arithmetic syntax error that
+  # aborts the run. One `case` over the concatenation costs no fork and keeps
+  # the happy path (all digits, or empty for an absent counter) untouched.
+  case "$failed$passed$skipped$incomplete$snapshot" in
+  *[!0-9]*) failed=0 passed=0 skipped=0 incomplete=0 snapshot=0 ;;
+  esac
   local total
-  total=$((${failed:-0} + ${passed:-0} + ${skipped:-0}))
-  total=$((total + ${incomplete:-0} + ${snapshot:-0}))
+  total=$((failed + passed + skipped))
+  total=$((total + incomplete + snapshot))
   _BASHUNIT_RUNNER_TOTAL_OUT=$total
 }
 
@@ -215,6 +234,23 @@ function bashunit::runner::record_profile() {
   local test_name=$2
   local test_file=$3
   printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
+}
+
+##
+# Honours --stop-on-failure once a test has been recorded as failed. A parallel
+# worker raises the shared flag file (the dispatcher checks it between tests)
+# rather than exiting, since exiting would only kill the worker. A sequential
+# run exits with EXIT_CODE_STOP_ON_FAILURE, which main.sh's EXIT trap turns
+# into the final summary. No-op when the flag is off.
+##
+function bashunit::runner::halt_if_stop_on_failure() {
+  bashunit::env::is_stop_on_failure_enabled || return 0
+
+  if bashunit::parallel::is_enabled; then
+    bashunit::parallel::mark_stop_on_failure
+  else
+    exit "$EXIT_CODE_STOP_ON_FAILURE"
+  fi
 }
 
 # Writes the detected runtime-error message (empty when none) into
@@ -502,13 +538,9 @@ function bashunit::runner::load_test_files() {
     local _cached_fns="$functions_for_script"
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
-      bashunit::runner::call_test_functions \
-        "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter" "$_cached_fns" 2>/dev/null &
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" 2>/dev/null &
     else
-      bashunit::runner::call_test_functions \
-        "$test_file" "$filter" "$tag_filter" \
-        "$exclude_tag_filter" "$_cached_fns"
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
     fi
     bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
@@ -524,7 +556,7 @@ function bashunit::runner::load_test_files() {
     wait
     bashunit::runner::spinner &
     local spinner_pid=$!
-    bashunit::parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" 2>/dev/null || true
     kill "$spinner_pid" 2>/dev/null || true
@@ -775,54 +807,26 @@ function bashunit::runner::parse_data_provider_args() {
   done
 }
 
+##
+# Runs the given test functions of a script (sequentially, or one background
+# worker per test under --parallel).
+# Arguments: $1 script path, $2 space-separated test function names, already
+# filter/tag/rerun-filtered by load_test_files (never empty: the caller skips
+# the file when no function survives filtering).
+##
 function bashunit::runner::call_test_functions() {
   local script="$1"
-  local filter="$2"
-  local tag_filter="${3:-}"
-  local exclude_tag_filter="${4:-}"
-  local cached_functions="${5:-}"
+  local cached_functions="${2:-}"
   local IFS=$' \t\n'
   local -a functions_to_run=()
   local functions_to_run_count=0
 
-  if [ -n "$cached_functions" ]; then
-    # Use pre-computed function list from load_test_files (already tag-filtered)
-    local _fn
-    for _fn in $cached_functions; do
-      [ -z "$_fn" ] && continue
-      functions_to_run[functions_to_run_count]="$_fn"
-      functions_to_run_count=$((functions_to_run_count + 1))
-    done
-  else
-    # Fallback: compute function list (for direct calls without cache)
-    local prefix="test"
-    local filtered_functions
-    filtered_functions=$(bashunit::helper::get_functions_to_run \
-      "$prefix" "$filter" "$_BASHUNIT_CACHED_ALL_FUNCTIONS")
-    local _fn
-    while IFS= read -r _fn; do
-      [ -z "$_fn" ] && continue
-      functions_to_run[functions_to_run_count]="$_fn"
-      functions_to_run_count=$((functions_to_run_count + 1))
-    done < <(bashunit::runner::functions_for_script "$script" "$filtered_functions")
-
-    # Apply tag filtering if --tag or --exclude-tag was specified
-    if [ -n "$tag_filter" ] || [ -n "$exclude_tag_filter" ]; then
-      bashunit::helper::build_tags_map "$script"
-      local -a tag_filtered=()
-      local tag_filtered_count=0
-      local _tf_fn
-      for _tf_fn in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-        bashunit::helper::tags_for_function "$_tf_fn"
-        if bashunit::helper::function_matches_tags "$_BASHUNIT_TAGS_OUT" "$tag_filter" "$exclude_tag_filter"; then
-          tag_filtered[tag_filtered_count]="$_tf_fn"
-          tag_filtered_count=$((tag_filtered_count + 1))
-        fi
-      done
-      functions_to_run=("${tag_filtered[@]+"${tag_filtered[@]}"}")
-      functions_to_run_count=$tag_filtered_count
-    fi
-  fi
+  local _fn
+  for _fn in $cached_functions; do
+    [ -z "$_fn" ] && continue
+    functions_to_run[functions_to_run_count]="$_fn"
+    functions_to_run_count=$((functions_to_run_count + 1))
+  done
 
   # Randomize function order within this file. The seed is mixed with a stable
   # per-file value (cksum of the path) so different files get different orders
@@ -1331,13 +1335,7 @@ function bashunit::runner::run_test() {
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
     bashunit::internal_log "Test error" "$failure_label" "$error_message"
 
-    if bashunit::env::is_stop_on_failure_enabled; then
-      if bashunit::parallel::is_enabled; then
-        bashunit::parallel::mark_stop_on_failure
-      else
-        exit "$EXIT_CODE_STOP_ON_FAILURE"
-      fi
-    fi
+    bashunit::runner::halt_if_stop_on_failure
     return
   fi
 
@@ -1354,13 +1352,7 @@ function bashunit::runner::run_test() {
 
     bashunit::internal_log "Test failed" "$label"
 
-    if bashunit::env::is_stop_on_failure_enabled; then
-      if bashunit::parallel::is_enabled; then
-        bashunit::parallel::mark_stop_on_failure
-      else
-        exit "$EXIT_CODE_STOP_ON_FAILURE"
-      fi
-    fi
+    bashunit::runner::halt_if_stop_on_failure
     return
   fi
 
@@ -1401,13 +1393,7 @@ function bashunit::runner::run_test() {
       bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$risky_msg"
       bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$risky_msg"
       bashunit::internal_log "Test failed (risky)" "$label"
-      if bashunit::env::is_stop_on_failure_enabled; then
-        if bashunit::parallel::is_enabled; then
-          bashunit::parallel::mark_stop_on_failure
-        else
-          exit "$EXIT_CODE_STOP_ON_FAILURE"
-        fi
-      fi
+      bashunit::runner::halt_if_stop_on_failure
       return
     fi
     bashunit::state::add_tests_risky
