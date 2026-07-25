@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 
 ##
+# Prints an "unknown option" error and exits non-zero.
+# Arguments: $1 - the offending argument, $2 - subcommand to name in the hint
+##
+function bashunit::main::abort_unknown_option() {
+  printf "%sError: unknown option '%s'. Run 'bashunit %s --help' to list the available options.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED}" "$1" "$2" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+  exit 1
+}
+
+##
 # Validates a `--shard <index>/<total>` spec and exports the parts, or prints an
 # error and exits non-zero. Requires numeric index/total with 1 <= index <= total.
 ##
@@ -329,6 +339,13 @@ function bashunit::main::cmd_test() {
       fi
       _bashunit_coverage_opt_set=true
       ;;
+    -*)
+      # Anything option-shaped reaching here matched no branch above. It used to
+      # be filed under test paths, so a typo degraded the run silently and still
+      # exited 0: `--parralel` ran sequentially, `--filterr x` ran the whole
+      # suite (#871). Test paths never start with a dash.
+      bashunit::main::abort_unknown_option "$1" "test"
+      ;;
     *)
       raw_args[raw_args_count]="$1"
       raw_args_count=$((raw_args_count + 1))
@@ -528,6 +545,9 @@ function bashunit::main::cmd_bench() {
     -h | --help)
       bashunit::console_header::print_bench_help
       exit 0
+      ;;
+    -*)
+      bashunit::main::abort_unknown_option "$1" "bench"
       ;;
     *)
       raw_args[raw_args_count]="$1"
