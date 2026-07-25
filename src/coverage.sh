@@ -156,9 +156,9 @@ function bashunit::coverage::get_tracked_files() {
 # Get coverage class (high/medium/low) based on percentage
 function bashunit::coverage::get_coverage_class() {
   local pct="$1"
-  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}" ]; then
+  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
     echo "high"
-  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}" ]; then
+  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" ]; then
     echo "medium"
   else
     echo "low"
@@ -1824,19 +1824,19 @@ EOF
           <div class="legend-item">
             <span class="legend-color high"></span>
 EOF
-    echo "            <span>≥${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}% High</span>"
+    echo "            <span>≥${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}% High</span>"
     cat <<'EOF'
           </div>
           <div class="legend-item">
             <span class="legend-color medium"></span>
 EOF
-    echo "            <span>${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}-${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}% Medium</span>"
+    echo "            <span>${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}-${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}% Medium</span>"
     cat <<'EOF'
           </div>
           <div class="legend-item">
             <span class="legend-color low"></span>
 EOF
-    echo "            <span>&lt;${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}% Low</span>"
+    echo "            <span>&lt;${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}% Low</span>"
     cat <<'EOF'
           </div>
         </div>
