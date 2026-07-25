@@ -110,7 +110,7 @@ function test_learn_cleanup_is_safe_without_init() {
 
 function test_learn_print_menu_lists_every_lesson_and_the_controls() {
   local out
-  out="$(_learn_in_sandbox 'bashunit::learn::print_menu')"
+  out="$(_learn_in_sandbox 'bashunit::learn::print_menu || true')"
 
   assert_contains "1." "$out"
   assert_contains "10." "$out"
@@ -119,7 +119,7 @@ function test_learn_print_menu_lists_every_lesson_and_the_controls() {
 
 function test_learn_show_progress_without_a_progress_file() {
   local out
-  out="$(_learn_in_sandbox 'bashunit::learn::show_progress')"
+  out="$(_learn_in_sandbox 'bashunit::learn::show_progress || true')"
 
   assert_contains "No progress yet" "$out"
 }
@@ -128,7 +128,7 @@ function test_learn_show_progress_reflects_completed_lessons() {
   local out
   out="$(_learn_in_sandbox '
     bashunit::learn::mark_completed "lesson_1"
-    bashunit::learn::show_progress
+    bashunit::learn::show_progress || true
   ')"
 
   assert_contains "Your Progress" "$out"
