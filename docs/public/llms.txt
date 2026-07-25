@@ -27,6 +27,8 @@
 - [Code coverage](https://bashunit.com/coverage): Measure how much of your bash scripts your tests exercise.
 - [Benchmarks](https://bashunit.com/benchmarks): Measure script execution time and find performance bottlenecks.
 - [Standalone](https://bashunit.com/standalone): Use assertions outside test files for integration and end-to-end checks.
+- [Agentic coding](https://bashunit.com/ai-agents): Machine-readable results, fast feedback loops, and the API traps that make AI-written bash tests pass for the wrong reason.
+- [Agent skill (SKILL.md)](https://bashunit.com/bashunit-skill.md): Drop-in skill file teaching an agent to write and run bashunit tests correctly.
 
 ## More
 

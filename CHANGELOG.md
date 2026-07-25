@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Docs: an [Agentic coding](https://bashunit.com/ai-agents) page covering machine-readable results (`--report-json`, `--output tap`), the flags that keep an AI agent's edit-run loop tight (`--filter`, `--rerun-failed`, `--test-timeout`), and the API traps that make generated tests pass for the wrong reason. It also surfaces `llms.txt` / `llms-full.txt`, which were already published but linked from nowhere
+- A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md) for Claude Code and other tools that load a `SKILL.md`
 - Per-line execution hit counts in the text report: `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block listing each covered line as `<lineno>:<count>` per file. The LCOV report already carried the same counts in its `DA:<line>,<count>` records; those are now pinned by tests (#856)
 
 ### Changed

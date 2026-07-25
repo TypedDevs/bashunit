@@ -13,7 +13,6 @@
     "preview": "vitepress preview ."
   },
   "dependencies": {
-    "chart.js": "^4.4.9",
     "vanilla-tilt": "^1.8.1"
   },
   "devDependencies": {
