@@ -72,7 +72,7 @@ function bashunit::main::validate_config_or_exit() {
   # Env-only (no CLI flag). Compared with `[ -ge ]` in
   # bashunit::coverage::get_coverage_class, which errors instead of returning
   # false on a non-integer operand, leaking a raw shell error into the
-  # coverage report and silently mis-bucketing every file's class (#880).
+  # coverage report and silently mis-bucketing every file's class (#879).
   bashunit::main::require_non_negative_int_or_exit \
     "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}" "BASHUNIT_COVERAGE_THRESHOLD_LOW"
   bashunit::main::require_non_negative_int_or_exit \

@@ -203,7 +203,7 @@ function test_print_results_outputs_failing_threshold_status() {
 # and add_result's own test above stores an avg of "42.5"), but plain `[ -le ]`
 # errors on a fractional operand instead of comparing it: the well-under-budget
 # row below used to print a stray "integer expression expected" line and always
-# fall through to the ">" (failing) branch regardless of the real average (#880).
+# fall through to the ">" (failing) branch regardless of the real average (#879).
 function test_print_results_outputs_passing_threshold_status_with_decimal_max_ms() {
   function bashunit::env::is_bench_mode_enabled() { return 0; }
   function bashunit::env::is_simple_output_enabled() { return 1; }
