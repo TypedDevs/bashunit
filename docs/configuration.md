@@ -430,6 +430,35 @@ BASHUNIT_REPORT_HTML=report.html
 ```
 :::
 
+## Report TAP
+
+> `BASHUNIT_REPORT_TAP=file`
+
+Write a [TAP version 13](https://testanything.org/tap-version-13-specification.html) report to the given file. Unlike `BASHUNIT_OUTPUT_FORMAT=tap`, which replaces the console output, this writes to disk and leaves the normal output alone.
+
+::: code-group
+```bash [Example]
+BASHUNIT_REPORT_TAP=report.tap
+```
+:::
+
+## Report JSON
+
+> `BASHUNIT_REPORT_JSON=file`
+
+Write a machine-readable JSON report to the given file: a summary plus one entry per test, including the failure message and source line. Strings are escaped in pure Bash, so `jq` is not required to produce it.
+
+::: code-group
+```bash [Example]
+BASHUNIT_REPORT_JSON=report.json
+```
+:::
+
+::: tip
+The report destination is checked before the suite runs — an unwritable path fails
+immediately instead of after a passing run. See [Invalid input](/command-line#invalid-input).
+:::
+
 ## Bootstrap
 
 > `BASHUNIT_BOOTSTRAP=file`

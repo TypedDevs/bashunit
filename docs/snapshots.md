@@ -11,10 +11,13 @@ This way, it helps maintain the expected behavior while modifications are being 
 making the verification process more efficient and reliable.
 
 ## assert_match_snapshot
-> `assert_match_snapshot "actual"`
+> `assert_match_snapshot "actual" ["snapshot_file"]`
 
 Reports an error if `actual` does not match the existing snapshot file associated with the current test function.
 If no such file exists, a new one is created with the provided value.
+
+Pass `snapshot_file` to point at a specific snapshot — useful to share one snapshot between tests.
+By default each test gets its own, named after the test function.
 
 ::: tip
 You can update the snapshot by deleting it and running its test again.
@@ -58,7 +61,7 @@ The first time you run them, the snapshots will be generated and the second time
 :::
 
 ## assert_match_snapshot_ignore_colors
-> `assert_match_snapshot_ignore_colors "actual"`
+> `assert_match_snapshot_ignore_colors "actual" ["snapshot_file"]`
 
 Like `assert_match_snapshot` but ANSI escape codes in `actual` are ignored. This allows
 verifying the output text while disregarding its style.

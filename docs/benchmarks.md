@@ -32,7 +32,7 @@ Control benchmark behavior with comment annotations placed before the function:
 |------------|-------------|---------|
 | `@revs=N` | Number of revolutions (function calls per iteration) | 1 |
 | `@its=N` | Number of iterations (separate processes) | 1 |
-| `@max_ms=N` | Maximum allowed average time in milliseconds | - |
+| `@max_ms=N` | Maximum allowed average time in milliseconds (decimals allowed, e.g. `1.5`) | - |
 
 ::: code-group
 ```bash [Basic benchmark]

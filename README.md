@@ -29,7 +29,7 @@
 ## Why bashunit
 
 A lightweight, fast testing framework for **Bash 3.0+**, focused on developer experience.
-It ships hundreds of assertions plus spies, mocks, data providers, snapshots and more.
+It ships 71 assertions plus spies, mocks, data providers, snapshots and more.
 
 ## Quick start
 
@@ -59,8 +59,8 @@ Prefer learning by doing? Run `./lib/bashunit learn` for an interactive tutorial
 
 ## Assertions at a glance
 
-bashunit ships ~70 assertions across many families. One representative example per family
-(full catalog and signatures at [bashunit.com/assertions](https://bashunit.com/assertions)):
+One representative example per family — the full catalogue and every signature is at
+[bashunit.com/assertions](https://bashunit.com/assertions), or run `bashunit doc` locally:
 
 | Family | Example |
 |---|---|
@@ -81,6 +81,12 @@ bashunit ships ~70 assertions across many families. One representative example p
 Full documentation, covering installation options, every feature and examples, lives at [bashunit.com](https://bashunit.com).
 
 Shell tab-completion for bash and zsh is available under [`completions/`](completions/) — see the [installation docs](https://bashunit.com/installation#shell-completion).
+
+Using an AI coding agent? [bashunit.com/ai-agents](https://bashunit.com/ai-agents) covers machine-readable
+results and the API traps that make generated bash tests pass for the wrong reason. The docs are also
+published as plain text at [`llms.txt`](https://bashunit.com/llms.txt) and
+[`llms-full.txt`](https://bashunit.com/llms-full.txt), with a drop-in skill at
+[`bashunit-skill.md`](https://bashunit.com/bashunit-skill.md).
 
 ## Contribute
 

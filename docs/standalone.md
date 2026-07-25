@@ -24,8 +24,19 @@ Execute assertions directly from the command line using the `assert` command:
 | Exit Code | Description |
 |-----------|-------------|
 | `0` | Assertion passed |
-| `1` | Assertion failed |
+| `1` | Assertion failed, or the invocation was malformed |
 | `127` | Non-existing function |
+
+A malformed invocation is reported rather than passed over — an assertion called with no
+arguments at all exits `1` with an error, so a typo in a deploy script cannot look like a
+success:
+
+```bash
+bashunit assert equals
+```
+```[Output]
+Error: assert equals requires at least one argument.
+```
 
 ## Basic Usage
 

@@ -208,7 +208,7 @@ function test_failure() {
 :::
 
 ## assert_have_been_called_times
-> assert_have_been_called_times "expected" "spy"
+> `assert_have_been_called_times "expected" "spy"`
 
 Reports an error if `spy` is not called exactly `expected` times.
 

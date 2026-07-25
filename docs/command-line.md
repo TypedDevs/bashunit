@@ -975,6 +975,62 @@ bashunit watch --help
 bashunit doc --help
 ```
 
+## Invalid input
+
+bashunit validates its options before running anything and exits non-zero on a bad one.
+It never silently ignores an option it does not understand — a typo would otherwise
+produce a passing run that did something other than what you asked.
+
+### Unknown options
+
+An argument that looks like an option but matches nothing is an error, not a test path:
+
+```bash
+bashunit --parralel tests/
+```
+```[Output]
+Error: unknown option '--parralel'. Run 'bashunit test --help' to list the available options.
+```
+
+Without this, `--parralel` ran the suite **sequentially** and still exited `0`, and
+`--filterr foo` swallowed both the flag and its value and ran the whole suite.
+
+### Invalid values
+
+`--jobs`, `--retry`, `--test-timeout`, `--coverage-min` and `--seed` require a
+non-negative integer; `--output` accepts only `tap`; `--shard` requires `<index>/<total>`:
+
+```bash
+bashunit --jobs abc tests/
+```
+```[Output]
+Error: BASHUNIT_PARALLEL_JOBS (--jobs) must be a non-negative integer, got 'abc'.
+```
+
+The same check applies to the equivalent `BASHUNIT_*` environment variables, including
+the env-only `BASHUNIT_COVERAGE_THRESHOLD_LOW` / `BASHUNIT_COVERAGE_THRESHOLD_HIGH`.
+
+### Unusable paths
+
+The bootstrap file must be readable, and every report destination must be writable.
+Both are checked **before** the suite runs, so a bad path fails immediately rather than
+after a green run has already reported success:
+
+```bash
+bashunit --env missing.sh tests/
+bashunit --report-json /nope/dir/out.json tests/
+```
+```[Output]
+Error: cannot read the bootstrap file: 'missing.sh'.
+Error: BASHUNIT_REPORT_JSON cannot be written: '/nope/dir/out.json'.
+```
+
+::: tip
+A `0` exit code means nothing *failed* — a run that was entirely skipped, incomplete or
+risky also exits `0`. Add [`--fail-on-risky`](#test-options) or read the counts from
+[`--report-json`](#reports).
+:::
+
 ## Related
 
 - [Configuration](/configuration) — set the same options via env vars and config files
