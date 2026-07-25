@@ -72,6 +72,29 @@ function test_bashunit_fails_when_parallel_jobs_env_var_is_not_a_number() {
   assert_contains "BASHUNIT_PARALLEL_JOBS" "$output"
 }
 
+# BASHUNIT_COVERAGE_THRESHOLD_LOW/HIGH are env-only (no CLI flag) and are
+# compared with `[ -ge ]` in bashunit::coverage::get_coverage_class. A
+# non-integer value used to leak a raw "integer expression expected" shell
+# error into the coverage report and silently mis-bucket every file's
+# high/medium/low class instead of failing fast (#880).
+function test_bashunit_fails_when_coverage_threshold_high_env_var_is_not_a_number() {
+  local ec=0
+  local output
+  output=$(BASHUNIT_COVERAGE_THRESHOLD_HIGH=abc ./bashunit --env "$TEST_ENV_FILE" --coverage "$TEST_FILE" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "BASHUNIT_COVERAGE_THRESHOLD_HIGH" "$output"
+}
+
+function test_bashunit_fails_when_coverage_threshold_low_env_var_is_not_a_number() {
+  local ec=0
+  local output
+  output=$(BASHUNIT_COVERAGE_THRESHOLD_LOW=abc ./bashunit --env "$TEST_ENV_FILE" --coverage "$TEST_FILE" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "BASHUNIT_COVERAGE_THRESHOLD_LOW" "$output"
+}
+
 function test_bashunit_still_accepts_valid_option_values() {
   local ec=0
   local output
