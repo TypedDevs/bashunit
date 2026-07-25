@@ -53,14 +53,26 @@ Lifecycle hooks: `set_up_before_script` (once per file), `set_up` (per test),
 
 ```bash
 bashunit tests/                                # everything
-bashunit --filter "add two positive" tests/    # one test, by name
+bashunit --filter add_two_positive tests/      # one test — matches the FUNCTION name
 bashunit --rerun-failed tests/                 # only what failed last run
 bashunit --failures-only --no-progress tests/  # quiet output for a transcript
 bashunit --report-json out.json tests/         # structured results to parse
 ```
 
 Run once, then loop on `--rerun-failed` until nothing fails. Do not re-run the whole
-suite after every edit. Exit code is 0 only when everything passed.
+suite after every edit.
+
+`--rerun-failed` reads `.bashunit/last-failed` (add it to `.gitignore`). When that cache
+is empty it falls back to running everything — so the run that suddenly grows back to
+the full suite is the signal you are green, not a bug.
+
+`--filter` matches the **function name** (`test_add_two_positive_numbers`), not the
+humanized title in the report, so a filter containing spaces silently matches nothing
+and reports `0 total`.
+
+**A `0` exit code does not mean everything passed.** It means nothing *failed*: a run
+that is entirely skipped, incomplete or risky still exits `0`. Check the counts in
+`--report-json`, or add `--fail-on-risky`.
 
 ## The namespace rule
 
@@ -83,9 +95,9 @@ cleaned up automatically and are safe under `--parallel`.
 
 ## Assertions
 
-There are 66. `bashunit doc <filter>` lists them locally; the catalogue is at
-https://bashunit.com/assertions. **Do not invent names** — a wrong name is a runtime
-error, not a failed assertion.
+`bashunit doc` prints the full catalogue (64 assertions) locally; `bashunit doc contains`
+filters it. The same list is at https://bashunit.com/assertions. **Do not invent names**
+— a wrong name is a runtime error, not a failed assertion.
 
 - Equality: `assert_same`, `assert_not_same`, `assert_equals`, `assert_not_equals`
 - Strings: `assert_contains`, `assert_not_contains`, `assert_matches`,

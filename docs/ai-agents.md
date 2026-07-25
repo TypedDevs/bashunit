@@ -63,8 +63,9 @@ not ok 2 - Fails
 
 `--report-tap <file>` and `--log-junit <file>` write the same information to disk.
 
-The exit code is `0` when everything passed and non-zero otherwise, so an agent can
-branch on `$?` before parsing anything.
+The exit code is non-zero when a test **failed**. It is `0` for a run that was entirely
+skipped, incomplete or risky, so `$?` alone does not mean "everything passed" — read
+`summary.total` against `summary.passed`, or add `--fail-on-risky`.
 
 ## Keep the loop tight
 
@@ -72,7 +73,7 @@ An agent that re-runs the whole suite after every edit wastes most of its turn. 
 flags exist to avoid that:
 
 ```bash
-bashunit --filter "parses the header" tests/   # one test by name
+bashunit --filter parses_the_header tests/     # one test — matches the FUNCTION name
 bashunit --rerun-failed tests/                 # only what failed last run
 bashunit --failures-only --no-progress tests/  # drop the noise from the transcript
 bashunit --parallel tests/                     # full suite, concurrently
@@ -95,7 +96,9 @@ actually make against this API:
 ## Testing with bashunit
 
 - Test files end in `_test.sh`; test functions start with `test_`.
-- Run one test: `bashunit --filter "<name>" tests/`. Run everything: `bashunit tests/`.
+- Run one test: `bashunit --filter <function_name> tests/` — it matches the function
+  name (`test_parses_the_header`), not the humanized title shown in the report, so a
+  filter with spaces silently matches nothing. Run everything: `bashunit tests/`.
 - Prefer `assert_same` (exact) over `assert_equals` (which trims/normalizes).
 - **Exit-code assertions take the code as the THIRD argument**, not the first:
   `assert_general_error "" "" "$exit_code"`. With no arguments at all they read `$?`.
