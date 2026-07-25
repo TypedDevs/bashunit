@@ -875,6 +875,38 @@ BASHUNIT_COVERAGE_THRESHOLD_HIGH=90
 ```
 :::
 
+## Deprecations
+
+Every setting also answers to an **unprefixed** name — `VERBOSE` as well as
+`BASHUNIT_VERBOSE`. Those unprefixed aliases predate the `BASHUNIT_` prefix
+introduced in 0.15.0 and are deprecated: the names are generic enough that an
+unrelated tool exporting `COVERAGE=true` or `VERBOSE=true` silently
+reconfigures bashunit. Always use the prefixed name.
+
+When a deprecated form is what supplied a value, bashunit says so on stderr:
+
+```
+Deprecated: the unprefixed `VERBOSE`. Use `BASHUNIT_VERBOSE` instead.
+```
+
+The warning goes to stderr, so it never corrupts a report on stdout. Silence it
+with:
+
+> `BASHUNIT_NO_DEPRECATION_WARNINGS=true`
+
+::: tip Deprecation policy
+A form that still works but is on its way out warns for at least one minor
+release before it is removed in a major one. If you see one of these warnings,
+you have time to migrate — but the form will not be there forever.
+:::
+
+Currently deprecated:
+
+| Deprecated | Use instead |
+|------------|-------------|
+| Unprefixed settings (`VERBOSE`, `COVERAGE`, …) | The `BASHUNIT_`-prefixed name |
+| `bashunit test --assert <fn>` | [`bashunit assert <fn>`](/standalone) |
+
 ## Related
 
 - [Command line](/command-line) — flags that mirror these settings

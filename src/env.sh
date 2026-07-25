@@ -46,6 +46,24 @@ function bashunit::env::load_config_file() {
 }
 
 ##
+# Reports a deprecated form once per run, on stderr so it cannot corrupt a
+# report on stdout. Silence with BASHUNIT_NO_DEPRECATION_WARNINGS=true.
+#
+# The deprecation policy: a form that still works but is on its way out warns
+# here for at least one minor release before it is removed in a major one. That
+# gives the warning somewhere to live instead of the deprecation sitting
+# indefinitely in a help string nobody reads.
+#
+# Arguments: $1 the deprecated form, $2 what to use instead
+##
+function bashunit::env::warn_deprecated() {
+  [ "${BASHUNIT_NO_DEPRECATION_WARNINGS:-false}" = "true" ] && return 0
+
+  printf "%sDeprecated: %s. Use %s instead.%s\n" \
+    "${_BASHUNIT_COLOR_SKIPPED:-}" "$1" "$2" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+}
+
+##
 # Echoes $1 when it is a positive integer, otherwise echoes the default $2.
 # Arguments: $1 candidate value, $2 fallback default
 ##
@@ -97,6 +115,45 @@ if [ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]; then
 
     unset _bashunit_env_preserved _bashunit_env_name _bashunit_env_value
   fi
+fi
+
+# Settings that still answer to an unprefixed name (`VERBOSE`, `COVERAGE`, …).
+# The prefix landed in 0.15.0; these remain only for back-compat and are an
+# active hazard, because the names are generic enough that an unrelated tool
+# exporting COVERAGE=true silently reconfigures bashunit (#866).
+#
+# Kept in sync with the `: "${BASHUNIT_X:=${X:=…}}"` lines below by
+# tests/unit/env_deprecated_aliases_test.sh, which fails if the two drift.
+_BASHUNIT_DEPRECATED_ALIASES="DEFAULT_PATH DEV_LOG BOOTSTRAP BOOTSTRAP_ARGS
+LOG_JUNIT LOG_GHA REPORT_HTML REPORT_TAP REPORT_JSON WATCH_INTERVAL COVERAGE
+COVERAGE_PATHS COVERAGE_EXCLUDE COVERAGE_REPORT COVERAGE_REPORT_HTML
+COVERAGE_MIN COVERAGE_THRESHOLD_LOW COVERAGE_THRESHOLD_HIGH PARALLEL_RUN
+SHOW_HEADER HEADER_ASCII_ART SIMPLE_OUTPUT STOP_ON_FAILURE SHOW_EXECUTION_TIME
+VERBOSE BENCH_MODE NO_OUTPUT INTERNAL_LOG SHOW_SKIPPED SHOW_INCOMPLETE
+STRICT_MODE STOP_ON_ASSERTION_FAILURE SKIP_ENV_FILE LOGIN_SHELL FAILURES_ONLY
+SHOW_OUTPUT_ON_FAILURE NO_DIFF NO_PROGRESS OUTPUT_FORMAT FAIL_ON_RISKY PROFILE
+PROFILE_COUNT TEST_TIMEOUT"
+
+# Record which unprefixed names are about to supply a value. Runs BEFORE the
+# `:=` block below, because after it the prefixed name is set either way and the
+# two cases are indistinguishable. Pure bash: a `compgen -v` capture would cost
+# a fork on the cold-start path, which is budgeted (#801).
+_bashunit_deprecated_in_use=""
+for _bashunit_alias in $_BASHUNIT_DEPRECATED_ALIASES; do
+  eval "_bashunit_alias_prefixed=\${BASHUNIT_$_bashunit_alias+set}"
+  [ -n "$_bashunit_alias_prefixed" ] && continue
+  eval "_bashunit_alias_value=\${$_bashunit_alias:-}"
+  [ -n "$_bashunit_alias_value" ] &&
+    _bashunit_deprecated_in_use="$_bashunit_deprecated_in_use $_bashunit_alias"
+done
+unset _bashunit_alias _bashunit_alias_prefixed _bashunit_alias_value
+
+if [ -n "$_bashunit_deprecated_in_use" ]; then
+  for _bashunit_alias in $_bashunit_deprecated_in_use; do
+    bashunit::env::warn_deprecated \
+      "the unprefixed \`$_bashunit_alias\`" "\`BASHUNIT_$_bashunit_alias\`"
+  done
+  unset _bashunit_alias
 fi
 
 _BASHUNIT_DEFAULT_DEFAULT_PATH="tests"
