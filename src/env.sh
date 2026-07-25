@@ -62,10 +62,41 @@ function bashunit::env::positive_int_or_default() {
 # Load .env file (skip if --skip-env-file is used to keep shell environment intact)
 if [ "${BASHUNIT_SKIP_ENV_FILE:-false}" != "true" ]; then
   bashunit::env::load_config_file ".bashunitrc"
-  set -o allexport
-  # shellcheck source=/dev/null
-  [ -f ".env" ] && source .env
-  set +o allexport
+
+  if [ -f ".env" ]; then
+    # `.env` is sourced under allexport so it can hold arbitrary shell, which
+    # means every `KEY=` line is an unconditional assignment: an empty entry used
+    # to wipe a value the caller exported, so a project could not document a
+    # setting without breaking it on the command line (#865).
+    #
+    # Snapshot the caller's non-empty BASHUNIT_* values and put back any the file
+    # blanked. A non-empty entry still wins -- that is what a project config is
+    # for -- and only an empty one is treated as "not configured here", matching
+    # how .bashunitrc already applies values.
+    _bashunit_env_preserved=""
+    for _bashunit_env_name in $(compgen -v BASHUNIT_ 2>/dev/null || true); do
+      eval "_bashunit_env_value=\${$_bashunit_env_name}"
+      if [ -n "$_bashunit_env_value" ]; then
+        _bashunit_env_preserved="$_bashunit_env_preserved $_bashunit_env_name"
+        eval "_bashunit_env_saved_$_bashunit_env_name=\$_bashunit_env_value"
+      fi
+    done
+
+    set -o allexport
+    # shellcheck source=/dev/null
+    source .env
+    set +o allexport
+
+    for _bashunit_env_name in $_bashunit_env_preserved; do
+      eval "_bashunit_env_value=\${$_bashunit_env_name}"
+      if [ -z "$_bashunit_env_value" ]; then
+        eval "export $_bashunit_env_name=\$_bashunit_env_saved_$_bashunit_env_name"
+      fi
+      eval "unset _bashunit_env_saved_$_bashunit_env_name"
+    done
+
+    unset _bashunit_env_preserved _bashunit_env_name _bashunit_env_value
+  fi
 fi
 
 _BASHUNIT_DEFAULT_DEFAULT_PATH="tests"
