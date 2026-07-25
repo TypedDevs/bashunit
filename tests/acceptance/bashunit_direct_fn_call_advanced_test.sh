@@ -7,6 +7,10 @@ function set_up_before_script() {
 
 function set_up() {
   export BASHUNIT_SIMPLE_OUTPUT=false
+  # These exercise the deprecated `-a` form itself, so silence its warning to
+  # keep the captured output stable. The warning is covered by
+  # bashunit_assert_errors_test.sh instead.
+  export BASHUNIT_NO_DEPRECATION_WARNINGS=true
 }
 
 function test_bashunit_direct_fn_call_failure() {

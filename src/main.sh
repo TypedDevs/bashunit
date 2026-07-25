@@ -166,6 +166,15 @@ function bashunit::main::cmd_test() {
   while [ $# -gt 0 ]; do
     case "$1" in
     -a | --assert)
+      # Superseded by the `bashunit assert` subcommand. The help text has said
+      # "deprecated" since that subcommand landed without ever warning at
+      # runtime, which is how a deprecation stays put forever.
+      #
+      # Not a pure rename: this path goes through cmd_test's parser, so it also
+      # accepts test-level flags (`--env`, `--no-parallel`). `bashunit assert`
+      # forwards everything to the assertion instead. Removing this form needs
+      # that gap closed first.
+      bashunit::env::warn_deprecated "\`bashunit test --assert\`" "\`bashunit assert\`"
       assert_fn="$2"
       shift
       ;;

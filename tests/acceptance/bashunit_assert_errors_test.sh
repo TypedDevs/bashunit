@@ -56,7 +56,9 @@ function test_bashunit_assert_subcommand_failure() {
   assert_general_error "" "" "$exit_code"
 }
 
-# Test backward compatibility with --assert option
+# Backward compatibility with the deprecated --assert option. These are the only
+# tests that should still use it: everything else exercises `bashunit assert`.
+# The form keeps working and warns; it is removed no earlier than the next major.
 function test_bashunit_old_assert_option_still_works() {
   local output
   output=$(./bashunit -a equals "foo" "foo" 2>&1)
@@ -67,6 +69,21 @@ function test_bashunit_old_assert_option_long_form() {
   local output
   output=$(./bashunit --assert equals "foo" "foo" 2>&1)
   assert_successful_code "$output"
+}
+
+function test_bashunit_old_assert_option_warns_that_it_is_deprecated() {
+  local warnings
+  warnings=$(./bashunit -a equals "foo" "foo" 2>&1 >/dev/null)
+
+  assert_contains "Deprecated" "$warnings"
+  assert_contains "bashunit assert" "$warnings"
+}
+
+function test_bashunit_new_assert_subcommand_does_not_warn() {
+  local warnings
+  warnings=$(./bashunit assert equals "foo" "foo" 2>&1 >/dev/null)
+
+  assert_empty "$warnings"
 }
 
 # Test deprecation notice in help
