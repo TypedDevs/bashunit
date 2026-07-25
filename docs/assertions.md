@@ -8,6 +8,30 @@ When creating tests, you'll need to verify your commands and functions.
 We provide assertions for these checks.
 Below is their documentation.
 
+Assertions are called **unprefixed** — `assert_same`, not `bashunit::assert_same`. Every
+other helper does take the `bashunit::` prefix; see [Globals](/globals).
+
+Run `bashunit doc` to print this catalogue in your terminal, or `bashunit doc <filter>`
+to narrow it (`bashunit doc json`).
+
+## Quick reference
+
+| Group | Assertions |
+|-------|------------|
+| **Booleans and equality** | [assert_true](#assert-true) · [assert_false](#assert-false) · [assert_same](#assert-same) · [assert_not_same](#assert-not-same) · [assert_equals](#assert-equals) · [assert_not_equals](#assert-not-equals) |
+| **Strings** | [assert_contains](#assert-contains) · [assert_not_contains](#assert-not-contains) · [assert_contains_ignore_case](#assert-contains-ignore-case) · [assert_matches](#assert-matches) · [assert_not_matches](#assert-not-matches) · [assert_string_starts_with](#assert-string-starts-with) · [assert_string_not_starts_with](#assert-string-not-starts-with) · [assert_string_ends_with](#assert-string-ends-with) · [assert_string_not_ends_with](#assert-string-not-ends-with) · [assert_string_matches_format](#assert-string-matches-format) · [assert_string_not_matches_format](#assert-string-not-matches-format) · [assert_empty](#assert-empty) · [assert_not_empty](#assert-not-empty) · [assert_line_count](#assert-line-count) |
+| **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_within_delta](#assert-within-delta) |
+| **Dates** | [assert_date_equals](#assert-date-equals) · [assert_date_before](#assert-date-before) · [assert_date_after](#assert-date-after) · [assert_date_within_range](#assert-date-within-range) · [assert_date_within_delta](#assert-date-within-delta) |
+| **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
+| **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
+| **Directories** | [assert_directory_exists](#assert-directory-exists) · [assert_directory_not_exists](#assert-directory-not-exists) · [assert_is_directory](#assert-is-directory) · [assert_is_directory_empty](#assert-is-directory-empty) · [assert_is_directory_not_empty](#assert-is-directory-not-empty) · [assert_is_directory_readable](#assert-is-directory-readable) · [assert_is_directory_not_readable](#assert-is-directory-not-readable) · [assert_is_directory_writable](#assert-is-directory-writable) · [assert_is_directory_not_writable](#assert-is-directory-not-writable) |
+| **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
+| **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
+| **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
+| **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) |
+| **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
+| **Manual failure** | [bashunit::fail](#bashunit-fail) |
+
 ## assert_true
 > `assert_true bool|function|command`
 
@@ -1566,6 +1590,160 @@ function test_success() {
 
 function test_failure() {
   assert_duration_greater_than "echo hello" 5000
+}
+```
+:::
+
+## assert_match_snapshot
+> `assert_match_snapshot "actual" ["snapshot_file"]`
+
+Reports an error if `actual` differs from the stored snapshot. On the first run no snapshot exists, so one is written from `actual` and the assertion passes — review and commit that file.
+
+Pass `snapshot_file` to share one snapshot between tests; by default each test gets its own, named after the test function.
+
+See [Snapshots](/snapshots) for the full workflow, including how to update a snapshot after an intentional change.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_match_snapshot "$(./bin/render --help)"
+}
+
+function test_failure() {
+  assert_match_snapshot "output that no longer matches the stored snapshot"
+}
+```
+:::
+
+## assert_match_snapshot_ignore_colors
+> `assert_match_snapshot_ignore_colors "actual" ["snapshot_file"]`
+
+Same as [assert_match_snapshot](#assert-match-snapshot), but strips ANSI escape sequences from `actual` before comparing. Use it for commands whose colouring depends on the terminal.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_match_snapshot_ignore_colors "$(./bin/render --help)"
+}
+
+function test_failure() {
+  assert_match_snapshot_ignore_colors "output that no longer matches the stored snapshot"
+}
+```
+:::
+
+## assert_have_been_called
+> `assert_have_been_called "command"`
+
+Reports an error if the spied `command` was never called. Requires `bashunit::spy command` first — see [Test doubles](/test-doubles).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_user
+
+  assert_have_been_called send_email
+}
+
+function test_failure() {
+  bashunit::spy send_email
+
+  assert_have_been_called send_email
+}
+```
+:::
+
+## assert_have_been_called_with
+> `assert_have_been_called_with "command" "expected_args" [nth]`
+
+Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one.
+
+Note the argument order: the spy comes first here, but *second* in [assert_have_been_called_times](#assert-have-been-called-times).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_user "a@b.c"
+
+  assert_have_been_called_with send_email "--to a@b.c"
+}
+
+function test_failure() {
+  bashunit::spy send_email
+  notify_user "a@b.c"
+
+  assert_have_been_called_with send_email "--to nobody@example.com"
+}
+```
+:::
+
+## assert_have_been_called_times
+> `assert_have_been_called_times "expected_count" "command"`
+
+Reports an error if the spied `command` was not called exactly `expected_count` times. The count comes **first**, the spy second.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_times 2 send_email
+}
+
+function test_failure() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_times 1 send_email
+}
+```
+:::
+
+## assert_have_been_called_nth_with
+> `assert_have_been_called_nth_with "nth" "command" "expected_args"`
+
+Reports an error if call number `nth` of the spied `command` did not receive `expected_args`. Calls are numbered from 1.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_nth_with 1 send_email "--to a@b.c"
+}
+
+function test_failure() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_nth_with 1 send_email "--to d@e.f"
+}
+```
+:::
+
+## assert_not_called
+> `assert_not_called "command"`
+
+Reports an error if the spied `command` was called at all. The inverse of [assert_have_been_called](#assert-have-been-called).
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_user --dry-run
+
+  assert_not_called send_email
+}
+
+function test_failure() {
+  bashunit::spy send_email
+  notify_user
+
+  assert_not_called send_email
 }
 ```
 :::

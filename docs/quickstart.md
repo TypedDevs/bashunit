@@ -84,13 +84,13 @@ Alternatively, create your tests manually:
     ```-vue
     bashunit - {{ pkg.version }} | Tests: 1
     Running tests/example_test.sh
-    ✓ Passed: Bashunit is working                                         16 ms
+    ✓ Passed: Bashunit is working                                          16ms
 
     Tests:      1 passed, 1 total
     Assertions: 1 passed, 1 total
 
     All tests passed
-    Time taken: 90 ms
+    Time taken: 90ms
     ```
 
 5.  Now you can start testing the functionalities of your own Bash scripts.

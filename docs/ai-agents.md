@@ -161,3 +161,10 @@ bashunit --coverage --coverage-report coverage/lcov.info tests/
 Use it to answer "did the agent test the branch it just changed", not as a target to
 optimize — see [Coverage](/coverage). `--coverage-min <n>` fails the run below a
 threshold if you want it enforced.
+
+## Related
+
+- [Command line](/command-line) — every flag referenced above
+- [Assertions](/assertions) — the catalogue agents should pick names from
+- [Test doubles](/test-doubles) — mocking the network and other side effects
+- [Configuration](/configuration) — set these flags once via `.bashunitrc`

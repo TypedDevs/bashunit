@@ -100,6 +100,13 @@ export default defineConfig({
     externalLinkIcon: true,
     siteTitle: false,
 
+    // Reference pages carry their per-flag and per-pattern detail at H3 (27 of them on
+    // command-line, 24 on common-patterns, 23 on coverage). The VitePress default of
+    // H2-only hides exactly the headings people navigate to. Must live under
+    // themeConfig: the outline is read as `frontmatter.outline ?? theme.outline`,
+    // so a top-level `outline` is silently ignored.
+    outline: [2, 3],
+
     editLink: {
       pattern: 'https://github.com/TypedDevs/bashunit/edit/main/docs/:path'
     },
