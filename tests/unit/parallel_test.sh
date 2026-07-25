@@ -333,6 +333,11 @@ function test_aggregate_treats_an_unparseable_result_file_as_a_failed_test() {
   _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
     "bash: line 3: syntax error near unexpected token"
 
+  # get_tests_failed is cumulative for the whole run, so assert the delta this
+  # aggregation adds — an absolute value would also count any earlier failure.
+  local before
+  before=$(bashunit::state::get_tests_failed)
+
   local result passed failed tests_failed
   result=$(
     bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
@@ -344,7 +349,7 @@ EOF
 
   assert_same "0" "$passed"
   assert_same "0" "$failed"
-  assert_same "1" "$tests_failed"
+  assert_same "1" "$((tests_failed - before))"
 }
 
 function test_aggregate_sums_multiple_result_files() {
