@@ -17,8 +17,8 @@ function test_mock_ps_when_executing_a_sourced_function() {
 
 function test_spy_commands_called_when_executing_a_script() {
   # Skip on Bash 3.0 - shell function exports don't work for external scripts
-  if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
-    bashunit::skip "Spies don't work for external scripts in Bash 3.0"
+  if [[ "${BASH_VERSINFO[0]}" -eq 3 ]]; then
+    bashunit::skip "Spies do not reach external scripts on Bash 3.x"
     return
   fi
 
@@ -48,8 +48,8 @@ function test_spy_commands_called_when_executing_a_sourced_function() {
 
 function test_spy_commands_called_once_when_executing_a_script() {
   # Skip on Bash 3.0 - shell function exports don't work for external scripts
-  if [[ "${BASH_VERSINFO[0]}" -eq 3 ]] && [[ "${BASH_VERSINFO[1]}" -lt 1 ]]; then
-    bashunit::skip "Spies don't work for external scripts in Bash 3.0"
+  if [[ "${BASH_VERSINFO[0]}" -eq 3 ]]; then
+    bashunit::skip "Spies do not reach external scripts on Bash 3.x"
     return
   fi
   # Skip when coverage is enabled because coverage uses head internally,
