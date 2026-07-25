@@ -962,7 +962,11 @@ function bashunit::runner::call_bench_functions() {
 
   local fn_name
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-    read -r revs its max_ms <<<"$(bashunit::benchmark::parse_annotations "$fn_name" "$script")"
+    # Capture separately so a malformed annotation aborts the run: the exit
+    # status of a $(...) inside `read <<<` is otherwise discarded (#884).
+    local parsed_annotations
+    parsed_annotations=$(bashunit::benchmark::parse_annotations "$fn_name" "$script") || exit 1
+    read -r revs its max_ms <<<"$parsed_annotations"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
     unset -v fn_name
   done

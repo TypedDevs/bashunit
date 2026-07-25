@@ -275,3 +275,42 @@ function test_run_function_with_multiple_iterations() {
   assert_same "3" "${_BASHUNIT_BENCH_ITS[0]}"
   [[ -n "${_BASHUNIT_BENCH_AVERAGES[0]}" ]]
 }
+
+# A marker that is present but yielded no number is a typo, not an absent
+# annotation. Falling back to the default silently ran a different benchmark
+# than the one asked for: `@revs=abc` quietly became one revolution (#884).
+function test_parse_annotations_rejects_a_malformed_revs() {
+  local fixture ec=0
+  fixture="$(bashunit::temp_dir)/malformed_bench.sh"
+  printf '#!/usr/bin/env bash\n\n# @revs=abc\nfunction bench_x() { :; }\n' >"$fixture"
+
+  local output
+  output=$(bashunit::benchmark::parse_annotations bench_x "$fixture" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "@revs" "$output"
+}
+
+function test_parse_annotations_rejects_a_malformed_max_ms() {
+  local fixture ec=0
+  fixture="$(bashunit::temp_dir)/malformed_max_bench.sh"
+  printf '#!/usr/bin/env bash\n\n# @max_ms=abc\nfunction bench_x() { :; }\n' >"$fixture"
+
+  local output
+  output=$(bashunit::benchmark::parse_annotations bench_x "$fixture" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "@max_ms" "$output"
+}
+
+function test_parse_annotations_accepts_a_function_with_no_annotation_at_all() {
+  local fixture ec=0
+  fixture="$(bashunit::temp_dir)/plain_bench.sh"
+  printf '#!/usr/bin/env bash\n\nfunction bench_x() { :; }\n' >"$fixture"
+
+  local output
+  output=$(bashunit::benchmark::parse_annotations bench_x "$fixture" 2>&1) || ec=$?
+
+  assert_successful_code "" "" "$ec"
+  assert_same "1 1" "$output"
+}
