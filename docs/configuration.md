@@ -496,9 +496,9 @@ bashunit --env "tests/bootstrap.sh staging verbose" tests/
 BASHUNIT_DEV_LOG="dev.log"
 ```
 ```bash [Usage]
-log "I am tracing something..."
-log "error" "an" "error" "message"
-log "warning" "different log level messages!"
+bashunit::log "I am tracing something..."
+bashunit::log "error" "an" "error" "message"
+bashunit::log "warning" "different log level messages!"
 ```
 ```bash [Output: out.log]
 2024-10-03 21:27:23 [INFO]: I am tracing something... #tests/sample.sh:11

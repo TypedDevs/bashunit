@@ -9,7 +9,7 @@ const LLMS_ORDER = [
   'assertions', 'custom-asserts', 'test-doubles', 'data-providers', 'snapshots',
   'skipping-incomplete', 'test-files', 'globals', 'common-patterns',
   'command-line', 'configuration', 'coverage', 'benchmarks', 'standalone',
-  'examples', 'support'
+  'ai-agents', 'examples', 'support'
 ]
 
 // https://vitepress.dev/reference/site-config
@@ -23,6 +23,8 @@ export default defineConfig({
 
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }],
+    // Discoverability for agents: the docs are also published as plain text.
+    ['link', { rel: 'alternate', type: 'text/plain', href: 'https://bashunit.com/llms.txt', title: 'llms.txt' }],
     ['meta', { name: 'theme-color', content: '#22c55e' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'bashunit' }],
@@ -144,6 +146,7 @@ export default defineConfig({
           { text: 'Benchmarks', link: '/benchmarks' },
           { text: 'Standalone', link: '/standalone' },
           { text: 'Common patterns', link: '/common-patterns' },
+          { text: 'Agentic coding', link: '/ai-agents' },
         ],
       }, {
         text: 'Reference',
@@ -200,7 +203,10 @@ export default defineConfig({
   },
 
   srcExclude: [
-    'blog/0000-00-00-template.md'
+    'blog/0000-00-00-template.md',
+    // public/ is copied verbatim as static assets; without this, any .md in it is
+    // ALSO rendered as a page (/public/<name>) and lands in the sitemap.
+    'public/**/*.md'
   ],
 
   markdown: {

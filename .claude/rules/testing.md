@@ -38,16 +38,25 @@ assert_fails "assert_equals 'a' 'b'"
 
 ## Test Doubles
 
+Helpers are namespaced (`bashunit::*`); assertions are bare. The unprefixed helper name
+is a `command not found`, not an alias.
+
 ```bash
 # Spies - track calls without changing behavior
-spy function_name
+bashunit::spy function_name
 assert_have_been_called function_name
-assert_have_been_called_times 2 function_name
-assert_have_been_called_with "arg" function_name
+assert_have_been_called_times 2 function_name          # count first, then spy
+assert_have_been_called_with function_name "arg"       # spy first, then expected
+assert_have_been_called_with function_name "arg" 1     # ...of call #1
+assert_have_been_called_nth_with 1 function_name "arg"
 
 # Mocks - replace behavior
-mock curl echo "mocked response"
+bashunit::mock date echo "2024-05-01"
+bashunit::mock uname <<< "Linux"    # heredoc form ignores the call's arguments
 ```
+
+Note `_times` takes the count first while `_with` takes the spy first — a swapped pair
+fails the assertion rather than erroring, so it reads like a real defect.
 
 ## Data Providers
 
@@ -79,7 +88,8 @@ assert_match_snapshot "$output"
 
 ## Test Isolation
 
-- Use `$temp_file` / `$temp_dir` (auto-cleaned) for file operations
+- Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` (auto-cleaned) for file
+  operations — these are functions, not variables
 - No shared global state between tests
 - No network calls — mock external commands
 - No time dependencies — mock `date` if needed
