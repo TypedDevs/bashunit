@@ -14,6 +14,7 @@
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
 
 ### Fixed
+- The numeric options (`--jobs`, `--retry`, `--test-timeout`, `--coverage-min`) and `--output` now reject an invalid value with a clear error and a non-zero exit, instead of dropping the setting. `--jobs abc` was the worst case: `[ n -lt abc ]` errors rather than returning false, so the Bash 3.x job-slot poll never reached its `break` and the run **hung**, while Bash 4.3+ silently ignored the concurrency limit. `--coverage-min abc` leaked a raw `[: abc: integer expression expected` and still exited `0`, so a CI job never enforced its threshold. Validation runs on the resolved configuration, so it covers the `BASHUNIT_*` environment variables too (#873)
 - An unknown option is now rejected with a clear error and a non-zero exit instead of being silently filed under test paths. A mistyped flag used to degrade the run while still reporting success: `bashunit --parralel tests/` ran sequentially and exited `0`, and `bashunit --filterr foo tests/` swallowed both the flag and its value and ran the whole suite. Applies to `test` and `bench`; the `assert` subcommand parses its own arguments and is unchanged (#871)
 - The quickstart's sample output showed durations as `16 ms` / `90 ms`; bashunit prints `16ms` / `90ms`
 - `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true`; the actual default has been `auto` since #765
