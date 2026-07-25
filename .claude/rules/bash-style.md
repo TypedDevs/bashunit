@@ -20,7 +20,9 @@ bashunit must work on **Bash 3.0+** (macOS default). These features are **prohib
 
 ## Coding Conventions
 
-- **2 spaces** indent, no tabs — enforced by `shfmt -w .`
+- **2 spaces** indent, no tabs — enforced by `make lint` (EditorConfig). Do **not**
+  run `shfmt -w`: it wants tabs for `tests/acceptance/**` and collapses
+  `\`-continued strings past the 120-char limit, breaking `make lint`
 - **120 chars** max line length (soft)
 - Follow [Google Shell Style Guide](https://google.github.io/styleguide/shellguide.html)
 - Always quote variables unless explicit word splitting is needed

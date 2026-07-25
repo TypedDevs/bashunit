@@ -36,7 +36,7 @@ Review a GitHub PR. When no number is given, review the PR for the current branc
   - Bash 3.0+ compatibility (no `declare -A`, `[[ ]]`, `${var,,}`, negative indexing, `&>>`)
   - Tests exist and follow TDD; both success and failure paths covered
   - Naming, namespacing (`bashunit::*` / `_private`), and dynamic-scope safety
-  - ShellCheck cleanliness and `shfmt` formatting
+  - ShellCheck cleanliness and 2-space indentation (`make lint`, not `shfmt`)
   - CHANGELOG.md updated for user-facing changes
 
 4. **Report findings** grouped by severity (blocker / suggestion / nit), each as `path:line — problem. fix.`. No praise, no scope creep. State plainly if the PR looks good.

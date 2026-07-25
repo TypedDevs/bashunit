@@ -27,10 +27,13 @@ See `.claude/rules/bash-style.md` for complete compatibility guide (auto-loaded 
 Every change must pass:
 ```bash
 make sa          # ShellCheck static analysis
-make lint        # EditorConfig linting
+make lint        # EditorConfig linting (the formatting authority — 2-space indent)
 ./bashunit tests/  # All tests passing
-shfmt -w .       # Code formatting
 ```
+
+**Never run `shfmt -w`.** shfmt and `.editorconfig` disagree on this repo: 146
+tracked files are already shfmt-dirty on a clean `main`, and satisfying shfmt
+breaks `make lint`. See "Formatting" below.
 
 ## Architecture
 
@@ -61,8 +64,28 @@ bashunit/
 ./bashunit --parallel tests/   # Parallel execution
 ./bashunit tests/unit/         # Run unit tests only
 make sa                        # ShellCheck static analysis
-make lint                      # EditorConfig checker
-shfmt -w .                     # Format all shell files
+make lint                      # EditorConfig checker (formatting authority)
+```
+
+## Formatting
+
+Match the surrounding 2-space style by hand and verify with `make lint`. There is
+no `shfmt` target, and **`shfmt -w .` must not be run** — it fights `.editorconfig`
+two ways:
+
+- `.editorconfig` sets `indent_size = unset` for `tests/acceptance/**.sh` and
+  `src/console_header.sh`; shfmt reads `unset` as "use my default", which is tabs,
+  while `[*]` sets `indent_style = space`. Any new file under `tests/acceptance/`
+  therefore shows up shfmt-dirty — that is expected, not a defect.
+- shfmt collapses `\`-continued strings onto one line, which would push
+  `src/state.sh`'s record writer past `max_line_length = 120`.
+
+To check you introduced no new drift, compare the dirty-file *list* against main
+rather than requiring it to be empty:
+
+```bash
+git ls-files -z '*.sh' bashunit | xargs -0 shfmt -d 2>/dev/null \
+  | grep '^--- ' | sed 's|--- ||; s|\.orig.*||' | sort
 ```
 
 ## Test Patterns
@@ -137,7 +160,7 @@ Rules auto-load based on file paths being edited (via `paths:` frontmatter in ea
 - All tests green for the **right reason**
 - `make sa` passes (ShellCheck)
 - `make lint` passes (EditorConfig)
-- Code formatted (`shfmt -w .`)
+- Code formatted to 2-space indent by hand (verified by `make lint`, never `shfmt -w`)
 - Bash 3.0+ compatible
 - Parallel tests passing (`./bashunit --parallel tests/`)
 - CHANGELOG.md updated (if user-facing changes)

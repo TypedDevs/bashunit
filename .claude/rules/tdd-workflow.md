@@ -59,15 +59,14 @@ Test: (none yet)
 
 1. Improve readability, naming, extract duplication — **no behavior changes**
 2. Run tests after each change
-3. Run quality checks: `make sa && make lint && shfmt -w .`
+3. Run quality checks: `make sa && make lint` (never `shfmt -w` — it breaks `make lint`)
 
 ## Quality Gate (Before Commit)
 
 ```bash
 ./bashunit tests/               # All tests
 ./bashunit --parallel tests/    # Parallel (isolation check)
-make sa && make lint            # Static analysis + linting
-shfmt -w .                      # Formatting
+make sa && make lint            # Static analysis + linting (lint is the format gate)
 ```
 
 ## Definition of Done

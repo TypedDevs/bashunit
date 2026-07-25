@@ -41,7 +41,7 @@ For each test in inventory, follow RED -> GREEN -> REFACTOR:
 - Source new file in `src/bashunit.sh` if created
 - `export -f` the assertion function
 - Run full test suite: `./bashunit tests/`
-- Quality checks: `make sa && make lint && shfmt -w .`
+- Quality checks: `make sa && make lint`
 
 ### 5. Documentation
 

@@ -33,7 +33,7 @@ Check for `.tasks/YYYY-MM-DD-*.md`. If missing, create one before proceeding.
 
 1. Improve readability, naming, extract duplication — no behavior changes
 2. Run tests after each change
-3. Quality checks: `make sa && make lint && shfmt -w .`
+3. Quality checks: `make sa && make lint`
 4. Full suite: `./bashunit tests/`
 5. Update task file with refactoring notes
 

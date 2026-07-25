@@ -94,11 +94,21 @@ test/parallel: $(TEST_SCRIPTS)
 # SHELLCHECK_OPTS for local/CI parity. One file per invocation (like CI's
 # action) because shellcheck 0.11.0 can crash on multi-file batches with -x;
 # -P 4 keeps the wall time reasonable.
+#
+# The file list comes from git, not `find`, for two reasons: `find .` descends
+# into .claude/worktrees/ (linked worktrees hold whole copies of the tree, so
+# the target lints the repo N+1 times and appears to hang), and its "*.sh" glob
+# never sees the extensionless entrypoint or the bin/ scripts. `find` remains
+# the fallback outside a git checkout.
 sa:
 ifndef STATIC_ANALYSIS_CHECKER
 	@printf "\e[1m\e[31m%s\e[0m\n" "Shellcheck not installed: Static analysis not performed!" && exit 1
 else
-	@find . -name "*.sh" -not -path "./local/*" -print0 \
+	@{ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
+		git ls-files -z "*.sh" bashunit bin/pre-commit bin/create-pr; \
+	else \
+		find . -name "*.sh" -not -path "./local/*" -not -path "./.claude/worktrees/*" -print0; \
+	fi; } \
 		| xargs -0 -n 1 -P 4 shellcheck -xC -e SC1091 -e SC2155 -e SC2016 \
 		&& printf "\e[1m\e[32m%s\e[0m\n" "ShellCheck: OK!"
 endif
