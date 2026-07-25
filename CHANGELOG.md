@@ -14,6 +14,10 @@
 - A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead
 - `release.sh` reports a failed rollback as failed instead of always printing "Rollback complete", and aborts when neither the tar nor the `cp` sandbox copy produced a usable project copy
 - `assert_arrays_equal` no longer reports the internal label `Bashunit::assert::label` when it fails outside a test function (for example from a `set_up` hook); it now reports `Assert arrays equal`, matching every other assertion
+- The exit-code assertions (`assert_exit_code`, `assert_successful_code`, `assert_unsuccessful_code`, `assert_general_error`, `assert_command_not_found`) counted the assertion as **passed** when given a non-integer exit code: `[ x -ne y ]` exits 2 rather than 1 on an unparseable operand, and that was read as "equal". They now fail closed
+- A test path containing both a glob and a space (`./bashunit "my tests/*"`) is no longer word-split into bogus search roots, which silently discovered zero tests; the path is also no longer passed through `eval`
+- The variadic assertions (`assert_contains` and friends) called with the actual value omitted now report a clean failed assertion on Bash 3.2 instead of aborting the run with `unbound variable` under `--strict`
+- An unreadable or truncated parallel `.result` file is now counted as a failed test instead of aborting aggregation with an arithmetic syntax error
 
 ### Removed
 - Dead internal code with no remaining callers: the pre-cache fallback branch of the runner's `call_test_functions` (unreachable since the per-file function list became mandatory), `bashunit::state::calculate_total_assertions` (superseded by `bashunit::runner::compute_total_assertions`), `bashunit::coverage::get_line_hits` (superseded by `bashunit::coverage::get_all_line_hits`), `bashunit::helper::trim` and `bashunit::dependencies::has_adjtimex`. All are internal (sub-namespaced) helpers, not part of the documented public API
