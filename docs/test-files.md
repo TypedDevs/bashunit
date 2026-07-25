@@ -42,12 +42,12 @@ You're free to use any of Bash's syntax options to define these functions.
 ## Custom test titles
 
 By default, **bashunit** derives the name shown in reports from the test function name.
-If you need a more descriptive title, you can override it inside the test using `set_test_title`:
+If you need a more descriptive title, you can override it inside the test using `bashunit::set_test_title`:
 
 ::: code-group
 ```bash [Example]
 function test_handles_invalid_input() {
-  set_test_title "🔥 handles custom test names 🚀"
+  bashunit::set_test_title "🔥 handles custom test names 🚀"
   # test logic...
 }
 ```

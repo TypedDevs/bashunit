@@ -1,6 +1,6 @@
 ---
 name: bashunit
-description: Write and run tests for bash scripts with bashunit. Use when adding or fixing tests for shell code, when a bashunit run fails, or when asked to raise coverage of a bash script. Covers the assertion catalogue, the fast edit-run loop, and the API traps that produce silently-passing tests.
+description: Write and run tests for bash scripts with bashunit. Use when adding or fixing tests for shell code, when a bashunit run fails, or when asked to raise coverage of a bash script. Covers loading the code under test, the assertion catalogue, the fast edit-run loop, and the API traps that produce silently-passing tests.
 ---
 
 # bashunit
@@ -10,50 +10,84 @@ install and a run starts in tens of milliseconds.
 
 Full docs: https://bashunit.com — machine-readable at https://bashunit.com/llms-full.txt
 
-## Layout
+## Anatomy of a test file
 
-Files end in `_test.sh`, functions start with `test_`:
+Files end in `_test.sh`, functions start with `test_`. **Load the code under test
+yourself** — bashunit does not do it for you:
 
 ```bash
 #!/usr/bin/env bash
 
-function set_up() {           # before each test (optional)
-  TARGET_DIR="$(bashunit::temp_dir)"
+function set_up() {
+  source "src/calculator.sh"      # relative to where you RUN bashunit
 }
 
-function test_it_writes_the_header() {
-  create_report "$TARGET_DIR/out.txt"
-
-  assert_file_contains "$TARGET_DIR/out.txt" "# Report"
+function test_add_two_positive_numbers() {
+  assert_same "5" "$(add 2 3)"
 }
 ```
 
-Lifecycle hooks: `set_up_before_script`, `set_up`, `tear_down`, `tear_down_after_script`.
+Run it from the project root: `bashunit tests/`. If the suite must work from any
+directory, anchor the path to the test file instead:
+
+```bash
+source "$(dirname "${BASH_SOURCE[0]}")/../src/calculator.sh"
+```
+
+Testing a whole script rather than a function? Execute it and assert on the result:
+
+```bash
+function test_script_rejects_a_missing_argument() {
+  local output ec=0
+  output=$(./src/deploy.sh 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "usage:" "$output"
+}
+```
+
+Lifecycle hooks: `set_up_before_script` (once per file), `set_up` (per test),
+`tear_down` (per test), `tear_down_after_script` (once per file).
 
 ## The loop
 
 ```bash
 bashunit tests/                                # everything
-bashunit --filter "writes the header" tests/   # one test, by name
+bashunit --filter "add two positive" tests/    # one test, by name
 bashunit --rerun-failed tests/                 # only what failed last run
 bashunit --failures-only --no-progress tests/  # quiet output for a transcript
 bashunit --report-json out.json tests/         # structured results to parse
 ```
 
-Work the cycle: run once, then loop on `--rerun-failed` until nothing fails. Do not
-re-run the whole suite after every edit.
+Run once, then loop on `--rerun-failed` until nothing fails. Do not re-run the whole
+suite after every edit. Exit code is 0 only when everything passed.
 
-Exit code is 0 only when everything passed.
+## The namespace rule
+
+**`assert_*` is bare. Every helper needs the `bashunit::` prefix.** The unprefixed name
+is not an alias — it is a runtime failure, and it is the single most common mistake:
+
+```bash
+d="$(bashunit::temp_dir)"       # correct   | temp_dir        -> command not found
+f="$(bashunit::temp_file)"      # correct   | temp_file       -> command not found
+bashunit::spy send_email        # correct   | spy             -> command not found
+bashunit::mock date echo "x"    # correct   | mock            -> command not found
+bashunit::skip "reason"         # correct   | skip            -> command not found
+bashunit::set_test_title "..."  # correct   | set_test_title  -> command not found
+bashunit::log "msg"             # correct   | log             -> on macOS this silently
+                                #           |                    runs /usr/bin/log
+```
+
+Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` for all scratch paths: they are
+cleaned up automatically and are safe under `--parallel`.
 
 ## Assertions
 
-There are 66. `bashunit doc <filter>` prints them locally; the catalogue is at
+There are 66. `bashunit doc <filter>` lists them locally; the catalogue is at
 https://bashunit.com/assertions. **Do not invent names** — a wrong name is a runtime
 error, not a failed assertion.
 
-The ones worth memorising:
-
-- Equality: `assert_same` (exact), `assert_equals` (normalizing), `assert_not_same`
+- Equality: `assert_same`, `assert_not_same`, `assert_equals`, `assert_not_equals`
 - Strings: `assert_contains`, `assert_not_contains`, `assert_matches`,
   `assert_string_starts_with`, `assert_string_ends_with`, `assert_empty`, `assert_not_empty`
 - Numbers: `assert_greater_than`, `assert_less_than`, `assert_within_delta`
@@ -65,12 +99,14 @@ The ones worth memorising:
 - JSON: `assert_json_equals`, `assert_json_contains`, `assert_json_key_exists`
 - Snapshots: `assert_match_snapshot`
 
-Prefer `assert_same` over `assert_equals` unless you specifically want normalization.
+`assert_same` compares exactly. `assert_equals` first strips ANSI colour codes, tabs and
+newlines — useful for asserting on coloured CLI output, misleading everywhere else.
+**Default to `assert_same`**; reach for `assert_equals` only when you mean to ignore
+formatting.
 
 ## Traps that produce silently-passing tests
 
-**Exit-code assertions take the code as the third argument.** This is the single most
-common mistake:
+**Exit-code assertions take the code as the third argument:**
 
 ```bash
 local ec=0
@@ -80,59 +116,48 @@ assert_general_error "" "" "$ec"     # correct
 assert_general_error "$ec"           # WRONG — $1 is ignored, $? is read instead
 ```
 
-With no arguments they read `$?` directly, which only works immediately after the
-command.
+With no arguments they read `$?`, which only works immediately after the command.
 
-**Capture exit codes before asserting.** Under `--strict` (or a caller's `set -e`) a
-failing command ends the test before your assertion runs:
+**Capture exit codes; never let a failing command run bare.** Under `--strict` (or a
+caller's `set -e`) it ends the test before your assertion runs:
 
 ```bash
 local ec=0
-failing_command || ec=$?      # correct
+failing_command || ec=$?            # correct
 local out; out=$(failing_command)   # WRONG under set -e
 ```
 
-**A test with no assertions passes.** Always assert something. Run
-`bashunit --fail-on-risky tests/` to turn that into a failure.
-
-**Helpers and doubles are namespaced; assertions are not.** `assert_*` is called bare,
-but every helper needs the `bashunit::` prefix. The bare form is not an alias — it is a
-`command not found` at runtime:
-
-```bash
-d="$(bashunit::temp_dir)"    # correct
-d="$(temp_dir)"              # WRONG — command not found
-bashunit::spy send_email     # correct
-spy send_email               # WRONG — command not found
-```
-
-**Use `$(bashunit::temp_file)` and `$(bashunit::temp_dir)`** for scratch paths. They are
-cleaned up automatically and are safe under `--parallel`.
+**A test with no assertions passes.** Always assert something; `--fail-on-risky` turns
+that into a failure.
 
 **Do not delete shared fixtures in `tear_down_after_script`.** Under `--parallel` that
-file's tests may still be running; they crash and disappear from the totals without
-reporting a failure.
+file's tests may still be running; they crash and vanish from the totals without
+reporting a failure. Create per-test fixtures with `bashunit::temp_dir` instead and add
+no teardown.
 
-**No network calls.** Mock the command instead.
+**No network calls.** Mock the command.
 
 ## Test doubles
 
 ```bash
 bashunit::mock date echo "2024-05-01"   # replace behaviour
+bashunit::mock uname <<< "Linux"        # heredoc form ignores the call's arguments
 bashunit::spy send_email                # record calls, keep behaviour
 
 assert_have_been_called send_email
-assert_have_been_called_times 2 send_email          # count first, then spy
-assert_have_been_called_with send_email "--to a@b.c"  # spy first, then expected
+assert_have_been_called_times 2 send_email               # count FIRST, then spy
+assert_have_been_called_with send_email "--to a@b.c"     # spy FIRST, then expected
 assert_have_been_called_with send_email "--to a@b.c" 1   # ...of call #1
 assert_have_been_called_nth_with 1 send_email "--to a@b.c"
 ```
 
-The argument order is **not** consistent between these: `_times` takes the count first,
-`_with` takes the spy first. Getting it backwards produces a failed assertion, not an
-error, so check it against this list rather than guessing.
+The argument order is inconsistent between `_times` and `_with`. A swapped pair *fails
+the assertion* rather than erroring, so it reads like a real defect — check this list
+rather than guessing.
 
 ## Data providers
+
+Each line of the provider becomes one run, split on whitespace into `$1`, `$2`, …:
 
 ```bash
 function data_provider_sums() {
@@ -146,6 +171,26 @@ function test_add() {
 }
 ```
 
+## Selecting and annotating tests
+
+```bash
+# @tag slow
+function test_heavy_computation() { ...; }
+```
+
+```bash
+bashunit tests/ --tag slow            # only tagged tests (repeatable, OR)
+bashunit tests/ --exclude-tag slow    # everything else (exclusion wins)
+```
+
+Inside a test:
+
+```bash
+bashunit::skip "not supported on this platform" && return   # conditional skip
+bashunit::todo "needs a fixture for the error path"         # mark incomplete
+bashunit::set_test_title "handles a malformed header"       # display name only
+```
+
 ## Portability
 
 bashunit runs on Bash 3.0+, including the bash 3.2 that ships with macOS. If the code
@@ -156,7 +201,7 @@ in both the code and the tests.
 
 ```bash
 bashunit --fail-on-risky tests/   # assertion-free tests fail
-bashunit --random-order tests/    # catches order dependence
+bashunit --random-order tests/    # catches order dependence (--seed N to reproduce)
 bashunit --strict tests/          # set -euo pipefail
 bashunit --parallel tests/        # catches shared-state leaks
 ```
