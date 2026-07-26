@@ -6,12 +6,12 @@ paths:
 
 # Bash Style & Compatibility Rules
 
-## Bash 3.2+ Compatibility (Critical)
+## Bash 3.0+ Compatibility (Critical)
 
-bashunit must work on **Bash 3.2+** — the bash macOS ships, and the reason for
-supporting an old bash at all. Bash 3.0/3.1 are not supported: they predate
-`printf -v` and `+=`, and predate the 3.2 change to `[[ =~ ]]` quoting, so a
-regex match would behave differently across "supported" versions.
+bashunit must work on **Bash 3.0+**. The floor was deliberately lowered from 3.2
+to 3.0 in 0.33 to reach older systems; macOS's 3.2 is the common case, not the
+floor. The runtime gate in `./bashunit` compares major **and** minor against
+`BASHUNIT_MIN_BASH_VERSION`, so the declared floor is the enforced one.
 
 These are **version-breaking** above the floor and are prohibited. They are
 enforced mechanically by `tests/unit/bash_compatibility_test.sh`, which greps
@@ -19,6 +19,8 @@ enforced mechanically by `tests/unit/bash_compatibility_test.sh`, which greps
 
 | Feature | Bash ver | Alternative |
 |---------|----------|-------------|
+| `printf -v` | 3.1+ | Return-slot pattern (below) |
+| `+=` (append assign) | 3.1+ | `var="$var$more"`, `arr[${#arr[@]}]=x` |
 | `declare -A` (associative arrays) | 4.0+ | Parallel indexed arrays |
 | `${var,,}` / `${var^^}` (case) | 4.0+ | `tr '[:upper:]' '[:lower:]'` |
 | `${array[-1]}` (negative index) | 4.3+ | `${array[${#array[@]}-1]}` |
@@ -29,15 +31,17 @@ enforced mechanically by `tests/unit/bash_compatibility_test.sh`, which greps
 | `coproc` | 4.0+ | — |
 | `${var@Q}` (transformations) | 4.4+ | — |
 
+`[[ =~ ]]` is a subtler case: it **exists** on 3.0 (verified against a real
+build), but 3.2 changed whether a quoted right-hand side is a regex or a
+literal. At a 3.0 floor the same match therefore behaves differently across
+supported versions, so regex matching goes through `grep -E` — a real
+constraint, not a style preference. See `.claude/rules/perf-fork-budget.md`.
+
 ### Style, not compatibility
 
-These are **house style**, not version constraints. Do not justify them as
-Bash 3 requirements, and do not add them to the compatibility gate:
-
-| Convention | Reality |
-|------------|---------|
-| Prefer `[ ]` over `[[ ]]` | `[[ ]]` works on every supported bash, including 3.0 (verified against a real build) |
-| Avoid `printf -v` | Works on 3.1+; the real objection is that it resolves against the *dynamic* scope, like `eval "$name=..."` |
+Prefer `[ ]` over `[[ ]]` for ordinary tests. This is **house style**: `[[ ]]`
+itself works on every supported bash, including 3.0. Do not justify it as a
+Bash 3 requirement, and do not add it to the compatibility gate.
 
 ## Coding Conventions
 

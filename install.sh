@@ -3,7 +3,7 @@
 # success message must be unreachable on any failure path (#840).
 set -euo pipefail
 
-# Helper function for regex matching (Bash 3.2+ compatible)
+# Helper function for regex matching (Bash 3.0+ compatible)
 function regex_match() {
   [[ $1 =~ $2 ]]
 }

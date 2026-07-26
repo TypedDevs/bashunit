@@ -33,6 +33,29 @@ function test_src_has_no_compound_array_assignment_attached_to_local() {
   assert_empty "$offenders"
 }
 
+# `printf -v` is Bash 3.1+. Use the return-slot pattern documented in
+# .claude/rules/bash-style.md instead (which also avoids its dynamic-scope trap).
+function test_src_has_no_printf_assignment() {
+  assert_empty "$(bashunit::compat::offenders 'printf[[:space:]]+(-[a-zA-Z]*v)')"
+}
+
+# `+=` append assignment is Bash 3.1+. Use `var="$var$more"` for strings and
+# `arr[${#arr[@]}]=x` to append to an array. Arithmetic `(( x += 1 ))` is fine on
+# 3.0, so only assignment-position `+=` is matched here.
+function test_src_has_no_append_assignment() {
+  local pattern='^[[:space:]]*(local[[:space:]]+|declare[[:space:]]+[^[:space:]]+[[:space:]]+|export[[:space:]]+)?'
+  pattern="$pattern"'[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?\+='
+
+  assert_empty "$(bashunit::compat::offenders "$pattern")"
+}
+
+# `[[ =~ ]]` exists on Bash 3.0, but 3.2 changed whether a quoted right-hand side
+# is a regex or a literal, so the same match behaves differently across supported
+# versions. Regex matching goes through `grep -E` -- see perf-fork-budget.md.
+function test_src_has_no_regex_match_operator() {
+  assert_empty "$(bashunit::compat::offenders '\[\[[^]]*=~')"
+}
+
 # Associative arrays are Bash 4.0+. Use parallel indexed arrays instead.
 function test_src_has_no_associative_arrays() {
   assert_empty "$(bashunit::compat::offenders '(declare|local|typeset)[[:space:]]+(-[a-zA-Z]*A)')"

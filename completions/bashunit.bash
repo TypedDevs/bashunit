@@ -6,7 +6,7 @@
 #   source /path/to/bashunit/completions/bashunit.bash
 #
 # Kept in sync with src/main.sh by tests/unit/completions_test.sh (anti-drift).
-# Works on bash 3.2+ (plain compgen -W, no bash-completion helpers required).
+# Works on bash 3.0+ (plain compgen -W, no bash-completion helpers required).
 
 _BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watch"
 

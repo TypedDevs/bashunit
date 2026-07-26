@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 3.2 is the bash macOS ships, which is the reason for supporting an old bash at
-# all. 3.0 and 3.1 lack `printf -v` and `+=`, and predate the 3.2 change to
-# `[[ =~ ]]` quoting -- so at a 3.0 floor a regex match behaves differently
-# across supported versions, which is worse than not supporting them.
-declare -r BASHUNIT_MIN_BASH_VERSION="3.2"
+declare -r BASHUNIT_MIN_BASH_VERSION="3.0"
 
 function _check_bash_version() {
   local current_version
@@ -20,13 +16,17 @@ function _check_bash_version() {
     current_version="$(bash --version | head -n1 | cut -d' ' -f4 | cut -d. -f1,2)"
   fi
 
-  local major minor
+  # Compare against the declared minimum, minor included: comparing only the
+  # major would accept any 3.x whatever the floor says.
+  local major minor min_major min_minor
   IFS=. read -r major minor <<<"$current_version"
-  minor=${minor:-0}
+  IFS=. read -r min_major min_minor <<<"$BASHUNIT_MIN_BASH_VERSION"
+  # Keep leading digits only, so a suffixed version (3.2.57(1)-release) compares.
+  major=${major%%[!0-9]*}
+  minor=${minor%%[!0-9]*}
 
-  # The minor matters now: the previous gate compared only the major, so every
-  # 3.x passed regardless of the declared minimum.
-  if ((major < 3)) || { ((major == 3)) && ((minor < 2)); }; then
+  if ((10#${major:-0} < 10#$min_major)) ||
+    { ((10#${major:-0} == 10#$min_major)) && ((10#${minor:-0} < 10#${min_minor:-0})); }; then
     printf 'Bashunit requires Bash >= %s. Current version: %s\n' "$BASHUNIT_MIN_BASH_VERSION" "$current_version" >&2
     exit 1
   fi
