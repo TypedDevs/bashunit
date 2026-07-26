@@ -68,11 +68,11 @@ only** — toggling it in the caller's shell clobbers caller state (#808).
   duplicate check) stay awk.
 - **`${var//pattern/}` on large strings**: quadratic on Bash 3.2 — 2.7 s where
   awk takes 3.5ms. Never string-replace over big captures.
-- **Regex assertions** (`assert_matches`): the `grep -E` fork follows from the
-  house rule preferring `[ ]` over `[[ ]]`, **not** from the version floor —
-  `[[ =~ ]]` was verified working on a real Bash 3.0 build. Since the floor is
-  now 3.2, where `=~` quoting semantics are stable, this fork is removable if
-  the style rule is revisited. Measure before assuming it is a win.
+- **Regex assertions** (`assert_matches`): the `grep -E` fork is **not** because
+  `[[ =~ ]]` is missing — it was verified working on a real Bash 3.0 build. It is
+  because 3.2 changed whether a quoted right-hand side is a regex or a literal,
+  so at the 3.0 floor the same pattern would match differently across supported
+  versions. Removing the fork means picking one semantic and breaking the other.
 - **Single-file build artifact**: sourcing `bin/bashunit` is *not* faster than
   sourcing `src/*.sh` (parse time dominates, file opens don't).
 - **`tput cols` at startup**: returns 80 on non-tty; snapshots depend on that

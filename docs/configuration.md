@@ -143,7 +143,7 @@ default. Useful to stop a run from hanging forever on a blocked test, such as a
 mock left without an implementation.
 
 The value is expressed in whole seconds and applies per test (set up and tear
-down included). It needs no external `timeout` command and works on Bash 3.2+,
+down included). It needs no external `timeout` command and works on Bash 3.0+,
 including the default macOS Bash.
 
 Similar as using `--test-timeout` option on the [command line](/command-line#test-timeout).

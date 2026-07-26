@@ -469,7 +469,7 @@ given an implementation and waits on input that never arrives.
 
 The timeout is **disabled by default** (`0`). It applies per test (set up and
 tear down included) and is expressed in whole seconds. It needs no external
-`timeout` command and works on Bash 3.2+ (including the default macOS Bash).
+`timeout` command and works on Bash 3.0+ (including the default macOS Bash).
 
 ::: code-group
 ```bash [Example]

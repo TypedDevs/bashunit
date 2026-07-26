@@ -1,5 +1,5 @@
 ---
-description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a single-file bash testing framework running on Bash 3.2+ (Linux, macOS, WSL)."
+description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a single-file bash testing framework running on Bash 3.0+ (Linux, macOS, WSL)."
 ---
 
 # Installation
@@ -8,7 +8,7 @@ description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a
 
 ## Requirements
 
-bashunit requires **Bash 3.2** or newer. On Windows use [WSL](https://learn.microsoft.com/windows/wsl/install).
+bashunit requires **Bash 3.0** or newer. On Windows use [WSL](https://learn.microsoft.com/windows/wsl/install).
 
 ## install.sh
 

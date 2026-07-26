@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**bashunit** is a lightweight Bash testing framework (Bash 3.2+) focused on developer experience. Provides assertions, test doubles (spies/mocks), data providers, snapshots, and more.
+**bashunit** is a lightweight Bash testing framework (Bash 3.0+) focused on developer experience. Provides assertions, test doubles (spies/mocks), data providers, snapshots, and more.
 
 **Documentation:** https://bashunit.com
 
@@ -11,11 +11,14 @@
 ### TDD by Default
 **RED → GREEN → REFACTOR** — every change starts from a failing test. No exceptions.
 
-### Bash 3.2+ Compatible
+### Bash 3.0+ Compatible
 
-Works on macOS default bash. **Prohibited features:**
+Works on macOS default bash (3.2) and older. **Prohibited features:**
+- `printf -v` (Bash 3.1+)
+- `+=` append assignment (Bash 3.1+)
 - `declare -A` (associative arrays - Bash 4.0+)
-- `[[ ]]` (use `[ ]` instead)
+- `[[ ]]` (use `[ ]` instead — house style, not a version limit)
+- `[[ =~ ]]` (exists on 3.0, but 3.2 changed quoted-pattern semantics)
 - `${var,,}` (case conversion - Bash 4.0+)
 - `${array[-1]}` (negative indexing - Bash 4.3+)
 - `&>>` redirect (Bash 4.0+)
@@ -39,7 +42,7 @@ breaks `make lint`. See "Formatting" below.
 
 ```
 bashunit/
-├── src/                    # Core framework code (Bash 3.2+ compatible)
+├── src/                    # Core framework code (Bash 3.0+ compatible)
 │   ├── bashunit.sh        # Main entry point
 │   ├── assertions.sh      # Assertion functions
 │   ├── assert_*.sh        # Specialized assertions
@@ -120,7 +123,7 @@ Rules auto-load based on file paths being edited (via `paths:` frontmatter in ea
 
 ### `src/**/*.sh`
 - Small, portable functions
-- Bash 3.2+ compatibility (no associative arrays, no `[[`, no `${var,,}`)
+- Bash 3.0+ compatibility (no associative arrays, no `[[`, no `${var,,}`)
 - Proper namespacing (`bashunit::*`)
 - No external dependencies in core
 
@@ -139,7 +142,7 @@ Rules auto-load based on file paths being edited (via `paths:` frontmatter in ea
 
 ### Never:
 - Invent commands/features not in the codebase
-- Break Bash 3.2+ compatibility
+- Break Bash 3.0+ compatibility
 - Skip tests or quality checks
 - Change public API without docs/CHANGELOG
 - Commit without tests passing
@@ -153,7 +156,7 @@ Rules auto-load based on file paths being edited (via `paths:` frontmatter in ea
 - Keep tests passing during REFACTOR
 - Update CHANGELOG.md for user-visible changes
 - Run quality checks before committing
-- Maintain Bash 3.2+ compatibility
+- Maintain Bash 3.0+ compatibility
 
 ## Definition of Done
 
@@ -161,7 +164,7 @@ Rules auto-load based on file paths being edited (via `paths:` frontmatter in ea
 - `make sa` passes (ShellCheck)
 - `make lint` passes (EditorConfig)
 - Code formatted to 2-space indent by hand (verified by `make lint`, never `shfmt -w`)
-- Bash 3.2+ compatible
+- Bash 3.0+ compatible
 - Parallel tests passing (`./bashunit --parallel tests/`)
 - CHANGELOG.md updated (if user-facing changes)
 - ADR created/updated (if architectural decision)
