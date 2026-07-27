@@ -18,7 +18,8 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 --no-progress --output --parallel --profile --random-order --report-html \
 --report-json --report-junit --report-tap --rerun-failed --retry --run-all \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
---skip-env-file --stop-on-failure --strict --tag --test-timeout --verbose \
+--skip-env-file --snapshot-update --stop-on-failure --strict --tag \
+--test-timeout --verbose \
 --watch -R -S -a -e -f -h -j -l -p -r -s -vvv -w"
 
 _BASHUNIT_COMPLETIONS_ASSERT_FNS="assert_array_contains assert_array_length \

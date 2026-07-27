@@ -186,10 +186,11 @@ file's tests may still be running; they crash and vanish from the totals without
 reporting a failure. Create per-test fixtures with `bashunit::temp_dir` instead and add
 no teardown.
 
-**There is no `--update-snapshots` flag.** To re-record a snapshot, delete the file and
-run the test again — the assertion writes the snapshot when it is missing and passes.
-Which also means a *deleted* snapshot never fails: delete only when you have read the
-diff and decided the new output is correct.
+**Re-record snapshots with `--snapshot-update`** (scope it: `--snapshot-update --filter
+"my test"`), never by deleting snapshot files. A missing snapshot is written silently and
+passes, so a wrong `rm` converts a real assertion into a rubber stamp with no error. Read
+`git diff` after re-recording. A snapshot containing the placeholder is left alone and
+reported on stderr, because rewriting it would drop the part the author chose not to pin.
 
 **No network calls.** Mock the command.
 

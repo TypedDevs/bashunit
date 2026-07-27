@@ -83,6 +83,7 @@ _bashunit() {
     '--seed[Seed for random order]:seed:' \
     '--shard[Run shard i of n]:shard:' \
     '--rerun-failed[Replay only the tests that failed on the last run]' \
+    '--snapshot-update[Rewrite existing snapshots from the actual value]' \
     '(-vvv --verbose)'{-vvv,--verbose}'[Show execution details]' \
     '--debug[Enable shell debug mode]::file:_files' \
     '--no-output[Suppress all output]' \

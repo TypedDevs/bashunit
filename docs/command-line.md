@@ -83,6 +83,7 @@ bashunit test tests/ --parallel --simple
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
+| `--snapshot-update`            | Rewrite existing snapshots from the actual value |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -567,6 +568,35 @@ steps:
   - run: ./bashunit tests/ --shard ${{ matrix.shard }}/4
 ```
 :::
+
+### Snapshot update
+
+> `bashunit test --snapshot-update`
+
+Re-record snapshots: every `assert_match_snapshot` /
+`assert_match_snapshot_ignore_colors` whose snapshot already exists is
+overwritten with the value this run produced, and reported as a recorded
+snapshot instead of a pass. A missing snapshot is written as usual.
+
+Use it when an output change is deliberate. It replaces deleting snapshot files
+by hand — the path is derived from the test file and function name, so a wrong
+`rm` is easy and silent: a deleted snapshot is re-recorded on the next run and
+never fails.
+
+Scope it with `--filter` to re-record a single test:
+
+```bash
+./bashunit --snapshot-update --filter "renders the header" tests/
+```
+
+Notes:
+
+- A snapshot containing the placeholder (`::ignore::`, or
+  `BASHUNIT_SNAPSHOT_PLACEHOLDER`) is **not** overwritten — the placeholder
+  marks output the author chose not to pin, and rewriting would silently drop
+  it. bashunit says so on stderr and compares as usual.
+- Review the diff afterwards: this rewrites files, so `git diff` is what tells
+  you the new output is the output you meant.
 
 ### Rerun failed
 

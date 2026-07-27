@@ -116,7 +116,11 @@ function bashunit::console_results::render_result() {
   fi
 
   if [ "$tests_snapshot" -gt 0 ]; then
-    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SNAPSHOT" " Some snapshots created " "$_BASHUNIT_COLOR_DEFAULT"
+    local snapshot_notice=" Some snapshots created "
+    if bashunit::env::is_snapshot_update_enabled; then
+      snapshot_notice=" Some snapshots updated "
+    fi
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_SNAPSHOT" "$snapshot_notice" "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 0
   fi

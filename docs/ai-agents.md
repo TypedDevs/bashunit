@@ -132,9 +132,10 @@ actually make against this API:
   argument by argument whenever an argument may contain a space.
 - Do not delete a shared fixture in `tear_down_after_script`: under `--parallel` the
   file's tests may still be running, and they will vanish from the totals silently.
-- There is no `--update-snapshots` flag. Re-record a snapshot by deleting the file and
-  re-running; the assertion writes it when missing. A missing snapshot therefore never
-  fails, so delete one only after reading the diff.
+- Re-record snapshots with `--snapshot-update`, scoped by `--filter`; do not delete
+  snapshot files. A missing snapshot is written silently and never fails, so a wrong
+  `rm` turns a real assertion into a rubber stamp. Read `git diff` afterwards either way.
+  Snapshots containing the placeholder are not rewritten — bashunit says so on stderr.
 - Assertions are listed at https://bashunit.com/assertions — do not invent names.
   `bashunit doc <filter>` prints them locally.
 ```
