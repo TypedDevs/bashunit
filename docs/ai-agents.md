@@ -114,6 +114,9 @@ actually make against this API:
 - Spy assertion argument order is inconsistent — check, don't guess:
   `assert_have_been_called_times <count> <spy>` but
   `assert_have_been_called_with <spy> <expected> [call_index]`.
+- A call assertion on a name that was never passed to `bashunit::spy` fails with
+  `was never registered as a spy`. Spies do not survive across tests, so register the
+  spy inside the test that asserts on it.
 - `assert_have_been_called_with` joins the expected arguments with spaces, so it cannot
   tell `cmd "a b"` from `cmd a b` — a quoting bug passes it. Use
   `assert_have_been_called_with_args <spy> <arg>...` (no `call_index`) to compare

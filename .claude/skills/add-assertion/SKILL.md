@@ -33,7 +33,8 @@ Read `src/assertions.sh` and `tests/unit/assert_test.sh` to understand:
 For each test in inventory, follow RED -> GREEN -> REFACTOR:
 
 1. **Basic success case** — assertion passes with valid input
-2. **Failure case** — assertion fails correctly, use `assert_fails`
+2. **Failure case** — assertion fails correctly: capture its output and compare it with
+   `bashunit::console_results::print_failed_test` (there is no `assert_fails`)
 3. **Edge cases** — empty input, special characters, nested structures, malformed data
 
 ### 4. Integration

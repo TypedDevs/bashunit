@@ -165,6 +165,10 @@ failing_command || ec=$?            # correct
 local out; out=$(failing_command)   # WRONG under set -e
 ```
 
+**Spies do not survive across tests, and a call assertion on an unregistered name fails**
+with `was never registered as a spy` (it used to report zero calls, so `assert_not_called`
+with a typo passed while asserting nothing). Register the spy in the test that asserts on it.
+
 **`assert_have_been_called_with` joins arguments with spaces**, so it cannot see argument
 boundaries: `touch "a b"` also satisfies `assert_have_been_called_with touch "a" "b"`. When
 an argument may contain a space — any path — use `assert_have_been_called_with_args`, which

@@ -127,6 +127,48 @@ function test_spy_call_with_args_detects_wrong_argument_boundaries() {
     "$(assert_have_been_called_with_args spy_boundary_command "a" "b")"
 }
 
+function test_assert_not_called_fails_when_the_command_was_never_spied() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert not called fails when the command was never spied" \
+      "never_spied_command" "was never registered as a spy; call it first with" \
+      "bashunit::spy never_spied_command")" \
+    "$(assert_not_called never_spied_command)"
+}
+
+function test_call_assertions_fail_when_the_command_was_never_spied() {
+  local label="Call assertions fail when the command was never spied"
+  local expected
+  expected="$(bashunit::console_results::print_failed_test "$label" \
+    "never_spied_command" "was never registered as a spy; call it first with" \
+    "bashunit::spy never_spied_command")"
+
+  assert_same "$expected" "$(assert_have_been_called never_spied_command)"
+  assert_same "$expected" "$(assert_have_been_called_times 0 never_spied_command)"
+  assert_same "$expected" "$(assert_have_been_called_with never_spied_command "x")"
+  assert_same "$expected" "$(assert_have_been_called_with_args never_spied_command "x")"
+  assert_same "$expected" "$(assert_have_been_called_nth_with 1 never_spied_command "x")"
+}
+
+function test_call_assertions_fail_after_the_spy_was_unmocked() {
+  bashunit::spy spy_to_be_unmocked
+  bashunit::unmock spy_to_be_unmocked
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Call assertions fail after the spy was unmocked" \
+      "spy_to_be_unmocked" "was never registered as a spy; call it first with" \
+      "bashunit::spy spy_to_be_unmocked")" \
+    "$(assert_not_called spy_to_be_unmocked)"
+}
+
+function test_assert_not_called_still_passes_on_a_registered_spy() {
+  bashunit::spy spy_never_invoked
+
+  assert_empty "$(assert_not_called spy_never_invoked)"
+  assert_empty "$(assert_have_been_called_times 0 spy_never_invoked)"
+}
+
 function test_spy_on_echo_does_not_hang() {
   source ./tests/functional/fixtures/echo_function.sh
   bashunit::spy echo

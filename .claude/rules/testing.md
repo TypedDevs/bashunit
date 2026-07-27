@@ -33,7 +33,14 @@ assert_file_not_exists "$path"
 assert_directory_exists "$path"
 assert_array_contains "value" "${array[@]}"
 assert_array_not_contains "value" "${array[@]}"
-assert_fails "assert_equals 'a' 'b'"
+```
+
+There is no `assert_fails`. To assert that an assertion *fails*, capture its output and
+compare it with the renderer:
+
+```bash
+assert_same "$(bashunit::console_results::print_failed_test "My test" "a" "but got " "b")" \
+  "$(assert_same "a" "b")"
 ```
 
 ## Test Doubles

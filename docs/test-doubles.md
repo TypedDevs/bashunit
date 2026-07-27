@@ -127,6 +127,18 @@ function test_example() {
 ```
 :::
 
+::: tip Call assertions require a registered spy
+Every `assert_have_been_called*` / `assert_not_called` assertion fails when the name it targets was never passed to `bashunit::spy` — or was removed by `bashunit::unmock`, or belongs to a previous test:
+
+```
+✗ Failed: My test
+    Expected 'tuoch'
+    was never registered as a spy; call it first with 'bashunit::spy tuoch'
+```
+
+Without that check a typo would report zero calls, so `assert_not_called tuoch` would pass while asserting nothing. Spies are cleared between tests, so spy inside the test that asserts on them.
+:::
+
 ## assert_have_been_called
 > `assert_have_been_called "spy"`
 
