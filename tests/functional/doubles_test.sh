@@ -107,6 +107,26 @@ function test_mock_mktemp_does_not_break_spy_creation() {
   assert_have_been_called_with rm "-f" "/tmp/mocked_temp_file"
 }
 
+function test_spy_call_with_args_matches_exact_argument_boundaries() {
+  bashunit::spy spy_boundary_command
+
+  spy_boundary_command "a b"
+
+  assert_empty "$(assert_have_been_called_with_args spy_boundary_command "a b")"
+}
+
+function test_spy_call_with_args_detects_wrong_argument_boundaries() {
+  bashunit::spy spy_boundary_command
+
+  spy_boundary_command "a b"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Spy call with args detects wrong argument boundaries" \
+      "a b" "but got " "a\\ b")" \
+    "$(assert_have_been_called_with_args spy_boundary_command "a" "b")"
+}
+
 function test_spy_on_echo_does_not_hang() {
   source ./tests/functional/fixtures/echo_function.sh
   bashunit::spy echo

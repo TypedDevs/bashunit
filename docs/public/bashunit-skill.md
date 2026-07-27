@@ -134,7 +134,8 @@ filters it. The same list is at https://bashunit.com/assertions. **Do not invent
 - JSON: `assert_json_equals`, `assert_json_contains`, `assert_json_key_exists`
 - Snapshots: `assert_match_snapshot`, `assert_match_snapshot_ignore_colors`
 - Spies: `assert_have_been_called`, `assert_not_called`, `assert_have_been_called_with`,
-  `assert_have_been_called_times`, `assert_have_been_called_nth_with`
+  `assert_have_been_called_with_args`, `assert_have_been_called_times`,
+  `assert_have_been_called_nth_with`
 
 `assert_same` compares exactly. `assert_equals` first strips ANSI colour codes, tabs and
 newlines — useful for asserting on coloured CLI output, misleading everywhere else.
@@ -164,6 +165,11 @@ failing_command || ec=$?            # correct
 local out; out=$(failing_command)   # WRONG under set -e
 ```
 
+**`assert_have_been_called_with` joins arguments with spaces**, so it cannot see argument
+boundaries: `touch "a b"` also satisfies `assert_have_been_called_with touch "a" "b"`. When
+an argument may contain a space — any path — use `assert_have_been_called_with_args`, which
+compares argument by argument.
+
 **A test with no assertions passes.** Always assert something; `--fail-on-risky` turns
 that into a failure.
 
@@ -191,6 +197,7 @@ assert_have_been_called_times 2 send_email               # count FIRST, then spy
 assert_have_been_called_with send_email "--to a@b.c"     # spy FIRST, then expected
 assert_have_been_called_with send_email "--to a@b.c" 1   # ...of call #1
 assert_have_been_called_nth_with 1 send_email "--to a@b.c"
+assert_have_been_called_with_args send_email "--to" "a@b.c"  # boundary-exact, no index
 ```
 
 The argument order is inconsistent between `_times` and `_with`. A swapped pair *fails

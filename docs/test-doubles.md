@@ -178,6 +178,34 @@ function test_failure() {
 :::
 
 
+## assert_have_been_called_with_args
+> `assert_have_been_called_with_args spy expected...`
+
+Reports an error if the last invocation of `spy` did not receive exactly these arguments. Arguments are compared one by one instead of being joined with spaces, so an argument containing a space cannot be confused with two arguments — the check `assert_have_been_called_with` cannot make.
+
+There is no `call_index` parameter: a trailing number could not be told apart from a numeric argument.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy touch
+
+  touch "a b"
+
+  assert_have_been_called_with_args touch "a b"
+}
+
+function test_failure() {
+  bashunit::spy touch
+
+  touch "a b"
+
+  # passes with assert_have_been_called_with, fails here
+  assert_have_been_called_with_args touch "a" "b"
+}
+```
+:::
+
 ## assert_have_been_called_nth_with
 > `assert_have_been_called_nth_with "nth" "spy" "expected"`
 
