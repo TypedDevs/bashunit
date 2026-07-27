@@ -200,6 +200,7 @@ bashunit::mock date echo "2024-05-01"   # replace behaviour
 bashunit::mock uname <<< "Linux"        # heredoc form ignores the call's arguments
 bashunit::mock curl 1                   # all-digits arg = exit code, no output (as for spy)
 bashunit::spy send_email                # record calls, keep behaviour
+bashunit::unmock date                   # restore the real command for the rest of this test
 
 assert_have_been_called send_email
 assert_have_been_called_times 2 send_email               # count FIRST, then spy
@@ -213,6 +214,11 @@ assert_have_been_called_with_args send_email "--to" "a@b.c"  # boundary-exact, n
 The argument order is inconsistent between `_times` and `_with`. A swapped pair *fails
 the assertion* rather than erroring, so it reads like a real defect — check this list
 rather than guessing.
+
+A double declared inside a test is removed when that test ends, so never unmock in
+`tear_down` — it is noise. One declared in `set_up_before_script` lives for the whole
+file; `bashunit::unmock` on it only suspends it for the current test, because each test
+runs in its own subshell.
 
 ## Data providers
 

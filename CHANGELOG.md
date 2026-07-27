@@ -18,6 +18,7 @@
 - Deprecated forms now warn at runtime on stderr; silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true` (#866)
 - `bashunit::state::print_line` / `print_tap_line` moved to `bashunit::console_results::*`; no alias kept (#868)
 - `bashunit doc` and the [Assertions](https://bashunit.com/assertions) page now cover all 71 assertions, with a quick-reference table
+- Docs: `bashunit::unmock` and the lifecycle of a double — automatic per-test cleanup, `set_up_before_script` doubles, and what `unmock` reaches (#899)
 - Docs: invalid-input handling, `BASHUNIT_REPORT_TAP`/`BASHUNIT_REPORT_JSON`, the standalone exit code, and the optional `["snapshot_file"]` argument
 - The docs sidebar outline now lists `h3` headings
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded

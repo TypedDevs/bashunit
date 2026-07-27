@@ -126,6 +126,35 @@ test_example() {
 ```
 :::
 
+## bashunit::unmock
+> `bashunit::unmock "function"`
+
+Removes a double: it drops the function override — restoring the real command — and deletes the state files a spy recorded its calls in. It is a no-op for a name that was never mocked or spied.
+
+::: code-group
+```bash [Example]
+function test_example() {
+  bashunit::mock ls echo "mocked"
+  assert_same "mocked" "$(ls)"
+
+  bashunit::unmock ls
+
+  assert_not_same "mocked" "$(ls)"
+}
+```
+:::
+
+### Lifecycle of a double
+
+You rarely need to call it, because doubles are cleaned up for you:
+
+- A double created **inside a test** is removed after that test. There is no need to unmock in `tear_down`, and nothing leaks into the next test.
+- A double created in **`set_up_before_script`** stays in place for every test in the file — that is the point of declaring it there.
+
+Each test runs in its own subshell, so `bashunit::unmock` only affects the test that calls it. Calling it on a `set_up_before_script` double suspends that double for the current test; the following tests still see it.
+
+Reach for it when a single test needs the real command back after exercising the mocked path, or when it needs a spy's recorded calls to start over mid-test. Re-declaring a double does not require it: a second `bashunit::mock` or `bashunit::spy` on the same command replaces the first.
+
 ## bashunit::spy
 > `bashunit::spy "function"`
 
