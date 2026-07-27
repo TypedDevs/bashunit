@@ -83,7 +83,8 @@ function test_should_add() {
 
 ```bash
 assert_match_snapshot "$output"
-# Update: ./bashunit --update-snapshots tests/acceptance/
+# Re-record: delete the snapshot file and re-run; the assertion writes it when missing
+# (so a deleted snapshot never fails — read the diff before deleting)
 ```
 
 ## Test Isolation

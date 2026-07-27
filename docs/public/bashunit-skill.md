@@ -56,11 +56,14 @@ bashunit tests/                                # everything
 bashunit --filter add_two_positive tests/      # one test — matches the FUNCTION name
 bashunit --rerun-failed tests/                 # only what failed last run
 bashunit --failures-only --no-progress tests/  # quiet output for a transcript
-bashunit --report-json out.json tests/         # structured results to parse
+bashunit --test-timeout 10 tests/              # kill a test that hangs
 ```
 
 Run once, then loop on `--rerun-failed` until nothing fails. Do not re-run the whole
 suite after every edit.
+
+Set `--test-timeout` on any unattended run. A generated `while` loop that never
+terminates otherwise hangs until *your* timeout fires, and the transcript shows nothing.
 
 `--rerun-failed` reads `.bashunit/last-failed` (add it to `.gitignore`). When that cache
 is empty it falls back to running everything — so the run that suddenly grows back to
@@ -70,9 +73,29 @@ the full suite is the signal you are green, not a bug.
 humanized title in the report, so a filter containing spaces silently matches nothing
 and reports `0 total`.
 
+## Read results, do not scrape them
+
+```bash
+bashunit --report-json out.json tests/   # summary + one entry per test
+bashunit --output tap tests/             # TAP 13 on stdout
+```
+
+`--report-json` gives you the failure message and the exact source line, which is what
+you need to fix the test — parse it instead of reading the terminal rendering:
+
+```json
+{
+  "summary": { "total": 2, "passed": 1, "failed": 1, "skipped": 0, "incomplete": 0 },
+  "tests": [
+    { "file": "tests/math_test.sh", "name": "Fails", "status": "failed",
+      "message": "✗ Failed: Fails\n    Expected 'a'\n    but got  'b'\n    at tests/math_test.sh:7" }
+  ]
+}
+```
+
 **A `0` exit code does not mean everything passed.** It means nothing *failed*: a run
-that is entirely skipped, incomplete or risky still exits `0`. Check the counts in
-`--report-json`, or add `--fail-on-risky`.
+that is entirely skipped, incomplete, risky, or that only recorded new snapshots still
+exits `0`. Compare `summary.passed` against `summary.total`, or add `--fail-on-risky`.
 
 ## The namespace rule
 
@@ -148,6 +171,11 @@ that into a failure.
 file's tests may still be running; they crash and vanish from the totals without
 reporting a failure. Create per-test fixtures with `bashunit::temp_dir` instead and add
 no teardown.
+
+**There is no `--update-snapshots` flag.** To re-record a snapshot, delete the file and
+run the test again — the assertion writes the snapshot when it is missing and passes.
+Which also means a *deleted* snapshot never fails: delete only when you have read the
+diff and decided the new output is correct.
 
 **No network calls.** Mock the command.
 

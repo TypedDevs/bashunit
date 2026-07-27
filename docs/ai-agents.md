@@ -64,8 +64,9 @@ not ok 2 - Fails
 `--report-tap <file>` and `--log-junit <file>` write the same information to disk.
 
 The exit code is non-zero when a test **failed**. It is `0` for a run that was entirely
-skipped, incomplete or risky, so `$?` alone does not mean "everything passed" — read
-`summary.total` against `summary.passed`, or add `--fail-on-risky`.
+skipped, incomplete, risky, or that only recorded new snapshots, so `$?` alone does not
+mean "everything passed" — read `summary.total` against `summary.passed`, or add
+`--fail-on-risky`.
 
 ## Keep the loop tight
 
@@ -115,6 +116,9 @@ actually make against this API:
   `assert_have_been_called_with <spy> <expected> [call_index]`.
 - Do not delete a shared fixture in `tear_down_after_script`: under `--parallel` the
   file's tests may still be running, and they will vanish from the totals silently.
+- There is no `--update-snapshots` flag. Re-record a snapshot by deleting the file and
+  re-running; the assertion writes it when missing. A missing snapshot therefore never
+  fails, so delete one only after reading the diff.
 - Assertions are listed at https://bashunit.com/assertions — do not invent names.
   `bashunit doc <filter>` prints them locally.
 ```
@@ -161,6 +165,11 @@ bashunit --coverage --coverage-report coverage/lcov.info tests/
 Use it to answer "did the agent test the branch it just changed", not as a target to
 optimize — see [Coverage](/coverage). `--coverage-min <n>` fails the run below a
 threshold if you want it enforced.
+
+On Bash 4.1+ this is cheaper than it used to be: `BASHUNIT_COVERAGE_ENGINE` defaults to
+an `xtrace` tracer that costs roughly a quarter of the old `DEBUG`-trap engine per
+executed line, so a coverage run is affordable inside an agent loop rather than only in
+a nightly job.
 
 ## Related
 
