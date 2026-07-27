@@ -85,6 +85,7 @@ bashunit test tests/ --parallel --simple
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
+| `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -598,6 +599,31 @@ Notes:
   it. bashunit says so on stderr and compares as usual.
 - Review the diff afterwards: this rewrites files, so `git diff` is what tells
   you the new output is the output you meant.
+
+### Snapshot report unused
+
+> `bashunit test --snapshot-report-unused`
+
+Lists the snapshot files that no test resolved during the run — the ones left
+behind when a test was renamed or deleted, since the filename is derived from
+the test file and function name:
+
+```
+Unused snapshots (1), no test resolved them:
+  tests/snapshots/header_test_sh.test_old_name.snapshot
+Nothing was deleted. Delete them yourself once you have checked the tests are gone.
+```
+
+Nothing is removed, on purpose: a snapshot deleted by mistake is silently
+re-recorded on the next run and never fails again, so an automatic cleanup could
+turn a real assertion into one that asserts nothing.
+
+The report only considers snapshots belonging to the test files the run
+discovered, so running a single file or directory reports only that scope
+instead of everything else in the same `snapshots/` directory. A run that
+executes a *subset of the tests* in those files would still be misleading, so
+the flag is refused alongside `--filter`, `--tag`, `--exclude-tag`, `--shard`
+and `--rerun-failed`.
 
 ### No snapshot create
 

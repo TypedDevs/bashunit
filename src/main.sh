@@ -285,6 +285,10 @@ function bashunit::main::cmd_test() {
       BASHUNIT_SNAPSHOT_CREATE=false
       export -n BASHUNIT_SNAPSHOT_CREATE
       ;;
+    --snapshot-report-unused)
+      BASHUNIT_SNAPSHOT_REPORT_UNUSED=true
+      export -n BASHUNIT_SNAPSHOT_REPORT_UNUSED
+      ;;
     -w | --watch)
       BASHUNIT_WATCH_MODE=true
       export -n BASHUNIT_WATCH_MODE
@@ -535,6 +539,23 @@ function bashunit::main::cmd_test() {
       if [ -z "$filter" ] && [ -n "$inline_filter" ]; then
         filter="$inline_filter"
       fi
+    fi
+  fi
+
+  # A run that executes a subset resolves a subset of the snapshots, so every
+  # snapshot the subset skipped would be reported as unused. Refusing beats
+  # printing a list that invites deleting live files.
+  if bashunit::env::is_snapshot_report_unused_enabled; then
+    local _partial_flag=""
+    [ -n "$filter" ] && _partial_flag="--filter"
+    [ -n "$tag_filter" ] && _partial_flag="--tag"
+    [ -n "$exclude_tag_filter" ] && _partial_flag="--exclude-tag"
+    [ -n "${BASHUNIT_SHARD_INDEX:-}" ] && _partial_flag="--shard"
+    bashunit::rerun::is_enabled && _partial_flag="--rerun-failed"
+    if [ -n "$_partial_flag" ]; then
+      printf "%sError: --snapshot-report-unused needs a full run; %s only runs a subset.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$_partial_flag" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
     fi
   fi
 
@@ -1060,6 +1081,12 @@ function bashunit::main::exec_tests() {
 
   if bashunit::env::is_profile_enabled; then
     bashunit::console_results::print_profile_and_reset
+  fi
+
+  # Report only: it never touches exit_code, captured above. With no discovered
+  # file the helper falls back to the working directory.
+  if bashunit::env::is_snapshot_report_unused_enabled; then
+    bashunit::snapshot::report_unused ${test_files[@]+"${test_files[@]}"}
   fi
 
   if [ -n "$BASHUNIT_LOG_JUNIT" ]; then

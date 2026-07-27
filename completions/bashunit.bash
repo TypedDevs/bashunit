@@ -19,7 +19,8 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 --random-order --report-html \
 --report-json --report-junit --report-tap --rerun-failed --retry --run-all \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
---skip-env-file --snapshot-update --stop-on-failure --strict --tag \
+--skip-env-file --snapshot-report-unused --snapshot-update \
+--stop-on-failure --strict --tag \
 --test-timeout --verbose \
 --watch -R -S -a -e -f -h -j -l -p -r -s -vvv -w"
 

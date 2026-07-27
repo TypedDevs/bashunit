@@ -91,6 +91,28 @@ echo 'Run at ::ignore::' > snapshots/example.snapshot
 assert_match_snapshot "Run at $(date)"
 ```
 
+## Finding unused snapshots
+
+A snapshot file is named after its test file and test function, so renaming or deleting a
+test orphans its snapshot: nothing reads it, nothing reports it, and it stays on disk.
+
+`--snapshot-report-unused` lists the snapshot files no test resolved during the run:
+
+```bash
+./bashunit --snapshot-report-unused tests/
+```
+```
+Unused snapshots (1), no test resolved them:
+  tests/snapshots/header_test_sh.test_old_name.snapshot
+Nothing was deleted. Delete them yourself once you have checked the tests are gone.
+```
+
+It never deletes anything — a snapshot removed by mistake is re-recorded on the next run
+and never fails again, so an automatic cleanup could quietly turn a real assertion into a
+rubber stamp. Only snapshots belonging to the test files of the run are considered, and
+the flag is refused with `--filter`, `--tag`, `--exclude-tag`, `--shard` and
+`--rerun-failed`, whose partial runs would report live files as unused.
+
 ## Snapshots in CI
 
 Recommended CI setting: `--no-snapshot-create` (or `BASHUNIT_SNAPSHOT_CREATE=false`).
