@@ -84,6 +84,7 @@ bashunit test tests/ --parallel --simple
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
+| `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -597,6 +598,28 @@ Notes:
   it. bashunit says so on stderr and compares as usual.
 - Review the diff afterwards: this rewrites files, so `git diff` is what tells
   you the new output is the output you meant.
+
+### No snapshot create
+
+> `bashunit test --no-snapshot-create`
+
+Require every snapshot to exist already: a missing one fails the test instead of
+being recorded, and the failure names the resolved path so you know what to
+commit.
+
+```
+✗ Failed: Renders the header
+    Expected './tests/snapshots/header_test_sh.test_renders_the_header.snapshot'
+    does not exist; record it with a run without '--no-snapshot-create'
+```
+
+This is the CI setting. By default a first run records the snapshot and passes,
+so a snapshot that was never committed — or is gitignored, or was lost — is
+re-created on the fly and CI stays green while asserting nothing. Record
+locally, commit the file, and let CI run with this flag.
+
+The two snapshot flags are opposites and pair up: `--snapshot-update` records
+deliberately, `--no-snapshot-create` forbids recording by accident.
 
 ### Rerun failed
 

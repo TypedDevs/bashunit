@@ -21,16 +21,7 @@ function assert_match_snapshot() {
   bashunit::snapshot::resolve_file "${2:-}" "$test_fn"
   local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
 
-  if [ ! -f "$snapshot_file" ]; then
-    bashunit::snapshot::initialize "$snapshot_file" "$actual"
-    return
-  fi
-
-  if bashunit::snapshot::update "$snapshot_file" "$actual"; then
-    return
-  fi
-
-  bashunit::snapshot::compare "$actual" "$snapshot_file" "$test_fn"
+  bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
 }
 
 function assert_match_snapshot_ignore_colors() {
@@ -50,7 +41,22 @@ function assert_match_snapshot_ignore_colors() {
   bashunit::snapshot::resolve_file "${2:-}" "$test_fn"
   local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
 
+  bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
+}
+
+# The shared tail of both snapshot assertions: record a first-time snapshot,
+# rewrite it under --snapshot-update, or compare against it.
+# Arguments: $1 - actual value, $2 - snapshot path, $3 - test function name
+function bashunit::snapshot::assert() {
+  local actual="$1"
+  local snapshot_file="$2"
+  local test_fn="$3"
+
   if [ ! -f "$snapshot_file" ]; then
+    if ! bashunit::env::is_snapshot_create_enabled; then
+      bashunit::snapshot::fail_missing "$snapshot_file" "$test_fn"
+      return
+    fi
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
     return
   fi
@@ -60,6 +66,20 @@ function assert_match_snapshot_ignore_colors() {
   fi
 
   bashunit::snapshot::compare "$actual" "$snapshot_file" "$test_fn"
+}
+
+# Fails because the snapshot has to exist already (--no-snapshot-create). The
+# resolved path goes in the message: it is derived from the test file and
+# function name, so a reader cannot otherwise tell which file to commit.
+function bashunit::snapshot::fail_missing() {
+  local path="$1"
+  local func_name="$2"
+  local label
+  label=$(bashunit::helper::normalize_test_function_name "$func_name")
+
+  bashunit::state::add_assertions_failed
+  bashunit::console_results::print_failed_test "$label" "$path" \
+    "does not exist; record it with a run without" "--no-snapshot-create"
 }
 
 function bashunit::snapshot::match_with_placeholder() {
