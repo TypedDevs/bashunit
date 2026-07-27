@@ -120,10 +120,12 @@ function test_spy_call_with_args_detects_wrong_argument_boundaries() {
 
   spy_boundary_command "a b"
 
+  bashunit::spy::call_log_to_slot spy_boundary_command args
+
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Spy call with args detects wrong argument boundaries" \
-      "a b" "but got " "a\\ b")" \
+      "a b" "but got " "a\\ b" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_with_args spy_boundary_command "a" "b")"
 }
 
@@ -167,6 +169,42 @@ function test_assert_not_called_still_passes_on_a_registered_spy() {
 
   assert_empty "$(assert_not_called spy_never_invoked)"
   assert_empty "$(assert_have_been_called_times 0 spy_never_invoked)"
+}
+
+function test_failed_call_assertions_dump_the_recorded_calls() {
+  bashunit::spy spy_with_a_call_log
+
+  spy_with_a_call_log first
+  spy_with_a_call_log second
+
+  bashunit::spy::call_log_to_slot spy_with_a_call_log
+  local log=$_BASHUNIT_SPY_CALL_LOG_OUT
+  local label="Failed call assertions dump the recorded calls"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "$label" \
+      "first" "but got " "second" "" "" "$log")" \
+    "$(assert_have_been_called_with spy_with_a_call_log "first")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "$label" \
+      "spy_with_a_call_log" "to have been called" "0 times" "actual" "2 times" "$log")" \
+    "$(assert_not_called spy_with_a_call_log)"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "$label" \
+      "first" "but got " "second" "" "" "$log")" \
+    "$(assert_have_been_called_nth_with 2 spy_with_a_call_log "first")"
+}
+
+function test_passing_call_assertions_print_nothing() {
+  bashunit::spy spy_with_a_passing_assertion
+
+  spy_with_a_passing_assertion first
+
+  assert_empty "$(assert_have_been_called spy_with_a_passing_assertion)"
+  assert_empty "$(assert_have_been_called_times 1 spy_with_a_passing_assertion)"
+  assert_empty "$(assert_have_been_called_with spy_with_a_passing_assertion "first")"
 }
 
 function test_spy_on_echo_does_not_hang() {

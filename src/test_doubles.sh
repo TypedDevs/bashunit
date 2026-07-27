@@ -29,6 +29,61 @@ function bashunit::spy::times_to_slot() {
   fi
 }
 
+_BASHUNIT_SPY_CALL_LOG_MAX=10
+_BASHUNIT_SPY_CALL_LOG_OUT=""
+
+# Renders the calls recorded for $1 into _BASHUNIT_SPY_CALL_LOG_OUT, one per
+# line, capped at _BASHUNIT_SPY_CALL_LOG_MAX with an explicit "and N more".
+# Empty when $1 is not a spy or was never called. Failure path only: reading the
+# params file on every assertion would break the per-test fork budget.
+# Arguments: $1 - command, $2 - "raw" (space-joined, default) or "args"
+#            (per-argument, boundaries kept)
+function bashunit::spy::call_log_to_slot() {
+  local command=$1
+  local field=${2:-raw}
+  _BASHUNIT_SPY_CALL_LOG_OUT=""
+
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  if [ -z "${!file_var-}" ] || [ ! -f "${!file_var}" ]; then
+    return
+  fi
+
+  local entries=""
+  local total=0
+  local shown=0
+  local line value
+  while IFS= read -r line; do
+    total=$((total + 1))
+    if [ "$shown" -lt "$_BASHUNIT_SPY_CALL_LOG_MAX" ]; then
+      if [ "$field" = args ]; then
+        value=${line#*$'\x1e'}
+        value=${value//$'\x1f'/ }
+      else
+        value=${line%%$'\x1e'*}
+      fi
+      entries="$entries
+      ${_BASHUNIT_COLOR_FAINT}${total}:${_BASHUNIT_COLOR_DEFAULT} ${value}"
+      shown=$((shown + 1))
+    fi
+  done <"${!file_var}"
+
+  if [ "$total" -eq 0 ]; then
+    return
+  fi
+
+  _BASHUNIT_SPY_CALL_LOG_OUT="\
+    ${_BASHUNIT_COLOR_FAINT}Recorded calls to '${command}' (${total}):\
+${_BASHUNIT_COLOR_DEFAULT}${entries}"
+
+  local remaining=$((total - shown))
+  if [ "$remaining" -gt 0 ]; then
+    _BASHUNIT_SPY_CALL_LOG_OUT="$_BASHUNIT_SPY_CALL_LOG_OUT
+      ${_BASHUNIT_COLOR_FAINT}… and ${remaining} more${_BASHUNIT_COLOR_DEFAULT}"
+  fi
+}
+
 # Fails the calling assertion because $1 is not a registered spy. Reporting
 # "never called" for a name that was never spied — a typo, or a spy that was
 # unmocked — makes the assertion vacuous while still printing green.
@@ -160,7 +215,9 @@ function assert_have_been_called() {
 
   if [ "$times" -eq 0 ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
+    bashunit::spy::call_log_to_slot "$command"
+    bashunit::console_results::print_failed_test "${label}" "${command}" "to have been called" "once" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -209,7 +266,9 @@ function assert_have_been_called_with() {
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "$label" "$expected" "but got " "$raw"
+    bashunit::spy::call_log_to_slot "$command"
+    bashunit::console_results::print_failed_test "$label" "$expected" "but got " "$raw" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -244,8 +303,10 @@ function assert_have_been_called_with_args() {
 
   if [ "$expected" != "$actual" ]; then
     bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command" args
     bashunit::console_results::print_failed_test "$label" \
-      "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }"
+      "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -266,9 +327,10 @@ function assert_have_been_called_times() {
 
   if [ "$times" -ne "$expected_count" ]; then
     bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
     bashunit::console_results::print_failed_test "${label}" "${command}" \
       "to have been called" "${expected_count} times" \
-      "actual" "${times} times"
+      "actual" "${times} times" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -297,8 +359,10 @@ function assert_have_been_called_nth_with() {
 
   if [ "$nth" -gt "$times" ]; then
     bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
     bashunit::console_results::print_failed_test "${label}" \
-      "expected call" "at index ${nth} but" "only called ${times} times"
+      "expected call" "at index ${nth} but" "only called ${times} times" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -312,8 +376,9 @@ function assert_have_been_called_nth_with() {
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
     bashunit::console_results::print_failed_test "${label}" \
-      "$expected" "but got " "$raw"
+      "$expected" "but got " "$raw" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 

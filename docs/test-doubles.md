@@ -127,6 +127,21 @@ function test_example() {
 ```
 :::
 
+::: tip Failures list the recorded calls
+When a call assertion fails, the recorded calls are printed below the failure, so you can tell "called with other arguments" from "called in another order" or "called more often than expected" without re-running:
+
+```
+✗ Failed: My test
+    Expected 'first'
+    but got  'second'
+    Recorded calls to 'touch' (2):
+      1: first
+      2: second
+```
+
+Long logs stop after 10 entries and end with `… and N more`.
+:::
+
 ::: tip Call assertions require a registered spy
 Every `assert_have_been_called*` / `assert_not_called` assertion fails when the name it targets was never passed to `bashunit::spy` — or was removed by `bashunit::unmock`, or belongs to a previous test:
 

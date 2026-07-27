@@ -114,6 +114,8 @@ actually make against this API:
 - Spy assertion argument order is inconsistent — check, don't guess:
   `assert_have_been_called_times <count> <spy>` but
   `assert_have_been_called_with <spy> <expected> [call_index]`.
+- A failed call assertion prints the spy's recorded calls under the diff — read that block
+  before guessing why it failed, it is usually enough to fix the test in one pass.
 - A call assertion on a name that was never passed to `bashunit::spy` fails with
   `was never registered as a spy`. Spies do not survive across tests, so register the
   spy inside the test that asserts on it.

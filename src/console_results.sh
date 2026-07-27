@@ -335,6 +335,9 @@ function bashunit::console_results::print_failed_test() {
   local actual=$4
   local extra_key=${5-}
   local extra_value=${6-}
+  # Free-form block appended verbatim below the failure (already indented by the
+  # caller). The spy assertions use it to dump the recorded call log.
+  local details=${7-}
 
   # For multiline values, render a unified diff below the header (git required,
   # opt out with BASHUNIT_NO_DIFF). Single-line output stays byte-identical.
@@ -377,6 +380,11 @@ $(bashunit::console_results::render_diff "$_expected_file" "$_actual_file")"
 
     ${_BASHUNIT_COLOR_FAINT}%s${_BASHUNIT_COLOR_DEFAULT} ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
       "${extra_key}" "${extra_value}")"
+  fi
+
+  if [ -n "$details" ]; then
+    line="$line
+$details"
   fi
 
   line="$line$(bashunit::console_results::test_location_suffix)"
