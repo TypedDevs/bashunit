@@ -1076,6 +1076,9 @@ function bashunit::main::exec_tests() {
 
   # Generate coverage report if enabled
   if bashunit::env::is_coverage_enabled; then
+    # Turn captured xtrace output into hit records (no-op for the trap engine)
+    bashunit::coverage::finalize
+
     # Aggregate per-process coverage data from parallel runs
     if bashunit::parallel::is_enabled; then
       bashunit::coverage::aggregate_parallel

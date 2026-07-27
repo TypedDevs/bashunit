@@ -13,6 +13,7 @@ _ORIG_COVERAGE_TEST_HITS_FILE=""
 _ORIG_COVERAGE=""
 _ORIG_COVERAGE_PATHS=""
 _ORIG_COVERAGE_EXCLUDE=""
+_ORIG_COVERAGE_ENGINE=""
 
 # Whole-suite skip: enabling the DEBUG trap inside a parallel test
 # worker process makes the worker fire the trap on every internal
@@ -48,6 +49,13 @@ function set_up() {
   _ORIG_COVERAGE="${BASHUNIT_COVERAGE:-}"
   _ORIG_COVERAGE_PATHS="${BASHUNIT_COVERAGE_PATHS:-}"
   _ORIG_COVERAGE_EXCLUDE="${BASHUNIT_COVERAGE_EXCLUDE:-}"
+  _ORIG_COVERAGE_ENGINE="${BASHUNIT_COVERAGE_ENGINE:-}"
+
+  # These assert on data files right after disable_trap, which is the trap
+  # engine's contract. The xtrace engine only writes records in
+  # coverage::finalize at the end of a run; it is covered end-to-end by
+  # tests/acceptance/coverage_engine_test.sh instead.
+  export BASHUNIT_COVERAGE_ENGINE="trap"
 
   _BASHUNIT_COVERAGE_DATA_FILE=""
   _BASHUNIT_COVERAGE_TRACKED_FILES=""
@@ -88,6 +96,11 @@ function tear_down() {
     export BASHUNIT_COVERAGE_EXCLUDE="$_ORIG_COVERAGE_EXCLUDE"
   else
     unset BASHUNIT_COVERAGE_EXCLUDE
+  fi
+  if [ -n "$_ORIG_COVERAGE_ENGINE" ]; then
+    export BASHUNIT_COVERAGE_ENGINE="$_ORIG_COVERAGE_ENGINE"
+  else
+    unset BASHUNIT_COVERAGE_ENGINE
   fi
 }
 

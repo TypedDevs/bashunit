@@ -111,11 +111,40 @@ BASHUNIT_COVERAGE_MIN=80
 BASHUNIT_COVERAGE_THRESHOLD_LOW=50   # Red below this
 BASHUNIT_COVERAGE_THRESHOLD_HIGH=80  # Green above this, yellow between
 
+# Tracing engine: auto (default), xtrace or trap
+BASHUNIT_COVERAGE_ENGINE=auto
+
 # Optional text-report blocks (off by default, opt-in for verbose runs)
 BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true   # Print per-function coverage
 BASHUNIT_COVERAGE_SHOW_UNCOVERED=true   # Print missed line ranges per file
 BASHUNIT_COVERAGE_SHOW_LINE_HITS=true   # Print per-line execution counts (lineno:count)
 ```
+
+### Tracing engine
+
+Coverage can capture executed lines two ways, selected with
+`BASHUNIT_COVERAGE_ENGINE`:
+
+| Value | Behaviour |
+|-------|-----------|
+| `auto` (default) | Use `xtrace` where it is available, `trap` otherwise |
+| `xtrace` | Redirect `set -x` to a private descriptor and parse it after the run |
+| `trap` | Record each line from a `DEBUG` trap as it executes |
+
+The `xtrace` engine needs `BASH_XTRACEFD`, which is **Bash 4.1+**; below that it
+would have to write the trace to stderr, where it would mix with the output of
+the code under test. `auto` therefore falls back to `trap` on Bash 3.0–4.0, as
+does an explicit `xtrace` request that the running Bash cannot honour. Capturing
+with `xtrace` costs roughly a quarter of what the `DEBUG` trap costs per
+executed line.
+
+The two engines are held to producing identical LCOV output by
+`tests/acceptance/coverage_engine_test.sh`. One difference is not a bug in
+either: the `trap` engine buffers hits in a shell variable, so hits recorded
+inside a `$(...)` command substitution are lost when that subshell exits unless
+the buffer happens to fill. The `xtrace` engine writes through a file
+descriptor and keeps them, so it can report *more* covered lines on
+subshell-heavy code.
 
 Per-line execution counts are always written to the LCOV report as the count
 field of each `DA:<line>,<count>` record (consumable by `genhtml`, Codecov and
