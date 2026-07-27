@@ -4,7 +4,7 @@ description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a
 
 # Installation
 
-**bashunit** ships as a single-file executable. Pick the option that fits your project: `install.sh` (universal), [npm](#npm) (Node.js projects), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), or [bashdep](#bashdep).
+**bashunit** ships as a single-file executable. Pick the option that fits your project: `install.sh` (universal), [npm](#npm) (Node.js projects), [Brew](#brew) (macOS/Linux global), [MacPorts](#macports), [Nix](#nix), or [bashdep](#bashdep).
 
 ## Requirements
 
@@ -170,6 +170,44 @@ On macOS, you can also install **bashunit** via [MacPorts](https://www.macports.
 ```bash
 sudo port install bashunit
 ```
+
+## Nix
+
+**bashunit** is packaged in [nixpkgs](https://search.nixos.org/packages?query=bashunit),
+so no install step is needed to try it:
+
+::: code-group
+```bash [One-shot]
+# Run without installing anything
+nix-shell -p bashunit --run "bashunit tests/"
+```
+
+```bash [Flakes]
+nix run nixpkgs#bashunit -- tests/
+```
+
+```bash [Profile]
+# Install for your user
+nix profile install nixpkgs#bashunit
+```
+:::
+
+To pin it for a project, add it to a `shell.nix`:
+
+```nix
+{ pkgs ? import <nixpkgs> {} }:
+
+pkgs.mkShell {
+  buildInputs = [ pkgs.bashunit ];
+}
+```
+
+::: warning nixpkgs lags the latest release
+The nixpkgs version trails this project's releases, and channels lag further still.
+Run `nix-shell -p bashunit --run "bashunit --version"` to see what you would get. When
+you need a specific version, use [install.sh](#install-sh) with an explicit `[version]`
+argument instead — it is unaffected by channel lag.
+:::
 
 ## bashdep
 

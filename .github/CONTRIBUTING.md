@@ -237,8 +237,9 @@ Supported: Linux (Ubuntu, Alpine), macOS, Windows (WSL/Git Bash)
 make docker/alpine
 make docker/ubuntu
 
-# NixOS
+# NixOS — shell.nix carries the whole quality gate, so --pure is enough
 nix-shell --pure --run "./bashunit --simple --parallel"
+nix-shell --pure --run "make sa && make lint"
 ```
 
 ### Testing with Bash 3.0

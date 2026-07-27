@@ -6,6 +6,7 @@
 - `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
 - `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints per-line execution counts in the text coverage report (#856)
 - An [Agentic coding](https://bashunit.com/ai-agents) docs page, and `llms.txt` / `llms-full.txt` are now linked
+- Docs: [Nix](https://bashunit.com/installation#nix) as an install option — bashunit is in nixpkgs (`nix-shell -p bashunit`, `nix run nixpkgs#bashunit`), which was never documented
 - A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md)
 
 ### Changed

@@ -31,6 +31,17 @@ function test_parallel_run_attributes_worker_stderr_to_its_file() {
   local output
   output=$(./bashunit --parallel "$FIXTURE" 2>&1)
 
+  # On a platform bashunit does not support parallel on (anything outside
+  # macOS/Ubuntu/Alpine/Windows, e.g. NixOS) `--parallel` degrades to
+  # sequential. There is no worker then, so stderr reaches the terminal
+  # directly and there is no block to attribute.
+  case "$output" in
+  *"Fallback using --no-parallel"*)
+    bashunit::skip "--parallel is not supported on this platform"
+    return 0
+    ;;
+  esac
+
   assert_contains "Stderr from $FIXTURE" "$output"
 }
 

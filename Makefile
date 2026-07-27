@@ -1,9 +1,15 @@
-SHELL=/bin/bash
+# Resolved from PATH rather than hardcoded: /bin/bash does not exist inside
+# `nix-shell --pure` (or on a bare NixOS host), where every target failed with
+# "make: /bin/bash: No such file or directory".
+SHELL := $(shell command -v bash 2>/dev/null || echo /bin/bash)
 
 -include .env
 
-STATIC_ANALYSIS_CHECKER := $(shell which shellcheck 2> /dev/null)
-LINTER_CHECKER := $(shell which editorconfig-checker 2> /dev/null)
+# `command -v`, not `which`: which is its own package on Nix and absent from a
+# `nix-shell --pure`, so the probe came back empty and every checker looked
+# uninstalled even when it was on PATH.
+STATIC_ANALYSIS_CHECKER := $(shell command -v shellcheck 2> /dev/null)
+LINTER_CHECKER := $(shell command -v editorconfig-checker 2> /dev/null)
 GIT_DIR = $(shell git rev-parse --git-dir 2> /dev/null)
 
 OS:=
