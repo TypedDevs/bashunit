@@ -110,7 +110,7 @@ ifndef STATIC_ANALYSIS_CHECKER
 else
 	@{ if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then \
 		git ls-files -z --cached --others --exclude-standard \
-			"*.sh" bashunit bin/pre-commit bin/create-pr; \
+			"*.sh" bashunit bin/pre-commit; \
 	else \
 		find . -name "*.sh" -not -path "./local/*" -not -path "./.claude/worktrees/*" -print0; \
 	fi; } \
