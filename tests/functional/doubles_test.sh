@@ -125,7 +125,7 @@ function test_spy_call_with_args_detects_wrong_argument_boundaries() {
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Spy call with args detects wrong argument boundaries" \
-      "a b" "but got " "a\\ b" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+      "a b" "but got " "a\\ b" "compared" "the only call" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_with_args spy_boundary_command "a" "b")"
 }
 
@@ -183,7 +183,7 @@ function test_failed_call_assertions_dump_the_recorded_calls() {
 
   assert_same \
     "$(bashunit::console_results::print_failed_test "$label" \
-      "first" "but got " "second" "" "" "$log")" \
+      "first" "but got " "second" "compared" "the last of 2 calls" "$log")" \
     "$(assert_have_been_called_with spy_with_a_call_log "first")"
 
   assert_same \
@@ -195,6 +195,54 @@ function test_failed_call_assertions_dump_the_recorded_calls() {
     "$(bashunit::console_results::print_failed_test "$label" \
       "first" "but got " "second" "" "" "$log")" \
     "$(assert_have_been_called_nth_with 2 spy_with_a_call_log "first")"
+}
+
+function test_called_with_any_matches_a_call_in_any_position() {
+  bashunit::spy spy_called_three_times
+
+  spy_called_three_times first
+  spy_called_three_times middle one
+  spy_called_three_times last
+
+  assert_empty "$(assert_have_been_called_with_any spy_called_three_times "first" 2>&1)"
+  assert_empty "$(assert_have_been_called_with_any spy_called_three_times "middle one" 2>&1)"
+  assert_empty "$(assert_have_been_called_with_any spy_called_three_times "last" 2>&1)"
+}
+
+function test_called_with_any_fails_when_no_call_matches() {
+  bashunit::spy spy_without_a_match
+
+  spy_without_a_match first
+  spy_without_a_match second
+
+  bashunit::spy::call_log_to_slot spy_without_a_match
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with any fails when no call matches" \
+      "third" "not found in any of" "2 calls" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+    "$(assert_have_been_called_with_any spy_without_a_match "third")"
+}
+
+function test_called_with_reports_which_call_it_compared() {
+  bashunit::spy spy_compared_call
+
+  spy_compared_call first
+  spy_compared_call second
+
+  bashunit::spy::call_log_to_slot spy_compared_call
+  local log=$_BASHUNIT_SPY_CALL_LOG_OUT
+  local label="Called with reports which call it compared"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "$label" \
+      "third" "but got " "second" "compared" "the last of 2 calls" "$log")" \
+    "$(assert_have_been_called_with spy_compared_call "third")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "$label" \
+      "third" "but got " "first" "compared" "call 1 of 2" "$log")" \
+    "$(assert_have_been_called_with spy_compared_call "third" 1)"
 }
 
 function test_passing_call_assertions_print_nothing() {

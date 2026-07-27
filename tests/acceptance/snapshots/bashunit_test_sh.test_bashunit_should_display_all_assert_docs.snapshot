@@ -646,9 +646,16 @@ Reports an error if the spied `command` was never called. Requires `bashunit::sp
 --------------
 > `assert_have_been_called_with "command" "expected_args" nth`
 
-Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one.
+Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one; the failure names the call it compared. To match any call, use assert_have_been_called_with_any.
 
 Note the argument order: the spy comes first here, but *second* in assert_have_been_called_times.
+
+
+## assert_have_been_called_with_any
+--------------
+> `assert_have_been_called_with_any "command" "expected_args"`
+
+Reports an error if no recorded call to the spied `command` received `expected_args`. Where assert_have_been_called_with compares a single call — the last one, or the one at `nth` — this one scans them all, so the assertion does not break when an unrelated call is added after it.
 
 
 ## assert_have_been_called_with_args

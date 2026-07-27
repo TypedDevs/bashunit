@@ -29,7 +29,7 @@ to narrow it (`bashunit doc json`).
 | **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
 | **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
 | **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) |
-| **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
+| **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_any](#assert-have-been-called-with-any) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
 | **Manual failure** | [bashunit::fail](#bashunit-fail) |
 
 ## assert_true
@@ -1657,7 +1657,7 @@ function test_failure() {
 ## assert_have_been_called_with
 > `assert_have_been_called_with "command" "expected_args" [nth]`
 
-Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one.
+Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one; the failure names the call it compared. To match any call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
 
 Note the argument order: the spy comes first here, but *second* in [assert_have_been_called_times](#assert-have-been-called-times).
 
@@ -1675,6 +1675,29 @@ function test_failure() {
   notify_user "a@b.c"
 
   assert_have_been_called_with send_email "--to nobody@example.com"
+}
+```
+:::
+
+## assert_have_been_called_with_any
+> `assert_have_been_called_with_any "command" "expected_args"`
+
+Reports an error if no recorded call to the spied `command` received `expected_args`. Where [assert_have_been_called_with](#assert-have-been-called-with) compares a single call — the last one, or the one at `nth` — this one scans them all, so the assertion does not break when an unrelated call is added after it.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_with_any send_email "--to a@b.c"
+}
+
+function test_failure() {
+  bashunit::spy send_email
+  notify_all "a@b.c" "d@e.f"
+
+  assert_have_been_called_with_any send_email "--to nobody@example.com"
 }
 ```
 :::

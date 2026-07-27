@@ -29,6 +29,45 @@ function bashunit::spy::times_to_slot() {
   fi
 }
 
+_BASHUNIT_SPY_CALL_OUT=""
+_BASHUNIT_SPY_CALL_TOTAL_OUT=0
+
+# Reads the params file $1 in a single pass: the recorded line for call $2 (the
+# last one when $2 is empty) lands in _BASHUNIT_SPY_CALL_OUT, the number of
+# recorded calls in _BASHUNIT_SPY_CALL_TOTAL_OUT. Both are needed together,
+# because the failure message names which call it compared.
+# Arguments: $1 - params file, $2 - call index (optional)
+function bashunit::spy::read_call_to_slots() {
+  local file=$1
+  local index=${2:-}
+  _BASHUNIT_SPY_CALL_OUT=""
+  _BASHUNIT_SPY_CALL_TOTAL_OUT=0
+
+  if [ -z "$file" ] || [ ! -f "$file" ]; then
+    return
+  fi
+
+  local current
+  while IFS= read -r current; do
+    _BASHUNIT_SPY_CALL_TOTAL_OUT=$((_BASHUNIT_SPY_CALL_TOTAL_OUT + 1))
+    if [ -z "$index" ] || [ "$_BASHUNIT_SPY_CALL_TOTAL_OUT" = "$index" ]; then
+      _BASHUNIT_SPY_CALL_OUT=$current
+    fi
+  done <"$file"
+}
+
+# Names the call a last-call/indexed assertion compared, for the failure block.
+# Arguments: $1 - call index (empty for the last call), $2 - total calls
+function bashunit::spy::compared_call() {
+  if [ -n "$1" ]; then
+    builtin echo "call $1 of $2"
+  elif [ "$2" -eq 1 ]; then
+    builtin echo "the only call"
+  else
+    builtin echo "the last of $2 calls"
+  fi
+}
+
 _BASHUNIT_SPY_CALL_LOG_MAX=10
 _BASHUNIT_SPY_CALL_LOG_OUT=""
 
@@ -252,23 +291,18 @@ function assert_have_been_called_with() {
     return
   fi
 
-  local line=""
-  if [ -f "${!file_var-}" ]; then
-    if [ -n "$index" ]; then
-      line=$(sed -n "${index}p" "${!file_var}" 2>/dev/null || true)
-    else
-      line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
-    fi
-  fi
-
-  local raw
-  IFS=$'\x1e' read -r raw _ <<<"$line" || true
+  # One pass yields both the compared line and the total, which the failure
+  # message needs — and costs no fork, unlike the tail/sed it replaces.
+  bashunit::spy::read_call_to_slots "${!file_var-}" "$index"
+  local raw=${_BASHUNIT_SPY_CALL_OUT%%$'\x1e'*}
+  local total=$_BASHUNIT_SPY_CALL_TOTAL_OUT
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
     bashunit::spy::call_log_to_slot "$command"
     bashunit::console_results::print_failed_test "$label" "$expected" "but got " "$raw" \
-      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+      "compared" "$(bashunit::spy::compared_call "$index" "$total")" \
+      "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 
@@ -293,20 +327,59 @@ function assert_have_been_called_with_args() {
     return
   fi
 
-  local line=""
-  if [ -f "${!file_var-}" ]; then
-    line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
-  fi
-
-  local actual
-  IFS=$'\x1e' read -r _ actual <<<"$line" || true
+  bashunit::spy::read_call_to_slots "${!file_var-}"
+  local actual=""
+  case "$_BASHUNIT_SPY_CALL_OUT" in
+  *$'\x1e'*) actual=${_BASHUNIT_SPY_CALL_OUT#*$'\x1e'} ;;
+  esac
 
   if [ "$expected" != "$actual" ]; then
     bashunit::state::add_assertions_failed
     bashunit::spy::call_log_to_slot "$command" args
     bashunit::console_results::print_failed_test "$label" \
       "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }" \
-      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+      "compared" "$(bashunit::spy::compared_call "" "$_BASHUNIT_SPY_CALL_TOTAL_OUT")" \
+      "$_BASHUNIT_SPY_CALL_LOG_OUT"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_have_been_called_with_any() {
+  local command=$1
+  shift
+  local expected="$*"
+
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  if [ -z "${!file_var-}" ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
+  local total=0
+  local found=false
+  local line
+  if [ -f "${!file_var}" ]; then
+    while IFS= read -r line; do
+      total=$((total + 1))
+      if [ "${line%%$'\x1e'*}" = "$expected" ]; then
+        found=true
+        break
+      fi
+    done <"${!file_var}"
+  fi
+
+  if [ "$found" = false ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
+    bashunit::console_results::print_failed_test "$label" "$expected" \
+      "not found in any of" "${total} calls" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
     return
   fi
 

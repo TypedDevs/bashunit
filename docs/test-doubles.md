@@ -182,6 +182,8 @@ function test_failure() {
 
 Reports an error if `spy` is not called with `expected`. When `call_index` is provided, the assertion checks the arguments of that specific call (starting at 1). Without `call_index` it checks the last invocation. Arguments are joined with spaces before comparison.
 
+Only one call is compared, and the failure says which one (`compared 'the last of 2 calls'`). To match any recorded call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
+
 ::: code-group
 ```bash [Example]
 function test_success() {
@@ -204,6 +206,35 @@ function test_failure() {
 ```
 :::
 
+
+## assert_have_been_called_with_any
+> `assert_have_been_called_with_any spy expected`
+
+Reports an error if **no** recorded call of `spy` received `expected`. Use it when the requirement is "this side effect happened" rather than "this side effect happened last": `assert_have_been_called_with` only compares one call, so it breaks as soon as an unrelated call is added after it.
+
+Arguments are joined with spaces, like `assert_have_been_called_with`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy ps
+
+  ps first
+  ps second
+
+  assert_have_been_called_with_any ps "first"
+}
+
+function test_failure() {
+  bashunit::spy ps
+
+  ps first
+  ps second
+
+  assert_have_been_called_with_any ps "third"
+}
+```
+:::
 
 ## assert_have_been_called_with_args
 > `assert_have_been_called_with_args spy expected...`
