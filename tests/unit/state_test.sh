@@ -320,78 +320,17 @@ function test_decode_base64_returns_empty_for_empty_value() {
   assert_same "" "$(bashunit::helper::decode_base64 "")"
 }
 
-# --- print_tap_line -----------------------------------------------------------
-# Each capture runs in $(...) so mutating _BASHUNIT_TOTAL_TESTS_COUNT never
-# leaks into the suite's own counters.
+# --- layering ------------------------------------------------------------------
+# state.sh owns counters and the per-test payload. It rendered progress lines
+# until #868, which was both a layering inversion and the sole reason for the
+# state -> parallel call cycle #862 broke. Grepped rather than exercised, so the
+# edge cannot come back through a path no test happens to cover.
+function test_state_does_not_call_the_renderer_or_parallel() {
+  # `|| true`: no match is the passing case, and grep exiting 1 would sink the
+  # whole pipeline under --strict's pipefail.
+  local offenders
+  offenders=$({ "$GREP" -oE "bashunit::(console_results|console_header|parallel|runner)::[a-z_]+" \
+    src/state.sh || true; } | sort -u | tr '\n' ' ')
 
-function test_tap_line_successful_strips_colors_and_duration() {
-  local line
-  line="$(printf '\033[32m✓ Passed\033[0m: Adds numbers 12ms')"
-
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=7
-    bashunit::state::print_tap_line "successful" "$line"
-  )
-
-  assert_same "ok 7 - Adds numbers" "$out"
-}
-
-function test_tap_line_failure_renders_yaml_block_without_the_header() {
-  local line
-  line=$'\033[31m✗ Failed\033[0m: Broken thing\n    Expected \'a\'\n    but got \'b\''
-
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=3
-    bashunit::state::print_tap_line "failed" "$line"
-  )
-
-  local expected
-  expected=$'not ok 3 - Broken thing\n  ---\n  Expected \'a\'\n  but got \'b\'\n  ...'
-  assert_same "$expected" "$out"
-}
-
-function test_tap_line_skipped_with_reason() {
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=2
-    bashunit::state::print_tap_line "skipped" "↷ Skipped: Needs jq   jq not installed"
-  )
-
-  assert_same "ok 2 - Needs jq # SKIP jq not installed" "$out"
-}
-
-function test_tap_line_skipped_without_reason() {
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=2
-    bashunit::state::print_tap_line "skipped" "↷ Skipped: No reason"
-  )
-
-  assert_same "ok 2 - No reason # SKIP" "$out"
-}
-
-function test_tap_line_incomplete_and_snapshot_and_risky_directives() {
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=5
-    bashunit::state::print_tap_line "incomplete" "✒ Incomplete: Pending"
-    bashunit::state::print_tap_line "snapshot" "✎ Snapshot: Rendered"
-    bashunit::state::print_tap_line "risky" "△ Risky: No asserts"
-  )
-
-  local expected
-  expected=$'ok 5 - Pending # TODO incomplete\nok 5 - Rendered # snapshot\nok 5 - No asserts # RISKY no assertions'
-  assert_same "$expected" "$out"
-}
-
-function test_tap_line_unknown_type_is_not_ok() {
-  local out
-  out=$(
-    _BASHUNIT_TOTAL_TESTS_COUNT=9
-    bashunit::state::print_tap_line "mystery" "?: Something odd"
-  )
-
-  assert_same "not ok 9 - Something odd" "$out"
+  assert_same "" "${offenders% }"
 }

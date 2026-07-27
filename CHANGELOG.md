@@ -15,6 +15,9 @@
 - The docs sidebar outline now lists `h3` headings as well as `h2` — per-flag and per-pattern detail (27 headings on Command line, 24 on Common patterns, 23 on Coverage) was hidden from the "On this page" navigation
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
 
+### Changed
+- Progress rendering moved out of `state.sh` into `console_results.sh`: `bashunit::state::print_line` and `bashunit::state::print_tap_line` are now `bashunit::console_results::print_line` / `::print_tap_line`. Rendering from the module that owns counters and the per-test payload was a layering inversion, and it was the sole remaining reason for the `state.sh → parallel.sh` call cycle that #862 broke. `state.sh` now makes no call into the renderer, parallel, or the runner, pinned by a grep-based guard so the edge cannot return through an uncovered path. These two functions were never documented API — `docs/custom-asserts.md` points custom assertions at `bashunit::assertion_passed` / `state::add_assertions_passed`, and the documented `bashunit::print_line` is an unrelated separator helper in `globals.sh` — so no alias is kept: one in `state.sh` would have recreated the very cycle this removes (#868)
+
 ### Removed
 - `bin/create-pr`, a 476-line vendored copy of [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr) v0.10. Nothing referenced it — not the `Makefile` targets, the workflows, or the docs, which link the upstream project rather than this copy — and having no `.sh` extension it escaped `make sa` until #863, so it sat in the tree written in a Bash 4 style the project's own rules prohibit. Use the upstream tool (#867)
 

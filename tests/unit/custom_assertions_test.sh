@@ -44,10 +44,10 @@ function test_custom_assertion_with_fail_shows_correct_test_name() {
   # the failure message shows the test function name, not the custom assertion name
   local output
   output="$(
-    # Temporarily override bashunit::state::print_line to capture output
+    # Temporarily override bashunit::console_results::print_line to capture output
     _captured_output=""
     # shellcheck disable=SC2317,SC2329
-    bashunit::state::print_line() {
+    bashunit::console_results::print_line() {
       _captured_output="$2"
       echo "$_captured_output"
     }
@@ -71,7 +71,7 @@ function test_custom_assertion_with_bashunit_assertion_failed_shows_correct_test
   output="$(
     _captured_output=""
     # shellcheck disable=SC2317,SC2329
-    bashunit::state::print_line() {
+    bashunit::console_results::print_line() {
       _captured_output="$2"
       echo "$_captured_output"
     }
@@ -94,7 +94,7 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
   output="$(
     _captured_output=""
     # shellcheck disable=SC2317,SC2329
-    bashunit::state::print_line() {
+    bashunit::console_results::print_line() {
       _captured_output="$2"
       echo "$_captured_output"
     }

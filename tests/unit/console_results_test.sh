@@ -780,3 +780,79 @@ function test_test_location_suffix_empty_when_unset() {
 
   export _BASHUNIT_TEST_LOCATION="$original"
 }
+
+# --- print_tap_line -----------------------------------------------------------
+# Each capture runs in $(...) so mutating _BASHUNIT_TOTAL_TESTS_COUNT never
+# leaks into the suite's own counters.
+
+function test_tap_line_successful_strips_colors_and_duration() {
+  local line
+  line="$(printf '\033[32m✓ Passed\033[0m: Adds numbers 12ms')"
+
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=7
+    bashunit::console_results::print_tap_line "successful" "$line"
+  )
+
+  assert_same "ok 7 - Adds numbers" "$out"
+}
+
+function test_tap_line_failure_renders_yaml_block_without_the_header() {
+  local line
+  line=$'\033[31m✗ Failed\033[0m: Broken thing\n    Expected \'a\'\n    but got \'b\''
+
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=3
+    bashunit::console_results::print_tap_line "failed" "$line"
+  )
+
+  local expected
+  expected=$'not ok 3 - Broken thing\n  ---\n  Expected \'a\'\n  but got \'b\'\n  ...'
+  assert_same "$expected" "$out"
+}
+
+function test_tap_line_skipped_with_reason() {
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=2
+    bashunit::console_results::print_tap_line "skipped" "↷ Skipped: Needs jq   jq not installed"
+  )
+
+  assert_same "ok 2 - Needs jq # SKIP jq not installed" "$out"
+}
+
+function test_tap_line_skipped_without_reason() {
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=2
+    bashunit::console_results::print_tap_line "skipped" "↷ Skipped: No reason"
+  )
+
+  assert_same "ok 2 - No reason # SKIP" "$out"
+}
+
+function test_tap_line_incomplete_and_snapshot_and_risky_directives() {
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=5
+    bashunit::console_results::print_tap_line "incomplete" "✒ Incomplete: Pending"
+    bashunit::console_results::print_tap_line "snapshot" "✎ Snapshot: Rendered"
+    bashunit::console_results::print_tap_line "risky" "△ Risky: No asserts"
+  )
+
+  local expected
+  expected=$'ok 5 - Pending # TODO incomplete\nok 5 - Rendered # snapshot\nok 5 - No asserts # RISKY no assertions'
+  assert_same "$expected" "$out"
+}
+
+function test_tap_line_unknown_type_is_not_ok() {
+  local out
+  out=$(
+    _BASHUNIT_TOTAL_TESTS_COUNT=9
+    bashunit::console_results::print_tap_line "mystery" "?: Something odd"
+  )
+
+  assert_same "not ok 9 - Something odd" "$out"
+}
