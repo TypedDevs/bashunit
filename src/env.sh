@@ -654,6 +654,11 @@ SKIPPED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/skipped"
 INCOMPLETE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/incomplete"
 RISKY_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/risky"
 PROFILE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/profile"
+# Prefix for one file-per-worker capture of stderr written inside a parallel
+# worker but outside a test body. An ordinal is appended per spawned worker;
+# these must not live under TEMP_DIR_PARALLEL_TEST_SUITE, whose every entry is
+# walked by state::aggregate_parallel_results (#864).
+WORKER_STDERR_OUTPUT_PREFIX="$_BASHUNIT_RUN_OUTPUT_DIR/worker-stderr"
 # Collects "<test_file>:<function_name>" for every failing test in a run so the
 # next --rerun-failed can replay just those. Shared across parallel subshells.
 RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
