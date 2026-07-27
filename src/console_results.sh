@@ -559,6 +559,24 @@ function bashunit::console_results::print_error_test() {
   bashunit::state::print_line "error" "$line"
 }
 
+##
+# Render stderr a parallel worker wrote outside any test body.
+# A sequential run lets this straight through to the terminal; parallel workers
+# have it captured per file so concurrent writes cannot shred the progress
+# line. Attributed to the file, not a test: it is emitted where no test owns it
+# (data providers, hook plumbing). Test-body stderr is merged into the captured
+# stdout and still surfaces in that test's own failure block.
+# Arguments: $1 - test file the worker ran, $2 - captured stderr file
+##
+function bashunit::console_results::print_worker_stderr() {
+  local test_file="$1"
+  local stderr_file="$2"
+
+  printf "\n%sStderr from %s%s\n" \
+    "$_BASHUNIT_COLOR_SKIPPED" "$test_file" "$_BASHUNIT_COLOR_DEFAULT"
+  sed 's/^/|/' "$stderr_file"
+}
+
 function bashunit::console_results::print_failing_tests_and_reset() {
   if [ -s "$FAILURES_OUTPUT_PATH" ]; then
     local total_failed

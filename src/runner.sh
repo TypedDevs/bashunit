@@ -396,6 +396,9 @@ function bashunit::runner::load_test_files() {
   files=("$@")
   local -a scripts_ids=()
   local scripts_ids_count=0
+  local -a worker_stderr_paths=()
+  local -a worker_stderr_owners=()
+  local worker_stderr_count=0
 
   # Randomize file execution order (deterministic for the resolved seed).
   if bashunit::env::is_random_order_enabled; then
@@ -538,7 +541,15 @@ function bashunit::runner::load_test_files() {
     local _cached_fns="$functions_for_script"
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
-      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" 2>/dev/null &
+      # Capture rather than discard: a worker's stderr cannot be written
+      # straight to the terminal without shredding the progress line, but
+      # dropping it made the same run report differently under --parallel
+      # (#358 added the discard, #864 replaced it with this capture).
+      local _worker_stderr="${WORKER_STDERR_OUTPUT_PREFIX}.${worker_stderr_count}"
+      worker_stderr_paths[worker_stderr_count]="$_worker_stderr"
+      worker_stderr_owners[worker_stderr_count]="$test_file"
+      worker_stderr_count=$((worker_stderr_count + 1))
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" 2>"$_worker_stderr" &
     else
       bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
     fi
@@ -561,6 +572,16 @@ function bashunit::runner::load_test_files() {
     disown "$spinner_pid" 2>/dev/null || true
     kill "$spinner_pid" 2>/dev/null || true
     printf "\r  \r" # Clear the spinner output
+
+    local _stderr_idx=0
+    while [ "$_stderr_idx" -lt "$worker_stderr_count" ]; do
+      if [ -s "${worker_stderr_paths[_stderr_idx]:-}" ]; then
+        bashunit::console_results::print_worker_stderr \
+          "${worker_stderr_owners[_stderr_idx]:-}" "${worker_stderr_paths[_stderr_idx]:-}"
+      fi
+      _stderr_idx=$((_stderr_idx + 1))
+    done
+
     local script_id
     for script_id in "${scripts_ids[@]+"${scripts_ids[@]}"}"; do
       export BASHUNIT_CURRENT_SCRIPT_ID="${script_id}"
