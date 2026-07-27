@@ -259,6 +259,8 @@ _BASHUNIT_DEFAULT_RERUN_FAILED="false"
 _BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
 # Record a snapshot the first time it is asserted (false = a missing one fails)
 _BASHUNIT_DEFAULT_SNAPSHOT_CREATE="true"
+# Report snapshot files that no test resolved during the run
+_BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=$_BASHUNIT_DEFAULT_PARALLEL_JOBS}"
@@ -303,6 +305,7 @@ _BASHUNIT_DEFAULT_SNAPSHOT_CREATE="true"
 # setting that should be reachable by a generic name from the environment.
 : "${BASHUNIT_SNAPSHOT_UPDATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE}"
 : "${BASHUNIT_SNAPSHOT_CREATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_CREATE}"
+: "${BASHUNIT_SNAPSHOT_REPORT_UNUSED:=$_BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -550,6 +553,10 @@ function bashunit::env::is_tap_output_enabled() {
   [ "$BASHUNIT_OUTPUT_FORMAT" = "tap" ]
 }
 
+function bashunit::env::is_snapshot_report_unused_enabled() {
+  [ "$BASHUNIT_SNAPSHOT_REPORT_UNUSED" = "true" ]
+}
+
 function bashunit::env::is_snapshot_create_enabled() {
   [ "$BASHUNIT_SNAPSHOT_CREATE" = "true" ]
 }
@@ -678,6 +685,10 @@ WORKER_STDERR_OUTPUT_PREFIX="$_BASHUNIT_RUN_OUTPUT_DIR/worker-stderr"
 # Collects "<test_file>:<function_name>" for every failing test in a run so the
 # next --rerun-failed can replay just those. Shared across parallel subshells.
 RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
+# Collects every snapshot path a test resolved, so --snapshot-report-unused can
+# diff it against what is on disk. Appended from the test subshells, only when
+# the flag is on, so a normal run pays nothing.
+SNAPSHOT_USED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/snapshots-used"
 
 # Shared temp directory, initialized once at startup for performance.
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"

@@ -85,6 +85,7 @@ _bashunit() {
     '--rerun-failed[Replay only the tests that failed on the last run]' \
     '--snapshot-update[Rewrite existing snapshots from the actual value]' \
     '--no-snapshot-create[Fail instead of recording a missing snapshot]' \
+    '--snapshot-report-unused[List snapshot files no test resolved]' \
     '(-vvv --verbose)'{-vvv,--verbose}'[Show execution details]' \
     '--debug[Enable shell debug mode]::file:_files' \
     '--no-output[Suppress all output]' \

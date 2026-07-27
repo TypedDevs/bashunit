@@ -44,6 +44,97 @@ function assert_match_snapshot_ignore_colors() {
   bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
 }
 
+# Strips the `./` resolve_file prepends and squeezes doubled slashes, so a path
+# recorded by an assertion and the same path as `find` prints it compare equal.
+function bashunit::snapshot::normalize_path() {
+  local path="$1"
+  while [ "${path#./}" != "$path" ]; do
+    path="${path#./}"
+  done
+  while [ "${path%%//*}" != "$path" ]; do
+    path="${path%%//*}/${path#*//}"
+  done
+  builtin echo "$path"
+}
+
+# Lists the snapshot files under $@ that no test resolved this run, and says so.
+# Deliberately reports only: a snapshot deleted by mistake is re-recorded on the
+# next run and never fails again, so an automatic cleanup could quietly turn a
+# real assertion into one that asserts nothing.
+function bashunit::snapshot::report_unused() {
+  local -a search_paths=()
+  local path
+  for path in "$@"; do
+    if [ -d "$path" ]; then
+      search_paths[${#search_paths[@]}]="$path"
+    elif [ -f "$path" ]; then
+      case "$path" in
+      */*) search_paths[${#search_paths[@]}]="${path%/*}" ;;
+      *) search_paths[${#search_paths[@]}]="." ;;
+      esac
+    fi
+  done
+  if [ "${#search_paths[@]}" -eq 0 ]; then
+    search_paths[0]="."
+  fi
+
+  # A snapshot is named "<normalized test file>.<normalized function>.snapshot",
+  # so it can be attributed to the test file that owns it. Only the files this
+  # run discovered are considered: running one file or one directory must not
+  # report every snapshot belonging to the files it did not run.
+  local owners=""
+  for path in "$@"; do
+    [ -f "$path" ] || continue
+    bashunit::helper::normalize_variable_name_to_slot "${path##*/}"
+    owners="$owners$_BASHUNIT_HELPER_VARNAME_OUT
+"
+  done
+
+  local used=""
+  if [ -f "${SNAPSHOT_USED_OUTPUT_PATH:-}" ]; then
+    local used_path
+    while IFS= read -r used_path; do
+      [ -z "$used_path" ] && continue
+      used="$used$(bashunit::snapshot::normalize_path "$used_path")
+"
+    done <"$SNAPSHOT_USED_OUTPUT_PATH"
+  fi
+
+  local unused=""
+  local total=0
+  local dir file normalized
+  while IFS= read -r dir; do
+    [ -z "$dir" ] && continue
+    for file in "$dir"/*.snapshot; do
+      [ -f "$file" ] || continue
+      normalized="$(bashunit::snapshot::normalize_path "$file")"
+      case "$used" in
+      *"$normalized"$'\n'*) continue ;;
+      esac
+      local owner="${file##*/}"
+      owner="${owner%%.*}"
+      case "$owners" in
+      *"$owner"$'\n'*) ;;
+      *) continue ;;
+      esac
+      total=$((total + 1))
+      unused="$unused  $normalized
+"
+    done
+  done < <(find "${search_paths[@]}" -type d -name snapshots 2>/dev/null | sort -u)
+
+  if [ "$total" -eq 0 ]; then
+    printf "\n%sNo unused snapshots.%s\n" \
+      "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}"
+    return
+  fi
+
+  printf "\n%sUnused snapshots (%s), no test resolved them:%s\n%s" \
+    "${_BASHUNIT_COLOR_SKIPPED}" "$total" "${_BASHUNIT_COLOR_DEFAULT}" "$unused"
+  printf "%sNothing was deleted. Delete them yourself once you have checked the tests are gone.%s\n" \
+    "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}"
+}
+
 # The shared tail of both snapshot assertions: record a first-time snapshot,
 # rewrite it under --snapshot-update, or compare against it.
 # Arguments: $1 - actual value, $2 - snapshot path, $3 - test function name
@@ -51,6 +142,10 @@ function bashunit::snapshot::assert() {
   local actual="$1"
   local snapshot_file="$2"
   local test_fn="$3"
+
+  if bashunit::env::is_snapshot_report_unused_enabled; then
+    printf '%s\n' "$snapshot_file" >>"${SNAPSHOT_USED_OUTPUT_PATH:-/dev/null}" 2>/dev/null || true
+  fi
 
   if [ ! -f "$snapshot_file" ]; then
     if ! bashunit::env::is_snapshot_create_enabled; then
