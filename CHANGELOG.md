@@ -3,47 +3,43 @@
 ## Unreleased
 
 ### Added
-- Docs: an [Agentic coding](https://bashunit.com/ai-agents) page — machine-readable results (`--report-json`, `--output tap`), the flags that keep an agent's edit-run loop tight (`--filter`, `--rerun-failed`, `--test-timeout`), and the API traps that make generated tests pass for the wrong reason. It also surfaces `llms.txt` / `llms-full.txt`, which were published but linked from nowhere
-- A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md) for tools that load a `SKILL.md`
-- `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap` selects how `--coverage` captures executed lines (ADR-009). The new `xtrace` engine redirects `set -x` to a private descriptor (`BASH_XTRACEFD`) and parses the trace once after the run, instead of dispatching a shell function from a `DEBUG` trap on every executed command; measured at roughly a quarter of the trap's per-line capture cost. It needs Bash 4.1+, so `auto` — the default — keeps the trap engine on the Bash 3.0–4.0 floor, as does an explicit `xtrace` that the running Bash cannot honour. Both engines are pinned to identical LCOV output, sequential and `--parallel`, by `tests/acceptance/coverage_engine_test.sh`. One deliberate difference: the trap engine buffers hits in a shell variable and loses those recorded inside a `$(...)` subshell, so `xtrace` can report more covered lines on subshell-heavy code (#860)
-- `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints a `Line Hits` block in the text report, listing each covered line as `<lineno>:<count>` per file — the same counts the LCOV report already carried as `DA:` records, now pinned by tests (#856)
+- `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
+- `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints per-line execution counts in the text coverage report (#856)
+- An [Agentic coding](https://bashunit.com/ai-agents) docs page, and `llms.txt` / `llms-full.txt` are now linked
+- A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md)
 
 ### Changed
-- Deprecated forms now warn at runtime instead of only being marked deprecated in a help string. An unprefixed setting (`VERBOSE`, `COVERAGE`, …) that supplies a value, or `bashunit test --assert`, prints `Deprecated: … Use … instead.` on **stderr**, so it never corrupts a report on stdout. Silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true`. The policy is now documented: a deprecated form warns for at least one minor release before being removed in a major one (#866)
-- `bashunit doc` and the [Assertions](https://bashunit.com/assertions) reference now cover all 71 assertions instead of 64 — the two snapshot and five spy assertions were documented only on their own pages, so `bashunit doc` (the command the docs tell agents to use so they do not invent names) listed no spy assertion at all. The page also opens with a grouped quick-reference table linking every assertion, instead of running straight into the first entry of a 1,700-line catalogue
-- Docs: [Command line](https://bashunit.com/command-line#invalid-input) documents how invalid input is rejected (unknown options, out-of-range values, unusable bootstrap/report paths), shipped across several releases with no page describing it; `BASHUNIT_REPORT_TAP`/`BASHUNIT_REPORT_JSON` are listed in [Configuration](https://bashunit.com/configuration) next to the JUnit/HTML/GHA reports; [Standalone](https://bashunit.com/standalone) documents the malformed-invocation exit code; `snapshots.md` documents the optional `["snapshot_file"]` argument both snapshot assertions accept; the README claimed "hundreds of assertions" against an actual 71
-- The docs sidebar outline now lists `h3` headings as well as `h2` — per-flag and per-pattern detail (27 headings on Command line, 24 on Common patterns, 23 on Coverage) was hidden from the "On this page" navigation
-- The `--parallel` unsupported-OS warning no longer claims Alpine is excluded: Alpine has been a supported parallel platform since the race conditions were fixed, the message was simply never updated
-
-### Changed
-- Progress rendering moved out of `state.sh` into `console_results.sh`: `bashunit::state::print_line` and `bashunit::state::print_tap_line` are now `bashunit::console_results::print_line` / `::print_tap_line`. Rendering from the module that owns counters and the per-test payload was a layering inversion, and it was the sole remaining reason for the `state.sh → parallel.sh` call cycle that #862 broke. `state.sh` now makes no call into the renderer, parallel, or the runner, pinned by a grep-based guard so the edge cannot return through an uncovered path. These two functions were never documented API — `docs/custom-asserts.md` points custom assertions at `bashunit::assertion_passed` / `state::add_assertions_passed`, and the documented `bashunit::print_line` is an unrelated separator helper in `globals.sh` — so no alias is kept: one in `state.sh` would have recreated the very cycle this removes (#868)
-
-### Removed
-- `bin/create-pr`, a 476-line vendored copy of [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr) v0.10. Nothing referenced it — not the `Makefile` targets, the workflows, or the docs, which link the upstream project rather than this copy — and having no `.sh` extension it escaped `make sa` until #863, so it sat in the tree written in a Bash 4 style the project's own rules prohibit. Use the upstream tool (#867)
+- Deprecated forms now warn at runtime on stderr; silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true` (#866)
+- `bashunit::state::print_line` / `print_tap_line` moved to `bashunit::console_results::*`; no alias kept (#868)
+- `bashunit doc` and the [Assertions](https://bashunit.com/assertions) page now cover all 71 assertions, with a quick-reference table
+- Docs: invalid-input handling, `BASHUNIT_REPORT_TAP`/`BASHUNIT_REPORT_JSON`, the standalone exit code, and the optional `["snapshot_file"]` argument
+- The docs sidebar outline now lists `h3` headings
+- The `--parallel` unsupported-OS warning no longer claims Alpine is excluded
 
 ### Fixed
-- `--parallel` no longer discards stderr written inside a worker but outside a test body, which made the same run report differently depending on the mode. Each file worker had been spawned with `2>/dev/null` since #358 to keep its noise off the progress line; its stderr is now captured per file and rendered afterwards as a `Stderr from <file>` block, so data-provider diagnostics, hook-plumbing messages and scratch-dir errors survive. Output written by a test *body* was never affected — it is merged into that test's captured stdout and already appeared in its failure block (#864)
-- The minimum-bash gate now compares the minor version as well as the major, so it enforces whatever `BASHUNIT_MIN_BASH_VERSION` declares. It previously accepted any `3.x` regardless of the stated minimum, and a version string carrying a suffix (`5.2.37(1)-release`) is now parsed instead of tripping the comparison. The floor itself is unchanged at **Bash 3.0+**; `printf -v`, `+=` and `[[ =~ ]]` are now rejected in `src/` by the compatibility gate, since 3.0/3.1 lack the first two and 3.2 changed quoted-pattern semantics for the third
-- An empty entry in `.env` no longer overrides a value the caller exported or set on the command line. `.env` is sourced under `set -o allexport`, so every line was an unconditional assignment: merely *listing* a name blanked it, and `BASHUNIT_OUTPUT_FORMAT=tap ./bashunit` silently stopped working in any project whose `.env` mentioned that setting. An empty entry now means "not configured here"; an entry with a value still takes effect. This had been actively concealing defects — two of the bugs fixed in #879 were not reproducible from inside a repo checkout for exactly this reason (#865)
-- A malformed benchmark annotation is now an error instead of a silent fallback to the default: `@revs=abc` quietly ran a single revolution, `@its=abc` a single iteration, and `@max_ms=abc` dropped the threshold entirely so the benchmark could never fail — each reporting success while measuring something other than what was written (#884)
-- `@max_ms` with a decimal value (`@max_ms=100.5`) no longer leaks a raw `integer expression expected` and renders as failing (`>`) regardless of the actual average; the threshold comparison now tolerates fractional operands like the average already could
-- An unknown option is now rejected with a clear error and a non-zero exit instead of being silently filed under test paths. `bashunit --parralel tests/` ran sequentially and exited `0`; `bashunit --filterr foo tests/` swallowed both the flag and its value and ran the whole suite. Applies to `test` and `bench`; `assert` parses its own arguments and is unchanged (#871)
-- The numeric options (`--jobs`, `--retry`, `--test-timeout`, `--coverage-min`) and `--output` now reject an invalid value instead of dropping the setting. `--jobs abc` was the worst case: `[ n -lt abc ]` errors rather than returning false, so the Bash 3.x job-slot poll never reached its `break` and the run **hung**, while Bash 4.3+ silently ignored the concurrency limit. `--coverage-min abc` leaked a raw `[: abc: integer expression expected` and still exited `0`, so a CI job never enforced its threshold. Validation runs on the resolved configuration, so it covers the `BASHUNIT_*` environment variables too (#873)
-- A missing `--env`/`--boot` bootstrap file is now an error instead of a green run that tested nothing: the file was sourced unchecked, so a typo'd path leaked `No such file or directory`, skipped the entire suite and still exited `0`. The report options (`--report-json`, `--log-junit`, `--report-tap`, `--report-html`, `--log-gha`) are likewise checked before the run rather than failing silently after it, and `--seed` validates as a non-negative integer (#875)
-- `BASHUNIT_COVERAGE_THRESHOLD_LOW`/`BASHUNIT_COVERAGE_THRESHOLD_HIGH` (env-only, no CLI flag) now validate as non-negative integers. They are compared with `[ -ge ]`, which errors instead of returning false on a non-integer: a bad threshold leaked `integer expression expected` into the coverage report and silently mis-bucketed every file's high/medium/low class
-- `bashunit assert <name>` with no arguments now reports a clear error and exits non-zero. It computed a `-1` array index, which Bash 3.x rejects, so it leaked `bad array subscript` and still exited `0` — a malformed standalone assertion in a deploy script reported success (#877)
-- The exit-code assertions (`assert_exit_code`, `assert_successful_code`, `assert_unsuccessful_code`, `assert_general_error`, `assert_command_not_found`) now fail closed on a non-integer exit code: `[ x -ne y ]` exits 2 rather than 1 on an unparseable operand, and that was read as "equal" and counted as **passed**
-- The variadic assertions (`assert_contains` and friends) called with the actual value omitted now report a clean failed assertion on Bash 3.2 instead of aborting the run with `unbound variable` under `--strict`
-- `assert_arrays_equal` failing outside a test function (for example from a `set_up` hook) now reports `Assert arrays equal` instead of the internal label `Bashunit::assert::label`, matching every other assertion
-- bashunit now aborts with an actionable error when its scratch directories under `TMPDIR` cannot be created. The run used to continue with every failure/skip collector writing nowhere, so a failing suite still exited non-zero but lost its assertion detail and leaked raw `src/runner.sh: line N: ...: Not a directory` errors instead of reporting the cause
-- A test file whose `set_up_before_script` changes directory no longer silently drops the remaining files from the run when the original working directory has become unreachable; the run aborts with a clear error instead
-- A test path containing both a glob and a space (`./bashunit "my tests/*"`) is no longer word-split into bogus search roots that discovered zero tests, nor passed through `eval`
-- An unreadable or truncated parallel `.result` file is now counted as a failed test instead of aborting aggregation with an arithmetic syntax error
-- `release.sh` reports a failed rollback as failed instead of always printing "Rollback complete", and aborts when neither the tar nor the `cp` sandbox copy produced a usable project copy
-- Docs: the quickstart's sample output showed durations as `16 ms` / `90 ms`, but bashunit prints `16ms` / `90ms`; `.env.example` documented `BASHUNIT_SHOW_EXECUTION_TIME` as defaulting to `true` when the actual default has been `auto` since #765
+- `--parallel` no longer discards worker stderr written outside a test body; it renders as a `Stderr from <file>` block (#864)
+- The minimum-bash gate compares the minor version and parses suffixed versions; the floor is unchanged at **Bash 3.0+**
+- An empty entry in `.env` no longer blanks a value the caller exported or passed on the command line (#865)
+- Malformed benchmark annotations (`@revs`, `@its`, `@max_ms`) now error instead of silently falling back (#884)
+- `@max_ms` accepts a decimal value
+- An unknown option is rejected instead of being treated as a test path (#871)
+- `--jobs`, `--retry`, `--test-timeout`, `--coverage-min` and `--output` reject invalid values; `--jobs abc` used to hang (#873)
+- A missing `--env`/`--boot` file errors instead of a green run that tested nothing; report paths and `--seed` are validated too (#875)
+- `BASHUNIT_COVERAGE_THRESHOLD_LOW`/`BASHUNIT_COVERAGE_THRESHOLD_HIGH` validate as non-negative integers
+- `bashunit assert <name>` with no arguments errors instead of exiting `0` (#877)
+- The exit-code assertions fail closed on a non-integer exit code, which used to count as passed
+- Variadic assertions with the actual value omitted fail cleanly on Bash 3.2 under `--strict`
+- `assert_arrays_equal` failing outside a test function shows its real label
+- Scratch directories that cannot be created under `TMPDIR` now abort with an actionable error
+- A `set_up_before_script` that changes directory no longer drops the remaining test files
+- A test path combining a glob and a space (`./bashunit "my tests/*"`) is no longer word-split
+- An unreadable or truncated parallel `.result` file counts as a failed test instead of aborting aggregation
+- `release.sh` reports a failed rollback as failed
+- Docs: the quickstart's duration format, and the real `BASHUNIT_SHOW_EXECUTION_TIME` default (`auto`)
 
 ### Removed
-- Dead internal helpers with no remaining callers: the runner's pre-cache `call_test_functions` fallback (unreachable since the per-file function list became mandatory), `bashunit::state::calculate_total_assertions` (superseded by `bashunit::runner::compute_total_assertions`), `bashunit::coverage::get_line_hits` (superseded by `bashunit::coverage::get_all_line_hits`), `bashunit::helper::trim` and `bashunit::dependencies::has_adjtimex`. All internal, not part of the documented public API
+- `bin/create-pr`, an unreferenced vendored copy of [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr); use the upstream tool (#867)
+- Dead internal helpers with no remaining callers
 
 ## [0.43.0](https://github.com/TypedDevs/bashunit/compare/0.42.0...0.43.0) - 2026-07-24
 
