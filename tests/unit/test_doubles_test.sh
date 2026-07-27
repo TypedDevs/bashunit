@@ -61,9 +61,11 @@ function test_unsuccessful_spy_called_times() {
   ps
   ps
 
+  bashunit::spy::call_log_to_slot ps
+
   assert_same "$(bashunit::console_results::print_failed_test "Unsuccessful spy called times" "ps" \
     "to have been called" "1 times" \
-    "actual" "2 times")" \
+    "actual" "2 times" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_times 1 ps)"
 }
 
@@ -85,11 +87,13 @@ function test_unsuccessful_spy_with_source_function_have_been_called() {
   function_to_be_spied_on
   function_to_be_spied_on
 
+  bashunit::spy::call_log_to_slot function_to_be_spied_on
+
   assert_same "$(bashunit::console_results::print_failed_test \
     "Unsuccessful spy with source function have been called" \
     "function_to_be_spied_on" \
     "to have been called" "1 times" \
-    "actual" "2 times")" \
+    "actual" "2 times" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_times 1 function_to_be_spied_on)"
 }
 
@@ -141,6 +145,58 @@ function test_spy_serialize_args_joins_quoted_arguments_with_a_unit_separator() 
   assert_same "a\\ b"$'\x1f'"c" "$_BASHUNIT_SPY_SERIALIZED_OUT"
 }
 
+function test_spy_call_log_renders_every_recorded_call() {
+  bashunit::spy spy_with_two_calls
+
+  spy_with_two_calls first
+  spy_with_two_calls second a
+
+  bashunit::spy::call_log_to_slot spy_with_two_calls
+
+  assert_same "    ${_BASHUNIT_COLOR_FAINT}Recorded calls to 'spy_with_two_calls' (2):\
+${_BASHUNIT_COLOR_DEFAULT}
+      ${_BASHUNIT_COLOR_FAINT}1:${_BASHUNIT_COLOR_DEFAULT} first
+      ${_BASHUNIT_COLOR_FAINT}2:${_BASHUNIT_COLOR_DEFAULT} second a" \
+    "$_BASHUNIT_SPY_CALL_LOG_OUT"
+}
+
+function test_spy_call_log_caps_the_dump_with_an_explicit_marker() {
+  bashunit::spy spy_called_many_times
+
+  local i=1
+  while [ "$i" -le 13 ]; do
+    spy_called_many_times "call$i"
+    i=$((i + 1))
+  done
+
+  bashunit::spy::call_log_to_slot spy_called_many_times
+
+  assert_contains "      ${_BASHUNIT_COLOR_FAINT}10:${_BASHUNIT_COLOR_DEFAULT} call10" \
+    "$_BASHUNIT_SPY_CALL_LOG_OUT"
+  assert_not_contains "call11" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+  assert_contains "… and 3 more" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+}
+
+function test_spy_call_log_is_empty_without_recorded_calls() {
+  bashunit::spy spy_without_calls
+
+  bashunit::spy::call_log_to_slot spy_without_calls
+  assert_empty "$_BASHUNIT_SPY_CALL_LOG_OUT"
+
+  bashunit::spy::call_log_to_slot never_spied_at_all
+  assert_empty "$_BASHUNIT_SPY_CALL_LOG_OUT"
+}
+
+function test_spy_call_log_keeps_argument_boundaries_in_args_mode() {
+  bashunit::spy spy_with_spaced_argument
+
+  spy_with_spaced_argument "a b"
+
+  bashunit::spy::call_log_to_slot spy_with_spaced_argument args
+
+  assert_contains "1:${_BASHUNIT_COLOR_DEFAULT} a\\ b" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+}
+
 function test_spy_called_with_different_arguments() {
   bashunit::spy ps
 
@@ -162,10 +218,12 @@ function test_spy_unsuccessful_not_called() {
 
   ps
 
+  bashunit::spy::call_log_to_slot ps
+
   assert_same \
     "$(bashunit::console_results::print_failed_test "Spy unsuccessful not called" "ps" \
       "to have been called" "0 times" \
-      "actual" "1 times")" \
+      "actual" "1 times" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_not_called ps)"
 }
 
@@ -202,10 +260,12 @@ function test_unsuccessful_spy_nth_called_with() {
   ps first
   ps second
 
+  bashunit::spy::call_log_to_slot ps
+
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Unsuccessful spy nth called with" \
-      "wrong" "but got " "first")" \
+      "wrong" "but got " "first" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_nth_with 1 ps "wrong")"
 }
 
@@ -214,10 +274,13 @@ function test_unsuccessful_spy_nth_called_with_invalid_index() {
 
   ps first
 
+  bashunit::spy::call_log_to_slot ps
+
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Unsuccessful spy nth called with invalid index" \
-      "expected call" "at index 5 but" "only called 1 times")" \
+      "expected call" "at index 5 but" "only called 1 times" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
     "$(assert_have_been_called_nth_with 5 ps "first")"
 }
 

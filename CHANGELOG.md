@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- A failed call assertion now prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)
 - `assert_have_been_called_with_args <spy> <arg>...`: compares the recorded arguments one by one, so `cmd "a b"` no longer matches `cmd a b` (#894)
 - `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
 - `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints per-line execution counts in the text coverage report (#856)
