@@ -23,6 +23,21 @@ function bashunit::spy::times_to_slot() {
   fi
 }
 
+_BASHUNIT_SPY_SERIALIZED_OUT=""
+
+# Serializes the given arguments into _BASHUNIT_SPY_SERIALIZED_OUT exactly the
+# way bashunit::spy records a call: each argument through `printf '%q'`, joined
+# with \x1f. Unlike the space-joined `raw` field, this keeps the argument
+# boundaries, so `f "a b"` and `f a b` serialize differently.
+function bashunit::spy::serialize_args_to_slot() {
+  local serialized=""
+  local arg
+  for arg in "$@"; do
+    serialized="$serialized$(builtin printf '%q' "$arg")"$'\x1f'
+  done
+  _BASHUNIT_SPY_SERIALIZED_OUT=${serialized%$'\x1f'}
+}
+
 function bashunit::unmock() {
   local command=$1
 
@@ -100,7 +115,7 @@ function bashunit::spy() {
     local serialized=\"\"
     local arg
     for arg in \"\$@\"; do
-      serialized=\"\$serialized\$(builtin printf '%q' \"\$arg\")$'\\x1f'\"
+      serialized=\"\$serialized\$(builtin printf '%q' \"\$arg\")\"$'\\x1f'
     done
     serialized=\${serialized%$'\\x1f'}
     builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
@@ -167,6 +182,34 @@ function assert_have_been_called_with() {
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
       "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_have_been_called_with_args() {
+  local command=$1
+  shift
+
+  bashunit::spy::serialize_args_to_slot "$@"
+  local expected=$_BASHUNIT_SPY_SERIALIZED_OUT
+
+  local variable
+  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local line=""
+  if [ -f "${!file_var-}" ]; then
+    line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
+  fi
+
+  local actual
+  IFS=$'\x1e' read -r _ actual <<<"$line" || true
+
+  if [ "$expected" != "$actual" ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
+      "${FUNCNAME[1]}")" "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }"
     return
   fi
 

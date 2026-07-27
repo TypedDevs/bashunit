@@ -135,6 +135,12 @@ function test_mock_called_in_subshell() {
   assert_same "2024-05-01" "$result"
 }
 
+function test_spy_serialize_args_joins_quoted_arguments_with_a_unit_separator() {
+  bashunit::spy::serialize_args_to_slot "a b" c
+
+  assert_same "a\\ b"$'\x1f'"c" "$_BASHUNIT_SPY_SERIALIZED_OUT"
+}
+
 function test_spy_called_with_different_arguments() {
   bashunit::spy ps
 

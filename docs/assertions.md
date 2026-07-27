@@ -29,7 +29,7 @@ to narrow it (`bashunit doc json`).
 | **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
 | **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
 | **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) |
-| **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
+| **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
 | **Manual failure** | [bashunit::fail](#bashunit-fail) |
 
 ## assert_true
@@ -1675,6 +1675,31 @@ function test_failure() {
   notify_user "a@b.c"
 
   assert_have_been_called_with send_email "--to nobody@example.com"
+}
+```
+:::
+
+## assert_have_been_called_with_args
+> `assert_have_been_called_with_args "command" "expected_arg"...`
+
+Reports an error if the **last** call to the spied `command` did not receive exactly these arguments. Unlike [assert_have_been_called_with](#assert-have-been-called-with), the arguments are compared one by one, so `cmd "a b"` does not match `cmd a b`. Use it whenever an argument may contain spaces, such as a path.
+
+There is no `nth` parameter: a trailing number would be indistinguishable from a numeric argument.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  bashunit::spy touch
+  create_report "/tmp/my reports"
+
+  assert_have_been_called_with_args touch "/tmp/my reports/out.txt"
+}
+
+function test_failure() {
+  bashunit::spy touch
+  create_report "/tmp/my reports"
+
+  assert_have_been_called_with_args touch "/tmp/my" "reports/out.txt"
 }
 ```
 :::

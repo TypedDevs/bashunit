@@ -49,6 +49,7 @@ assert_have_been_called_times 2 function_name          # count first, then spy
 assert_have_been_called_with function_name "arg"       # spy first, then expected
 assert_have_been_called_with function_name "arg" 1     # ...of call #1
 assert_have_been_called_nth_with 1 function_name "arg"
+assert_have_been_called_with_args function_name "a b"  # boundary-exact, no call index
 
 # Mocks - replace behavior
 bashunit::mock date echo "2024-05-01"

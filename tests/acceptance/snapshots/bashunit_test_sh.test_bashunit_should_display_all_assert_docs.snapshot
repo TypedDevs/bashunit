@@ -651,6 +651,15 @@ Reports an error if the spied `command` was not called with `expected_args`. Che
 Note the argument order: the spy comes first here, but *second* in assert_have_been_called_times.
 
 
+## assert_have_been_called_with_args
+--------------
+> `assert_have_been_called_with_args "command" "expected_arg"...`
+
+Reports an error if the **last** call to the spied `command` did not receive exactly these arguments. Unlike assert_have_been_called_with, the arguments are compared one by one, so `cmd "a b"` does not match `cmd a b`. Use it whenever an argument may contain spaces, such as a path.
+
+There is no `nth` parameter: a trailing number would be indistinguishable from a numeric argument.
+
+
 ## assert_have_been_called_times
 --------------
 > `assert_have_been_called_times "expected_count" "command"`

@@ -114,6 +114,10 @@ actually make against this API:
 - Spy assertion argument order is inconsistent — check, don't guess:
   `assert_have_been_called_times <count> <spy>` but
   `assert_have_been_called_with <spy> <expected> [call_index]`.
+- `assert_have_been_called_with` joins the expected arguments with spaces, so it cannot
+  tell `cmd "a b"` from `cmd a b` — a quoting bug passes it. Use
+  `assert_have_been_called_with_args <spy> <arg>...` (no `call_index`) to compare
+  argument by argument whenever an argument may contain a space.
 - Do not delete a shared fixture in `tear_down_after_script`: under `--parallel` the
   file's tests may still be running, and they will vanish from the totals silently.
 - There is no `--update-snapshots` flag. Re-record a snapshot by deleting the file and

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_have_been_called_with_args <spy> <arg>...`: compares the recorded arguments one by one, so `cmd "a b"` no longer matches `cmd a b` (#894)
 - `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
 - `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints per-line execution counts in the text coverage report (#856)
 - An [Agentic coding](https://bashunit.com/ai-agents) docs page, and `llms.txt` / `llms-full.txt` are now linked
@@ -18,6 +19,7 @@
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded
 
 ### Fixed
+- The per-argument form a spy records was written with a literal `$'\x1f'` separator instead of the byte, so it could not be compared against (#894)
 - `--parallel` no longer discards worker stderr written outside a test body; it renders as a `Stderr from <file>` block (#864)
 - The minimum-bash gate compares the minor version and parses suffixed versions; the floor is unchanged at **Bash 3.0+**
 - An empty entry in `.env` no longer blanks a value the caller exported or passed on the command line (#865)
