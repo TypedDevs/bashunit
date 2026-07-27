@@ -255,6 +255,45 @@ function test_passing_call_assertions_print_nothing() {
   assert_empty "$(assert_have_been_called_with spy_with_a_passing_assertion "first")"
 }
 
+function test_mock_with_an_exit_code_returns_it_without_output() {
+  bashunit::mock mock_failing_command 1
+
+  local code=0
+  local output
+  output="$(mock_failing_command 2>&1)" || code=$?
+
+  assert_same "1" "$code"
+  assert_empty "$output"
+}
+
+function test_mock_with_the_exit_code_zero_returns_zero() {
+  bashunit::mock mock_succeeding_command 0
+
+  local code=1
+  mock_succeeding_command && code=0
+
+  assert_same "0" "$code"
+}
+
+function test_mock_keeps_the_replacement_implementation_form() {
+  bashunit::mock mock_with_impl echo hello
+
+  assert_same "hello" "$(mock_with_impl)"
+}
+
+function test_mock_reads_only_a_lone_all_digits_argument_as_an_exit_code() {
+  # `echo 1` is an implementation whose first word happens to be a command, so
+  # the digits must stay an argument to it rather than becoming `return 1`.
+  bashunit::mock mock_with_numeric_argument echo 1
+
+  local code=1
+  local output
+  output="$(mock_with_numeric_argument)" && code=0
+
+  assert_same "1" "$output"
+  assert_same "0" "$code"
+}
+
 function test_spy_on_echo_does_not_hang() {
   source ./tests/functional/fixtures/echo_function.sh
   bashunit::spy echo

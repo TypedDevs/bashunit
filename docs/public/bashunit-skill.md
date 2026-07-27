@@ -198,6 +198,7 @@ diff and decided the new output is correct.
 ```bash
 bashunit::mock date echo "2024-05-01"   # replace behaviour
 bashunit::mock uname <<< "Linux"        # heredoc form ignores the call's arguments
+bashunit::mock curl 1                   # all-digits arg = exit code, no output (as for spy)
 bashunit::spy send_email                # record calls, keep behaviour
 
 assert_have_been_called send_email

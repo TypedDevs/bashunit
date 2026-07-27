@@ -63,6 +63,23 @@ EOF
 ```
 
 :::
+A lone all-digits argument is an exit code, not an implementation — the same convention `bashunit::spy` uses. The mock then produces no output and returns that code, which is all an error-path test usually needs:
+
+::: code-group
+```bash [Example]
+function test_example() {
+  bashunit::mock curl 1
+
+  local code=0
+  curl https://example.com || code=$?
+
+  assert_same "1" "$code"
+}
+```
+:::
+
+To produce output *and* a non-zero exit code, pass a function: `bashunit::mock curl my_failing_curl`.
+
 Mocked functions are also available inside subshells:
 
 ::: code-group

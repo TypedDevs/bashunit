@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `bashunit::mock <cmd> <code>`: a lone all-digits argument is an exit code, matching `bashunit::spy`; no throwaway `return 1` helper needed (#898)
 - `assert_have_been_called_with_any <spy> <expected>`: passes when *any* recorded call matches, instead of only the last one (#897)
 - A failed call assertion now prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)
 - `assert_have_been_called_with_args <spy> <arg>...`: compares the recorded arguments one by one, so `cmd "a b"` no longer matches `cmd a b` (#894)
