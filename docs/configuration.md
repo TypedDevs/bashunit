@@ -222,6 +222,27 @@ BASHUNIT_SNAPSHOT_UPDATE=false
 ```
 :::
 
+## Snapshot create
+
+> `BASHUNIT_SNAPSHOT_CREATE=true|false`
+
+Whether a missing snapshot is recorded on the fly. Enabled by default, which is
+what makes the first run of a snapshot test pass. Set it to `false` in CI so a
+snapshot that was never committed fails the run instead of being re-created
+silently.
+
+Similar as using `--no-snapshot-create` option on the
+[command line](/command-line#no-snapshot-create).
+
+::: code-group
+```bash [CI: a missing snapshot fails]
+BASHUNIT_SNAPSHOT_CREATE=false
+```
+```bash [Default]
+BASHUNIT_SNAPSHOT_CREATE=true
+```
+:::
+
 ## Rerun failed
 
 > `BASHUNIT_RERUN_FAILED=true|false`

@@ -66,7 +66,8 @@ not ok 2 - Fails
 The exit code is non-zero when a test **failed**. It is `0` for a run that was entirely
 skipped, incomplete, risky, or that only recorded new snapshots, so `$?` alone does not
 mean "everything passed" — read `summary.total` against `summary.passed`, or add
-`--fail-on-risky`.
+`--fail-on-risky` and `--no-snapshot-create` (the latter turns a first-time snapshot
+recording into a failure, so a snapshot that was never committed cannot pass silently).
 
 ## Keep the loop tight
 

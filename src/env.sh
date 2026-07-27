@@ -257,6 +257,8 @@ _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
 # Rewrite existing snapshots from the actual value instead of comparing
 _BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
+# Record a snapshot the first time it is asserted (false = a missing one fails)
+_BASHUNIT_DEFAULT_SNAPSHOT_CREATE="true"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=$_BASHUNIT_DEFAULT_PARALLEL_JOBS}"
@@ -300,6 +302,7 @@ _BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
 # No bare SNAPSHOT_UPDATE alias either: rewriting files on disk is the last
 # setting that should be reachable by a generic name from the environment.
 : "${BASHUNIT_SNAPSHOT_UPDATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE}"
+: "${BASHUNIT_SNAPSHOT_CREATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_CREATE}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -545,6 +548,10 @@ function bashunit::env::is_coverage_enabled() {
 
 function bashunit::env::is_tap_output_enabled() {
   [ "$BASHUNIT_OUTPUT_FORMAT" = "tap" ]
+}
+
+function bashunit::env::is_snapshot_create_enabled() {
+  [ "$BASHUNIT_SNAPSHOT_CREATE" = "true" ]
 }
 
 function bashunit::env::is_snapshot_update_enabled() {

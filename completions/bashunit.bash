@@ -15,7 +15,8 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 --debug --detailed --env --exclude-tag --fail-on-risky --failures-only \
 --filter --help --jobs --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \
---no-progress --output --parallel --profile --random-order --report-html \
+--no-progress --no-snapshot-create --output --parallel --profile \
+--random-order --report-html \
 --report-json --report-junit --report-tap --rerun-failed --retry --run-all \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
 --skip-env-file --snapshot-update --stop-on-failure --strict --tag \

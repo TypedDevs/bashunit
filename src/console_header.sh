@@ -141,6 +141,7 @@ Options:
   --shard <i>/<n>             Run shard i of n (split the suite across runners)
   --rerun-failed              Replay only the tests that failed on the last run (.bashunit/last-failed)
   --snapshot-update           Rewrite existing snapshots from the actual value (combine with --filter)
+  --no-snapshot-create        Fail on a missing snapshot instead of recording it (for CI)
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output

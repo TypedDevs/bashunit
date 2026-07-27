@@ -91,6 +91,24 @@ echo 'Run at ::ignore::' > snapshots/example.snapshot
 assert_match_snapshot "Run at $(date)"
 ```
 
+## Snapshots in CI
+
+Recommended CI setting: `--no-snapshot-create` (or `BASHUNIT_SNAPSHOT_CREATE=false`).
+
+By default the first run of a snapshot test writes the snapshot and passes. That is what
+you want locally, and exactly what you do not want in CI: a snapshot that was never
+committed, is gitignored, or was lost gets re-created on the fly, and the run is green
+while asserting nothing. With the flag, a missing snapshot fails and the message names
+the file to commit:
+
+```
+✗ Failed: Renders the header
+    Expected './tests/snapshots/header_test_sh.test_renders_the_header.snapshot'
+    does not exist; record it with a run without '--no-snapshot-create'
+```
+
+So: record locally, commit the snapshot, run CI with `--no-snapshot-create`.
+
 ## Re-recording snapshots
 
 When an output change is intentional, run with `--snapshot-update` (or
