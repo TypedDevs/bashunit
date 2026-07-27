@@ -111,6 +111,10 @@ actually make against this API:
 - Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` for scratch files — they are
   cleaned up automatically and are safe under `--parallel`.
 - Never call the network in a test. Use `bashunit::mock` / `bashunit::spy` instead.
+- Doubles are torn down after every test — do not add `bashunit::unmock` to `tear_down`.
+  Use it inside a test to get the real command back, or to suspend a
+  `set_up_before_script` double for that one test (it cannot undo it for the others,
+  since each test runs in its own subshell).
 - Spy assertion argument order is inconsistent — check, don't guess:
   `assert_have_been_called_times <count> <spy>` but
   `assert_have_been_called_with <spy> <expected> [call_index]`.
