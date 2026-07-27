@@ -9,7 +9,9 @@ XTRACE_LCOV=""
 PARALLEL_LCOV=""
 FIXTURE_DIR=""
 
-function set_up_before_script() {
+# Per test, not per script: two tests write these, and under --parallel they run
+# as concurrent processes that would otherwise race on the same paths.
+function set_up() {
   TRAP_LCOV="$(bashunit::temp_file "lcov-engine-trap")"
   XTRACE_LCOV="$(bashunit::temp_file "lcov-engine-xtrace")"
   PARALLEL_LCOV="$(bashunit::temp_file "lcov-engine-parallel")"
