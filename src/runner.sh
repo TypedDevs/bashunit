@@ -1281,7 +1281,7 @@ function bashunit::runner::run_test() {
     bashunit::runner::format_subshell_output "$subshell_output"
     subshell_output=$_BASHUNIT_RUNNER_OUTPUT_OUT
     if ! bashunit::env::is_failures_only_enabled; then
-      bashunit::state::print_line "$type" "$subshell_output"
+      bashunit::console_results::print_line "$type" "$subshell_output"
     fi
   fi
 

@@ -112,7 +112,7 @@ function bashunit::benchmark::run_function() {
     if bashunit::env::is_bench_mode_enabled; then
       local label="$(bashunit::helper::normalize_test_function_name "$fn_name")"
       local line="$label [$i/$its] ${dur_ms} ms"
-      bashunit::state::print_line "successful" "$line"
+      bashunit::console_results::print_line "successful" "$line"
     fi
   done
 
