@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_have_been_called_with_any <spy> <expected>`: passes when *any* recorded call matches, instead of only the last one (#897)
 - A failed call assertion now prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)
 - `assert_have_been_called_with_args <spy> <arg>...`: compares the recorded arguments one by one, so `cmd "a b"` no longer matches `cmd a b` (#894)
 - `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
@@ -12,6 +13,7 @@
 - A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md)
 
 ### Changed
+- A failed `assert_have_been_called_with` / `_with_args` now states which call it compared (`compared 'the last of 2 calls'`) (#897)
 - Deprecated forms now warn at runtime on stderr; silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true` (#866)
 - `bashunit::state::print_line` / `print_tap_line` moved to `bashunit::console_results::*`; no alias kept (#868)
 - `bashunit doc` and the [Assertions](https://bashunit.com/assertions) page now cover all 71 assertions, with a quick-reference table
