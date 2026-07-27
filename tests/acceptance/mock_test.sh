@@ -16,5 +16,10 @@ function test_runner_clear_mocks_first() {
 
 function test_runner_clear_mocks_second() {
   assert_not_equals "foo" "$(ls)"
-  assert_have_been_called_times 0 ps
+  # The spy registered by the first test is gone, so a call assertion on `ps`
+  # now reports an unregistered spy rather than zero calls.
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Runner clear mocks second" "ps" \
+      "was never registered as a spy; call it first with" "bashunit::spy ps")" \
+    "$(assert_have_been_called_times 0 ps)"
 }

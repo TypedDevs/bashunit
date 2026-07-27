@@ -8,19 +8,35 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 # resolves `_BASHUNIT_SPY_foo_TIMES_FILE` instead.
 
 _BASHUNIT_SPY_TIMES_OUT=0
+_BASHUNIT_SPY_REGISTERED_OUT=false
 
 # Reads the recorded call count for $1 into _BASHUNIT_SPY_TIMES_OUT (0 when
-# never spied/called). Shared by the call-count assertions instead of each
-# repeating the "resolve times file, cat it, default to 0" sequence.
+# never called) and whether $1 is a live spy into _BASHUNIT_SPY_REGISTERED_OUT.
+# Shared by the call-count assertions instead of each repeating the "resolve
+# times file, cat it, default to 0" sequence.
 function bashunit::spy::times_to_slot() {
   local command="$1"
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   _BASHUNIT_SPY_TIMES_OUT=0
+  _BASHUNIT_SPY_REGISTERED_OUT=false
+  if [ -n "${!file_var-}" ]; then
+    _BASHUNIT_SPY_REGISTERED_OUT=true
+  fi
   if [ -f "${!file_var-}" ]; then
     _BASHUNIT_SPY_TIMES_OUT=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
   fi
+}
+
+# Fails the calling assertion because $1 is not a registered spy. Reporting
+# "never called" for a name that was never spied — a typo, or a spy that was
+# unmocked — makes the assertion vacuous while still printing green.
+# Arguments: $1 - command, $2 - test label
+function bashunit::spy::fail_unregistered() {
+  bashunit::state::add_assertions_failed
+  bashunit::console_results::print_failed_test "$2" "$1" \
+    "was never registered as a spy; call it first with" "bashunit::spy $1"
 }
 
 _BASHUNIT_SPY_SERIALIZED_OUT=""
@@ -137,6 +153,11 @@ function assert_have_been_called() {
   local times=$_BASHUNIT_SPY_TIMES_OUT
   local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
 
+  if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
   if [ "$times" -eq 0 ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "${label}" "${command}" "to have been called" "once"
@@ -166,6 +187,14 @@ function assert_have_been_called_with() {
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  if [ -z "${!file_var-}" ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
   local line=""
   if [ -f "${!file_var-}" ]; then
     if [ -n "$index" ]; then
@@ -180,8 +209,7 @@ function assert_have_been_called_with() {
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
-      "${FUNCNAME[1]}")" "$expected" "but got " "$raw"
+    bashunit::console_results::print_failed_test "$label" "$expected" "but got " "$raw"
     return
   fi
 
@@ -198,6 +226,14 @@ function assert_have_been_called_with_args() {
   local variable
   variable="$(bashunit::helper::normalize_variable_name "$command")"
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local label
+  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+
+  if [ -z "${!file_var-}" ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
   local line=""
   if [ -f "${!file_var-}" ]; then
     line=$(tail -n 1 "${!file_var}" 2>/dev/null || true)
@@ -208,8 +244,8 @@ function assert_have_been_called_with_args() {
 
   if [ "$expected" != "$actual" ]; then
     bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_test "$(bashunit::helper::normalize_test_function_name \
-      "${FUNCNAME[1]}")" "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }"
+    bashunit::console_results::print_failed_test "$label" \
+      "${expected//$'\x1f'/ }" "but got " "${actual//$'\x1f'/ }"
     return
   fi
 
@@ -222,6 +258,12 @@ function assert_have_been_called_times() {
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
   local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+
+  if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
   if [ "$times" -ne "$expected_count" ]; then
     bashunit::state::add_assertions_failed
     bashunit::console_results::print_failed_test "${label}" "${command}" \
@@ -247,6 +289,11 @@ function assert_have_been_called_nth_with() {
 
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
+
+  if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
 
   if [ "$nth" -gt "$times" ]; then
     bashunit::state::add_assertions_failed
