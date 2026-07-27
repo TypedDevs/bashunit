@@ -26,6 +26,10 @@ function assert_match_snapshot() {
     return
   fi
 
+  if bashunit::snapshot::update "$snapshot_file" "$actual"; then
+    return
+  fi
+
   bashunit::snapshot::compare "$actual" "$snapshot_file" "$test_fn"
 }
 
@@ -48,6 +52,10 @@ function assert_match_snapshot_ignore_colors() {
 
   if [ ! -f "$snapshot_file" ]; then
     bashunit::snapshot::initialize "$snapshot_file" "$actual"
+    return
+  fi
+
+  if bashunit::snapshot::update "$snapshot_file" "$actual"; then
     return
   fi
 
@@ -121,6 +129,36 @@ function bashunit::snapshot::initialize() {
   mkdir -p "$(dirname "$path")"
   echo "$content" >"$path"
   bashunit::state::add_assertions_snapshot
+}
+
+# Under --snapshot-update, rewrites $1 with the actual value $2 and counts it as
+# a recorded snapshot. Returns 1 when the caller must fall back to a normal
+# comparison: either the mode is off, or the snapshot carries a placeholder.
+#
+# A placeholder is deliberate: it marks a part of the output the author decided
+# not to pin. Overwriting would silently replace it with whatever this run
+# produced, turning a tolerant snapshot into a brittle one with no way back, so
+# such a file is left alone and the run says so on stderr.
+function bashunit::snapshot::update() {
+  local path="$1"
+  local actual="$2"
+
+  bashunit::env::is_snapshot_update_enabled || return 1
+
+  local placeholder="${BASHUNIT_SNAPSHOT_PLACEHOLDER:-::ignore::}"
+  local snapshot
+  snapshot=$(<"$path")
+  case "$snapshot" in
+  *"$placeholder"*)
+    printf "%sNot updating %s: it contains the placeholder '%s'.%s\n" \
+      "${_BASHUNIT_COLOR_SKIPPED:-}" "$path" "$placeholder" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+    return 1
+    ;;
+  esac
+
+  echo "$actual" >"$path"
+  bashunit::state::add_assertions_snapshot
+  return 0
 }
 
 function bashunit::snapshot::compare() {

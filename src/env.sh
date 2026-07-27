@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Rewrite existing snapshots from the actual value instead of comparing
+_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
 
 : "${BASHUNIT_PARALLEL_RUN:=${PARALLEL_RUN:=$_BASHUNIT_DEFAULT_PARALLEL_RUN}}"
 : "${BASHUNIT_PARALLEL_JOBS:=$_BASHUNIT_DEFAULT_PARALLEL_JOBS}"
@@ -295,6 +297,9 @@ _BASHUNIT_DEFAULT_RERUN_FAILED="false"
 # lives here rather than inline in rerun.sh so every BASHUNIT_* default has one
 # home; bashunit::rerun::is_enabled keeps its :- guard for callers that unset it.
 : "${BASHUNIT_RERUN_FAILED:=$_BASHUNIT_DEFAULT_RERUN_FAILED}"
+# No bare SNAPSHOT_UPDATE alias either: rewriting files on disk is the last
+# setting that should be reachable by a generic name from the environment.
+: "${BASHUNIT_SNAPSHOT_UPDATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE}"
 # Support NO_COLOR standard (https://no-color.org)
 if [ -n "${NO_COLOR:-}" ]; then
   BASHUNIT_NO_COLOR="true"
@@ -540,6 +545,10 @@ function bashunit::env::is_coverage_enabled() {
 
 function bashunit::env::is_tap_output_enabled() {
   [ "$BASHUNIT_OUTPUT_FORMAT" = "tap" ]
+}
+
+function bashunit::env::is_snapshot_update_enabled() {
+  [ "$BASHUNIT_SNAPSHOT_UPDATE" = "true" ]
 }
 
 function bashunit::env::is_fail_on_risky_enabled() {

@@ -201,6 +201,27 @@ BASHUNIT_RANDOM_ORDER=false
 ```
 :::
 
+## Snapshot update
+
+> `BASHUNIT_SNAPSHOT_UPDATE=true|false`
+
+Rewrite existing snapshots with the value each run produces instead of comparing
+against them. Disabled by default. Snapshots holding the placeholder are left
+alone. Because it writes to disk, prefer the flag for a one-off re-record and
+keep this off in a committed `.env`.
+
+Similar as using `--snapshot-update` option on the
+[command line](/command-line#snapshot-update).
+
+::: code-group
+```bash [Re-record snapshots]
+BASHUNIT_SNAPSHOT_UPDATE=true
+```
+```bash [Disabled (default)]
+BASHUNIT_SNAPSHOT_UPDATE=false
+```
+:::
+
 ## Rerun failed
 
 > `BASHUNIT_RERUN_FAILED=true|false`

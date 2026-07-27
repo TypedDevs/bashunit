@@ -277,6 +277,10 @@ function bashunit::main::cmd_test() {
       BASHUNIT_RERUN_FAILED=true
       export -n BASHUNIT_RERUN_FAILED
       ;;
+    --snapshot-update)
+      BASHUNIT_SNAPSHOT_UPDATE=true
+      export -n BASHUNIT_SNAPSHOT_UPDATE
+      ;;
     -w | --watch)
       BASHUNIT_WATCH_MODE=true
       export -n BASHUNIT_WATCH_MODE

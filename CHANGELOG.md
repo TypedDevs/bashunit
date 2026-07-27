@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--snapshot-update` / `BASHUNIT_SNAPSHOT_UPDATE=true` re-records existing snapshots (combine with `--filter`); snapshots holding a placeholder are left alone (#900)
 - `bashunit::mock <cmd> <code>`: a lone all-digits argument is an exit code, matching `bashunit::spy`; no throwaway `return 1` helper needed (#898)
 - `assert_have_been_called_with_any <spy> <expected>`: passes when *any* recorded call matches, instead of only the last one (#897)
 - A failed call assertion now prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)

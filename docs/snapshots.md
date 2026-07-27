@@ -91,6 +91,26 @@ echo 'Run at ::ignore::' > snapshots/example.snapshot
 assert_match_snapshot "Run at $(date)"
 ```
 
+## Re-recording snapshots
+
+When an output change is intentional, run with `--snapshot-update` (or
+`BASHUNIT_SNAPSHOT_UPDATE=true`) and the existing snapshots are rewritten with the value
+of that run, reported as recorded snapshots rather than passes:
+
+```bash
+./bashunit --snapshot-update tests/                            # all of them
+./bashunit --snapshot-update --filter "renders header" tests/  # just one test
+```
+
+Snapshots holding a [placeholder](#placeholders) are **not** rewritten: the placeholder
+marks output that was deliberately left unpinned, and overwriting it would replace that
+with one run's concrete value. bashunit reports those on stderr and compares as usual.
+
+Prefer this to deleting snapshot files. The snapshot path is derived from the test file
+and function name, and a missing snapshot is silently re-recorded and passes — so a `rm`
+of the wrong file turns a real assertion into one that asserts nothing. Either way, read
+`git diff` before committing the re-recorded files.
+
 ## Related
 
 - [Assertions](/assertions) — the built-in assertion reference
