@@ -173,11 +173,24 @@ function bashunit::unmock() {
   done
 }
 
+# True when $1 is an exit code rather than a replacement implementation, i.e. a
+# non-empty all-digits string. Shared by both doubles so they read the same
+# convention, and so the value interpolated into `return $1` is provably
+# numeric — that is what keeps the generated body free of shell syntax.
+function bashunit::doubles::is_exit_code() {
+  case "$1" in
+  '' | *[!0-9]*) return 1 ;;
+  esac
+  return 0
+}
+
 function bashunit::mock() {
   local command=$1
   shift
 
-  if [ $# -gt 0 ]; then
+  if [ $# -eq 1 ] && bashunit::doubles::is_exit_code "$1"; then
+    eval "function $command() { return $1; }"
+  elif [ $# -gt 0 ]; then
     eval "function $command() { $* \"\$@\"; }"
   else
     eval "function $command() { builtin echo \"$($CAT)\" ; }"
@@ -204,17 +217,9 @@ function bashunit::spy() {
   export "_BASHUNIT_SPY_${variable}_PARAMS_FILE"="$params_file"
 
   # An all-digits second argument is an exit code; anything else non-empty is a
-  # replacement implementation. The `case` glob is the Bash 3.0 form of the old
-  # `[[ =~ ^[0-9]+$ ]]` (identical domain: a value is all-digits iff it is
-  # non-empty and contains no non-digit) and it keeps the interpolation below
-  # provably numeric, so `return $exit_code_or_impl` cannot inject shell syntax.
+  # replacement implementation.
   local body_suffix=""
-  local _is_exit_code=false
-  case "$exit_code_or_impl" in
-  '' | *[!0-9]*) ;;
-  *) _is_exit_code=true ;;
-  esac
-  if [ "$_is_exit_code" = true ]; then
+  if bashunit::doubles::is_exit_code "$exit_code_or_impl"; then
     body_suffix="return $exit_code_or_impl"
   elif [ -n "$exit_code_or_impl" ]; then
     body_suffix="$exit_code_or_impl \"\$@\""
