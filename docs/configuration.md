@@ -842,6 +842,25 @@ BASHUNIT_COVERAGE_REPORT=
 ```
 :::
 
+### Coverage engine
+
+> `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`
+
+Which mechanism captures executed lines. `auto` by default.
+
+`xtrace` redirects `set -x` to a private file descriptor and parses it after the
+run, which costs about a quarter of what the `DEBUG` trap costs per executed
+line. It requires `BASH_XTRACEFD` (Bash 4.1+), so `auto` — and an explicit
+`xtrace` that the running Bash cannot honour — falls back to `trap`.
+
+See [Coverage](/coverage#tracing-engine) for the behavioural differences.
+
+::: code-group
+```bash [.env]
+BASHUNIT_COVERAGE_ENGINE=trap
+```
+:::
+
 ### Coverage minimum
 
 > `BASHUNIT_COVERAGE_MIN=percent`

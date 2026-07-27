@@ -102,6 +102,37 @@ records the validated direction and a follow-up issue carries the build.
   default flip. Only after that, consider promoting `--coverage` to a gating CI
   job.
 
+## Implementation notes (#860)
+
+Built as decided. Three things the spike did not predict:
+
+* **Parse cost, not capture cost, is what has to be engineered.** Capturing with
+  `set -x` is nearly free (+24 ms on a run whose tests take 133 ms). Replaying
+  the trace through `record_line` — one shell function call per event — cost
+  ~27x the capture and erased the entire win; so did parsing per test, which
+  adds an `awk` fork and a full pass to every test. The engine therefore
+  captures for the whole run and parses **once**, after the last test, which is
+  what the sentinel in this ADR was for.
+* **No sentinel would have been needed for attribution alone.** `enable_trap` /
+  `disable_trap` already bracket each test body, so a per-test parse could read
+  the attribution globals directly. The sentinel is required only because the
+  parse was moved to the end of the run.
+* **Byte-for-byte equivalence does not hold in general, and the trap engine is
+  the lossy side.** It buffers hits in a shell variable and flushes at 100
+  records or at `disable_trap`, so hits recorded inside a `$(...)` subshell die
+  with that subshell. On `tests/unit/{assert,str,math}_test.sh` measured against
+  `src/`, xtrace reports 203 covered lines to the trap engine's 159. The
+  equivalence oracle therefore pins a fixture that uses a return slot instead of
+  command substitution, where the two engines do agree exactly.
+
+Measured capture overhead over a 133 ms baseline, Bash 5.3 / Linux, reporting
+held constant: trap +450–525 ms, xtrace +106–125 ms (**~4.3x**).
+
+`--coverage` is still **not** a gating candidate on this change alone. With the
+whole of `src/` reported, both engines spend ~3.5 s in the *reporting* phase —
+`is_executable_line` forks a `grep` per source line — which now dominates the
+run and is untouched by ADR-009.
+
 ## Links
 
 * Spike issue #854; dedup finding #853; branch-coverage ADR-007; per-test

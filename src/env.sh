@@ -176,6 +176,9 @@ _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW="50"
 _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH="80"
 # Per-line execution counts in the text coverage report (#856)
 _BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS="false"
+# Tracing engine: auto|xtrace|trap. auto takes the xtrace fast path wherever
+# BASH_XTRACEFD exists (Bash 4.1+) and the DEBUG trap below it (ADR-009, #860)
+_BASHUNIT_DEFAULT_COVERAGE_ENGINE="auto"
 
 : "${BASHUNIT_DEFAULT_PATH:=${DEFAULT_PATH:=$_BASHUNIT_DEFAULT_DEFAULT_PATH}}"
 : "${BASHUNIT_DEV_LOG:=${DEV_LOG:=$_BASHUNIT_DEFAULT_DEV_LOG}}"
@@ -206,6 +209,9 @@ BASHUNIT_WATCH_INTERVAL=$(bashunit::env::positive_int_or_default \
 # no-op consolidation, whereas adding the alias would widen the public API.
 # bashunit::coverage keeps its :- guard for callers that unset it.
 : "${BASHUNIT_COVERAGE_SHOW_LINE_HITS:=$_BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS}"
+# No bare COVERAGE_ENGINE alias: the unprefixed forms are deprecated, so a new
+# setting only ever ships under the BASHUNIT_ prefix.
+: "${BASHUNIT_COVERAGE_ENGINE:=$_BASHUNIT_DEFAULT_COVERAGE_ENGINE}"
 
 # Booleans
 _BASHUNIT_DEFAULT_PARALLEL_RUN="false"
@@ -634,6 +640,7 @@ TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
 CAT="$(command -v cat)"
 GREP="$(command -v grep)"
 MKTEMP="$(command -v mktemp)"
+AWK="$(command -v awk)"
 # Deferred-output scratch files. Each used to be its own `mktemp` fork; at ~258
 # nested cold starts in the acceptance suite that is ~1.5k forks and dominates
 # cold-start cost (#798). Derive them from one run-unique directory instead:
