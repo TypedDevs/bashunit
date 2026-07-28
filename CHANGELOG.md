@@ -27,6 +27,8 @@
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded
 
 ### Fixed
+- A configured external git differ (`diff.external` / `GIT_EXTERNAL_DIFF`, e.g. difftastic) no longer blanks the multiline and snapshot failure diffs, which now render with `--no-ext-diff` (#912)
+- Time reads and the JUnit report no longer set the locale with a temporary-environment prefix (`LC_ALL=C cmd`), which segfaults inside a command substitution on Bash 5.3.9 macOS (#912)
 - Call assertions (`assert_not_called`, `assert_have_been_called*`) fail with `was never registered as a spy` instead of reporting zero calls when the name was never spied — a typo used to pass silently (#895)
 - The per-argument form a spy records was written with a literal `$'\x1f'` separator instead of the byte, so it could not be compared against (#894)
 - `--parallel` no longer discards worker stderr written outside a test body; it renders as a `Stderr from <file>` block (#864)

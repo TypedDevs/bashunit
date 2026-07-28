@@ -62,3 +62,26 @@ function test_render_diff_shows_changed_tokens_without_color() {
   rm -f "$a" "$b"
   unset BASHUNIT_NO_COLOR
 }
+
+function test_render_diff_ignores_a_configured_external_diff() {
+  if ! bashunit::dependencies::has_git; then
+    bashunit::skip "git not available" && return
+  fi
+  export BASHUNIT_NO_COLOR=true
+  # An external differ (difftastic in #912) replaces git's own output, so without
+  # --no-ext-diff the rendered diff is whatever it prints -- here nothing at all.
+  export GIT_EXTERNAL_DIFF=true
+  local a b
+  a=$(bashunit::temp_file diff_a)
+  b=$(bashunit::temp_file diff_b)
+  printf 'alpha\nbeta\ngamma\n' >"$a"
+  printf 'alpha\nDELTA\ngamma\n' >"$b"
+
+  local output
+  output=$(bashunit::console_results::render_diff "$a" "$b")
+
+  assert_contains "beta" "$output"
+  assert_contains "DELTA" "$output"
+  rm -f "$a" "$b"
+  unset BASHUNIT_NO_COLOR GIT_EXTERNAL_DIFF
+}
