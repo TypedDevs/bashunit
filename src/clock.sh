@@ -182,6 +182,9 @@ function bashunit::clock::now() {
 
 function bashunit::clock::shell_time() {
   # Get time directly from the shell variable EPOCHREALTIME (Bash 5+)
+  # No `LC_ALL=C` prefix: the value is expanded before the temporary environment
+  # applies, so it cannot normalize the decimal separator (callers accept both),
+  # and that form segfaults inside `$()` on Bash 5.3 macOS (#912).
   [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && echo "$EPOCHREALTIME"
 }
 

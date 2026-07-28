@@ -312,7 +312,8 @@ function bashunit::console_results::render_diff() {
 
   # `git diff` exits non-zero when the files differ; the `|| true` keeps that
   # from tripping `set -e`/`pipefail` under --strict. `tail -n +6` drops git's
-  # header lines; `sed` indents the body.
+  # header lines; `sed` indents the body. `--no-ext-diff` ignores a user's
+  # `diff.external`/`GIT_EXTERNAL_DIFF`, which would replace this word-diff.
   git diff --no-index --no-ext-diff --word-diff "$color_flag" \
     "$expected_file" "$actual_file" 2>/dev/null |
     tail -n +6 | sed "s/^/    /" || true
