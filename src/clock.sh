@@ -182,7 +182,10 @@ function bashunit::clock::now() {
 
 function bashunit::clock::shell_time() {
   # Get time directly from the shell variable EPOCHREALTIME (Bash 5+)
-  [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && LC_ALL=C echo "$EPOCHREALTIME"
+  # No LC_ALL=C prefix: it cannot normalize the decimal separator (bash expands the
+  # value before the temp env applies, and callers accept '.' and ','), and that form
+  # was reported to segfault inside a command substitution on Bash 5.3.9 macOS (#912).
+  [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && echo "$EPOCHREALTIME"
 }
 
 function bashunit::clock::total_runtime_in_milliseconds() {

@@ -102,7 +102,10 @@ function bashunit::reports::generate_junit_xml() {
   local tests_failed=$(bashunit::state::get_tests_failed)
   local time_ms=$(bashunit::clock::total_runtime_in_milliseconds)
   local time
-  time=$(LC_ALL=C awk -v ms="$time_ms" 'BEGIN {printf "%.3f", ms/1000}')
+  # `env` rather than a bare LC_ALL=C prefix (which keeps awk's radix a dot
+  # without bash changing its own locale, reported to segfault on Bash 5.3.9
+  # macOS inside a command substitution, #912).
+  time=$(env LC_ALL=C awk -v ms="$time_ms" 'BEGIN {printf "%.3f", ms/1000}')
 
   {
     echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -120,7 +123,7 @@ function bashunit::reports::generate_junit_xml() {
       local test_time_ms="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-}"
       local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
       local test_time
-      test_time=$(LC_ALL=C awk -v ms="$test_time_ms" 'BEGIN {printf "%.3f", ms/1000}')
+      test_time=$(env LC_ALL=C awk -v ms="$test_time_ms" 'BEGIN {printf "%.3f", ms/1000}')
 
       echo "    <testcase file=\"$file\""
       echo "        name=\"$name\""
