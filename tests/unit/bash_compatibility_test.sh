@@ -102,3 +102,14 @@ function test_src_has_no_coproc() {
 function test_src_has_no_parameter_transformations() {
   assert_empty "$(bashunit::compat::offenders '\$\{[A-Za-z_][A-Za-z0-9_]*@[QEPAKa]\}')"
 }
+
+# A temporary-environment locale prefix (`LC_ALL=C cmd`) makes bash change its
+# own locale for that command. Bash 5.3.9 on macOS segfaults on that form inside
+# a command substitution -- `x=$(LC_ALL=C echo hi)` exits 139 (#912) -- and no CI
+# job runs that build. Use `env LC_ALL=C cmd` instead, which passes the locale
+# straight to the child and never touches bash's own.
+function test_src_has_no_temporary_locale_assignment_prefix() {
+  local pattern='(^|[;&|(])[[:space:]]*((LC_[A-Z_]+|LANG)=[^[:space:]]*[[:space:]]+)+[^[:space:]=]'
+
+  assert_empty "$(bashunit::compat::offenders "$pattern")"
+}
