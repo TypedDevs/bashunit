@@ -48,6 +48,8 @@
 - An unreadable or truncated parallel `.result` file counts as a failed test instead of aborting aggregation
 - `release.sh` reports a failed rollback as failed
 - Docs: the quickstart's duration format, and the real `BASHUNIT_SHOW_EXECUTION_TIME` default (`auto`)
+- Word-diff output was broken for users with `diff.external` configured (e.g. difftastic); `render_diff` now passes `--no-ext-diff` to `git diff`
+- `shell_time()` crashed (SIGSEGV) on Bash 5.3 macOS due to `LC_ALL=C` inside a command substitution; removed since callers already handle both decimal separators
 
 ### Removed
 - `bin/create-pr`, an unreferenced vendored copy of [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr); use the upstream tool (#867)
