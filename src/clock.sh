@@ -182,7 +182,7 @@ function bashunit::clock::now() {
 
 function bashunit::clock::shell_time() {
   # Get time directly from the shell variable EPOCHREALTIME (Bash 5+)
-  [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && LC_ALL=C echo "$EPOCHREALTIME"
+  [ -n "${EPOCHREALTIME+x}" ] && [ -n "$EPOCHREALTIME" ] && echo "$EPOCHREALTIME"
 }
 
 function bashunit::clock::total_runtime_in_milliseconds() {
