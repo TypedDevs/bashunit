@@ -7,41 +7,51 @@ function set_up() {
 }
 
 function test_assert_foo_passed() {
-  assert_foo "foo"
+  assert_assertion_passes assert_foo "foo"
 }
 
 function test_assert_foo_failed() {
-  assert_same "$(bashunit::console_results::print_failed_test "Assert foo failed" "foo" "but got " "bar")" \
-    "$(assert_foo "bar")"
+  assert_assertion_fails assert_foo "bar"
+}
+
+function test_assert_foo_failure_reports_the_expected_and_actual_values() {
+  assert_assertion_fails_with "Expected 'foo'" assert_foo "bar"
+  assert_assertion_fails_with "'bar'" assert_foo "bar"
+}
+
+function test_assert_foo_failure_is_labelled_with_the_test_name() {
+  assert_assertion_fails_with \
+    "Assert foo failure is labelled with the test name" assert_foo "bar"
 }
 
 function test_assert_positive_number_passed() {
-  assert_positive_number "1"
+  assert_assertion_passes assert_positive_number "1"
 }
 
 function test_assert_positive_number_failed() {
-  assert_same \
-    "$(bashunit::console_results::print_failed_test "Assert positive number failed" "positive number" "got" "0")" \
-    "$(assert_positive_number "0")"
+  assert_assertion_fails assert_positive_number "0"
+}
+
+function test_assert_positive_number_uses_its_own_failure_condition_message() {
+  assert_assertion_fails_with "got '0'" assert_positive_number "0"
 }
 
 function test_assert_that_positive_number_passed() {
-  assert_that_positive_number "1"
+  assert_assertion_passes assert_that_positive_number "1"
 }
 
 function test_assert_that_positive_number_failed() {
-  assert_same \
-    "$(bashunit::console_results::print_failed_test \
-      "Assert that positive number failed" "positive number" "but got " "0")" \
-    "$(assert_that_positive_number "0" || true)"
+  assert_assertion_fails_with "Expected 'positive number'" assert_that_positive_number "0"
 }
 
 function test_assert_labelled_foo_passed() {
-  assert_labelled_foo "foo"
+  assert_assertion_passes assert_labelled_foo "foo"
 }
 
-function test_assert_labelled_foo_failed() {
-  assert_same \
-    "$(bashunit::console_results::print_failed_test "Assert labelled foo" "foo" "but got " "bar")" \
-    "$(assert_labelled_foo "bar")"
+function test_assert_labelled_foo_names_itself_instead_of_the_test() {
+  assert_assertion_fails_with "Assert labelled foo" assert_labelled_foo "bar"
+
+  assert_not_contains \
+    "Assert labelled foo names itself instead of the test" \
+    "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
 }

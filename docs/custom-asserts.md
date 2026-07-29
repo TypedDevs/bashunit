@@ -183,6 +183,47 @@ function assert_positive_number() {
 }
 ```
 
+## Testing your custom assertions
+
+A custom assertion is code, so it deserves tests of its own — including for the
+case it is meant to reject. Three [assertions](/assertions) assert about
+assertions:
+
+```bash
+function test_positive_number_accepts_one() {
+  assert_assertion_passes assert_positive_number 1
+}
+
+function test_positive_number_rejects_zero() {
+  assert_assertion_fails assert_positive_number 0
+}
+
+function test_positive_number_says_what_it_wanted() {
+  assert_assertion_fails_with "positive number" assert_positive_number 0
+}
+```
+
+The inner assertion runs isolated. Its verdict never lands in the run totals,
+its failure block never reaches the console, and it cannot trip the
+stop-on-failure guard for the rest of your test — only the outer
+`assert_assertion_*` is counted.
+
+An assertion that counts *nothing* fails both `assert_assertion_passes` and
+`assert_assertion_fails`, which is what catches a custom assertion that forgot
+to mark its outcome at all.
+
+To assert on what a failure did **not** say, read the captured message from
+`$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT` — colour-stripped and flattened to a single
+line:
+
+```bash
+function test_failure_is_labelled_with_the_test_not_the_assertion() {
+  assert_assertion_fails assert_positive_number 0
+
+  assert_not_contains "Assert positive number" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
+}
+```
+
 ## Loading your assertions once
 
 Sourcing a shared assertions file from `set_up` re-runs it for every test, and

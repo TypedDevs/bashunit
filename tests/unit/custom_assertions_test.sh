@@ -42,72 +42,32 @@ function _assert_length_equals() {
 function test_custom_assertion_with_fail_shows_correct_test_name() {
   # This test verifies that when a custom assertion uses fail(),
   # the failure message shows the test function name, not the custom assertion name
-  local output
-  output="$(
-    # Temporarily override bashunit::console_results::print_line to capture output
-    _captured_output=""
-    # shellcheck disable=SC2317,SC2329
-    bashunit::console_results::print_line() {
-      _captured_output="$2"
-      echo "$_captured_output"
-    }
-
-    # Force a failure using our custom assertion with invalid JSON
-    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  assert_assertion_fails_with \
+    "Custom assertion with fail shows correct test name" \
     _assert_valid_json "invalid json"
 
-    echo "$_captured_output"
-  )"
-
-  # The output should contain the test function name (normalized from the test function)
-  assert_contains "Custom assertion with fail shows correct test name" "$output"
-  assert_not_contains "Assert valid json" "$output"
+  assert_not_contains "Assert valid json" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
 }
 
 function test_custom_assertion_with_bashunit_assertion_failed_shows_correct_test_name() {
   # This test verifies that when a custom assertion uses bashunit::assertion_failed(),
   # the failure message shows the test function name, not the custom assertion name
-  local output
-  output="$(
-    _captured_output=""
-    # shellcheck disable=SC2317,SC2329
-    bashunit::console_results::print_line() {
-      _captured_output="$2"
-      echo "$_captured_output"
-    }
-
-    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  assert_assertion_fails_with \
+    "Custom assertion with bashunit assertion failed shows correct test name" \
     _assert_positive_number "-5"
 
-    echo "$_captured_output"
-  )"
-
-  assert_contains \
-    "Custom assertion with bashunit assertion failed shows correct test name" "$output"
-  assert_not_contains "Assert positive number" "$output"
+  assert_not_contains "Assert positive number" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
 }
 
 function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
   # This test verifies that when a custom assertion calls another assertion like assert_same,
   # the failure message shows the test function name, not the intermediate assertion name
-  local output
-  output="$(
-    _captured_output=""
-    # shellcheck disable=SC2317,SC2329
-    bashunit::console_results::print_line() {
-      _captured_output="$2"
-      echo "$_captured_output"
-    }
-
-    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  assert_assertion_fails_with \
+    "Custom assertion calling assert same shows correct test name" \
     _assert_length_equals "5" "abc" # length is 3, not 5
 
-    echo "$_captured_output"
-  )"
-
-  assert_contains "Custom assertion calling assert same shows correct test name" "$output"
-  assert_not_contains "Assert length equals" "$output"
-  assert_not_contains "Assert same" "$output"
+  assert_not_contains "Assert length equals" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
+  assert_not_contains "Assert same" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
 }
 
 function test_assert_that_counts_exactly_one_passed_assertion() {
@@ -160,23 +120,11 @@ function test_assert_that_returns_one_when_the_command_fails() {
 }
 
 function test_assertion_failed_uses_the_optional_label_over_the_test_name() {
-  local output
-  output="$(
-    _captured_output=""
-    # shellcheck disable=SC2317,SC2329
-    bashunit::console_results::print_line() {
-      _captured_output="$2"
-      echo "$_captured_output"
-    }
-
-    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  assert_assertion_fails_with "My own label" \
     bashunit::assertion_failed "positive number" "-5" "but got " "My own label"
 
-    echo "$_captured_output"
-  )"
-
-  assert_contains "My own label" "$output"
-  assert_not_contains "Assertion failed uses the optional label" "$output"
+  assert_not_contains \
+    "Assertion failed uses the optional label" "$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT"
 }
 
 function test_helper_find_test_function_name_finds_test() {
