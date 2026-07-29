@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.44.0](https://github.com/TypedDevs/bashunit/compare/0.43.0...0.44.0) - 2026-07-29
+
 ### Added
 - `bashunit doc --custom` lists the assertions your project defines, rendering the comment block above each one; plain `bashunit doc` appends them as a "Custom assertions" section. Needs `--boot` / `BASHUNIT_BOOTSTRAP`, which `bashunit doc` now accepts (#918)
 - `bashunit::assert_once <label> <actual>` makes a composed assertion count and report once instead of once per inner step, under its own label. Opt-in, so existing totals are unchanged (#917)
