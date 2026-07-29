@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- `bashunit::assert_that <expected> <actual> <cmd> [args...]` writes a custom assertion in one call: it runs the command and marks the assertion passed or failed, so the two counters can no longer drift apart by a forgotten `return` or a missing `bashunit::assertion_passed` (#915)
+- `bashunit::assertion_failed` takes an optional 4th argument labelling the failure block, so a custom assertion can name itself instead of showing the test name (#915)
 - `--snapshot-report-unused` lists snapshot files no test resolved — the ones a rename or deletion leaves behind. Reports only, never deletes; refused on partial runs (#902)
 - `--no-snapshot-create` / `BASHUNIT_SNAPSHOT_CREATE=false` fails on a missing snapshot instead of recording it — the recommended CI setting, since a never-committed snapshot used to make CI green while asserting nothing (#901)
 - `--snapshot-update` / `BASHUNIT_SNAPSHOT_UPDATE=true` re-records existing snapshots (combine with `--filter`); snapshots holding a placeholder are left alone (#900)

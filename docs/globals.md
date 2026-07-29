@@ -89,9 +89,12 @@ bashunit::print_line 40 '='   # 40 equals signs
 
 These helpers are intended for building [custom assertions](/custom-asserts).
 
+- `bashunit::assert_that <expected> <actual> <cmd> [args...]` — Run `cmd` and mark
+  the assertion passed or failed accordingly, in a single call.
 - `bashunit::assertion_passed` — Mark the current assertion as passed.
-- `bashunit::assertion_failed <expected> <actual> <?label>` — Mark the current
-  assertion as failed and print a failure report.
+- `bashunit::assertion_failed <expected> <actual> <?failure_condition_message> <?label>`
+  — Mark the current assertion as failed and print a failure report. `label`
+  names the assertion in that report, defaulting to the test function name.
 - `bashunit::fail <?message>` — Fail the current test with an optional message.
 
 See [Custom asserts](/custom-asserts) for full examples.

@@ -110,6 +110,75 @@ function test_custom_assertion_calling_assert_same_shows_correct_test_name() {
   assert_not_contains "Assert same" "$output"
 }
 
+function test_assert_that_counts_exactly_one_passed_assertion() {
+  local counters
+  counters="$(
+    _BASHUNIT_ASSERTIONS_PASSED=0
+    _BASHUNIT_ASSERTIONS_FAILED=0
+    bashunit::assert_that "truthy" "1" test 1 -gt 0
+    echo "$_BASHUNIT_ASSERTIONS_PASSED:$_BASHUNIT_ASSERTIONS_FAILED"
+  )"
+
+  assert_same "1:0" "$counters"
+}
+
+function test_assert_that_counts_exactly_one_failed_assertion() {
+  local counters
+  counters="$(
+    # shellcheck disable=SC2317,SC2329
+    bashunit::console_results::print_line() { :; }
+    _BASHUNIT_ASSERTIONS_PASSED=0
+    _BASHUNIT_ASSERTIONS_FAILED=0
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+    bashunit::assert_that "truthy" "0" test 0 -gt 0 || true
+    echo "$_BASHUNIT_ASSERTIONS_PASSED:$_BASHUNIT_ASSERTIONS_FAILED"
+  )"
+
+  assert_same "0:1" "$counters"
+}
+
+function test_assert_that_returns_zero_when_the_command_succeeds() {
+  local exit_code=0
+
+  bashunit::assert_that "truthy" "1" test 1 -gt 0 || exit_code=$?
+
+  assert_same "0" "$exit_code"
+}
+
+function test_assert_that_returns_one_when_the_command_fails() {
+  local exit_code
+  exit_code="$(
+    # shellcheck disable=SC2317,SC2329
+    bashunit::console_results::print_line() { :; }
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+    local ec=0
+    bashunit::assert_that "truthy" "0" test 0 -gt 0 || ec=$?
+    echo "$ec"
+  )"
+
+  assert_same "1" "$exit_code"
+}
+
+function test_assertion_failed_uses_the_optional_label_over_the_test_name() {
+  local output
+  output="$(
+    _captured_output=""
+    # shellcheck disable=SC2317,SC2329
+    bashunit::console_results::print_line() {
+      _captured_output="$2"
+      echo "$_captured_output"
+    }
+
+    _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+    bashunit::assertion_failed "positive number" "-5" "but got " "My own label"
+
+    echo "$_captured_output"
+  )"
+
+  assert_contains "My own label" "$output"
+  assert_not_contains "Assertion failed uses the optional label" "$output"
+}
+
 function test_helper_find_test_function_name_finds_test() {
   # Test that bashunit::helper::find_test_function_name correctly finds the test function
   local found_name
