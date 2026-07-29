@@ -30,6 +30,7 @@ to narrow it (`bashunit doc json`).
 | **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
 | **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) |
 | **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_any](#assert-have-been-called-with-any) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
+| **Assertions** | [assert_assertion_passes](#assert-assertion-passes) · [assert_assertion_fails](#assert-assertion-fails) · [assert_assertion_fails_with](#assert-assertion-fails-with) |
 | **Manual failure** | [bashunit::fail](#bashunit-fail) |
 
 ## assert_true
@@ -1813,6 +1814,67 @@ function test_failure() {
   if [ "$(date +%-H)" -lt 25 ]; then
     bashunit::fail "This test will always fail"
   fi
+}
+```
+:::
+
+## assert_assertion_passes
+> `assert_assertion_passes <assertion> [args...]`
+
+Reports an error unless the given assertion reports a success. Use it to test
+your own [custom assertions](/custom-asserts).
+
+The inner assertion runs isolated: its verdict is never added to the run totals,
+its failure output never reaches the console, and it cannot trip the
+stop-on-failure guard for the rest of your test. Exactly one assertion is
+counted — this one.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_assertion_passes assert_positive_number 1
+}
+function test_failure() {
+  assert_assertion_passes assert_positive_number 0
+}
+```
+:::
+
+## assert_assertion_fails
+> `assert_assertion_fails <assertion> [args...]`
+
+Reports an error unless the given assertion reports a failure. An assertion that
+counts nothing at all also fails this check.
+
+The message the inner assertion produced is left in
+`$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT`, colour-stripped and flattened to one line,
+so you can also assert on what it did *not* say.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_assertion_fails assert_positive_number 0
+}
+function test_failure() {
+  assert_assertion_fails assert_positive_number 1
+}
+```
+:::
+
+## assert_assertion_fails_with
+> `assert_assertion_fails_with <expected_message> <assertion> [args...]`
+
+Reports an error unless the given assertion fails **and** its failure message
+contains `expected_message`. This is how a custom assertion's output contract
+gets tested without rebuilding the expected string from `console_results`.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_assertion_fails_with "positive number" assert_positive_number 0
+}
+function test_failure() {
+  assert_assertion_fails_with "negative number" assert_positive_number 0
 }
 ```
 :::

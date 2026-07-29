@@ -694,3 +694,37 @@ Reports an error if the spied `command` was called at all. The inverse of assert
 
 Unambiguously reports an error message. Useful for reporting specific message
 when testing situations not covered by any `assert_*` functions.
+
+
+## assert_assertion_passes
+--------------
+> `assert_assertion_passes <assertion> args...`
+
+Reports an error unless the given assertion reports a success. Use it to test
+your own custom assertions(/custom-asserts).
+
+The inner assertion runs isolated: its verdict is never added to the run totals,
+its failure output never reaches the console, and it cannot trip the
+stop-on-failure guard for the rest of your test. Exactly one assertion is
+counted — this one.
+
+
+## assert_assertion_fails
+--------------
+> `assert_assertion_fails <assertion> args...`
+
+Reports an error unless the given assertion reports a failure. An assertion that
+counts nothing at all also fails this check.
+
+The message the inner assertion produced is left in
+`$_BASHUNIT_ASSERT_INNER_OUTPUT_OUT`, colour-stripped and flattened to one line,
+so you can also assert on what it did *not* say.
+
+
+## assert_assertion_fails_with
+--------------
+> `assert_assertion_fails_with <expected_message> <assertion> args...`
+
+Reports an error unless the given assertion fails **and** its failure message
+contains `expected_message`. This is how a custom assertion's output contract
+gets tested without rebuilding the expected string from `console_results`.
