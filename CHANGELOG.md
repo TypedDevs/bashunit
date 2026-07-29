@@ -3,44 +3,42 @@
 ## Unreleased
 
 ### Added
-- `bashunit doc --custom` lists the assertions your own project defines, rendering the comment block above each one; plain `bashunit doc` appends them as a "Custom assertions" section. Needs `--boot` / `BASHUNIT_BOOTSTRAP`, which `bashunit doc` now accepts (#918)
-- `bashunit::assert_once <label> <actual>` makes a composed custom assertion count and report once instead of once per inner step, with its own label rather than the internal step's message. Opt-in, so existing totals are unchanged (#917)
-- `assert_assertion_passes`, `assert_assertion_fails` and `assert_assertion_fails_with <message>` test a custom assertion for the verdict it reports. The inner assertion runs isolated — its counters, output and stop-on-failure guard are restored — so testing a failing assertion no longer means rebuilding the expected string from `bashunit::console_results::print_failed_test` (#916)
-- `bashunit::assert_that <expected> <actual> <cmd> [args...]` writes a custom assertion in one call: it runs the command and marks the assertion passed or failed, so the two counters can no longer drift apart by a forgotten `return` or a missing `bashunit::assertion_passed` (#915)
+- `bashunit doc --custom` lists the assertions your project defines, rendering the comment block above each one; plain `bashunit doc` appends them as a "Custom assertions" section. Needs `--boot` / `BASHUNIT_BOOTSTRAP`, which `bashunit doc` now accepts (#918)
+- `bashunit::assert_once <label> <actual>` makes a composed assertion count and report once instead of once per inner step, under its own label. Opt-in, so existing totals are unchanged (#917)
+- `assert_assertion_passes`, `assert_assertion_fails` and `assert_assertion_fails_with <message>` assert the verdict a custom assertion reports. The inner assertion runs isolated (counters, output and stop-on-failure guard restored), so testing a failing assertion no longer means rebuilding its expected output by hand (#916)
+- `bashunit::assert_that <expected> <actual> <cmd> [args...]` writes a custom assertion in one call: it runs the command and marks the assertion passed or failed, so a forgotten `return` or `bashunit::assertion_passed` can no longer drift the two counters apart (#915)
 - `bashunit::assertion_failed` takes an optional 4th argument labelling the failure block, so a custom assertion can name itself instead of showing the test name (#915)
-- `--snapshot-report-unused` lists snapshot files no test resolved — the ones a rename or deletion leaves behind. Reports only, never deletes; refused on partial runs (#902)
-- `--no-snapshot-create` / `BASHUNIT_SNAPSHOT_CREATE=false` fails on a missing snapshot instead of recording it — the recommended CI setting, since a never-committed snapshot used to make CI green while asserting nothing (#901)
+- `--snapshot-report-unused` lists snapshot files no test resolved, the leftovers of a rename or deletion. Reports only, never deletes; refused on partial runs (#902)
+- `--no-snapshot-create` / `BASHUNIT_SNAPSHOT_CREATE=false` fails on a missing snapshot instead of recording it. Recommended in CI, where a never-committed snapshot used to pass while asserting nothing (#901)
 - `--snapshot-update` / `BASHUNIT_SNAPSHOT_UPDATE=true` re-records existing snapshots (combine with `--filter`); snapshots holding a placeholder are left alone (#900)
 - `bashunit::mock <cmd> <code>`: a lone all-digits argument is an exit code, matching `bashunit::spy`; no throwaway `return 1` helper needed (#898)
-- `assert_have_been_called_with_any <spy> <expected>`: passes when *any* recorded call matches, instead of only the last one (#897)
-- A failed call assertion now prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)
+- `assert_have_been_called_with_any <spy> <expected>`: passes when *any* recorded call matches, not only the last one (#897)
+- A failed call assertion prints the calls recorded for that spy, capped at 10 with an explicit `… and N more` (#896)
 - `assert_have_been_called_with_args <spy> <arg>...`: compares the recorded arguments one by one, so `cmd "a b"` no longer matches `cmd a b` (#894)
-- `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` coverage engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
+- `BASHUNIT_COVERAGE_ENGINE=auto|xtrace|trap`: a new `xtrace` engine, ~4x cheaper per captured line. Needs Bash 4.1+, so `auto` (the default) falls back to `trap` below that (#860)
 - `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true` prints per-line execution counts in the text coverage report (#856)
-- An [Agentic coding](https://bashunit.com/ai-agents) docs page, and `llms.txt` / `llms-full.txt` are now linked
-- Docs: [Nix](https://bashunit.com/installation#nix) as an install option — bashunit is in nixpkgs (`nix-shell -p bashunit`, `nix run nixpkgs#bashunit`), which was never documented
-- A drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md)
+- Docs: an [Agentic coding](https://bashunit.com/ai-agents) page, linked `llms.txt` / `llms-full.txt`, and a drop-in agent skill at [bashunit.com/bashunit-skill.md](https://bashunit.com/bashunit-skill.md)
+- Docs: [Nix](https://bashunit.com/installation#nix) as an install option, since bashunit is in nixpkgs (`nix-shell -p bashunit`, `nix run nixpkgs#bashunit`)
 
 ### Changed
-- A failed `assert_have_been_called_with` / `_with_args` now states which call it compared (`compared 'the last of 2 calls'`) (#897)
-- Deprecated forms now warn at runtime on stderr; silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true` (#866)
+- A failed `assert_have_been_called_with` / `_with_args` states which call it compared (`compared 'the last of 2 calls'`) (#897)
+- Deprecated forms warn at runtime on stderr; silence with `BASHUNIT_NO_DEPRECATION_WARNINGS=true` (#866)
 - `bashunit::state::print_line` / `print_tap_line` moved to `bashunit::console_results::*`; no alias kept (#868)
 - `bashunit doc` and the [Assertions](https://bashunit.com/assertions) page now cover all 71 assertions, with a quick-reference table
-- Docs: `bashunit::unmock` and the lifecycle of a double — automatic per-test cleanup, `set_up_before_script` doubles, and what `unmock` reaches (#899)
-- Docs: invalid-input handling, `BASHUNIT_REPORT_TAP`/`BASHUNIT_REPORT_JSON`, the standalone exit code, and the optional `["snapshot_file"]` argument
-- The docs sidebar outline now lists `h3` headings
 - The `--parallel` unsupported-OS warning no longer claims Alpine is excluded
+- Docs: `bashunit::unmock` and the lifecycle of a double: automatic per-test cleanup, `set_up_before_script` doubles, and what `unmock` reaches (#899)
+- Docs: invalid-input handling, `BASHUNIT_REPORT_TAP`/`BASHUNIT_REPORT_JSON`, the standalone exit code, and the optional `["snapshot_file"]` argument
+- Docs: the sidebar outline now lists `h3` headings
 
 ### Fixed
-- A configured external git differ (`diff.external` / `GIT_EXTERNAL_DIFF`, e.g. difftastic) no longer blanks the multiline and snapshot failure diffs, which now render with `--no-ext-diff` (#912)
-- Time reads and the JUnit report no longer set the locale with a temporary-environment prefix (`LC_ALL=C cmd`), which segfaults inside a command substitution on Bash 5.3.9 macOS (#912)
-- Call assertions (`assert_not_called`, `assert_have_been_called*`) fail with `was never registered as a spy` instead of reporting zero calls when the name was never spied — a typo used to pass silently (#895)
-- The per-argument form a spy records was written with a literal `$'\x1f'` separator instead of the byte, so it could not be compared against (#894)
+- Failure and snapshot diffs render with `--no-ext-diff`, so a configured `diff.external` (difftastic) no longer blanks them (#912)
+- Time reads and the JUnit report pass the locale via `env`; the `LC_ALL=C cmd` prefix segfaults inside `$()` on Bash 5.3 macOS (#912)
+- Call assertions (`assert_not_called`, `assert_have_been_called*`) fail with `was never registered as a spy` instead of reporting zero calls when the name was never spied, so a typo no longer passes silently (#895)
+- The per-argument form a spy records held a literal `$'\x1f'` string instead of the separator byte, so it could not be compared against (#894)
 - `--parallel` no longer discards worker stderr written outside a test body; it renders as a `Stderr from <file>` block (#864)
 - The minimum-bash gate compares the minor version and parses suffixed versions; the floor is unchanged at **Bash 3.0+**
 - An empty entry in `.env` no longer blanks a value the caller exported or passed on the command line (#865)
-- Malformed benchmark annotations (`@revs`, `@its`, `@max_ms`) now error instead of silently falling back (#884)
-- `@max_ms` accepts a decimal value
+- Malformed benchmark annotations (`@revs`, `@its`, `@max_ms`) error instead of silently falling back, and `@max_ms` accepts a decimal value (#884)
 - An unknown option is rejected instead of being treated as a test path (#871)
 - `--jobs`, `--retry`, `--test-timeout`, `--coverage-min` and `--output` reject invalid values; `--jobs abc` used to hang (#873)
 - A missing `--env`/`--boot` file errors instead of a green run that tested nothing; report paths and `--seed` are validated too (#875)
@@ -49,7 +47,7 @@
 - The exit-code assertions fail closed on a non-integer exit code, which used to count as passed
 - Variadic assertions with the actual value omitted fail cleanly on Bash 3.2 under `--strict`
 - `assert_arrays_equal` failing outside a test function shows its real label
-- Scratch directories that cannot be created under `TMPDIR` now abort with an actionable error
+- Scratch directories that cannot be created under `TMPDIR` abort with an actionable error
 - A `set_up_before_script` that changes directory no longer drops the remaining test files
 - A test path combining a glob and a space (`./bashunit "my tests/*"`) is no longer word-split
 - An unreadable or truncated parallel `.result` file counts as a failed test instead of aborting aggregation
