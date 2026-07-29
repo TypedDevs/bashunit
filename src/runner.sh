@@ -1461,6 +1461,10 @@ function bashunit::runner::cleanup_on_exit() {
 
   set +e
 
+  # Settle a bashunit::assert_once marker the test body left open, before
+  # tear_down runs its own assertions and before the counters are exported.
+  bashunit::assert::once_flush
+
   # Detect unexpected subshell exit during set_up (Issue #611).
   # When 'source' of a non-existent file fails under set -eE, the ERR trap
   # does not fire. On macOS Bash 3.2, $? is 0 in the EXIT trap; on Linux
