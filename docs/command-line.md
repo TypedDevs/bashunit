@@ -13,7 +13,7 @@ bashunit test [path] [options]    # Run tests (default)
 bashunit bench [path] [options]   # Run benchmarks
 bashunit watch [path] [options]   # Watch files, re-run tests on change
 bashunit assert <fn> <args>       # Run standalone assertion
-bashunit doc [filter]             # Show assertion documentation
+bashunit doc [options] [filter]   # Show assertion documentation
 bashunit init [dir]               # Initialize test directory
 bashunit learn                    # Interactive tutorial
 bashunit upgrade                  # Upgrade to latest version
@@ -890,9 +890,18 @@ also uses polling.
 
 ## doc
 
-> `bashunit doc [filter]`
+> `bashunit doc [options] [filter]`
 
 Display documentation for assertion functions.
+
+| Option | Description |
+|--------|-------------|
+| `--custom` | Show only the assertions your project defines |
+| `-e, --env, --boot <file>` | Load a bootstrap file defining custom assertions |
+
+With a bootstrap loaded, `bashunit doc` appends a **Custom assertions** section
+rendering the comment block above each of your own `assert_*` functions. See
+[Custom asserts](/custom-asserts).
 
 ::: code-group
 ```bash [Examples]
@@ -904,6 +913,9 @@ bashunit doc equals
 
 # Show file-related assertions
 bashunit doc file
+
+# Show only your project's assertions
+bashunit doc --custom --boot tests/bootstrap.sh
 ```
 ```[Output]
 ## assert_equals

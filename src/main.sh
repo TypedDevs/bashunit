@@ -733,14 +733,63 @@ function bashunit::main::cmd_bench() {
 # Subcommand: doc
 #############################
 function bashunit::main::cmd_doc() {
-  case "${1:-}" in
-  -h | --help)
-    bashunit::console_header::print_doc_help
-    exit 0
-    ;;
-  esac
+  local filter=""
+  local custom_only=false
+  local boot_file="${BASHUNIT_BOOTSTRAP:-}"
 
-  bashunit::doc::print_asserts "${1:-}"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    -h | --help)
+      bashunit::console_header::print_doc_help
+      exit 0
+      ;;
+    --custom)
+      custom_only=true
+      shift
+      ;;
+    -e | --env | --boot)
+      boot_file="${2:-}"
+      shift 2
+      ;;
+    *)
+      filter="$1"
+      shift
+      ;;
+    esac
+  done
+
+  # Snapshot before sourcing: whatever assert_* appears afterwards is the
+  # project's own.
+  local known
+  known="$(compgen -A function assert_ 2>/dev/null)"
+
+  if [ -n "$boot_file" ]; then
+    if [ ! -r "$boot_file" ]; then
+      printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+        "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+      exit 1
+    fi
+    # shellcheck disable=SC1090,SC2086
+    source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+  fi
+
+  bashunit::doc::custom_fns_to_slot "$known"
+
+  if [ "$custom_only" = true ]; then
+    if ! bashunit::doc::print_custom_asserts "$filter"; then
+      printf 'No custom assertions found.\n'
+      printf 'Load them with --boot <file> or BASHUNIT_BOOTSTRAP.\n'
+    fi
+    exit 0
+  fi
+
+  bashunit::doc::print_asserts "$filter"
+
+  if [ -n "$_BASHUNIT_DOC_CUSTOM_FNS_OUT" ]; then
+    printf '\n## Custom assertions\n\n'
+    bashunit::doc::print_custom_asserts "$filter" || true
+  fi
+
   exit 0
 }
 

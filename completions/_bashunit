@@ -59,6 +59,7 @@ _bashunit() {
   fi
 
   _arguments \
+    '--custom[Show only the assertions your project defines]' \
     '(-a --assert)'{-a,--assert}'[Run a standalone assert function]:function:' \
     '(-e --env --boot)'{-e,--env,--boot}'[Load a custom env/bootstrap file]:file:_files' \
     '(-f --filter)'{-f,--filter}'[Only run tests matching the name]:name:' \

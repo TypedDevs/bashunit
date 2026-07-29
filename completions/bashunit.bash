@@ -10,6 +10,9 @@
 
 _BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watch"
 
+# Flags accepted by the doc subcommand.
+_BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"
+
 _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 --coverage-min --coverage-paths --coverage-report --coverage-report-html \
 --debug --detailed --env --exclude-tag --fail-on-risky --failures-only \
@@ -79,6 +82,15 @@ _bashunit_completions() {
   # `bashunit assert <fn>` completes the public assertion names.
   if [ "$COMP_CWORD" -ge 2 ] && [ "${COMP_WORDS[1]}" = "assert" ]; then
     COMPREPLY=($(compgen -W "$_BASHUNIT_COMPLETIONS_ASSERT_FNS" -- "$cur"))
+    return 0
+  fi
+
+  # `bashunit doc <filter>` completes assertion names, plus its own flags.
+  if [ "$COMP_CWORD" -ge 2 ] && [ "${COMP_WORDS[1]}" = "doc" ]; then
+    case "$cur" in
+    -*) COMPREPLY=($(compgen -W "$_BASHUNIT_COMPLETIONS_DOC_OPTS" -- "$cur")) ;;
+    *) COMPREPLY=($(compgen -W "$_BASHUNIT_COMPLETIONS_ASSERT_FNS" -- "$cur")) ;;
+    esac
     return 0
   fi
 
