@@ -41,11 +41,29 @@ function bashunit::assert::_capture() {
   local before_output=$_BASHUNIT_TEST_OUTPUT
   local before_count=$_BASHUNIT_TOTAL_TESTS_COUNT
 
+  # A bashunit::assert_once marker open around this call would swallow the very
+  # verdict the counters below are read for, so it is set aside for the
+  # duration and restored afterwards.
+  local before_once_active=$_BASHUNIT_ASSERT_ONCE_ACTIVE
+  local before_once_frame=$_BASHUNIT_ASSERT_ONCE_FRAME
+  local before_once_abs=$_BASHUNIT_ASSERT_ONCE_ABS
+  local before_once_label=$_BASHUNIT_ASSERT_ONCE_LABEL
+  local before_once_actual=$_BASHUNIT_ASSERT_ONCE_ACTUAL
+  local before_once_failed=$_BASHUNIT_ASSERT_ONCE_FAILED
+  local before_once_in_expected=$_BASHUNIT_ASSERT_ONCE_IN_EXPECTED
+  local before_once_in_condition=$_BASHUNIT_ASSERT_ONCE_IN_CONDITION
+  local before_once_in_actual=$_BASHUNIT_ASSERT_ONCE_IN_ACTUAL
+  bashunit::assert::once_reset
+
   # Run the inner assertion unguarded: had an earlier assertion in this test
   # failed, it would otherwise skip and report no verdict at all.
   _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
 
   "$@" >/dev/null 2>&1 || true
+
+  # Settle a marker the captured assertion opened, so its single verdict is
+  # visible in the counters read below.
+  bashunit::assert::once_flush >/dev/null 2>&1
 
   bashunit::str::strip_ansi_to_slot "${_BASHUNIT_TEST_OUTPUT#"$before_output"}"
   local output=$_BASHUNIT_STR_STRIPPED_OUT
@@ -69,6 +87,16 @@ function bashunit::assert::_capture() {
   _BASHUNIT_ASSERTION_FAILED_IN_TEST=$before_guard
   _BASHUNIT_TEST_OUTPUT=$before_output
   _BASHUNIT_TOTAL_TESTS_COUNT=$before_count
+
+  _BASHUNIT_ASSERT_ONCE_FRAME=$before_once_frame
+  _BASHUNIT_ASSERT_ONCE_ABS=$before_once_abs
+  _BASHUNIT_ASSERT_ONCE_LABEL=$before_once_label
+  _BASHUNIT_ASSERT_ONCE_ACTUAL=$before_once_actual
+  _BASHUNIT_ASSERT_ONCE_FAILED=$before_once_failed
+  _BASHUNIT_ASSERT_ONCE_IN_EXPECTED=$before_once_in_expected
+  _BASHUNIT_ASSERT_ONCE_IN_CONDITION=$before_once_in_condition
+  _BASHUNIT_ASSERT_ONCE_IN_ACTUAL=$before_once_in_actual
+  _BASHUNIT_ASSERT_ONCE_ACTIVE=$before_once_active
 }
 
 _BASHUNIT_ASSERT_INNER_OUTCOME_OUT=""

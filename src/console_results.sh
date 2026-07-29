@@ -279,6 +279,14 @@ function bashunit::console_results::print_failure_message() {
   local test_name=$1
   local failure_message=$2
 
+  # Absorbed by an open bashunit::assert_once marker: see print_failed_test.
+  if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
+    if bashunit::assert::once_is_absorbing; then
+      bashunit::assert::once_absorb_message "$failure_message" "" ""
+      return 0
+    fi
+  fi
+
   local line
   line="$(printf "\
 ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
@@ -343,6 +351,16 @@ function bashunit::console_results::print_failed_test() {
   # Free-form block appended verbatim below the failure (already indented by the
   # caller). The spy assertions use it to dump the recorded call log.
   local details=${7-}
+
+  # Absorbed by an open bashunit::assert_once marker: keep the message as the
+  # no-label fallback and print nothing, so the composed assertion reports once.
+  if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
+    if bashunit::assert::once_is_absorbing; then
+      bashunit::assert::once_absorb_message "$expected" \
+        "$failure_condition_message" "$actual"
+      return 0
+    fi
+  fi
 
   # For multiline values, render a unified diff below the header (git required,
   # opt out with BASHUNIT_NO_DIFF). Single-line output stays byte-identical.

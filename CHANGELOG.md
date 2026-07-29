@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `bashunit::assert_once <label> <actual>` makes a composed custom assertion count and report once instead of once per inner step, with its own label rather than the internal step's message. Opt-in, so existing totals are unchanged (#917)
 - `assert_assertion_passes`, `assert_assertion_fails` and `assert_assertion_fails_with <message>` test a custom assertion for the verdict it reports. The inner assertion runs isolated — its counters, output and stop-on-failure guard are restored — so testing a failing assertion no longer means rebuilding the expected string from `bashunit::console_results::print_failed_test` (#916)
 - `bashunit::assert_that <expected> <actual> <cmd> [args...]` writes a custom assertion in one call: it runs the command and marks the assertion passed or failed, so the two counters can no longer drift apart by a forgotten `return` or a missing `bashunit::assertion_passed` (#915)
 - `bashunit::assertion_failed` takes an optional 4th argument labelling the failure block, so a custom assertion can name itself instead of showing the test name (#915)

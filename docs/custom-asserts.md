@@ -36,6 +36,18 @@ Returns `0` when the command succeeds and `1` when it fails, so it can be chaine
 The command is invoked directly, without `eval`, so arguments keep their word
 boundaries and nothing is re-parsed by the shell.
 
+### assert_once
+> `bashunit::assert_once <label?> <actual?>`
+
+Declares that the calling custom assertion counts and reports as **one**
+assertion, whatever it asserts internally. See
+[Composing with existing assertions](#composing-with-existing-assertions).
+
+| Parameter | Description |
+|-----------|-------------|
+| `label` | What the assertion expects, shown in the failure block. Omit it to report the innermost failure message instead |
+| `actual` | The actual value shown against that label |
+
 ### assertion_failed
 > `bashunit::assertion_failed <expected> <actual> <failure_condition_message?> <label?>`
 
@@ -167,6 +179,48 @@ function test_api_returns_success() {
   assert_http_success "$status_code"
 }
 ```
+
+By default each inner assertion is counted and reported on its own, so one call
+to `assert_http_success` counts as two assertions and a failure reads
+`Expected '500' to be less than '300'` — the internal step rather than "not an
+HTTP success".
+
+Add `bashunit::assert_once` at the top to report the whole thing as one:
+
+```bash
+function assert_http_success() {
+  bashunit::assert_once "a 2xx status" "$1"
+
+  assert_greater_or_equal_than "200" "$1"
+  assert_less_than "300" "$1"
+}
+```
+
+```
+Tests:      1 passed, 1 failed, 2 total
+Assertions: 1 passed, 1 failed, 2 total
+```
+
+The failure now reads `Expected 'a 2xx status' but got '500'`, labelled with the
+test that called it.
+
+| Parameter | Description |
+|-----------|-------------|
+| `label` | What the assertion expects, shown in the failure block. Omit it to keep reporting the innermost failure message |
+| `actual` | The actual value shown against that label |
+
+Notes:
+
+- It is opt-in. A composed assertion without the marker keeps counting and
+  reporting exactly as before.
+- Every call counts, including repeated calls from a loop.
+- The inner assertions all run even when one fails, so the marker reports on the
+  whole check rather than stopping at the first step.
+- The marker is settled when the custom assertion is called again, when an
+  assertion runs after it returned, or at the end of the test — whichever comes
+  first.
+- `bashunit::assert_that` (above) is the shorter option when the check is a
+  single command rather than several composed assertions.
 
 ### Custom assertion with custom failure message
 

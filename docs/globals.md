@@ -91,6 +91,8 @@ These helpers are intended for building [custom assertions](/custom-asserts).
 
 - `bashunit::assert_that <expected> <actual> <cmd> [args...]` — Run `cmd` and mark
   the assertion passed or failed accordingly, in a single call.
+- `bashunit::assert_once <?label> <?actual>` — Declare that the calling custom
+  assertion counts and reports once, whatever it asserts internally.
 - `bashunit::assertion_passed` — Mark the current assertion as passed.
 - `bashunit::assertion_failed <expected> <actual> <?failure_condition_message> <?label>`
   — Mark the current assertion as failed and print a failure report. `label`

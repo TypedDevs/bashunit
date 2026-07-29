@@ -2,6 +2,15 @@
 
 # Helper to mark assertion as failed and set the guard flag
 function bashunit::assert::mark_failed() {
+  # While a bashunit::assert_once marker absorbs this assertion, neither the
+  # counter nor the guard moves: the marker's flush reports the single verdict,
+  # and leaving the guard clear lets the rest of the composed assertion run.
+  if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
+    if bashunit::assert::once_is_absorbing; then
+      _BASHUNIT_ASSERT_ONCE_FAILED=1
+      return 0
+    fi
+  fi
   bashunit::state::add_assertions_failed
   bashunit::state::mark_assertion_failed_in_test
 }

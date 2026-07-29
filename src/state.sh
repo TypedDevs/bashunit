@@ -92,6 +92,11 @@ function bashunit::state::get_assertions_passed() {
 }
 
 function bashunit::state::add_assertions_passed() {
+  # Cheap global test first: the function call only happens while a
+  # bashunit::assert_once marker is open, keeping the per-assertion path flat.
+  if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
+    bashunit::assert::once_is_absorbing && return 0
+  fi
   ((_BASHUNIT_ASSERTIONS_PASSED++)) || true
 }
 
@@ -204,6 +209,7 @@ function bashunit::state::initialize_assertions_count() {
   _BASHUNIT_TEST_HOOK_FAILURE=""
   _BASHUNIT_TEST_HOOK_MESSAGE=""
   _BASHUNIT_ASSERTION_FAILED_IN_TEST=0
+  bashunit::assert::once_reset
 }
 
 # base64-encodes a field, writing the result into _BASHUNIT_STATE_ENCODED_OUT.
