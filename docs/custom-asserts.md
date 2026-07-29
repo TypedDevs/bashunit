@@ -302,6 +302,42 @@ source "$(dirname "${BASH_SOURCE[0]}")/custom_asserts.sh"
 See [Configuration](/configuration) and [Command line](/command-line) for the
 full bootstrap options.
 
+## Listing your assertions
+
+`bashunit doc` prints the built-in catalogue. Once a bootstrap defines your own
+assertions, it appends them too, rendering the comment block above each one:
+
+```bash
+./bashunit doc --boot tests/bootstrap.sh     # built-ins, then a "Custom assertions" section
+./bashunit doc --custom --boot tests/bootstrap.sh  # only your own
+./bashunit doc --custom http                 # ...narrowed by a filter
+```
+
+```
+## assert_http_success
+--------------
+Asserts that the status code is a 2xx.
+```
+
+With `BASHUNIT_BOOTSTRAP` set, the `--boot` flag can be omitted. A bootstrap is
+required either way: it is the only point at which your assertions are
+guaranteed loaded, which is another reason to prefer it over sourcing from
+`set_up`.
+
+Write the docstring as a plain comment block immediately above the function —
+the same shape the built-ins use:
+
+```bash
+# Asserts that the status code is a 2xx.
+# Arguments: $1 - the status code
+function assert_http_success() {
+  bashunit::assert_once "a 2xx status" "$1"
+
+  assert_greater_or_equal_than "200" "$1"
+  assert_less_than "300" "$1"
+}
+```
+
 ## Best practices
 
 1. **Prefer `bashunit::assert_that`**: one call marks the assertion passed or failed, so you cannot forget the `return` after a failure (which would bump both counters) or forget `bashunit::assertion_passed` (which would leave the test with zero assertions, reported as risky).

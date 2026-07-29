@@ -208,17 +208,22 @@ EOF
 
 function bashunit::console_header::print_doc_help() {
   cat <<EOF
-Usage: bashunit doc [filter]
+Usage: bashunit doc [options] [filter]
 
 Display documentation for assertion functions.
 
 Arguments:
 filter                      Optional filter to show only matching assertions
 
+Options:
+--custom                    Show only the assertions your project defines
+-e, --env, --boot <file>    Load a bootstrap file defining custom assertions
+
 Examples:
 bashunit doc                Show all assertions
 bashunit doc equals         Show assertions containing 'equals'
 bashunit doc file           Show file-related assertions
+bashunit doc --custom       Show only your project's own assertions
 EOF
 }
 

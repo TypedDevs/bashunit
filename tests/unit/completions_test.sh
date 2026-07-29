@@ -16,6 +16,16 @@ function completions_expected_test_flags() {
     LC_ALL=C sort -u
 }
 
+# Flags accepted by cmd_doc, straight from its option-parsing case arms. The
+# zsh script advertises every flag from one _arguments block, so its expected
+# set is the union of the test and doc flags.
+function completions_expected_doc_flags() {
+  awk '/^function bashunit::main::cmd_doc\(\)/,/^}$/' src/main.sh |
+    grep -E '^[[:space:]]+--?[a-zA-Z][a-zA-Z0-9-]*( \| --?[a-zA-Z][a-zA-Z0-9-]*)*\)' |
+    sed 's/)$//' | tr -d ' ' | tr '|' '\n' |
+    LC_ALL=C sort -u
+}
+
 function completions_expected_assert_functions() {
   grep -hoE '^function assert_[a-z_0-9]+' src/assert*.sh |
     sed 's/^function //' | LC_ALL=C sort -u
@@ -64,8 +74,25 @@ function test_bash_completion_flags_match_main_sh() {
 
 function test_zsh_completion_flags_match_main_sh() {
   local expected actual
-  expected=$(completions_expected_test_flags)
+  expected=$(
+    {
+      completions_expected_test_flags
+      completions_expected_doc_flags
+    } | LC_ALL=C sort -u
+  )
   actual=$(completions_zsh_flags)
+
+  assert_same "$expected" "$actual"
+}
+
+function test_bash_completion_doc_flags_match_main_sh() {
+  local expected actual
+  expected=$(completions_expected_doc_flags)
+  actual=$(
+    # shellcheck source=/dev/null
+    source "$BASH_COMPLETION_FILE" 2>/dev/null
+    echo "$_BASHUNIT_COMPLETIONS_DOC_OPTS" | tr ' ' '\n' | grep -v '^$' | LC_ALL=C sort -u
+  )
 
   assert_same "$expected" "$actual"
 }
