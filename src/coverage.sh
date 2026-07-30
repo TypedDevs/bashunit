@@ -170,8 +170,8 @@ function bashunit::coverage::resolve_engine() {
   esac
 }
 
-# Name kept from the trap-only era: this is the seam runner.sh already calls
-# around every test body and lifecycle hook.
+# Name kept from the trap-only era: this is the seam runner/exec.sh and
+# runner/hooks.sh already call around every test body and lifecycle hook.
 function bashunit::coverage::enable_trap() {
   if ! bashunit::env::is_coverage_enabled; then
     return 0

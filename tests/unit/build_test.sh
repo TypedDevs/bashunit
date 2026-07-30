@@ -89,6 +89,24 @@ function test_build_embed_docs_fails_on_missing_markers() {
   assert_contains "echo hi" "$(cat "$file")"
 }
 
+# build::process_file emits a file's body and *then* recurses into its `source`
+# lines, so an aggregator holding anything else at top level would run that code
+# before its dependencies in the built binary but after them in dev mode. Add any
+# new aggregator here.
+function test_module_aggregators_hold_only_source_lines_and_comments() {
+  local aggregators="src/assertions.sh src/runner.sh"
+
+  local offenders=""
+  local aggregator
+  for aggregator in $aggregators; do
+    if grep -qvE '^[[:space:]]*(#|source |$)' "$ROOT_DIR/$aggregator"; then
+      offenders="$offenders $aggregator"
+    fi
+  done
+
+  assert_empty "$offenders"
+}
+
 function test_build_process_file_embeds_a_file_only_once() {
   local dir
   dir=$(bashunit::temp_dir)

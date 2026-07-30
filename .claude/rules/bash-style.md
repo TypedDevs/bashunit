@@ -118,7 +118,7 @@ local thing=$_BASHUNIT_PKG_THING_OUT
 - A dedicated slot per helper (rather than one shared `_BASHUNIT_OUT`) means
   adjacent or nested calls can't clobber each other. Cheap: globals are free.
 
-Examples in tree: `src/runner.sh` (`_BASHUNIT_RUNNER_FIELD_OUT`,
+Examples in tree: `src/runner/payload.sh` (`_BASHUNIT_RUNNER_FIELD_OUT`,
 `_BASHUNIT_RUNNER_TOTAL_OUT`, `_BASHUNIT_RUNNER_TYPE_OUT`, `_BASHUNIT_RUNNER_OUTPUT_OUT`),
 `src/coverage.sh` (`_BASHUNIT_BRANCH_ARMS_OUT`).
 
