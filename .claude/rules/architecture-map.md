@@ -80,3 +80,12 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
   doubles/PATH games can't hijack the framework's own plumbing.
 - **Snapshots assume 80-col non-tty width** (`tput cols` fallback); anything
   that changes rendering widths breaks `tests/acceptance/snapshots/`.
+- **The build flattens the source graph in DFS order** (`build.sh`
+  `build::process_file`): a file's body is emitted, *then* its `source` lines are
+  recursed into. That equals dev-mode order only if a module aggregator
+  (`src/<module>.sh`, e.g. `src/assertions.sh`) contains **nothing but `source`
+  lines and comments** — any other top-level statement would run before its
+  dependencies in the built artifact but after them in dev mode. Files are
+  deduped by repo-relative path, so `src/` may hold module dirs and two files may
+  share a basename. Every src file's **first line must be the shebang**:
+  `tail -n +2` strips it when embedding.
