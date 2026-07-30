@@ -7,9 +7,9 @@ bashunit::check_os::init
 BASHUNIT_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export BASHUNIT_ROOT_DIR
 
-# Files already embedded by build::process_file. The source graph is a tree
-# today, but one added cross-source would otherwise silently bundle a file
-# twice (duplicate function definitions and double top-level execution).
+# Files already embedded by build::process_file, keyed by repo-relative path.
+# Without the dedupe a cross-module source would bundle a file twice (duplicate
+# function definitions and double top-level execution).
 _BUILD_EMBEDDED_FILES=""
 
 function build() {
@@ -70,13 +70,20 @@ function build::process_file() {
   local file=$1
   local temp=$2
 
+  # Key the dedupe and the marker on a repo-relative path, never a basename: the
+  # top-level loop passes `src/x.sh` while the recursion passes an absolute path,
+  # and two modules can hold the same basename (src/parallel.sh vs
+  # src/runner/parallel.sh). `$file` itself stays untouched so the `tail` and
+  # `dirname` below work on whichever form the caller passed.
+  local marker="${file#"$BASHUNIT_ROOT_DIR"/}"
+
   case " $_BUILD_EMBEDDED_FILES " in
-  *" $file "*) return ;;
+  *" $marker "*) return ;;
   esac
-  _BUILD_EMBEDDED_FILES="$_BUILD_EMBEDDED_FILES $file"
+  _BUILD_EMBEDDED_FILES="$_BUILD_EMBEDDED_FILES $marker"
 
   {
-    echo "# $(basename "$file")"
+    echo "# $marker"
     tail -n +2 "$file"
     echo ""
   } >>"$temp"
@@ -91,10 +98,12 @@ function build::process_file() {
     # Expand the literal $BASHUNIT_ROOT_DIR prefix without eval
     sourced_file="${sourced_file/\$BASHUNIT_ROOT_DIR/$BASHUNIT_ROOT_DIR}"
 
-    # Handle relative paths if necessary
+    # Handle relative paths if necessary. Strip a leading `./` first, or each
+    # recursion level appends another `/.` segment and the same file reaches the
+    # dedupe under two spellings.
     local _absolute_path_pattern='^/'
     if [[ ! "$sourced_file" =~ $_absolute_path_pattern ]]; then
-      sourced_file="$(dirname "$file")/$sourced_file"
+      sourced_file="$(dirname "$file")/${sourced_file#./}"
     fi
 
     # Recursively process the sourced file if it exists
