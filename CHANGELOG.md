@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Internal: `src/runner.sh` is split into a `src/runner/` module of ten single-responsibility files behind a `source`-only aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924)
+
 ### Fixed
 - `build.sh` dedupes embedded files by repo-relative path. The previous basename key compared the top-level loop's relative paths against the recursion's absolute ones, so a file reached from two places could be bundled twice in the released binary; it also collided for same-named files in different directories (#923)
 
