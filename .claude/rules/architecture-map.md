@@ -14,7 +14,7 @@ flow of a test run. Line numbers drift; function names are the stable anchors.
 ```
 bashunit (entry)          sources all src/*.sh; version gate; early flag scan
 └─ bashunit::main::cmd_test                 (main.sh: flag parsing, env exports)
-   └─ bashunit::runner::load_test_files     (runner.sh: the per-file loop)
+   └─ bashunit::runner::load_test_files     (runner/discovery.sh: the per-file loop)
       ├─ console_header::print_header       "Running N tests" — captures
       │    └─ helper::find_total_tests      $() SUBSHELL: sources each file in a
       │                                     nested subshell just to count tests
@@ -48,7 +48,17 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | Module | Owns |
 |--------|------|
 | `bashunit` + `main.sh` | entry, subcommand routing, flag parsing, run lifecycle, exit codes, cleanup calls |
-| `runner.sh` | file loop, per-test execution, retry/timeout, result parsing, failure context |
+| `runner.sh` | aggregator only — sources the `src/runner/` module below |
+| `runner/context.sh` | workdir restore, test identity/location exports, title interpolation, capability probes |
+| `runner/payload.sh` | the `_BASHUNIT_RUNNER_*_OUT` return slots; encode/decode of the per-test result payload |
+| `runner/diagnostics.sh` | runtime-error detection, kill-signal classification, profiling, verbose/file headers |
+| `runner/result.sh` | `parse_result{,_sync,_parallel}`, failure source context, failed/skipped/incomplete/risky writers |
+| `runner/parallel.sh` | job-slot waiting (`wait -n` or poll), running-job count, spinner |
+| `runner/hooks.sh` | set_up/tear_down (test + script scope), hook failure records, mock clearing, EXIT cleanup |
+| `runner/provider.sh` | `@data_provider` argument parsing |
+| `runner/exec.sh` | `run_test`, the capture-subshell body, retry, timeout watchdog, per-file dispatch |
+| `runner/discovery.sh` | `load_test_files` (the per-file loop), `functions_for_script` |
+| `runner/bench.sh` | benchmark file loop and bench function dispatch |
 | `helpers.sh` | discovery (`find_files_recursive`), fn filtering, provider map, duplicate check, ids |
 | `state.sh` | counters, per-test payload encode/decode, TAP conversion |
 | `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
