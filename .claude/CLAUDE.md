@@ -38,38 +38,6 @@ make lint        # EditorConfig linting (the formatting authority — 2-space in
 tracked files are already shfmt-dirty on a clean `main`, and satisfying shfmt
 breaks `make lint`. See "Formatting" below.
 
-## Architecture
-
-```
-bashunit/
-├── src/                    # Core framework code (Bash 3.0+ compatible)
-│   ├── bashunit.sh        # Main entry point
-│   ├── assertions.sh      # Assertion functions
-│   ├── assert_*.sh        # Specialized assertions
-│   └── *.sh               # Utilities (io, math, etc.)
-├── tests/
-│   ├── unit/              # Unit tests for src/ (isolated, with mocks)
-│   ├── functional/        # Integration tests
-│   └── acceptance/        # End-to-end CLI tests
-├── .claude/               # Claude Code configuration
-│   ├── CLAUDE.md         # This file
-│   ├── skills/           # Custom workflows (invoke with /skill-name)
-│   └── rules/            # Modular guidelines
-├── .tasks/               # Optional task tracking files
-├── adrs/                 # Architecture Decision Records
-└── bashunit             # CLI entry point
-```
-
-## Common Commands
-
-```bash
-./bashunit tests/              # Run all tests
-./bashunit --parallel tests/   # Parallel execution
-./bashunit tests/unit/         # Run unit tests only
-make sa                        # ShellCheck static analysis
-make lint                      # EditorConfig checker (formatting authority)
-```
-
 ## Formatting
 
 Match the surrounding 2-space style by hand and verify with `make lint`. There is
@@ -101,42 +69,9 @@ Study existing tests before writing new ones:
 - **Lifecycle Hooks**: `tests/unit/setup_teardown_test.sh`
 - **CLI Testing**: `tests/acceptance/bashunit_test.sh`
 
-## Skills
-
-Invoke with `/skill-name`:
-
-| Skill | Purpose |
-|-------|---------|
-| `/tdd-cycle` | Complete RED → GREEN → REFACTOR cycle |
-| `/fix-test` | Debug and fix failing tests |
-| `/add-assertion` | Add new assertion with TDD |
-| `/check-coverage` | Analyze test coverage gaps |
-| `/pre-release` | Pre-release validation checklist |
-| `/release` | Run pre-release checks and execute release |
-| `/commit` | Stage and commit with conventional commits |
-| `/gh-issue <N>` | GitHub issue → branch → implement → PR |
-| `/pr [#N]` | Push branch and create PR |
-
 ## Path-Scoped Guidelines
 
 Rules auto-load based on file paths being edited (via `paths:` frontmatter in each rule file).
-
-### `src/**/*.sh`
-- Small, portable functions
-- Bash 3.0+ compatibility (no associative arrays, no `[[`, no `${var,,}`)
-- Proper namespacing (`bashunit::*`)
-- No external dependencies in core
-
-### `tests/**/*_test.sh`
-- Behavior-focused tests
-- Use official assertions/doubles only
-- Avoid network calls
-- Use `temp_file`/`temp_dir` for isolation
-- Test both success and failure paths
-
-### `adrs/*.md`
-- Read existing ADRs before major changes
-- Use template for new decisions
 
 ## Guardrails
 
