@@ -64,7 +64,7 @@ function bashunit::coverage::report_lcov() {
       echo "BRF:$br_total"
       echo "BRH:$br_hit"
 
-      local lineno=0 executable=0 hit=0 line line_hits
+      local lineno=0 executable=0 hit=0 line
       local -a lcov_lines=()
       local _lli=0 _ll
       while IFS= read -r _ll || [ -n "$_ll" ]; do
