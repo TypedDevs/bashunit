@@ -162,6 +162,97 @@ function test_build_process_file_marks_same_basename_files_in_different_dirs_dis
   assert_equals "1" "$(grep -cFx '# src/mod/parallel.sh' "$dir/out.tmp")"
 }
 
+# A three-level module tree: aggregator -> nested aggregator -> leaf in a
+# sub-subdirectory. Echoes the fixture root.
+function build_nested_module_fixture() {
+  local dir
+  dir=$(bashunit::temp_dir)
+  mkdir -p "$dir/src/mod/deep"
+  printf '#!/usr/bin/env bash\nsource "$BASHUNIT_ROOT_DIR/src/mod/mid.sh"\n' >"$dir/src/mod.sh"
+  printf '#!/usr/bin/env bash\nsource "$BASHUNIT_ROOT_DIR/src/mod/deep/leaf.sh"\n' >"$dir/src/mod/mid.sh"
+  printf '#!/usr/bin/env bash\nfunction deep_leaf_fn() { :; }\n' >"$dir/src/mod/deep/leaf.sh"
+  echo "$dir"
+}
+
+function build_process_fixture_root() {
+  (cd "$ROOT_DIR" && bash -c '
+    source ./build.sh
+    BASHUNIT_ROOT_DIR="$1"
+    cd "$1" || exit 1
+    build::process_file "src/mod.sh" out.tmp
+  ' _ "$1") >/dev/null 2>&1
+}
+
+# build::process_file walks `source` statements, not directories, so nesting
+# depth is invisible to it. Module directories may therefore nest freely
+# (adrs/adr-010-src-module-directories.md); without this test nothing says so.
+function test_build_process_file_embeds_modules_nested_at_any_depth() {
+  local dir
+  dir=$(build_nested_module_fixture)
+
+  build_process_fixture_root "$dir"
+
+  assert_equals "1" "$(grep -cFx '# src/mod.sh' "$dir/out.tmp")"
+  assert_equals "1" "$(grep -cFx '# src/mod/mid.sh' "$dir/out.tmp")"
+  assert_equals "1" "$(grep -cFx '# src/mod/deep/leaf.sh' "$dir/out.tmp")"
+  assert_equals "1" "$(grep -c 'function deep_leaf_fn()' "$dir/out.tmp")"
+}
+
+# The ordering contract behind the "aggregators hold only source lines" rule: a
+# file's own body is emitted *before* the bodies of the files it sources. Were it
+# reversed, an aggregator's statements would run after its dependencies in the
+# built binary but before them in dev mode.
+function test_build_process_file_emits_a_file_before_the_files_it_sources() {
+  local dir
+  dir=$(build_nested_module_fixture)
+
+  build_process_fixture_root "$dir"
+
+  local order
+  order=$(grep -oE '^# src/[a-z/]+\.sh$' "$dir/out.tmp" | tr '\n' '|')
+
+  assert_same "# src/mod.sh|# src/mod/mid.sh|# src/mod/deep/leaf.sh|" "$order"
+}
+
+# The embed dedupe keys on the repo-relative path (#923). Two modules holding the
+# same basename must both survive -- the situation every further module split
+# creates (src/parallel.sh vs src/runner/parallel.sh today).
+function test_build_process_file_embeds_same_basename_from_two_module_dirs() {
+  local dir
+  dir=$(bashunit::temp_dir)
+  mkdir -p "$dir/src/one" "$dir/src/two"
+  {
+    printf '#!/usr/bin/env bash\n'
+    printf 'source "$BASHUNIT_ROOT_DIR/src/one/helpers.sh"\n'
+    printf 'source "$BASHUNIT_ROOT_DIR/src/two/helpers.sh"\n'
+  } >"$dir/src/root.sh"
+  printf '#!/usr/bin/env bash\nfunction one_helpers_fn() { :; }\n' >"$dir/src/one/helpers.sh"
+  printf '#!/usr/bin/env bash\nfunction two_helpers_fn() { :; }\n' >"$dir/src/two/helpers.sh"
+
+  (cd "$ROOT_DIR" && bash -c '
+    source ./build.sh
+    BASHUNIT_ROOT_DIR="$1"
+    cd "$1" || exit 1
+    build::process_file "src/root.sh" out.tmp
+  ' _ "$dir") >/dev/null 2>&1
+
+  assert_equals "1" "$(grep -c 'function one_helpers_fn()' "$dir/out.tmp")"
+  assert_equals "1" "$(grep -c 'function two_helpers_fn()' "$dir/out.tmp")"
+}
+
+# The distributable is one flat script: every `source` line is stripped, so a
+# surviving one would try to read a src/ tree the installed binary does not ship
+# with (regressions: bench #0.31.0, watch #735).
+function test_built_binary_contains_no_source_lines() {
+  local build_dir
+  build_dir=$(bashunit::temp_dir)
+
+  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+
+  assert_file_exists "$build_dir/bashunit"
+  assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
+}
+
 function test_build_assert_valid_syntax_rejects_broken_file() {
   local file
   file=$(bashunit::temp_file)
