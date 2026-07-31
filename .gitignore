@@ -17,7 +17,9 @@ log-junit.xml
 report.html
 
 # internal
-coverage/
+# Anchored: the generated report lives at the repo root. Unanchored, this also
+# matched the src/coverage/ source module and silently excluded it from git.
+/coverage/
 local/
 tmp/
 dev.log
