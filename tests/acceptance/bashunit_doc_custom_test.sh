@@ -80,3 +80,24 @@ function test_doc_custom_reports_an_unreadable_bootstrap() {
 
   assert_contains "cannot read the bootstrap file" "$output"
 }
+
+# A bootstrap named explicitly must still fail loudly (above), but the *default*
+# one is optional: BASHUNIT_BOOTSTRAP carries a default of tests/bootstrap.sh, so
+# treating it as mandatory made plain `bashunit doc` abort before printing
+# anything in any project without that file (#929). This mirrors what cmd_test
+# already does -- explicit --env errors, the default is `[ -f ] && source`.
+function test_doc_does_not_error_when_the_default_bootstrap_is_missing() {
+  local output
+  output=$(BASHUNIT_BOOTSTRAP="does/not/exist.sh" ./bashunit doc 2>&1) || true
+
+  assert_contains "## assert_same" "$output"
+  assert_not_contains "cannot read the bootstrap file" "$output"
+}
+
+function test_doc_exits_zero_when_the_default_bootstrap_is_missing() {
+  local exit_code=0
+
+  BASHUNIT_BOOTSTRAP="does/not/exist.sh" ./bashunit doc >/dev/null 2>&1 || exit_code=$?
+
+  assert_same "0" "$exit_code"
+}

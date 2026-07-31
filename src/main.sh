@@ -736,6 +736,7 @@ function bashunit::main::cmd_doc() {
   local filter=""
   local custom_only=false
   local boot_file="${BASHUNIT_BOOTSTRAP:-}"
+  local boot_provided=false
 
   while [ $# -gt 0 ]; do
     case "$1" in
@@ -749,6 +750,7 @@ function bashunit::main::cmd_doc() {
       ;;
     -e | --env | --boot)
       boot_file="${2:-}"
+      boot_provided=true
       shift 2
       ;;
     *)
@@ -765,12 +767,15 @@ function bashunit::main::cmd_doc() {
 
   if [ -n "$boot_file" ]; then
     if [ ! -r "$boot_file" ]; then
-      printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
-        "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
-      exit 1
+      if [ "$boot_provided" = true ]; then
+        printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+          "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+        exit 1
+      fi
+    else
+      # shellcheck disable=SC1090,SC2086
+      source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
     fi
-    # shellcheck disable=SC1090,SC2086
-    source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
   fi
 
   bashunit::doc::custom_fns_to_slot "$known"
