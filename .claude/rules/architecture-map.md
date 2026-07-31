@@ -48,7 +48,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | Module | Owns |
 |--------|------|
 | `bashunit` + `main.sh` | entry, subcommand routing, flag parsing, run lifecycle, exit codes, cleanup calls |
-| `runner.sh` | aggregator only — sources the `src/runner/` module below |
+| `runner/index.sh` | aggregator only — sources the `src/runner/` module below |
 | `runner/context.sh` | workdir restore, test identity/location exports, title interpolation, capability probes |
 | `runner/payload.sh` | the `_BASHUNIT_RUNNER_*_OUT` return slots; encode/decode of the per-test result payload |
 | `runner/diagnostics.sh` | runtime-error detection, kill-signal classification, profiling, verbose/file headers |
@@ -68,7 +68,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
 | `str.sh` / `math.sh` / `io.sh` / `globals.sh` | pure-bash utilities; `globals.sh` has `temp_file`/`temp_dir` (public test API) |
 | `test_doubles.sh` | spy/mock state via `_BASHUNIT_SPY_*` globals + files |
-| `coverage.sh` | aggregator only — sources the `src/coverage/` modules below |
+| `coverage/index.sh` | aggregator only — sources the `src/coverage/` modules below |
 | `coverage/config.sh` | data-file locations, tracked-file roots, engine selection (`init` resets state owned by several modules) |
 | `coverage/paths.sh` | `normalize_path`, `should_track` and the hot-path track/path caches |
 | `coverage/engine.sh` | DEBUG-trap and xtrace capture, buffering, `finalize`/`cleanup`, parallel merge; only active under `--coverage` |

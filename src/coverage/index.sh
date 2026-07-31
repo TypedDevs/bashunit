@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Aggregator for the src/coverage/ module: only `source` lines and comments
+# Entry point for the src/coverage/ module: only `source` lines and comments
 # belong here. build.sh emits a file's body before recursing into its `source`
 # lines, so any statement here would run before its dependencies in the built
 # binary (adrs/adr-010-src-module-directories.md).
