@@ -32,5 +32,12 @@ indent_size = unset
 [.claude/**.md]
 indent_size = unset
 
-[src/coverage.sh]
+# The two HTML page emitters are template-heavy: their long lines are single
+# printf'd markup rows that reflowing would only make harder to read. Scoped to
+# these two files on purpose -- every other src/coverage/ module honours the
+# global 120 limit, which is a net tightening over the old whole-file exemption.
+[src/coverage/html_index.sh]
+max_line_length = unset
+
+[src/coverage/html_file.sh]
 max_line_length = unset

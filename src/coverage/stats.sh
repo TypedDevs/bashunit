@@ -1,0 +1,147 @@
+#!/usr/bin/env bash
+
+# Coverage percentages, the precomputed per-file stats cache and the threshold gate.
+
+# Get coverage class (high/medium/low) based on percentage
+function bashunit::coverage::get_coverage_class() {
+  local pct="$1"
+  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
+    echo "high"
+  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" ]; then
+    echo "medium"
+  else
+    echo "low"
+  fi
+}
+
+function bashunit::coverage::get_color_for_class() {
+  case "$1" in
+  high) printf '%s' "$_BASHUNIT_COLOR_PASSED" ;;
+  medium) printf '%s' "$_BASHUNIT_COLOR_SKIPPED" ;;
+  low) printf '%s' "$_BASHUNIT_COLOR_FAILED" ;;
+  esac
+}
+
+# Calculate percentage from hit and executable counts
+function bashunit::coverage::calculate_percentage() {
+  local hit="$1"
+  local executable="$2"
+  if [ "$executable" -gt 0 ]; then
+    echo $((hit * 100 / executable))
+  else
+    echo "0"
+  fi
+}
+
+# Get file coverage stats as "executable:hit:pct:class"
+function bashunit::coverage::get_file_stats() {
+  local file="$1"
+  local stats executable hit pct class
+  stats=$(bashunit::coverage::compute_file_coverage "$file")
+  executable="${stats%%:*}"
+  hit="${stats##*:}"
+  pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+  class=$(bashunit::coverage::get_coverage_class "$pct")
+  echo "${executable}:${hit}:${pct}:${class}"
+}
+
+
+# Pre-computed file stats cache (avoids redundant per-file reads across reports)
+_BASHUNIT_COVERAGE_STATS_FILES=()
+_BASHUNIT_COVERAGE_STATS_EXEC=()
+_BASHUNIT_COVERAGE_STATS_HIT=()
+_BASHUNIT_COVERAGE_STATS_PCT=()
+_BASHUNIT_COVERAGE_STATS_CLASS=()
+_BASHUNIT_COVERAGE_STATS_COUNT=0
+_BASHUNIT_COVERAGE_STATS_LOOKUP=""
+
+
+# Pre-compute stats for all tracked files (call once before reports)
+function bashunit::coverage::precompute_file_stats() {
+  _BASHUNIT_COVERAGE_STATS_FILES=()
+  _BASHUNIT_COVERAGE_STATS_EXEC=()
+  _BASHUNIT_COVERAGE_STATS_HIT=()
+  _BASHUNIT_COVERAGE_STATS_PCT=()
+  _BASHUNIT_COVERAGE_STATS_CLASS=()
+  _BASHUNIT_COVERAGE_STATS_COUNT=0
+  _BASHUNIT_COVERAGE_STATS_LOOKUP=""
+
+  local file
+  while IFS= read -r file; do
+    { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+    local stats executable hit pct class
+    stats=$(bashunit::coverage::compute_file_coverage "$file")
+    executable="${stats%%:*}"
+    hit="${stats##*:}"
+    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
+    class=$(bashunit::coverage::get_coverage_class "$pct")
+
+    local idx="$_BASHUNIT_COVERAGE_STATS_COUNT"
+    _BASHUNIT_COVERAGE_STATS_FILES[idx]="$file"
+    _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$executable"
+    _BASHUNIT_COVERAGE_STATS_HIT[idx]="$hit"
+    _BASHUNIT_COVERAGE_STATS_PCT[idx]="$pct"
+    _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$class"
+    _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
+    _BASHUNIT_COVERAGE_STATS_LOOKUP="${_BASHUNIT_COVERAGE_STATS_LOOKUP}|${file}=${idx}|"
+  done < <(bashunit::coverage::get_tracked_files)
+}
+
+# Look up cached stats for a file, returns "executable:hit:pct:class"
+function bashunit::coverage::get_cached_stats() {
+  local file="$1"
+  case "$_BASHUNIT_COVERAGE_STATS_LOOKUP" in
+  *"|${file}="*)
+    local idx="${_BASHUNIT_COVERAGE_STATS_LOOKUP#*"|${file}="}"
+    idx="${idx%%"|"*}"
+    echo "${_BASHUNIT_COVERAGE_STATS_EXEC[idx]}:${_BASHUNIT_COVERAGE_STATS_HIT[idx]}\
+:${_BASHUNIT_COVERAGE_STATS_PCT[idx]}:${_BASHUNIT_COVERAGE_STATS_CLASS[idx]}"
+    return 0
+    ;;
+  esac
+  bashunit::coverage::get_file_stats "$file"
+}
+
+function bashunit::coverage::get_percentage() {
+  local total_executable=0
+  local total_hit=0
+
+  if [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]; then
+    local i
+    for ((i = 0; i < _BASHUNIT_COVERAGE_STATS_COUNT; i++)); do
+      total_executable=$((total_executable + _BASHUNIT_COVERAGE_STATS_EXEC[i]))
+      total_hit=$((total_hit + _BASHUNIT_COVERAGE_STATS_HIT[i]))
+    done
+  else
+    while IFS= read -r file; do
+      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+
+      local executable hit
+      executable=$(bashunit::coverage::get_executable_lines "$file")
+      hit=$(bashunit::coverage::get_hit_lines "$file")
+
+      total_executable=$((total_executable + executable))
+      total_hit=$((total_hit + hit))
+    done < <(bashunit::coverage::get_tracked_files)
+  fi
+
+  bashunit::coverage::calculate_percentage "$total_hit" "$total_executable"
+}
+
+function bashunit::coverage::check_threshold() {
+  if [ -z "$BASHUNIT_COVERAGE_MIN" ]; then
+    return 0
+  fi
+
+  local pct
+  pct=$(bashunit::coverage::get_percentage)
+
+  if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
+    printf "%sCoverage %d%% is below minimum %d%%%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT"
+    return 1
+  fi
+
+  return 0
+}

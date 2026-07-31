@@ -68,7 +68,16 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
 | `str.sh` / `math.sh` / `io.sh` / `globals.sh` | pure-bash utilities; `globals.sh` has `temp_file`/`temp_dir` (public test API) |
 | `test_doubles.sh` | spy/mock state via `_BASHUNIT_SPY_*` globals + files |
-| `coverage.sh` | DEBUG-trap line tracking; only active under `--coverage` |
+| `coverage.sh` | aggregator only — sources the `src/coverage/` modules below |
+| `coverage/config.sh` | data-file locations, tracked-file roots, engine selection (`init` resets state owned by several modules) |
+| `coverage/paths.sh` | `normalize_path`, `should_track` and the hot-path track/path caches |
+| `coverage/engine.sh` | DEBUG-trap and xtrace capture, buffering, `finalize`/`cleanup`, parallel merge; only active under `--coverage` |
+| `coverage/lines.sh` | executable-line classification (`_NONEXEC_PATTERN`) and hit-data reading |
+| `coverage/stats.sh` | percentages, the precomputed per-file stats cache, threshold gate |
+| `coverage/functions.sh` | function definitions and their line spans |
+| `coverage/branches.sh` | branch extraction + hit computation; **one file on purpose** — the `_branch_*` helpers mutate `extract_branches`'s locals via dynamic scoping |
+| `coverage/report_text.sh` / `report_lcov.sh` / `report_html.sh` | the three renderers |
+| `coverage/html_index.sh` / `html_file.sh` | HTML page emitters; the only two files exempt from `max_line_length` |
 | `rerun.sh` | `.bashunit/last-failed` cache for `--rerun-failed` |
 | `reports.sh` | JUnit/HTML/TAP/JSON writers |
 | `check_os.sh` / `dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |
