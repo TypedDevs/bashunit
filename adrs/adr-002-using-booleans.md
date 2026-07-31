@@ -32,14 +32,14 @@ When using variables, we must use `true` and `false` as commands (not strings!):
 
 When possible, extract a condition into a function. For example:
 ```bash
-function env::is_show_header_enabled() {
-    # this is a string comparison because it is coming from the .env
-    [[ "$BASHUNIT_SHOW_HEADER" == "true" ]]
+function bashunit::env::is_show_header_enabled() {
+  # this is a string comparison because it is coming from the .env
+  [ "$BASHUNIT_SHOW_HEADER" = "true" ]
 }
 ```
 Usage
 ```bash
-if env::is_show_header_enabled; then
+if bashunit::env::is_show_header_enabled; then
     # ...
 fi
 ```

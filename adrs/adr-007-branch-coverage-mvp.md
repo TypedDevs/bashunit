@@ -18,7 +18,7 @@ We need a path that yields useful, mostly-correct branch metrics in LCOV reports
 * Bash 3.0+ compatibility (no associative arrays, no `[[`, no Bash 4-only features).
 * Reuse existing line-hit data; do not double the runtime cost of coverage.
 * LCOV output must be consumable by genhtml, Codecov and Coveralls without custom processing.
-* Implementation must fit in `src/coverage.sh` and remain testable with the existing unit-test patterns.
+* Implementation must fit in the coverage module and remain testable with the existing unit-test patterns.
 * Behavior must be predictable enough to pin in tests; "best-effort heuristic" outputs are not acceptable.
 
 ## Considered Options
@@ -101,5 +101,5 @@ than the line-range model.
 
 ## Links
 
-* Builds on the function extractor introduced in `src/coverage.sh` (see `bashunit::coverage::extract_functions`).
+* Builds on the function extractor `bashunit::coverage::extract_functions` (now `src/coverage/functions.sh`; branch code lives in `src/coverage/branches.sh` since ADR-010).
 * LCOV format reference: <https://manpages.debian.org/unstable/lcov/geninfo.1.en.html>
