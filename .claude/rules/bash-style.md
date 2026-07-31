@@ -120,7 +120,7 @@ local thing=$_BASHUNIT_PKG_THING_OUT
 
 Examples in tree: `src/runner/payload.sh` (`_BASHUNIT_RUNNER_FIELD_OUT`,
 `_BASHUNIT_RUNNER_TOTAL_OUT`, `_BASHUNIT_RUNNER_TYPE_OUT`, `_BASHUNIT_RUNNER_OUTPUT_OUT`),
-`src/coverage.sh` (`_BASHUNIT_BRANCH_ARMS_OUT`).
+`src/coverage/branches.sh` (`_BASHUNIT_BRANCH_ARMS_OUT`).
 
 ### When the helper builds dynamic variable names (mock/spy state)
 
@@ -158,10 +158,11 @@ function bashunit::pkg::do_thing() {
 
 ### Intentional dynamic-scope mutation is a separate pattern
 
-The coverage branch helpers in `src/coverage.sh` (`_branch_push_if` and friends) deliberately
-mutate caller locals (`if_decision_line`, `if_arms`, `if_depth`, `if_arm_start`). That is
-documented inline at `src/coverage.sh:818-821` and is **not** the outvar pattern — the
-helper has no `$1`-named outvar argument; the caller agrees to share state by convention.
+The coverage branch helpers in `src/coverage/branches.sh` (`_branch_push_if` and friends)
+deliberately mutate caller locals (`if_decision_line`, `if_arms`, `if_depth`, `if_arm_start`).
+That is documented inline above the helpers in that file and is **not** the outvar pattern —
+the helper has no `$1`-named outvar argument; the caller agrees to share state by convention.
+It is also why those helpers and `extract_branches` must stay in one file (ADR-010).
 Don't introduce new instances of this pattern without an inline justification comment.
 
 ## ShellCheck

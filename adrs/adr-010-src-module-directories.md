@@ -1,10 +1,16 @@
 # Splitting large `src/` files into module directories
 
-* Status: accepted
+* Status: accepted, amended 2026-08-01
 * Deciders: Chemaclass
 * Date: 2026-07-30
 
 Technical Story: https://github.com/TypedDevs/bashunit/issues/924
+
+> **Amendment, 2026-08-01.** The aggregator moves *inside* the module directory
+> as `index.sh`, replacing the original `src/<module>.sh` beside it. The
+> reasoning that first chose "beside" was wrong, and one of the two arguments
+> that overturn it is a correctness bug rather than a preference — see
+> [Aggregator placement](#aggregator-placement-amended-2026-08-01).
 
 ## Context and Problem Statement
 
@@ -36,24 +42,60 @@ directory without changing what the released single-file binary does?
 
 ## Decision Outcome
 
-Chosen option: **`src/runner/` directory behind a thin aggregator beside it**.
+Chosen option: **`src/runner/` directory with the aggregator inside it as
+`index.sh`** (originally "beside it"; amended 2026-08-01, below).
 
-`src/runner.sh` keeps its single `source` line in the `bashunit` entrypoint and
-becomes ten `source` lines plus comments. `build.sh` needs no per-module
-knowledge: it already recurses into `source` lines, so the module children are
-discovered through the aggregator.
+The entrypoint keeps a single `source` line per module —
+`src/runner/index.sh` — and that file is ten `source` lines plus comments.
+`build.sh` needs no per-module knowledge: it already recurses into `source`
+lines, so the module children are discovered through the aggregator.
 
-The aggregator sits **beside** the directory rather than inside it as an
-`index.sh`. Both are identical to `build.sh` — see the next section, the build
-follows the `source` graph and cannot tell the difference — so the choice is
-about the source tree, not the artifact. Beside wins on precedent: it is exactly
-how `src/assertions.sh` has aggregated the flat `src/assert_*.sh` files since
-long before module directories existed, so there is one aggregator convention in
-`src/` rather than two. Inside would make each module a self-contained directory
-and keep `ls src/` free of aggregator/directory pairs, which is the real argument
-for it; it was rejected as not worth renaming shipped modules and rewriting
-entrypoint lines for a cosmetic gain. Revisit only with a deliberate amendment
-here — not per module, or `src/` ends up with both conventions.
+### Aggregator placement (amended 2026-08-01)
+
+The aggregator lives **inside** the module directory as `index.sh`:
+
+```
+src/runner/index.sh    <- the module's entry point
+src/runner/exec.sh
+src/coverage/index.sh
+src/coverage/engine.sh
+```
+
+Both placements are identical to `build.sh` — it follows the `source` graph and
+cannot tell the difference (next section) — so this is a source-tree decision,
+not an artifact one.
+
+The original decision was "beside" (`src/runner.sh` + `src/runner/*.sh`), on the
+grounds that it matched the `src/assertions.sh` → `src/assert_*.sh` precedent and
+kept one aggregator convention in `src/`. **That reasoning was wrong.**
+`src/assertions.sh` aggregates *flat* files; there is no `src/assert/` directory.
+It is not a module aggregator at all, it is unaffected by this choice, and it
+would remain exactly as it is under either placement. There was never a
+"two conventions" risk to avoid.
+
+Two arguments settle it for inside:
+
+* **A hand-maintained aggregator list drifts; a glob cannot.** The rule that
+  aggregators hold only `source` lines is enforced by
+  `test_module_aggregators_hold_only_source_lines_and_comments`, which named its
+  aggregators in a string: `"src/assertions.sh src/runner.sh"`. `src/coverage.sh`
+  was added in #928 and never appended, so the rule silently stopped covering it
+  within one module of being introduced. With the aggregator at a predictable
+  `src/*/index.sh`, the test discovers modules by glob and cannot drift. This is
+  the deciding argument: it is a correctness property, not a preference.
+* **The cost only grows.** Converting two shipped modules costs two renames and
+  two entrypoint lines. #931 adds nine more; converting after it costs eleven.
+
+Alongside those, the ordinary case for treating a directory as the module: `mv`
+or `rm -r` moves it as one unit, an orphaned `src/runner.sh` left behind by a
+deleted `src/runner/` becomes impossible, and `ls src/` lists modules rather than
+aggregator/directory pairs. The convention also matches what most ecosystems do —
+`index.ts`, `__init__.py`, `mod.rs`.
+
+`index.sh` over `main.sh` or `init.sh`: both of those collide with existing
+concepts here (`src/main.sh`, and `src/init.sh` implementing `bashunit init`).
+
+Apply this to every module. Mixing placements is the outcome worth avoiding.
 
 This required fixing `build.sh` first (#923). Its embed dedupe was keyed on a
 file's *basename*, which both hid a genuine double-embed (the top-level loop
@@ -161,27 +203,35 @@ context · payload · diagnostics → parallel · hooks · result → provider �
   grouping in a filename prefix rather than in the directory structure.
 * Bad, because it does not generalise — `src/coverage.sh` would add nine more.
 
-### `src/runner/` directory behind an aggregator beside it
+### `src/runner/` directory behind an aggregator beside it (rejected on amendment)
 
-* Good, because it mirrors the existing `src/assertions.sh` → `src/assert_*.sh`
-  aggregator precedent, and `src/dev/debug.sh` already proved `src/` can nest.
 * Good, because `build.sh` discovers children through recursion, so adding a
   module file needs no build change.
-* Good, because the entrypoint keeps one `source` line per module, unchanged in
-  shape from when the module was a single file.
+* Good, because the entrypoint line keeps the shape it had when the module was a
+  single file.
+* Bad, because the aggregator's path is unpredictable, so the test enforcing the
+  "only `source` lines" rule needs a hand-maintained list — which drifted the
+  first time a second module appeared (#928 added `src/coverage.sh` and never
+  appended it, silently un-enforcing the rule for that file).
+* Bad, because `ls src/` shows an aggregator/directory pair per module, and the
+  pair can desync: deleting `src/runner/` leaves an orphaned `src/runner.sh`.
 * Bad, because it required fixing the build's dedupe key first (#923).
-* Bad, because `ls src/` shows an aggregator/directory pair per module.
+* ~~Good, because it mirrors the `src/assertions.sh` → `src/assert_*.sh`
+  precedent~~ — withdrawn. `src/assertions.sh` aggregates flat files and has no
+  directory, so it is not a module aggregator and is unaffected either way.
 
-### `src/runner/index.sh` inside the directory
+### `src/runner/index.sh` inside the directory (chosen on amendment)
 
-* Good, because a module becomes one self-contained directory — moving or
-  deleting it is a single `mv`/`rm -r`, and `ls src/` shows modules, not pairs.
-* Good, because it scales more cleanly if `src/` ever reaches a dozen modules.
+* Good, because the aggregator sits at a predictable `src/*/index.sh`, so the
+  enforcement test discovers modules by glob and cannot drift.
+* Good, because a module becomes one self-contained directory — `mv`/`rm -r`
+  moves it as a unit, no orphan is possible, and `ls src/` lists modules.
+* Good, because it matches the convention most ecosystems already use
+  (`index.ts`, `__init__.py`, `mod.rs`), so the entry point is where a reader
+  looks for it.
 * Neutral on the build: identical to beside, which walks the `source` graph.
-* Bad, because it would rename the two shipped modules and rewrite their
-  entrypoint lines for no behavioural gain.
-* Bad, because `src/assertions.sh` would stay a beside-aggregator (it has no
-  directory), leaving `src/` with two aggregator conventions.
+* Bad, because it cost renaming the two shipped modules and their entrypoint
+  lines — a cost that only grows, hence doing it before #931 adds nine more.
 
 ## Links
 

@@ -91,20 +91,42 @@ function test_build_embed_docs_fails_on_missing_markers() {
 
 # build::process_file emits a file's body and *then* recurses into its `source`
 # lines, so an aggregator holding anything else at top level would run that code
-# before its dependencies in the built binary but after them in dev mode. Add any
-# new aggregator here.
-function test_module_aggregators_hold_only_source_lines_and_comments() {
-  local aggregators="src/assertions.sh src/runner.sh"
+# before its dependencies in the built binary but after them in dev mode.
+#
+# Discovered by glob, never by a hand-maintained list: the previous list named
+# src/assertions.sh and src/runner.sh, and src/coverage.sh was added in #928
+# without being appended, so the rule silently stopped covering it. A module's
+# aggregator is src/<module>/index.sh (ADR-010); src/assertions.sh is the one
+# flat-file aggregator, which has no directory of its own.
+function build_aggregators() {
+  echo "src/assertions.sh"
+  local index
+  for index in "$ROOT_DIR"/src/*/index.sh; do
+    [ -f "$index" ] || continue
+    echo "${index#"$ROOT_DIR"/}"
+  done
+}
 
+function test_module_aggregators_hold_only_source_lines_and_comments() {
   local offenders=""
   local aggregator
-  for aggregator in $aggregators; do
+  while IFS= read -r aggregator; do
     if grep -qvE '^[[:space:]]*(#|source |$)' "$ROOT_DIR/$aggregator"; then
       offenders="$offenders $aggregator"
     fi
-  done
+  done < <(build_aggregators)
 
   assert_empty "$offenders"
+}
+
+# The glob above is only a safety net if it actually finds the modules.
+function test_module_aggregator_discovery_finds_every_module() {
+  local found
+  found=$(build_aggregators | tr '\n' ' ')
+
+  assert_contains "src/runner/index.sh" "$found"
+  assert_contains "src/coverage/index.sh" "$found"
+  assert_contains "src/assertions.sh" "$found"
 }
 
 function test_build_process_file_embeds_a_file_only_once() {
