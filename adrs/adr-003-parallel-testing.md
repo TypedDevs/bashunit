@@ -35,16 +35,29 @@ We aim to enhance testing performance by running tests in parallel processes whi
 
 ## Technical Details
 
-When the `--parallel` flag is used, each test is run in its own subprocess by calling:
+When the `--parallel` flag is used, each **test function** is spawned as its own
+background subshell from `bashunit::runner::call_test_functions`:
 
-> runner::call_test_functions "$test_file" "$filter" 2>/dev/null &
+> bashunit::runner::run_test "$script" "$fn_name" &
 
-Each test script creates a temporary directory and stores individual test results in temp files.
-After all tests finish, the results are aggregated by traversing these directories and files.
-This approach ensures isolation of test execution while improving performance by running tests concurrently.
+Each test writes its result to one file under `$TEMP_DIR_PARALLEL_TEST_SUITE`.
+After all tests finish, the results are aggregated by traversing that directory.
+This keeps test execution isolated while running tests concurrently.
 
-The aggregation (which collects all test outcomes into a final result set) is handled by the function:
+Aggregation is handled by:
 
-> parallel::aggregate_test_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+> bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+
+> **Updated since this ADR was written.** The original text described spawning
+> one subprocess *per file* via `runner::call_test_functions … &` and aggregating
+> via `parallel::aggregate_test_results`. Both are out of date: the unit of
+> parallelism is the individual test, the functions gained the `bashunit::`
+> namespace (#538), aggregation moved to `state.sh`, and the runner now lives in
+> the `src/runner/` module (ADR-010) with the spawn in `src/runner/exec.sh`.
+> The result file is named from a per-suite ordinal assigned just before each
+> `&` rather than from a `mktemp` per test (#851) — Bash 3 subshells inherit
+> `$$` and the `RANDOM` state and `BASHPID` is 4.0+, so an ordinal is the only
+> fork-free way to get a unique name. Job-slot limiting is in
+> `src/runner/parallel.sh`.
 
 

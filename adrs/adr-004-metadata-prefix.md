@@ -33,5 +33,5 @@ eg: using `# @data_provider provider_name`.
 
 ## Technical Details
 
-`helper::get_provider_data` now matches both `# @data_provider` and the old
+`bashunit::helper::get_provider_data` now matches both `# @data_provider` and the old
 `# data_provider` when locating provider functions.

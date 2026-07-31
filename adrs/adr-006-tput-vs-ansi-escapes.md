@@ -32,7 +32,7 @@ Reasoning:
 
 What this PR does:
 
-1. All color escapes go through `bashunit::sgr` and the `_BASHUNIT_COLOR_*` constants. No more raw `\033[...m` literals in `src/coverage.sh` or `src/main.sh`.
+1. All color escapes go through `bashunit::sgr` and the `_BASHUNIT_COLOR_*` constants. No more raw `\033[...m` literals in the coverage code (since ADR-010, `src/coverage/`) or `src/main.sh`.
 2. New `bashunit::env::supports_color` (false on `TERM=dumb` or `tput colors < 8`). Exposed but not wired into `colors.sh` init yet. The same auto-disable broke CI in PR #245 and again on the first push of this branch, so it waits until we add a `CI` / `FORCE_COLOR` override.
 3. New `bashunit::io::clear_screen` runs `tput clear` and falls back to `\033[2J\033[H` if tput is missing or returns nothing. Replaces the hardcoded clear in `--watch` mode.
 

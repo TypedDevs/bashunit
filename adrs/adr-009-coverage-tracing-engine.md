@@ -1,13 +1,13 @@
 # Coverage Tracing Engine: xtrace fast path with DEBUG-trap fallback
 
-* Status: accepted (direction); implementation deferred to a follow-up
+* Status: accepted; implemented in #860 (see Implementation notes below)
 * Date: 2026-07-24
 * Spike: #854 · builds on #853 (shelved dedup) and ADR-007/ADR-008
 
 ## Context and Problem Statement
 
 Line/branch coverage is driven by a `DEBUG` trap that invokes
-`bashunit::coverage::record_line` for **every executed command** (`src/coverage.sh`).
+`bashunit::coverage::record_line` for **every executed command** (now `src/coverage/engine.sh`).
 That per-line callback is a full shell-function dispatch, and it dominates the
 cost of `--coverage`: on a loop-heavy fixture the whole run takes ~35s, and the
 #853 experiment (dedup line hits at source) moved that by ~0s — collapsing ~1500
