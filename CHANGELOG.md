@@ -7,6 +7,7 @@
 
 ### Fixed
 - `build.sh` dedupes embedded files by repo-relative path. The previous basename key compared the top-level loop's relative paths against the recursion's absolute ones, so a file reached from two places could be bundled twice in the released binary; it also collided for same-named files in different directories (#923)
+- `bashunit doc` no longer errors when the default bootstrap file is missing (#929)
 
 ## [0.44.0](https://github.com/TypedDevs/bashunit/compare/0.43.0...0.44.0) - 2026-07-29
 
