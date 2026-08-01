@@ -83,8 +83,10 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `assert/index.sh` | aggregator only — sources the `src/assert/` module below, plus `skip_todo.sh` and `test_doubles.sh` |
 | `assert/core.sh` | `assert::should_skip`, `assert::fail_with`, `assert::join_to_slot` and the comparison assertions the other files build on |
 | `assert/{arrays,assertions,dates,duration,files,folders,json,once,snapshot}.sh` | the per-topic assertions; the per-assertion path must stay fork-free |
-| `clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
-| `str.sh` / `math.sh` / `io.sh` / `globals.sh` | pure-bash utilities; `globals.sh` has `temp_file`/`temp_dir` (public test API) |
+| `util/index.sh` | aggregator only — sources the `src/util/` module below |
+| `util/clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
+| `util/str.sh` / `util/math.sh` | pure-bash string and arithmetic helpers |
+| `globals.sh` | `temp_file`/`temp_dir` and the rest of the public test API |
 | `doubles/index.sh` | aggregator only — sources the `src/doubles/` module below |
 | `doubles/mock.sh` | `mock`/`unmock` and the `_BASHUNIT_MOCKED_FUNCTIONS` registry `runner/hooks.sh` unwinds per test |
 | `doubles/spy.sh` | `spy` and its `_BASHUNIT_SPY_*` state slots + files |
