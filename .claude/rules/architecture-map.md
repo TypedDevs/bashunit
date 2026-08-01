@@ -113,7 +113,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `system/io.sh` | small I/O helpers |
 | `cli/index.sh` | aggregator only — sources the `src/cli/` module below |
 | `cli/{upgrade,watch,doc,init}.sh` | the non-`test` subcommand implementations; `main.sh` is their only caller |
-| `learn/index.sh` `benchmark.sh` | the remaining non-`test` subcommands; benchmark is shared with `runner/bench.sh` |
+| `learn/index.sh` `benchmark/index.sh` | the remaining non-`test` subcommands; benchmark is shared with `runner/bench.sh` |
 
 ## Cross-cutting invariants
 

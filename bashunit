@@ -77,7 +77,7 @@ source "$BASHUNIT_ROOT_DIR/src/cli/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/index.sh"
-source "$BASHUNIT_ROOT_DIR/src/benchmark.sh"
+source "$BASHUNIT_ROOT_DIR/src/benchmark/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/learn/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/main.sh"
 
