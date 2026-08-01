@@ -59,7 +59,11 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `runner/exec.sh` | `run_test`, the capture-subshell body, retry, timeout watchdog, per-file dispatch |
 | `runner/discovery.sh` | `load_test_files` (the per-file loop), `functions_for_script` |
 | `runner/bench.sh` | benchmark file loop and bench function dispatch |
-| `helpers.sh` | discovery (`find_files_recursive`), fn filtering, provider map, duplicate check, ids |
+| `helper/index.sh` | aggregator only — sources the `src/helper/` module below |
+| `helper/naming.sh` | resolving and normalising test-function and variable names |
+| `helper/discovery.sh` | `find_files_recursive`, `find_total_tests`, fn filtering, duplicate check, line lookup |
+| `helper/provider.sh` / `helper/tags.sh` | `@data_provider` map; `@tag` extraction and matching |
+| `helper/encoding.sh` / `helper/functions.sh` / `helper/git.sh` | base64 + ids; generic fn utilities; remote tag lookup for `upgrade` |
 | `state.sh` | counters, per-test payload encode/decode, TAP conversion |
 | `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
 | `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
