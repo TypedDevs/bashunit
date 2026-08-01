@@ -95,11 +95,11 @@ function test_build_embed_docs_fails_on_missing_markers() {
 #
 # Discovered by glob, never by a hand-maintained list: the previous list named
 # src/assertions.sh and src/runner.sh, and src/coverage.sh was added in #928
-# without being appended, so the rule silently stopped covering it. A module's
-# aggregator is src/<module>/index.sh (ADR-010); src/assertions.sh is the one
-# flat-file aggregator, which has no directory of its own.
+# without being appended, so the rule silently stopped covering it. Every
+# aggregator is now src/<module>/index.sh (ADR-010), so the glob covers them all
+# -- src/assertions.sh was the last flat-file exception and became
+# src/assert/index.sh in #940.
 function build_aggregators() {
-  echo "src/assertions.sh"
   local index
   for index in "$ROOT_DIR"/src/*/index.sh; do
     [ -f "$index" ] || continue
@@ -126,7 +126,7 @@ function test_module_aggregator_discovery_finds_every_module() {
 
   assert_contains "src/runner/index.sh" "$found"
   assert_contains "src/coverage/index.sh" "$found"
-  assert_contains "src/assertions.sh" "$found"
+  assert_contains "src/assert/index.sh" "$found"
 }
 
 function test_build_process_file_embeds_a_file_only_once() {
