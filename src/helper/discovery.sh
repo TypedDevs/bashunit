@@ -56,12 +56,8 @@ function bashunit::helper::check_duplicate_functions() {
 }
 
 
-#
-# @param $1 string Eg: "prefix"
-# @param $2 string Eg: "filter"
-# @param $3 array Eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"
-#
-# @return array Eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
+# Arguments: $1 - eg: "prefix", $2 - eg: "filter", $3 - eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"
+# Returns: eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
 function bashunit::helper::get_functions_to_run() {
   local prefix=$1
@@ -241,9 +237,8 @@ function bashunit::helper::load_bench_files() {
 }
 
 
-#
-# @param $1 string function name
-# @return number line number of the function in the source file
+# Arguments: $1 - function name
+# Returns: line number of the function in the source file
 #
 function bashunit::helper::get_function_line_number() {
   local fn_name=$1
@@ -266,10 +261,8 @@ function bashunit::helper::get_function_line_number() {
 # Supports two syntaxes:
 #   - path::function_name (filter by function name)
 #   - path:line_number (filter by line number)
-#
-# @param $1 string Eg: "tests/test.sh::test_foo" or "tests/test.sh:123"
-#
-# @return string Two lines: first is file path, second is filter (or empty)
+# Arguments: $1 - eg: "tests/test.sh::test_foo" or "tests/test.sh:123"
+# Returns: two lines: first is file path, second is filter (or empty)
 #
 function bashunit::helper::parse_file_path_filter() {
   local input="$1"
@@ -311,11 +304,8 @@ function bashunit::helper::parse_file_path_filter() {
 
 #
 # Finds the test function that contains a given line number in a file.
-#
-# @param $1 string File path
-# @param $2 number Line number
-#
-# @return string The function name, or empty if not found
+# Arguments: $1 - file path, $2 - line number
+# Returns: the function name, or empty if not found
 #
 function bashunit::helper::find_function_at_line() {
   local file="$1"

@@ -22,7 +22,7 @@ _BASHUNIT_COVERAGE_IS_PARALLEL=""
 
 # Auto-discover coverage paths from test file names
 # When no explicit coverage paths are set, find source files matching test file base names
-# Example: tests/unit/assert_test.sh -> finds src/assert.sh, src/assert_*.sh
+# Example: tests/unit/assert/basic_test.sh -> finds src/assert/*.sh
 function bashunit::coverage::auto_discover_paths() {
   local project_root
   project_root="$(pwd)"
