@@ -10,12 +10,42 @@ This repository hosts the bashunit source code, its documentation and many autom
 
 ## Repository layout
 
-- `src` – library functions used by `bashunit`.
+- `src` – library functions used by `bashunit`, organised as modules (below).
 - `bin` – the executable entry points.
 - `adrs` – internal architecture decisions records.
 - `example` – example scripts and tests demonstrating usage.
 - `tests` – automated tests for bashunit itself.
 - `docs` – documentation built with [VitePress](https://vitepress.dev/).
+
+## Source modules
+
+`src/` contains module directories and no loose files. Each module has an `index.sh` entry
+point holding **only `source` lines** — the code lives in the sibling files beside it.
+
+| Module | What it owns |
+|---|---|
+| `system` | capability probing: OS detection, `command -v`, small I/O helpers |
+| `util` | computation: strings, arithmetic, time |
+| `api` | the surface your test file calls — `temp_file`, `skip`/`todo`, custom-assert helpers |
+| `config` | `BASHUNIT_*` defaults, scratch dirs, parallel mode, the rerun cache |
+| `coverage` | line and branch tracking, and the coverage reports |
+| `state` | counters, per-test context, the result payload |
+| `console` | everything printed: palette, header, per-test lines, totals |
+| `helper` | naming, test discovery, data providers, tags, encoding |
+| `cli` | the `doc`, `init`, `upgrade` and `watch` subcommands |
+| `assert` | every assertion |
+| `reports` | JUnit, TAP, JSON, GitHub Actions and HTML writers |
+| `runner` | the file loop, per-test execution, retry, result parsing |
+| `benchmark` | the bench implementation |
+| `learn` | the interactive tutorial |
+| `main` | flag parsing per subcommand and the run lifecycle |
+
+The released `bashunit` is a **single file**: `build.sh` walks the `source` statements from the
+entrypoint, inlines every module in dependency order, and strips the `source` lines.
+
+For the full picture — load order, the build pipeline, the tests that enforce all of it, and
+how to add a file, a module or a subcommand — see
+[ADR-011](https://github.com/TypedDevs/bashunit/blob/main/adrs/adr-011-source-layout-and-build-pipeline.md).
 
 ## Running tests
 
