@@ -64,8 +64,8 @@ function bashunit::runner::call_test_functions() {
   # publish into it, and checking `[ -d ]` inside a worker races its siblings
   # (every worker would still pay the mkdir fork).
   if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
-    local _suite_base="${script##*/}"
-    mkdir -p "${TEMP_DIR_PARALLEL_TEST_SUITE}/${_suite_base%.sh}" 2>/dev/null || true
+    bashunit::runner::parallel_suite_dir_to_slot "$script"
+    mkdir -p "$_BASHUNIT_RUNNER_SUITE_DIR_OUT" 2>/dev/null || true
   fi
 
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do

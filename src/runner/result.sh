@@ -16,6 +16,30 @@ function bashunit::runner::parse_result() {
   fi
 }
 
+_BASHUNIT_RUNNER_SUITE_DIR_OUT=""
+
+##
+# Writes the parallel result directory for a test file into
+# _BASHUNIT_RUNNER_SUITE_DIR_OUT.
+#
+# Keyed on the whole path with separators folded, never on the basename: two
+# files sharing a basename in different directories used to land in one
+# directory, where their per-suite ordinals collided and the second file's
+# results overwrote the first's -- silently, with the run still green (#959).
+# That is the same defect #923 fixed in build.sh. Mirroring a source tree in
+# tests/ makes duplicate basenames ordinary, so this is a normal layout.
+#
+# Pure parameter expansion: this runs once per test in every parallel worker and
+# the path must stay fork-free (.claude/rules/perf-fork-budget.md).
+# Arguments: $1 - the test file path
+##
+function bashunit::runner::parallel_suite_dir_to_slot() {
+  local key="${1#./}"
+  key="${key%.sh}"
+  key="${key//\//_}"
+  _BASHUNIT_RUNNER_SUITE_DIR_OUT="${TEMP_DIR_PARALLEL_TEST_SUITE}/${key}"
+}
+
 function bashunit::runner::parse_result_parallel() {
   local fn_name=$1
   shift
@@ -25,8 +49,8 @@ function bashunit::runner::parse_result_parallel() {
   # mkdir when the dir is missing (first test of the file wins the race,
   # `-p` makes the losers no-ops), and name the result file by the per-suite
   # ordinal the dispatcher assigned — unique without forking mktemp or mv.
-  local test_suite_base="${test_file##*/}"
-  local test_suite_dir="${TEMP_DIR_PARALLEL_TEST_SUITE}/${test_suite_base%.sh}"
+  bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+  local test_suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
   [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
 
   local unique_test_result_file="${test_suite_dir}/${_BASHUNIT_RUNNER_RESULT_ORDINAL}.result"
