@@ -101,7 +101,9 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `coverage/html_index.sh` / `html_file.sh` | HTML page emitters; the only two files exempt from `max_line_length` |
 | `rerun.sh` | `.bashunit/last-failed` cache for `--rerun-failed` |
 | `reports.sh` | JUnit/HTML/TAP/JSON writers |
-| `check_os.sh` / `dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |
+| `system/index.sh` | aggregator only — sources the `src/system/` module below |
+| `system/check_os.sh` / `system/dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |
+| `system/io.sh` | small I/O helpers |
 | `cli/index.sh` | aggregator only — sources the `src/cli/` module below |
 | `cli/{upgrade,watch,doc,init}.sh` | the non-`test` subcommand implementations; `main.sh` is their only caller |
 | `learn/index.sh` `benchmark.sh` | the remaining non-`test` subcommands; benchmark is shared with `runner/bench.sh` |
