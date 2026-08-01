@@ -49,7 +49,7 @@ export BASHUNIT_WORKING_DIR
 for arg in "$@"; do
   case "$arg" in
   --skip-env-file)
-    # this-process-only (see the flag-parse loop in src/main.sh) (#837)
+    # this-process-only (see the flag-parse loop in src/main/test.sh) (#837)
     BASHUNIT_SKIP_ENV_FILE=true
     export -n BASHUNIT_SKIP_ENV_FILE
     ;;
@@ -79,7 +79,7 @@ source "$BASHUNIT_ROOT_DIR/src/reports/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/benchmark/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/learn/index.sh"
-source "$BASHUNIT_ROOT_DIR/src/main.sh"
+source "$BASHUNIT_ROOT_DIR/src/main/index.sh"
 
 bashunit::check_os::init
 bashunit::clock::init

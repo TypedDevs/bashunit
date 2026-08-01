@@ -2,7 +2,7 @@
 # shellcheck disable=SC2317
 
 # Anti-drift contract: the static completion scripts under completions/ must
-# stay in sync with the flags parsed by the test subcommand in src/main.sh,
+# stay in sync with the flags parsed by the test subcommand in src/main/test.sh,
 # the subcommand list in the bashunit entrypoint, and the public assertions.
 
 BASH_COMPLETION_FILE="completions/bashunit.bash"
@@ -10,7 +10,7 @@ ZSH_COMPLETION_FILE="completions/_bashunit"
 
 # Flags accepted by cmd_test, straight from the option-parsing case arms.
 function completions_expected_test_flags() {
-  awk '/# Parse test-specific options/,/^  done$/' src/main.sh |
+  awk '/# Parse test-specific options/,/^  done$/' src/main/test.sh |
     grep -E '^[[:space:]]+--?[a-zA-Z][a-zA-Z0-9-]*( \| --?[a-zA-Z][a-zA-Z0-9-]*)*\)' |
     sed 's/)$//' | tr -d ' ' | tr '|' '\n' |
     LC_ALL=C sort -u
@@ -20,7 +20,7 @@ function completions_expected_test_flags() {
 # zsh script advertises every flag from one _arguments block, so its expected
 # set is the union of the test and doc flags.
 function completions_expected_doc_flags() {
-  awk '/^function bashunit::main::cmd_doc\(\)/,/^}$/' src/main.sh |
+  awk '/^function bashunit::main::cmd_doc\(\)/,/^}$/' src/main/subcommands.sh |
     grep -E '^[[:space:]]+--?[a-zA-Z][a-zA-Z0-9-]*( \| --?[a-zA-Z][a-zA-Z0-9-]*)*\)' |
     sed 's/)$//' | tr -d ' ' | tr '|' '\n' |
     LC_ALL=C sort -u

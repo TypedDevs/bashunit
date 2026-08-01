@@ -7,8 +7,12 @@ function set_up_before_script() {
 }
 
 function src_files_sourced_by_entrypoint() {
+  # Anchored on `^source ` like build::dependencies is, not on anything
+  # path-shaped anywhere in the file: a comment mentioning a src/ path used to
+  # register here as a bundled dependency and fail this contract for no reason.
   # Dev-only helpers under src/dev/ are intentionally excluded from the build.
-  grep -oE 'src/[a-zA-Z0-9_/]+\.sh' "$ROOT_DIR/bashunit" | grep -v '^src/dev/' | sort -u
+  grep '^source ' "$ROOT_DIR/bashunit" |
+    grep -oE 'src/[a-zA-Z0-9_/]+\.sh' | grep -v '^src/dev/' | sort -u
 }
 
 function build_dependencies() {

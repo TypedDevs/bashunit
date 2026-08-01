@@ -47,7 +47,12 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 
 | Module | Owns |
 |--------|------|
-| `bashunit` + `main.sh` | entry, subcommand routing, flag parsing, run lifecycle, exit codes, cleanup calls |
+| `bashunit` | entry: version gate, early flag scan, sources every module, subcommand routing |
+| `main/index.sh` | aggregator only — sources the `src/main/` module below |
+| `main/validate.sh` | shared parser validation: unknown options, integer/path checks, shard parsing |
+| `main/test.sh` / `main/bench.sh` / `main/subcommands.sh` | flag parsing per subcommand |
+| `main/assert.sh` | the standalone `bashunit assert` path |
+| `main/watch.sh` / `main/run.sh` | the `--watch` loop; the run lifecycle, exit codes and cleanup |
 | `runner/index.sh` | aggregator only — sources the `src/runner/` module below |
 | `runner/context.sh` | workdir restore, test identity/location exports, title interpolation, capability probes |
 | `runner/payload.sh` | the `_BASHUNIT_RUNNER_*_OUT` return slots; encode/decode of the per-test result payload |
