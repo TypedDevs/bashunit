@@ -74,7 +74,12 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
 | `console/index.sh` | aggregator only — sources the `src/console/` module below |
 | `console/colors.sh` | the `_BASHUNIT_COLOR_*` palette and `bashunit::sgr` |
-| `console/header.sh` / `console/results.sh` | header/totals rendering, deferred failed/skipped/incomplete/risky blocks (scratch files under the run dir) |
+| `console/header.sh` | the "Running N tests" header |
+| `console/line.sh` | `print_line`, the primitive every result line goes through, and its TAP variant |
+| `console/duration.sh` / `console/diff.sh` | duration formatting; unified and line-by-line diffs under a failure |
+| `console/test_line.sh` | the per-test result lines (passed/failed/skipped/incomplete/snapshot/risky/error) |
+| `console/deferred.sh` | end-of-run blocks buffered during the run (scratch files under the run dir) |
+| `console/summary.sh` | run totals, execution time, hook completion |
 | `assert/index.sh` | aggregator only — sources the `src/assert/` module below, plus `skip_todo.sh` and `test_doubles.sh` |
 | `assert/core.sh` | `assert::should_skip`, `assert::fail_with`, `assert::join_to_slot` and the comparison assertions the other files build on |
 | `assert/{arrays,assertions,dates,duration,files,folders,json,once,snapshot}.sh` | the per-topic assertions; the per-assertion path must stay fork-free |
