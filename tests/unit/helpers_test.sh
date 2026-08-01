@@ -455,7 +455,7 @@ function helpers_test::find_total_in_subshell() {
   # index resolves its own children through $BASHUNIT_ROOT_DIR, so the subshell repoints that
   # at the repo root it is already reading src/ from.
   bash -c 'BASHUNIT_ROOT_DIR="$PWD" && export BASHUNIT_ROOT_DIR
-source src/globals.sh; source "$1"; shift; bashunit::helper::find_total_tests "$@"' \
+source src/api/globals.sh; source "$1"; shift; bashunit::helper::find_total_tests "$@"' \
     bash "src/helper/index.sh" "$@"
 }
 
