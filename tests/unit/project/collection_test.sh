@@ -14,8 +14,14 @@ function set_up_before_script() {
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 }
 
+# Filtered on a `tests/` prefix rather than by stripping a fixed number of header
+# lines: run from inside `make test`, this sub-make inherits MAKEFLAGS and wraps
+# its output in `make[1]: Entering/Leaving directory`, which a positional strip
+# gets wrong. MAKEFLAGS is cleared too, so the sub-make cannot inherit -j or a
+# parent goal.
 function collection_from_make() {
-  (cd "$ROOT_DIR" && make test/list 2>/dev/null | tail -n +2 | grep -v '^$' | LC_ALL=C sort)
+  (cd "$ROOT_DIR" && MAKEFLAGS='' make --no-print-directory test/list 2>/dev/null) |
+    grep '^tests/' | LC_ALL=C sort
 }
 
 function collection_from_disk() {
