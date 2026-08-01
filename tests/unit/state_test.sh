@@ -321,16 +321,18 @@ function test_decode_base64_returns_empty_for_empty_value() {
 }
 
 # --- layering ------------------------------------------------------------------
-# state.sh owns counters and the per-test payload. It rendered progress lines
-# until #868, which was both a layering inversion and the sole reason for the
-# state -> parallel call cycle #862 broke. Grepped rather than exercised, so the
-# edge cannot come back through a path no test happens to cover.
+# The state module owns counters and the per-test payload. It rendered progress
+# lines until #868, which was both a layering inversion and the sole reason for
+# the state -> parallel call cycle #862 broke. Grepped rather than exercised, so
+# the edge cannot come back through a path no test happens to cover. Globbed over
+# the whole module: pointed at a single file it would pass vacuously the moment
+# that file is split or renamed.
 function test_state_does_not_call_the_renderer_or_parallel() {
   # `|| true`: no match is the passing case, and grep exiting 1 would sink the
   # whole pipeline under --strict's pipefail.
   local offenders
   offenders=$({ "$GREP" -oE "bashunit::(console_results|console_header|parallel|runner)::[a-z_]+" \
-    src/state.sh || true; } | sort -u | tr '\n' ' ')
+    src/state/*.sh || true; } | sort -u | tr '\n' ' ')
 
   assert_same "" "${offenders% }"
 }
