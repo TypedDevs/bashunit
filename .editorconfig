@@ -26,7 +26,7 @@ indent_size = 2
 [{Makefile,**.mk,.git*}]
 indent_style = tab
 
-[{tests/acceptance/**.sh,src/console_header.sh,docs/command-line.md}]
+[{tests/acceptance/**.sh,src/console/header.sh,docs/command-line.md}]
 indent_size = unset
 
 [.claude/**.md]

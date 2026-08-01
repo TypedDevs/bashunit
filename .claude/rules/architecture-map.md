@@ -63,7 +63,9 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `state.sh` | counters, per-test payload encode/decode, TAP conversion |
 | `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
 | `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
-| `console_header.sh` / `console_results.sh` | header/totals rendering, deferred failed/skipped/incomplete/risky blocks (scratch files under the run dir) |
+| `console/index.sh` | aggregator only — sources the `src/console/` module below |
+| `console/colors.sh` | the `_BASHUNIT_COLOR_*` palette and `bashunit::sgr` |
+| `console/header.sh` / `console/results.sh` | header/totals rendering, deferred failed/skipped/incomplete/risky blocks (scratch files under the run dir) |
 | `assert/index.sh` | aggregator only — sources the `src/assert/` module below, plus `skip_todo.sh` and `test_doubles.sh` |
 | `assert/core.sh` | `assert::should_skip`, `assert::fail_with`, `assert::join_to_slot` and the comparison assertions the other files build on |
 | `assert/{arrays,assertions,dates,duration,files,folders,json,once,snapshot}.sh` | the per-topic assertions; the per-assertion path must stay fork-free |
