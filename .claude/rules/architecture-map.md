@@ -85,7 +85,9 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `rerun.sh` | `.bashunit/last-failed` cache for `--rerun-failed` |
 | `reports.sh` | JUnit/HTML/TAP/JSON writers |
 | `check_os.sh` / `dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |
-| `doc.sh` `init.sh` `learn.sh` `upgrade.sh` `watch.sh` `benchmark.sh` | the non-`test` subcommands |
+| `cli/index.sh` | aggregator only — sources the `src/cli/` module below |
+| `cli/{upgrade,watch,doc,init}.sh` | the non-`test` subcommand implementations; `main.sh` is their only caller |
+| `learn/index.sh` `benchmark.sh` | the remaining non-`test` subcommands; benchmark is shared with `runner/bench.sh` |
 
 ## Cross-cutting invariants
 
