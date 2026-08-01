@@ -11,7 +11,7 @@ RELEASE_SCRIPT_DIR=""
 FIXTURE_DIR=""
 
 function set_up_before_script() {
-  RELEASE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  RELEASE_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
   # Source release.sh to get access to functions
   # shellcheck source=/dev/null

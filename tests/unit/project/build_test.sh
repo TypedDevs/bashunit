@@ -3,7 +3,7 @@
 ROOT_DIR=""
 
 function set_up_before_script() {
-  ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 }
 
 function src_files_sourced_by_entrypoint() {

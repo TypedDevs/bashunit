@@ -5,7 +5,7 @@ PKG_FILE=""
 DOCS_PKG_FILE=""
 
 function set_up_before_script() {
-  ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
   PKG_FILE="$ROOT_DIR/package.json"
   DOCS_PKG_FILE="$ROOT_DIR/docs/package.json"
 }
