@@ -19,5 +19,5 @@ source "$BASHUNIT_ROOT_DIR/src/assert/json.sh"
 source "$BASHUNIT_ROOT_DIR/src/assert/snapshot.sh"
 
 # Not assertions, but part of the same public test surface the runner loads.
-source "$BASHUNIT_ROOT_DIR/src/skip_todo.sh"
+# skip_todo moved to src/api/ in #949, where the rest of that surface lives.
 source "$BASHUNIT_ROOT_DIR/src/doubles/index.sh"

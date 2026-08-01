@@ -86,7 +86,10 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `util/index.sh` | aggregator only — sources the `src/util/` module below |
 | `util/clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
 | `util/str.sh` / `util/math.sh` | pure-bash string and arithmetic helpers |
-| `globals.sh` | `temp_file`/`temp_dir` and the rest of the public test API |
+| `api/index.sh` | aggregator only — sources the `src/api/` module below |
+| `api/globals.sh` | `temp_file`/`temp_dir`/`current_dir`/`data_set`; runs `set -euo pipefail` at file scope, so it must stay first in the module |
+| `api/skip_todo.sh` / `api/test_title.sh` | `skip`/`todo` markers; `set_test_title` |
+| `api/bashunit.sh` | the custom-assert facade (`assert_that`, `assert_once`, `assertion_failed`/`passed`) |
 | `doubles/index.sh` | aggregator only — sources the `src/doubles/` module below |
 | `doubles/mock.sh` | `mock`/`unmock` and the `_BASHUNIT_MOCKED_FUNCTIONS` registry `runner/hooks.sh` unwinds per test |
 | `doubles/spy.sh` | `spy` and its `_BASHUNIT_SPY_*` state slots + files |
