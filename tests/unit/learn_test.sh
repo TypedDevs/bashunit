@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Covers the non-interactive core of src/learn.sh: progress persistence and the
-# environment lifecycle. LEARN_PROGRESS_FILE is a readonly resolved from $HOME at
-# source time, so each test sources learn.sh in a fresh shell with HOME pointed
+# Covers the non-interactive core of the src/learn/ module: progress persistence
+# and the environment lifecycle. LEARN_PROGRESS_FILE is a readonly resolved from
+# $HOME at source time, so each test sources the module in a fresh shell with HOME
 # at an isolated directory — the suite's own already-sourced copy (bound to the
 # real $HOME) is never exercised.
 
@@ -26,14 +26,14 @@ function _learn_in_sandbox() {
         BASHUNIT_ROOT_DIR="'"$root_dir"'"
         export BASHUNIT_ROOT_DIR
         GREP="$(command -v grep)"
-        # learn.sh renders coloured output but does not source colors.sh. Stub
+        # learn renders coloured output but does not source colors.sh. Stub
         # the palette to empty rather than pulling in the real chain
         # (str -> globals -> env -> colors), which would couple this unit test to
         # source order and make the assertions match escape codes.
         _BASHUNIT_COLOR_BOLD="" _BASHUNIT_COLOR_DEFAULT="" _BASHUNIT_COLOR_FAILED=""
         _BASHUNIT_COLOR_FAINT="" _BASHUNIT_COLOR_INCOMPLETE="" _BASHUNIT_COLOR_PASSED=""
         # shellcheck source=/dev/null
-        source "'"$root_dir"'/src/learn.sh"
+        source "'"$root_dir"'/src/learn/index.sh"
         '"$1"'
       ' </dev/null
   )
