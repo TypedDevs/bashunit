@@ -72,7 +72,7 @@ function build::process_file() {
 
   # Key the dedupe and the marker on a repo-relative path, never a basename: the
   # top-level loop passes `src/x.sh` while the recursion passes an absolute path,
-  # and two modules can hold the same basename (src/parallel.sh vs
+  # and two modules can hold the same basename (src/config/parallel.sh vs
   # src/runner/parallel.sh). `$file` itself stays untouched so the `tail` and
   # `dirname` below work on whichever form the caller passed.
   local marker="${file#"$BASHUNIT_ROOT_DIR"/}"

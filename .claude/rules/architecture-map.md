@@ -70,8 +70,10 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `state/context.sh` | per-test output buffer, exit code, title, hook failure, and the per-test reset |
 | `state/payload.sh` | the encoded per-test result payload and the base64 capability probe |
 | `state/parallel.sh` | aggregating per-test result files after a `--parallel` run |
-| `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
-| `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
+| `config/index.sh` | aggregator only — sources the `src/config/` module below |
+| `config/env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup); executes at source time |
+| `config/rerun.sh` | the `.bashunit/last-failed` cache for `--rerun-failed` |
+| `config/parallel.sh` | is this run parallel; worker temp tree and stop-on-failure flag file (not `runner/parallel.sh`, which waits on job slots) |
 | `console/index.sh` | aggregator only — sources the `src/console/` module below |
 | `console/colors.sh` | the `_BASHUNIT_COLOR_*` palette and `bashunit::sgr` |
 | `console/header.sh` | the "Running N tests" header |
@@ -104,7 +106,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `coverage/branches.sh` | branch extraction + hit computation; **one file on purpose** — the `_branch_*` helpers mutate `extract_branches`'s locals via dynamic scoping |
 | `coverage/report_text.sh` / `report_lcov.sh` / `report_html.sh` | the three renderers |
 | `coverage/html_index.sh` / `html_file.sh` | HTML page emitters; the only two files exempt from `max_line_length` |
-| `rerun.sh` | `.bashunit/last-failed` cache for `--rerun-failed` |
+
 | `reports.sh` | JUnit/HTML/TAP/JSON writers |
 | `system/index.sh` | aggregator only — sources the `src/system/` module below |
 | `system/check_os.sh` / `system/dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |

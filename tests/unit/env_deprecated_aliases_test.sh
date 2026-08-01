@@ -9,7 +9,7 @@
 # Every `: "${BASHUNIT_X:=${X:=...}}"` line in env.sh declares an unprefixed
 # alias for X. That is the source of truth.
 function bashunit::test::aliases_declared_in_env_sh() {
-  grep -oE '^: "\$\{BASHUNIT_[A-Z0-9_]+:=\$\{[A-Z0-9_]+:=' src/env.sh |
+  grep -oE '^: "\$\{BASHUNIT_[A-Z0-9_]+:=\$\{[A-Z0-9_]+:=' src/config/env.sh |
     sed -E 's/^: "\$\{BASHUNIT_[A-Z0-9_]+:=\$\{([A-Z0-9_]+):=$/\1/' |
     sort
 }
