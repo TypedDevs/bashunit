@@ -37,9 +37,17 @@ function bashunit::coverage::extract_functions() {
       # Extract first word as candidate function name
       fn_name="${stripped%%[[:space:]\(\{]*}"
 
-      # Validate: must start with valid identifier char, and rest must have () or {
+      # Validate: must BE an identifier, and rest must have () or {
       if [ -n "$fn_name" ]; then
         case "$fn_name" in
+        # A candidate holding anything outside the identifier alphabet is not a
+        # function name. Cutting at the first `{` means `VAR="x${Y}"` yields
+        # `VAR="x$`, whose trailing `{Y}"` then looks like a body opener — every
+        # such assignment became a phantom FN record, and one containing the
+        # record separator `|` shifted the fields and crashed report_lcov's
+        # arithmetic (#936). Checking only the first character let all of that
+        # through.
+        *[!a-zA-Z0-9_:]*) fn_name="" ;;
         [a-zA-Z_]*)
           local after_name="${stripped#"$fn_name"}"
           after_name="${after_name#"${after_name%%[![:space:]]*}"}"

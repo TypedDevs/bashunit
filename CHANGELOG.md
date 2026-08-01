@@ -6,6 +6,7 @@
 - Internal: `src/runner.sh` and `src/coverage.sh` are split into `src/runner/` and `src/coverage/` modules of single-responsibility files, each behind a `source`-only `index.sh` aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- Coverage no longer counts variable assignments as functions. A line like `URL="https://${host}/api"` was reported as a function, inflating `FNF`/`FNH` in the LCOV report (17 phantom entries in bashunit's own run); when the value also contained a `|`, the malformed record aborted the LCOV writer with a raw bash arithmetic error (#936)
 - `build.sh` dedupes embedded files by repo-relative path. The previous basename key compared the top-level loop's relative paths against the recursion's absolute ones, so a file reached from two places could be bundled twice in the released binary; it also collided for same-named files in different directories (#923)
 - `bashunit doc` no longer errors when the default bootstrap file is missing (#929)
 

@@ -31,6 +31,10 @@ function bashunit::coverage::report_lcov() {
       local _fdi=0
       while IFS='|' read -r fn_name fn_start fn_end; do
         [ -z "$fn_name" ] && continue
+        # Belt and braces alongside the extract_functions fix (#936): a record
+        # whose span is not numeric must never reach the `for ((...))` below,
+        # where it aborts the report with a raw bash arithmetic error.
+        case "$fn_start$fn_end" in '' | *[!0-9]*) continue ;; esac
         echo "FN:${fn_start},${fn_name}"
         fn_total=$((fn_total + 1))
 
