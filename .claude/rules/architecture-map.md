@@ -64,7 +64,12 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `helper/discovery.sh` | `find_files_recursive`, `find_total_tests`, fn filtering, duplicate check, line lookup |
 | `helper/provider.sh` / `helper/tags.sh` | `@data_provider` map; `@tag` extraction and matching |
 | `helper/encoding.sh` / `helper/functions.sh` / `helper/git.sh` | base64 + ids; generic fn utilities; remote tag lookup for `upgrade` |
-| `state.sh` | counters, per-test payload encode/decode, TAP conversion |
+| `state/index.sh` | aggregator only — sources the `src/state/` module below |
+| `state/counters.sh` | test and assertion tallies and their get/add accessors |
+| `state/duplicates.sh` | duplicate test-function detection state |
+| `state/context.sh` | per-test output buffer, exit code, title, hook failure, and the per-test reset |
+| `state/payload.sh` | the encoded per-test result payload and the base64 capability probe |
+| `state/parallel.sh` | aggregating per-test result files after a `--parallel` run |
 | `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
 | `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
 | `console/index.sh` | aggregator only — sources the `src/console/` module below |
