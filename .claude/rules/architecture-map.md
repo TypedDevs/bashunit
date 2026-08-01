@@ -75,7 +75,10 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `assert/{arrays,assertions,dates,duration,files,folders,json,once,snapshot}.sh` | the per-topic assertions; the per-assertion path must stay fork-free |
 | `clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
 | `str.sh` / `math.sh` / `io.sh` / `globals.sh` | pure-bash utilities; `globals.sh` has `temp_file`/`temp_dir` (public test API) |
-| `test_doubles.sh` | spy/mock state via `_BASHUNIT_SPY_*` globals + files |
+| `doubles/index.sh` | aggregator only — sources the `src/doubles/` module below |
+| `doubles/mock.sh` | `mock`/`unmock` and the `_BASHUNIT_MOCKED_FUNCTIONS` registry `runner/hooks.sh` unwinds per test |
+| `doubles/spy.sh` | `spy` and its `_BASHUNIT_SPY_*` state slots + files |
+| `doubles/assertions.sh` | the `assert_have_been_called*` family |
 | `coverage/index.sh` | aggregator only — sources the `src/coverage/` modules below |
 | `coverage/config.sh` | data-file locations, tracked-file roots, engine selection (`init` resets state owned by several modules) |
 | `coverage/paths.sh` | `normalize_path`, `should_track` and the hot-path track/path caches |

@@ -20,4 +20,4 @@ source "$BASHUNIT_ROOT_DIR/src/assert/snapshot.sh"
 
 # Not assertions, but part of the same public test surface the runner loads.
 source "$BASHUNIT_ROOT_DIR/src/skip_todo.sh"
-source "$BASHUNIT_ROOT_DIR/src/test_doubles.sh"
+source "$BASHUNIT_ROOT_DIR/src/doubles/index.sh"
