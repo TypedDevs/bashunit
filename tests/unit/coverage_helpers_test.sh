@@ -287,3 +287,77 @@ function test_coverage_get_all_line_hits_counts_per_line() {
 
   assert_equals "5:3" "$result"
 }
+
+# A variable assignment is not a function definition. extract_functions cut the
+# candidate name at the first space, `(` or `{`, so in `VAR="x${Y}"` the `{` of
+# the expansion ended the name and the remaining `{Y}"` looked like a function
+# body opener. Every such assignment became a phantom FN record, corrupting
+# FNF/FNH in the LCOV report (#936).
+function test_coverage_extract_functions_ignores_assignment_with_expansion() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+URL="https://${host}/api"
+PATH_="$HOME/${sub}"
+function real_fn() {
+  echo "hello"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_not_contains "URL" "$result"
+  assert_not_contains "PATH_" "$result"
+  assert_contains "real_fn" "$result"
+
+  rm -f "$temp_file"
+}
+
+# Same misdetection, but the value also contains the `|` used as the record
+# separator, so the emitted record gained a fourth field. report_lcov reads it
+# with `IFS='|' read -r fn_name fn_start fn_end`, landing a literal `$` in
+# fn_start and aborting its `for ((...))` with a bash arithmetic error (#936).
+function test_coverage_extract_functions_ignores_assignment_containing_a_pipe() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+PS4_LIKE="x|${LINENO}"
+function real_fn() {
+  echo "hello"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_not_contains "PS4_LIKE" "$result"
+  assert_contains "real_fn" "$result"
+
+  rm -f "$temp_file"
+}
+
+# Every emitted record must be exactly name|start|end, so a malformed one can
+# never reach the arithmetic in report_lcov.
+function test_coverage_extract_functions_emits_three_fields_per_record() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+PS4_LIKE="x|${LINENO}"
+function real_fn() { echo "hi"; }
+function bashunit::ns::other() {
+  echo "there"
+}
+FIXTURE
+
+  local malformed
+  malformed=$(bashunit::coverage::extract_functions "$temp_file" |
+    awk -F'|' 'NF != 3 || $2 !~ /^[0-9]+$/ || $3 !~ /^[0-9]+$/')
+
+  assert_empty "$malformed"
+
+  rm -f "$temp_file"
+}
