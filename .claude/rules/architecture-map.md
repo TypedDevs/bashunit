@@ -64,7 +64,9 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `env.sh` | all `BASHUNIT_*` defaults/config files, scratch dirs (`_BASHUNIT_RUN_OUTPUT_DIR` + EXIT-trap cleanup) |
 | `parallel.sh` | worker temp tree, aggregation, stop-on-failure flag file |
 | `console_header.sh` / `console_results.sh` | header/totals rendering, deferred failed/skipped/incomplete/risky blocks (scratch files under the run dir) |
-| `assert*.sh` | assertions; `assertions.sh` re-exports; per-assertion path must stay fork-free |
+| `assert/index.sh` | aggregator only — sources the `src/assert/` module below, plus `skip_todo.sh` and `test_doubles.sh` |
+| `assert/core.sh` | `assert::should_skip`, `assert::fail_with`, `assert::join_to_slot` and the comparison assertions the other files build on |
+| `assert/{arrays,assertions,dates,duration,files,folders,json,once,snapshot}.sh` | the per-topic assertions; the per-assertion path must stay fork-free |
 | `clock.sh` | time impl selection (EPOCHREALTIME > date > perl > …), return-slot reads |
 | `str.sh` / `math.sh` / `io.sh` / `globals.sh` | pure-bash utilities; `globals.sh` has `temp_file`/`temp_dir` (public test API) |
 | `test_doubles.sh` | spy/mock state via `_BASHUNIT_SPY_*` globals + files |
@@ -102,7 +104,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 - **The build flattens the source graph in DFS order** (`build.sh`
   `build::process_file`): a file's body is emitted, *then* its `source` lines are
   recursed into. That equals dev-mode order only if a module aggregator
-  (`src/<module>.sh`, e.g. `src/assertions.sh`) contains **nothing but `source`
+  (`src/<module>/index.sh`, ADR-010) contains **nothing but `source`
   lines and comments** — any other top-level statement would run before its
   dependencies in the built artifact but after them in dev mode. Files are
   deduped by repo-relative path, so `src/` may hold module dirs and two files may

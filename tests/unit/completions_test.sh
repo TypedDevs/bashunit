@@ -27,7 +27,7 @@ function completions_expected_doc_flags() {
 }
 
 function completions_expected_assert_functions() {
-  grep -hoE '^function assert_[a-z_0-9]+' src/assert*.sh |
+  grep -hoE '^function assert_[a-z_0-9]+' src/assert/*.sh |
     sed 's/^function //' | LC_ALL=C sort -u
 }
 
