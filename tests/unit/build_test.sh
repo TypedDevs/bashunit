@@ -238,7 +238,7 @@ function test_build_process_file_emits_a_file_before_the_files_it_sources() {
 
 # The embed dedupe keys on the repo-relative path (#923). Two modules holding the
 # same basename must both survive -- the situation every further module split
-# creates (src/parallel.sh vs src/runner/parallel.sh today).
+# creates (src/config/parallel.sh vs src/runner/parallel.sh today).
 function test_build_process_file_embeds_same_basename_from_two_module_dirs() {
   local dir
   dir=$(bashunit::temp_dir)
