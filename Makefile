@@ -64,7 +64,15 @@ TEST_SCRIPTS_DIR=tests
 EXAMPLE_TEST_SCRIPTS=./example/logic_test.sh
 PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 
-TEST_SCRIPTS = $(wildcard $(TEST_SCRIPTS_DIR)/*/*[tT]est.sh)
+# Collected recursively so tests/unit/ can mirror the src/ module layout. A
+# plain $(wildcard tests/*/*[tT]est.sh) matches exactly one level, so a nested
+# test would be skipped by `make test` while `./bashunit tests/` still ran it --
+# green, and quietly testing less.
+#
+# fixtures/ is excluded by path: those files are inputs to other tests, not
+# tests. Four of them end in _test.sh and a naive recursive glob collects them.
+# tests/unit/project/collection_test.sh keeps this list honest.
+TEST_SCRIPTS = $(shell find $(TEST_SCRIPTS_DIR) -name '*[tT]est.sh' -not -path '*/fixtures/*' | sort)
 
 test/list:
 	@echo "Test scripts found:"
