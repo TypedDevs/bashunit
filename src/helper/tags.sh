@@ -5,8 +5,7 @@
 #
 # Scans a script once and caches its test-function -> tags pairs.
 # Memoized by resolved path, so repeated calls for the same file do not rescan.
-#
-# @param $1 string Path to the test script
+# Arguments: $1 - path to the test script
 #
 function bashunit::helper::build_tags_map() {
   local script=$1
@@ -70,8 +69,7 @@ function bashunit::helper::build_tags_map() {
 #
 # Pure-bash lookup against the cached tags map.
 # Writes the comma-separated tags (or empty) into _BASHUNIT_TAGS_OUT.
-#
-# @param $1 string Test-function name
+# Arguments: $1 - test-function name
 #
 function bashunit::helper::tags_for_function() {
   local function_name=$1
@@ -93,12 +91,10 @@ function bashunit::helper::tags_for_function() {
 # Include uses OR logic (any match passes).
 # Exclude uses OR logic (any match fails).
 # Exclude takes precedence over include.
-#
-# @param $1 string Comma-separated tags for the function
-# @param $2 string Comma-separated include tags (empty = no filter)
-# @param $3 string Comma-separated exclude tags (empty = no filter)
-#
-# @return 0 if function should run, 1 if it should be skipped
+# Arguments: $1 - comma-separated tags for the function,
+#            $2 - comma-separated include tags (empty = no filter),
+#            $3 - comma-separated exclude tags (empty = no filter)
+# Returns: 0 if the function should run, 1 if it should be skipped
 #
 function bashunit::helper::function_matches_tags() {
   local fn_tags="$1"

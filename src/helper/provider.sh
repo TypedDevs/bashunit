@@ -24,8 +24,7 @@ function bashunit::helper::_resolve_provider_script() {
 #
 # Scans a script once and caches its test-function -> provider-function pairs.
 # Memoized by resolved path, so repeated calls for the same file do not rescan.
-#
-# @param $1 string Path to the test script
+# Arguments: $1 - path to the test script
 #
 function bashunit::helper::build_provider_map() {
   bashunit::helper::_resolve_provider_script "$1"
@@ -97,8 +96,7 @@ function bashunit::helper::build_provider_map() {
 #
 # Pure-bash lookup against the cached provider map.
 # Writes the provider-function name (or empty) into _BASHUNIT_PROVIDER_FN_OUT.
-#
-# @param $1 string Test-function name
+# Arguments: $1 - test-function name
 #
 function bashunit::helper::provider_for_function() {
   local function_name=$1

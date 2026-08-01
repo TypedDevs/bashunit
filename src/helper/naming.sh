@@ -7,10 +7,8 @@
 # Walks up the call stack to find the first function that looks like a test function.
 # A test function is one that starts with "test_" or "test" (camelCase).
 # If no test function is found, falls back to the caller of the assertion function.
-#
-# @param $1 number Optional fallback depth (default: 2, i.e., the caller of the assertion)
-#
-# @return string The test function name, or fallback function name
+# Arguments: $1 - optional fallback depth (default: 2, i.e., the caller of the assertion)
+# Returns: the test function name, or fallback function name
 #
 _BASHUNIT_HELPER_TESTFN_OUT=""
 
@@ -58,10 +56,8 @@ function bashunit::helper::find_test_function_name() {
   echo "${FUNCNAME[$fallback_depth]:-}"
 }
 
-#
-# @param $1 string Eg: "test_some_logic_camelCase"
-#
-# @return string Eg: "Some logic camelCase"
+# Arguments: $1 - eg: "test_some_logic_camelCase"
+# Returns: eg: "Some logic camelCase"
 #
 _BASHUNIT_HELPER_NORMALIZED_OUT=""
 
@@ -70,9 +66,7 @@ _BASHUNIT_HELPER_NORMALIZED_OUT=""
 # Return-slot variant of normalize_test_function_name: writes the result into
 # _BASHUNIT_HELPER_NORMALIZED_OUT with no fork, removing the command-substitution
 # fork at the (failure-path) call sites in the assertion layer.
-#
-# @param $1 string Eg: "test_some_logic_camelCase"
-# @param $2 string Optional interpolated name
+# Arguments: $1 - eg: "test_some_logic_camelCase", $2 - optional interpolated name
 #
 function bashunit::helper::normalize_test_function_name_to_slot() {
   local original_fn_name="${1-}"
@@ -129,10 +123,8 @@ function bashunit::helper::normalize_test_function_name_to_slot() {
 }
 
 
-#
-# @param $1 string Eg: "test_some_logic_camelCase"
-#
-# @return string Eg: "Some logic camelCase"
+# Arguments: $1 - eg: "test_some_logic_camelCase"
+# Returns: eg: "Some logic camelCase"
 #
 function bashunit::helper::normalize_test_function_name() {
   bashunit::helper::normalize_test_function_name_to_slot "${1-}" "${2-}"

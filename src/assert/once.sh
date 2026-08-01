@@ -1,27 +1,21 @@
 #!/usr/bin/env bash
 
-# Opt-in marker letting a composed custom assertion count and report once.
+# Opt-in marker: a custom assertion built from built-in assertions otherwise
+# reports one assertion per inner step, and its failure names the step rather
+# than itself. Declaring bashunit::assert_once absorbs them all into one.
 #
-# A custom assertion built out of built-in assertions otherwise reports one
-# assertion per inner step, and its failure names the inner step rather than
-# itself. Declaring bashunit::assert_once at the top of such a function absorbs
-# every assertion it makes into a single reported one.
+# Opt-in because bash has no cheap hook on a user function's return, and the
+# inner assertions are siblings, not nested frames -- nothing to detect without
+# a functrace RETURN trap on the per-test hot path. It also leaves existing
+# suites' totals untouched.
 #
-# Why opt-in: bash gives no cheap hook on a user function's *return*, and the
-# inner assertions are siblings rather than nested frames, so there is nothing
-# to detect implicitly without a functrace RETURN trap on the per-test hot path.
-# An explicit marker also keeps existing suites' totals unchanged.
+# With no return hook, the marker counts one pass immediately and the flush
+# converts it to a failure if anything it absorbed failed, so the totals are
+# correct at every point in time.
 #
-# How the absence of a return hook is worked around: the marker counts one
-# passing assertion immediately, and the flush converts that into a failure if
-# any absorbed assertion failed. The totals are therefore correct at every point
-# in time, without ever needing to observe the declaring function returning.
-#
-# The marker is closed (flushed) by whichever of these happens first:
-#   - another bashunit::assert_once call, which is what makes a loop over the
-#     same custom assertion count once per iteration,
-#   - an assertion reached after the declaring frame has returned,
-#   - the end of the test, via bashunit::runner::cleanup_on_exit.
+# Flushed by whichever comes first: the next assert_once call (which is what
+# makes a loop count once per iteration), an assertion after the declaring frame
+# returned, or runner::cleanup_on_exit at end of test.
 
 _BASHUNIT_ASSERT_ONCE_ACTIVE=0
 _BASHUNIT_ASSERT_ONCE_FRAME=""

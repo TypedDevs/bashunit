@@ -2,8 +2,7 @@
 
 # Generic shell-function utilities.
 
-#
-# @param $1 string Eg: "do_something"
+# Arguments: $1 - eg: "do_something"
 #
 function bashunit::helper::execute_function_if_exists() {
   local fn_name="$1"
@@ -17,8 +16,7 @@ function bashunit::helper::execute_function_if_exists() {
 }
 
 
-#
-# @param $1 string Eg: "do_something"
+# Arguments: $1 - eg: "do_something"
 #
 function bashunit::helper::unset_if_exists() {
   unset "$1" 2>/dev/null

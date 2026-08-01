@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-# Entry point for the src/coverage/ module: only `source` lines and comments
-# belong here. build.sh emits a file's body before recursing into its `source`
-# lines, so any statement here would run before its dependencies in the built
-# binary (adrs/adr-010-src-module-directories.md).
+# Entry point for the src/coverage/ module. `source` lines and comments only,
+# for the reason recorded in adrs/adr-011-source-layout-and-build-pipeline.md.
 #
 # Sourced in dependency layers, leaves first:
 #   config · paths · lines · functions → engine · stats · branches

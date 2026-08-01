@@ -16,18 +16,16 @@ _BASHUNIT_ASSERT_INNER_OUTPUT_OUT=""
 # Runs an assertion in isolation and reports what it did, without letting it
 # touch the calling test.
 #
-# Everything the inner assertion reports is snapshotted and restored: the two
-# counters, the stop-on-assertion-failure guard (src/assert.sh:10) — which
-# would otherwise make every later assertion in the same test skip — plus the
-# per-test output accumulator and the TAP line counter that
-# console_results::print_line feeds. Console output is redirected away.
+# Snapshotted and restored: both counters, the stop-on-assertion-failure guard
+# (assert/core.sh, which would otherwise skip every later assertion in the test),
+# the per-test output accumulator and the TAP line counter. Console output is
+# redirected away.
 #
-# The captured message is read back from that accumulator rather than from
-# stdout, because in --simple mode print_line only emits a one-char marker.
+# The message is read back from the accumulator, not stdout: --simple mode only
+# prints a one-char marker.
 #
-# Every slot is written *after* the call returns, which is what makes this
-# reentrant: a nested capture clobbers the slots while it runs, and the outer
-# frame overwrites them again on the way out.
+# Slots are written *after* the call returns, which makes this reentrant -- a
+# nested capture clobbers them, the outer frame overwrites them on the way out.
 #
 # Writes: _BASHUNIT_ASSERT_INNER_FAILED_OUT (1 when it reported a failure),
 #         _BASHUNIT_ASSERT_INNER_PASSED_OUT (1 when it reported a success),
