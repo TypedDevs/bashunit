@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Regression guard for #834. The dev entrypoint never sourced src/benchmark.sh
+# Regression guard for #834. The dev entrypoint never sourced the benchmark module
 # (only the hand-maintained build list bundled it), so `./bashunit bench` worked
 # in the built binary but crashed with `command not found` in dev mode — and no
 # *_test.sh exercised the bench CLI path.

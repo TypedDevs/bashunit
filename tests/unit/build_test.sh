@@ -36,7 +36,7 @@ function test_build_bundles_only_files_sourced_by_entrypoint() {
 }
 
 function test_build_dependencies_include_benchmark() {
-  assert_contains "src/benchmark.sh" "$(build_dependencies)"
+  assert_contains "src/benchmark/index.sh" "$(build_dependencies)"
 }
 
 function test_build_script_is_sourceable_without_running_a_build() {
