@@ -125,28 +125,28 @@ function test_successful_unset_if_exists() {
 
 function test_check_duplicate_functions_with_duplicates() {
   local file
-  file="$(bashunit::current_dir)/fixtures/duplicate_functions.sh"
+  file="$(bashunit::current_dir)/../fixtures/duplicate_functions.sh"
 
   assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
 function test_check_duplicate_functions_without_duplicates() {
   local file
-  file="$(bashunit::current_dir)/fixtures/no_duplicate_functions.sh"
+  file="$(bashunit::current_dir)/../fixtures/no_duplicate_functions.sh"
 
   assert_successful_code "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
 function test_check_duplicate_functions_without_function_keyword() {
   local file
-  file="$(bashunit::current_dir)/fixtures/no_function_keyword_duplicates.sh"
+  file="$(bashunit::current_dir)/../fixtures/no_function_keyword_duplicates.sh"
 
   assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
 function test_check_duplicate_functions_reports_each_duplicate_name_sorted() {
   local file names
-  file="$(bashunit::current_dir)/fixtures/multiple_duplicate_functions.sh"
+  file="$(bashunit::current_dir)/../fixtures/multiple_duplicate_functions.sh"
 
   # Isolate the state mutation in a subshell; report the stored duplicate names.
   names=$(
@@ -255,7 +255,7 @@ function test_get_provider_data_should_returns_empty_when_not_exists_provider_fu
     "$(bashunit::helper::get_provider_data "fake_function_get_not_existing_provider_data" "${BASH_SOURCE[0]}")"
 }
 
-FIXTURE_PROVIDER_MAP="$(dirname "${BASH_SOURCE[0]}")/fixtures/provider_map/sample_providers.sh"
+FIXTURE_PROVIDER_MAP="$(dirname "${BASH_SOURCE[0]}")/../fixtures/provider_map/sample_providers.sh"
 
 function provider_for() {
   bashunit::helper::build_provider_map "$1"
@@ -324,7 +324,7 @@ function test_build_provider_map_no_parallel_marker_defaults_false() {
 
 function test_find_files_recursive_given_file() {
   local path
-  path="$(bashunit::current_dir)/fixtures/tests/example1_test.sh"
+  path="tests/unit/fixtures/tests/example1_test.sh"
 
   local result
   result=$(bashunit::helper::find_files_recursive "$path")
@@ -334,7 +334,7 @@ function test_find_files_recursive_given_file() {
 
 function test_find_files_recursive_given_dir() {
   local path
-  path="$(bashunit::current_dir)/fixtures/tests"
+  path="tests/unit/fixtures/tests"
 
   local result
   result=$(bashunit::helper::find_files_recursive "$path")
@@ -347,7 +347,7 @@ tests/unit/fixtures/tests/example3_test.bash" \
 
 function test_find_files_recursive_given_wildcard() {
   local path
-  path="$(bashunit::current_dir)/fixtures/tests/*2_test.sh"
+  path="tests/unit/fixtures/tests/*2_test.sh"
 
   local result
   result=$(bashunit::helper::find_files_recursive "$path")
@@ -357,7 +357,7 @@ function test_find_files_recursive_given_wildcard() {
 
 function test_find_files_recursive_given_bash_extension() {
   local path
-  path="$(bashunit::current_dir)/fixtures/tests/*3_test.bash"
+  path="tests/unit/fixtures/tests/*3_test.bash"
 
   local result
   result=$(bashunit::helper::find_files_recursive "$path")
@@ -465,21 +465,21 @@ function test_find_total_tests_no_files() {
 
 function test_find_total_tests_simple_file() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
 
 function test_find_total_tests_simple_file_bash() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.bash"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.bash"
 
   assert_same "2" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
 
 function test_find_total_tests_with_provider() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "3" "$(helpers_test::find_total_in_subshell "" "$file")"
 }
@@ -487,8 +487,8 @@ function test_find_total_tests_with_provider() {
 function test_find_total_tests_multiple_files() {
   local file1
   local file2
-  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
-  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
+  file1="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
+  file2="$(bashunit::current_dir)/../fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "5" "$(helpers_test::find_total_in_subshell "" "$file1" "$file2")"
 }
@@ -496,8 +496,8 @@ function test_find_total_tests_multiple_files() {
 function test_find_total_tests_with_filter() {
   local file1
   local file2
-  file1="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
-  file2="$(bashunit::current_dir)/fixtures/find_total_tests/provider_fixture.sh"
+  file1="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
+  file2="$(bashunit::current_dir)/../fixtures/find_total_tests/provider_fixture.sh"
 
   assert_same "3" "$(helpers_test::find_total_in_subshell "with_provider" "$file1" "$file2")"
 }
@@ -574,28 +574,28 @@ function test_parse_file_path_filter_with_colon_in_path() {
 
 function test_find_function_at_line_first_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_first" "$(bashunit::helper::find_function_at_line "$file" 4)"
 }
 
 function test_find_function_at_line_second_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_second" "$(bashunit::helper::find_function_at_line "$file" 8)"
 }
 
 function test_find_function_at_line_exact_function_line() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "test_first" "$(bashunit::helper::find_function_at_line "$file" 3)"
 }
 
 function test_find_function_at_line_before_any_function() {
   local file
-  file="$(bashunit::current_dir)/fixtures/find_total_tests/simple_fixture.sh"
+  file="$(bashunit::current_dir)/../fixtures/find_total_tests/simple_fixture.sh"
 
   assert_same "" "$(bashunit::helper::find_function_at_line "$file" 1)"
 }

@@ -23,7 +23,7 @@ function tear_down() {
 }
 
 function test_globals_current_dir() {
-  assert_same "tests/unit" "$(bashunit::current_dir)"
+  assert_same "tests/unit/api" "$(bashunit::current_dir)"
 }
 
 function test_globals_current_filename() {
@@ -38,7 +38,7 @@ function globals_test::call_caller_filename() {
 }
 
 function test_globals_caller_filename() {
-  assert_same "tests/unit" "$(globals_test::call_caller_filename)"
+  assert_same "tests/unit/api" "$(globals_test::call_caller_filename)"
 }
 
 function test_globals_caller_line() {

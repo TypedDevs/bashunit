@@ -13,7 +13,7 @@ function _learn_in_sandbox() {
   sandbox="$(bashunit::temp_dir)"
   # Resolve the repo root from this test file, not $BASHUNIT_ROOT_DIR: under
   # `build.sh --verify` the running binary's root dir has no src/ (#834).
-  root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+  root_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
   # stdin is /dev/null so the `read -p "Press Enter to continue..."` prompts in
   # the interactive paths hit EOF and return instead of blocking the suite.
   # BASHUNIT_ROOT_DIR is set INSIDE the child (run_lesson_test shells out to the

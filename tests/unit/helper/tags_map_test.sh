@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2317
 
-FIXTURE_TAGS_MAP="$(dirname "${BASH_SOURCE[0]}")/fixtures/tags_map/sample_tags.sh"
-FIXTURE_TAGS_MAP_OTHER="$(dirname "${BASH_SOURCE[0]}")/fixtures/tags_map/sample_tags_other.sh"
+FIXTURE_TAGS_MAP="$(dirname "${BASH_SOURCE[0]}")/../fixtures/tags_map/sample_tags.sh"
+FIXTURE_TAGS_MAP_OTHER="$(dirname "${BASH_SOURCE[0]}")/../fixtures/tags_map/sample_tags_other.sh"
 
 function tags_for() {
   bashunit::helper::build_tags_map "$1"
