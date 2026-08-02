@@ -43,7 +43,11 @@ function test_src_has_no_printf_assignment() {
 # `arr[${#arr[@]}]=x` to append to an array. Arithmetic `(( x += 1 ))` is fine on
 # 3.0, so only assignment-position `+=` is matched here.
 function test_src_has_no_append_assignment() {
-  local pattern='^[[:space:]]*(local[[:space:]]+|declare[[:space:]]+[^[:space:]]+[[:space:]]+|export[[:space:]]+)?'
+  # Anchored at a statement boundary, not just start-of-line: `cmd; x+=y`,
+  # `if c; then x+=y; fi` and `for i; do x+=y; done` are all Bash 3.1+ append
+  # assignments, and a `^`-only anchor walked straight past every one of them.
+  local pattern='(^|[;&|]|\bthen\b|\bdo\b|\belse\b)[[:space:]]*'
+  pattern="$pattern"'(local[[:space:]]+|declare[[:space:]]+[^[:space:]]+[[:space:]]+|export[[:space:]]+)?'
   pattern="$pattern"'[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?\+='
 
   assert_empty "$(bashunit::compat::offenders "$pattern")"
