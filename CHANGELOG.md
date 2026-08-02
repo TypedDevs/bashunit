@@ -6,6 +6,7 @@
 - Internal: `src/runner.sh` and `src/coverage.sh` are split into `src/runner/` and `src/coverage/` modules of single-responsibility files, each behind a `source`-only `index.sh` aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- `assert_json_equals` no longer reports two invalid (unparseable) JSON strings as equal. It sorted both sides with `jq -S` but never checked jq's exit code, so two differently-invalid inputs both silently sorted to an empty string and compared equal instead of failing
 - Parallel runs no longer lose results when two test files in different directories share a filename. Per-test results were bucketed by basename, so the second file overwrote the first — silently, with the run still green. A tests/ tree mirroring a src/ tree makes that layout ordinary (#959)
 - Coverage no longer counts variable assignments as functions. A line like `URL="https://${host}/api"` was reported as a function, inflating `FNF`/`FNH` in the LCOV report (17 phantom entries in bashunit's own run); when the value also contained a `|`, the malformed record aborted the LCOV writer with a raw bash arithmetic error (#936)
 - `build.sh` dedupes embedded files by repo-relative path. The previous basename key compared the top-level loop's relative paths against the recursion's absolute ones, so a file reached from two places could be bundled twice in the released binary; it also collided for same-named files in different directories (#923)
