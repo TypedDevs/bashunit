@@ -29,15 +29,6 @@ function mock_unknown_linux_os() {
   bashunit::mock bashunit::check_os::is_windows mock_false
 }
 
-function mock_ubuntu_os() {
-  bashunit::mock bashunit::check_os::is_linux mock_true
-  bashunit::mock bashunit::check_os::is_ubuntu mock_true
-
-  bashunit::mock bashunit::check_os::is_alpine mock_false
-  bashunit::mock bashunit::check_os::is_busybox mock_false
-  bashunit::mock bashunit::check_os::is_macos mock_false
-  bashunit::mock bashunit::check_os::is_windows mock_false
-}
 
 function mock_alpine_os() {
   bashunit::mock bashunit::check_os::is_linux mock_true
