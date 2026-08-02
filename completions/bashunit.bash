@@ -5,7 +5,8 @@
 # or source it from your ~/.bashrc:
 #   source /path/to/bashunit/completions/bashunit.bash
 #
-# Kept in sync with src/main.sh by tests/unit/completions_test.sh (anti-drift).
+# Kept in sync with src/main/test.sh and src/main/subcommands.sh by
+# tests/unit/main/completions_test.sh (anti-drift).
 # Works on bash 3.0+ (plain compgen -W, no bash-completion helpers required).
 
 _BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watch"

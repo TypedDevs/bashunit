@@ -5,7 +5,8 @@
 #   cp completions/_bashunit /usr/local/share/zsh/site-functions/_bashunit
 # then restart zsh (or reinitialize completions with compinit).
 #
-# Kept in sync with src/main.sh by tests/unit/completions_test.sh (anti-drift).
+# Kept in sync with src/main/test.sh and src/main/subcommands.sh by
+# tests/unit/main/completions_test.sh (anti-drift).
 
 _bashunit() {
   local curcontext="$curcontext" ret=1

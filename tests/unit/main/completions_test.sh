@@ -42,10 +42,18 @@ function completions_bash_flags() {
 
 # Flags advertised by the zsh completion script: strip [descriptions], then
 # collect every -x/--long token.
+#
+# The '(-p --parallel)' exclusion groups are stripped as well, and that is the
+# whole point rather than tidiness. A zsh spec names each flag twice --
+# '(-p --parallel)'{-p,--parallel}'[...]' -- once to say "these are mutually
+# exclusive" and once to actually offer them. Reading both halves meant deleting
+# a flag from the offered {..} token left it visible in the exclusion group, so
+# this contract stayed green while zsh had quietly stopped completing the flag.
+# Only the offered forms count.
 function completions_zsh_flags() {
   # Each punctuation char maps to a space (char-by-char); the repeated spaces are intentional.
   # shellcheck disable=SC2020
-  sed 's/\[[^]]*\]//g' "$ZSH_COMPLETION_FILE" |
+  sed 's/\[[^]]*\]//g; s/(\([^)]*\))//g' "$ZSH_COMPLETION_FILE" |
     tr '{}(),"'"'"':' '      ' | tr ' \t' '\n\n' |
     grep -E '^--?[a-zA-Z][a-zA-Z0-9-]*$' |
     LC_ALL=C sort -u
