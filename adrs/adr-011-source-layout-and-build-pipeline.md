@@ -44,27 +44,35 @@ statement. That is load-bearing, not stylistic — see the build section — and
 
 ## The modules
 
-Seventeen, in the order the `bashunit` entrypoint sources them. The order is the dependency
-layering: leaves first.
+Seventeen, in load order. The order is the dependency layering: leaves first.
 
 | # | Module | Files | Lines | Owns |
 |---|---|---|---|---|
 | 1 | `dev/` | 1 | 18 | debug helpers; **excluded from the build** |
-| 2 | `system/` | 4 | 192 | capability probing: OS, `command -v`, small I/O |
-| 3 | `util/` | 4 | 476 | computation: strings, arithmetic, time |
-| 4 | `api/` | 5 | 207 | the surface a user's test file calls (except assertions) |
-| 5 | `config/` | 4 | 964 | `BASHUNIT_*` defaults, scratch dirs, parallel mode, rerun cache |
-| 6 | `coverage/` | 13 | 2644 | line/branch tracking and the four report formats |
-| 7 | `state/` | 6 | 477 | counters, per-test context, result payload, parallel aggregation |
-| 8 | `console/` | 9 | 1281 | everything printed: palette, header, per-test lines, totals |
-| 9 | `helper/` | 8 | 976 | naming, discovery, data providers, tags, encoding |
-| 10 | `cli/` | 5 | 447 | the `doc`/`init`/`upgrade`/`watch` subcommand implementations |
-| 11 | `assert/` | 11 | 2336 | every assertion |
-| 12 | `reports/` | 7 | 467 | JUnit, TAP, JSON, GHA and HTML writers |
-| 13 | `runner/` | 11 | 2172 | the file loop, per-test execution, retry, result parsing |
-| 14 | `benchmark/` | 4 | 221 | the bench implementation (`runner/bench.sh` is its loop) |
-| 15 | `learn/` | 5 | 240 | the interactive tutorial |
-| 16 | `main/` | 8 | 1475 | flag parsing per subcommand and the run lifecycle |
+| 2 | `system/` | 4 | 189 | capability probing: OS, `command -v`, small I/O |
+| 3 | `util/` | 4 | 474 | computation: strings, arithmetic, time |
+| 4 | `api/` | 5 | 205 | the surface a user's test file calls (except assertions) |
+| 5 | `config/` | 4 | 961 | `BASHUNIT_*` defaults, scratch dirs, parallel mode, rerun cache |
+| 6 | `coverage/` | 13 | 2640 | line/branch tracking and the four report formats |
+| 7 | `state/` | 6 | 474 | counters, per-test context, result payload, parallel aggregation |
+| 8 | `console/` | 9 | 1278 | everything printed: palette, header, per-test lines, totals |
+| 9 | `helper/` | 8 | 948 | naming, discovery, data providers, tags, encoding |
+| 10 | `cli/` | 5 | 445 | the `doc`/`init`/`upgrade`/`watch` subcommand implementations |
+| 11 | `assert/` | 11 | 2326 | every assertion |
+| 12 | `doubles/` | 4 | 505 | spies and mocks — **sourced by `assert/index.sh`, not the entrypoint** |
+| 13 | `reports/` | 7 | 465 | JUnit, TAP, JSON, GHA and HTML writers |
+| 14 | `runner/` | 11 | 2190 | the file loop, per-test execution, retry, result parsing |
+| 15 | `benchmark/` | 4 | 219 | the bench implementation (`runner/bench.sh` is its loop) |
+| 16 | `learn/` | 14 | 1296 | the interactive tutorial (9 of those files are `learn/lessons/`) |
+| 17 | `main/` | 8 | 1473 | flag parsing per subcommand and the run lifecycle |
+
+The file counts sum to 118, which is every `.sh` file in `src/` — that is the check to re-run
+when editing this table, because both of its previous errors came from counting the wrong way.
+`doubles/` was absent entirely: the table was generated from the entrypoint's `source` lines,
+and `doubles/` is the one module the entrypoint does not source, so it fell through while the
+prose above said "seventeen" from a directory count. And `learn/` was listed as 5 files / 240
+lines because a one-level `src/learn/*.sh` glob does not descend into `learn/lessons/` — the
+same one-level-glob mistake that `Makefile:67` made with nested tests. Count from the tree.
 
 Namespaces track directories: `src/runner/` holds `bashunit::runner::*`. Two exceptions are
 deliberate — `assert/` holds bare `assert_*` (the public API is unprefixed) and `console/`
