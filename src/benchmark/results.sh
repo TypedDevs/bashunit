@@ -2,21 +2,11 @@
 
 # The collected bench results and the table they print as.
 
-#!/usr/bin/env bash
-
 _BASHUNIT_BENCH_NAMES=()
 _BASHUNIT_BENCH_REVS=()
 _BASHUNIT_BENCH_ITS=()
 _BASHUNIT_BENCH_AVERAGES=()
 _BASHUNIT_BENCH_MAX_MILLIS=()
-
-##
-# Fails when a marker is present in the annotation but produced no value, which
-# only happens when its argument is malformed. Silently falling back to the
-# default ran a different benchmark than the one asked for: `@revs=abc` quietly
-# became one revolution, and `@max_ms=abc` dropped the threshold entirely (#884).
-# Arguments: $1 annotation line, $2 marker name, $3 value extracted so far
-##
 
 function bashunit::benchmark::add_result() {
   _BASHUNIT_BENCH_NAMES[${#_BASHUNIT_BENCH_NAMES[@]}]="$1"
@@ -25,8 +15,6 @@ function bashunit::benchmark::add_result() {
   _BASHUNIT_BENCH_AVERAGES[${#_BASHUNIT_BENCH_AVERAGES[@]}]="$4"
   _BASHUNIT_BENCH_MAX_MILLIS[${#_BASHUNIT_BENCH_MAX_MILLIS[@]}]="$5"
 }
-
-# shellcheck disable=SC2155
 
 function bashunit::benchmark::print_results() {
   if ! bashunit::env::is_bench_mode_enabled; then
