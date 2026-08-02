@@ -3,12 +3,21 @@
 function bashunit::date::to_epoch() {
   local input="$1"
 
-  # Already epoch seconds (all digits, and at least one: an empty string
-  # otherwise matched this "no non-digit chars" case vacuously and was
-  # returned as a "successfully parsed" empty epoch instead of falling
-  # through to the parsing cascade below, which correctly rejects it)
+  # An empty string is never a date, and it has to be rejected here rather than
+  # left to the cascade below, because the two date(1) implementations disagree
+  # about it: GNU reads `date -d ""` as "now" and exits 0, while on BSD/macOS
+  # -d is not even a valid option. Falling through therefore resolved two empty
+  # inputs to the same epoch and compared them equal on Linux while correctly
+  # failing on macOS. It also matched the all-digits fast path below vacuously
+  # (an empty string contains no non-digit characters).
+  if [ -z "$input" ]; then
+    echo "$input"
+    return 1
+  fi
+
+  # Already epoch seconds (all digits)
   case "$input" in
-  '' | *[!0-9]*) ;; # empty or contains non-digits, continue to ISO parsing
+  *[!0-9]*) ;; # contains non-digits, continue to ISO parsing
   *)
     echo "$input"
     return 0
