@@ -237,11 +237,21 @@ function test_unsuccessful_assert_string_not_matches_format() {
     "$(assert_string_not_matches_format "%d items" "42 items")"
 }
 
+# Guarded on the same predicate the production code uses: `shopt -u nocasematch`
+# is itself an "invalid shell option name" error on Bash 3.0, so these tests
+# cannot even set up there -- and on 3.0 the tr path runs, where there is no
+# option to leak.
+#
 # nocasematch is a global shell option, so the fast path in
 # assert_contains_ignore_case has to leave it exactly as it found it -- a user's
 # test file may have set it deliberately, and silently clearing it would change
 # how their own `case` statements match.
 function test_assert_contains_ignore_case_leaves_nocasematch_unset_when_it_was_unset() {
+  if ! bashunit::assert::_supports_nocasematch; then
+    bashunit::skip "nocasematch requires Bash 3.1+"
+    return
+  fi
+
   shopt -u nocasematch
 
   assert_contains_ignore_case "world" "Hello WORLD"
@@ -252,6 +262,11 @@ function test_assert_contains_ignore_case_leaves_nocasematch_unset_when_it_was_u
 }
 
 function test_assert_contains_ignore_case_leaves_nocasematch_set_when_it_was_set() {
+  if ! bashunit::assert::_supports_nocasematch; then
+    bashunit::skip "nocasematch requires Bash 3.1+"
+    return
+  fi
+
   shopt -s nocasematch
 
   assert_contains_ignore_case "world" "Hello WORLD"
