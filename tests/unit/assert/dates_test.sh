@@ -163,3 +163,65 @@ function test_successful_assert_date_equals_with_utc_z_suffix() {
 function test_successful_assert_date_equals_with_tz_offset() {
   assert_empty "$(assert_date_equals "2023-11-14T12:00:00+0100" "2023-11-14T12:00:00+0100")"
 }
+
+# Unparseable input tests
+#
+# bashunit::date::to_epoch signals an unparseable date with `return 1`, echoing
+# the raw input back. Every assert_date_* used to capture only the echoed value
+# and ignore that return code, so the raw string flowed on into an unguarded
+# integer comparison (assert_date_equals/_before/_after/_within_range) or
+# `$(( ))` arithmetic (assert_date_within_delta). Depending on the exact
+# garbage, that either crashed with a raw "integer expression expected" shell
+# error (a hyphenated string) or silently coerced to 0 and produced a wrong
+# answer with no error at all (a plain word, or two equal garbage/empty
+# strings comparing "equal" to each other). Each assertion must instead fail
+# cleanly, the same way any other invalid input does.
+
+function test_assert_date_equals_fails_cleanly_on_unparseable_expected() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date equals fails cleanly on unparseable expected" "not-a-date" "to be" "a valid date")"\
+    "$(assert_date_equals "not-a-date" "1700000000")"
+}
+
+function test_assert_date_equals_fails_cleanly_on_unparseable_actual() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date equals fails cleanly on unparseable actual" "banana" "to be" "a valid date")"\
+    "$(assert_date_equals "1700000000" "banana")"
+}
+
+function test_assert_date_before_fails_cleanly_on_unparseable_arg() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date before fails cleanly on unparseable arg" "banana" "to be" "a valid date")"\
+    "$(assert_date_before "banana" "1700000000")"
+}
+
+function test_assert_date_after_fails_cleanly_on_unparseable_arg() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date after fails cleanly on unparseable arg" "banana" "to be" "a valid date")"\
+    "$(assert_date_after "banana" "1700000000")"
+}
+
+function test_assert_date_within_range_fails_cleanly_on_unparseable_actual() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date within range fails cleanly on unparseable actual" "banana" "to be" "a valid date")"\
+    "$(assert_date_within_range "1600000000" "1800000000" "banana")"
+}
+
+function test_assert_date_within_delta_does_not_silently_pass_two_equal_garbage_strings() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date within delta does not silently pass two equal garbage strings" "banana" "to be" "a valid date")"\
+    "$(assert_date_within_delta "banana" "banana" "5")"
+}
+
+function test_assert_date_within_delta_does_not_silently_pass_two_empty_strings() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Assert date within delta does not silently pass two empty strings" "" "to be" "a valid date")"\
+    "$(assert_date_within_delta "" "" "5")"
+}

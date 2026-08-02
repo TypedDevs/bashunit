@@ -3,6 +3,18 @@
 function bashunit::date::to_epoch() {
   local input="$1"
 
+  # An empty string is never a date, and it has to be rejected here rather than
+  # left to the cascade below, because the two date(1) implementations disagree
+  # about it: GNU reads `date -d ""` as "now" and exits 0, while on BSD/macOS
+  # -d is not even a valid option. Falling through therefore resolved two empty
+  # inputs to the same epoch and compared them equal on Linux while correctly
+  # failing on macOS. It also matched the all-digits fast path below vacuously
+  # (an empty string contains no non-digit characters).
+  if [ -z "$input" ]; then
+    echo "$input"
+    return 1
+  fi
+
   # Already epoch seconds (all digits)
   case "$input" in
   *[!0-9]*) ;; # contains non-digits, continue to ISO parsing
@@ -96,13 +108,58 @@ function bashunit::date::to_epoch() {
   return 1
 }
 
+_BASHUNIT_DATE_EPOCH_OUT=""
+
+##
+# Resolves $1 to epoch seconds into _BASHUNIT_DATE_EPOCH_OUT. Fails the current
+# assertion and returns 1 if $1 is not a parseable date.
+#
+# bashunit::date::to_epoch already signals an unparseable date with `return 1`
+# (echoing the raw input back rather than a number), but every assert_date_*
+# below used to capture only that echoed value with a plain `x="$(...)"` and
+# drop the return code -- so the raw, non-numeric string flowed on into an
+# unguarded integer comparison or `$(( ))`. That either crashed with a raw
+# "integer expression expected" shell error, or silently coerced to 0 and
+# produced a wrong answer with no error at all: two equally-unparseable inputs
+# compared equal to each other, so `assert_date_within_delta "" "" "5"` passed.
+#
+# Uses a fixed return slot rather than an outvar name, per bash-style.md's
+# preference. All five callers live in this file and read the slot immediately,
+# so one slot cannot be clobbered by an interleaved call -- and it avoids the
+# `eval` form entirely, whose internal locals can be shadowed by a caller that
+# happens to name its outvar the same thing (the bug behind PR #672).
+#
+# Arguments: $1 - raw date string
+# Returns: 0 and sets the slot when parseable, 1 after failing the assertion
+#
+# Callers MUST chain `|| return 0`, not bare `|| return`: every other failure
+# path in this file ends in `fail_with; return`, which returns 0 (fail_with's
+# own last command succeeds), so the enclosing test function's exit status
+# stays 0 on an assertion failure. Propagating this function's `return 1`
+# unchanged would make the *test function* exit non-zero, which
+# runner/exec.sh's `[ "$test_exit_code" -ne 0 ]` check reads as a runtime error
+# independently of the fail_with already made here -- reporting the one cause
+# as both Failed and Error.
+##
+function bashunit::date::_epoch_or_fail() {
+  local input=$1
+  local epoch
+  if epoch="$(bashunit::date::to_epoch "$input")"; then
+    _BASHUNIT_DATE_EPOCH_OUT=$epoch
+    return 0
+  fi
+  bashunit::assert::fail_with "" "${input}" "to be" "a valid date"
+  return 1
+}
+
 function assert_date_equals() {
   bashunit::assert::should_skip && return 0
 
-  local expected
-  expected="$(bashunit::date::to_epoch "$1")"
-  local actual
-  actual="$(bashunit::date::to_epoch "$2")"
+  local expected actual
+  bashunit::date::_epoch_or_fail "$1" || return 0
+  expected=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$2" || return 0
+  actual=$_BASHUNIT_DATE_EPOCH_OUT
 
   if [ "$actual" -ne "$expected" ]; then
     bashunit::assert::fail_with "" "${actual}" "to be equal to" "${expected}"
@@ -115,10 +172,11 @@ function assert_date_equals() {
 function assert_date_before() {
   bashunit::assert::should_skip && return 0
 
-  local expected
-  expected="$(bashunit::date::to_epoch "$1")"
-  local actual
-  actual="$(bashunit::date::to_epoch "$2")"
+  local expected actual
+  bashunit::date::_epoch_or_fail "$1" || return 0
+  expected=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$2" || return 0
+  actual=$_BASHUNIT_DATE_EPOCH_OUT
 
   if [ "$actual" -ge "$expected" ]; then
     bashunit::assert::fail_with "" "${actual}" "to be before" "${expected}"
@@ -131,10 +189,11 @@ function assert_date_before() {
 function assert_date_after() {
   bashunit::assert::should_skip && return 0
 
-  local expected
-  expected="$(bashunit::date::to_epoch "$1")"
-  local actual
-  actual="$(bashunit::date::to_epoch "$2")"
+  local expected actual
+  bashunit::date::_epoch_or_fail "$1" || return 0
+  expected=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$2" || return 0
+  actual=$_BASHUNIT_DATE_EPOCH_OUT
 
   if [ "$actual" -le "$expected" ]; then
     bashunit::assert::fail_with "" "${actual}" "to be after" "${expected}"
@@ -147,12 +206,13 @@ function assert_date_after() {
 function assert_date_within_range() {
   bashunit::assert::should_skip && return 0
 
-  local from
-  from="$(bashunit::date::to_epoch "$1")"
-  local to
-  to="$(bashunit::date::to_epoch "$2")"
-  local actual
-  actual="$(bashunit::date::to_epoch "$3")"
+  local from to actual
+  bashunit::date::_epoch_or_fail "$1" || return 0
+  from=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$2" || return 0
+  to=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$3" || return 0
+  actual=$_BASHUNIT_DATE_EPOCH_OUT
 
   if [ "$actual" -lt "$from" ] || [ "$actual" -gt "$to" ]; then
     bashunit::assert::fail_with "" "${actual}" "to be between" "${from} and ${to}"
@@ -165,10 +225,11 @@ function assert_date_within_range() {
 function assert_date_within_delta() {
   bashunit::assert::should_skip && return 0
 
-  local expected
-  expected="$(bashunit::date::to_epoch "$1")"
-  local actual
-  actual="$(bashunit::date::to_epoch "$2")"
+  local expected actual
+  bashunit::date::_epoch_or_fail "$1" || return 0
+  expected=$_BASHUNIT_DATE_EPOCH_OUT
+  bashunit::date::_epoch_or_fail "$2" || return 0
+  actual=$_BASHUNIT_DATE_EPOCH_OUT
   local delta="$3"
 
   local diff=$((actual - expected))
