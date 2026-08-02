@@ -51,7 +51,7 @@ function test_env_flag_returns_failure_when_false() {
 
   if "$fn_name"; then
     eval "export $var_name='$original_value'"
-    fail "Expected $fn_name to return failure when $var_name=false"
+    bashunit::fail "Expected $fn_name to return failure when $var_name=false"
     return
   fi
 
@@ -121,7 +121,7 @@ function test_is_dev_mode_disabled_when_dev_log_empty() {
 
   if bashunit::env::is_dev_mode_enabled; then
     export BASHUNIT_DEV_LOG="$original"
-    fail "Expected is_dev_mode_enabled to return failure when BASHUNIT_DEV_LOG is empty"
+    bashunit::fail "Expected is_dev_mode_enabled to return failure when BASHUNIT_DEV_LOG is empty"
     return
   fi
 
@@ -224,7 +224,7 @@ function test_is_tap_output_disabled_when_format_is_not_tap() {
 
   if bashunit::env::is_tap_output_enabled; then
     export BASHUNIT_OUTPUT_FORMAT="$original"
-    fail "Expected is_tap_output_enabled to return failure when format is empty"
+    bashunit::fail "Expected is_tap_output_enabled to return failure when format is empty"
     return
   fi
 
@@ -238,7 +238,7 @@ function test_active_internet_connection_returns_failure_when_no_network() {
 
   if bashunit::env::active_internet_connection; then
     export BASHUNIT_NO_NETWORK="$original"
-    fail "Expected active_internet_connection to fail when BASHUNIT_NO_NETWORK=true"
+    bashunit::fail "Expected active_internet_connection to fail when BASHUNIT_NO_NETWORK=true"
     return
   fi
 
@@ -269,7 +269,7 @@ function test_supports_color_returns_failure_when_TERM_is_dumb() {
 
   if bashunit::env::supports_color; then
     export TERM="$original_term"
-    fail "Expected supports_color to fail when TERM=dumb"
+    bashunit::fail "Expected supports_color to fail when TERM=dumb"
     return
   fi
 
@@ -284,7 +284,7 @@ function test_supports_color_returns_failure_when_tput_reports_below_8_colors() 
 
   if bashunit::env::supports_color; then
     export TERM="$original_term"
-    fail "Expected supports_color to fail when tput colors reports 2"
+    bashunit::fail "Expected supports_color to fail when tput colors reports 2"
     return
   fi
 

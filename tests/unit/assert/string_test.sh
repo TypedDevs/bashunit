@@ -28,9 +28,13 @@ function test_successful_assert_equals() {
 }
 
 function test_successful_assert_equals_with_special_chars() {
-  local string="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
+  # Two independently-colored strings, not the same variable twice: both
+  # sides must have their ANSI codes stripped for this to pass, so a broken
+  # strip on either side would surface here.
+  local str1="${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
+  local str2="${_BASHUNIT_COLOR_PASSED}✗ Failed${_BASHUNIT_COLOR_DEFAULT} foo"
 
-  assert_equals "$string" "$string"
+  assert_equals "$str1" "$str2"
 }
 
 function test_unsuccessful_assert_equals() {
