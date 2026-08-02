@@ -86,6 +86,26 @@ function bashunit::main::validate_config_or_exit() {
     bashunit::main::require_non_negative_int_or_exit "${BASHUNIT_SEED}" "BASHUNIT_SEED (--seed)"
   fi
 
+  # BASHUNIT_SHARD_INDEX/BASHUNIT_SHARD_TOTAL set directly (e.g. via .bashunitrc)
+  # bypass bashunit::main::set_shard_or_exit's parsing, which only runs on the
+  # --shard flag path. Left unchecked, a non-numeric or zero total reached the
+  # raw arithmetic in main/run.sh as a "division by 0" shell error, and an
+  # out-of-range index silently produced "No tests found" instead of a clear
+  # message -- the same failure shape this function already closed for other
+  # settings (#873, #879).
+  if bashunit::env::is_shard_enabled; then
+    bashunit::main::require_non_negative_int_or_exit \
+      "${BASHUNIT_SHARD_INDEX}" "BASHUNIT_SHARD_INDEX"
+    bashunit::main::require_non_negative_int_or_exit \
+      "${BASHUNIT_SHARD_TOTAL}" "BASHUNIT_SHARD_TOTAL"
+    if [ "$BASHUNIT_SHARD_TOTAL" -lt 1 ] || [ "$BASHUNIT_SHARD_INDEX" -lt 1 ] ||
+      [ "$BASHUNIT_SHARD_INDEX" -gt "$BASHUNIT_SHARD_TOTAL" ]; then
+      printf "%sError: BASHUNIT_SHARD_INDEX/BASHUNIT_SHARD_TOTAL must satisfy 1 <= index <= total.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+  fi
+
   local _report_var _report_path
   for _report_var in BASHUNIT_LOG_JUNIT BASHUNIT_LOG_GHA BASHUNIT_REPORT_HTML \
     BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON; do
