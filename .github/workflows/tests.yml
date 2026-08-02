@@ -99,16 +99,16 @@ jobs:
         include:
           - name: "functional"
             test_path: "tests/functional/*_test.sh"
-          - name: "unit a-b"
-            test_path: "tests/unit/[a-b]*_test.sh"
-          - name: "unit c + coverage"
-            test_path: "tests/unit/c*_test.sh"
-          - name: "unit d-g"
-            test_path: "tests/unit/[d-g]*_test.sh"
-          - name: "unit h-p"
-            test_path: "tests/unit/[h-p]*_test.sh"
-          - name: "unit q-z"
-            test_path: "tests/unit/[q-z]*_test.sh"
+          - name: "unit 1/5"
+            test_path: "--shard 1/5 tests/unit"
+          - name: "unit 2/5"
+            test_path: "--shard 2/5 tests/unit"
+          - name: "unit 3/5"
+            test_path: "--shard 3/5 tests/unit"
+          - name: "unit 4/5"
+            test_path: "--shard 4/5 tests/unit"
+          - name: "unit 5/5"
+            test_path: "--shard 5/5 tests/unit"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -130,12 +130,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "a-e"
-            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh tests/acceptance/coverage_*_test.sh"
-          - name: "f-l"
-            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh tests/acceptance/install*_test.sh"
-          - name: "m-z"
-            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/bashunit_test.sh tests/acceptance/mock*_test.sh tests/acceptance/parallel*_test.sh"
+          - name: "1/3"
+            test_path: "--shard 1/3 tests/acceptance"
+          - name: "2/3"
+            test_path: "--shard 2/3 tests/acceptance"
+          - name: "3/3"
+            test_path: "--shard 3/3 tests/acceptance"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -158,16 +158,16 @@ jobs:
         include:
           - name: "functional"
             test_path: "tests/functional/*_test.sh"
-          - name: "unit a-b"
-            test_path: "tests/unit/[a-b]*_test.sh"
-          - name: "unit c + coverage"
-            test_path: "tests/unit/ch*_test.sh tests/unit/cl*_test.sh tests/unit/console*_test.sh tests/unit/cu*_test.sh tests/unit/coverage_*_test.sh"
-          - name: "unit d-g"
-            test_path: "tests/unit/[d-g]*_test.sh"
-          - name: "unit h-p"
-            test_path: "tests/unit/[h-p]*_test.sh"
-          - name: "unit r-z"
-            test_path: "tests/unit/[r-z]*_test.sh"
+          - name: "unit 1/5"
+            test_path: "--shard 1/5 tests/unit"
+          - name: "unit 2/5"
+            test_path: "--shard 2/5 tests/unit"
+          - name: "unit 3/5"
+            test_path: "--shard 3/5 tests/unit"
+          - name: "unit 4/5"
+            test_path: "--shard 4/5 tests/unit"
+          - name: "unit 5/5"
+            test_path: "--shard 5/5 tests/unit"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -191,12 +191,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "a-e"
-            test_path: "tests/acceptance/bashunit_[a-e]*_test.sh tests/acceptance/coverage_*_test.sh"
-          - name: "f-l"
-            test_path: "tests/acceptance/bashunit_[f-l]*_test.sh tests/acceptance/install*_test.sh"
-          - name: "m-z"
-            test_path: "tests/acceptance/bashunit_[m-z]*_test.sh tests/acceptance/bashunit_test.sh tests/acceptance/mock*_test.sh tests/acceptance/parallel*_test.sh"
+          - name: "1/3"
+            test_path: "--shard 1/3 tests/acceptance"
+          - name: "2/3"
+            test_path: "--shard 2/3 tests/acceptance"
+          - name: "3/3"
+            test_path: "--shard 3/3 tests/acceptance"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
