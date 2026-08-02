@@ -264,9 +264,21 @@ function test_assert_contains_ignore_case_leaves_nocasematch_set_when_it_was_set
 }
 
 # Non-ASCII folding is why the tr fallback cannot be replaced with a pure-bash
-# A-Z loop: in a UTF-8 locale both nocasematch and tr fold accented text, and an
-# ASCII-only loop would silently stop matching it.
+# A-Z loop: where the locale folds accented text, both nocasematch and tr do it
+# and an ASCII-only loop would silently stop matching.
+#
+# Whether it folds at all is a property of the platform's locale, not of
+# bashunit: under LC_ALL=C neither path folds, which is correct and is what Git
+# Bash on Windows does. So the capability is probed first and the assertion is
+# skipped where it does not apply, rather than pinning a UTF-8-only outcome.
 function test_assert_contains_ignore_case_folds_non_ascii() {
+  local folded
+  folded=$(printf '%s' "ÑÜ" | tr '[:upper:]' '[:lower:]')
+  if [ "$folded" != "ñü" ]; then
+    bashunit::skip "locale does not fold non-ASCII case"
+    return
+  fi
+
   assert_contains_ignore_case "ñü" "Test ÑÜ string"
   assert_contains_ignore_case "ÑÜ" "test ñü string"
 }
