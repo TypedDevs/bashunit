@@ -33,16 +33,33 @@ function bashunit::coverage::calculate_percentage() {
   fi
 }
 
+# Return slots for bashunit::coverage::_compute_file_stats.
+_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT=""
+_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT=""
+_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT=""
+_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT=""
+
+# Computes one file's executable/hit/pct/class into the four slots above.
+# Shared by get_file_stats and precompute_file_stats so the two cannot drift
+# on how compute_file_coverage's "executable:hit" string is parsed or how
+# pct/class are derived from it.
+function bashunit::coverage::_compute_file_stats() {
+  local file="$1"
+  local stats
+  stats=$(bashunit::coverage::compute_file_coverage "$file")
+  _BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT="${stats%%:*}"
+  _BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT="${stats##*:}"
+  _BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT=$(bashunit::coverage::calculate_percentage \
+    "$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT" "$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT")
+  _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT=$(bashunit::coverage::get_coverage_class \
+    "$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT")
+}
+
 # Get file coverage stats as "executable:hit:pct:class"
 function bashunit::coverage::get_file_stats() {
-  local file="$1"
-  local stats executable hit pct class
-  stats=$(bashunit::coverage::compute_file_coverage "$file")
-  executable="${stats%%:*}"
-  hit="${stats##*:}"
-  pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
-  class=$(bashunit::coverage::get_coverage_class "$pct")
-  echo "${executable}:${hit}:${pct}:${class}"
+  bashunit::coverage::_compute_file_stats "$1"
+  echo "${_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT}:${_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT}:\
+${_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT}:${_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT}"
 }
 
 
@@ -70,19 +87,14 @@ function bashunit::coverage::precompute_file_stats() {
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local stats executable hit pct class
-    stats=$(bashunit::coverage::compute_file_coverage "$file")
-    executable="${stats%%:*}"
-    hit="${stats##*:}"
-    pct=$(bashunit::coverage::calculate_percentage "$hit" "$executable")
-    class=$(bashunit::coverage::get_coverage_class "$pct")
+    bashunit::coverage::_compute_file_stats "$file"
 
     local idx="$_BASHUNIT_COVERAGE_STATS_COUNT"
     _BASHUNIT_COVERAGE_STATS_FILES[idx]="$file"
-    _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$executable"
-    _BASHUNIT_COVERAGE_STATS_HIT[idx]="$hit"
-    _BASHUNIT_COVERAGE_STATS_PCT[idx]="$pct"
-    _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$class"
+    _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT"
+    _BASHUNIT_COVERAGE_STATS_HIT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT"
+    _BASHUNIT_COVERAGE_STATS_PCT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT"
+    _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT"
     _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
     _BASHUNIT_COVERAGE_STATS_LOOKUP="${_BASHUNIT_COVERAGE_STATS_LOOKUP}|${file}=${idx}|"
   done < <(bashunit::coverage::get_tracked_files)
@@ -101,6 +113,26 @@ function bashunit::coverage::get_cached_stats() {
     ;;
   esac
   bashunit::coverage::get_file_stats "$file"
+}
+
+# Return slots for bashunit::coverage::split_stats.
+_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT=""
+_BASHUNIT_COVERAGE_SPLIT_HIT_OUT=""
+_BASHUNIT_COVERAGE_SPLIT_PCT_OUT=""
+_BASHUNIT_COVERAGE_SPLIT_CLASS_OUT=""
+
+# Splits a "executable:hit:pct:class" string (as returned by get_cached_stats/
+# get_file_stats) into the four slots above. No fork. The report writers that
+# consume this format (report_text, report_html, generate_file_html) share
+# this parser so they cannot drift from each other on field order or count.
+function bashunit::coverage::split_stats() {
+  local stats="$1" rest
+  _BASHUNIT_COVERAGE_SPLIT_EXEC_OUT="${stats%%:*}"
+  rest="${stats#*:}"
+  _BASHUNIT_COVERAGE_SPLIT_HIT_OUT="${rest%%:*}"
+  rest="${rest#*:}"
+  _BASHUNIT_COVERAGE_SPLIT_PCT_OUT="${rest%%:*}"
+  _BASHUNIT_COVERAGE_SPLIT_CLASS_OUT="${rest#*:}"
 }
 
 function bashunit::coverage::get_percentage() {

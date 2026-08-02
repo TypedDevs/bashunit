@@ -452,6 +452,42 @@ EOF
   rm -f "$temp_file"
 }
 
+function test_coverage_split_stats_populates_all_four_slots() {
+  bashunit::coverage::split_stats "12:8:66:medium"
+
+  assert_equals "12" "$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
+  assert_equals "8" "$_BASHUNIT_COVERAGE_SPLIT_HIT_OUT"
+  assert_equals "66" "$_BASHUNIT_COVERAGE_SPLIT_PCT_OUT"
+  assert_equals "medium" "$_BASHUNIT_COVERAGE_SPLIT_CLASS_OUT"
+}
+
+function test_coverage_split_stats_round_trips_get_cached_stats() {
+  BASHUNIT_COVERAGE="true"
+  bashunit::coverage::init
+
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'EOF'
+#!/usr/bin/env bash
+echo "line 1"
+echo "line 2"
+EOF
+
+  echo "$temp_file" >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  bashunit::coverage::precompute_file_stats
+
+  local stats
+  stats=$(bashunit::coverage::get_cached_stats "$temp_file")
+  bashunit::coverage::split_stats "$stats"
+
+  assert_equals "2" "$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
+  local rebuilt="${_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT}:${_BASHUNIT_COVERAGE_SPLIT_HIT_OUT}"
+  rebuilt="${rebuilt}:${_BASHUNIT_COVERAGE_SPLIT_PCT_OUT}:${_BASHUNIT_COVERAGE_SPLIT_CLASS_OUT}"
+  assert_equals "$stats" "$rebuilt"
+
+  rm -f "$temp_file"
+}
+
 function test_coverage_report_lcov_includes_branch_records_for_if_else() {
   BASHUNIT_COVERAGE="true"
   bashunit::coverage::init

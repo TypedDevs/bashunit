@@ -4,8 +4,7 @@
 
 function bashunit::reports::__gha_encode() {
   local text="$1"
-  # Strip ANSI escape sequences first (one sed call)
-  text=$(printf '%s' "$text" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g')
+  text=$(bashunit::reports::__strip_ansi "$text")
   # Percent-encode reserved chars per GHA workflow-commands spec.
   # Bash 3.0+ parameter expansion avoids extra awk/sed calls.
   # Order matters: encode '%' first so the sequences we inject stay literal.

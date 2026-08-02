@@ -7,8 +7,7 @@ function bashunit::reports::__xml_escape() {
   local text="$1"
   # Strip ANSI escape sequences and control characters invalid in XML 1.0,
   # then escape XML special characters (& first to avoid double-escaping)
-  echo "$text" \
-    | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+  bashunit::reports::__strip_ansi "$text" \
     | tr -d '\000-\010\013\014\016-\037' \
     | sed -e 's/&/\&amp;/g' -e 's/</\&lt;/g' -e 's/>/\&gt;/g' -e 's/"/\&quot;/g' -e "s/'/\&apos;/g"
 }

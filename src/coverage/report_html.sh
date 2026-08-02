@@ -32,11 +32,10 @@ function bashunit::coverage::report_html() {
 
     local stats executable hit pct
     stats=$(bashunit::coverage::get_cached_stats "$file")
-    executable="${stats%%:*}"
-    stats="${stats#*:}"
-    hit="${stats%%:*}"
-    stats="${stats#*:}"
-    pct="${stats%%:*}"
+    bashunit::coverage::split_stats "$stats"
+    executable="$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
+    hit="$_BASHUNIT_COVERAGE_SPLIT_HIT_OUT"
+    pct="$_BASHUNIT_COVERAGE_SPLIT_PCT_OUT"
 
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))

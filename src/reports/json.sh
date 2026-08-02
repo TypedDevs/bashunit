@@ -6,7 +6,7 @@
 # Strips ANSI/control chars that cannot appear inline, keeps \t\r\n as escapes.
 function bashunit::reports::__json_escape() {
   local text="$1"
-  text=$(printf '%s' "$text" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' | tr -d '\000-\010\013\014\016-\037')
+  text=$(bashunit::reports::__strip_ansi "$text" | tr -d '\000-\010\013\014\016-\037')
   # Backslash first so escapes added below are not doubled.
   text="${text//\\/\\\\}"
   text="${text//\"/\\\"}"
