@@ -236,3 +236,64 @@ function test_unsuccessful_assert_string_not_matches_format() {
       "42 items" "to not match format" "%d items")" \
     "$(assert_string_not_matches_format "%d items" "42 items")"
 }
+
+# Guarded on the same predicate the production code uses: `shopt -u nocasematch`
+# is itself an "invalid shell option name" error on Bash 3.0, so these tests
+# cannot even set up there -- and on 3.0 the tr path runs, where there is no
+# option to leak.
+#
+# nocasematch is a global shell option, so the fast path in
+# assert_contains_ignore_case has to leave it exactly as it found it -- a user's
+# test file may have set it deliberately, and silently clearing it would change
+# how their own `case` statements match.
+function test_assert_contains_ignore_case_leaves_nocasematch_unset_when_it_was_unset() {
+  if ! bashunit::assert::_supports_nocasematch; then
+    bashunit::skip "nocasematch requires Bash 3.1+"
+    return
+  fi
+
+  shopt -u nocasematch
+
+  assert_contains_ignore_case "world" "Hello WORLD"
+
+  if shopt -q nocasematch; then
+    bashunit::fail "nocasematch leaked ON into the caller"
+  fi
+}
+
+function test_assert_contains_ignore_case_leaves_nocasematch_set_when_it_was_set() {
+  if ! bashunit::assert::_supports_nocasematch; then
+    bashunit::skip "nocasematch requires Bash 3.1+"
+    return
+  fi
+
+  shopt -s nocasematch
+
+  assert_contains_ignore_case "world" "Hello WORLD"
+
+  local still_set=1
+  shopt -q nocasematch || still_set=0
+  shopt -u nocasematch
+
+  assert_equals "1" "$still_set"
+}
+
+# Non-ASCII folding is why the tr fallback cannot be replaced with a pure-bash
+# A-Z loop: where the locale folds accented text, both nocasematch and tr do it
+# and an ASCII-only loop would silently stop matching.
+#
+# Whether it folds at all is a property of the platform's locale, not of
+# bashunit: under LC_ALL=C neither path folds, which is correct and is what Git
+# Bash on Windows does. So the capability is probed first and the assertion is
+# skipped where it does not apply, rather than pinning a UTF-8-only outcome.
+function test_assert_contains_ignore_case_folds_non_ascii() {
+  local folded
+  folded=$(printf '%s' "ÑÜ" | tr '[:upper:]' '[:lower:]')
+  if [ "$folded" != "ñü" ]; then
+    bashunit::skip "locale does not fold non-ASCII case"
+    return
+  fi
+
+  assert_contains_ignore_case "ñü" "Test ÑÜ string"
+  assert_contains_ignore_case "ÑÜ" "test ñü string"
+}

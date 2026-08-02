@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- `assert_contains_ignore_case` folds case with `shopt -s nocasematch` on Bash 3.1+ instead of two `tr` subprocesses, and falls back to `tr` only on Bash 3.0. Roughly 10x faster in a run dominated by that assertion (300 calls: 1419ms -> 131ms), with identical results including non-ASCII folding
 - Internal: `src/runner.sh` and `src/coverage.sh` are split into `src/runner/` and `src/coverage/` modules of single-responsibility files, each behind a `source`-only `index.sh` aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
