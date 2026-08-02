@@ -75,3 +75,31 @@ function test_unsuccessful_assert_json_equals() {
       "$expected" "but got " "$actual")" \
     "$(assert_json_equals "$expected" "$actual")"
 }
+
+# jq -S silently produces empty output (not a parse-error message) on invalid
+# JSON; without checking its exit code, two differently-invalid or identically
+# unparseable inputs both sort to "" and compare equal, turning "not JSON at
+# all" into a false pass.
+function test_unsuccessful_assert_json_equals_when_expected_is_invalid_json() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local expected='not json'
+  local actual='{"a":1}'
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert json equals when expected is invalid json" \
+      "$expected" "but got " "$actual")" \
+    "$(assert_json_equals "$expected" "$actual")"
+}
+
+function test_unsuccessful_assert_json_equals_when_both_sides_are_invalid_json() {
+  if [ "$_JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local expected='not json'
+  local actual='also not json'
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert json equals when both sides are invalid json" \
+      "$expected" "but got " "$actual")" \
+    "$(assert_json_equals "$expected" "$actual")"
+}

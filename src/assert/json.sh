@@ -53,12 +53,17 @@ function assert_json_equals() {
   local expected="$1"
   local actual="$2"
 
-  local expected_sorted
-  expected_sorted=$(printf '%s' "$expected" | jq -S '.' 2>/dev/null)
+  # jq -S prints nothing (not an error message) on invalid JSON, so its exit
+  # code -- not just its output -- has to gate the comparison: two inputs that
+  # both fail to parse would otherwise both sort to "" and compare equal,
+  # reporting unparseable input as matching JSON instead of failing.
+  local expected_sorted actual_valid=true expected_valid=true
+  expected_sorted=$(printf '%s' "$expected" | jq -S '.' 2>/dev/null) || expected_valid=false
   local actual_sorted
-  actual_sorted=$(printf '%s' "$actual" | jq -S '.' 2>/dev/null)
+  actual_sorted=$(printf '%s' "$actual" | jq -S '.' 2>/dev/null) || actual_valid=false
 
-  if [ "$expected_sorted" != "$actual_sorted" ]; then
+  if [ "$expected_valid" = false ] || [ "$actual_valid" = false ] ||
+    [ "$expected_sorted" != "$actual_sorted" ]; then
     bashunit::assert::fail_with "" "${expected}" "but got " "${actual}"
     return
   fi
