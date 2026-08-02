@@ -82,12 +82,18 @@ holds `bashunit::console_results::*` in files named for what they do.
 
 Most of it is ordinary dependency layering, but three points are genuinely load-bearing:
 
-* **`api/globals.sh` runs `set -euo pipefail` at file scope.** Everything sourced after it
-  inherits strict mode. It must stay first inside `api/`, and `api/` must stay where it is.
+* ~~**`api/globals.sh` runs `set -euo pipefail` at file scope**, so it must stay first.~~
+  **Corrected 2026-08-02: it does run that, but it is not an ordering constraint.** The
+  `bashunit` entrypoint sets the same options on its own line 2, and
+  `system/dependencies.sh` repeats them at module #2 — both before `api/` (#4) loads.
+  The line is worth keeping for anything that sources `api/globals.sh` alone; moving
+  `api/` would not turn strict mode off.
 * **`config/env.sh` executes at source time** — it loads `.bashunitrc` and `.env` and creates
   the scratch dirs. It must come before `console/`, whose palette is built at file scope from
   the values it resolves.
-* **`main/` is sourced last**, after everything it dispatches to.
+* **`main/` is sourced last**, after everything it dispatches to. This is a description of
+  the current order rather than a proven constraint: sourcing `main/` first was tried and
+  the suite still passed, because every call it makes resolves at runtime.
 
 ## How the binary is built
 
