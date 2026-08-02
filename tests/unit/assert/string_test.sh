@@ -236,3 +236,37 @@ function test_unsuccessful_assert_string_not_matches_format() {
       "42 items" "to not match format" "%d items")" \
     "$(assert_string_not_matches_format "%d items" "42 items")"
 }
+
+# nocasematch is a global shell option, so the fast path in
+# assert_contains_ignore_case has to leave it exactly as it found it -- a user's
+# test file may have set it deliberately, and silently clearing it would change
+# how their own `case` statements match.
+function test_assert_contains_ignore_case_leaves_nocasematch_unset_when_it_was_unset() {
+  shopt -u nocasematch
+
+  assert_contains_ignore_case "world" "Hello WORLD"
+
+  if shopt -q nocasematch; then
+    bashunit::fail "nocasematch leaked ON into the caller"
+  fi
+}
+
+function test_assert_contains_ignore_case_leaves_nocasematch_set_when_it_was_set() {
+  shopt -s nocasematch
+
+  assert_contains_ignore_case "world" "Hello WORLD"
+
+  local still_set=1
+  shopt -q nocasematch || still_set=0
+  shopt -u nocasematch
+
+  assert_equals "1" "$still_set"
+}
+
+# Non-ASCII folding is why the tr fallback cannot be replaced with a pure-bash
+# A-Z loop: in a UTF-8 locale both nocasematch and tr fold accented text, and an
+# ASCII-only loop would silently stop matching it.
+function test_assert_contains_ignore_case_folds_non_ascii() {
+  assert_contains_ignore_case "ñü" "Test ÑÜ string"
+  assert_contains_ignore_case "ÑÜ" "test ñü string"
+}
