@@ -36,8 +36,12 @@ function adr_table_modules() {
     sed 's/^| *[0-9]* *| *`\([a-z]*\)\/` *|.*/\1/' | LC_ALL=C sort
 }
 
+# Enumerated with `find`, not `git ls-files`: the Bash 3.0 jobs run in a container
+# where git refuses to read the repo (dubious-ownership), so `git ls-files` exits
+# non-zero and yields nothing -- which reads here as "src/ has no modules" and
+# fails for a reason that has nothing to do with the ADR.
 function src_modules() {
-  (cd "$ROOT_DIR" && git ls-files 'src/**.sh' | cut -d/ -f2 | LC_ALL=C sort -u)
+  (cd "$ROOT_DIR" && find src -name '*.sh' | cut -d/ -f2 | LC_ALL=C sort -u)
 }
 
 function test_every_src_module_has_a_row_in_the_adr_table() {
@@ -49,7 +53,7 @@ function adr_table_file_total() {
 }
 
 function src_file_total() {
-  (cd "$ROOT_DIR" && git ls-files 'src/**.sh' | wc -l | tr -d ' ')
+  (cd "$ROOT_DIR" && find src -name '*.sh' | wc -l | tr -d ' ')
 }
 
 function test_adr_table_file_counts_account_for_every_src_file() {
