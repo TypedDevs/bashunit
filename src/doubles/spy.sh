@@ -18,7 +18,8 @@ _BASHUNIT_SPY_REGISTERED_OUT=false
 function bashunit::spy::times_to_slot() {
   local command="$1"
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   _BASHUNIT_SPY_TIMES_OUT=0
   _BASHUNIT_SPY_REGISTERED_OUT=false
@@ -26,7 +27,14 @@ function bashunit::spy::times_to_slot() {
     _BASHUNIT_SPY_REGISTERED_OUT=true
   fi
   if [ -f "${!file_var-}" ]; then
-    _BASHUNIT_SPY_TIMES_OUT=$(cat "${!file_var}" 2>/dev/null || builtin echo 0)
+    # `read` is a builtin: the count is a single short line, so this avoids a
+    # `cat` fork on a path a spy-heavy test hits once per assertion.
+    local times_line=""
+    read -r times_line <"${!file_var}" 2>/dev/null || times_line=""
+    case "$times_line" in
+    '' | *[!0-9]*) _BASHUNIT_SPY_TIMES_OUT=0 ;;
+    *) _BASHUNIT_SPY_TIMES_OUT=$times_line ;;
+    esac
   fi
 }
 
@@ -87,7 +95,8 @@ function bashunit::spy::call_log_to_slot() {
   _BASHUNIT_SPY_CALL_LOG_OUT=""
 
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   if [ -z "${!file_var-}" ] || [ ! -f "${!file_var}" ]; then
     return
@@ -159,7 +168,8 @@ function bashunit::spy() {
   local command=$1
   local exit_code_or_impl="${2:-}"
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
 
   local times_file params_file
   local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
@@ -188,8 +198,9 @@ function bashunit::spy() {
     done
     serialized=\${serialized%$'\\x1f'}
     builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
-    local _c
-    _c=\$(cat '$times_file' 2>/dev/null || builtin echo 0)
+    local _c=\"\"
+    read -r _c < '$times_file' 2>/dev/null || _c=\"\"
+    case \"\$_c\" in '' | *[!0-9]*) _c=0 ;; esac
     _c=\$((_c+1))
     builtin echo \"\$_c\" > '$times_file'
     $body_suffix
