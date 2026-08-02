@@ -16,7 +16,6 @@ unset _bashunit_base64_help
 # in line parsing, so encode_base64 emits this token and both decode sites map it
 # back to "". Single source of truth keeps the encode (helpers.sh) and decode
 # (helpers.sh, runner/payload.sh) sides byte-identical.
-# shellcheck disable=SC2034 # read cross-file in helpers.sh and runner/payload.sh
 _BASHUNIT_BASE64_EMPTY_SENTINEL="_BASHUNIT_EMPTY_"
 
 function bashunit::state::encode_field() {

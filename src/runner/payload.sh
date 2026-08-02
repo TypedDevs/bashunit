@@ -184,7 +184,6 @@ function bashunit::runner::extract_assertion_runtime_output() {
   echo "$runtime_output"
 }
 
-# shellcheck disable=SC2295
 ##
 # Parses the encoded per-test result's last line into the counts out-slots
 # (_BASHUNIT_RUNNER_COUNTS_*_OUT). Pure read: never mutates the cumulative

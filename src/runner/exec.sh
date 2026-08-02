@@ -165,7 +165,6 @@ function bashunit::runner::execute_test_body() {
   fi
 
   # Run set_up and capture exit code without || to preserve errexit behavior
-  # shellcheck disable=SC2030
   _BASHUNIT_SETUP_COMPLETED=false
   local setup_exit_code=0
   bashunit::runner::run_set_up "$test_file"
