@@ -20,14 +20,13 @@ function bashunit::coverage::report_text() {
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
     has_files=true
 
-    local executable hit pct class stats rest
+    local executable hit pct class stats
     stats=$(bashunit::coverage::get_cached_stats "$file")
-    executable="${stats%%:*}"
-    rest="${stats#*:}"
-    hit="${rest%%:*}"
-    rest="${rest#*:}"
-    pct="${rest%%:*}"
-    class="${rest#*:}"
+    bashunit::coverage::split_stats "$stats"
+    executable="$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
+    hit="$_BASHUNIT_COVERAGE_SPLIT_HIT_OUT"
+    pct="$_BASHUNIT_COVERAGE_SPLIT_PCT_OUT"
+    class="$_BASHUNIT_COVERAGE_SPLIT_CLASS_OUT"
 
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))

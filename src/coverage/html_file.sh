@@ -7,14 +7,13 @@ function bashunit::coverage::generate_file_html() {
   local output_file="$2"
 
   local display_file="${file#"$(pwd)"/}"
-  local executable hit pct class stats rest
+  local executable hit pct class stats
   stats=$(bashunit::coverage::get_cached_stats "$file")
-  executable="${stats%%:*}"
-  rest="${stats#*:}"
-  hit="${rest%%:*}"
-  rest="${rest#*:}"
-  pct="${rest%%:*}"
-  class="${rest#*:}"
+  bashunit::coverage::split_stats "$stats"
+  executable="$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
+  hit="$_BASHUNIT_COVERAGE_SPLIT_HIT_OUT"
+  pct="$_BASHUNIT_COVERAGE_SPLIT_PCT_OUT"
+  class="$_BASHUNIT_COVERAGE_SPLIT_CLASS_OUT"
   local uncovered=$((executable - hit))
 
   # Pre-load all line hits into indexed array (performance optimization)

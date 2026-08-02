@@ -2,6 +2,14 @@
 
 # Collected per-test results: the shared arrays every report writer reads, and the API the runner calls to fill them.
 
+# Strips ANSI CSI escape sequences (color codes, cursor moves, erase-line, ...)
+# from $1. Shared by every writer's own escape/encode function below as their
+# first step, so the definition of "what is an ANSI escape sequence" for
+# report output lives in exactly one place instead of one regex per format.
+function bashunit::reports::__strip_ansi() {
+  printf '%s' "$1" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g'
+}
+
 _BASHUNIT_REPORTS_TEST_FILES=()
 _BASHUNIT_REPORTS_TEST_NAMES=()
 _BASHUNIT_REPORTS_TEST_STATUSES=()

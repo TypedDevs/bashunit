@@ -290,6 +290,22 @@ function test_generate_junit_xml_failure_element_with_xml_escaping() {
   assert_contains 'Expected &quot;value1&quot; &amp; &quot;value2&quot; to be &gt; other</failure>' "$content"
 }
 
+function test_generate_junit_xml_strips_ansi_color_codes() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  local msg
+  msg=$(printf 'expected \033[32mgreen\033[0m got \033[31mred\033[0m')
+  bashunit::reports::add_test "test_fail.sh" "test_color" "100" "1" "failed" "$msg"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains 'expected green got red' "$content"
+  assert_not_contains $'\033[' "$content"
+}
+
 # === HTML report generation tests ===
 
 function test_generate_report_html_creates_valid_html_structure() {
@@ -540,6 +556,22 @@ function test_generate_report_tap_todo_directive_for_incomplete_test() {
   bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
 
   assert_contains "ok 1 - test_todo # TODO" "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
+function test_generate_report_tap_strips_ansi_color_codes() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  local msg
+  msg=$(printf 'expected \033[32mgreen\033[0m got \033[31mred\033[0m')
+  bashunit::reports::add_test "test.sh" "test_color" "100" "1" "failed" "$msg"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains 'expected green got red' "$content"
+  assert_not_contains $'\033[' "$content"
 }
 
 function test_generate_report_html_applies_status_css_classes() {

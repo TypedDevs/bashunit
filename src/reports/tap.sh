@@ -8,8 +8,7 @@
 # is safe inside a YAML single-quoted scalar. Bash 3.0+ compatible.
 ##
 function bashunit::reports::__tap_message() {
-  echo "$1" \
-    | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
+  bashunit::reports::__strip_ansi "$1" \
     | tr '\n' ' ' \
     | sed -e "s/'/''/g"
 }
