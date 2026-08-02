@@ -336,3 +336,37 @@ function test_state_does_not_call_the_renderer_or_parallel() {
 
   assert_same "" "${offenders% }"
 }
+
+# The greps in this file only mean something if `src/state/*.sh` actually resolves
+# to real files. #946 moved state.sh once already while a path-shaped contract
+# stayed green, checking nothing; the fix was globbing the whole module instead of
+# one file. That still goes vacuous if the *module itself* is ever renamed or
+# moved: an unmatched glob is passed to grep as its own literal, unexpanded
+# string, which fails "No such file", is swallowed by `|| true` above and below,
+# and reports a clean pass having scanned zero lines.
+function test_state_module_glob_resolves_to_real_files() {
+  set -- src/state/*.sh
+
+  assert_file_exists "$1"
+}
+
+# state and assert call each other: assert -> state (recording pass/fail) is the
+# expected, dominant direction. The reverse exists too, narrowly:
+# bashunit::assert_once's marker (src/assert/once.sh) shares state's per-test reset
+# lifecycle, so state calls exactly two assert:: functions to participate in it --
+# once_reset (cleared on the same per-test reset state already does) and
+# once_is_absorbing (gates whether a pass is counted or absorbed into an open
+# marker). That is a deliberate, narrow, already-shipped exception (#921) -- not
+# license for state to reach into assert generally. Anything else here is the same
+# layering shape as the console/parallel/runner cycle above (#868/#862).
+function test_state_only_calls_the_documented_assert_once_functions() {
+  # `|| true` on both greps: no match is the passing case for the second one (every
+  # line got excluded), and the first one the same way as the test above.
+  local offenders
+  offenders=$({ "$GREP" -ohE "bashunit::assert::[a-z_]+" src/state/*.sh || true; } |
+    sort -u |
+    { "$GREP" -vFx -e "bashunit::assert::once_reset" -e "bashunit::assert::once_is_absorbing" \
+      || true; } | tr '\n' ' ')
+
+  assert_same "" "${offenders% }"
+}

@@ -5,11 +5,14 @@
 #
 # The surface a user's test file calls: temp_file/temp_dir/current_dir/data_set,
 # skip/todo, set_test_title, and the custom-assert facade (assert_that,
-# assert_once, assertion_failed/passed). Assertions are the other half of that
-# surface and live in src/assert/, which is large enough to be its own module.
+# assertion_failed/passed). assert_once lives in src/assert/once.sh, not here.
+# Assertions are the other half of that surface and live in src/assert/, which is
+# large enough to be its own module.
 #
-# globals.sh MUST stay first: it runs `set -euo pipefail` at file scope, so every
-# file sourced after it inherits strict mode. This module is sourced at the
+# globals.sh runs `set -euo pipefail` at file scope. That is belt-and-braces, not
+# an ordering constraint: the `bashunit` entrypoint sets the same options on its
+# line 2 and src/system/dependencies.sh repeats them, both long before api/ is
+# reached. It still earns its place for anything that sources this file alone. This module is sourced at the
 # position globals.sh held on its own, which keeps that boundary where it was.
 source "$BASHUNIT_ROOT_DIR/src/api/globals.sh"
 source "$BASHUNIT_ROOT_DIR/src/api/skip_todo.sh"
