@@ -6,7 +6,11 @@ function assert_have_been_called() {
   local command=$1
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
-  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${2:-}"
+  if [ -z "$label" ]; then
+    bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+    label=$_BASHUNIT_HELPER_NORMALIZED_OUT
+  fi
 
   if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
     bashunit::spy::fail_unregistered "$command" "$label"
@@ -43,10 +47,12 @@ function assert_have_been_called_with() {
   local expected="$*"
 
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
-  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+  label=$_BASHUNIT_HELPER_NORMALIZED_OUT
 
   if [ -z "${!file_var-}" ]; then
     bashunit::spy::fail_unregistered "$command" "$label"
@@ -80,10 +86,12 @@ function assert_have_been_called_with_args() {
   local expected=$_BASHUNIT_SPY_SERIALIZED_OUT
 
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
-  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+  label=$_BASHUNIT_HELPER_NORMALIZED_OUT
 
   if [ -z "${!file_var-}" ]; then
     bashunit::spy::fail_unregistered "$command" "$label"
@@ -116,10 +124,12 @@ function assert_have_been_called_with_any() {
   local expected="$*"
 
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
-  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+  label=$_BASHUNIT_HELPER_NORMALIZED_OUT
 
   if [ -z "${!file_var-}" ]; then
     bashunit::spy::fail_unregistered "$command" "$label"
@@ -156,7 +166,11 @@ function assert_have_been_called_times() {
   local command=$2
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
-  local label="${3:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${3:-}"
+  if [ -z "$label" ]; then
+    bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+    label=$_BASHUNIT_HELPER_NORMALIZED_OUT
+  fi
 
   if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
     bashunit::spy::fail_unregistered "$command" "$label"
@@ -183,10 +197,12 @@ function assert_have_been_called_nth_with() {
   local expected="$*"
 
   local variable
-  variable="$(bashunit::helper::normalize_variable_name "$command")"
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
   local file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
   local label
-  label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")"
+  bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+  label=$_BASHUNIT_HELPER_NORMALIZED_OUT
 
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
@@ -227,6 +243,10 @@ function assert_have_been_called_nth_with() {
 
 function assert_not_called() {
   local command=$1
-  local label="${2:-$(bashunit::helper::normalize_test_function_name "${FUNCNAME[1]}")}"
+  local label="${2:-}"
+  if [ -z "$label" ]; then
+    bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+    label=$_BASHUNIT_HELPER_NORMALIZED_OUT
+  fi
   assert_have_been_called_times 0 "$command" "$label"
 }
