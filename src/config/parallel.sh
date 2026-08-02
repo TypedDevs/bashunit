@@ -9,7 +9,6 @@ function bashunit::parallel::must_stop_on_failure() {
 }
 
 function bashunit::parallel::cleanup() {
-  # shellcheck disable=SC2153
   local target="$TEMP_DIR_PARALLEL_TEST_SUITE"
   case "$target" in
   */bashunit/parallel/*)

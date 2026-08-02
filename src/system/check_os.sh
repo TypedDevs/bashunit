@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC2034
 _BASHUNIT_OS="Unknown"
 _BASHUNIT_DISTRO="Unknown"
 

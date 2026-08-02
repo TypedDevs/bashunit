@@ -63,7 +63,6 @@ function bashunit::coverage::should_track() {
   IFS=','
   local pattern
   for pattern in $BASHUNIT_COVERAGE_EXCLUDE; do
-    # shellcheck disable=SC2254
     case "$normalized_file" in
     *$pattern*)
       IFS="$old_ifs"

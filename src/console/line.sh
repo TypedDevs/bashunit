@@ -14,7 +14,6 @@ _BASHUNIT_TOTAL_TESTS_COUNT=0
 # Arguments: $1 - test type, $2 - already formatted line
 ##
 function bashunit::console_results::print_line() {
-  # shellcheck disable=SC2034
   local type=$1
   local line=$2
 

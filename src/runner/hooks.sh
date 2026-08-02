@@ -22,7 +22,6 @@ function bashunit::runner::cleanup_on_exit() {
   # Additionally, the stdout redirect from execute_test_hook leaks into the
   # EXIT trap. Restore stdout from saved FD 5 so export_subshell_context
   # output reaches test_execution_result.
-  # shellcheck disable=SC2031
   if [ "${_BASHUNIT_SETUP_COMPLETED:-true}" != "true" ]; then
     exec 1>&5
     if [ "$exit_code" -eq 0 ]; then
@@ -103,7 +102,6 @@ function bashunit::runner::execute_file_hook() {
   # NOT this executor: on Bash >= 4 the trap also fires HERE when the hook call
   # itself returns non-zero, and an unconditional return skipped
   # record_file_hook_failure entirely (silent failures, off-by-one counts, #836).
-  # shellcheck disable=SC2154
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?
     if [ "${FUNCNAME[0]:-}" != "bashunit::runner::execute_file_hook" ]; then
       set +Eu +o pipefail
@@ -224,7 +222,6 @@ function bashunit::runner::execute_test_hook() {
   # See the twin comment in execute_file_hook: conditional return keeps the
   # early-exit semantics for intermediate failures without silently returning
   # from THIS executor when the trap re-fires here on Bash >= 4 (#836).
-  # shellcheck disable=SC2154
   trap '_BASHUNIT_HOOK_ERR_STATUS=$?
     if [ "${FUNCNAME[0]:-}" != "bashunit::runner::execute_test_hook" ]; then
       set +Eu +o pipefail
