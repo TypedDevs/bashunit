@@ -2,6 +2,13 @@
 
 # Parsing the @revs/@its/@max_ms markers above a bench function.
 
+##
+# Fails when a marker is present in the annotation but produced no value, which
+# only happens when its argument is malformed. Silently falling back to the
+# default ran a different benchmark than the one asked for: `@revs=abc` quietly
+# became one revolution, and `@max_ms=abc` dropped the threshold entirely (#884).
+# Arguments: $1 annotation line, $2 marker name, $3 value extracted so far
+##
 function bashunit::benchmark::reject_malformed_marker() {
   local annotation=$1
   local marker=$2
