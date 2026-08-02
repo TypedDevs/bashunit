@@ -76,9 +76,11 @@ function bashunit::main::validate_config_or_exit() {
   # false on a non-integer operand, leaking a raw shell error into the
   # coverage report and silently mis-bucketing every file's class (#879).
   bashunit::main::require_non_negative_int_or_exit \
-    "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-50}" "BASHUNIT_COVERAGE_THRESHOLD_LOW"
+    "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" \
+    "BASHUNIT_COVERAGE_THRESHOLD_LOW"
   bashunit::main::require_non_negative_int_or_exit \
-    "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-80}" "BASHUNIT_COVERAGE_THRESHOLD_HIGH"
+    "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" \
+    "BASHUNIT_COVERAGE_THRESHOLD_HIGH"
 
   if [ -n "${BASHUNIT_SEED:-}" ]; then
     bashunit::main::require_non_negative_int_or_exit "${BASHUNIT_SEED}" "BASHUNIT_SEED (--seed)"
