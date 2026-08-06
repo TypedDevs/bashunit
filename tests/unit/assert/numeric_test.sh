@@ -189,3 +189,29 @@ function test_unsuccessful_assert_within_delta_with_a_non_numeric_value() {
     "abc 105 3" "to all be numeric" "but got a non-numeric value")" \
     "$(assert_within_delta "abc" "105" "3")"
 }
+
+# bc cannot parse a leading `+`, but bashunit::assert::_is_numeric accepts one,
+# so this pair used to reach the comparison, get an empty result back, and fail
+# the assertion. The fixed-point path handles the sign itself.
+function test_assert_within_delta_accepts_a_leading_plus() {
+  assert_within_delta "+5" "5" "1"
+  assert_within_delta "5" "+5" "1"
+}
+
+# The fixed-point path deliberately refuses operands it cannot represent exactly
+# in 64-bit integer arithmetic and hands them to the bc/awk chain. This one has
+# more digits than that path allows, so it exercises the fallback rather than
+# the fast path -- and must still give the same answer.
+function test_assert_within_delta_falls_back_for_very_high_precision() {
+  assert_within_delta "1.00000000000000000001" "1.00000000000000000002" "0.1"
+}
+
+function test_assert_within_delta_compares_mixed_precision_operands() {
+  assert_within_delta "100" "100.0001" "0.001"
+  assert_within_delta "1.000" "1" "0"
+  assert_within_delta "3.14159" "3.1416" "0.0001"
+}
+
+function test_assert_within_delta_handles_negative_operands() {
+  assert_within_delta "-2.5" "-2.4" "0.2"
+}
