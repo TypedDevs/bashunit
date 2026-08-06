@@ -79,3 +79,52 @@ EOF
 
   assert_empty "$unresolved"
 }
+
+# The same rot hit a second workflow and this file did not catch it, because it
+# only ever looked at tests.yml. coverage.yml globbed `tests/unit/*_test.sh` in a
+# shell step rather than a `test_path:` key, so after #960 its `ls` failed and the
+# nightly coverage run had been red for days -- unnoticed, because that workflow
+# is deliberately non-blocking.
+#
+# This checks the property across every workflow and every shape: any tests/
+# path or glob a workflow names must resolve to something on disk.
+function ci_referenced_test_paths() {
+  # Comment lines are dropped first: the workflows document the broken globs
+  # they replaced, and those must not be read as live references.
+  #
+  # The match is anchored on a boundary so `sample_tests/pass_test.sh` -- a file
+  # test-action.yml writes at runtime -- is not read as a `tests/` path. An
+  # unanchored `tests/` matched its tail and reported it missing.
+  "$GREP" -rhv '^[[:space:]]*#' "$ROOT_DIR"/.github/workflows/ --include='*.yml' 2>/dev/null |
+    "$GREP" -oE '(^|[[:space:]"'"'"'=])tests/[A-Za-z0-9_*/.-]+' |
+    sed 's/^[^t]//' | LC_ALL=C sort -u
+}
+
+function test_every_tests_path_named_by_any_workflow_resolves() {
+  local unresolved=""
+  local token
+  while IFS= read -r token; do
+    [ -z "$token" ] && continue
+    case "$token" in
+    */) continue ;;
+    esac
+
+    local found=0
+    local match
+    for match in $token; do
+      if [ -e "$match" ]; then
+        found=1
+        break
+      fi
+    done
+
+    if [ "$found" -eq 0 ]; then
+      unresolved="$unresolved$token
+"
+    fi
+  done <<EOF
+$(cd "$ROOT_DIR" && ci_referenced_test_paths | "$GREP" -v '^tests/$')
+EOF
+
+  assert_empty "$unresolved"
+}

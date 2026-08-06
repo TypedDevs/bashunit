@@ -9,9 +9,9 @@ name: Coverage
 # so it is not a status check on any commit and cannot gate merges. Coverage is
 # CPU-heavy, so a scheduled cadence keeps it off the critical path.
 #
-# The coverage engine's own meta-tests (tests/unit/coverage_*_test.sh) are
-# excluded from the measured run: executing them under --coverage double-
-# instruments src/coverage.sh and corrupts their assertions.
+# The coverage engine's own meta-tests (tests/unit/coverage/) are excluded from
+# the measured run: executing them under --coverage double-instruments
+# src/coverage/ and corrupts their assertions.
 
 on:
   schedule:
@@ -51,7 +51,11 @@ jobs:
         # run well under the job timeout on the multi-core runner. Parallel LCOV
         # aggregation is deterministic (same total as a sequential run).
         run: |
-          files=$(ls tests/unit/*_test.sh | grep -v '/coverage_')
+          # `find`, not a glob: unit tests live in per-module subdirectories since
+          # #960, so a flat glob there matches nothing and `ls` fails the step.
+          # fixtures/ holds inputs to other tests, never tests themselves.
+          files=$(find tests/unit -name '*_test.sh' \
+            -not -path '*/fixtures/*' -not -path '*/coverage/*')
           # shellcheck disable=SC2086
           ./bashunit --coverage --parallel --jobs auto \
             --coverage-report coverage/lcov.info --coverage-paths src $files
