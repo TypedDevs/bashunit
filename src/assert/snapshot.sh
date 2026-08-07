@@ -24,6 +24,19 @@ function assert_match_snapshot() {
   bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
 }
 
+function assert_match_named_snapshot() {
+  local snapshot_name=$1
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual "$2"
+  local actual=$_snapshot_normalized
+  bashunit::helper::find_test_function_name_to_slot
+  local test_fn=$_BASHUNIT_HELPER_TESTFN_OUT
+  bashunit::snapshot::resolve_file "" "$test_fn" "$snapshot_name"
+  local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
+
+  bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
+}
+
 function assert_match_snapshot_ignore_colors() {
   # Only fork sed when the input actually carries an escape sequence; plain,
   # colorless output takes a pure-bash fast path. The sed pattern is kept
@@ -39,6 +52,25 @@ function assert_match_snapshot_ignore_colors() {
   bashunit::helper::find_test_function_name_to_slot
   local test_fn=$_BASHUNIT_HELPER_TESTFN_OUT
   bashunit::snapshot::resolve_file "${2:-}" "$test_fn"
+  local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
+
+  bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
+}
+
+function assert_match_named_snapshot_ignore_colors() {
+  local snapshot_name=$1
+  # Keep this byte-compatible with assert_match_snapshot_ignore_colors: only
+  # ANSI sequences ending in m/K are stripped, and only when ESC is present.
+  local stripped=$2
+  case "$stripped" in
+  *$'\e'*) stripped=$(printf '%s' "$stripped" | sed 's/\x1B\[[0-9;]*[mK]//g') ;;
+  esac
+  local _snapshot_normalized
+  bashunit::snapshot::normalize_actual "$stripped"
+  local actual=$_snapshot_normalized
+  bashunit::helper::find_test_function_name_to_slot
+  local test_fn=$_BASHUNIT_HELPER_TESTFN_OUT
+  bashunit::snapshot::resolve_file "" "$test_fn" "$snapshot_name"
   local snapshot_file=$_BASHUNIT_SNAPSHOT_FILE_OUT
 
   bashunit::snapshot::assert "$actual" "$snapshot_file" "$test_fn"
@@ -214,6 +246,7 @@ _BASHUNIT_SNAPSHOT_FILE_OUT=""
 function bashunit::snapshot::resolve_file() {
   local file_hint="$1"
   local func_name="$2"
+  local snapshot_name="${3:-}"
 
   if [ -n "$file_hint" ]; then
     _BASHUNIT_SNAPSHOT_FILE_OUT=$file_hint
@@ -233,9 +266,13 @@ function bashunit::snapshot::resolve_file() {
   bashunit::helper::normalize_variable_name_to_slot "$base_part"
   local test_file=$_BASHUNIT_HELPER_VARNAME_OUT
   bashunit::helper::normalize_variable_name_to_slot "$func_name"
-  local name="$_BASHUNIT_HELPER_VARNAME_OUT.snapshot"
+  local name=$_BASHUNIT_HELPER_VARNAME_OUT
+  if [ -n "$snapshot_name" ]; then
+    bashunit::helper::normalize_variable_name_to_slot "$snapshot_name"
+    name="$name.$_BASHUNIT_HELPER_VARNAME_OUT"
+  fi
 
-  _BASHUNIT_SNAPSHOT_FILE_OUT="./${dir_part}/snapshots/${test_file}.${name}"
+  _BASHUNIT_SNAPSHOT_FILE_OUT="./${dir_part}/snapshots/${test_file}.${name}.snapshot"
 }
 
 function bashunit::snapshot::initialize() {

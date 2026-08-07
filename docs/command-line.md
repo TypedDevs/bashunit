@@ -575,10 +575,10 @@ steps:
 
 > `bashunit test --snapshot-update`
 
-Re-record snapshots: every `assert_match_snapshot` /
-`assert_match_snapshot_ignore_colors` whose snapshot already exists is
+Re-record snapshots: every snapshot assertion whose file already exists is
 overwritten with the value this run produced, and reported as a recorded
-snapshot instead of a pass. A missing snapshot is written as usual.
+snapshot instead of a pass. A missing snapshot is written as usual. This
+includes default, named and ignore-colors snapshots.
 
 Use it when an output change is deliberate. It replaces deleting snapshot files
 by hand — the path is derived from the test file and function name, so a wrong

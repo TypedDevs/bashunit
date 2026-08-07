@@ -42,7 +42,8 @@ function test_incomplete_tests_displayed_with_show_incomplete_flag() {
 function test_both_flags_can_be_used_together() {
   local output
   output=$(./bashunit --env "$TEST_ENV_FILE" --no-parallel --simple --show-skipped --show-incomplete \
-    "tests/acceptance/bashunit_fail_test.sh" "tests/acceptance/bashunit_init_test.sh" 2>&1) || true
+    "tests/acceptance/bashunit_execution_error_test.sh" \
+    "tests/acceptance/bashunit_init_test.sh" 2>&1) || true
 
   assert_contains "incomplete test" "$output"
   assert_contains "skipped test" "$output"

@@ -28,6 +28,8 @@ function test_unsuccessful_assert_match_snapshot() {
 
   assert_matches "Unsuccessful assert match snapshot" "$actual"
   assert_matches "Expected to match the snapshot" "$actual"
+  assert_contains "snapshot_test_sh.test_unsuccessful_assert_match_snapshot.snapshot" "$actual"
+  assert_contains "--snapshot-update" "$actual"
 }
 
 function test_successful_assert_match_snapshot_ignore_colors() {
@@ -58,6 +60,9 @@ function test_unsuccessful_assert_match_snapshot_ignore_colors() {
 
   assert_matches "Unsuccessful assert match snapshot ignore colors" "$actual"
   assert_matches "Expected to match the snapshot" "$actual"
+  assert_contains \
+    "snapshot_test_sh.test_unsuccessful_assert_match_snapshot_ignore_colors.snapshot" "$actual"
+  assert_contains "--snapshot-update" "$actual"
 }
 
 function test_assert_match_snapshot_strips_carriage_returns_from_actual() {

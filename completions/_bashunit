@@ -32,6 +32,7 @@ _bashunit() {
       assert_is_directory_writable assert_is_file assert_is_file_empty
       assert_json_contains assert_json_equals assert_json_key_exists
       assert_less_or_equal_than assert_less_than assert_line_count
+      assert_match_named_snapshot assert_match_named_snapshot_ignore_colors
       assert_match_snapshot assert_match_snapshot_ignore_colors assert_matches
       assert_not_contains assert_not_empty assert_not_equals assert_not_matches
       assert_not_same assert_same assert_string_ends_with

@@ -28,7 +28,7 @@ to narrow it (`bashunit doc json`).
 | **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
 | **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
 | **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
-| **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) |
+| **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_named_snapshot](#assert-match-named-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) · [assert_match_named_snapshot_ignore_colors](#assert-match-named-snapshot-ignore-colors) |
 | **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_any](#assert-have-been-called-with-any) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
 | **Assertions** | [assert_assertion_passes](#assert-assertion-passes) · [assert_assertion_fails](#assert-assertion-fails) · [assert_assertion_fails_with](#assert-assertion-fails-with) |
 | **Manual failure** | [bashunit::fail](#bashunit-fail) |
@@ -1629,6 +1629,34 @@ function test_success() {
 
 function test_failure() {
   assert_match_snapshot_ignore_colors "output that no longer matches the stored snapshot"
+}
+```
+:::
+
+## assert_match_named_snapshot
+> `assert_match_named_snapshot "name" "actual"`
+
+Matches `actual` against a snapshot whose filename includes `name`. Use it for multiple independent snapshots in one test without constructing file paths yourself. Names are normalized so they cannot escape the test's `snapshots/` directory.
+
+::: code-group
+```bash [Example]
+function test_render_modes() {
+  assert_match_named_snapshot "compact" "$(./bin/render --compact)"
+  assert_match_named_snapshot "verbose" "$(./bin/render --verbose)"
+}
+```
+:::
+
+## assert_match_named_snapshot_ignore_colors
+> `assert_match_named_snapshot_ignore_colors "name" "actual"`
+
+Named version of [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors). ANSI escape sequences are stripped from `actual` before it is stored or compared.
+
+::: code-group
+```bash [Example]
+function test_colored_render_modes() {
+  assert_match_named_snapshot_ignore_colors "compact" "$(./bin/render --compact)"
+  assert_match_named_snapshot_ignore_colors "verbose" "$(./bin/render --verbose)"
 }
 ```
 :::

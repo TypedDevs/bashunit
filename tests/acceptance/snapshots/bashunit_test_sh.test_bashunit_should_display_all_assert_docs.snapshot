@@ -635,6 +635,20 @@ See Snapshots(/snapshots) for the full workflow, including how to update a snaps
 Same as assert_match_snapshot, but strips ANSI escape sequences from `actual` before comparing. Use it for commands whose colouring depends on the terminal.
 
 
+## assert_match_named_snapshot
+--------------
+> `assert_match_named_snapshot "name" "actual"`
+
+Matches `actual` against a snapshot whose filename includes `name`. Use it for multiple independent snapshots in one test without constructing file paths yourself. Names are normalized so they cannot escape the test's `snapshots/` directory.
+
+
+## assert_match_named_snapshot_ignore_colors
+--------------
+> `assert_match_named_snapshot_ignore_colors "name" "actual"`
+
+Named version of assert_match_snapshot_ignore_colors. ANSI escape sequences are stripped from `actual` before it is stored or compared.
+
+
 ## assert_have_been_called
 --------------
 > `assert_have_been_called "command"`
