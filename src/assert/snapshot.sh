@@ -288,12 +288,26 @@ function bashunit::snapshot::compare() {
   snapshot=$(<"$snapshot_path")
   snapshot="${snapshot//$'\r'/}"
 
-  if ! bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"; then
-    local label=$(bashunit::helper::normalize_test_function_name "$func_name")
-    bashunit::state::add_assertions_failed
-    bashunit::console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
-    return 1
+  # Literal snapshots need only a builtin string comparison. The placeholder
+  # matcher shells out to sed and perl/grep, so reserve it for snapshots that
+  # actually contain the configured marker.
+  if [ "$actual" = "$snapshot" ]; then
+    bashunit::state::add_assertions_passed
+    return
   fi
 
-  bashunit::state::add_assertions_passed
+  local placeholder="${BASHUNIT_SNAPSHOT_PLACEHOLDER:-::ignore::}"
+  case "$snapshot" in
+  *"$placeholder"*)
+    if bashunit::snapshot::match_with_placeholder "$actual" "$snapshot"; then
+      bashunit::state::add_assertions_passed
+      return
+    fi
+    ;;
+  esac
+
+  local label=$(bashunit::helper::normalize_test_function_name "$func_name")
+  bashunit::state::add_assertions_failed
+  bashunit::console_results::print_failed_snapshot_test "$label" "$snapshot_path" "$actual"
+  return 1
 }

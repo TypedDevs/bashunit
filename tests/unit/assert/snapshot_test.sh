@@ -131,6 +131,56 @@ function test_assert_snapshot_with_custom_placeholder() {
 
 # --- internals ---------------------------------------------------------------
 
+function test_snapshot_compare_bypasses_placeholder_matcher_for_literal_match() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/literal-match.snapshot"
+  printf 'plain snapshot\n' >"$snapshot_path"
+
+  # Invoked indirectly by snapshot::compare.
+  # shellcheck disable=SC2329
+  function bashunit::snapshot::match_with_placeholder() { return 1; }
+
+  bashunit::snapshot::compare "plain snapshot" "$snapshot_path" "test_literal_match"
+}
+
+function test_snapshot_compare_bypasses_placeholder_matcher_for_literal_mismatch() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/literal-mismatch.snapshot"
+  printf 'expected\n' >"$snapshot_path"
+
+  # Must not be invoked by snapshot::compare.
+  # shellcheck disable=SC2329
+  function bashunit::snapshot::match_with_placeholder() { return 0; }
+
+  local output status=0
+  output="$(bashunit::snapshot::compare \
+    "actual" "$snapshot_path" "test_literal_mismatch")" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "Expected to match the snapshot" "$output"
+}
+
+function test_snapshot_compare_uses_placeholder_matcher_when_marker_is_present() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/placeholder-match.snapshot"
+  printf 'expected ::ignore::\n' >"$snapshot_path"
+
+  # Invoked indirectly by snapshot::compare.
+  # shellcheck disable=SC2329
+  function bashunit::snapshot::match_with_placeholder() { return 0; }
+
+  bashunit::snapshot::compare "different fixed text" "$snapshot_path" "test_placeholder_match"
+}
+
+function test_snapshot_compare_routes_a_custom_placeholder_to_the_matcher() {
+  local snapshot_path
+  snapshot_path="$(bashunit::temp_dir)/custom-placeholder-match.snapshot"
+  printf 'value <<ANY>>\n' >"$snapshot_path"
+
+  BASHUNIT_SNAPSHOT_PLACEHOLDER="<<ANY>>" \
+    bashunit::snapshot::compare "value 42" "$snapshot_path" "test_custom_placeholder"
+}
+
 function test_snapshot_normalize_actual_strips_cr_and_trailing_newlines() {
   local _snapshot_normalized
   bashunit::snapshot::normalize_actual $'line1\r\nline2\r\n\n\n'
