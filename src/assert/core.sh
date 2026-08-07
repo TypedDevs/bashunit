@@ -20,6 +20,18 @@ function bashunit::assert::should_skip() {
   bashunit::env::is_stop_on_assertion_failure_enabled && ((_BASHUNIT_ASSERTION_FAILED_IN_TEST))
 }
 
+# Emits a machine-detectable assertion usage error. The runner strips the
+# prefix and reports the message through the existing Error channel.
+function bashunit::assert::usage_error() {
+  local assertion=$1
+  local required=$2
+  local signature=$3
+  local supplied=$4
+
+  printf 'bashunit: assertion usage error: %s expects %s arguments (%s), got %s\n' \
+    "$assertion" "$required" "$signature" "$supplied" >&2
+}
+
 _BASHUNIT_ASSERT_LABEL_OUT=""
 
 # Resolve assertion label into the slot _BASHUNIT_ASSERT_LABEL_OUT with no fork:
@@ -207,6 +219,10 @@ function bashunit::handle_bool_assertion_failure() {
 
 function assert_same() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -222,6 +238,10 @@ function assert_same() {
 
 function assert_equals() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -242,6 +262,10 @@ function assert_equals() {
 
 function assert_not_equals() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -290,6 +314,10 @@ function assert_not_empty() {
 
 function assert_not_same() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -305,6 +333,10 @@ function assert_not_same() {
 
 function assert_contains() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -339,6 +371,10 @@ function bashunit::assert::_supports_nocasematch() {
 
 function assert_contains_ignore_case() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -396,6 +432,10 @@ function assert_contains_ignore_case() {
 function assert_not_contains() {
   local label_override=""
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -416,6 +456,10 @@ function assert_not_contains() {
 
 function assert_matches() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "pattern, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -442,6 +486,10 @@ function assert_matches() {
 function assert_not_matches() {
   local label_override=""
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "pattern, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -706,6 +754,10 @@ function assert_command_not_found() {
 function assert_string_starts_with() {
   local label_override=""
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -727,6 +779,10 @@ function assert_string_starts_with() {
 
 function assert_string_not_starts_with() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -745,6 +801,10 @@ function assert_string_not_starts_with() {
 function assert_string_ends_with() {
   local label_override=""
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -767,6 +827,10 @@ function assert_string_ends_with() {
 function assert_string_not_ends_with() {
   local label_override=""
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -787,6 +851,10 @@ function assert_string_not_ends_with() {
 
 function assert_less_than() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -802,6 +870,10 @@ function assert_less_than() {
 
 function assert_less_or_equal_than() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -817,6 +889,10 @@ function assert_less_or_equal_than() {
 
 function assert_greater_than() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -832,6 +908,10 @@ function assert_greater_than() {
 
 function assert_greater_or_equal_than() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -868,6 +948,10 @@ function bashunit::assert::_is_numeric() {
 ##
 function assert_within_delta() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 3 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 3 "expected, actual, delta" "$#"
+    return 2
+  fi
 
   local expected="$1"
   local actual="$2"
@@ -948,6 +1032,10 @@ function assert_within_delta() {
 
 function assert_line_count() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
+    return 2
+  fi
   local IFS=$' \t\n'
 
   local expected="$1"
@@ -1029,6 +1117,10 @@ function bashunit::format_to_regex() {
 
 function assert_string_matches_format() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "format, actual" "$#"
+    return 2
+  fi
 
   local format="$1"
   local actual="$2"
@@ -1047,6 +1139,10 @@ function assert_string_matches_format() {
 
 function assert_string_not_matches_format() {
   bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "format, actual" "$#"
+    return 2
+  fi
 
   local format="$1"
   local actual="$2"

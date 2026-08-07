@@ -326,6 +326,7 @@ function bashunit::runner::run_test() {
     local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
     bashunit::runner::detect_runtime_error "$attempt_runtime_output"
     local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
+    local attempt_display_output=$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT
     bashunit::runner::extract_result_counts "$test_execution_result"
     # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
     # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
@@ -373,7 +374,7 @@ function bashunit::runner::run_test() {
   # Reuse the final attempt's values (the loop always runs at least once and
   # its locals persist in this function scope), instead of recomputing and
   # forking detect_runtime_error a second time (#764).
-  local runtime_output=$attempt_runtime_output
+  local runtime_output=$attempt_display_output
   local runtime_error=$attempt_runtime_error
 
   # parse_result accumulates _BASHUNIT_TEST_EXIT_CODE; reset it so each test's
