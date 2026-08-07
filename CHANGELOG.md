@@ -3,19 +3,20 @@
 ## Unreleased
 
 ### Changed
-- `assert_within_delta` compares in fixed-point integer arithmetic instead of shelling out to `bc`/`awk` twice per call, falling back to the old chain for operands it cannot represent exactly. 200 calls went from 1092ms to 165ms, against a 108ms fork-free floor
-- Spies are substantially cheaper. `assert_have_been_called` and the spy call counter dropped their `cat` and command-substitution forks in favour of the `read` builtin and existing return-slot helpers: a 200-call spy test went from 1111ms to 170ms, against a 111ms fork-free floor
-- `assert_contains_ignore_case` folds case with `shopt -s nocasematch` on Bash 3.1+ instead of two `tr` subprocesses, and falls back to `tr` only on Bash 3.0. Roughly 10x faster in a run dominated by that assertion (300 calls: 1419ms -> 131ms), with identical results including non-ASCII folding
-- Internal: `src/runner.sh` and `src/coverage.sh` are split into `src/runner/` and `src/coverage/` modules of single-responsibility files, each behind a `source`-only `index.sh` aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
+- Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
+- Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster)
+- Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster)
+- Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
-- `assert_within_delta` accepts a leading `+` on any operand. `bashunit::assert::_is_numeric` allowed it but `bc` cannot parse it, so `assert_within_delta +5 5 1` compared against an empty string and failed
-- `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` set directly (for example in `.bashunitrc`) are now validated. Only the `--shard` flag path parsed them, so a zero or non-numeric total reached raw arithmetic and printed a bare `division by 0` shell error while still exiting 0, and an out-of-range index silently reported `No tests found`
-- The `assert_date_*` assertions no longer accept unparseable input. They discarded `bashunit::date::to_epoch`'s failure signal, so a raw non-numeric string reached integer comparison: it either crashed with a bare shell error or coerced to epoch 0, which made two equally-invalid values compare equal — `assert_date_within_delta "" "" "5"` passed
-- `assert_json_equals` no longer reports two invalid (unparseable) JSON strings as equal. It sorted both sides with `jq -S` but never checked jq's exit code, so two differently-invalid inputs both silently sorted to an empty string and compared equal instead of failing
-- Parallel runs no longer lose results when two test files in different directories share a filename. Per-test results were bucketed by basename, so the second file overwrote the first — silently, with the run still green. A tests/ tree mirroring a src/ tree makes that layout ordinary (#959)
-- Coverage no longer counts variable assignments as functions. A line like `URL="https://${host}/api"` was reported as a function, inflating `FNF`/`FNH` in the LCOV report (17 phantom entries in bashunit's own run); when the value also contained a `|`, the malformed record aborted the LCOV writer with a raw bash arithmetic error (#936)
-- `build.sh` dedupes embedded files by repo-relative path. The previous basename key compared the top-level loop's relative paths against the recursion's absolute ones, so a file reached from two places could be bundled twice in the released binary; it also collided for same-named files in different directories (#923)
+- `assert_within_delta` accepts a leading `+` on any operand (#979)
+- Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests
+- Date assertions reject unparseable values instead of crashing or treating them as epoch 0
+- `assert_json_equals` rejects invalid JSON instead of considering two unparseable values equal
+- Parallel runs preserve results from same-named test files in different directories (#959)
+- Coverage no longer counts variable assignments as functions or emits malformed LCOV records for assignments containing `|` (#936)
+- The nightly coverage workflow discovers nested unit tests while excluding coverage meta-tests and fixtures (#980)
+- `build.sh` deduplicates embedded files by repository-relative path, preventing duplicate or missing modules with the same filename (#923)
 - `bashunit doc` no longer errors when the default bootstrap file is missing (#929)
 
 ## [0.44.0](https://github.com/TypedDevs/bashunit/compare/0.43.0...0.44.0) - 2026-07-29
