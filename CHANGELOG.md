@@ -3,11 +3,13 @@
 ## Unreleased
 
 ### Changed
+- `assert_within_delta` compares in fixed-point integer arithmetic instead of shelling out to `bc`/`awk` twice per call, falling back to the old chain for operands it cannot represent exactly. 200 calls went from 1092ms to 165ms, against a 108ms fork-free floor
 - Spies are substantially cheaper. `assert_have_been_called` and the spy call counter dropped their `cat` and command-substitution forks in favour of the `read` builtin and existing return-slot helpers: a 200-call spy test went from 1111ms to 170ms, against a 111ms fork-free floor
 - `assert_contains_ignore_case` folds case with `shopt -s nocasematch` on Bash 3.1+ instead of two `tr` subprocesses, and falls back to `tr` only on Bash 3.0. Roughly 10x faster in a run dominated by that assertion (300 calls: 1419ms -> 131ms), with identical results including non-ASCII folding
 - Internal: `src/runner.sh` and `src/coverage.sh` are split into `src/runner/` and `src/coverage/` modules of single-responsibility files, each behind a `source`-only `index.sh` aggregator. A pure relocation, no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- `assert_within_delta` accepts a leading `+` on any operand. `bashunit::assert::_is_numeric` allowed it but `bc` cannot parse it, so `assert_within_delta +5 5 1` compared against an empty string and failed
 - `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` set directly (for example in `.bashunitrc`) are now validated. Only the `--shard` flag path parsed them, so a zero or non-numeric total reached raw arithmetic and printed a bare `division by 0` shell error while still exiting 0, and an out-of-range index silently reported `No tests found`
 - The `assert_date_*` assertions no longer accept unparseable input. They discarded `bashunit::date::to_epoch`'s failure signal, so a raw non-numeric string reached integer comparison: it either crashed with a bare shell error or coerced to epoch 0, which made two equally-invalid values compare equal — `assert_date_within_delta "" "" "5"` passed
 - `assert_json_equals` no longer reports two invalid (unparseable) JSON strings as equal. It sorted both sides with `jq -S` but never checked jq's exit code, so two differently-invalid inputs both silently sorted to an empty string and compared equal instead of failing

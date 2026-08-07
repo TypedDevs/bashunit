@@ -881,6 +881,57 @@ function assert_within_delta() {
     return
   fi
 
+  # A leading `+` is valid to _is_numeric but not to bc, which returns an empty
+  # string for `+5 - 5` and made the comparison below fail. Stripped once here so
+  # both the fixed-point path and the bc/awk fallback see a plain number.
+  expected=${expected#+}
+  actual=${actual#+}
+  delta=${delta#+}
+
+  # Fork-free path: bring all three operands to one decimal scale, then compare
+  # as integers. The bc/awk chain below costs a subshell plus a process, twice,
+  # on a per-assertion path. bc also cannot parse a leading `+`, which
+  # _is_numeric accepts, so `assert_within_delta +5 5 1` used to fail with an
+  # empty comparison result rather than pass.
+  local scale expected_places actual_places delta_places
+  bashunit::math::decimals_to_slot "$expected"
+  expected_places=$_BASHUNIT_MATH_DECIMALS_OUT
+  bashunit::math::decimals_to_slot "$actual"
+  actual_places=$_BASHUNIT_MATH_DECIMALS_OUT
+  bashunit::math::decimals_to_slot "$delta"
+  delta_places=$_BASHUNIT_MATH_DECIMALS_OUT
+  scale=$expected_places
+  if [ "$actual_places" -gt "$scale" ]; then
+    scale=$actual_places
+  fi
+  if [ "$delta_places" -gt "$scale" ]; then
+    scale=$delta_places
+  fi
+
+  local padded_expected padded_actual padded_delta
+  bashunit::math::pad_to_slot "$expected" "$scale"
+  padded_expected=$_BASHUNIT_MATH_PADDED_OUT
+  bashunit::math::pad_to_slot "$actual" "$scale"
+  padded_actual=$_BASHUNIT_MATH_PADDED_OUT
+  bashunit::math::pad_to_slot "$delta" "$scale"
+  padded_delta=$_BASHUNIT_MATH_PADDED_OUT
+
+  if bashunit::math::scale_pair_to_slots "$padded_expected" "$padded_actual"; then
+    local scaled_diff=$((_BASHUNIT_MATH_SCALED_L_OUT - _BASHUNIT_MATH_SCALED_R_OUT))
+    if [ "$scaled_diff" -lt 0 ]; then
+      scaled_diff=$((-scaled_diff))
+    fi
+    if bashunit::math::scale_pair_to_slots "$padded_delta" "$padded_expected"; then
+      if [ "$scaled_diff" -gt "$_BASHUNIT_MATH_SCALED_L_OUT" ]; then
+        bashunit::assert::fail_with "" "${actual}" "to be within ${delta} of" "${expected}"
+        return
+      fi
+
+      bashunit::state::add_assertions_passed
+      return
+    fi
+  fi
+
   local diff
   diff="$(bashunit::math::calculate "$expected - $actual")"
   case "$diff" in
