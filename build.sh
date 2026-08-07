@@ -65,7 +65,11 @@ function build::generate_bin() {
   # Keep the source tree documented without shipping those comments in every
   # standalone binary. A shell parser is required here: the built file contains
   # heredocs whose Markdown and example scripts legitimately start with `#`.
-  build::strip_comments "$out"
+  # Structural build tests use the raw form so platforms without release-tool
+  # dependencies still exercise bundling; release builds always take this path.
+  if [[ ${_BASHUNIT_BUILD_SKIP_COMMENT_STRIP:-false} != true ]]; then
+    build::strip_comments "$out"
+  fi
 
   build::assert_valid_syntax "$out"
 }

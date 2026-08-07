@@ -33,6 +33,12 @@ jobs:
           npm install -g npm@latest
           echo "npm version after upgrade: $(npm -v)"
 
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+
       - name: Install standalone build optimizer
         shell: bash
         run: |
