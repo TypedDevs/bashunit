@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Performance: Literal snapshots bypass placeholder regex processing unless they contain a placeholder (about 13x faster) (#985)
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
 - Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster)
 - Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster)
