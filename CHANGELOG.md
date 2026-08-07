@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Named snapshot assertions support multiple snapshots per test; mismatches show the resolved path and `--snapshot-update` hint (#986)
+
 ### Changed
 - Performance: Literal snapshots bypass placeholder regex processing unless they contain a placeholder (about 13x faster) (#985)
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
