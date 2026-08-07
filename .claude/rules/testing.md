@@ -91,8 +91,8 @@ function test_should_add() {
 
 ```bash
 assert_match_snapshot "$output"
-# Re-record: delete the snapshot file and re-run; the assertion writes it when missing
-# (so a deleted snapshot never fails — read the diff before deleting)
+assert_match_named_snapshot "stderr" "$stderr" # multiple snapshots in one test
+# Re-record deliberately: ./bashunit --snapshot-update --filter "test name" tests/
 ```
 
 ## Test Isolation

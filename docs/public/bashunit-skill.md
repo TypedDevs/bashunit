@@ -118,7 +118,7 @@ cleaned up automatically and are safe under `--parallel`.
 
 ## Assertions
 
-`bashunit doc` prints the full catalogue (71 assertions) locally; `bashunit doc contains`
+`bashunit doc` prints the full catalogue (73 assertions) locally; `bashunit doc contains`
 filters it. The same list is at https://bashunit.com/assertions. **Do not invent names**
 — a wrong name is a runtime error, not a failed assertion.
 
@@ -132,7 +132,8 @@ filters it. The same list is at https://bashunit.com/assertions. **Do not invent
   `assert_directory_exists`, `assert_file_permissions`
 - Arrays: `assert_array_contains`, `assert_array_length`, `assert_arrays_equal`
 - JSON: `assert_json_equals`, `assert_json_contains`, `assert_json_key_exists`
-- Snapshots: `assert_match_snapshot`, `assert_match_snapshot_ignore_colors`
+- Snapshots: `assert_match_snapshot`, `assert_match_snapshot_ignore_colors`,
+  `assert_match_named_snapshot`, `assert_match_named_snapshot_ignore_colors`
 - Spies: `assert_have_been_called`, `assert_not_called`, `assert_have_been_called_with`,
   `assert_have_been_called_with_any`, `assert_have_been_called_with_args`,
   `assert_have_been_called_times`, `assert_have_been_called_nth_with`

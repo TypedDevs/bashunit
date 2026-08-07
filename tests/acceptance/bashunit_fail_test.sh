@@ -21,8 +21,12 @@ function test_bashunit_when_a_test_fail_verbose_output_option() {
 }
 
 function test_different_verbose_snapshots_matches() {
-  bashunit::todo \
-    "The different snapshots for these tests should also be identical, option to choose snapshot name?"
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+
+  assert_match_named_snapshot "env" \
+    "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_match_named_snapshot "option" \
+    "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)"
 }
 
 function test_bashunit_when_a_test_fail_simple_output_env() {
@@ -54,6 +58,10 @@ function test_bashunit_with_a_test_fail_and_exit_immediately() {
 }
 
 function test_different_simple_snapshots_matches() {
-  bashunit::todo \
-    "The different snapshots for these tests should also be identical, option to choose snapshot name?"
+  local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
+
+  assert_match_named_snapshot "env" \
+    "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  assert_match_named_snapshot "option" \
+    "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
 }

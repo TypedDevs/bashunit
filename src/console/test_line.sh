@@ -162,16 +162,21 @@ function bashunit::console_results::print_failed_snapshot_test() {
 
   local line
   line="$(printf "${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
-    ${_BASHUNIT_COLOR_FAINT}Expected to match the snapshot${_BASHUNIT_COLOR_DEFAULT}\n" "$function_name")"
+    ${_BASHUNIT_COLOR_FAINT}Expected to match the snapshot${_BASHUNIT_COLOR_DEFAULT}
+    ${_BASHUNIT_COLOR_FAINT}Snapshot: %s${_BASHUNIT_COLOR_DEFAULT}
+    ${_BASHUNIT_COLOR_FAINT}Re-record with '--snapshot-update'${_BASHUNIT_COLOR_DEFAULT}\n" \
+    "$function_name" "$snapshot_file")"
 
   if bashunit::dependencies::has_git; then
     local actual_file="${snapshot_file}.tmp"
     echo "$actual_content" >"$actual_file"
 
-    line="$line$(bashunit::console_results::render_diff "$snapshot_file" "$actual_file")"
+    line="$line
+$(bashunit::console_results::render_diff "$snapshot_file" "$actual_file")"
     rm "$actual_file"
   else
-    line="$line$(bashunit::console_results::snapshot_line_diff \
+    line="$line
+$(bashunit::console_results::snapshot_line_diff \
       "$(cat "$snapshot_file")" "$actual_content")"
   fi
 
@@ -282,4 +287,3 @@ function bashunit::console_results::print_worker_stderr() {
     "$_BASHUNIT_COLOR_SKIPPED" "$test_file" "$_BASHUNIT_COLOR_DEFAULT"
   sed 's/^/|/' "$stderr_file"
 }
-

@@ -20,7 +20,8 @@ Pass `snapshot_file` to point at a specific snapshot — useful to share one sna
 By default each test gets its own, named after the test function.
 
 ::: tip
-You can update the snapshot by deleting it and running its test again.
+Update snapshots deliberately with `--snapshot-update`; combine it with `--filter` to
+re-record a single test.
 :::
 
 ::: code-group
@@ -76,6 +77,27 @@ function test_failure() {
 }
 ```
 :::
+
+## Named snapshots
+
+Use named snapshots when one test needs to capture several independent values:
+
+> `assert_match_named_snapshot "name" "actual"`
+
+```bash
+function test_render_modes() {
+  assert_match_named_snapshot "compact" "$(./bin/render --compact)"
+  assert_match_named_snapshot "verbose" "$(./bin/render --verbose)"
+}
+```
+
+The name becomes a normalized filename suffix, so these resolve beside the default
+snapshot as `test_render_modes.compact.snapshot` and
+`test_render_modes.verbose.snapshot`. Spaces and punctuation are safe and cannot escape
+the test's `snapshots/` directory.
+
+Use `assert_match_named_snapshot_ignore_colors "name" "actual"` for the same behavior
+with ANSI escape sequences removed.
 
 ## Placeholders
 
