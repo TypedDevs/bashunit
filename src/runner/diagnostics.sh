@@ -31,12 +31,50 @@ function bashunit::runner::halt_if_stop_on_failure() {
 }
 
 # Writes the detected runtime-error message (empty when none) into
-# _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT. Return-slot form avoids a per-test fork
+# _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT and display-safe output into
+# _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT. Return-slot form avoids a per-test fork
 # on the hot path (#764).
 # Arguments: $1 runtime_output
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
   _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
+  _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT=$runtime_output
+
+  local usage_prefix="bashunit: assertion usage error: "
+  local usage_marker=$'\n'"$usage_prefix"
+  local usage_before=""
+  local usage_rest=""
+  local usage_found=false
+  case "$runtime_output" in
+  "$usage_prefix"*)
+    usage_rest=${runtime_output#"$usage_prefix"}
+    usage_found=true
+    ;;
+  *"$usage_marker"*)
+    usage_before=${runtime_output%%"$usage_marker"*}
+    usage_rest=${runtime_output#*"$usage_marker"}
+    usage_found=true
+    ;;
+  esac
+
+  if [ "$usage_found" = true ]; then
+    local usage_error=${usage_rest%%$'\n'*}
+    local usage_after=""
+    if [ "$usage_rest" != "$usage_error" ]; then
+      usage_after=${usage_rest#*$'\n'}
+    fi
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=$usage_error
+    if [ -n "$usage_before" ] && [ -n "$usage_after" ]; then
+      _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT="$usage_before
+$usage_after"
+    elif [ -n "$usage_before" ]; then
+      _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT=$usage_before
+    else
+      _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT=$usage_after
+    fi
+    return
+  fi
+
   case "$runtime_output" in
   *"command not found"* | *"unbound variable"* | *"permission denied"* | \
     *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \

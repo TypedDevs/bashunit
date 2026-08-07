@@ -43,6 +43,24 @@ function test_detect_runtime_error_matches_unexpected_eof() {
   assert_same "line 5: unexpected EOF while looking for matching" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
 }
 
+function test_detect_runtime_error_extracts_and_hides_assertion_usage_marker() {
+  local input=$'before\nbashunit: assertion usage error: assert_same expects 2 arguments, got 1\nafter'
+
+  bashunit::runner::detect_runtime_error "$input"
+
+  assert_same "assert_same expects 2 arguments, got 1" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+  assert_same $'before\nafter' "$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT"
+}
+
+function test_detect_runtime_error_ignores_indented_assertion_usage_marker() {
+  local input="  bashunit: assertion usage error: nested output"
+
+  bashunit::runner::detect_runtime_error "$input"
+
+  assert_empty "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+  assert_same "$input" "$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT"
+}
+
 function test_classify_kill_signal_sigkill_mentions_oom() {
   local output
   output="$(bashunit::runner::classify_kill_signal 137)"
