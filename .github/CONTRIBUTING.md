@@ -36,6 +36,7 @@ Contributions are licensed under the [MIT License](https://github.com/TypedDevs/
 - Make
 - [ShellCheck](https://github.com/koalaman/shellcheck#installing)
 - [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker#installation)
+- [shfmt](https://github.com/mvdan/sh) and [jq](https://jqlang.org/) when building the standalone binary
 
 ### Setup
 

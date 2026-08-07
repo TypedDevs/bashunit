@@ -21,6 +21,12 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Install standalone build optimizer
+        shell: bash
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.13.1
+
       - name: Build and verify
         shell: bash
         run: |

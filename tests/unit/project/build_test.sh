@@ -93,6 +93,35 @@ function test_build_embed_docs_fails_on_missing_markers() {
   assert_contains "echo hi" "$(cat "$file")"
 }
 
+function test_build_strip_comments_preserves_heredocs_shebang_and_source_markers() {
+  local file
+  file=$(bashunit::temp_file)
+  cat >"$file" <<'EOF'
+#!/usr/bin/env bash
+# src/example.sh
+# ordinary source comment
+value="# quoted value"
+cat <<'DOC'
+# Markdown heading
+  # indented example comment
+DOC
+printf '%s\n' "$value" # inline source comment
+EOF
+
+  (cd "$ROOT_DIR" && bash -c 'source ./build.sh && build::strip_comments "$1"' _ "$file")
+
+  assert_same "#!/usr/bin/env bash" "$(head -n 1 "$file")"
+  assert_file_contains "$file" "# src/example.sh"
+  assert_file_not_contains "$file" "ordinary source comment"
+  assert_file_not_contains "$file" "inline source comment"
+  assert_file_contains "$file" '# Markdown heading'
+  assert_file_contains "$file" '  # indented example comment'
+  assert_file_contains "$file" 'value="# quoted value"'
+  local exit_code=0
+  bash -n "$file" || exit_code=$?
+  assert_equals 0 "$exit_code"
+}
+
 # build::process_file emits a file's body and *then* recurses into its `source`
 # lines, so an aggregator holding anything else at top level would run that code
 # before its dependencies in the built binary but after them in dev mode.
@@ -277,6 +306,17 @@ function test_built_binary_contains_no_source_lines() {
 
   assert_file_exists "$build_dir/bashunit"
   assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
+}
+
+function test_built_binary_stays_below_500_kib() {
+  local build_dir
+  build_dir=$(bashunit::temp_dir)
+
+  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+
+  local bytes
+  bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
+  assert_less_or_equal_than 512000 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {
