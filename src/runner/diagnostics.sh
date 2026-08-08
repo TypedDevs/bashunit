@@ -20,6 +20,50 @@ function bashunit::runner::record_profile() {
 # run exits with EXIT_CODE_STOP_ON_FAILURE, which main.sh's EXIT trap turns
 # into the final summary. No-op when the flag is off.
 ##
+# Sets _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT when a line of $1 is a real bash
+# diagnostic: one carrying the source-and-line prefix as well as a known
+# phrase. Split out so a text miss falls through to the exit-code check rather
+# than returning from the caller.
+##
+function bashunit::runner::_scan_diagnostic_lines() {
+  local runtime_output=$1
+  # A phrase alone is not enough. The capture also carries bashunit's own
+  # rendering of the failure, and a test whose subject is error handling will
+  # legitimately quote one of these strings as data -- both used to be misread
+  # as runtime errors and reported twice, as Failed and as Error, for one cause.
+  # Requiring the prefix on the same line separates what the shell said from what
+  # we said about it; bashunit's own output never carries it.
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+    *": line "[0-9]*": "*) ;;
+    *) continue ;;
+    esac
+
+    case "$line" in
+    *"command not found"* | *"unbound variable"* | *"permission denied"* | \
+      *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
+      *"division by 0"* | *"bad file descriptor"* | \
+      *"illegal option"* | *"argument list too long"* | \
+      *"readonly variable"* | *"missing keyword"* | \
+      *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
+      *"ambiguous redirect"* | *"integer expression expected"* | \
+      *"too many arguments"* | *"value too great"* | \
+      *"not a valid identifier"* | *"unexpected EOF"*)
+      # Extract from the whole capture, not the matched line: the message shape
+      # (leading source stripped, newlines removed) is pinned by
+      # tests/unit/runner/diagnostics_test.sh.
+      local runtime_error="${runtime_output#*: }"
+      _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
+      return
+      ;;
+    esac
+  done <<EOF
+$runtime_output
+EOF
+}
+
+##
 function bashunit::runner::halt_if_stop_on_failure() {
   bashunit::env::is_stop_on_failure_enabled || return 0
 
@@ -37,6 +81,7 @@ function bashunit::runner::halt_if_stop_on_failure() {
 # Arguments: $1 runtime_output
 function bashunit::runner::detect_runtime_error() {
   local runtime_output=$1
+  local exit_code=${2:-0}
   _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT=""
   _BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT=$runtime_output
 
@@ -98,44 +143,28 @@ $usage_after"
     *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
     *"ambiguous redirect"* | *"integer expression expected"* | \
     *"too many arguments"* | *"value too great"* | \
-    *"not a valid identifier"* | *"unexpected EOF"*) ;;
-  *) return ;;
+    *"not a valid identifier"* | *"unexpected EOF"*)
+    bashunit::runner::_scan_diagnostic_lines "$runtime_output"
+    if [ -n "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT" ]; then
+      return
+    fi
+    ;;
   esac
 
-  # A phrase alone is not enough. The capture also carries bashunit's own
-  # rendering of the failure, and a test whose subject is error handling will
-  # legitimately quote one of these strings as data -- both used to be misread
-  # as runtime errors and reported twice, as Failed and as Error, for one cause.
-  # Requiring the prefix on the same line separates what the shell said from what
-  # we said about it; bashunit's own output never carries it.
-  local line
-  while IFS= read -r line; do
-    case "$line" in
-    *": line "[0-9]*": "*) ;;
-    *) continue ;;
-    esac
 
-    case "$line" in
-    *"command not found"* | *"unbound variable"* | *"permission denied"* | \
-      *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
-      *"division by 0"* | *"bad file descriptor"* | \
-      *"illegal option"* | *"argument list too long"* | \
-      *"readonly variable"* | *"missing keyword"* | \
-      *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
-      *"ambiguous redirect"* | *"integer expression expected"* | \
-      *"too many arguments"* | *"value too great"* | \
-      *"not a valid identifier"* | *"unexpected EOF"*)
-      # Extract from the whole capture, not the matched line: the message shape
-      # (leading source stripped, newlines removed) is pinned by
-      # tests/unit/runner/diagnostics_test.sh.
-      local runtime_error="${runtime_output#*: }"
-      _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
-      return
-      ;;
-    esac
-  done <<EOF
-$runtime_output
-EOF
+  # Last resort, and locale-independent. Everything above matches English text,
+  # but bash translates its diagnostics -- under es_ES a missing command reads
+  # "orden no encontrada" and matches nothing, so a genuine failure-to-run used
+  # to be reported as a plain assertion failure.
+  #
+  # These two codes carry the same fact without any text: the shell reserves 127
+  # for "could not find it" and 126 for "found it, could not run it". Consulted
+  # only after the text scan draws a blank, so English behaviour -- including the
+  # more specific message it produces -- is unchanged.
+  case "$exit_code" in
+  127) _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="command not found (exit code 127)" ;;
+  126) _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="not executable (exit code 126)" ;;
+  esac
 }
 
 ##

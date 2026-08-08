@@ -324,10 +324,14 @@ function bashunit::runner::run_test() {
     fi
 
     local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-    bashunit::runner::detect_runtime_error "$attempt_runtime_output"
+    # Counts first: detect_runtime_error consults the exit code when the output
+    # text is translated and matches nothing. extract_result_counts is a pure
+    # read, so moving it ahead commits nothing.
+    bashunit::runner::extract_result_counts "$test_execution_result"
+    bashunit::runner::detect_runtime_error "$attempt_runtime_output" \
+      "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT"
     local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
     local attempt_display_output=$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT
-    bashunit::runner::extract_result_counts "$test_execution_result"
     # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
     # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
     if [ -z "$attempt_runtime_error" ] &&

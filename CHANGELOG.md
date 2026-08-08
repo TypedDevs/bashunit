@@ -19,6 +19,7 @@
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- Runtime errors are recognised from the exit code when the diagnostic text cannot be matched. bash translates its messages, so under a Spanish or Japanese locale a genuine `command not found` was reported as a plain assertion failure; the same now applies when a test redirects the diagnostic away, where the message used to be empty (#998)
 - A failing test whose output quotes a shell-error phrase is no longer also reported as a runtime `Error`. The classifier scanned the whole capture -- which includes bashunit's own failure rendering -- for strings like `command not found`, so one cause was reported twice. It now requires the source-and-line prefix bash puts on a real diagnostic (#992)
 - `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error when their numeric argument is not a number, instead of leaking `[: my_cmd: integer expression expected` from inside bashunit. The common cause is swapping the count and the spy, which the message now names (#984)
 - `assert_false` no longer passes when the command does not exist. Exit code 127 is non-zero, so a typo in the command name satisfied the assertion while testing nothing; 127 and 126 now fail both `assert_true` and `assert_false`, because they mean the command never ran
