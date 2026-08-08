@@ -6,6 +6,7 @@
 - Named snapshot assertions support multiple snapshots per test; mismatches show the resolved path and `--snapshot-update` hint (#986)
 
 ### Changed
+- `assert_true` / `assert_false` name the problem instead of printing a bare number: exit code 127 now reports `unknown command: <arg>` and 126 `not executable: <arg>`. The most common cause is passing a test expression like `[ -d /tmp ]`, which is run as a command word
 - Core comparison assertions report missing required arguments as usage errors instead of comparing against empty values (#983)
 - Performance: Literal snapshots bypass placeholder regex processing unless they contain a placeholder (about 13x faster) (#985)
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
@@ -14,6 +15,7 @@
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- `assert_false` no longer passes when the command does not exist. Exit code 127 is non-zero, so a typo in the command name satisfied the assertion while testing nothing; 127 and 126 now fail both `assert_true` and `assert_false`, because they mean the command never ran
 - `assert_within_delta` accepts a leading `+` on any operand (#979)
 - Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests
 - Date assertions reject unparseable values instead of crashing or treating them as epoch 0
