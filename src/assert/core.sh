@@ -22,6 +22,19 @@ function bashunit::assert::should_skip() {
 
 # Emits a machine-detectable assertion usage error. The runner strips the
 # prefix and reports the message through the existing Error channel.
+##
+# Emits a machine-detectable assertion usage error for an argument of the wrong
+# *shape*, as opposed to a missing one. Same prefix as usage_error, so the
+# runner strips it and reports through the existing Error channel.
+# Arguments: $1 - assertion name, $2 - the rest of the sentence
+##
+function bashunit::assert::usage_error_detail() {
+  local assertion=$1
+  local detail=$2
+
+  printf 'bashunit: assertion usage error: %s %s\n' "$assertion" "$detail" >&2
+}
+
 function bashunit::assert::usage_error() {
   local assertion=$1
   local required=$2

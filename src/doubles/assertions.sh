@@ -164,6 +164,18 @@ function assert_have_been_called_with_any() {
 function assert_have_been_called_times() {
   local expected_count=$1
   local command=$2
+
+  # Guarded before the spy lookup so a swapped call is diagnosed as the ordering
+  # mistake it is, rather than as "the count you passed is not a registered
+  # spy". Without this the value reaches `[ "$times" -ne "$expected_count" ]`
+  # and bash prints "integer expression expected" from inside bashunit.
+  case "$expected_count" in
+  '' | *[!0-9]*)
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a numeric count first (expected_count, command), got '$expected_count'"
+    return 2
+    ;;
+  esac
   bashunit::spy::times_to_slot "$command"
   local times=$_BASHUNIT_SPY_TIMES_OUT
   local label="${3:-}"
@@ -192,6 +204,16 @@ function assert_have_been_called_times() {
 
 function assert_have_been_called_nth_with() {
   local nth=$1
+
+  # Same guard as assert_have_been_called_times: $nth reaches an integer
+  # comparison below.
+  case "$nth" in
+  '' | *[!0-9]*)
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a numeric call index first (nth, command, expected_args), got '$nth'"
+    return 2
+    ;;
+  esac
   local command=$2
   shift 2
   local expected="$*"

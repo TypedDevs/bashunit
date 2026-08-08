@@ -18,6 +18,7 @@
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error when their numeric argument is not a number, instead of leaking `[: my_cmd: integer expression expected` from inside bashunit. The common cause is swapping the count and the spy, which the message now names (#984)
 - `assert_false` no longer passes when the command does not exist. Exit code 127 is non-zero, so a typo in the command name satisfied the assertion while testing nothing; 127 and 126 now fail both `assert_true` and `assert_false`, because they mean the command never ran
 - `assert_within_delta` accepts a leading `+` on any operand (#979)
 - Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests
