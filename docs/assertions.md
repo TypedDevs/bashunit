@@ -23,7 +23,7 @@ to narrow it (`bashunit doc json`).
 | **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_within_delta](#assert-within-delta) |
 | **Dates** | [assert_date_equals](#assert-date-equals) · [assert_date_before](#assert-date-before) · [assert_date_after](#assert-date-after) · [assert_date_within_range](#assert-date-within-range) · [assert_date_within_delta](#assert-date-within-delta) |
 | **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
-| **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
+| **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
 | **Directories** | [assert_directory_exists](#assert-directory-exists) · [assert_directory_not_exists](#assert-directory-not-exists) · [assert_is_directory](#assert-is-directory) · [assert_is_directory_empty](#assert-is-directory-empty) · [assert_is_directory_not_empty](#assert-is-directory-not-empty) · [assert_is_directory_readable](#assert-is-directory-readable) · [assert_is_directory_not_readable](#assert-is-directory-not-readable) · [assert_is_directory_writable](#assert-is-directory-writable) · [assert_is_directory_not_writable](#assert-is-directory-not-writable) |
 | **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
 | **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
@@ -907,6 +907,51 @@ function test_failure() {
   echo -e "original content" > "$file"
 
   assert_file_contains "$file" "non existing"
+}
+```
+:::
+
+## assert_is_symlink
+> `assert_is_symlink "path"`
+
+Reports an error if `path` is not a symbolic link.
+
+Every other filesystem assertion follows the link — `assert_is_file` and
+`assert_file_exists` report on the *target*, so a link and the file it points at
+look identical, and a dangling link reads as "does not exist". This is the
+assertion that tells them apart, and it passes for a link whose target is gone.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  ln -s /etc/hosts ./hosts_link
+
+  assert_is_symlink "./hosts_link"
+}
+```
+:::
+
+## assert_is_not_symlink
+> `assert_is_not_symlink "path"`
+
+Reports an error if `path` is a symbolic link.
+
+## assert_symlink_to
+> `assert_symlink_to "expected_target" "path"`
+
+Reports an error if `path` is not a symbolic link, or if it points somewhere
+other than `expected_target`.
+
+The target is compared **as written**, via `readlink`, not fully resolved: that
+is what the test author wrote, and `readlink -f` is GNU-only. A relative link
+therefore compares as the relative string it is.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  ln -s ./releases/42 ./current
+
+  assert_symlink_to "./releases/42" "./current"
 }
 ```
 :::

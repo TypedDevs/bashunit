@@ -42,7 +42,7 @@ assert_files_not_equals assert_general_error assert_greater_or_equal_than \
 assert_greater_than assert_is_directory assert_is_directory_empty \
 assert_is_directory_not_empty assert_is_directory_not_readable \
 assert_is_directory_not_writable assert_is_directory_readable \
-assert_is_directory_writable assert_is_file assert_is_file_empty \
+assert_is_directory_writable assert_is_file assert_is_file_empty assert_is_not_symlink assert_is_symlink \
 assert_json_contains assert_json_equals assert_json_key_exists \
 assert_less_or_equal_than assert_less_than assert_line_count \
 assert_match_named_snapshot assert_match_named_snapshot_ignore_colors \
@@ -51,7 +51,7 @@ assert_not_contains assert_not_empty assert_not_equals assert_not_matches \
 assert_not_same assert_same assert_string_ends_with \
 assert_string_matches_format assert_string_not_ends_with \
 assert_string_not_matches_format assert_string_not_starts_with \
-assert_string_starts_with assert_successful_code assert_true \
+assert_string_starts_with assert_successful_code assert_symlink_to assert_true \
 assert_unsuccessful_code assert_within_delta"
 
 # compgen output is split into COMPREPLY words on purpose; mapfile/read -a would need bash 4+.

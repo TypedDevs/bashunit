@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Added
+- `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself. Every other filesystem assertion follows the link, so a link and its target were indistinguishable and a dangling link read as "does not exist" (#981)
+
+### Added
 - Named snapshot assertions support multiple snapshots per test; mismatches show the resolved path and `--snapshot-update` hint (#986)
 
 ### Changed
