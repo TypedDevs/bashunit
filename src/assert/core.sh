@@ -22,6 +22,19 @@ function bashunit::assert::should_skip() {
 
 # Emits a machine-detectable assertion usage error. The runner strips the
 # prefix and reports the message through the existing Error channel.
+##
+# Emits a machine-detectable assertion usage error for an argument of the wrong
+# *shape*, as opposed to a missing one. Same prefix as usage_error, so the
+# runner strips it and reports through the existing Error channel.
+# Arguments: $1 - assertion name, $2 - the rest of the sentence
+##
+function bashunit::assert::usage_error_detail() {
+  local assertion=$1
+  local detail=$2
+
+  printf 'bashunit: assertion usage error: %s %s\n' "$assertion" "$detail" >&2
+}
+
 function bashunit::assert::usage_error() {
   local assertion=$1
   local required=$2
@@ -114,33 +127,91 @@ function bashunit::fail() {
   bashunit::console_results::print_failure_message "${label}" "$message"
 }
 
+_BASHUNIT_ASSERT_BOOL_EXIT_OUT=0
+
+##
+# Runs the subject of assert_true / assert_false and leaves its exit code in
+# _BASHUNIT_ASSERT_BOOL_EXIT_OUT.
+#
+# With more than one argument the arguments are passed through as arguments --
+# no re-parsing, so a path containing a space survives. With exactly one they go
+# through run_command_or_eval, which is the historical behaviour: a bare command
+# word, or an `eval `-prefixed string. Keeping that split is what makes the
+# variadic form purely additive.
+#
+# The `|| exit_code=$?` capture is deliberate: a bare failing command as a
+# statement would abort the whole test under --strict (`set -e`).
+##
+function bashunit::assert::_run_bool_subject() {
+  local exit_code=0
+
+  if [ $# -gt 1 ]; then
+    "$@" >/dev/null 2>&1 || exit_code=$?
+  else
+    bashunit::run_command_or_eval "$1" || exit_code=$?
+  fi
+
+  _BASHUNIT_ASSERT_BOOL_EXIT_OUT=$exit_code
+}
+
+_BASHUNIT_ASSERT_EXIT_DESC_OUT=""
+
+##
+# Describes a failing exit code for assert_true / assert_false. 127 and 126 are
+# the two codes the shell reserves for "I could not run this at all", and a bare
+# number tells the reader nothing: the most natural shell idiom,
+# `assert_true "[ -d /tmp ]"`, hits 127 because the argument is run as a command
+# word rather than evaluated, and the failure used to point nowhere near the
+# cause.
+#
+# The wording avoided the literal phrase "command not found" because
+# runner/diagnostics.sh used to classify a test as a runtime error by scanning
+# its output for that exact string, which made every such failure report as both
+# Failed and Error. That constraint is gone -- the classifier now requires a
+# shell diagnostic's source-and-line prefix as well (#992). The phrasing stays
+# as it is because it is already documented and released, not because it must.
+# Arguments: $1 - exit code, $2 - the command as written
+##
+function bashunit::assert::_describe_exit_code() {
+  case "$1" in
+  127) _BASHUNIT_ASSERT_EXIT_DESC_OUT="unknown command: $2" ;;
+  126) _BASHUNIT_ASSERT_EXIT_DESC_OUT="not executable: $2" ;;
+  *) _BASHUNIT_ASSERT_EXIT_DESC_OUT="exit code: $1" ;;
+  esac
+}
+
 function assert_true() {
   bashunit::assert::should_skip && return 0
 
   local actual="$1"
 
-  # Check for expected literal values first
-  case "$actual" in
-  "")
-    bashunit::handle_bool_assertion_failure "true or 0" "$actual"
-    return
-    ;;
-  "true" | "0")
-    bashunit::state::add_assertions_passed
-    return
-    ;;
-  "false" | "1")
-    bashunit::handle_bool_assertion_failure "true or 0" "$actual"
-    return
-    ;;
-  esac
+  # The literal values only mean themselves when they are the whole subject;
+  # with arguments following, "true" is the command named true.
+  if [ $# -eq 1 ]; then
+    case "$actual" in
+    "")
+      bashunit::handle_bool_assertion_failure "true or 0" "$actual"
+      return
+      ;;
+    "true" | "0")
+      bashunit::state::add_assertions_passed
+      return
+      ;;
+    "false" | "1")
+      bashunit::handle_bool_assertion_failure "true or 0" "$actual"
+      return
+      ;;
+    esac
+  fi
 
-  # Run command or eval and check the exit code
-  bashunit::run_command_or_eval "$actual"
-  local exit_code=$?
+  bashunit::assert::_run_bool_subject "$@"
+  local exit_code=$_BASHUNIT_ASSERT_BOOL_EXIT_OUT
+  actual="$*"
 
   if [ "$exit_code" -ne 0 ]; then
-    bashunit::handle_bool_assertion_failure "command or function with zero exit code" "exit code: $exit_code"
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::handle_bool_assertion_failure \
+      "command or function with zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
   else
     bashunit::state::add_assertions_passed
   fi
@@ -151,31 +222,40 @@ function assert_false() {
 
   local actual="$1"
 
-  # Check for expected literal values first
-  case "$actual" in
-  "")
-    bashunit::handle_bool_assertion_failure "false or 1" "$actual"
-    return
-    ;;
-  "false" | "1")
-    bashunit::state::add_assertions_passed
-    return
-    ;;
-  "true" | "0")
-    bashunit::handle_bool_assertion_failure "false or 1" "$actual"
-    return
-    ;;
-  esac
-
-  # Run command or eval and check the exit code
-  bashunit::run_command_or_eval "$actual"
-  local exit_code=$?
-
-  if [ "$exit_code" -eq 0 ]; then
-    bashunit::handle_bool_assertion_failure "command or function with non-zero exit code" "exit code: $exit_code"
-  else
-    bashunit::state::add_assertions_passed
+  # As in assert_true: the literal values only mean themselves when they are the
+  # whole subject.
+  if [ $# -eq 1 ]; then
+    case "$actual" in
+    "")
+      bashunit::handle_bool_assertion_failure "false or 1" "$actual"
+      return
+      ;;
+    "false" | "1")
+      bashunit::state::add_assertions_passed
+      return
+      ;;
+    "true" | "0")
+      bashunit::handle_bool_assertion_failure "false or 1" "$actual"
+      return
+      ;;
+    esac
   fi
+
+  bashunit::assert::_run_bool_subject "$@"
+  local exit_code=$_BASHUNIT_ASSERT_BOOL_EXIT_OUT
+  actual="$*"
+
+  # 127/126 mean the command never ran. Treating "did not run" as "returned
+  # false" let a typo in the command name satisfy this assertion while testing
+  # nothing, so those are failures here as well as in assert_true.
+  case "$exit_code" in
+  0 | 126 | 127)
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::handle_bool_assertion_failure \
+      "command or function with non-zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+    ;;
+  *) bashunit::state::add_assertions_passed ;;
+  esac
 }
 
 function bashunit::run_command_or_eval() {

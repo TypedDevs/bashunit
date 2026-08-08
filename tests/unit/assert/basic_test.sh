@@ -183,3 +183,76 @@ function test_assert_not_same_with_custom_label() {
     "$(bashunit::console_results::print_failed_test "my custom label" "foo" "to not be" "foo")" \
     "$(assert_not_same "foo" "foo" "my custom label")"
 }
+
+# Exit code 127 is the shell's not-found code. Reporting the bare number
+# gives the reader nothing to act on -- and the most natural shell idiom,
+# a `[ ... ]` test expression, produces exactly this because assert_true runs
+# its argument as a command word rather than evaluating it.
+function test_assert_true_reports_a_missing_command_by_name() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true reports a missing command by name" \
+      "command or function with zero exit code" "but got " \
+      "unknown command: definitely_not_a_command")" \
+    "$(assert_true "definitely_not_a_command")"
+}
+
+function test_assert_true_reports_a_bracket_expression_as_not_found() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true reports a bracket expression as not found" \
+      "command or function with zero exit code" "but got " \
+      "unknown command: [ -d /tmp ]")" \
+    "$(assert_true "[ -d /tmp ]")"
+}
+
+# assert_false only failed when the exit code was 0, so a command that does not
+# exist satisfied it: 127 is non-zero, therefore "false". A typo in the command
+# name made the assertion pass while testing nothing.
+function test_assert_false_fails_when_the_command_does_not_exist() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert false fails when the command does not exist" \
+      "command or function with non-zero exit code" "but got " \
+      "unknown command: definitely_not_a_command")" \
+    "$(assert_false "definitely_not_a_command")"
+}
+
+# Arguments as real arguments. The single-argument forms are untouched: one
+# argument still means "run this as a command word", so every existing call
+# behaves exactly as before.
+function test_assert_true_accepts_a_command_with_arguments() {
+  assert_empty "$(assert_true test -d /tmp)"
+}
+
+function test_assert_true_variadic_fails_when_the_command_fails() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true variadic fails when the command fails" \
+      "command or function with zero exit code" "but got " \
+      "exit code: 1")" \
+    "$(assert_true test -d /definitely/not/a/directory)"
+}
+
+function test_assert_false_accepts_a_command_with_arguments() {
+  assert_empty "$(assert_false test -d /definitely/not/a/directory)"
+}
+
+function test_assert_true_variadic_does_not_re_parse_its_arguments() {
+  local dir
+  dir=$(bashunit::temp_dir)
+  # A path containing a space survives, because it is passed as one argument
+  # rather than re-split out of a single string.
+  mkdir -p "$dir/two words"
+
+  assert_empty "$(assert_true test -d "$dir/two words")"
+}
+
+function test_assert_true_variadic_reports_a_missing_command() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true variadic reports a missing command" \
+      "command or function with zero exit code" "but got " \
+      "unknown command: definitely_not_a_command --flag")" \
+    "$(assert_true definitely_not_a_command --flag)"
+}

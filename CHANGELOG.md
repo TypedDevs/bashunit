@@ -3,22 +3,29 @@
 ## Unreleased
 
 ### Added
+- `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself, which every other filesystem assertion follows through to the target (#981)
+- `assert_true` and `assert_false` accept a command with its arguments — `assert_true test -d /tmp`. A single argument keeps its previous meaning (#994)
 - Named snapshot assertions support multiple snapshots per test; mismatches show the resolved path and `--snapshot-update` hint (#986)
 
 ### Changed
-- Build: standalone binaries omit source comments while preserving heredoc content and source markers, reducing the current artifact by about 22%
+- `assert_true` / `assert_false` report `unknown command` / `not executable` instead of a bare exit code 127 or 126 (#982)
 - Core comparison assertions report missing required arguments as usage errors instead of comparing against empty values (#983)
 - Performance: Literal snapshots bypass placeholder regex processing unless they contain a placeholder (about 13x faster) (#985)
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
-- Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster)
-- Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster)
+- Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster) (#978)
+- Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster) (#977)
+- Build: standalone binaries omit source comments while preserving heredoc content and source markers, reducing the current artifact by about 22% (#990)
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
+- `assert_false` no longer passes when the command does not exist; exit codes 127 and 126 fail both boolean assertions, because the command never ran (#982)
+- `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error for a non-numeric count instead of leaking a raw `integer expression expected` (#984)
+- A failing test whose output quotes a shell-error phrase is no longer also reported as a runtime error (#992)
+- Runtime errors are recognised from the exit code when the diagnostic text is translated or redirected away (#998)
 - `assert_within_delta` accepts a leading `+` on any operand (#979)
-- Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests
-- Date assertions reject unparseable values instead of crashing or treating them as epoch 0
-- `assert_json_equals` rejects invalid JSON instead of considering two unparseable values equal
+- Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests (#969)
+- Date assertions reject unparseable values instead of crashing or treating them as epoch 0 (#968)
+- `assert_json_equals` rejects invalid JSON instead of considering two unparseable values equal (#967)
 - Parallel runs preserve results from same-named test files in different directories (#959)
 - Coverage no longer counts variable assignments as functions or emits malformed LCOV records for assignments containing `|` (#936)
 - The nightly coverage workflow discovers nested unit tests while excluding coverage meta-tests and fixtures (#980)
