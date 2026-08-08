@@ -75,20 +75,67 @@ $usage_after"
     return
   fi
 
+  # Conditions the shell reports without a source-and-line prefix, because they
+  # come from job control rather than the parser. Matched anywhere in the
+  # capture, as before.
+  case "$runtime_output" in
+  *"killed"* | *"segmentation fault"* | *"cannot allocate memory"*)
+    local runtime_error="${runtime_output#*: }"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
+    return
+    ;;
+  esac
+
+  # Everything else is a diagnostic bash emits with its source and line
+  # ("file.sh: line 12: foo: command not found"). The cheap gate first: most
+  # failing tests contain none of these phrases and pay one glob.
   case "$runtime_output" in
   *"command not found"* | *"unbound variable"* | *"permission denied"* | \
     *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
-    *"division by 0"* | *"cannot allocate memory"* | *"bad file descriptor"* | \
-    *"segmentation fault"* | *"illegal option"* | *"argument list too long"* | \
-    *"readonly variable"* | *"missing keyword"* | *"killed"* | \
+    *"division by 0"* | *"bad file descriptor"* | \
+    *"illegal option"* | *"argument list too long"* | \
+    *"readonly variable"* | *"missing keyword"* | \
     *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
     *"ambiguous redirect"* | *"integer expression expected"* | \
     *"too many arguments"* | *"value too great"* | \
-    *"not a valid identifier"* | *"unexpected EOF"*)
-    local runtime_error="${runtime_output#*: }"
-    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
-    ;;
+    *"not a valid identifier"* | *"unexpected EOF"*) ;;
+  *) return ;;
   esac
+
+  # A phrase alone is not enough. The capture also carries bashunit's own
+  # rendering of the failure, and a test whose subject is error handling will
+  # legitimately quote one of these strings as data -- both used to be misread
+  # as runtime errors and reported twice, as Failed and as Error, for one cause.
+  # Requiring the prefix on the same line separates what the shell said from what
+  # we said about it; bashunit's own output never carries it.
+  local line
+  while IFS= read -r line; do
+    case "$line" in
+    *": line "[0-9]*": "*) ;;
+    *) continue ;;
+    esac
+
+    case "$line" in
+    *"command not found"* | *"unbound variable"* | *"permission denied"* | \
+      *"no such file or directory"* | *"syntax error"* | *"bad substitution"* | \
+      *"division by 0"* | *"bad file descriptor"* | \
+      *"illegal option"* | *"argument list too long"* | \
+      *"readonly variable"* | *"missing keyword"* | \
+      *"cannot execute binary file"* | *"invalid arithmetic operator"* | \
+      *"ambiguous redirect"* | *"integer expression expected"* | \
+      *"too many arguments"* | *"value too great"* | \
+      *"not a valid identifier"* | *"unexpected EOF"*)
+      # Extract from the whole capture, not the matched line: the message shape
+      # (leading source stripped, newlines removed) is pinned by
+      # tests/unit/runner/diagnostics_test.sh.
+      local runtime_error="${runtime_output#*: }"
+      _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
+      return
+      ;;
+    esac
+  done <<EOF
+$runtime_output
+EOF
 }
 
 ##

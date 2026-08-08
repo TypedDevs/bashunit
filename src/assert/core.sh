@@ -137,10 +137,12 @@ _BASHUNIT_ASSERT_EXIT_DESC_OUT=""
 # word rather than evaluated, and the failure used to point nowhere near the
 # cause.
 #
-# The wording deliberately avoids the literal phrase "command not found".
-# runner/diagnostics.sh classifies a test as a runtime error by scanning its
-# output for that exact string, so using it here made every such failure report
-# as both Failed and Error for the one cause.
+# The wording avoided the literal phrase "command not found" because
+# runner/diagnostics.sh used to classify a test as a runtime error by scanning
+# its output for that exact string, which made every such failure report as both
+# Failed and Error. That constraint is gone -- the classifier now requires a
+# shell diagnostic's source-and-line prefix as well (#992). The phrasing stays
+# as it is because it is already documented and released, not because it must.
 # Arguments: $1 - exit code, $2 - the command as written
 ##
 function bashunit::assert::_describe_exit_code() {
