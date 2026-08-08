@@ -36,6 +36,12 @@ to narrow it (`bashunit doc json`).
 ## assert_true
 > `assert_true bool|function|command`
 
+Takes a **command**, not a test expression. A bracketed condition of the form
+used inside `if` is run as a command word, so the shell reports exit code 127 and
+the assertion fails with `unknown command`. Use the `test` builtin instead —
+`assert_true "test -d /tmp"` — or a purpose-built assertion such as
+`assert_directory_exists`.
+
 Reports an error if the argument result in a truthy value: `true` or `0`.
 
 - [assert_false](#assert-false) is similar but different.
