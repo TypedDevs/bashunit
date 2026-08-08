@@ -36,11 +36,21 @@ to narrow it (`bashunit doc json`).
 ## assert_true
 > `assert_true bool|function|command`
 
-Takes a **command**, not a test expression. A bracketed condition of the form
-used inside `if` is run as a command word, so the shell reports exit code 127 and
-the assertion fails with `unknown command`. Use the `test` builtin instead —
-`assert_true "test -d /tmp"` — or a purpose-built assertion such as
-`assert_directory_exists`.
+The argument is run as a **single command word**, so it must be a bare command or
+function name with no arguments. Anything with arguments — including a bracketed
+condition of the form used inside `if` — is treated as one long command name, and
+the assertion fails with `unknown command`.
+
+Prefix with `eval` to run anything more than a bare name:
+
+```bash
+assert_true "my_function"            # bare name: works
+assert_true "eval test -d /tmp"      # arguments: needs eval
+assert_true "eval grep -q foo file"  # arguments: needs eval
+```
+
+A purpose-built assertion is usually clearer still — `assert_directory_exists`
+rather than a hand-rolled `test -d`.
 
 Reports an error if the argument result in a truthy value: `true` or `0`.
 
