@@ -1,18 +1,13 @@
 ## assert_true
 --------------
-> `assert_true bool|function|command`
+> `assert_true bool|function|command args...`
 
-The argument is run as a **single command word**, so it must be a bare command or
-function name with no arguments. Anything with arguments — including a bracketed
-condition of the form used inside `if` — is treated as one long command name, and
-the assertion fails with `unknown command`.
-
-Prefix with `eval` to run anything more than a bare name:
+Pass a command with its arguments as separate arguments:
 
 
 ## assert_false
 --------------
-> `assert_false bool|function|command`
+> `assert_false bool|function|command args...`
 
 Reports an error if the argument result in a falsy value: `false` or `1`.
 

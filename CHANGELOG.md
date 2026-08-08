@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_true` and `assert_false` accept a command with its arguments — `assert_true test -d /tmp`. Arguments are passed through rather than re-parsed, so a value containing a space survives. A single argument keeps its previous meaning exactly, so existing calls are unaffected (#994)
 - `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself. Every other filesystem assertion follows the link, so a link and its target were indistinguishable and a dangling link read as "does not exist" (#981)
 
 ### Added
