@@ -3,30 +3,28 @@
 ## Unreleased
 
 ### Added
-- `assert_true` and `assert_false` accept a command with its arguments — `assert_true test -d /tmp`. Arguments are passed through rather than re-parsed, so a value containing a space survives. A single argument keeps its previous meaning exactly, so existing calls are unaffected (#994)
-- `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself. Every other filesystem assertion follows the link, so a link and its target were indistinguishable and a dangling link read as "does not exist" (#981)
-
-### Added
+- `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself, which every other filesystem assertion follows through to the target (#981)
+- `assert_true` and `assert_false` accept a command with its arguments — `assert_true test -d /tmp`. A single argument keeps its previous meaning (#994)
 - Named snapshot assertions support multiple snapshots per test; mismatches show the resolved path and `--snapshot-update` hint (#986)
 
 ### Changed
-- `assert_true` / `assert_false` name the problem instead of printing a bare number: exit code 127 now reports `unknown command: <arg>` and 126 `not executable: <arg>`. The most common cause is passing a test expression like `[ -d /tmp ]`, which is run as a command word
+- `assert_true` / `assert_false` report `unknown command` / `not executable` instead of a bare exit code 127 or 126 (#982)
 - Core comparison assertions report missing required arguments as usage errors instead of comparing against empty values (#983)
 - Performance: Literal snapshots bypass placeholder regex processing unless they contain a placeholder (about 13x faster) (#985)
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
-- Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster)
-- Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster)
+- Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster) (#978)
+- Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster) (#977)
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
-- Runtime errors are recognised from the exit code when the diagnostic text cannot be matched. bash translates its messages, so under a Spanish or Japanese locale a genuine `command not found` was reported as a plain assertion failure; the same now applies when a test redirects the diagnostic away, where the message used to be empty (#998)
-- A failing test whose output quotes a shell-error phrase is no longer also reported as a runtime `Error`. The classifier scanned the whole capture -- which includes bashunit's own failure rendering -- for strings like `command not found`, so one cause was reported twice. It now requires the source-and-line prefix bash puts on a real diagnostic (#992)
-- `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error when their numeric argument is not a number, instead of leaking `[: my_cmd: integer expression expected` from inside bashunit. The common cause is swapping the count and the spy, which the message now names (#984)
-- `assert_false` no longer passes when the command does not exist. Exit code 127 is non-zero, so a typo in the command name satisfied the assertion while testing nothing; 127 and 126 now fail both `assert_true` and `assert_false`, because they mean the command never ran
+- `assert_false` no longer passes when the command does not exist; exit codes 127 and 126 fail both boolean assertions, because the command never ran (#982)
+- `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error for a non-numeric count instead of leaking a raw `integer expression expected` (#984)
+- A failing test whose output quotes a shell-error phrase is no longer also reported as a runtime error (#992)
+- Runtime errors are recognised from the exit code when the diagnostic text is translated or redirected away (#998)
 - `assert_within_delta` accepts a leading `+` on any operand (#979)
-- Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests
-- Date assertions reject unparseable values instead of crashing or treating them as epoch 0
-- `assert_json_equals` rejects invalid JSON instead of considering two unparseable values equal
+- Invalid `BASHUNIT_SHARD_INDEX` / `BASHUNIT_SHARD_TOTAL` values now fail with a clear error instead of reaching raw arithmetic or reporting no tests (#969)
+- Date assertions reject unparseable values instead of crashing or treating them as epoch 0 (#968)
+- `assert_json_equals` rejects invalid JSON instead of considering two unparseable values equal (#967)
 - Parallel runs preserve results from same-named test files in different directories (#959)
 - Coverage no longer counts variable assignments as functions or emits malformed LCOV records for assignments containing `|` (#936)
 - The nightly coverage workflow discovers nested unit tests while excluding coverage meta-tests and fixtures (#980)
