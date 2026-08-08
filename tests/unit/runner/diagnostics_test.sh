@@ -88,3 +88,37 @@ function test_classify_kill_signal_generic_signal() {
 function test_classify_kill_signal_empty_for_normal_exit() {
   assert_empty "$(bashunit::runner::classify_kill_signal 1)"
 }
+
+# bash translates its diagnostics, so the English phrase list matches nothing
+# under a Spanish or Japanese locale and a genuine failure-to-run was reported
+# as a plain assertion failure. The exit code carries the same information and
+# is locale-independent: 127 is "could not find it", 126 "could not run it".
+function test_detect_runtime_error_uses_the_exit_code_when_the_text_is_translated() {
+  bashunit::runner::detect_runtime_error \
+    "/tmp/x.sh: línea 1: foo: orden no encontrada" 127
+
+  assert_not_empty "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+}
+
+function test_detect_runtime_error_uses_the_exit_code_for_not_executable() {
+  bashunit::runner::detect_runtime_error \
+    "/tmp/x.sh: ligne 1: foo: Permission non accordée" 126
+
+  assert_not_empty "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+}
+
+# A failing assertion is not a runtime error, whatever the exit code says about
+# the test function itself.
+function test_detect_runtime_error_ignores_an_ordinary_failure_exit_code() {
+  bashunit::runner::detect_runtime_error "Expected 'a' but got 'b'" 1
+
+  assert_empty "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+}
+
+# English text still wins, so the message stays as informative as before.
+function test_detect_runtime_error_prefers_the_matched_text_over_the_exit_code() {
+  bashunit::runner::detect_runtime_error \
+    "/tmp/x.sh: line 1: foo: command not found" 127
+
+  assert_contains "command not found" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+}
