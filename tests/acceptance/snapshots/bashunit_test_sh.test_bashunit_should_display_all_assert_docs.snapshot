@@ -359,6 +359,31 @@ Reports an error if `file` does not contains the search string.
 - assert_file_not_contains is the inverse of this assertion and takes the same arguments.
 
 
+## assert_is_symlink
+--------------
+> `assert_is_symlink "path"`
+
+Reports an error if `path` is not a symbolic link.
+
+Every other filesystem assertion follows the link — `assert_is_file` and
+`assert_file_exists` report on the *target*, so a link and the file it points at
+look identical, and a dangling link reads as "does not exist". This is the
+assertion that tells them apart, and it passes for a link whose target is gone.
+
+
+## assert_is_not_symlink
+## assert_symlink_to
+--------------
+> `assert_symlink_to "expected_target" "path"`
+
+Reports an error if `path` is not a symbolic link, or if it points somewhere
+other than `expected_target`.
+
+The target is compared **as written**, via `readlink`, not fully resolved: that
+is what the test author wrote, and `readlink -f` is GNU-only. A relative link
+therefore compares as the relative string it is.
+
+
 ## assert_file_permissions
 --------------
 > `assert_file_permissions "mode" "file"`

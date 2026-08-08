@@ -154,3 +154,82 @@ function assert_file_permissions() {
 
   bashunit::state::add_assertions_passed
 }
+
+##
+# Whether $1 is a symbolic link, regardless of whether its target resolves.
+#
+# Every other filesystem assertion here follows the link: -f and -e report on
+# the target, so a link and the file it points at are indistinguishable, and a
+# dangling link reads as "does not exist" -- the same answer as a path that was
+# never created. This is the one that can tell them apart.
+#
+# Arguments: $1 - path, $2 - unused, $3 - optional label override
+##
+function assert_is_symlink() {
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+
+  if [ ! -L "$expected" ]; then
+    bashunit::assert::fail_with "${3:-}" "${expected}" "to be a symlink" "but is not a symlink"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+##
+# Whether $1 exists and is not a symbolic link.
+# Arguments: $1 - path, $2 - unused, $3 - optional label override
+##
+function assert_is_not_symlink() {
+  bashunit::assert::should_skip && return 0
+
+  local expected="$1"
+
+  if [ -L "$expected" ]; then
+    bashunit::assert::fail_with "${3:-}" "${expected}" "not to be a symlink" "but is a symlink"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+##
+# Whether $2 is a symlink pointing at $1.
+#
+# Compares the target as written, via `readlink`, not the fully resolved path.
+# Two reasons: it is what the test author wrote in the first place, so a failure
+# names something they recognise; and `readlink -f` is GNU-only, so resolving
+# would need a second implementation for BSD/macOS. A relative link therefore
+# compares as the relative string it is.
+#
+# Arguments: $1 - expected target, $2 - path, $3 - optional label override
+##
+function assert_symlink_to() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 2 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected_target, path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  local path="$2"
+
+  if [ ! -L "$path" ]; then
+    bashunit::assert::fail_with "${3:-}" "${path}" "to be a symlink" "but is not a symlink"
+    return
+  fi
+
+  local actual
+  actual=$(readlink "$path")
+
+  if [ "$actual" != "$expected" ]; then
+    bashunit::assert::fail_with "${3:-}" "${expected}" \
+      "to be the target of ${path}, but got " "${actual}"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}

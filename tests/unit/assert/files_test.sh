@@ -249,3 +249,119 @@ function test_unsuccessful_assert_file_permissions_when_file_does_not_exist() {
     "$file" "to have permissions 644" "but the file does not exist")" \
     "$(assert_file_permissions "644" "$file")"
 }
+
+# Symlinks are invisible to every other filesystem assertion: -f and -e follow
+# the link, so a link and its target look identical, and a dangling link reads
+# as "does not exist" -- the same as a path that was never created.
+function symlink_fixture_dir() {
+  bashunit::temp_dir
+}
+
+function test_successful_assert_is_symlink() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/target"
+  ln -s "$dir/target" "$dir/link"
+
+  assert_empty "$(assert_is_symlink "$dir/link")"
+}
+
+# The case nothing covers today: a link whose target is gone is still a link.
+function test_successful_assert_is_symlink_when_the_target_is_missing() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  ln -s "$dir/never_created" "$dir/dangling"
+
+  assert_empty "$(assert_is_symlink "$dir/dangling")"
+}
+
+function test_unsuccessful_assert_is_symlink_on_a_regular_file() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/plain"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert is symlink on a regular file" \
+      "$dir/plain" "to be a symlink" "but is not a symlink")" \
+    "$(assert_is_symlink "$dir/plain")"
+}
+
+function test_successful_assert_is_not_symlink() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/plain"
+
+  assert_empty "$(assert_is_not_symlink "$dir/plain")"
+}
+
+function test_unsuccessful_assert_is_not_symlink() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/target"
+  ln -s "$dir/target" "$dir/link"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert is not symlink" \
+      "$dir/link" "not to be a symlink" "but is a symlink")" \
+    "$(assert_is_not_symlink "$dir/link")"
+}
+
+function test_successful_assert_symlink_to() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/target"
+  ln -s "$dir/target" "$dir/link"
+
+  assert_empty "$(assert_symlink_to "$dir/target" "$dir/link")"
+}
+
+function test_unsuccessful_assert_symlink_to_reports_both_targets() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/target"
+  ln -s "$dir/target" "$dir/link"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert symlink to reports both targets" \
+      "$dir/other" "to be the target of ${dir}/link, but got " "$dir/target")" \
+    "$(assert_symlink_to "$dir/other" "$dir/link")"
+}
+
+function test_unsuccessful_assert_symlink_to_on_a_regular_file() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip && return
+  fi
+  local dir
+  dir=$(symlink_fixture_dir)
+  : >"$dir/plain"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert symlink to on a regular file" \
+      "$dir/plain" "to be a symlink" "but is not a symlink")" \
+    "$(assert_symlink_to "$dir/whatever" "$dir/plain")"
+}
