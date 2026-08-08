@@ -14,6 +14,7 @@
 - Performance: `assert_within_delta` uses fixed-point arithmetic for common values, with a `bc`/`awk` fallback for unsupported inputs (about 6.6x faster) (#979)
 - Performance: Spy assertions and call counters use builtins instead of `cat` and command substitutions (about 6.5x faster) (#978)
 - Performance: `assert_contains_ignore_case` uses Bash's `nocasematch` where available, falling back to `tr` on Bash 3.0 (about 10x faster) (#977)
+- Build: standalone binaries omit source comments while preserving heredoc content and source markers, reducing the current artifact by about 22% (#990)
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed

@@ -19,6 +19,14 @@ function build_dependencies() {
   (cd "$ROOT_DIR" && bash -c 'source ./build.sh && build::dependencies')
 }
 
+function build_unoptimized() {
+  (cd "$ROOT_DIR" && _BASHUNIT_BUILD_SKIP_COMMENT_STRIP=true bash build.sh "$1")
+}
+
+function build_optimizer_is_available() {
+  command -v shfmt >/dev/null 2>&1 && command -v jq >/dev/null 2>&1
+}
+
 # Every src file the dev entrypoint sources (except dev-only helpers) must also be
 # bundled by build.sh, otherwise its functions are missing from the distributable
 # single-file binary (regressions: bench #0.31.0, watch #735).
@@ -91,6 +99,40 @@ function test_build_embed_docs_fails_on_missing_markers() {
   assert_not_equals 0 "$exit_code"
   # The artifact must not be replaced with a truncated file on failure.
   assert_contains "echo hi" "$(cat "$file")"
+}
+
+function test_build_strip_comments_preserves_heredocs_shebang_and_source_markers() {
+  if ! build_optimizer_is_available; then
+    bashunit::skip "shfmt and jq are required for standalone optimization"
+    return
+  fi
+
+  local file
+  file=$(bashunit::temp_file)
+  cat >"$file" <<'EOF'
+#!/usr/bin/env bash
+# src/example.sh
+# ordinary source comment
+value="# quoted value"
+cat <<'DOC'
+# Markdown heading
+  # indented example comment
+DOC
+printf '%s\n' "$value" # inline source comment
+EOF
+
+  (cd "$ROOT_DIR" && bash -c 'source ./build.sh && build::strip_comments "$1"' _ "$file")
+
+  assert_same "#!/usr/bin/env bash" "$(head -n 1 "$file")"
+  assert_file_contains "$file" "# src/example.sh"
+  assert_file_not_contains "$file" "ordinary source comment"
+  assert_file_not_contains "$file" "inline source comment"
+  assert_file_contains "$file" '# Markdown heading'
+  assert_file_contains "$file" '  # indented example comment'
+  assert_file_contains "$file" 'value="# quoted value"'
+  local exit_code=0
+  bash -n "$file" || exit_code=$?
+  assert_equals 0 "$exit_code"
 }
 
 # build::process_file emits a file's body and *then* recurses into its `source`
@@ -273,10 +315,26 @@ function test_built_binary_contains_no_source_lines() {
   local build_dir
   build_dir=$(bashunit::temp_dir)
 
-  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+  build_unoptimized "$build_dir" >/dev/null 2>&1
 
   assert_file_exists "$build_dir/bashunit"
   assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
+}
+
+function test_built_binary_stays_below_500_kib() {
+  if ! build_optimizer_is_available; then
+    bashunit::skip "shfmt and jq are required for standalone optimization"
+    return
+  fi
+
+  local build_dir
+  build_dir=$(bashunit::temp_dir)
+
+  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+
+  local bytes
+  bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
+  assert_less_or_equal_than 512000 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {
@@ -295,7 +353,7 @@ function test_built_binary_defines_watch_run() {
   local build_dir
   build_dir=$(bashunit::temp_dir)
 
-  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+  build_unoptimized "$build_dir" >/dev/null 2>&1
 
   assert_file_exists "$build_dir/bashunit"
   assert_equals "1" "$(grep -c 'function bashunit::watch::run()' "$build_dir/bashunit")"
@@ -305,7 +363,7 @@ function test_built_binary_embeds_each_src_file_exactly_once() {
   local build_dir
   build_dir=$(bashunit::temp_dir)
 
-  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+  build_unoptimized "$build_dir" >/dev/null 2>&1
 
   local duplicated
   duplicated=$(grep -E '^# src/[a-z_0-9/]+\.sh$' "$build_dir/bashunit" | sort | uniq -d)
@@ -319,7 +377,7 @@ function test_built_binary_defines_each_bashunit_function_exactly_once() {
   local build_dir
   build_dir=$(bashunit::temp_dir)
 
-  (cd "$ROOT_DIR" && bash build.sh "$build_dir") >/dev/null 2>&1
+  build_unoptimized "$build_dir" >/dev/null 2>&1
 
   # Scoped to the bashunit:: namespace on purpose: an unqualified `^function `
   # also matches the example code inside the embedded docs/assertions.md heredoc.

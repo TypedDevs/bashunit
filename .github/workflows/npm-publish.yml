@@ -33,6 +33,18 @@ jobs:
           npm install -g npm@latest
           echo "npm version after upgrade: $(npm -v)"
 
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+
+      - name: Install standalone build optimizer
+        shell: bash
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.13.1
+
       - name: Build bashunit single-file binary
         shell: bash
         run: ./build.sh bin
