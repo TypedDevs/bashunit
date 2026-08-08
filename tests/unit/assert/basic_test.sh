@@ -217,3 +217,42 @@ function test_assert_false_fails_when_the_command_does_not_exist() {
       "unknown command: definitely_not_a_command")" \
     "$(assert_false "definitely_not_a_command")"
 }
+
+# Arguments as real arguments. The single-argument forms are untouched: one
+# argument still means "run this as a command word", so every existing call
+# behaves exactly as before.
+function test_assert_true_accepts_a_command_with_arguments() {
+  assert_empty "$(assert_true test -d /tmp)"
+}
+
+function test_assert_true_variadic_fails_when_the_command_fails() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true variadic fails when the command fails" \
+      "command or function with zero exit code" "but got " \
+      "exit code: 1")" \
+    "$(assert_true test -d /definitely/not/a/directory)"
+}
+
+function test_assert_false_accepts_a_command_with_arguments() {
+  assert_empty "$(assert_false test -d /definitely/not/a/directory)"
+}
+
+function test_assert_true_variadic_does_not_re_parse_its_arguments() {
+  local dir
+  dir=$(bashunit::temp_dir)
+  # A path containing a space survives, because it is passed as one argument
+  # rather than re-split out of a single string.
+  mkdir -p "$dir/two words"
+
+  assert_empty "$(assert_true test -d "$dir/two words")"
+}
+
+function test_assert_true_variadic_reports_a_missing_command() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert true variadic reports a missing command" \
+      "command or function with zero exit code" "but got " \
+      "unknown command: definitely_not_a_command --flag")" \
+    "$(assert_true definitely_not_a_command --flag)"
+}
