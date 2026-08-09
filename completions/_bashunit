@@ -66,6 +66,7 @@ _bashunit() {
     '(-e --env --boot)'{-e,--env,--boot}'[Load a custom env/bootstrap file]:file:_files' \
     '(-f --filter)'{-f,--filter}'[Only run tests matching the name]:name:' \
     '--tag[Only run tests with matching @tag; supports a&&b and !a]:tag:' \
+    '--exclude-filter[Skip tests whose name matches]:name:' \
     '--exclude-tag[Skip tests with matching @tag]:tag:' \
     '--log-junit[Write JUnit XML report]:file:_files' \
     '--report-junit[Write JUnit XML report]:file:_files' \

@@ -45,6 +45,18 @@ function bashunit::main::cmd_test() {
       filter="$2"
       shift
       ;;
+    --exclude-filter)
+      if [ -z "$BASHUNIT_EXCLUDE_FILTER" ]; then
+        BASHUNIT_EXCLUDE_FILTER="$2"
+      else
+        BASHUNIT_EXCLUDE_FILTER="$BASHUNIT_EXCLUDE_FILTER,$2"
+      fi
+      # export -n like every other flag (#839): find_total_tests reads this
+      # from a plain subshell, which inherits it without exporting, and a real
+      # export would leak into nested ./bashunit runs.
+      export -n BASHUNIT_EXCLUDE_FILTER
+      shift
+      ;;
     --tag)
       bashunit::main::require_valid_tag_expression_or_exit "$2"
       if [ -z "$tag_filter" ]; then

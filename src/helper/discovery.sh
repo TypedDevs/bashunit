@@ -70,6 +70,25 @@ function bashunit::helper::get_functions_to_run() {
   for fn in $function_names; do
     local _fn_match=false
     case "$fn" in ${prefix}_*${filter}*) _fn_match=true ;; esac
+    # --exclude-filter wins over the include filter, mirroring how
+    # --exclude-tag beats --tag. Read from the environment rather than passed
+    # in, so the header count and the runner cannot apply different selections
+    # (they call this from different places, one of them a subshell).
+    if [ "$_fn_match" = true ] && [ -n "${BASHUNIT_EXCLUDE_FILTER:-}" ]; then
+      local _old_ifs="$IFS"
+      IFS=','
+      local _excl
+      for _excl in $BASHUNIT_EXCLUDE_FILTER; do
+        _excl=${_excl/test_/}
+        [ -z "$_excl" ] && continue
+        case "$fn" in ${prefix}_*${_excl}*)
+          _fn_match=false
+          break
+          ;;
+        esac
+      done
+      IFS="$_old_ifs"
+    fi
     if [ "$_fn_match" = true ]; then
       local _dup=false
       case "$filtered_functions" in *" $fn"*) _dup=true ;; esac

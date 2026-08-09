@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Skip tests whose name matches (comma-separated; the counterpart of --filter)
+_BASHUNIT_DEFAULT_EXCLUDE_FILTER=""
 # Print the tests that would run and exit, without running any of them
 _BASHUNIT_DEFAULT_LIST_TESTS="false"
 # Rendering for --list: text (one id per line) or json
@@ -307,6 +309,9 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 : "${BASHUNIT_RERUN_FAILED:=$_BASHUNIT_DEFAULT_RERUN_FAILED}"
 # No bare LIST/LIST_FORMAT aliases: `LIST` is far too generic a name to let the
 # environment turn a real run into a no-op query.
+# No bare EXCLUDE_FILTER alias: a generic name silently dropping tests from a
+# run is exactly the kind of surprise the unprefixed forms caused (#866).
+: "${BASHUNIT_EXCLUDE_FILTER:=$_BASHUNIT_DEFAULT_EXCLUDE_FILTER}"
 : "${BASHUNIT_LIST_TESTS:=$_BASHUNIT_DEFAULT_LIST_TESTS}"
 : "${BASHUNIT_LIST_FORMAT:=$_BASHUNIT_DEFAULT_LIST_FORMAT}"
 # No bare SNAPSHOT_UPDATE alias either: rewriting files on disk is the last

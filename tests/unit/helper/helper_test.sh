@@ -628,3 +628,68 @@ function test_get_function_line_number_preserves_caller_extdebug() {
 
   assert_same "on" "$state"
 }
+
+# --exclude-filter: the name-based counterpart of --exclude-tag (#1009).
+# The value is read from BASHUNIT_EXCLUDE_FILTER so that the header count and
+# the runner apply the same selection without threading a new argument through
+# every call site.
+_ORIG_EXCLUDE_FILTER=""
+
+function _with_exclude_filter() { # $1 exclude value, $2.. get_functions_to_run args
+  local value="$1"
+  shift
+  _ORIG_EXCLUDE_FILTER="${BASHUNIT_EXCLUDE_FILTER:-}"
+  BASHUNIT_EXCLUDE_FILTER="$value"
+  bashunit::helper::get_functions_to_run "$@"
+  BASHUNIT_EXCLUDE_FILTER="$_ORIG_EXCLUDE_FILTER"
+}
+
+function test_exclude_filter_removes_matching_functions() {
+  local functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
+
+  assert_same "prefix_alpha prefix_gamma" \
+    "$(_with_exclude_filter "beta" "prefix" "" "${functions[*]}")"
+}
+
+function test_exclude_filter_keeps_everything_when_nothing_matches() {
+  local functions=("prefix_alpha" "prefix_beta")
+
+  assert_same "prefix_alpha prefix_beta" \
+    "$(_with_exclude_filter "nope" "prefix" "" "${functions[*]}")"
+}
+
+function test_exclude_filter_is_or_across_comma_separated_values() {
+  local functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
+
+  assert_same "prefix_gamma" \
+    "$(_with_exclude_filter "alpha,beta" "prefix" "" "${functions[*]}")"
+}
+
+function test_exclude_filter_wins_over_the_include_filter() {
+  local functions=("prefix_user_list" "prefix_user_admin")
+
+  assert_same "prefix_user_list" \
+    "$(_with_exclude_filter "admin" "prefix" "user" "${functions[*]}")"
+}
+
+function test_exclude_filter_can_empty_the_selection() {
+  local functions=("prefix_alpha")
+
+  assert_same "" \
+    "$(_with_exclude_filter "alpha" "prefix" "" "${functions[*]}")"
+}
+
+# Symmetry with --filter, which strips a leading test_ from the value.
+function test_exclude_filter_tolerates_a_test_prefix_in_the_value() {
+  local functions=("test_alpha" "test_beta")
+
+  assert_same "test_beta" \
+    "$(_with_exclude_filter "test_alpha" "test" "" "${functions[*]}")"
+}
+
+function test_no_exclude_filter_keeps_previous_behaviour() {
+  local functions=("prefix_alpha" "prefix_beta")
+
+  assert_same "prefix_alpha prefix_beta" \
+    "$(_with_exclude_filter "" "prefix" "" "${functions[*]}")"
+}
