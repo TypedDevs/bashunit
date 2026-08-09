@@ -1,5 +1,46 @@
 #!/usr/bin/env bash
 
+_BASHUNIT_RUNNER_ORDERED_FNS_OUT=""
+
+##
+# Puts a file's already-filtered test functions in the order they will run,
+# into _BASHUNIT_RUNNER_ORDERED_FNS_OUT.
+#
+# Under --random-order the seed is mixed with a stable per-file value (cksum of
+# the path) so different files get different orders while staying reproducible
+# for the resolved seed. Extracted from call_test_functions so `--list` reports
+# the order a run would actually use instead of re-deriving it (#1007).
+#
+# Arguments: $1 script path, $2 space-separated test function names
+##
+function bashunit::runner::order_functions_for_script() {
+  local script="$1"
+  local fns="${2:-}"
+  local IFS=$' \t\n'
+
+  local -a ordered=()
+  local fn
+  for fn in $fns; do
+    [ -z "$fn" ] && continue
+    ordered[${#ordered[@]}]="$fn"
+  done
+
+  if bashunit::env::is_random_order_enabled && [ "${#ordered[@]}" -gt 1 ]; then
+    local _base _crc _fn_seed
+    _base=$(bashunit::env::seed)
+    _crc=$(printf '%s' "$script" | cksum | cut -d' ' -f1)
+    _fn_seed=$(((_base + _crc) & 2147483647))
+    local -a _shuffled_fns=()
+    local _sfn
+    while IFS= read -r _sfn; do
+      [ -n "$_sfn" ] && _shuffled_fns[${#_shuffled_fns[@]}]=$_sfn
+    done < <(printf '%s\n' "${ordered[@]+"${ordered[@]}"}" | bashunit::math::shuffle "$_fn_seed")
+    ordered=("${_shuffled_fns[@]+"${_shuffled_fns[@]}"}")
+  fi
+
+  _BASHUNIT_RUNNER_ORDERED_FNS_OUT="${ordered[*]+${ordered[*]}}"
+}
+
 ##
 # Runs the given test functions of a script (sequentially, or one background
 # worker per test under --parallel).
@@ -14,29 +55,12 @@ function bashunit::runner::call_test_functions() {
   local -a functions_to_run=()
   local functions_to_run_count=0
 
-  local _fn
-  for _fn in $cached_functions; do
-    [ -z "$_fn" ] && continue
-    functions_to_run[functions_to_run_count]="$_fn"
+  bashunit::runner::order_functions_for_script "$script" "$cached_functions"
+  local _ofn
+  for _ofn in $_BASHUNIT_RUNNER_ORDERED_FNS_OUT; do
+    functions_to_run[functions_to_run_count]="$_ofn"
     functions_to_run_count=$((functions_to_run_count + 1))
   done
-
-  # Randomize function order within this file. The seed is mixed with a stable
-  # per-file value (cksum of the path) so different files get different orders
-  # while staying reproducible for the resolved seed.
-  if bashunit::env::is_random_order_enabled && [ "$functions_to_run_count" -gt 1 ]; then
-    local _base _crc _fn_seed
-    _base=$(bashunit::env::seed)
-    _crc=$(printf '%s' "$script" | cksum | cut -d' ' -f1)
-    _fn_seed=$(((_base + _crc) & 2147483647))
-    local -a _shuffled_fns=()
-    local _sfn
-    while IFS= read -r _sfn; do
-      [ -n "$_sfn" ] && _shuffled_fns[${#_shuffled_fns[@]}]=$_sfn
-    done < <(printf '%s\n' "${functions_to_run[@]+"${functions_to_run[@]}"}" | bashunit::math::shuffle "$_fn_seed")
-    functions_to_run=("${_shuffled_fns[@]+"${_shuffled_fns[@]}"}")
-    functions_to_run_count=${#functions_to_run[@]}
-  fi
 
   if [ "$functions_to_run_count" -le 0 ]; then
     return

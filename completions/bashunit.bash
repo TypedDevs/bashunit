@@ -16,8 +16,8 @@ _BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"
 
 _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 --coverage-min --coverage-paths --coverage-report --coverage-report-html \
---debug --detailed --env --exclude-tag --fail-on-risky --failures-only \
---filter --help --jobs --log-gha --log-junit --login --no-color \
+--debug --detailed --dry-run --env --exclude-tag --fail-on-risky --failures-only \
+--filter --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \
 --no-progress --no-snapshot-create --output --parallel --profile \
 --random-order --report-html \
@@ -74,6 +74,10 @@ _bashunit_completions() {
     ;;
   -e | --env | --boot)
     COMPREPLY=($(compgen -f -- "$cur"))
+    return 0
+    ;;
+  --list-format)
+    COMPREPLY=($(compgen -W "text json" -- "$cur"))
     return 0
     ;;
   -f | --filter | --tag | --exclude-tag | --retry | --seed | --shard | --test-timeout)

@@ -255,6 +255,10 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Print the tests that would run and exit, without running any of them
+_BASHUNIT_DEFAULT_LIST_TESTS="false"
+# Rendering for --list: text (one id per line) or json
+_BASHUNIT_DEFAULT_LIST_FORMAT="text"
 # Rewrite existing snapshots from the actual value instead of comparing
 _BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
 # Record a snapshot the first time it is asserted (false = a missing one fails)
@@ -301,6 +305,10 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 # lives here rather than inline in rerun.sh so every BASHUNIT_* default has one
 # home; bashunit::rerun::is_enabled keeps its :- guard for callers that unset it.
 : "${BASHUNIT_RERUN_FAILED:=$_BASHUNIT_DEFAULT_RERUN_FAILED}"
+# No bare LIST/LIST_FORMAT aliases: `LIST` is far too generic a name to let the
+# environment turn a real run into a no-op query.
+: "${BASHUNIT_LIST_TESTS:=$_BASHUNIT_DEFAULT_LIST_TESTS}"
+: "${BASHUNIT_LIST_FORMAT:=$_BASHUNIT_DEFAULT_LIST_FORMAT}"
 # No bare SNAPSHOT_UPDATE alias either: rewriting files on disk is the last
 # setting that should be reachable by a generic name from the environment.
 : "${BASHUNIT_SNAPSHOT_UPDATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE}"
@@ -563,6 +571,10 @@ function bashunit::env::is_snapshot_create_enabled() {
 
 function bashunit::env::is_snapshot_update_enabled() {
   [ "$BASHUNIT_SNAPSHOT_UPDATE" = "true" ]
+}
+
+function bashunit::env::is_list_enabled() {
+  [ "$BASHUNIT_LIST_TESTS" = "true" ]
 }
 
 function bashunit::env::is_fail_on_risky_enabled() {

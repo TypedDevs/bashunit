@@ -87,6 +87,8 @@ _bashunit() {
     '--seed[Seed for random order]:seed:' \
     '--shard[Run shard i of n]:shard:' \
     '--rerun-failed[Replay only the tests that failed on the last run]' \
+    '(--list --dry-run)'{--list,--dry-run}'[Print the tests that would run, then exit]' \
+    '--list-format[Rendering for --list]:format:(text json)' \
     '--snapshot-update[Rewrite existing snapshots from the actual value]' \
     '--no-snapshot-create[Fail instead of recording a missing snapshot]' \
     '--snapshot-report-unused[List snapshot files no test resolved]' \
