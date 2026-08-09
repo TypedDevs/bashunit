@@ -101,9 +101,11 @@ with ANSI escape sequences removed.
 
 ## Placeholders
 
-Snapshot files can contain placeholder tokens to ignore variable parts of the output.
-By default the token `::ignore::` will match any text. You can override it with the
-`BASHUNIT_SNAPSHOT_PLACEHOLDER` environment variable.
+Output that changes between runs — a timestamp, a PID, a temp path, a duration — would
+make a snapshot fail every time. A placeholder marks the part you have decided not to
+pin, so the rest still is.
+
+The default token is `::ignore::`; override it with `BASHUNIT_SNAPSHOT_PLACEHOLDER`.
 
 ```bash [Example]
 # snapshot file content
@@ -112,6 +114,47 @@ echo 'Run at ::ignore::' > snapshots/example.snapshot
 # test
 assert_match_snapshot "Run at $(date)"
 ```
+
+### What a placeholder does and does not relax
+
+Everything outside the placeholder still has to match **exactly**. A placeholder is not
+a wildcard for the whole snapshot: `a::ignore::b` matches `a123b`, and does *not* match
+`XXX` or `aXXXc`.
+
+| Snapshot | Matches | Does not match |
+|---|---|---|
+| `a::ignore::b` | `a123b`, `ab` (an empty region matches) | `XXX`, `aXXXc` |
+| `::ignore::tail` | `anythingtail` | `anythingelse` |
+| `a=::ignore:: b=::ignore::` | `a=1 b=2` | `a=1 c=2` |
+| `::ignore::` alone | any value at all | — |
+
+Text around a placeholder is compared literally, so regex metacharacters need no
+escaping: a snapshot reading `cost $5.00 (x) ::ignore::` matches that exact prefix and
+nothing else.
+
+A placeholder may span several lines. Given this snapshot:
+
+```
+Report
+::ignore::
+Done
+```
+
+`Report\nany\nnumber\nof lines\nDone` matches, and unrelated output does not.
+
+### Placeholders and `--snapshot-update`
+
+`--snapshot-update` **skips** any snapshot containing a placeholder and says so. The
+placeholder is a deliberate decision about what not to pin, and re-recording would
+silently replace it with whatever this run happened to produce. Remove the placeholder
+first if you really want the literal value.
+
+### Requirements
+
+Matching a placeholder needs `perl` or `awk`; one of them is present on essentially any
+system that runs bash. If neither is, the assertion **fails** with a message saying so
+rather than reporting a pass it could not verify. Snapshots without a placeholder are a
+plain string comparison and need neither.
 
 ## Finding unused snapshots
 
