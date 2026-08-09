@@ -18,8 +18,8 @@
 - Internal: Split `src/runner.sh` and `src/coverage.sh` into focused modules with no behavior change; see [ADR-010](adrs/adr-010-src-module-directories.md) (#924, #925)
 
 ### Fixed
-- Snapshot placeholders no longer report a false match without `perl`. The fallback matched line by line, so a multi-line snapshot whose placeholder sat on its own line contributed a bare `.*` that matched any input; it now uses `awk` over the whole value, and fails loudly if neither tool is available
-- Snapshots resolve correctly when the test file is given as an absolute path. The path was always prefixed with `./`, so the real snapshot was never read and a stray one was recorded under the current directory, silently passing every snapshot assertion in the run
+- Snapshot placeholders no longer match anything at all without `perl`; the `grep` fallback treated a multi-line pattern as separate alternatives, and now uses `awk` over the whole value (#1002)
+- Snapshots resolve correctly for an absolute test path; the `./` prefix made them cwd-relative, so a stray snapshot was recorded and every snapshot assertion passed (#1002)
 - `assert_false` no longer passes when the command does not exist; exit codes 127 and 126 fail both boolean assertions, because the command never ran (#982)
 - `assert_have_been_called_times` and `assert_have_been_called_nth_with` report a usage error for a non-numeric count instead of leaking a raw `integer expression expected` (#984)
 - A failing test whose output quotes a shell-error phrase is no longer also reported as a runtime error (#992)
