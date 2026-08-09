@@ -140,6 +140,15 @@ function bashunit::main::cmd_test() {
       BASHUNIT_RERUN_FAILED=true
       export -n BASHUNIT_RERUN_FAILED
       ;;
+    --list | --dry-run)
+      BASHUNIT_LIST_TESTS=true
+      export -n BASHUNIT_LIST_TESTS
+      ;;
+    --list-format)
+      BASHUNIT_LIST_FORMAT="$2"
+      export -n BASHUNIT_LIST_FORMAT
+      shift
+      ;;
     --snapshot-update)
       BASHUNIT_SNAPSHOT_UPDATE=true
       export -n BASHUNIT_SNAPSHOT_UPDATE

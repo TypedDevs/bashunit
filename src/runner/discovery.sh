@@ -120,6 +120,15 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::restore_workdir
       continue
     fi
+    # --list stops here: every selection step has been applied, and nothing
+    # below this point can run without producing side effects (#1007).
+    if bashunit::env::is_list_enabled; then
+      bashunit::runner::list_functions "$test_file" "$functions_for_script"
+      bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
+      bashunit::runner::clean_set_up_and_tear_down_after_script
+      bashunit::runner::restore_workdir
+      continue
+    fi
     # Render header BEFORE set_up_before_script so user sees activity immediately
     bashunit::runner::render_running_file_header "$test_file"
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook

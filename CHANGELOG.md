@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
 - The coverage engine in use is reported by `--verbose`, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` that the running Bash cannot honour now warns instead of being silently ignored (#1005)
 
 ### Changed

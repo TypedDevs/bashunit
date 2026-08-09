@@ -83,6 +83,8 @@ bashunit test tests/ --parallel --simple
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
+| `--list`, `--dry-run`          | Print the tests that would run, then exit         |
+| `--list-format <fmt>`          | Rendering for `--list`: `text` (default) or `json` |
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
@@ -646,6 +648,73 @@ locally, commit the file, and let CI run with this flag.
 
 The two snapshot flags are opposites and pair up: `--snapshot-update` records
 deliberately, `--no-snapshot-create` forbids recording by accident.
+
+### List
+
+> `bashunit test --list` · `bashunit test --dry-run`
+
+Print the tests that *would* run, then exit without running any of them.
+`--dry-run` is an alias, for anyone arriving from shellspec.
+
+```bash
+./bashunit --list tests/
+# tests/unit/assert_test.sh::test_assert_equals
+# tests/unit/assert_test.sh::test_assert_contains
+# ...
+# 412 tests
+```
+
+Test ids go to **stdout**, one `path::function` per line; the count goes to
+**stderr**, so the list pipes cleanly into `grep`, `fzf` or a CI matrix.
+
+Every selection mechanism applies exactly as it would in a real run —
+`--filter`, `--tag`, `--exclude-tag`, `--shard`, `--rerun-failed`,
+`--random-order --seed`, and `file::fn` / `file:LINE`. That makes it the way to
+answer questions that previously needed a full run per answer:
+
+```bash
+# Are the shards balanced?
+for i in 1 2 3 4; do
+  printf '%s: ' "$i"; ./bashunit --list --shard "$i/4" tests/ | wc -l
+done
+
+# Which tests does this filter actually select?
+./bashunit --list --filter "snapshot" tests/
+
+# What order will seed 42 use?
+./bashunit --list --random-order --seed 42 tests/
+```
+
+An empty selection prints nothing and exits **0** — this is a query, not a run,
+so a filter matching nothing is an empty answer rather than the "No tests found"
+error a real run reports.
+
+Test files are still *sourced* (that is how their functions are discovered), but
+no test body and no lifecycle hook runs, and no report file is written.
+
+A test using a `@data_provider` is listed **once**, by function: the id is the
+thing you can pass back to `--filter`, while the number of executions it expands
+to is a property of the run.
+
+#### JSON output
+
+> `bashunit test --list --list-format json`
+
+```bash
+./bashunit --list --list-format json tests/ | jq '.tests[] | select(.tags[]? == "slow")'
+```
+
+```json
+{
+  "count": 2,
+  "tests": [
+    { "file": "tests/unit/example_test.sh", "function": "test_slow_path",
+      "name": "Slow path", "line": 12, "tags": ["slow"] }
+  ]
+}
+```
+
+An unsupported format is rejected rather than silently falling back to `text`.
 
 ### Rerun failed
 

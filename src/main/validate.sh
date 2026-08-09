@@ -125,6 +125,17 @@ function bashunit::main::validate_config_or_exit() {
     exit 1
     ;;
   esac
+
+  # Same shape as --output above: an unrecognised name would otherwise fall
+  # through to the default renderer and look like it worked.
+  case "${BASHUNIT_LIST_FORMAT:-}" in
+  text | json) ;;
+  *)
+    printf "%sError: unsupported list format '%s' for --list-format. Supported: text, json.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_LIST_FORMAT}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
 }
 
 ##

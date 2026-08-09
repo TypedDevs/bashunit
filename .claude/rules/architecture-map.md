@@ -61,7 +61,8 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `runner/parallel.sh` | job-slot waiting (`wait -n` or poll), running-job count, spinner |
 | `runner/hooks.sh` | set_up/tear_down (test + script scope), hook failure records, mock clearing, EXIT cleanup |
 | `runner/provider.sh` | `@data_provider` argument parsing |
-| `runner/exec.sh` | `run_test`, the capture-subshell body, retry, timeout watchdog, per-file dispatch |
+| `runner/exec.sh` | `run_test`, the capture-subshell body, retry, timeout watchdog, per-file dispatch, `order_functions_for_script` (the run order a seed produces) |
+| `runner/list.sh` | `--list`/`--dry-run`: emits selected tests instead of running them; hooks in after all filtering, before any hook |
 | `runner/discovery.sh` | `load_test_files` (the per-file loop), `functions_for_script` |
 | `runner/bench.sh` | benchmark file loop and bench function dispatch |
 | `helper/index.sh` | aggregator only — sources the `src/helper/` module below |

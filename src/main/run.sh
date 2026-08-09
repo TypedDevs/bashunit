@@ -66,7 +66,11 @@ function bashunit::main::exec_tests() {
     bashunit::parallel::init
   fi
 
-  if bashunit::env::is_tap_output_enabled; then
+  # --list is a query: stdout must be nothing but test ids, so the banner and
+  # the seed line are suppressed and the run header never prints (#1007).
+  if bashunit::env::is_list_enabled; then
+    :
+  elif bashunit::env::is_tap_output_enabled; then
     printf "TAP version 13\n"
   else
     bashunit::console_header::print_version_with_env "$filter" "${test_files[@]}"
@@ -79,7 +83,7 @@ function bashunit::main::exec_tests() {
       BASHUNIT_SEED=$RANDOM
       export -n BASHUNIT_SEED
     fi
-    if ! bashunit::env::is_tap_output_enabled; then
+    if ! bashunit::env::is_tap_output_enabled && ! bashunit::env::is_list_enabled; then
       bashunit::console_header::print_random_order_seed "$BASHUNIT_SEED"
     fi
   fi
@@ -99,6 +103,15 @@ function bashunit::main::exec_tests() {
   fi
 
   bashunit::runner::load_test_files "$filter" "$tag_filter" "$exclude_tag_filter" "${test_files[@]}"
+
+  # Nothing ran, so there are no results to render, no reports to write and no
+  # rerun cache to update. An empty selection is a valid answer to a query, so
+  # this exits 0 where a real run would exit 1 with "No tests found".
+  if bashunit::env::is_list_enabled; then
+    bashunit::runner::list_render_summary
+    bashunit::env::cleanup_run_output_dir
+    exit 0
+  fi
 
   if bashunit::parallel::is_enabled; then
     wait
