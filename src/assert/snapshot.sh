@@ -220,23 +220,32 @@ function bashunit::snapshot::match_with_placeholder() {
   local regex="^${escaped//$token/(.|\\n)*}$"
 
   if command -v perl >/dev/null 2>&1; then
-    echo "$actual" | REGEX="$regex" perl -0 -e '
+    printf '%s' "$actual" | REGEX="$regex" perl -0 -e '
       my $r = $ENV{REGEX};
       my $input = join("", <STDIN>);
       exit($input =~ /$r/s ? 0 : 1);
     ' && return 0 || return 1
-  else
-    # No perl: build the pattern exactly like the perl branch — swap the
-    # placeholder for a token that survives escaping, escape the regex
-    # metacharacters, then turn the token into `.*`. (The previous order,
-    # escaping after inserting `.*`, escaped the `.*` itself and broke every
-    # fallback match.) grep matches line-by-line, so unlike the perl branch a
-    # placeholder cannot span multiple lines here.
-    local fallback="${snapshot//$placeholder/$token}"
-    fallback=$(printf '%s' "$fallback" | sed -e 's/[.[\\^$*+?{}()|]/\\&/g')
-    fallback="^${fallback//$token/.*}$"
-    echo "$actual" | grep -Eq "$fallback" && return 0 || return 1
   fi
+
+  # awk, not grep. grep applies the pattern per line, and a pattern that itself
+  # contains newlines is read as several alternative patterns -- so a multi-line
+  # snapshot whose placeholder sits on its own line contributed a bare `.*`,
+  # which matches any line of any input. That made an unrelated value pass while
+  # comparing nothing. Setting RS to a byte the input cannot contain gives awk
+  # the whole value as one record, so the anchors and the placeholder behave as
+  # they do under perl.
+  if bashunit::dependencies::has_awk; then
+    printf '%s' "$actual" | REGEX="$regex" awk '
+      BEGIN { RS = "\001"; re = ENVIRON["REGEX"] }
+      { exit !($0 ~ re) }
+    ' && return 0 || return 1
+  fi
+
+  # Neither available: refuse rather than guess. A placeholder snapshot that
+  # cannot be evaluated must not report success.
+  printf '%sCannot match a snapshot placeholder: neither perl nor awk is available.%s\n' \
+    "${_BASHUNIT_COLOR_FAILED:-}" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+  return 1
 }
 
 # Writes the resolved snapshot path into _BASHUNIT_SNAPSHOT_FILE_OUT (no fork).
@@ -255,7 +264,11 @@ function bashunit::snapshot::resolve_file() {
 
   # dirname via parameter expansion. `dirname "foo.sh"` (no slash) is ".", which
   # `${src%/*}` cannot yield, so special-case the slashless path.
-  local src="${BASH_SOURCE[2]}"
+  #
+  # $4 exists for the tests: BASH_SOURCE[2] is the test file only when this is
+  # reached through assert_match_snapshot, so a test calling it directly would
+  # otherwise resolve against the runner's own source.
+  local src="${4:-${BASH_SOURCE[2]}}"
   local dir_part
   case "$src" in
   */*) dir_part="${src%/*}" ;;
@@ -272,7 +285,14 @@ function bashunit::snapshot::resolve_file() {
     name="$name.$_BASHUNIT_HELPER_VARNAME_OUT"
   fi
 
-  _BASHUNIT_SNAPSHOT_FILE_OUT="./${dir_part}/snapshots/${test_file}.${name}.snapshot"
+  # An absolute directory must stay absolute. Prefixing "./" turned
+  # "/abs/dir" into a path relative to the caller's cwd, so the real snapshot
+  # was never read and a stray one was recorded elsewhere -- every snapshot
+  # assertion in that run passed while comparing nothing.
+  case "$dir_part" in
+  /*) _BASHUNIT_SNAPSHOT_FILE_OUT="${dir_part}/snapshots/${test_file}.${name}.snapshot" ;;
+  *) _BASHUNIT_SNAPSHOT_FILE_OUT="./${dir_part}/snapshots/${test_file}.${name}.snapshot" ;;
+  esac
 }
 
 function bashunit::snapshot::initialize() {

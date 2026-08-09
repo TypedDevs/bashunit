@@ -262,3 +262,104 @@ function test_snapshot_resolve_file_uses_explicit_hint_verbatim() {
 
   assert_same "/tmp/custom.snapshot" "$_BASHUNIT_SNAPSHOT_FILE_OUT"
 }
+
+# resolve_file used to prefix "./" unconditionally, so an absolute test path
+# became "./" + "/abs/dir" -- a path relative to the *current* directory. The
+# real snapshot was never read and a stray one was recorded under the caller's
+# cwd, so every snapshot assertion in that run passed while comparing nothing.
+function test_resolve_file_keeps_an_absolute_directory_absolute() {
+  bashunit::snapshot::resolve_file "" "test_example" "" "/abs/dir/my_test.sh"
+
+  assert_same "/abs/dir/snapshots/my_test_sh.test_example.snapshot" \
+    "$_BASHUNIT_SNAPSHOT_FILE_OUT"
+}
+
+function test_resolve_file_keeps_a_relative_directory_relative() {
+  bashunit::snapshot::resolve_file "" "test_example" "" "tests/unit/my_test.sh"
+
+  assert_same "./tests/unit/snapshots/my_test_sh.test_example.snapshot" \
+    "$_BASHUNIT_SNAPSHOT_FILE_OUT"
+}
+
+# A path with no slash yields dir_part "." and therefore a doubled "./". That is
+# the shape this function has always produced and the comment above it says so
+# deliberately; it resolves identically, so it is pinned rather than tidied.
+function test_resolve_file_handles_a_slashless_path() {
+  bashunit::snapshot::resolve_file "" "test_example" "" "my_test.sh"
+
+  assert_same "././snapshots/my_test_sh.test_example.snapshot" \
+    "$_BASHUNIT_SNAPSHOT_FILE_OUT"
+}
+
+function test_resolve_file_includes_the_snapshot_name_when_given() {
+  bashunit::snapshot::resolve_file "" "test_example" "stderr" "tests/my_test.sh"
+
+  assert_same "./tests/snapshots/my_test_sh.test_example.stderr.snapshot" \
+    "$_BASHUNIT_SNAPSHOT_FILE_OUT"
+}
+
+# The placeholder marks a region of the snapshot the author chose not to pin.
+# These cover the whole surface, and deliberately include the negative cases:
+# a placeholder must not turn the assertion into one that always passes.
+function snapshot_with() { # $1 snapshot content -> prints the path
+  local path="$(bashunit::temp_dir)/placeholder.snapshot"
+  printf '%s' "$1" >"$path"
+  printf '%s' "$path"
+}
+
+function test_placeholder_matches_a_varying_region_mid_line() {
+  assert_empty "$(assert_match_snapshot "a123b" "$(snapshot_with 'a::ignore::b')")"
+}
+
+function test_placeholder_matches_at_the_start_and_end() {
+  assert_empty "$(assert_match_snapshot "anythingtail" "$(snapshot_with '::ignore::tail')")"
+  assert_empty "$(assert_match_snapshot "headanything" "$(snapshot_with 'head::ignore::')")"
+}
+
+function test_placeholder_matches_an_empty_region() {
+  assert_empty "$(assert_match_snapshot "ab" "$(snapshot_with 'a::ignore::b')")"
+}
+
+function test_several_placeholders_in_one_snapshot() {
+  assert_empty "$(assert_match_snapshot "a=1 b=2" "$(snapshot_with 'a=::ignore:: b=::ignore::')")"
+}
+
+function test_a_lone_placeholder_matches_any_value() {
+  assert_empty "$(assert_match_snapshot "literally anything" "$(snapshot_with '::ignore::')")"
+}
+
+function test_placeholder_spans_multiple_lines() {
+  local snapshot actual
+  snapshot=$(snapshot_with "$(printf 'A\n::ignore::\nZ')")
+  actual=$(printf 'A\nq\nw\nZ')
+
+  assert_empty "$(assert_match_snapshot "$actual" "$snapshot")"
+}
+
+# The important half. Without these a placeholder could silently become
+# "match anything" and the assertion would report success while comparing
+# nothing -- which is exactly what the pre-awk fallback did for the multi-line
+# case.
+function test_placeholder_still_requires_the_surrounding_text() {
+  assert_not_empty "$(assert_match_snapshot "XXX" "$(snapshot_with 'a::ignore::b')")"
+}
+
+function test_placeholder_rejects_a_differing_suffix() {
+  assert_not_empty "$(assert_match_snapshot "aXXXc" "$(snapshot_with 'a::ignore::b')")"
+}
+
+function test_multi_line_placeholder_rejects_unrelated_output() {
+  local snapshot
+  snapshot=$(snapshot_with "$(printf 'A\n::ignore::\nZ')")
+
+  assert_not_empty "$(assert_match_snapshot "NOPE" "$snapshot")"
+}
+
+# Regex metacharacters in the snapshot are literal text, not pattern syntax.
+function test_regex_metacharacters_around_a_placeholder_are_literal() {
+  local snapshot
+  snapshot=$(snapshot_with 'cost $5.00 (x) ::ignore::')
+
+  assert_empty "$(assert_match_snapshot 'cost $5.00 (x) Z' "$snapshot")"
+  assert_not_empty "$(assert_match_snapshot 'cost 999 (x) Z' "$snapshot")"
+}
