@@ -28,7 +28,7 @@ function tear_down_after_script() {
 }
 
 function set_up() {
-  ./build.sh "$TMP_DIR" >/dev/null
+  _BASHUNIT_BUILD_SKIP_COMMENT_STRIP=true ./build.sh "$TMP_DIR" >/dev/null
   if [[ "$ACTIVE_INTERNET" == true ]] && [[ "$HAS_GIT" == true ]]; then
     LATEST_VERSION="$(bashunit::helper::get_latest_tag)"
   else

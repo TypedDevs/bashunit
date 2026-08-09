@@ -110,8 +110,10 @@ invisible to it.
 3.                        strip every `^source ` line from the result
 4. build::embed_docs      swap docs/assertions.md into a heredoc between the markers
                           in src/cli/doc.sh, so the binary needs no docs/ directory
-5. build::assert_valid_syntax   bash -n
-6. build::verify (-v)     run the whole suite against the built binary
+5. build::strip_comments  parse the assembled Bash and remove source comments, retaining
+                          the shebang, heredoc content and `# src/...` boundary markers
+6. build::assert_valid_syntax   bash -n
+7. build::verify (-v)     run the whole suite against the built binary
 ```
 
 **Step 2 is why an aggregator may hold only `source` lines.** A file's body is emitted *before*

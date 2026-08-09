@@ -62,6 +62,15 @@ function build::generate_bin() {
   # Embed the assertions.md docs into the binary
   build::embed_docs "$out"
 
+  # Keep the source tree documented without shipping those comments in every
+  # standalone binary. A shell parser is required here: the built file contains
+  # heredocs whose Markdown and example scripts legitimately start with `#`.
+  # Structural build tests use the raw form so platforms without release-tool
+  # dependencies still exercise bundling; release builds always take this path.
+  if [[ ${_BASHUNIT_BUILD_SKIP_COMMENT_STRIP:-false} != true ]]; then
+    build::strip_comments "$out"
+  fi
+
   build::assert_valid_syntax "$out"
 }
 
@@ -151,6 +160,42 @@ function build::embed_docs() {
     # Print everything after the end marker
     sed -n '/# __BASHUNIT_EMBEDDED_DOCS_END__/,$p' "$file" | tail -n +2
   } >"$temp_file"
+
+  mv "$temp_file" "$file"
+  chmod u+x "$file"
+}
+
+function build::strip_comments() {
+  local file=$1
+  local temp_file="${file}.tmp"
+
+  local dependency
+  for dependency in shfmt jq; do
+    if ! command -v "$dependency" >/dev/null 2>&1; then
+      echo "❌ $dependency is required to build the standalone binary" >&2
+      return 1
+    fi
+  done
+
+  # shfmt distinguishes real shell comments from `#` text inside heredocs. Keep
+  # the executable shebang and the tiny source-boundary markers: they make the
+  # flattened artifact navigable and let the build tests detect duplicate
+  # embeds. Everything else remains available in the repository source.
+  local jq_filter='walk(
+    if type == "object" and has("Comments") then
+      .Comments |= map(select(
+        ((.Text // "") | startswith("!")) or
+        ((.Text // "") | test("^ src/.*\\.sh$"))
+      ))
+    else . end
+  )'
+  if ! shfmt -ln=bash --to-json <"$file" \
+    | jq "$jq_filter" \
+    | shfmt -i 2 --from-json >"$temp_file"; then
+    rm -f "$temp_file"
+    echo "❌ Failed to strip comments from $file" >&2
+    return 1
+  fi
 
   mv "$temp_file" "$file"
   chmod u+x "$file"
