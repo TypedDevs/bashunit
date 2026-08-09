@@ -70,6 +70,33 @@ function bashunit::reports::add_test() {
     "$file":*) line="${_BASHUNIT_TEST_LOCATION##*:}" ;;
   esac
 
+  # Under --parallel this runs inside the per-test worker, so the arrays below
+  # are appended to in a process that is about to exit and the parent rebuilds
+  # nothing -- every report came out with zero tests while the run stayed green.
+  # Spool the row to a run-scoped file as well, the same way
+  # --snapshot-report-unused crosses the fork boundary, and replay it in the
+  # parent before the writers run.
+  #
+  # The arrays are still filled here rather than skipped: this function is also
+  # called directly, in the parent, by the reports unit tests, and returning
+  # early left them asserting against arrays nothing had touched. The parent
+  # never reaches this path for a real parallel test, so replaying the spool
+  # cannot double-count.
+  #
+  # Fields are base64-encoded because a failure message carries newlines and
+  # arbitrary text, either of which would break a delimited line.
+  if bashunit::parallel::is_enabled; then
+    printf '%s|%s|%s|%s|%s|%s|%s\n' \
+      "$(bashunit::helper::encode_base64 "$file")" \
+      "$(bashunit::helper::encode_base64 "$test_name")" \
+      "$(bashunit::helper::encode_base64 "$status")" \
+      "$(bashunit::helper::encode_base64 "$duration")" \
+      "$(bashunit::helper::encode_base64 "$assertions")" \
+      "$(bashunit::helper::encode_base64 "$failure_message")" \
+      "$(bashunit::helper::encode_base64 "$line")" \
+      >>"${REPORTS_OUTPUT_PATH:-/dev/null}" 2>/dev/null || true
+  fi
+
   _BASHUNIT_REPORTS_TEST_FILES[${#_BASHUNIT_REPORTS_TEST_FILES[@]}]="$file"
   _BASHUNIT_REPORTS_TEST_NAMES[${#_BASHUNIT_REPORTS_TEST_NAMES[@]}]="$test_name"
   _BASHUNIT_REPORTS_TEST_STATUSES[${#_BASHUNIT_REPORTS_TEST_STATUSES[@]}]="$status"
@@ -77,4 +104,27 @@ function bashunit::reports::add_test() {
   _BASHUNIT_REPORTS_TEST_DURATIONS[${#_BASHUNIT_REPORTS_TEST_DURATIONS[@]}]="$duration"
   _BASHUNIT_REPORTS_TEST_FAILURES[${#_BASHUNIT_REPORTS_TEST_FAILURES[@]}]="$failure_message"
   _BASHUNIT_REPORTS_TEST_LINES[${#_BASHUNIT_REPORTS_TEST_LINES[@]}]="$line"
+}
+
+##
+# Replays rows spooled by parallel workers into the report arrays, in the order
+# they were written. Called once in the parent before any report is generated;
+# a no-op sequentially, where add_test filled the arrays directly.
+##
+function bashunit::reports::load_spooled() {
+  bashunit::reports::is_enabled || return 0
+  [ -f "${REPORTS_OUTPUT_PATH:-}" ] || return 0
+
+  local file test_name status duration assertions failure_message line n
+  while IFS='|' read -r file test_name status duration assertions failure_message line; do
+    [ -n "$file" ] || continue
+    local n=${#_BASHUNIT_REPORTS_TEST_FILES[@]}
+    _BASHUNIT_REPORTS_TEST_FILES[n]=$(bashunit::helper::decode_base64 "$file")
+    _BASHUNIT_REPORTS_TEST_NAMES[n]=$(bashunit::helper::decode_base64 "$test_name")
+    _BASHUNIT_REPORTS_TEST_STATUSES[n]=$(bashunit::helper::decode_base64 "$status")
+    _BASHUNIT_REPORTS_TEST_DURATIONS[n]=$(bashunit::helper::decode_base64 "$duration")
+    _BASHUNIT_REPORTS_TEST_ASSERTIONS[n]=$(bashunit::helper::decode_base64 "$assertions")
+    _BASHUNIT_REPORTS_TEST_FAILURES[n]=$(bashunit::helper::decode_base64 "$failure_message")
+    _BASHUNIT_REPORTS_TEST_LINES[n]=$(bashunit::helper::decode_base64 "$line")
+  done <"$REPORTS_OUTPUT_PATH"
 }

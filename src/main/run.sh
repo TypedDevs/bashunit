@@ -127,6 +127,8 @@ function bashunit::main::exec_tests() {
     bashunit::snapshot::report_unused ${test_files[@]+"${test_files[@]}"}
   fi
 
+  bashunit::reports::load_spooled
+
   if [ -n "$BASHUNIT_LOG_JUNIT" ]; then
     bashunit::reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
   fi
