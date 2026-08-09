@@ -55,6 +55,49 @@ function test_unsuccessful_assert_command_not_found() {
     "$(assert_command_not_found "$(fake_function)")"
 }
 
+function test_successful_assert_command_available_for_external_command() {
+  assert_empty "$(assert_command_available bash)"
+}
+
+function test_successful_assert_command_available_for_builtin() {
+  assert_empty "$(assert_command_available printf)"
+}
+
+function test_successful_assert_command_available_for_shell_function() {
+  function available_shell_function() {
+    # shellcheck disable=SC2317  # Invoked indirectly by the availability lookup.
+    :
+  }
+
+  assert_empty "$(assert_command_available available_shell_function)"
+}
+
+function test_unsuccessful_assert_command_available_names_command() {
+  local command_name="bashunit_command_that_does_not_exist"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert command available names command" \
+      "$command_name" "to be available but was " "not found")" \
+    "$(assert_command_available "$command_name")"
+}
+
+function test_assert_command_available_is_symmetric_with_assert_command_not_found() {
+  local command_name="printf"
+  local exit_code=0
+  "$command_name" >/dev/null 2>&1 || exit_code=$?
+
+  assert_assertion_passes assert_command_available "$command_name"
+  assert_assertion_fails assert_command_not_found "" "" "$exit_code"
+
+  command_name="bashunit_command_that_does_not_exist"
+  exit_code=0
+  "$command_name" >/dev/null 2>&1 || exit_code=$?
+
+  assert_assertion_fails assert_command_available "$command_name"
+  assert_assertion_passes assert_command_not_found "" "" "$exit_code"
+}
+
 function test_successful_assert_exec() {
   # shellcheck disable=SC2317
   function fake_command() {

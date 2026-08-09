@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
-# @data_provider provide_core_comparison_assertions
-function test_core_comparison_assertions_reject_missing_arguments() {
+# @data_provider provide_core_assertions_requiring_arguments
+function test_core_assertions_reject_missing_arguments() {
   local assertion=$1
   local required=$2
   local signature=$3
   local output exit_code=0
 
-  if [ "$required" -eq 3 ]; then
+  if [ "$required" -eq 1 ]; then
+    output=$("$assertion" 2>&1) || exit_code=$?
+  elif [ "$required" -eq 3 ]; then
     output=$("$assertion" "first" "second" 2>&1) || exit_code=$?
   else
     output=$("$assertion" "first" 2>&1) || exit_code=$?
@@ -19,7 +21,7 @@ function test_core_comparison_assertions_reject_missing_arguments() {
     "$output"
 }
 
-function provide_core_comparison_assertions() {
+function provide_core_assertions_requiring_arguments() {
   bashunit::data_set assert_same 2 "expected, actual"
   bashunit::data_set assert_equals 2 "expected, actual"
   bashunit::data_set assert_not_same 2 "expected, actual"
@@ -41,6 +43,7 @@ function provide_core_comparison_assertions() {
   bashunit::data_set assert_line_count 2 "expected, actual"
   bashunit::data_set assert_string_matches_format 2 "format, actual"
   bashunit::data_set assert_string_not_matches_format 2 "format, actual"
+  bashunit::data_set assert_command_available 1 "command"
 }
 
 function test_empty_values_still_count_as_supplied_arguments() {

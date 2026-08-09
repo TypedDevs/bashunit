@@ -118,7 +118,7 @@ cleaned up automatically and are safe under `--parallel`.
 
 ## Assertions
 
-`bashunit doc` prints the full catalogue (73 assertions) locally; `bashunit doc contains`
+`bashunit doc` prints the full catalogue (75 assertions) locally; `bashunit doc contains`
 filters it. The same list is at https://bashunit.com/assertions. **Do not invent names**
 — a wrong name is a runtime error, not a failed assertion.
 

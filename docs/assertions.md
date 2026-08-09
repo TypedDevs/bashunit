@@ -22,7 +22,7 @@ to narrow it (`bashunit doc json`).
 | **Strings** | [assert_contains](#assert-contains) · [assert_not_contains](#assert-not-contains) · [assert_contains_ignore_case](#assert-contains-ignore-case) · [assert_matches](#assert-matches) · [assert_not_matches](#assert-not-matches) · [assert_string_starts_with](#assert-string-starts-with) · [assert_string_not_starts_with](#assert-string-not-starts-with) · [assert_string_ends_with](#assert-string-ends-with) · [assert_string_not_ends_with](#assert-string-not-ends-with) · [assert_string_matches_format](#assert-string-matches-format) · [assert_string_not_matches_format](#assert-string-not-matches-format) · [assert_empty](#assert-empty) · [assert_not_empty](#assert-not-empty) · [assert_line_count](#assert-line-count) |
 | **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_within_delta](#assert-within-delta) |
 | **Dates** | [assert_date_equals](#assert-date-equals) · [assert_date_before](#assert-date-before) · [assert_date_after](#assert-date-after) · [assert_date_within_range](#assert-date-within-range) · [assert_date_within_delta](#assert-date-within-delta) |
-| **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
+| **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_available](#assert-command-available) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
 | **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
 | **Directories** | [assert_directory_exists](#assert-directory-exists) · [assert_directory_not_exists](#assert-directory-not-exists) · [assert_is_directory](#assert-is-directory) · [assert_is_directory_empty](#assert-is-directory-empty) · [assert_is_directory_not_empty](#assert-is-directory-not-empty) · [assert_is_directory_readable](#assert-is-directory-readable) · [assert_is_directory_not_readable](#assert-is-directory-not-readable) · [assert_is_directory_writable](#assert-is-directory-writable) · [assert_is_directory_not_writable](#assert-is-directory-not-writable) |
 | **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
@@ -828,6 +828,33 @@ function test_failure() {
   foo
 
   assert_general_error
+}
+```
+:::
+
+## assert_command_available
+> `assert_command_available "command"`
+
+Reports an error if `command` is not available.
+
+Availability uses the same `command -v` check as
+[`bashunit::is_command_available`](/globals#bashunit-is-command-available), so
+external commands, shell builtins and shell functions are supported. The command
+is only resolved; it is not executed.
+
+::: code-group
+```bash [Example]
+function test_dependencies_are_installed() {
+  assert_command_available bash
+  assert_command_available jq
+}
+
+function test_shell_function_is_available() {
+  function project_build() {
+    make build
+  }
+
+  assert_command_available project_build
 }
 ```
 :::

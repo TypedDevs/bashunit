@@ -814,6 +814,29 @@ function assert_general_error() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# Reports an error unless the command resolves through
+# bashunit::is_command_available. Builtins and shell functions therefore follow
+# the same availability semantics as the public helper.
+# Arguments: $1 - command name
+##
+function assert_command_available() {
+  bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "command" "$#"
+    return 2
+  fi
+
+  local command_name=$1
+
+  if ! bashunit::is_command_available "$command_name"; then
+    bashunit::assertion_failed "$command_name" "not found" "to be available but was "
+    return
+  fi
+
+  bashunit::assertion_passed
+}
+
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"} # Capture $? before guard check
   local label_override=""

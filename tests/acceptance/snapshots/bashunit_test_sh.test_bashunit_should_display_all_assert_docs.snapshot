@@ -319,6 +319,18 @@ Use assert_exec if you want to pass a command as a string and check its exit cod
 - assert_exit_code is the full version of this assertion where you can specify the expected exit code.
 
 
+## assert_command_available
+--------------
+> `assert_command_available "command"`
+
+Reports an error if `command` is not available.
+
+Availability uses the same `command -v` check as
+`bashunit::is_command_available`(/globals#bashunit-is-command-available), so
+external commands, shell builtins and shell functions are supported. The command
+is only resolved; it is not executed.
+
+
 ## assert_command_not_found
 --------------
 > `assert_command_not_found`
