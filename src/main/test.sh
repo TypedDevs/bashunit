@@ -46,6 +46,7 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --tag)
+      bashunit::main::require_valid_tag_expression_or_exit "$2"
       if [ -z "$tag_filter" ]; then
         tag_filter="$2"
       else

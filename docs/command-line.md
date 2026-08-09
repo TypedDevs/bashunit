@@ -61,7 +61,7 @@ bashunit test tests/ --parallel --simple
 | `-a, --assert <fn> <args>`     | Run a standalone assert function                 |
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
-| `--tag <name>`                 | Only run tests with matching `@tag` (repeatable) |
+| `--tag <expr>`                 | Only run tests with matching `@tag`; supports `a&&b` and `!a` |
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
 | `--output <format>`            | Output format (`tap` for TAP version 13)         |
 | `-w, --watch`                  | Watch files and re-run tests on change           |
@@ -150,12 +150,14 @@ logic across names; `--exclude-tag` wins when a test matches both.
 
 ::: code-group
 ```bash [Annotate tests]
+# @tags integration        # applies to every test in this file
+
 # @tag slow
 function test_heavy_computation() {
   ...
 }
 
-# @tag integration
+# @tag api
 function test_api_call() {
   ...
 }
@@ -166,6 +168,47 @@ bashunit test tests/ --tag slow --tag integration
 bashunit test tests/ --exclude-tag integration
 ```
 :::
+
+#### File-level tags
+
+`# @tags <list>` applies every name in the list to **all** tests in that file,
+so tagging a whole suite no longer means repeating `# @tag` above each function.
+It may appear anywhere at top level, and unions with per-function `# @tag`
+(a name carried at both levels is not duplicated).
+
+Note the plural: `# @tags a b` is a space-separated list applying to the file,
+while `# @tag a b` is a single tag literally named `a b` applying to the next
+function.
+
+#### Tag expressions
+
+A single `--tag` value can combine terms with `&&` (AND) and `!` (NOT):
+
+```bash
+bashunit test tests/ --tag 'slow&&db'      # both tags
+bashunit test tests/ --tag '!slow'         # everything except slow
+bashunit test tests/ --tag 'db&&!slow'     # db, but not slow
+```
+
+Repeating the flag still means OR *between* expressions, so existing usage is
+unchanged:
+
+```bash
+bashunit test tests/ --tag 'db&&slow' --tag api   # (db AND slow) OR api
+```
+
+`!` matches untagged tests too — `--tag '!slow'` selects a test with no tags at
+all. `--exclude-tag` continues to win over any expression match.
+
+A malformed expression (`'a&&'`, `'&&'`, a bare `'!'`) is rejected with an error
+and a non-zero exit, rather than silently selecting nothing — or, in the case of
+a trailing `&&`, silently behaving like the term before it.
+
+Use [`--list`](#list) to check what an expression actually selects:
+
+```bash
+bashunit --list --tag 'db&&!slow' tests/
+```
 
 ### Output format
 

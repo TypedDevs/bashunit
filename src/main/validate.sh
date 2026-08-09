@@ -139,6 +139,55 @@ function bashunit::main::validate_config_or_exit() {
 }
 
 ##
+# Validates a `--tag` value and exits non-zero on a malformed expression.
+#
+# A value is a comma-separated list of expressions, each `term&&term&&...` with
+# an optional leading `!` per term. An empty term (`a&&`, `&&`, a bare `!`) can
+# never match, so without this check the flag would silently select nothing —
+# the failure shape #871/#873 closed for other settings.
+# Arguments: $1 - the raw --tag value
+##
+function bashunit::main::require_valid_tag_expression_or_exit() {
+  local value="${1:-}"
+  local IFS=','
+  local expression
+  for expression in $value; do
+    local rest="$expression"
+    local term more=true
+    # Mirrors bashunit::helper::tag_expression_matches: one term per iteration,
+    # stopping after the last, so `a&&` produces an empty final term instead of
+    # ending the loop early and looking valid.
+    while [ "$more" = true ]; do
+      case "$rest" in
+      *"&&"*)
+        term="${rest%%&&*}"
+        rest="${rest#*&&}"
+        ;;
+      *)
+        term="$rest"
+        rest=""
+        more=false
+        ;;
+      esac
+      term="${term#"${term%%[![:space:]]*}"}"
+      term="${term%"${term##*[![:space:]]}"}"
+      case "$term" in
+      '!'*)
+        term="${term#!}"
+        term="${term#"${term%%[![:space:]]*}"}"
+        ;;
+      esac
+      if [ -z "$term" ]; then
+        printf "%sError: invalid tag expression '%s' for --tag. \
+Use 'a', 'a&&b', '!a' or 'a&&!b'.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED}" "$expression" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+        exit 1
+      fi
+    done
+  done
+}
+
+##
 # Validates a `--shard <index>/<total>` spec and exports the parts, or prints an
 # error and exits non-zero. Requires numeric index/total with 1 <= index <= total.
 ##
