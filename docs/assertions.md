@@ -837,8 +837,8 @@ function test_failure() {
 
 Reports an error if `command` is not available.
 
-Availability uses the same `command -v` check as
-[`bashunit::is_command_available`](/globals#bashunit-is-command-available), so
+Availability uses the same `command -v` check as the
+[bashunit::is_command_available](/globals#bashunit-is-command-available) helper, so
 external commands, shell builtins and shell functions are supported. The command
 is only resolved; it is not executed.
 

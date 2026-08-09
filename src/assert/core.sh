@@ -818,7 +818,13 @@ function assert_general_error() {
 # Reports an error unless the command resolves through
 # bashunit::is_command_available. Builtins and shell functions therefore follow
 # the same availability semantics as the public helper.
-# Arguments: $1 - command name
+#
+# Reports through bashunit::assert::fail_with, not the public
+# bashunit::assertion_failed facade: the facade adds a stack frame, which would
+# make the label fallback report the facade's name for an assertion failing
+# outside a test_* frame. Pinned by tests/acceptance/bashunit_hook_failure_test.sh.
+#
+# Arguments: $1 - command name, $2 - label override (optional)
 ##
 function assert_command_available() {
   bashunit::assert::should_skip && return 0
@@ -828,13 +834,15 @@ function assert_command_available() {
   fi
 
   local command_name=$1
+  local label_override="${2:-}"
 
   if ! bashunit::is_command_available "$command_name"; then
-    bashunit::assertion_failed "$command_name" "not found" "to be available but was "
+    bashunit::assert::fail_with "${label_override:-}" \
+      "$command_name" "to be available but was" "not found"
     return
   fi
 
-  bashunit::assertion_passed
+  bashunit::state::add_assertions_passed
 }
 
 function assert_command_not_found() {

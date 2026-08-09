@@ -78,24 +78,20 @@ function test_unsuccessful_assert_command_available_names_command() {
   assert_same \
     "$(bashunit::console_results::print_failed_test \
       "Unsuccessful assert command available names command" \
-      "$command_name" "to be available but was " "not found")" \
+      "$command_name" "to be available but was" "not found")" \
     "$(assert_command_available "$command_name")"
 }
 
-function test_assert_command_available_is_symmetric_with_assert_command_not_found() {
-  local command_name="printf"
-  local exit_code=0
-  "$command_name" >/dev/null 2>&1 || exit_code=$?
+function test_unsuccessful_assert_command_available_with_custom_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "my custom label" \
+      "bashunit_command_that_does_not_exist" "to be available but was" "not found")" \
+    "$(assert_command_available "bashunit_command_that_does_not_exist" "my custom label")"
+}
 
-  assert_assertion_passes assert_command_available "$command_name"
-  assert_assertion_fails assert_command_not_found "" "" "$exit_code"
-
-  command_name="bashunit_command_that_does_not_exist"
-  exit_code=0
-  "$command_name" >/dev/null 2>&1 || exit_code=$?
-
-  assert_assertion_fails assert_command_available "$command_name"
-  assert_assertion_passes assert_command_not_found "" "" "$exit_code"
+function test_assert_command_available_moves_the_assertion_counters() {
+  assert_assertion_passes assert_command_available printf
+  assert_assertion_fails assert_command_available "bashunit_command_that_does_not_exist"
 }
 
 function test_successful_assert_exec() {
