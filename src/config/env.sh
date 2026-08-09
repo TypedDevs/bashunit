@@ -689,6 +689,7 @@ RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
 # diff it against what is on disk. Appended from the test subshells, only when
 # the flag is on, so a normal run pays nothing.
 SNAPSHOT_USED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/snapshots-used"
+REPORTS_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/reports"
 
 # Shared temp directory, initialized once at startup for performance.
 BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
+
 ## [0.45.0](https://github.com/TypedDevs/bashunit/compare/0.44.0...0.45.0) - 2026-08-09
 
 ### Added
