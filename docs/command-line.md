@@ -61,6 +61,7 @@ bashunit test tests/ --parallel --simple
 | `-a, --assert <fn> <args>`     | Run a standalone assert function                 |
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
+| `--exclude-filter <name>`      | Skip tests whose name matches (repeatable)       |
 | `--tag <expr>`                 | Only run tests with matching `@tag`; supports `a&&b` and `!a` |
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
 | `--output <format>`            | Output format (`tap` for TAP version 13)         |
@@ -139,6 +140,27 @@ Run only tests matching the given name.
 bashunit test tests/ --filter "user_login"
 ```
 :::
+
+### Exclude filter
+
+> `bashunit test --exclude-filter "name"`
+
+Skip tests whose name matches — the name-based counterpart of
+[`--exclude-tag`](#tags), for when you want to drop a handful of tests without
+tagging them first.
+
+```bash
+bashunit test tests/ --exclude-filter "slow_network"
+bashunit test tests/ --exclude-filter "slow" --exclude-filter "flaky"  # OR
+bashunit test tests/ --filter user --exclude-filter admin              # user, not admin
+```
+
+Matching is identical to `--filter`, the flag is repeatable (a test is skipped
+if it matches **any** value), and exclusion wins when a name matches both — the
+same precedence `--exclude-tag` has over `--tag`.
+
+Excluded tests are **not** reported as skipped: they are never selected, so they
+do not appear in the header count either.
 
 ### Tags
 
