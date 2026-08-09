@@ -120,7 +120,8 @@ Options:
   -a, --assert <fn> <args>    Run a standalone assert function (deprecated: use 'bashunit assert')
   -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
-  --tag <name>                Only run tests with matching @tag (repeatable, OR logic)
+  --tag <expr>                Only run tests with matching @tag (repeatable, OR logic).
+                              Supports 'a&&b' (AND) and '!a' (NOT)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
   --log-junit, --report-junit <file>  Write JUnit XML report
   -j, --jobs <N|auto>         Run tests in parallel with max N concurrent jobs ("auto" = CPU cores)

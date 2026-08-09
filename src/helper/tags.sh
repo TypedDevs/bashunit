@@ -46,6 +46,21 @@ function bashunit::helper::build_tags_map() {
     _BASHUNIT_TAGS_MAP_TAGS[count]="$tags"
     count=$((count + 1))
   done < <(awk '
+    # An uninitialised awk variable used as a subscript is the empty string,
+    # not 0, so the first function would land in order[""] and be unreachable
+    # from the numeric loop in END.
+    BEGIN { n = 0 }
+    # File-level tags: `# @tags a b` applies to every test in the file. Checked
+    # before the singular rule and before the generic comment rule, and space
+    # separated because it is a list rather than one tag per line.
+    /^[[:space:]]*#[[:space:]]*@tags[[:space:]]/ {
+      t = $0
+      sub(/^[[:space:]]*#[[:space:]]*@tags[[:space:]]+/, "", t)
+      sub(/[[:space:]]+$/, "", t)
+      gsub(/[[:space:]]+/, ",", t)
+      if (t != "") { filetags = (filetags == "" ? t : filetags "," t) }
+      next
+    }
     /^[[:space:]]*#[[:space:]]*@tag[[:space:]]/ {
       t = $0
       sub(/^[[:space:]]*#[[:space:]]*@tag[[:space:]]+/, "", t)
@@ -57,11 +72,35 @@ function bashunit::helper::build_tags_map() {
       fn = $0
       sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
       sub(/[[:space:]]*\(\).*/, "", fn)
-      if (tags != "") printf "%s\t%s\n", fn, tags
+      # Buffered rather than printed here so a `# @tags` line placed below the
+      # functions still applies to them (single pass, order preserved).
+      order[n] = fn
+      own[n] = tags
+      n++
       tags = ""
       next
     }
     { tags = "" }
+    END {
+      for (i = 0; i < n; i++) {
+        combined = own[i]
+        if (filetags != "") {
+          combined = (combined == "" ? filetags : combined "," filetags)
+        }
+        if (combined == "") { continue }
+        # Function tags come first (nearest-first, as before); a tag carried at
+        # both levels is emitted once.
+        count = split(combined, parts, ",")
+        out = ""
+        delete seen
+        for (j = 1; j <= count; j++) {
+          if (parts[j] == "" || (parts[j] in seen)) { continue }
+          seen[parts[j]] = 1
+          out = (out == "" ? parts[j] : out "," parts[j])
+        }
+        if (out != "") { printf "%s\t%s\n", order[i], out }
+      }
+    }
   ' "$script" 2>/dev/null)
 }
 
@@ -87,12 +126,90 @@ function bashunit::helper::tags_for_function() {
 
 
 #
+# Whether a comma-separated tag list contains an exact tag.
+# A tag may itself contain spaces (`# @tag needs a db`), so the split is on
+# commas only.
+# Arguments: $1 - comma-separated tags, $2 - tag to find
+#
+function bashunit::helper::_tags_contain() {
+  local fn_tags="$1"
+  local needle="$2"
+  local IFS=','
+  local tag
+  for tag in $fn_tags; do
+    if [ "$tag" = "$needle" ]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
+#
+# Evaluates one tag expression against a function's tags.
+# An expression is `term` or `term&&term&&...`, where a term is a tag name
+# optionally prefixed with `!` to negate it. Surrounding whitespace is ignored.
+# A malformed term (empty, or a bare `!`) matches nothing; the CLI rejects those
+# up front so they cannot silently widen a selection.
+# Arguments: $1 - comma-separated tags for the function, $2 - the expression
+# Returns: 0 when the expression holds, 1 otherwise
+#
+function bashunit::helper::tag_expression_matches() {
+  local fn_tags="$1"
+  local rest="$2"
+
+  # Always consume one term per iteration and stop only after the last one, so
+  # a trailing separator (`a&&`) yields a final empty term and is rejected. A
+  # `while [ -n "$rest" ]` loop would silently treat `a&&` as `a`, and an empty
+  # expression as "matches everything".
+  local term negate more=true
+  while [ "$more" = true ]; do
+    case "$rest" in
+    *"&&"*)
+      term="${rest%%&&*}"
+      rest="${rest#*&&}"
+      ;;
+    *)
+      term="$rest"
+      rest=""
+      more=false
+      ;;
+    esac
+
+    term="${term#"${term%%[![:space:]]*}"}"
+    term="${term%"${term##*[![:space:]]}"}"
+
+    negate=false
+    case "$term" in
+    '!'*)
+      negate=true
+      term="${term#!}"
+      term="${term#"${term%%[![:space:]]*}"}"
+      ;;
+    esac
+
+    if [ -z "$term" ]; then
+      return 1
+    fi
+
+    if bashunit::helper::_tags_contain "$fn_tags" "$term"; then
+      if [ "$negate" = true ]; then
+        return 1
+      fi
+    elif [ "$negate" = false ]; then
+      return 1
+    fi
+  done
+
+  return 0
+}
+
+#
 # Checks if a function's tags match the include/exclude filters.
-# Include uses OR logic (any match passes).
-# Exclude uses OR logic (any match fails).
-# Exclude takes precedence over include.
+# Include is a comma-separated list of expressions, OR'd together: repeated
+# --tag flags arrive comma-joined, so plain tags keep their previous meaning.
+# Exclude uses OR logic (any match fails) and takes precedence over include.
 # Arguments: $1 - comma-separated tags for the function,
-#            $2 - comma-separated include tags (empty = no filter),
+#            $2 - comma-separated include expressions (empty = no filter),
 #            $3 - comma-separated exclude tags (empty = no filter)
 # Returns: 0 if the function should run, 1 if it should be skipped
 #
@@ -115,20 +232,15 @@ function bashunit::helper::function_matches_tags() {
     done
   fi
 
-  # Check include tags (OR logic: any match passes)
+  # Check include expressions (OR logic: any match passes). An untagged
+  # function is not short-circuited here any more: `!slow` must match it.
   if [ -n "$include_tags" ]; then
-    if [ -z "$fn_tags" ]; then
-      return 1
-    fi
     local IFS=','
-    local itag
-    for itag in $include_tags; do
-      local check_tag
-      for check_tag in $fn_tags; do
-        if [ "$check_tag" = "$itag" ]; then
-          return 0
-        fi
-      done
+    local expression
+    for expression in $include_tags; do
+      if bashunit::helper::tag_expression_matches "$fn_tags" "$expression"; then
+        return 0
+      fi
     done
     return 1
   fi

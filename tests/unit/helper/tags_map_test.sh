@@ -61,3 +61,35 @@ function test_tags_map_invalidates_cache_per_script_path() {
   assert_same "single" \
     "$(tags_for "$FIXTURE_TAGS_MAP" "test_single_tag")"
 }
+
+FIXTURE_FILE_TAGS="$(dirname "${BASH_SOURCE[0]}")/../fixtures/tags_map/sample_file_tags.sh"
+FIXTURE_FILE_TAGS_LATE="$(dirname "${BASH_SOURCE[0]}")/../fixtures/tags_map/sample_file_tags_late.sh"
+
+# `# @tags a b` applies to every test in the file, so tagging a whole suite
+# no longer means repeating `# @tag` above every function (#1008).
+function test_file_level_tags_apply_to_a_test_with_no_tags_of_its_own() {
+  assert_same "integration,db" \
+    "$(tags_for "$FIXTURE_FILE_TAGS" "test_only_file_tags")"
+}
+
+function test_file_level_tags_union_with_function_tags_function_first() {
+  assert_same "slow,integration,db" \
+    "$(tags_for "$FIXTURE_FILE_TAGS" "test_file_and_function_tags")"
+}
+
+function test_a_tag_present_at_both_levels_is_not_duplicated() {
+  assert_same "db,integration" \
+    "$(tags_for "$FIXTURE_FILE_TAGS" "test_duplicate_between_file_and_function")"
+}
+
+# "Anywhere at top level": a file tag below the functions still applies.
+function test_file_level_tags_apply_regardless_of_position() {
+  assert_same "smoke" \
+    "$(tags_for "$FIXTURE_FILE_TAGS_LATE" "test_declared_before_the_file_tags")"
+}
+
+# The singular form must not be swallowed by the plural rule or vice versa.
+function test_singular_tag_is_still_function_scoped() {
+  assert_same "" \
+    "$(tags_for "$FIXTURE_TAGS_MAP" "test_no_tags")"
+}
