@@ -13,6 +13,7 @@ FIXTURES_PATH="./tests/acceptance/fixtures/list"
 ALPHA="$FIXTURES_PATH/alpha.sh"
 BETA="$FIXTURES_PATH/beta.sh"
 TAGGED="$FIXTURES_PATH/tagged.sh"
+ORDER="$FIXTURES_PATH/order.sh"
 
 function test_list_prints_every_test_as_file_and_function() {
   local output
@@ -101,21 +102,29 @@ function test_list_shards_cover_every_test_exactly_once() {
 # The ordering a seed produces must be the ordering that seed actually runs,
 # or --list cannot reproduce a random-order failure.
 function test_list_matches_the_execution_order_for_a_seed() {
-  local listed executed expected fn
-  listed="$(./bashunit --list --random-order --seed 42 "$ALPHA" "$BETA" 2>/dev/null | sed 's|.*::||')"
-  executed="$(./bashunit --no-parallel --random-order --seed 42 "$ALPHA" "$BETA" 2>/dev/null |
-    sed 's/\x1b\[[0-9;]*m//g' | grep -oE '^. Passed: .*' | sed 's/^. Passed: //' | sed 's/ *$//')"
+  local dir log listed executed
+  dir="$(bashunit::temp_dir)"
+  log="$dir/order.log"
 
-  # Compare through the same normaliser the result lines are rendered with, so
-  # this pins the ORDER rather than re-encoding how a name is humanised.
-  expected=""
-  for fn in $listed; do
-    expected="$expected$(bashunit::helper::normalize_test_function_name "$fn")
-"
-  done
+  # The fixture records its own execution order, so this compares orders rather
+  # than parsing rendered result lines — those carry ANSI codes and a multi-byte
+  # status glyph whose width depends on the locale.
+  listed="$(./bashunit --list --random-order --seed 42 "$ORDER" 2>/dev/null | sed 's|.*::||')"
+  LIST_ORDER_LOG="$log" ./bashunit --no-parallel --random-order --seed 42 "$ORDER" >/dev/null 2>&1
+  executed="$(cat "$log")"
 
   assert_not_empty "$listed"
-  assert_same "$(printf '%s' "$expected")" "$executed"
+  assert_same "$listed" "$executed"
+}
+
+# Paired with the test above: if the seed did not actually reorder anything,
+# comparing list order to run order would hold trivially.
+function test_a_seed_actually_changes_the_listed_order() {
+  local natural seeded
+  natural="$(./bashunit --list "$ORDER" 2>/dev/null)"
+  seeded="$(./bashunit --list --random-order --seed 42 "$ORDER" 2>/dev/null)"
+
+  assert_not_equals "$natural" "$seeded"
 }
 
 function test_list_runs_no_test_body_and_no_script_hook() {
