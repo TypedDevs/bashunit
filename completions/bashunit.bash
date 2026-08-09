@@ -30,7 +30,7 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
 
 _BASHUNIT_COMPLETIONS_ASSERT_FNS="assert_array_contains assert_array_length \
 assert_array_not_contains assert_arrays_equal assert_assertion_fails \
-assert_assertion_fails_with assert_assertion_passes assert_command_not_found \
+assert_assertion_fails_with assert_assertion_passes assert_command_available assert_command_not_found \
 assert_contains assert_contains_ignore_case assert_date_after \
 assert_date_before assert_date_equals assert_date_within_delta \
 assert_date_within_range assert_directory_exists assert_directory_not_exists \

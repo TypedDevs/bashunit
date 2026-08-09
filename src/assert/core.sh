@@ -814,6 +814,32 @@ function assert_general_error() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# Reports an error unless the command resolves through
+# bashunit::is_command_available, so builtins and shell functions count as
+# available exactly as they do for that helper. The command is resolved, never
+# executed.
+# Arguments: $1 - command, $2 - label override (optional)
+##
+function assert_command_available() {
+  bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "command" "$#"
+    return 2
+  fi
+
+  local command="$1"
+  local label_override="${2:-}"
+
+  if ! bashunit::is_command_available "$command"; then
+    bashunit::assert::fail_with "${label_override:-}" \
+      "${command}" "to be available but was" "not found"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
 function assert_command_not_found() {
   local actual_exit_code=${3-"$?"} # Capture $? before guard check
   local label_override=""
