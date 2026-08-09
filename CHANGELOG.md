@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.45.0](https://github.com/TypedDevs/bashunit/compare/0.44.0...0.45.0) - 2026-08-09
+
 ### Added
 - `assert_is_symlink`, `assert_is_not_symlink` and `assert_symlink_to` assert on a symbolic link itself, which every other filesystem assertion follows through to the target (#981)
 - `assert_true` and `assert_false` accept a command with its arguments — `assert_true test -d /tmp`. A single argument keeps its previous meaning (#994)
