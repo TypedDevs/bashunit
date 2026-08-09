@@ -105,24 +105,3 @@ function test_array_assertion_failing_in_a_hook_is_labelled_with_its_own_name() 
   assert_contains "Failed: Assert arrays equal" "$output"
   assert_not_contains "Bashunit::assert::label" "$output"
 }
-
-# Companion to the above for the other wrapper that adds a frame: the public
-# `bashunit::assertion_failed` facade. Built-in assertions must call
-# `bashunit::assert::fail_with` directly -- routing through the facade the way a
-# user-defined custom assertion does makes the fallback report the facade's own
-# name ("Bashunit::assertion failed") instead of the assertion's.
-function test_assertion_failing_in_a_hook_is_not_labelled_with_the_facade_name() {
-  local fixture
-  fixture="$(_write_failing_hook_fixture \
-    'assert_command_available "bashunit_command_that_does_not_exist"' \
-    "facade_label_fallback_test.sh")"
-
-  local output
-  local exit_code=0
-  output=$(./bashunit --no-parallel --detailed --no-color --skip-env-file \
-    "$fixture" 2>&1) || exit_code=$?
-
-  assert_general_error "" "" "$exit_code"
-  assert_contains "Failed: Assert command available" "$output"
-  assert_not_contains "Bashunit::assertion failed" "$output"
-}

@@ -7,13 +7,17 @@ function test_core_assertions_reject_missing_arguments() {
   local signature=$3
   local output exit_code=0
 
-  if [ "$required" -eq 1 ]; then
-    output=$("$assertion" 2>&1) || exit_code=$?
-  elif [ "$required" -eq 3 ]; then
-    output=$("$assertion" "first" "second" 2>&1) || exit_code=$?
-  else
-    output=$("$assertion" "first" 2>&1) || exit_code=$?
-  fi
+  # One argument short of the signature, whatever the arity. The `+` guard keeps
+  # an empty list expandable under `set -u` on Bash 3.x (a one-argument
+  # assertion is called with nothing at all).
+  local supplied=1
+  local -a args=()
+  while [ "$supplied" -lt "$required" ]; do
+    args[${#args[@]}]="arg${supplied}"
+    supplied=$((supplied + 1))
+  done
+
+  output=$("$assertion" "${args[@]+"${args[@]}"}" 2>&1) || exit_code=$?
 
   assert_same 2 "$exit_code"
   assert_same \

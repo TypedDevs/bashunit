@@ -94,6 +94,18 @@ function test_assert_command_available_moves_the_assertion_counters() {
   assert_assertion_fails assert_command_available "bashunit_command_that_does_not_exist"
 }
 
+# The two never agree about the same command. Both run inside $() so their
+# failures stay in the subshell instead of moving this test's counters.
+function test_assert_command_available_is_the_inverse_of_assert_command_not_found() {
+  # Missing: not_found passes on the 127, available fails.
+  assert_empty "$(assert_command_not_found "$(bashunit_command_that_does_not_exist 2>/dev/null)")"
+  assert_not_empty "$(assert_command_available "bashunit_command_that_does_not_exist")"
+
+  # Present: available passes, not_found fails on the 0.
+  assert_empty "$(assert_command_available printf)"
+  assert_not_empty "$(assert_command_not_found "$(printf '')")"
+}
+
 function test_successful_assert_exec() {
   # shellcheck disable=SC2317
   function fake_command() {
