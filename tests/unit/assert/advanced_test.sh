@@ -65,7 +65,7 @@ function test_successful_assert_command_available_for_builtin() {
 
 function test_successful_assert_command_available_for_shell_function() {
   function available_shell_function() {
-    # shellcheck disable=SC2317  # Invoked indirectly by the availability lookup.
+    # shellcheck disable=SC2317  # Never invoked: the assertion only resolves it.
     :
   }
 

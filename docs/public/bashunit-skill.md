@@ -127,7 +127,7 @@ filters it. The same list is at https://bashunit.com/assertions. **Do not invent
   `assert_string_starts_with`, `assert_string_ends_with`, `assert_empty`, `assert_not_empty`
 - Numbers: `assert_greater_than`, `assert_less_than`, `assert_within_delta`
 - Exit codes: `assert_successful_code`, `assert_general_error`, `assert_exit_code`,
-  `assert_command_not_found`
+  `assert_command_not_found`, `assert_command_available`
 - Files: `assert_file_exists`, `assert_file_contains`, `assert_is_file_empty`,
   `assert_directory_exists`, `assert_file_permissions`
 - Arrays: `assert_array_contains`, `assert_array_length`, `assert_arrays_equal`
