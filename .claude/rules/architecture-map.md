@@ -105,7 +105,7 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `coverage/config.sh` | data-file locations, tracked-file roots, engine selection (`init` resets state owned by several modules) |
 | `coverage/paths.sh` | `normalize_path`, `should_track` and the hot-path track/path caches |
 | `coverage/engine.sh` | DEBUG-trap and xtrace capture, buffering, `finalize`/`cleanup`, parallel merge; only active under `--coverage` |
-| `coverage/lines.sh` | executable-line classification (`_NONEXEC_PATTERN`) and hit-data reading |
+| `coverage/lines.sh` | executable-line classification (fork-free; the report phase's hot path) and hit-data reading |
 | `coverage/stats.sh` | percentages, the precomputed per-file stats cache, threshold gate |
 | `coverage/functions.sh` | function definitions and their line spans |
 | `coverage/branches.sh` | branch extraction + hit computation; **one file on purpose** — the `_branch_*` helpers mutate `extract_branches`'s locals via dynamic scoping |

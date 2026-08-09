@@ -40,16 +40,38 @@ Coverage report written to: coverage/lcov.info
 
 ## How It Works
 
-bashunit uses Bash's built-in `DEBUG` trap mechanism to track line execution:
+bashunit records which lines ran, then classifies and reports them:
 
-1. **Trap Setup**: When coverage is enabled, a DEBUG trap is set that fires before every command execution
-2. **Line Recording**: Each executed line's file path and line number are recorded
-3. **Filtering**: Only files matching your coverage paths (and not excluded) are tracked
-4. **Aggregation**: After tests complete, hit data is aggregated and reported
+1. **Capture**: every executed line's file path and line number is recorded, either from a `DEBUG` trap or from `xtrace` — see [Tracing engine](#tracing-engine)
+2. **Filtering**: only files matching your coverage paths (and not excluded) are tracked
+3. **Aggregation**: after tests complete, hit data is aggregated
+4. **Reporting**: each source line is classified as executable or not, and the executable ones are matched against the hits
 
 ::: tip Performance
-The DEBUG trap adds overhead to test execution. For large test suites, consider running coverage periodically rather than on every test run.
+Coverage roughly doubles to quadruples wall-clock time, depending on Bash version
+and engine. Cost is split fairly evenly between capture and reporting, and the
+reporting half is the same whichever engine ran. If that is too slow to keep on
+while you work, narrow `BASHUNIT_COVERAGE_PATHS` — both halves scale with the
+number of tracked source lines, not with the size of the test suite.
 :::
+
+### Seeing which engine ran
+
+`--verbose` prints the engine that was actually used:
+
+```bash
+./bashunit --coverage --verbose tests/
+# Coverage engine: xtrace
+```
+
+An explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` that the running Bash cannot honour
+is reported rather than silently ignored:
+
+```
+Warning: coverage engine 'xtrace' needs Bash 4.1+ (running 3.2); using 'trap'.
+```
+
+`auto` falling back to `trap` is normal and is not warned about.
 
 ## Configuration
 

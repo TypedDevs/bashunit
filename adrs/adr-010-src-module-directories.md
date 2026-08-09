@@ -136,8 +136,9 @@ Beyond the aggregator rule, five traps have cost real time. The first was found 
 
 * **Order-dependent file-scope initialisers must stay contiguous and in order.**
   `_BASHUNIT_COVERAGE_XTRACE_PS4` expands `$_BASHUNIT_COVERAGE_XTRACE_FS` at file
-  scope, and `_NONEXEC_PATTERN` is built across seven successive lines. Grep for
-  file-scope assignments that read another file-scope variable before splitting.
+  scope. (`_NONEXEC_PATTERN`, built across seven successive lines, was the other
+  example until #1005 replaced it with pure-Bash matching.) Grep for file-scope
+  assignments that read another file-scope variable before splitting.
 * **`.gitignore` can silently swallow a new module directory.** `coverage/` was
   unanchored, so it also matched `src/coverage/` and excluded all twelve new files
   from git — `git status` showed no `??` entries at all, and the split would have
