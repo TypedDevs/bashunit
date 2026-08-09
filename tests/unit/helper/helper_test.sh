@@ -645,35 +645,45 @@ function _with_exclude_filter() { # $1 exclude value, $2.. get_functions_to_run 
 }
 
 function test_exclude_filter_removes_matching_functions() {
-  local functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
 
   assert_same "prefix_alpha prefix_gamma" \
     "$(_with_exclude_filter "beta" "prefix" "" "${functions[*]}")"
 }
 
 function test_exclude_filter_keeps_everything_when_nothing_matches() {
-  local functions=("prefix_alpha" "prefix_beta")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_alpha" "prefix_beta")
 
   assert_same "prefix_alpha prefix_beta" \
     "$(_with_exclude_filter "nope" "prefix" "" "${functions[*]}")"
 }
 
 function test_exclude_filter_is_or_across_comma_separated_values() {
-  local functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_alpha" "prefix_beta" "prefix_gamma")
 
   assert_same "prefix_gamma" \
     "$(_with_exclude_filter "alpha,beta" "prefix" "" "${functions[*]}")"
 }
 
 function test_exclude_filter_wins_over_the_include_filter() {
-  local functions=("prefix_user_list" "prefix_user_admin")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_user_list" "prefix_user_admin")
 
   assert_same "prefix_user_list" \
     "$(_with_exclude_filter "admin" "prefix" "user" "${functions[*]}")"
 }
 
 function test_exclude_filter_can_empty_the_selection() {
-  local functions=("prefix_alpha")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_alpha")
 
   assert_same "" \
     "$(_with_exclude_filter "alpha" "prefix" "" "${functions[*]}")"
@@ -681,14 +691,18 @@ function test_exclude_filter_can_empty_the_selection() {
 
 # Symmetry with --filter, which strips a leading test_ from the value.
 function test_exclude_filter_tolerates_a_test_prefix_in_the_value() {
-  local functions=("test_alpha" "test_beta")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("test_alpha" "test_beta")
 
   assert_same "test_beta" \
     "$(_with_exclude_filter "test_alpha" "test" "" "${functions[*]}")"
 }
 
 function test_no_exclude_filter_keeps_previous_behaviour() {
-  local functions=("prefix_alpha" "prefix_beta")
+  # Bash 3.0 compatible: separate declaration and assignment
+  local functions
+  functions=("prefix_alpha" "prefix_beta")
 
   assert_same "prefix_alpha prefix_beta" \
     "$(_with_exclude_filter "" "prefix" "" "${functions[*]}")"

@@ -56,6 +56,40 @@ function bashunit::helper::check_duplicate_functions() {
 }
 
 
+##
+# Whether a function name matches any --exclude-filter value.
+#
+# The value is read from BASHUNIT_EXCLUDE_FILTER rather than passed in, so the
+# header count (which reaches get_functions_to_run from a subshell) and the
+# runner cannot end up applying different selections.
+#
+# Locals are `__bu_`-prefixed (bash-style.md, PR #672). The only caller is
+# get_functions_to_run, and this runs inside its `for fn in ...` loop, so plain
+# `fn`/`prefix` locals here would shadow the caller's by dynamic scoping.
+#
+# Arguments: $1 - function prefix ("test"/"bench"), $2 - function name
+# Returns: 0 when the name is excluded, 1 otherwise
+##
+function bashunit::helper::name_matches_exclude_filter() {
+  local __bu_prefix=$1
+  local __bu_fn=$2
+
+  if [ -z "${BASHUNIT_EXCLUDE_FILTER:-}" ]; then
+    return 1
+  fi
+
+  local IFS=','
+  local __bu_excl
+  for __bu_excl in $BASHUNIT_EXCLUDE_FILTER; do
+    __bu_excl=${__bu_excl/test_/}
+    if [ -n "$__bu_excl" ]; then
+      case "$__bu_fn" in ${__bu_prefix}_*${__bu_excl}*) return 0 ;; esac
+    fi
+  done
+
+  return 1
+}
+
 # Arguments: $1 - eg: "prefix", $2 - eg: "filter", $3 - eg: "[fn1, fn2, prefix_filter_fn3, fn4, ...]"
 # Returns: eg: "[prefix_filter_fn3, ...]" The filtered functions with prefix
 #
@@ -71,23 +105,9 @@ function bashunit::helper::get_functions_to_run() {
     local _fn_match=false
     case "$fn" in ${prefix}_*${filter}*) _fn_match=true ;; esac
     # --exclude-filter wins over the include filter, mirroring how
-    # --exclude-tag beats --tag. Read from the environment rather than passed
-    # in, so the header count and the runner cannot apply different selections
-    # (they call this from different places, one of them a subshell).
-    if [ "$_fn_match" = true ] && [ -n "${BASHUNIT_EXCLUDE_FILTER:-}" ]; then
-      local _old_ifs="$IFS"
-      IFS=','
-      local _excl
-      for _excl in $BASHUNIT_EXCLUDE_FILTER; do
-        _excl=${_excl/test_/}
-        [ -z "$_excl" ] && continue
-        case "$fn" in ${prefix}_*${_excl}*)
-          _fn_match=false
-          break
-          ;;
-        esac
-      done
-      IFS="$_old_ifs"
+    # --exclude-tag beats --tag.
+    if [ "$_fn_match" = true ] && bashunit::helper::name_matches_exclude_filter "$prefix" "$fn"; then
+      _fn_match=false
     fi
     if [ "$_fn_match" = true ]; then
       local _dup=false
