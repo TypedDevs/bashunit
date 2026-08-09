@@ -637,6 +637,7 @@ function bashunit::env::print_verbose() {
     "BASHUNIT_COVERAGE_REPORT"
     "BASHUNIT_COVERAGE_REPORT_HTML"
     "BASHUNIT_COVERAGE_MIN"
+    "BASHUNIT_COVERAGE_ENGINE"
   )
 
   local max_length=0

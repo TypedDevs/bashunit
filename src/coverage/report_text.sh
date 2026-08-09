@@ -2,6 +2,26 @@
 
 # Terminal coverage report.
 
+##
+# Say which engine ran, and never let an ignored explicit request pass silently.
+#
+# The warning is unconditional because an ignored BASHUNIT_COVERAGE_ENGINE is a
+# misconfiguration the user cannot otherwise see: on macOS's Bash 3.2 an explicit
+# `xtrace` was accepted and dropped with no output at all (#1005). The engine
+# line itself is verbose-only, since `auto` resolving to trap is normal.
+##
+function bashunit::coverage::print_engine_notice() {
+  if bashunit::coverage::engine_was_downgraded; then
+    printf "%sWarning: coverage engine 'xtrace' needs Bash 4.1+ (running %s.%s); using 'trap'.%s\n" \
+      "$_BASHUNIT_COLOR_INCOMPLETE" "${BASH_VERSINFO[0]}" "${BASH_VERSINFO[1]}" \
+      "$_BASHUNIT_COLOR_DEFAULT"
+  fi
+
+  if bashunit::env::is_verbose_enabled; then
+    printf "Coverage engine: %s\n" "$(bashunit::coverage::engine_in_use)"
+  fi
+}
+
 function bashunit::coverage::report_text() {
   if ! bashunit::env::is_coverage_enabled; then
     return 0
@@ -12,6 +32,7 @@ function bashunit::coverage::report_text() {
   local has_files=false
 
   echo ""
+  bashunit::coverage::print_engine_notice
   echo "Coverage Report"
   echo "---------------"
 

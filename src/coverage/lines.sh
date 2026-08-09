@@ -3,32 +3,19 @@
 # Static line classification and reading recorded hit data.
 
 
-# Pre-compiled combined regex of all non-executable line patterns.
-# Collapses multiple grep subshells into a single invocation per line for performance.
-# Each alternation is fully self-anchored so semantics match the original per-pattern checks.
-# Patterns covered (in order):
-#   - comment-only lines (including shebang)
-#   - function declarations (but not single-line functions with a body)
-#   - brace-only lines
-#   - control flow keywords (then, else, fi, do, done, esac, in, ;;, ;;&, ;&)
-#   - loop terminators with redirection/pipe/fd (e.g. "done < file", "done | sort")
-#   - case patterns like "--option)" or "*) # comment"
-#   - standalone ) for arrays/subshells
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN='^[[:space:]]*#'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*(function[[:space:]]+)?'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'[a-zA-Z_][a-zA-Z0-9_:]*'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'[[:space:]]*\(\)[[:space:]]*\{?[[:space:]]*$'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*[\{\}][[:space:]]*$'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'(then|else|fi|do|done|esac|in|;;|;;&|;&)'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'[[:space:]]*(#.*)?$'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*done'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'[[:space:]]+[^[:space:]#].*$'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*[^\)]+\)[[:space:]]*(#.*)?$'
-_BASHUNIT_COVERAGE_NONEXEC_PATTERN="${_BASHUNIT_COVERAGE_NONEXEC_PATTERN}"'|^[[:space:]]*\)[[:space:]]*(#.*)?$'
-
-
 # Check if a line is executable (used by get_executable_lines and report_lcov)
+#
+# Every tracked line is classified twice per run (once by precompute_file_stats,
+# once by report_lcov), so this is the report phase's hottest path and stays
+# fork-free. It used to fall back to one `grep -E` per unclassified line against
+# a combined regex; 286 source lines cost 1055 grep forks and roughly half of a
+# `--coverage` run's wall time (#1005). The pure-Bash rules below reproduce that
+# regex exactly, quirks included — see the comments on the individual cases.
+#
+# Non-executable lines are: comments and the shebang, brace-only lines, a bare
+# line continuation, control-flow keywords, loop terminators with a redirection
+# or pipe, function declarations, and case patterns.
+#
 # Arguments: line content, line number
 # Returns: 0 if executable, 1 if not
 function bashunit::coverage::is_executable_line() {
@@ -47,22 +34,82 @@ function bashunit::coverage::is_executable_line() {
   local trimmed="${stripped%"$_trail"}"
 
   case "$trimmed" in
-  '#'*) return 1 ;;      # Comments (including shebang)
-  '{' | '}') return 1 ;; # Braces only
+  '#'*) return 1 ;;             # Comments (including shebang)
+  '{' | '}' | [\\]) return 1 ;; # Braces only, or a bare line continuation
   esac
 
+  # A keyword may butt straight up against a trailing comment (`done#note`),
+  # so end the token at a `#` as well as at whitespace.
   local first="${trimmed%%[[:space:]]*}"
+  first="${first%%'#'*}"
   case "$first" in
   'then' | 'else' | 'fi' | 'do' | 'done' | 'esac' | 'in' | ';;' | ';;&' | ';&' | ')')
     local rest="${trimmed#"$first"}"
     local _rl="${rest%%[![:space:]]*}"
     rest="${rest#"$_rl"}"
     case "$rest" in '' | '#'*) return 1 ;; esac
+    # A loop terminator still terminates a loop when a redirection or a pipe
+    # follows it: `done < file`, `done | sort`. Reaching here means `done` was
+    # followed by whitespace and something that is not a comment.
+    if [ "$first" = 'done' ]; then
+      return 1
+    fi
     ;;
   esac
 
-  # Fallback: grep for complex patterns (function declarations, case patterns, done+redirection)
-  [ "$(printf '%s' "$line" | "$GREP" -cE "$_BASHUNIT_COVERAGE_NONEXEC_PATTERN" || true)" -gt 0 ] && return 1
+  # Function declarations: `[function ]name()` with an optional trailing `{`.
+  # No trailing comment is allowed, matching the pattern this replaced.
+  case "$trimmed" in
+  *'()'*)
+    local fn_rest="$trimmed"
+    case "$fn_rest" in
+    'function'[[:space:]]*)
+      fn_rest="${fn_rest#function}"
+      fn_rest="${fn_rest#"${fn_rest%%[![:space:]]*}"}"
+      ;;
+    esac
+    case "$fn_rest" in
+    *'{')
+      fn_rest="${fn_rest%'{'}"
+      fn_rest="${fn_rest%"${fn_rest##*[![:space:]]}"}"
+      ;;
+    esac
+    case "$fn_rest" in
+    *'()')
+      local fn_name="${fn_rest%'()'}"
+      fn_name="${fn_name%"${fn_name##*[![:space:]]}"}"
+      case "$fn_name" in
+      [a-zA-Z_]*)
+        case "${fn_name#?}" in
+        *[!a-zA-Z0-9_:]*) : ;;
+        *) return 1 ;;
+        esac
+        ;;
+      esac
+      ;;
+    esac
+    ;;
+  esac
+
+  # Case patterns: something, then `)`, then end of line or a comment —
+  # `--option)`, `*) # note`. The pattern this replaced spelled the leading
+  # segment `[^\)]+`, and inside a POSIX bracket expression a backslash is a
+  # literal member of the set, so a backslash anywhere before that `)`
+  # suppressed the match. `x=$(foo)` is therefore classified non-executable
+  # while `x=$(printf '%s\n')` is executable; both are preserved here.
+  case "$line" in
+  *')'*)
+    local cp_before="${line%%')'*}"
+    case "$cp_before" in
+    '' | *[\\]*) : ;;
+    *)
+      local cp_after="${line#*')'}"
+      cp_after="${cp_after#"${cp_after%%[![:space:]]*}"}"
+      case "$cp_after" in '' | '#'*) return 1 ;; esac
+      ;;
+    esac
+    ;;
+  esac
 
   return 0
 }

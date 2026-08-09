@@ -143,3 +143,34 @@ function bashunit::coverage::resolve_engine() {
   *) echo "trap" ;;
   esac
 }
+
+##
+# The engine this run is actually using.
+# Prefers the value resolved once in init and exported to every worker, so a
+# worker reports what it ran rather than re-deciding.
+# Returns: prints "xtrace" or "trap"
+##
+function bashunit::coverage::engine_in_use() {
+  if [ -n "${_BASHUNIT_COVERAGE_ENGINE_RESOLVED:-}" ]; then
+    echo "$_BASHUNIT_COVERAGE_ENGINE_RESOLVED"
+    return 0
+  fi
+  bashunit::coverage::resolve_engine
+}
+
+##
+# Whether an explicit engine request could not be honoured.
+# Only an explicit `xtrace` counts: `auto` resolving to trap is the documented
+# fallback, not an ignored request. macOS ships Bash 3.2, so this is the common
+# case there and used to be entirely silent (#1005).
+# Returns: 0 when downgraded, 1 otherwise
+##
+function bashunit::coverage::engine_was_downgraded() {
+  if [ "${BASHUNIT_COVERAGE_ENGINE:-auto}" != "xtrace" ]; then
+    return 1
+  fi
+  if bashunit::coverage::xtrace_is_supported; then
+    return 1
+  fi
+  return 0
+}

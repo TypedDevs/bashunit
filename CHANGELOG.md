@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- The coverage engine in use is reported by `--verbose`, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` that the running Bash cannot honour now warns instead of being silently ignored (#1005)
+
+### Changed
+- Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, which was roughly half of a coverage run's wall time and affected both engines equally (#1005)
+
 ### Fixed
 - Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
 

@@ -57,6 +57,7 @@ fork class; they are the RED test of the TDD cycle.
 | probe fork + first-use fork | probe does the real work and seeds the return slot | #802 (clock perl) |
 | per-worker `mkdir -p` | parent pre-creates before spawning workers (`[ -d ]` inside a worker races its siblings) | #813 |
 | sanitize-args pipeline on empty input | guard: skip the pipeline when the input is empty | #813 |
+| `printf \| grep -cE` per line as a classifier fallback | `case` globs translating each regex alternation | #1005 (286 lines cost 1055 forks) |
 
 `shopt -s extdebug` for `declare -F`: enable it **inside the capture subshell
 only** — toggling it in the caller's shell clobbers caller state (#808).
@@ -89,6 +90,28 @@ sourcing `src/` (irreducible without lazy-loading, rejected in #798).
 `--coverage` adds ~3 forks per unique file first seen by the DEBUG trap
 (decision-cache miss: grep|head + dirname) — bounded by file count, nightly
 non-gating workflow, not worth chasing.
+
+**Don't assume the engine is the cost.** Profiling `--coverage` for #1005 found
+the *report* phase was ~50-60% of wall time and identical for both engines: the
+per-line executable/non-executable classifier fell back to a `grep -E` fork for
+every line it could not decide in pure Bash, and every tracked line is classified
+twice per run (`precompute_file_stats`, then `report_lcov`). Budget guarded by
+`tests/acceptance/bashunit_coverage_forks_test.sh`, expressed as "fork count does
+not grow with source-line count" rather than an absolute number.
+
+Two traps when replacing a regex classifier with `case` globs — both silently
+change coverage numbers rather than erroring:
+
+- Inside a POSIX bracket expression a backslash is a **literal member of the
+  set**, so `[^\)]` excludes `\` as well as `)`. `x=$(foo)` and
+  `x=$(printf '%s\n')` therefore classify differently.
+- `[\{\}]` likewise matches a lone `\`, so a bare line continuation counts as a
+  brace-only line.
+
+Verify such a rewrite by running both implementations over the same input
+(`git show HEAD:<file>` + `declare -f | sed` to alias the old one) across every
+`git ls-files '*.sh'` line, and mutation-test the harness itself — a differential
+that cannot fail proves nothing.
 
 **Parallel 10-test file run (CI's mode):** ~11 forks — 3 `mkdir`, 4 `rm`,
 3 `awk` (#813; was 61). The per-test result file is named by a per-suite
