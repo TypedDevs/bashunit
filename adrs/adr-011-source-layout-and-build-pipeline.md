@@ -60,13 +60,13 @@ Seventeen, in load order. The order is the dependency layering: leaves first.
 | 10 | `cli/` | 5 | 445 | the `doc`/`init`/`upgrade`/`watch` subcommand implementations |
 | 11 | `assert/` | 11 | 2326 | every assertion |
 | 12 | `doubles/` | 4 | 505 | spies and mocks — **sourced by `assert/index.sh`, not the entrypoint** |
-| 13 | `reports/` | 7 | 465 | JUnit, TAP, JSON, GHA and HTML writers |
+| 13 | `reports/` | 8 | 693 | JUnit, TAP, JSON, GHA, HTML and Markdown writers |
 | 14 | `runner/` | 12 | 2434 | the file loop, per-test execution, retry, result parsing, `--list` |
 | 15 | `benchmark/` | 4 | 219 | the bench implementation (`runner/bench.sh` is its loop) |
 | 16 | `learn/` | 14 | 1296 | the interactive tutorial (9 of those files are `learn/lessons/`) |
 | 17 | `main/` | 8 | 1473 | flag parsing per subcommand and the run lifecycle |
 
-The file counts sum to 118, which is every `.sh` file in `src/` — that is the check to re-run
+The file counts sum to 121, which is every `.sh` file in `src/` — that is the check to re-run
 when editing this table, because both of its previous errors came from counting the wrong way.
 `doubles/` was absent entirely: the table was generated from the entrypoint's `source` lines,
 and `doubles/` is the one module the entrypoint does not source, so it fell through while the

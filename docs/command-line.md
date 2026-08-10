@@ -75,6 +75,7 @@ bashunit test tests/ --parallel --simple
 | `-r, --report-html <file>`     | Write HTML report                                |
 | `--report-tap <file>`          | Write TAP version 13 report to a file            |
 | `--report-json <file>`         | Write machine-readable JSON report to a file     |
+| `--report-md <file>`           | Write Markdown summary to a file (automatic on GitHub Actions) |
 | `-R, --run-all`                | Run all assertions (don't stop on first failure) |
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
@@ -456,6 +457,9 @@ bashunit test tests/
 ```bash [JSON]
 bashunit test tests/ --report-json report.json
 ```
+```bash [Markdown]
+bashunit test tests/ --report-md summary.md
+```
 :::
 
 ### GitHub Actions annotations
@@ -506,6 +510,21 @@ The `--report-json` flag writes machine-readable results for scripts, dashboards
 ```
 
 `status` is one of `passed`, `failed`, `skipped`, `incomplete` (`snapshot` and `risky` are also emitted per test and counted as passed in the summary). Like the other file reporters, per-test rows come from a sequential run; under `--parallel` the file is still valid JSON.
+
+### Markdown summary
+
+> `bashunit test --report-md <file>`
+
+Every other report format targets a machine; `--report-md` targets the place a developer looks first. It writes a human-readable Markdown summary: a one-line verdict with the total duration, a counts table, and each failure's name, `file:line` and message in a fenced code block. The coverage percentage is included when `--coverage` ran, and the slowest tests when `--profile` is on (`BASHUNIT_PROFILE_COUNT` entries, default 10).
+
+Inside GitHub Actions there is nothing to configure: when `$GITHUB_STEP_SUMMARY` is set and no explicit `--report-md` path is given, the summary is appended to the job's step summary automatically, so it renders directly on the workflow run page. Only the outermost bashunit process writes it — nested runs (a script under test that itself calls bashunit) stay quiet.
+
+```bash
+bashunit test tests/ --report-md summary.md
+
+# In a workflow: no flag needed, the step summary is filled automatically
+bashunit test tests/
+```
 
 ### Show Output on Failure
 

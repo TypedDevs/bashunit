@@ -260,6 +260,11 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_REPORT_JSON
       shift
       ;;
+    --report-md)
+      BASHUNIT_REPORT_MD="$2"
+      export -n BASHUNIT_REPORT_MD
+      shift
+      ;;
     --no-output)
       BASHUNIT_NO_OUTPUT=true
       export -n BASHUNIT_NO_OUTPUT

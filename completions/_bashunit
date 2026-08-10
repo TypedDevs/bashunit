@@ -78,6 +78,7 @@ _bashunit() {
     '(-r --report-html)'{-r,--report-html}'[Write HTML report]:file:_files' \
     '--report-tap[Write TAP version 13 report]:file:_files' \
     '--report-json[Write machine-readable JSON report]:file:_files' \
+    '--report-md[Write Markdown summary report]:file:_files' \
     '(-s --simple)'{-s,--simple}'[Simple output with dots]' \
     '--detailed[Detailed output, the default]' \
     '--output[Output format]:format:(tap)' \

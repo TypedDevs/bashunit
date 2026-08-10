@@ -221,6 +221,14 @@ function bashunit::main::exec_tests() {
     bashunit::coverage::cleanup
   fi
 
+  # After the coverage block on purpose: the Markdown summary embeds the
+  # coverage percentage, which exists only once precompute_file_stats ran.
+  if [ -n "$BASHUNIT_REPORT_MD" ]; then
+    bashunit::reports::generate_report_md "$BASHUNIT_REPORT_MD"
+  elif bashunit::env::should_write_github_step_summary; then
+    bashunit::reports::append_github_step_summary "$GITHUB_STEP_SUMMARY"
+  fi
+
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup
   fi

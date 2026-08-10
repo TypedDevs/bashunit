@@ -164,6 +164,7 @@ _BASHUNIT_DEFAULT_LOG_GHA=""
 _BASHUNIT_DEFAULT_REPORT_HTML=""
 _BASHUNIT_DEFAULT_REPORT_TAP=""
 _BASHUNIT_DEFAULT_REPORT_JSON=""
+_BASHUNIT_DEFAULT_REPORT_MD=""
 
 # Coverage defaults (following kcov, bashcov, SimpleCov conventions)
 _BASHUNIT_DEFAULT_COVERAGE="false"
@@ -191,6 +192,9 @@ _BASHUNIT_DEFAULT_COVERAGE_DIFF=""
 : "${BASHUNIT_REPORT_HTML:=${REPORT_HTML:=$_BASHUNIT_DEFAULT_REPORT_HTML}}"
 : "${BASHUNIT_REPORT_TAP:=${REPORT_TAP:=$_BASHUNIT_DEFAULT_REPORT_TAP}}"
 : "${BASHUNIT_REPORT_JSON:=${REPORT_JSON:=$_BASHUNIT_DEFAULT_REPORT_JSON}}"
+# No bare REPORT_MD alias: the unprefixed forms are deprecated, so a new
+# setting only ever ships under the BASHUNIT_ prefix.
+: "${BASHUNIT_REPORT_MD:=$_BASHUNIT_DEFAULT_REPORT_MD}"
 
 # Watch mode polling interval (seconds) used by the pure-shell fallback
 _BASHUNIT_DEFAULT_WATCH_INTERVAL="2"
@@ -670,6 +674,18 @@ function bashunit::env::should_print_gha_annotations() {
   [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ] &&
     [ "${GITHUB_ACTIONS:-}" = "true" ] &&
     ! bashunit::env::is_tap_output_enabled
+}
+
+##
+# Whether the run should append its Markdown summary to $GITHUB_STEP_SUMMARY.
+# Same ownership rule as the annotations above: GITHUB_STEP_SUMMARY is
+# inherited by every child process, so only the outermost run may write to it.
+# An explicit --report-md path takes over as the destination instead.
+##
+function bashunit::env::should_write_github_step_summary() {
+  [ -z "${BASHUNIT_REPORT_MD:-}" ] &&
+    [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ] &&
+    [ -n "${GITHUB_STEP_SUMMARY:-}" ]
 }
 
 function bashunit::env::is_fail_on_flaky_enabled() {
