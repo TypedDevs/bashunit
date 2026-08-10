@@ -88,6 +88,7 @@ _bashunit() {
     '--seed[Seed for random order]:seed:' \
     '--shard[Run shard i of n]:shard:' \
     '--rerun-failed[Replay only the tests that failed on the last run]' \
+    '--changed[Run only the test files changed since a git ref]::ref:' \
     '(--list --dry-run)'{--list,--dry-run}'[Print the tests that would run, then exit]' \
     '--list-format[Rendering for --list]:format:(text json)' \
     '--snapshot-update[Rewrite existing snapshots from the actual value]' \

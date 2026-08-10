@@ -106,6 +106,24 @@ function bashunit::main::validate_config_or_exit() {
     fi
   fi
 
+  # --changed asks git a question, and both ways of asking it wrongly return
+  # "nothing changed": outside a work tree, and with a ref that does not exist.
+  # Left unchecked that is a green run of zero tests, the #871 failure shape.
+  if bashunit::env::is_changed_enabled; then
+    if ! bashunit::helper::git_is_repo; then
+      printf "%sError: --changed needs a git work tree; '%s' is not inside one.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$PWD" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+    local _changed_ref
+    _changed_ref="$(bashunit::helper::git_changed_ref)"
+    if ! bashunit::helper::git_ref_exists "$_changed_ref"; then
+      printf "%sError: --changed cannot resolve the git ref '%s'.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$_changed_ref" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+  fi
+
   local _report_var _report_path
   for _report_var in BASHUNIT_LOG_JUNIT BASHUNIT_LOG_GHA BASHUNIT_REPORT_HTML \
     BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON; do

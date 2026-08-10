@@ -26,6 +26,24 @@ function bashunit::main::exec_tests() {
     exit 1
   fi
 
+  # Keep only the test files git reports as touched since the ref. This narrows
+  # after the "at least one path" guard on purpose: reaching zero files here is
+  # a real answer, so it renders "No tests found" and exits 1, the same shape an
+  # empty shard has, instead of the guard's "path is required" help dump.
+  if bashunit::env::is_changed_enabled; then
+    local _changed_ref
+    _changed_ref=$(bashunit::helper::git_changed_ref)
+    local -a _changed_files=()
+    local _changed_file
+    while IFS= read -r _changed_file; do
+      [ -z "$_changed_file" ] && continue
+      _changed_files[${#_changed_files[@]}]="$_changed_file"
+    done < <(bashunit::helper::git_filter_changed "$_changed_ref" "${test_files[@]}")
+    test_files=("${_changed_files[@]+"${_changed_files[@]}"}")
+    test_files_count=${#test_files[@]}
+    bashunit::internal_log "changed" "ref:$_changed_ref" "files:$test_files_count"
+  fi
+
   # Split the suite across runners: keep the files whose position matches this
   # shard (round-robin), so all shards together cover the whole suite with no
   # overlap. An empty shard (more shards than files) is valid and runs nothing.
