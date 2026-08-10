@@ -160,6 +160,13 @@ function bashunit::main::exec_tests() {
 
   bashunit::reports::load_spooled
 
+  # To stdout, not to a file: GitHub reads workflow commands from the job log.
+  # After load_spooled so a --parallel run annotates the rows its workers
+  # spooled, which the parent would otherwise never have seen (#1004).
+  if bashunit::env::should_print_gha_annotations; then
+    bashunit::reports::print_gha_annotations all
+  fi
+
   if [ -n "$BASHUNIT_LOG_JUNIT" ]; then
     bashunit::reports::generate_junit_xml "$BASHUNIT_LOG_JUNIT"
   fi

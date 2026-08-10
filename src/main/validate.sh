@@ -153,6 +153,17 @@ function bashunit::main::validate_config_or_exit() {
     ;;
   esac
 
+  # Same shape as --output above: an unrecognised mode would otherwise fall back
+  # to auto and look like it was honoured.
+  case "${BASHUNIT_GHA_ANNOTATIONS:-auto}" in
+  auto | always | never) ;;
+  *)
+    printf "%sError: unsupported mode '%s' for --gha-annotations. Supported: auto, always, never.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_GHA_ANNOTATIONS}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
+
   # Same shape as --output above: an unrecognised mode would otherwise leave the
   # suite in definition order and look like it was honoured.
   case "${BASHUNIT_ORDER_BY:-defined}" in

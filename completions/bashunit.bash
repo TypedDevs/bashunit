@@ -17,7 +17,7 @@ _BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"
 _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage-exclude \
 --coverage-min --coverage-paths --coverage-report --coverage-report-html \
 --debug --detailed --dry-run --env --exclude-filter --exclude-tag --fail-on-flaky --fail-on-risky --failures-only \
---filter --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
+--filter --gha-annotations --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \
 --no-progress --no-snapshot-create --order-by --output --parallel --profile \
 --random-order --repeat --report-html \
@@ -82,6 +82,10 @@ _bashunit_completions() {
     ;;
   --order-by)
     COMPREPLY=($(compgen -W "defined defects random" -- "$cur"))
+    return 0
+    ;;
+  --gha-annotations)
+    COMPREPLY=($(compgen -W "auto always never" -- "$cur"))
     return 0
     ;;
   -f | --filter | --exclude-filter | --tag | --exclude-tag | --repeat | --retry | --seed | --shard | --test-timeout)
