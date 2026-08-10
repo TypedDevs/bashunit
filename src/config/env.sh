@@ -255,6 +255,9 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Execution order: defined (definition order), defects (last run's failures
+# first) or random (equivalent to --random-order)
+_BASHUNIT_DEFAULT_ORDER_BY="defined"
 # Run only the test files git reports as changed since a ref
 _BASHUNIT_DEFAULT_CHANGED="false"
 # The ref --changed diffs against (empty = origin/HEAD, then HEAD)
@@ -305,6 +308,8 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 # up unrelated environment values.
 : "${BASHUNIT_RANDOM_ORDER:=$_BASHUNIT_DEFAULT_RANDOM_ORDER}"
 : "${BASHUNIT_SEED:=$_BASHUNIT_DEFAULT_SEED}"
+# No bare ORDER_BY alias, same reasoning as RETRY/SEED above.
+: "${BASHUNIT_ORDER_BY:=$_BASHUNIT_DEFAULT_ORDER_BY}"
 : "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
 : "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
 # No bare RERUN_FAILED alias, same reasoning as RETRY/SEED above. The default
@@ -377,8 +382,17 @@ function bashunit::env::retry_count() {
   printf '%s' "$_BASHUNIT_RETRY_VALIDATED"
 }
 
+##
+# --random-order and `--order-by random` are the same mode under two names, and
+# either may arrive through the environment rather than the parser, so the
+# predicate accepts both rather than one arm normalising into the other.
+##
 function bashunit::env::is_random_order_enabled() {
-  [ "$BASHUNIT_RANDOM_ORDER" = "true" ]
+  [ "$BASHUNIT_RANDOM_ORDER" = "true" ] || [ "${BASHUNIT_ORDER_BY:-defined}" = "random" ]
+}
+
+function bashunit::env::is_defects_order_enabled() {
+  [ "${BASHUNIT_ORDER_BY:-defined}" = "defects" ]
 }
 
 ##

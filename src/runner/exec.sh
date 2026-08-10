@@ -25,6 +25,15 @@ function bashunit::runner::order_functions_for_script() {
     ordered[${#ordered[@]}]="$fn"
   done
 
+  if bashunit::env::is_defects_order_enabled && [ "${#ordered[@]}" -gt 1 ]; then
+    local -a _defect_fns=()
+    local _defect_fn
+    for _defect_fn in $(bashunit::rerun::order_functions "$script" "${ordered[*]+${ordered[*]}}"); do
+      _defect_fns[${#_defect_fns[@]}]=$_defect_fn
+    done
+    ordered=("${_defect_fns[@]+"${_defect_fns[@]}"}")
+  fi
+
   if bashunit::env::is_random_order_enabled && [ "${#ordered[@]}" -gt 1 ]; then
     local _base _crc _fn_seed
     _base=$(bashunit::env::seed)

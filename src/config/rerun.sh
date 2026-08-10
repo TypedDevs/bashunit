@@ -107,6 +107,84 @@ $file:$fn
 }
 
 ##
+# Echoes the given test files with the recorded ones first, in the order the
+# cache holds them, then the rest in their given order.
+#
+# Reordering, not filtering: --order-by defects still runs the whole suite, it
+# just puts the known-bad files where --stop-on-failure trips on them first.
+# Arguments: $@ test file paths.
+##
+function bashunit::rerun::order_files() {
+  local recorded_files
+  recorded_files="$(bashunit::rerun::files)"
+  if [ -z "$recorded_files" ]; then
+    [ "$#" -gt 0 ] && printf '%s\n' "$@"
+    return 0
+  fi
+
+  local file recorded
+  # A recorded file the current selection does not contain is skipped, so a
+  # deleted or filtered-out file cannot resurrect itself through the cache.
+  while IFS= read -r recorded; do
+    [ -z "$recorded" ] && continue
+    for file in "$@"; do
+      if [ "$file" = "$recorded" ]; then
+        printf '%s\n' "$file"
+        break
+      fi
+    done
+  done <<EOF
+$recorded_files
+EOF
+
+  for file in "$@"; do
+    case "
+$recorded_files
+" in
+    *"
+$file
+"*) ;;
+    *) printf '%s\n' "$file" ;;
+    esac
+  done
+}
+
+##
+# Echoes a space-separated function list reordered so the ones recorded for the
+# file come first, in the order the cache holds them.
+# Arguments: $1 test file path, $2 space-separated function names.
+##
+function bashunit::rerun::order_functions() {
+  local file=$1
+  local functions=$2
+  local ordered=""
+  local entry recorded_fn fn
+
+  while IFS= read -r entry; do
+    case "$entry" in
+    "$file":*) recorded_fn="${entry#"$file":}" ;;
+    *) continue ;;
+    esac
+    for fn in $functions; do
+      if [ "$fn" = "$recorded_fn" ]; then
+        ordered="$ordered $fn"
+        break
+      fi
+    done
+  done <<EOF
+$_BASHUNIT_RERUN_ENTRIES
+EOF
+
+  for fn in $functions; do
+    if ! bashunit::rerun::allows "$file" "$fn"; then
+      ordered="$ordered $fn"
+    fi
+  done
+
+  echo "${ordered# }"
+}
+
+##
 # Filters a space-separated function list down to the ones recorded for a file.
 # Arguments: $1 test file path, $2 space-separated function names.
 ##

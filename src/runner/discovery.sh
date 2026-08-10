@@ -14,6 +14,18 @@ function bashunit::runner::load_test_files() {
   local -a worker_stderr_owners=()
   local worker_stderr_count=0
 
+  # --order-by defects: files holding last run's failures go first. The cache is
+  # only read here, never used to drop a file, so the full suite still runs.
+  if bashunit::env::is_defects_order_enabled; then
+    bashunit::rerun::load
+    local -a _defect_files=()
+    local _defect_file
+    while IFS= read -r _defect_file; do
+      [ -n "$_defect_file" ] && _defect_files[${#_defect_files[@]}]=$_defect_file
+    done < <(bashunit::rerun::order_files "${files[@]+"${files[@]}"}")
+    files=("${_defect_files[@]+"${_defect_files[@]}"}")
+  fi
+
   # Randomize file execution order (deterministic for the resolved seed).
   if bashunit::env::is_random_order_enabled; then
     local -a _shuffled_files=()
