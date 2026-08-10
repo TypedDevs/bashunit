@@ -341,47 +341,69 @@ function bashunit::runner::run_test() {
   # failure -- the only evidence of what the flakiness looks like -- is kept here
   # before it is lost.
   local first_attempt_result=""
+  bashunit::env::resolve_repeat_count
+  local repeat_max=$_BASHUNIT_REPEAT_VALIDATED
+  local iteration=0
+  local failed_iteration=0
   local measure_duration=false
   bashunit::runner::needs_test_duration && measure_duration=true
   # Retry wraps ONLY execution: a failed attempt is judged from its encoded
   # result without committing, so the parse/report/counter path below still runs
   # exactly once (on the final attempt) and nothing is double-counted. Each fork
   # in --parallel retries itself before writing its single .result file.
-  while :; do
-    if [ "$measure_duration" = true ]; then
-      bashunit::clock::now_to_slot
-      start_time=$_BASHUNIT_CLOCK_NOW_OUT
-    fi
-    if bashunit::env::is_test_timeout_enabled; then
-      bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
-      test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
-      timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
-    else
-      test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
-    fi
+  # --repeat is the OUTER loop and --retry the inner one: an iteration gets its
+  # full retry budget before the next iteration starts. Iterating stops at the
+  # first failure, since the test is already going to be reported failed and the
+  # remaining iterations cannot change that.
+  while [ "$iteration" -lt "$repeat_max" ]; do
+    iteration=$((iteration + 1))
+    retries_used=0
+    first_attempt_result=""
+    while :; do
+      if [ "$measure_duration" = true ]; then
+        bashunit::clock::now_to_slot
+        start_time=$_BASHUNIT_CLOCK_NOW_OUT
+      fi
+      if bashunit::env::is_test_timeout_enabled; then
+        bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
+        test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
+        timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
+      else
+        test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
+      fi
 
-    local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
-    # Counts first: detect_runtime_error consults the exit code when the output
-    # text is translated and matches nothing. extract_result_counts is a pure
-    # read, so moving it ahead commits nothing.
-    bashunit::runner::extract_result_counts "$test_execution_result"
-    bashunit::runner::detect_runtime_error "$attempt_runtime_output" \
-      "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT"
-    local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
-    local attempt_display_output=$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT
-    # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
-    # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
-    if [ -z "$attempt_runtime_error" ] &&
-      [ "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT" -eq 0 ] &&
-      [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -eq 0 ]; then
+      local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
+      # Counts first: detect_runtime_error consults the exit code when the output
+      # text is translated and matches nothing. extract_result_counts is a pure
+      # read, so moving it ahead commits nothing.
+      bashunit::runner::extract_result_counts "$test_execution_result"
+      bashunit::runner::detect_runtime_error "$attempt_runtime_output" \
+        "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT"
+      local attempt_runtime_error=$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT
+      local attempt_display_output=$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT
+      # Mirror the commit-phase failure test exactly (runtime error, non-zero exit,
+      # or a failed assertion); snapshot/incomplete/skipped/risky are not failures.
+      if [ -z "$attempt_runtime_error" ] &&
+        [ "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT" -eq 0 ] &&
+        [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -eq 0 ]; then
+        break
+      fi
+      # Only reached when the attempt failed, so this is the first failure.
+      if [ -z "$first_attempt_result" ]; then
+        first_attempt_result="$test_execution_result"
+      fi
+      [ "$retries_used" -ge "$retry_max" ] && break
+      retries_used=$((retries_used + 1))
+    done
+
+    # The inner loop only exits with a failure once the retries are exhausted,
+    # so reaching here with one means this iteration is the verdict.
+    if [ -n "$attempt_runtime_error" ] ||
+      [ "$_BASHUNIT_RUNNER_COUNTS_EXIT_CODE_OUT" -ne 0 ] ||
+      [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -ne 0 ]; then
+      failed_iteration=$iteration
       break
     fi
-    # Only reached when the attempt failed, so this is the first failure.
-    if [ -z "$first_attempt_result" ]; then
-      first_attempt_result="$test_execution_result"
-    fi
-    [ "$retries_used" -ge "$retry_max" ] && break
-    retries_used=$((retries_used + 1))
   done
 
   # The retry count lives in this shell, not in the test subshell that built the
@@ -457,6 +479,13 @@ function bashunit::runner::run_test() {
   bashunit::state::reset_test_title
   bashunit::state::reset_current_test_interpolated_function_name
 
+  # Under --repeat the test is reported once, so the message has to say which
+  # iteration produced the failure or the count is unactionable.
+  local repeat_note=""
+  if [ "$repeat_max" -gt 1 ] && [ "$failed_iteration" -gt 0 ]; then
+    repeat_note=" (failed on iteration $failed_iteration of $repeat_max)"
+  fi
+
   local failure_label="$label"
   local failure_function="$fn_name"
   if [ -n "$hook_failure" ]; then
@@ -492,6 +521,7 @@ function bashunit::runner::run_test() {
       error_message="Test timed out after $(bashunit::env::test_timeout_secs)s"
     fi
 
+    error_message="$error_message$repeat_note"
     bashunit::console_results::print_error_test "$failure_function" "$error_message" "$runtime_output"
     bashunit::reports::add_test_failed "$test_file" "$failure_label" "$duration" "$total_assertions" "$error_message"
     bashunit::runner::write_failure_result_output "$test_file" "$failure_function" "$error_message" "$runtime_output"
@@ -504,7 +534,11 @@ function bashunit::runner::run_test() {
   if [ "$current_assertions_failed" != "$_BASHUNIT_ASSERTIONS_FAILED" ]; then
     bashunit::state::add_tests_failed
     bashunit::rerun::record "$test_file" "$fn_name"
-    bashunit::reports::add_test_failed "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output"
+    bashunit::reports::add_test_failed \
+      "$test_file" "$label" "$duration" "$total_assertions" "$subshell_output$repeat_note"
+    if [ -n "$repeat_note" ]; then
+      bashunit::console_results::print_line "failed" "${repeat_note# }"
+    fi
     local assertion_runtime_output
     assertion_runtime_output="$(
       bashunit::runner::extract_assertion_runtime_output "$runtime_output" "$subshell_output"

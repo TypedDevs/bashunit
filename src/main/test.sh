@@ -136,6 +136,11 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_RETRY
       shift
       ;;
+    --repeat)
+      BASHUNIT_REPEAT="$2"
+      export -n BASHUNIT_REPEAT
+      shift
+      ;;
     --random-order)
       BASHUNIT_RANDOM_ORDER=true
       export -n BASHUNIT_RANDOM_ORDER

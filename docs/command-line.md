@@ -80,6 +80,7 @@ bashunit test tests/ --parallel --simple
 | `-S, --stop-on-failure`        | Stop on first failure                            |
 | `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
 | `--retry <n>`                  | Re-run a failed test up to N extra times         |
+| `--repeat <n>`                 | Run each selected test N times; it fails if any iteration fails |
 | `--random-order`               | Randomize test execution order                   |
 | `--order-by <mode>`            | Execution order: `defined` (default), `defects` or `random` |
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
@@ -820,6 +821,52 @@ bashunit test --rerun-failed    # replay just those
 ```
 ```bash [Env variable]
 BASHUNIT_RERUN_FAILED=true bashunit test tests/
+```
+:::
+
+### Repeat
+
+> `bashunit test --repeat <n>`
+
+Run each selected test n times. Where [`--retry`](#test-options) mitigates
+flakiness after it has already burned a CI run, `--repeat` goes looking for it:
+
+```bash
+bashunit test tests/ --repeat 50 --filter flaky_candidate
+```
+
+The test is reported **once**, with the aggregate outcome, and the assertion
+counts are those of the deciding iteration rather than the sum of all of them.
+A failure names the iteration it happened on:
+
+```
+✗ Failed: My test
+  (failed on iteration 7 of 50)
+```
+
+Iterating stops at the first failing iteration: the test is already going to be
+reported failed, and the remaining iterations cannot change that.
+
+**Interaction with `--retry`.** Repeat is the outer loop, retry the inner one.
+Each iteration gets its full retry budget before the next iteration starts, so
+`--repeat 2 --retry 1` runs the body at most four times, and an iteration that
+recovers on its retry lets the next iteration begin.
+
+Notes:
+
+- `--repeat 1` behaves exactly as if the flag were absent.
+- `--repeat 0`, a negative value and a non-numeric value are usage errors, not
+  silent no-ops.
+- Per-test `set_up` / `tear_down` run once per iteration; `set_up_before_script`
+  runs once for the file, as always.
+- Works under `--parallel`: each worker repeats its own test.
+
+::: code-group
+```bash [Hammer one suspect test]
+bashunit test --repeat 50 --filter flaky_candidate
+```
+```bash [Env variable]
+BASHUNIT_REPEAT=10 bashunit test tests/
 ```
 :::
 

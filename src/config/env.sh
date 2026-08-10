@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Run each selected test n times; the test fails if any iteration fails
+_BASHUNIT_DEFAULT_REPEAT="1"
 # Treat a test that only passed after a retry as a failure for the exit code
 _BASHUNIT_DEFAULT_FAIL_ON_FLAKY="false"
 # Execution order: defined (definition order), defects (last run's failures
@@ -313,6 +315,7 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 # No bare ORDER_BY/FAIL_ON_FLAKY aliases, same reasoning as RETRY/SEED above.
 : "${BASHUNIT_ORDER_BY:=$_BASHUNIT_DEFAULT_ORDER_BY}"
 : "${BASHUNIT_FAIL_ON_FLAKY:=$_BASHUNIT_DEFAULT_FAIL_ON_FLAKY}"
+: "${BASHUNIT_REPEAT:=$_BASHUNIT_DEFAULT_REPEAT}"
 : "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
 : "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
 # No bare RERUN_FAILED alias, same reasoning as RETRY/SEED above. The default
@@ -373,6 +376,19 @@ function bashunit::env::test_timeout_secs() {
 # In-shell (no fork) so the per-test hot path can read the global instead of
 # capturing retry_count in a $(...) subshell every test (#764).
 _BASHUNIT_RETRY_VALIDATED=0
+_BASHUNIT_REPEAT_VALIDATED=1
+##
+# Writes the validated repeat count into _BASHUNIT_REPEAT_VALIDATED. Mirrors
+# resolve_retry_count: fork-free, and a value the validator would have rejected
+# degrades to 1 rather than reaching the arithmetic in run_test.
+##
+function bashunit::env::resolve_repeat_count() {
+  case "${BASHUNIT_REPEAT:-1}" in
+  '' | *[!0-9]* | 0) _BASHUNIT_REPEAT_VALIDATED=1 ;;
+  *) _BASHUNIT_REPEAT_VALIDATED="${BASHUNIT_REPEAT:-1}" ;;
+  esac
+}
+
 function bashunit::env::resolve_retry_count() {
   case "${BASHUNIT_RETRY:-0}" in
   '' | *[!0-9]*) _BASHUNIT_RETRY_VALIDATED=0 ;;

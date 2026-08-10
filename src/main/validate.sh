@@ -66,6 +66,15 @@ function bashunit::main::validate_config_or_exit() {
     "${BASHUNIT_RETRY:-0}" "BASHUNIT_RETRY (--retry)"
   bashunit::main::require_non_negative_int_or_exit \
     "${BASHUNIT_TEST_TIMEOUT:-0}" "BASHUNIT_TEST_TIMEOUT (--test-timeout)"
+  bashunit::main::require_non_negative_int_or_exit \
+    "${BASHUNIT_REPEAT:-1}" "BASHUNIT_REPEAT (--repeat)"
+  # 0 passes the non-negative check but means "run nothing", which would be a
+  # silent no-op rather than the usage error it is.
+  if [ "${BASHUNIT_REPEAT:-1}" -lt 1 ]; then
+    printf "%sError: BASHUNIT_REPEAT (--repeat) must be at least 1, got '%s'.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_REPEAT}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+  fi
   # Empty is the documented "no minimum" default, so only a set value is checked.
   if [ -n "${BASHUNIT_COVERAGE_MIN:-}" ]; then
     bashunit::main::require_non_negative_int_or_exit \
