@@ -95,6 +95,21 @@ function test_the_report_is_populated_under_parallel() {
   assert_contains "## Failures" "$(cat "$REPORT_DIR/summary.md")"
 }
 
+# The summary's percentage is the console report's percentage. It used to be
+# read before the hit records were finalized and, under --parallel, before the
+# workers' data was aggregated, which reported 0% for a covered run.
+function test_the_coverage_percentage_matches_the_console_report() {
+  local output
+  output=$(./bashunit --parallel --no-color --env "$TEST_ENV_FILE" --coverage \
+    --report-md "$REPORT_DIR/summary.md" "$PASSING_FIXTURE" 2>/dev/null)
+
+  local console_pct
+  console_pct=$(echo "$output" | grep "^Total:" | sed 's/.*(\([0-9]*\)%).*/\1/')
+
+  assert_not_empty "$console_pct"
+  assert_contains "$console_pct% of tracked lines" "$(cat "$REPORT_DIR/summary.md")"
+}
+
 function test_the_slowest_tests_appear_only_with_profile() {
   ./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" \
     --report-md "$REPORT_DIR/plain.md" "$PASSING_FIXTURE" >/dev/null 2>&1
