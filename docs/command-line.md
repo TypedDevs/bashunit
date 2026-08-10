@@ -84,6 +84,7 @@ bashunit test tests/ --parallel --simple
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
+| `--changed [<ref>]`            | Run only the test files changed since `<ref>` (default: `origin/HEAD`, then `HEAD`) |
 | `--list`, `--dry-run`          | Print the tests that would run, then exit         |
 | `--list-format <fmt>`          | Rendering for `--list`: `text` (default) or `json` |
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
@@ -689,8 +690,8 @@ The report only considers snapshots belonging to the test files the run
 discovered, so running a single file or directory reports only that scope
 instead of everything else in the same `snapshots/` directory. A run that
 executes a *subset of the tests* in those files would still be misleading, so
-the flag is refused alongside `--filter`, `--tag`, `--exclude-tag`, `--shard`
-and `--rerun-failed`.
+the flag is refused alongside `--filter`, `--tag`, `--exclude-tag`, `--shard`,
+`--rerun-failed` and `--changed`.
 
 ### No snapshot create
 
@@ -733,7 +734,7 @@ Test ids go to **stdout**, one `path::function` per line; the count goes to
 **stderr**, so the list pipes cleanly into `grep`, `fzf` or a CI matrix.
 
 Every selection mechanism applies exactly as it would in a real run —
-`--filter`, `--tag`, `--exclude-tag`, `--shard`, `--rerun-failed`,
+`--filter`, `--tag`, `--exclude-tag`, `--shard`, `--rerun-failed`, `--changed`,
 `--random-order --seed`, and `file::fn` / `file:LINE`. That makes it the way to
 answer questions that previously needed a full run per answer:
 
@@ -817,6 +818,47 @@ bashunit test --rerun-failed    # replay just those
 ```
 ```bash [Env variable]
 BASHUNIT_RERUN_FAILED=true bashunit test tests/
+```
+:::
+
+### Changed
+
+> `bashunit test --changed [<ref>]`
+
+Run only the test files your branch touched. Where
+[`--rerun-failed`](#rerun-failed) needs a previous red run, `--changed` needs
+only git, so it works on the first run of a fresh branch.
+
+```bash
+bashunit test tests/ --changed          # against origin/HEAD, then HEAD
+bashunit test tests/ --changed main     # against main
+bashunit test tests/ --changed HEAD~3   # against three commits ago
+```
+
+The selection is every test file git reports as touched since `<ref>`, which
+merges three sources: the commit range `<ref>...HEAD`, the staged and unstaged
+edits on top of `HEAD`, and untracked new files. Deleted test files are dropped,
+and a rename selects its new path only.
+
+Notes:
+
+- Composes with `--filter`/`--tag` — both apply (intersection).
+- The ref argument is optional, so a value that is also an existing path is read
+  as the run's path, not as a ref. Write `--changed ./main` or set
+  `BASHUNIT_CHANGED_REF` when you mean the ref.
+- Outside a git work tree, or with a ref that does not resolve, the run exits
+  non-zero with a message rather than quietly running everything.
+- No changed test file is not an error in itself: the run reports `No tests
+  found` and exits `1`, the same as any other empty selection.
+- Source changes are not mapped to the tests that cover them. Only test files
+  are selected.
+
+::: code-group
+```bash [Fastest branch loop]
+bashunit test --changed main
+```
+```bash [Env variables]
+BASHUNIT_CHANGED=true BASHUNIT_CHANGED_REF=main bashunit test tests/
 ```
 :::
 
