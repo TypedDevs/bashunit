@@ -43,6 +43,8 @@ function provide_core_assertions_requiring_arguments() {
   bashunit::data_set assert_less_or_equal_than 2 "expected, actual"
   bashunit::data_set assert_greater_than 2 "expected, actual"
   bashunit::data_set assert_greater_or_equal_than 2 "expected, actual"
+  bashunit::data_set assert_between 3 "min, max, actual"
+  bashunit::data_set assert_not_between 3 "min, max, actual"
   bashunit::data_set assert_within_delta 3 "expected, actual, delta"
   bashunit::data_set assert_line_count 2 "expected, actual"
   bashunit::data_set assert_string_matches_format 2 "format, actual"

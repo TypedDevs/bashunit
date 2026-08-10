@@ -17,7 +17,7 @@ _bashunit() {
     assert_fns=(
       assert_array_contains assert_array_length assert_array_not_contains
       assert_arrays_equal assert_assertion_fails assert_assertion_fails_with
-      assert_assertion_passes assert_command_available assert_command_not_found assert_contains
+      assert_assertion_passes assert_between assert_command_available assert_command_not_found assert_contains
       assert_contains_ignore_case assert_date_after assert_date_before
       assert_date_equals assert_date_within_delta assert_date_within_range
       assert_directory_exists assert_directory_not_exists assert_duration
@@ -34,7 +34,7 @@ _bashunit() {
       assert_less_or_equal_than assert_less_than assert_line_count
       assert_match_named_snapshot assert_match_named_snapshot_ignore_colors
       assert_match_snapshot assert_match_snapshot_ignore_colors assert_matches
-      assert_not_contains assert_not_empty assert_not_equals assert_not_matches
+      assert_not_between assert_not_contains assert_not_empty assert_not_equals assert_not_matches
       assert_not_same assert_same assert_string_ends_with
       assert_string_matches_format assert_string_not_ends_with
       assert_string_not_matches_format assert_string_not_starts_with

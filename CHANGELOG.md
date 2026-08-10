@@ -8,6 +8,7 @@
 - Flaky is a first-class outcome: a test that only passed after a retry is counted separately, kept inside the pass total so the exit code is unchanged, and carried into JUnit (`<flakyFailure>`), TAP, JSON, HTML and GitHub Actions along with the first attempt's failure message. `--fail-on-flaky` turns such a run red (#1012)
 - `--order-by <mode>` picks the execution order: `defined` (default), `defects` (last run's failures first, whole suite still runs) or `random`. `--random-order` and `--seed` keep working unchanged (#1011)
 - `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes. Deletions are dropped, a rename selects its new path, and a missing work tree or unresolvable ref fails the run instead of selecting nothing (#1010)
+- `assert_between <min> <max> <actual>` and `assert_not_between` add inclusive numeric-range assertions for integers and decimals (#1026)
 - `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
 - `--exclude-filter <name>` skips tests by name, the counterpart of `--exclude-tag`. Repeatable, OR'd, and wins over `--filter` (#1009)
 - `# @tags a b` above any top-level line applies those tags to every test in the file, unioned with per-function `# @tag` (#1008)
@@ -19,6 +20,7 @@
 - Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, which was roughly half of a coverage run's wall time and affected both engines equally (#1005)
 
 ### Fixed
+- `assert_within_delta` rejects malformed numbers such as `1.2.3` or `5-3` as non-numeric instead of leaking a raw `bc` parse error or silently evaluating them as an expression (#1026)
 - Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
 
 ## [0.45.0](https://github.com/TypedDevs/bashunit/compare/0.44.0...0.45.0) - 2026-08-09

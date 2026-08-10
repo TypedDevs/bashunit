@@ -73,6 +73,25 @@ function test_calculate_fallback_to_bash_arithmetic_for_decimal() {
   assert_equals "30" "$result"
 }
 
+# The fixed-point path refuses operands too wide for 64-bit integer arithmetic
+# and hands them to bc, which cannot parse a leading `+` and answers with a parse
+# error on stderr and an empty result -- read as "greater than" by the caller.
+function test_is_le_handles_a_leading_plus_on_operands_wider_than_the_fixed_point_path() {
+  local stderr exit_code=0
+  stderr=$(bashunit::math::is_le "+1" "+9999999999999999999999" 2>&1) || exit_code=$?
+
+  assert_same 0 "$exit_code"
+  assert_empty "$stderr"
+}
+
+function test_is_le_rejects_a_greater_left_operand_with_a_leading_plus() {
+  local stderr exit_code=0
+  stderr=$(bashunit::math::is_le "+9999999999999999999999" "+1" 2>&1) || exit_code=$?
+
+  assert_same 1 "$exit_code"
+  assert_empty "$stderr"
+}
+
 function test_shuffle_is_deterministic_for_a_given_seed() {
   local first second
   first=$(printf '%s\n' a b c d e f g h | bashunit::math::shuffle 12345)

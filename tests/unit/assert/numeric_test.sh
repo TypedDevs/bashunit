@@ -163,6 +163,87 @@ function test_unsuccessful_assert_greater_or_equal_than() {
     "$(assert_greater_or_equal_than "3" "1")"
 }
 
+function test_assert_between_accepts_values_inside_inclusive_integer_bounds() {
+  assert_between "1" "10" "5"
+  assert_between "1" "10" "1"
+  assert_between "1" "10" "10"
+}
+
+function test_assert_between_supports_decimals_and_negative_numbers() {
+  assert_between "0.1" "0.3" "0.2"
+  assert_between "-10.5" "-1.5" "-3.25"
+  assert_between "+1" "+10" "+5"
+}
+
+function test_assert_between_reports_the_violated_lower_bound() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert between reports the violated lower bound" "0" "to be between" "1 and 10" "Violated lower bound" "1")" \
+    "$(assert_between "1" "10" "0")"
+}
+
+function test_assert_between_reports_the_violated_upper_bound() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert between reports the violated upper bound" "11" "to be between" "1 and 10" "Violated upper bound" "10")" \
+    "$(assert_between "1" "10" "11")"
+}
+
+function test_range_assertions_count_as_exactly_one_assertion() {
+  local before=$_BASHUNIT_ASSERTIONS_PASSED
+  assert_between "1" "10" "5"
+  local after=$_BASHUNIT_ASSERTIONS_PASSED
+
+  assert_same 1 "$((after - before))"
+
+  before=$_BASHUNIT_ASSERTIONS_PASSED
+  assert_not_between "1" "10" "11"
+  after=$_BASHUNIT_ASSERTIONS_PASSED
+
+  assert_same 1 "$((after - before))"
+}
+
+function test_assert_not_between_is_the_exact_negation() {
+  assert_not_between "1" "10" "0"
+  assert_not_between "1" "10" "11"
+  assert_assertion_fails assert_not_between "1" "10" "1"
+  assert_assertion_fails assert_not_between "1" "10" "5"
+  assert_assertion_fails assert_not_between "1" "10" "10"
+}
+
+# @data_provider provide_invalid_range_assertion_inputs
+function test_range_assertions_reject_invalid_inputs_as_usage_errors() {
+  local assertion=$1
+  local min=$2
+  local max=$3
+  local actual=$4
+  local expected_detail=$5
+  local output exit_code=0
+
+  output=$("$assertion" "$min" "$max" "$actual" 2>&1) || exit_code=$?
+
+  assert_same 2 "$exit_code"
+  assert_same "bashunit: assertion usage error: $assertion $expected_detail" "$output"
+}
+
+# Operands wider than the fork-free fixed-point path fall through to bc, which
+# cannot parse the leading `+` that the assertions otherwise accept.
+function test_range_assertions_accept_a_leading_plus_on_wide_operands() {
+  assert_empty "$(assert_between "+1" "+9999999999999999999999" "+5" 2>&1)"
+  assert_empty "$(assert_not_between "+1" "+10" "+9999999999999999999999" 2>&1)"
+}
+
+function provide_invalid_range_assertion_inputs() {
+  bashunit::data_set assert_between abc 10 5 \
+    "expects numeric min, max, and actual values, got 'abc', '10', '5'"
+  bashunit::data_set assert_between 1 1.2.3 1 \
+    "expects numeric min, max, and actual values, got '1', '1.2.3', '1'"
+  bashunit::data_set assert_not_between 1 10 nope \
+    "expects numeric min, max, and actual values, got '1', '10', 'nope'"
+  bashunit::data_set assert_between 10 1 5 "expects min <= max, got '10' and '1'"
+  bashunit::data_set assert_not_between 10 1 5 "expects min <= max, got '10' and '1'"
+}
+
 function test_successful_assert_within_delta() {
   assert_empty "$(assert_within_delta "3.14159" "3.14" "0.01")"
 }
@@ -188,6 +269,24 @@ function test_unsuccessful_assert_within_delta_with_a_non_numeric_value() {
     "Unsuccessful assert within delta with a non numeric value" \
     "abc 105 3" "to all be numeric" "but got a non-numeric value")" \
     "$(assert_within_delta "abc" "105" "3")"
+}
+
+# A second dot and an inner sign both reached bc before: the first leaked a raw
+# `Parse error` into the report, the second silently evaluated `5-3` as 2.
+function test_assert_within_delta_rejects_a_second_decimal_point() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert within delta rejects a second decimal point" \
+    "1.2.3 1 0.5" "to all be numeric" "but got a non-numeric value")" \
+    "$(assert_within_delta "1.2.3" "1" "0.5" 2>&1)"
+}
+
+function test_assert_within_delta_rejects_an_inner_sign() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert within delta rejects an inner sign" \
+    "5-3 1 0.5" "to all be numeric" "but got a non-numeric value")" \
+    "$(assert_within_delta "5-3" "1" "0.5" 2>&1)"
 }
 
 # bc cannot parse a leading `+`, but bashunit::assert::_is_numeric accepts one,

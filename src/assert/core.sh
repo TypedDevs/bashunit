@@ -1032,6 +1032,71 @@ function assert_greater_or_equal_than() {
 }
 
 ##
+# Asserts that a numeric value falls inside an inclusive range.
+# Arguments: $1 - minimum, $2 - maximum, $3 - actual, $4 - label (optional)
+# Returns: 0 after reporting the assertion, 2 for invalid input
+##
+function assert_between() {
+  bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 3 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 3 "min, max, actual" "$#"
+    return 2
+  fi
+
+  local min="$1"
+  local max="$2"
+  local actual="$3"
+  local label_override="${4:-}"
+
+  if ! bashunit::assert::_validate_range_args "${FUNCNAME[0]}" "$min" "$max" "$actual"; then
+    return 2
+  fi
+
+  if ! bashunit::math::is_le "$min" "$actual"; then
+    bashunit::assert::fail_with "$label_override" "$actual" "to be between" "$min and $max" \
+      "Violated lower bound" "$min"
+    return
+  fi
+
+  if ! bashunit::math::is_le "$actual" "$max"; then
+    bashunit::assert::fail_with "$label_override" "$actual" "to be between" "$min and $max" \
+      "Violated upper bound" "$max"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+##
+# Asserts that a numeric value falls outside an inclusive range.
+# Arguments: $1 - minimum, $2 - maximum, $3 - actual, $4 - label (optional)
+# Returns: 0 after reporting the assertion, 2 for invalid input
+##
+function assert_not_between() {
+  bashunit::assert::should_skip && return 0
+  if [ "$#" -lt 3 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 3 "min, max, actual" "$#"
+    return 2
+  fi
+
+  local min="$1"
+  local max="$2"
+  local actual="$3"
+  local label_override="${4:-}"
+
+  if ! bashunit::assert::_validate_range_args "${FUNCNAME[0]}" "$min" "$max" "$actual"; then
+    return 2
+  fi
+
+  if bashunit::math::is_le "$min" "$actual" && bashunit::math::is_le "$actual" "$max"; then
+    bashunit::assert::fail_with "$label_override" "$actual" "to not be between" "$min and $max"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+##
 # Whether a value looks like a number (integer or decimal, optional sign).
 # Returns: 0 when numeric, 1 otherwise.
 ##
@@ -1039,12 +1104,47 @@ function bashunit::assert::_is_numeric() {
   local value="$1"
   case "$value" in
   '' | *[!0-9.+-]*) return 1 ;;
+  -*) value=${value#-} ;;
+  +*) value=${value#+} ;;
   esac
-  # Must contain at least one digit (rejects ".", "-", "+").
+
+  case "$value" in
+  '' | '.' | *[+-]*) return 1 ;;
+  *.*)
+    local fraction=${value#*.}
+    case "$fraction" in *.*) return 1 ;; esac
+    ;;
+  esac
+
   case "$value" in
   *[0-9]*) return 0 ;;
   esac
   return 1
+}
+
+##
+# Validates the shared numeric-range contract.
+# Arguments: $1 - assertion name, $2 - min, $3 - max, $4 - actual
+# Returns: 0 when valid, 1 after emitting a usage error otherwise
+##
+function bashunit::assert::_validate_range_args() {
+  local assertion=$1
+  local min=$2
+  local max=$3
+  local actual=$4
+
+  if ! bashunit::assert::_is_numeric "$min" ||
+    ! bashunit::assert::_is_numeric "$max" ||
+    ! bashunit::assert::_is_numeric "$actual"; then
+    bashunit::assert::usage_error_detail "$assertion" \
+      "expects numeric min, max, and actual values, got '$min', '$max', '$actual'"
+    return 1
+  fi
+
+  if ! bashunit::math::is_le "$min" "$max"; then
+    bashunit::assert::usage_error_detail "$assertion" "expects min <= max, got '$min' and '$max'"
+    return 1
+  fi
 }
 
 ##
