@@ -30,6 +30,7 @@ function bashunit::console_results::render_result() {
   local tests_snapshot=$_BASHUNIT_TESTS_SNAPSHOT
   local tests_failed=$_BASHUNIT_TESTS_FAILED
   local tests_risky=$_BASHUNIT_TESTS_RISKY
+  local tests_flaky=$_BASHUNIT_TESTS_FLAKY
   local assertions_passed=$_BASHUNIT_ASSERTIONS_PASSED
   local assertions_skipped=$_BASHUNIT_ASSERTIONS_SKIPPED
   local assertions_incomplete=$_BASHUNIT_ASSERTIONS_INCOMPLETE
@@ -70,6 +71,11 @@ function bashunit::console_results::render_result() {
   if [ "$tests_risky" -gt 0 ]; then
     printf " %s%s risky%s," "$_BASHUNIT_COLOR_RISKY" "$tests_risky" "$_BASHUNIT_COLOR_DEFAULT"
   fi
+  # Deliberately absent from total_tests: these tests are already inside the
+  # passed count, so adding them would make the total exceed the tests run.
+  if [ "$tests_flaky" -gt 0 ]; then
+    printf " %s%s flaky%s," "$_BASHUNIT_COLOR_INCOMPLETE" "$tests_flaky" "$_BASHUNIT_COLOR_DEFAULT"
+  fi
   printf " %s total\n" "$total_tests"
 
   printf "%sAssertions:%s" "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT"
@@ -92,6 +98,14 @@ function bashunit::console_results::render_result() {
 
   if [ "$tests_failed" -gt 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " Some tests failed " "$_BASHUNIT_COLOR_DEFAULT"
+    bashunit::console_results::print_execution_time
+    return 1
+  fi
+
+  # Ranked above risky so a run that is both reports the outcome that turns it
+  # red. Without the flag flaky is a pass, so the ladder falls straight through.
+  if [ "$tests_flaky" -gt 0 ] && bashunit::env::is_fail_on_flaky_enabled; then
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " Some tests flaky " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_execution_time
     return 1
   fi

@@ -370,3 +370,58 @@ EOF
   assert_same "8" "$passed"
   assert_same "3" "$failed"
 }
+
+# A retried-then-passed worker carries its retry count in the payload, because
+# the parent re-derives every status from the .result file and would otherwise
+# record a plain pass.
+function test_aggregate_counts_a_retried_pass_as_flaky() {
+  _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
+    "##ASSERTIONS_PASSED=1##ASSERTIONS_FAILED=0##TEST_EXIT_CODE=0##TEST_RETRIES=2##"
+
+  local before
+  before=$(bashunit::state::get_tests_flaky)
+
+  local flaky
+  flaky=$(
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::get_tests_flaky
+  )
+
+  assert_same "1" "$((flaky - before))"
+}
+
+function test_aggregate_does_not_count_a_first_try_pass_as_flaky() {
+  _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
+    "##ASSERTIONS_PASSED=1##ASSERTIONS_FAILED=0##TEST_EXIT_CODE=0##TEST_RETRIES=0##"
+
+  local before
+  before=$(bashunit::state::get_tests_flaky)
+
+  local flaky
+  flaky=$(
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    bashunit::state::get_tests_flaky
+  )
+
+  assert_same "0" "$((flaky - before))"
+}
+
+# A payload predating the field leaves the ##TEST_RETRIES= strip a no-op, which
+# would hand the numeric guard arbitrary text and mark every test failed.
+function test_aggregate_treats_a_payload_without_the_retry_field_as_a_plain_pass() {
+  _create_result_file "$TEMP_DIR_PARALLEL_TEST_SUITE/script1" "test1.result" \
+    "##ASSERTIONS_PASSED=1##ASSERTIONS_FAILED=0##TEST_EXIT_CODE=0##"
+
+  local before_flaky before_failed
+  before_flaky=$(bashunit::state::get_tests_flaky)
+  before_failed=$(bashunit::state::get_tests_failed)
+
+  local counts
+  counts=$(
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE" >/dev/null
+    printf '%s %s' "$(bashunit::state::get_tests_flaky)" "$(bashunit::state::get_tests_failed)"
+  )
+
+  assert_same "0" "$((${counts%% *} - before_flaky))"
+  assert_same "0" "$((${counts##* } - before_failed))"
+}

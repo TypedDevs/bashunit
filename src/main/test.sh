@@ -278,6 +278,10 @@ function bashunit::main::cmd_test() {
       BASHUNIT_FAIL_ON_RISKY=true
       export -n BASHUNIT_FAIL_ON_RISKY
       ;;
+    --fail-on-flaky)
+      BASHUNIT_FAIL_ON_FLAKY=true
+      export -n BASHUNIT_FAIL_ON_FLAKY
+      ;;
     --profile)
       BASHUNIT_PROFILE=true
       export -n BASHUNIT_PROFILE

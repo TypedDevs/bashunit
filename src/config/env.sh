@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Treat a test that only passed after a retry as a failure for the exit code
+_BASHUNIT_DEFAULT_FAIL_ON_FLAKY="false"
 # Execution order: defined (definition order), defects (last run's failures
 # first) or random (equivalent to --random-order)
 _BASHUNIT_DEFAULT_ORDER_BY="defined"
@@ -308,8 +310,9 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 # up unrelated environment values.
 : "${BASHUNIT_RANDOM_ORDER:=$_BASHUNIT_DEFAULT_RANDOM_ORDER}"
 : "${BASHUNIT_SEED:=$_BASHUNIT_DEFAULT_SEED}"
-# No bare ORDER_BY alias, same reasoning as RETRY/SEED above.
+# No bare ORDER_BY/FAIL_ON_FLAKY aliases, same reasoning as RETRY/SEED above.
 : "${BASHUNIT_ORDER_BY:=$_BASHUNIT_DEFAULT_ORDER_BY}"
+: "${BASHUNIT_FAIL_ON_FLAKY:=$_BASHUNIT_DEFAULT_FAIL_ON_FLAKY}"
 : "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
 : "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
 # No bare RERUN_FAILED alias, same reasoning as RETRY/SEED above. The default
@@ -611,6 +614,10 @@ function bashunit::env::is_list_enabled() {
 
 function bashunit::env::is_fail_on_risky_enabled() {
   [ "$BASHUNIT_FAIL_ON_RISKY" = "true" ]
+}
+
+function bashunit::env::is_fail_on_flaky_enabled() {
+  [ "${BASHUNIT_FAIL_ON_FLAKY:-false}" = "true" ]
 }
 
 function bashunit::env::is_profile_enabled() {

@@ -37,6 +37,10 @@ function bashunit::reports::print_gha_annotations() {
         level="warning"
         message="Test has no assertions (risky)"
         ;;
+      flaky)
+        level="warning"
+        message="Test passed only after ${_BASHUNIT_REPORTS_TEST_RETRIES[$i]:-0} retries: $failure_message"
+        ;;
       incomplete)
         level="notice"
         message="Test incomplete"

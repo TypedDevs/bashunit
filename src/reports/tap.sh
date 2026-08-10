@@ -50,6 +50,11 @@ function bashunit::reports::generate_report_tap() {
       incomplete)
         echo "ok $seq - $name # TODO"
         ;;
+      flaky)
+        # `ok` because it passed; the TODO directive is how TAP consumers mark a
+        # result that needs attention without failing the run.
+        echo "ok $seq - $name # TODO flaky (retried ${_BASHUNIT_REPORTS_TEST_RETRIES[$i]:-0}/${BASHUNIT_RETRY:-0})"
+        ;;
       *)
         echo "ok $seq - $name"
         ;;
