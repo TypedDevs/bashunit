@@ -8,6 +8,9 @@ _BASHUNIT_TESTS_SKIPPED=0
 _BASHUNIT_TESTS_INCOMPLETE=0
 _BASHUNIT_TESTS_SNAPSHOT=0
 _BASHUNIT_TESTS_RISKY=0
+# Flaky is a facet of passed, not a seventh outcome: it counts tests already
+# tallied in _BASHUNIT_TESTS_PASSED, so it must never be added to the total.
+_BASHUNIT_TESTS_FLAKY=0
 _BASHUNIT_ASSERTIONS_PASSED=0
 _BASHUNIT_ASSERTIONS_FAILED=0
 _BASHUNIT_ASSERTIONS_SKIPPED=0
@@ -71,6 +74,16 @@ function bashunit::state::get_tests_risky() {
 
 function bashunit::state::add_tests_risky() {
   ((_BASHUNIT_TESTS_RISKY++)) || true
+}
+
+
+function bashunit::state::get_tests_flaky() {
+  echo "$_BASHUNIT_TESTS_FLAKY"
+}
+
+
+function bashunit::state::add_tests_flaky() {
+  ((_BASHUNIT_TESTS_FLAKY++)) || true
 }
 
 

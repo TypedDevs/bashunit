@@ -98,6 +98,7 @@ bashunit test tests/ --parallel --simple
 | `--no-output`                  | Suppress all output                              |
 | `--failures-only`              | Only show failures                               |
 | `--fail-on-risky`              | Treat risky tests (no assertions) as failures    |
+| `--fail-on-flaky`              | Treat flaky tests (passed only after a retry) as failures |
 | `--profile`                    | Report the slowest tests after a run             |
 | `--no-progress`                | Suppress real-time progress, show only summary   |
 | `--show-output`                | Show test output on failure (default)            |
@@ -819,6 +820,56 @@ bashunit test --rerun-failed    # replay just those
 ```
 ```bash [Env variable]
 BASHUNIT_RERUN_FAILED=true bashunit test tests/
+```
+:::
+
+### Flaky tests
+
+> `bashunit test --retry 2 --fail-on-flaky`
+
+A test that failed and then passed on a retry is **flaky**: it passed, so the
+run stays green, but the summary says so.
+
+```
+Tests:      12 passed, 1 flaky, 12 total
+```
+
+The flaky count is a facet of `passed`, not a seventh outcome, which is why it
+is not added to the total. Without it a retried failure is indistinguishable
+from a clean run, and flakiness never gets triaged.
+
+Every report carries the status, along with the **first attempt's** failure
+message (the diagnostic value, otherwise discarded when the retry overwrites
+it) and the retry count:
+
+| Format | Output |
+|--------|--------|
+| JUnit | `<flakyFailure>` inside the `<testcase>`, rendered natively by Jenkins and GitLab. Not counted in `failures` |
+| TAP | `ok N - name # TODO flaky (retried 1/2)` |
+| JSON | `"status": "flaky"`, `"retries": N`, plus a `flaky` key in the summary |
+| HTML | its own row styling |
+| GitHub Actions | a `::warning` annotation |
+
+Add `--fail-on-flaky` to turn a flaky run red, mirroring
+[`--fail-on-risky`](#test-options):
+
+```bash
+bashunit test tests/ --retry 2 --fail-on-flaky
+```
+
+Notes:
+
+- `--retry 0` (the default) can never produce a flaky result: nothing is retried.
+- Counters are correct under `--parallel`; the retry count crosses the fork in
+  the per-test payload.
+- Flaky never changes the exit code on its own.
+
+::: code-group
+```bash [Surface flakiness in CI]
+bashunit test --retry 2 --report-junit report.xml
+```
+```bash [Env variable]
+BASHUNIT_FAIL_ON_FLAKY=true bashunit test tests/ --retry 2
 ```
 :::
 

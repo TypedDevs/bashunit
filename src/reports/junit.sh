@@ -51,6 +51,13 @@ function bashunit::reports::generate_junit_xml() {
         local escaped_message
         escaped_message=$(bashunit::reports::__xml_escape "$failure_message")
         echo "      <failure message=\"Test failed\">$escaped_message</failure>"
+      elif [ "$status" = "flaky" ]; then
+        # Jenkins and GitLab render flakyFailure natively, and it does not count
+        # towards failures="" -- which is the point: the test passed.
+        local escaped_flaky
+        escaped_flaky=$(bashunit::reports::__xml_escape "$failure_message")
+        echo "      <flakyFailure message=\"Test passed after ${_BASHUNIT_REPORTS_TEST_RETRIES[$i]:-0} \
+retries\">$escaped_flaky</flakyFailure>"
       elif [ "$status" = "risky" ]; then
         echo "      <skipped message=\"Test has no assertions (risky)\"/>"
       elif [ "$status" = "skipped" ]; then

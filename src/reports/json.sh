@@ -20,7 +20,7 @@ function bashunit::reports::generate_report_json() {
   local output_file="$1"
   local total="${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
 
-  local passed=0 failed=0 skipped=0 incomplete=0 duration_total=0
+  local passed=0 failed=0 skipped=0 incomplete=0 flaky=0 duration_total=0
   local i
   for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
     duration_total=$((duration_total + ${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-0}))
@@ -28,6 +28,12 @@ function bashunit::reports::generate_report_json() {
     failed) failed=$((failed + 1)) ;;
     skipped) skipped=$((skipped + 1)) ;;
     incomplete) incomplete=$((incomplete + 1)) ;;
+    # Flaky is counted twice on purpose: it passed, so it belongs in passed, and
+    # the separate tally is what makes it triageable.
+    flaky)
+      flaky=$((flaky + 1))
+      passed=$((passed + 1))
+      ;;
     # snapshot and risky ran without failing, so they count as passed here; the
     # per-test "status" field below preserves the exact category.
     *) passed=$((passed + 1)) ;;
@@ -38,8 +44,8 @@ function bashunit::reports::generate_report_json() {
     printf '{\n'
     printf '  "summary": { "total": %d, "passed": %d, "failed": %d,' \
       "$total" "$passed" "$failed"
-    printf ' "skipped": %d, "incomplete": %d, "duration_ms": %d },\n' \
-      "$skipped" "$incomplete" "$duration_total"
+    printf ' "skipped": %d, "incomplete": %d, "flaky": %d, "duration_ms": %d },\n' \
+      "$skipped" "$incomplete" "$flaky" "$duration_total"
     printf '  "tests": [\n'
     local seq=0
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
@@ -51,8 +57,10 @@ function bashunit::reports::generate_report_json() {
       message=$(bashunit::reports::__json_escape "${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}")
       sep=","
       [ "$seq" -eq "$((total - 1))" ] && sep=""
-      printf '    { "file": "%s", "name": "%s", "status": "%s", "duration_ms": %d, "message": "%s" }%s\n' \
-        "$file" "$name" "$status" "$duration" "$message" "$sep"
+      printf '    { "file": "%s", "name": "%s", "status": "%s", "duration_ms": %d,' \
+        "$file" "$name" "$status" "$duration"
+      printf ' "retries": %d, "message": "%s" }%s\n' \
+        "${_BASHUNIT_REPORTS_TEST_RETRIES[$i]:-0}" "$message" "$sep"
       seq=$((seq + 1))
     done
     printf '  ]\n'

@@ -68,6 +68,18 @@ function bashunit::state::aggregate_parallel_results() {
       exit_code="${exit_code%%##*}"
       exit_code=${exit_code:-0}
 
+      # Read separately from the block above, and defaulted on its own, because a
+      # payload without the field would leave the strip a no-op and hand the
+      # guard below arbitrary text -- which would mark every test failed.
+      local retries=0
+      case "$result_line" in
+      *"##TEST_RETRIES="*)
+        retries="${result_line##*##TEST_RETRIES=}"
+        retries="${retries%%##*}"
+        case "$retries" in '' | *[!0-9]*) retries=0 ;; esac
+        ;;
+      esac
+
       # A truncated or non-payload .result line leaves every ##KEY= strip a
       # no-op, so these fields hold arbitrary text. `$(( ))` on such text is a
       # fatal arithmetic syntax error and `[ -gt ]` reports "integer expression
@@ -125,6 +137,9 @@ function bashunit::state::aggregate_parallel_results() {
         continue
       fi
 
+      if [ "$retries" -gt 0 ]; then
+        bashunit::state::add_tests_flaky
+      fi
       bashunit::state::add_tests_passed
     done
   done

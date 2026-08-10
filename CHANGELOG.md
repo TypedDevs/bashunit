@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Flaky is a first-class outcome: a test that only passed after a retry is counted separately, kept inside the pass total so the exit code is unchanged, and carried into JUnit (`<flakyFailure>`), TAP, JSON, HTML and GitHub Actions along with the first attempt's failure message. `--fail-on-flaky` turns such a run red (#1012)
 - `--order-by <mode>` picks the execution order: `defined` (default), `defects` (last run's failures first, whole suite still runs) or `random`. `--random-order` and `--seed` keep working unchanged (#1011)
 - `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes. Deletions are dropped, a rename selects its new path, and a missing work tree or unresolvable ref fails the run instead of selecting nothing (#1010)
 - `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)

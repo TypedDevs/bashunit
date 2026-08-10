@@ -370,3 +370,15 @@ function test_state_only_calls_the_documented_assert_once_functions() {
 
   assert_same "" "${offenders% }"
 }
+
+function test_add_and_get_tests_flaky() {
+  local tests_flaky
+  tests_flaky=$(
+    _BASHUNIT_TESTS_FLAKY=0
+
+    bashunit::state::add_tests_flaky
+    bashunit::state::get_tests_flaky
+  )
+
+  assert_same "1" "$tests_flaky"
+}

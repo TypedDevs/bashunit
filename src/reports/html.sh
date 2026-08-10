@@ -48,6 +48,7 @@ function bashunit::reports::generate_report_html() {
     echo "    .incomplete { background-color: #d9edf7; }"
     echo "    .snapshot { background-color: #dfe6e9; }"
     echo "    .risky { background-color: #f5e6f5; }"
+    echo "    .flaky { background-color: #ffe8cc; }"
     echo "  </style>"
     echo "</head>"
     echo "<body>"

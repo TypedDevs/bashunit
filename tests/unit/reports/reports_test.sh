@@ -15,6 +15,7 @@ function set_up() {
   _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
   _BASHUNIT_REPORTS_TEST_FAILURES=()
   _BASHUNIT_REPORTS_TEST_LINES=()
+  _BASHUNIT_REPORTS_TEST_RETRIES=()
   _BASHUNIT_TEST_LOCATION=""
 
   # Unset report env vars by default
@@ -589,4 +590,46 @@ function test_generate_report_html_applies_status_css_classes() {
   assert_contains '<tr class="passed">' "$content"
   assert_contains '<tr class="failed">' "$content"
   assert_contains '<tr class="skipped">' "$content"
+}
+
+function test_generate_junit_xml_flaky_testcase() {
+  _mock_state_functions
+  BASHUNIT_LOG_JUNIT="report.xml"
+
+  bashunit::reports::add_test "test.sh" "test_flaky" "10" "1" "flaky" "expected 1 got 2" "2"
+  bashunit::reports::generate_junit_xml "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains "<flakyFailure" "$content"
+  assert_contains "expected 1 got 2" "$content"
+  # It passed, so it must not register as a failure.
+  assert_not_contains "<failure" "$content"
+}
+
+function test_generate_report_tap_marks_a_flaky_test_as_todo() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_flaky" "10" "1" "flaky" "boom" "2"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  local content
+  content=$(cat "$_TEMP_OUTPUT_FILE")
+
+  assert_contains "ok 1 - test_flaky # TODO flaky (retried 2/" "$content"
+}
+
+function test_gha_annotates_a_flaky_test_as_a_warning() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="log-gha.txt"
+
+  bashunit::reports::add_test "test.sh" "test_flaky" "10" "1" "flaky" "boom" "2"
+
+  local content
+  content=$(bashunit::reports::print_gha_annotations)
+
+  assert_contains "::warning" "$content"
+  assert_contains "only after 2 retries" "$content"
 }

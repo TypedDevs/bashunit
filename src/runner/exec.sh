@@ -337,6 +337,10 @@ function bashunit::runner::run_test() {
   bashunit::env::resolve_retry_count
   local retry_max=$_BASHUNIT_RETRY_VALIDATED
   local retries_used=0
+  # The losing attempts are overwritten by the next iteration, so the first
+  # failure -- the only evidence of what the flakiness looks like -- is kept here
+  # before it is lost.
+  local first_attempt_result=""
   local measure_duration=false
   bashunit::runner::needs_test_duration && measure_duration=true
   # Retry wraps ONLY execution: a failed attempt is judged from its encoded
@@ -372,9 +376,19 @@ function bashunit::runner::run_test() {
       [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -eq 0 ]; then
       break
     fi
+    # Only reached when the attempt failed, so this is the first failure.
+    if [ -z "$first_attempt_result" ]; then
+      first_attempt_result="$test_execution_result"
+    fi
     [ "$retries_used" -ge "$retry_max" ] && break
     retries_used=$((retries_used + 1))
   done
+
+  # The retry count lives in this shell, not in the test subshell that built the
+  # payload, so it is appended here. Every decoder matches its key greedily and
+  # stops at the next `##`, which makes a trailing field additive-safe; without
+  # it the count never crosses the fork and --parallel could not see flakiness.
+  test_execution_result="$test_execution_result##TEST_RETRIES=$retries_used##"
 
   # Closes FD 3, which was used temporarily to hold the original stdout.
   exec 3>&-
@@ -569,6 +583,19 @@ function bashunit::runner::run_test() {
   fi
   _BASHUNIT_RETRY_NOTE=""
   bashunit::state::add_tests_passed
+  # Flaky is a facet of passed, never a replacement for it: the test did pass, so
+  # the exit code only changes under --fail-on-flaky.
+  if [ "$retries_used" -gt 0 ]; then
+    bashunit::state::add_tests_flaky
+    bashunit::runner::decode_subshell_output "$first_attempt_result"
+    local first_failure=$_BASHUNIT_RUNNER_SUBSHELL_OUTPUT_OUT
+    bashunit::runner::format_subshell_output "$first_failure"
+    first_failure=$_BASHUNIT_RUNNER_OUTPUT_OUT
+    bashunit::reports::add_test_flaky \
+      "$test_file" "$label" "$duration" "$total_assertions" "$first_failure" "$retries_used"
+    bashunit::internal_log "Test flaky" "$label" "retries:$retries_used"
+    return
+  fi
   bashunit::reports::add_test_passed "$test_file" "$label" "$duration" "$total_assertions"
   bashunit::internal_log "Test passed" "$label"
 }
