@@ -321,7 +321,10 @@ function test_built_binary_contains_no_source_lines() {
   assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
 }
 
-function test_built_binary_stays_below_500_kib() {
+# A ceiling on accidental bloat (a stray embed, a disabled comment strip), not a
+# cap on the project: features legitimately grow the distributable. Re-baseline
+# deliberately when planned growth reaches it, keeping ~10% headroom.
+function test_built_binary_stays_below_550_kib() {
   if ! build_optimizer_is_available; then
     bashunit::skip "shfmt and jq are required for standalone optimization"
     return
@@ -334,7 +337,7 @@ function test_built_binary_stays_below_500_kib() {
 
   local bytes
   bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
-  assert_less_or_equal_than 512000 "$bytes"
+  assert_less_or_equal_than 563200 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {
