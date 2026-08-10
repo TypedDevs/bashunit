@@ -148,6 +148,16 @@ function bashunit::main::exec_tests() {
   bashunit::console_results::render_result
   exit_code=$?
 
+  # Rows first, and the Markdown summary before print_profile_and_reset below
+  # removes the profile records that summary reads.
+  bashunit::reports::load_spooled
+
+  if [ -n "$BASHUNIT_REPORT_MD" ]; then
+    bashunit::reports::generate_report_md "$BASHUNIT_REPORT_MD"
+  elif bashunit::env::should_append_step_summary; then
+    bashunit::reports::append_step_summary
+  fi
+
   if bashunit::env::is_profile_enabled; then
     bashunit::console_results::print_profile_and_reset
   fi
@@ -157,8 +167,6 @@ function bashunit::main::exec_tests() {
   if bashunit::env::is_snapshot_report_unused_enabled; then
     bashunit::snapshot::report_unused ${test_files[@]+"${test_files[@]}"}
   fi
-
-  bashunit::reports::load_spooled
 
   # To stdout, not to a file: GitHub reads workflow commands from the job log.
   # After load_spooled so a --parallel run annotates the rows its workers

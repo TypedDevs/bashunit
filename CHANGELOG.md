@@ -4,6 +4,7 @@
 
 ### Added
 - `--coverage-diff <ref>` restricts the coverage console report to lines changed since a base ref, and `--coverage-min` then gates on that diff percentage (#1032)
+- `--report-md <file>` writes a Markdown run summary: verdict, counts table, failures with their message, plus coverage and slowest tests when those ran. Inside GitHub Actions it is appended to `$GITHUB_STEP_SUMMARY` automatically, so failures render on the job page (#1015)
 - `--gha-annotations <auto|always|never>` controls GitHub Actions annotations on stdout; `auto` turns them on inside GitHub Actions and stays quiet everywhere else (#1014)
 - `--repeat <n>` runs each selected test n times so flakiness can be hunted before it reaches CI. The test is reported once with the aggregate outcome, a failure names the iteration it happened on, and repeat wraps `--retry` rather than the other way round (#1013)
 - Flaky is a first-class outcome: a test that only passed after a retry is counted separately, kept inside the pass total so the exit code is unchanged, and carried into JUnit (`<flakyFailure>`), TAP, JSON, HTML and GitHub Actions along with the first attempt's failure message. `--fail-on-flaky` turns such a run red (#1012)

@@ -255,6 +255,11 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_REPORT_TAP
       shift
       ;;
+    --report-md)
+      BASHUNIT_REPORT_MD="$2"
+      export -n BASHUNIT_REPORT_MD
+      shift
+      ;;
     --report-json)
       BASHUNIT_REPORT_JSON="$2"
       export -n BASHUNIT_REPORT_JSON

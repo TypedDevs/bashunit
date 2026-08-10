@@ -61,6 +61,8 @@ function bashunit::reports::is_enabled() {
     [ -n "${BASHUNIT_LOG_GHA:-}" ] ||
     [ -n "${BASHUNIT_REPORT_TAP:-}" ] ||
     [ -n "${BASHUNIT_REPORT_JSON:-}" ] ||
+    [ -n "${BASHUNIT_REPORT_MD:-}" ] ||
+    bashunit::env::should_append_step_summary ||
     bashunit::env::should_print_gha_annotations
 }
 
