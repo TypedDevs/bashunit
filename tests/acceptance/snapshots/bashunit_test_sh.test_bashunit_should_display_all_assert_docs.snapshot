@@ -148,6 +148,26 @@ Reports an error if `actual` is not greater than or equal to `expected`.
 - assert_less_or_equal_than is the inverse of this assertion and takes the same arguments.
 
 
+## assert_between
+--------------
+> `assert_between "min" "max" "actual"`
+
+Reports an error if `actual` is outside the inclusive numeric range from `min` to `max`.
+Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
+
+- assert_not_between is the exact negation and takes the same arguments.
+
+
+## assert_not_between
+--------------
+> `assert_not_between "min" "max" "actual"`
+
+Reports an error if `actual` is inside the inclusive numeric range from `min` to `max`.
+Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
+
+- assert_between is the exact negation and takes the same arguments.
+
+
 ## assert_within_delta
 --------------
 > `assert_within_delta "expected" "actual" "delta"`

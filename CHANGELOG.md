@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_between <min> <max> <actual>` and `assert_not_between` add inclusive numeric-range assertions for integers and decimals (#1026)
 - `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
 - `--exclude-filter <name>` skips tests by name, the counterpart of `--exclude-tag`. Repeatable, OR'd, and wins over `--filter` (#1009)
 - `# @tags a b` above any top-level line applies those tags to every test in the file, unioned with per-function `# @tag` (#1008)

@@ -118,14 +118,15 @@ cleaned up automatically and are safe under `--parallel`.
 
 ## Assertions
 
-`bashunit doc` prints the full catalogue (75 assertions) locally; `bashunit doc contains`
+`bashunit doc` prints the full catalogue (77 assertions) locally; `bashunit doc contains`
 filters it. The same list is at https://bashunit.com/assertions. **Do not invent names**
 — a wrong name is a runtime error, not a failed assertion.
 
 - Equality: `assert_same`, `assert_not_same`, `assert_equals`, `assert_not_equals`
 - Strings: `assert_contains`, `assert_not_contains`, `assert_matches`,
   `assert_string_starts_with`, `assert_string_ends_with`, `assert_empty`, `assert_not_empty`
-- Numbers: `assert_greater_than`, `assert_less_than`, `assert_within_delta`
+- Numbers: `assert_greater_than`, `assert_less_than`, `assert_between`,
+  `assert_not_between`, `assert_within_delta`
 - Exit codes: `assert_successful_code`, `assert_general_error`, `assert_exit_code`,
   `assert_command_not_found`, `assert_command_available`
 - Files: `assert_file_exists`, `assert_file_contains`, `assert_is_file_empty`,

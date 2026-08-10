@@ -20,7 +20,7 @@ to narrow it (`bashunit doc json`).
 |-------|------------|
 | **Booleans and equality** | [assert_true](#assert-true) · [assert_false](#assert-false) · [assert_same](#assert-same) · [assert_not_same](#assert-not-same) · [assert_equals](#assert-equals) · [assert_not_equals](#assert-not-equals) |
 | **Strings** | [assert_contains](#assert-contains) · [assert_not_contains](#assert-not-contains) · [assert_contains_ignore_case](#assert-contains-ignore-case) · [assert_matches](#assert-matches) · [assert_not_matches](#assert-not-matches) · [assert_string_starts_with](#assert-string-starts-with) · [assert_string_not_starts_with](#assert-string-not-starts-with) · [assert_string_ends_with](#assert-string-ends-with) · [assert_string_not_ends_with](#assert-string-not-ends-with) · [assert_string_matches_format](#assert-string-matches-format) · [assert_string_not_matches_format](#assert-string-not-matches-format) · [assert_empty](#assert-empty) · [assert_not_empty](#assert-not-empty) · [assert_line_count](#assert-line-count) |
-| **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_within_delta](#assert-within-delta) |
+| **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_between](#assert-between) · [assert_not_between](#assert-not-between) · [assert_within_delta](#assert-within-delta) |
 | **Dates** | [assert_date_equals](#assert-date-equals) · [assert_date_before](#assert-date-before) · [assert_date_after](#assert-date-after) · [assert_date_within_range](#assert-date-within-range) · [assert_date_within_delta](#assert-date-within-delta) |
 | **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_available](#assert-command-available) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
 | **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
@@ -401,6 +401,47 @@ function test_success_with_two_equal_numbers() {
 
 function test_failure() {
   assert_greater_or_equal_than "999" "1"
+}
+```
+:::
+
+## assert_between
+> `assert_between "min" "max" "actual"`
+
+Reports an error if `actual` is outside the inclusive numeric range from `min` to `max`.
+Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
+
+- [assert_not_between](#assert-not-between) is the exact negation and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_between "100" "500" "275"
+  assert_between "0.1" "0.3" "0.2"
+}
+
+function test_failure() {
+  assert_between "100" "500" "750"
+}
+```
+:::
+
+## assert_not_between
+> `assert_not_between "min" "max" "actual"`
+
+Reports an error if `actual` is inside the inclusive numeric range from `min` to `max`.
+Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
+
+- [assert_between](#assert-between) is the exact negation and takes the same arguments.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_not_between "400" "499" "200"
+}
+
+function test_failure() {
+  assert_not_between "400" "499" "404"
 }
 ```
 :::
