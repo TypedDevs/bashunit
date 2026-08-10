@@ -7,7 +7,9 @@
 # Clearing _BASHUNIT_GHA_ANNOTATIONS_CLAIMED below is how a nested run says
 # "pretend I am the top-level one": this suite is itself a bashunit run and has
 # already claimed the job log for its process tree, which is the very pollution
-# the marker exists to prevent.
+# the marker exists to prevent. A run that claims top-level also claims
+# $GITHUB_STEP_SUMMARY, so it is pinned empty alongside or the fixtures'
+# summaries would land on the real job page under CI.
 
 function set_up_before_script() {
   TEST_ENV_FILE="tests/acceptance/fixtures/.env.default"
@@ -16,7 +18,8 @@ function set_up_before_script() {
 
 function test_annotations_reach_stdout_inside_github_actions() {
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --no-parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
     --env "$TEST_ENV_FILE" "$FIXTURE")" || true
 
   assert_contains "::error file=$FIXTURE" "$output"
@@ -25,7 +28,8 @@ function test_annotations_reach_stdout_inside_github_actions() {
 
 function test_the_annotation_carries_the_failing_line() {
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --no-parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
     --env "$TEST_ENV_FILE" "$FIXTURE")" || true
 
   assert_matches "::error file=[^,]*,line=[0-9]+,title=" "$output"
@@ -52,7 +56,8 @@ function test_a_nested_run_never_annotates_the_parents_log() {
 
 function test_never_suppresses_annotations_inside_github_actions() {
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --no-parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
     --env "$TEST_ENV_FILE" --gha-annotations never "$FIXTURE")" || true
 
   assert_not_contains "::error" "$output"
@@ -68,7 +73,8 @@ function test_always_emits_annotations_outside_github_actions() {
 
 function test_a_multi_line_message_stays_one_annotation() {
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --no-parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
     --env "$TEST_ENV_FILE" "$FIXTURE")" || true
 
   # One failing test, so one ::error line, with the newlines percent-encoded.
@@ -81,7 +87,8 @@ function test_log_gha_still_writes_the_file_without_duplicating_stdout() {
   log_file="$(bashunit::temp_file)"
 
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --no-parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
     --env "$TEST_ENV_FILE" --log-gha "$log_file" "$FIXTURE")" || true
 
   assert_contains "::error" "$(cat "$log_file")"
@@ -90,7 +97,8 @@ function test_log_gha_still_writes_the_file_without_duplicating_stdout() {
 
 function test_annotations_survive_parallel_aggregation() {
   local output
-  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_ACTIONS=true ./bashunit --parallel --no-color \
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --parallel --no-color \
     --env "$TEST_ENV_FILE" "$FIXTURE")" || true
 
   assert_contains "::error file=$FIXTURE" "$output"

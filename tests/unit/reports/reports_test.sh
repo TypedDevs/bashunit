@@ -25,10 +25,11 @@ function set_up() {
   unset BASHUNIT_REPORT_TAP
 
   # These tests ask whether a *file* report was configured. Stdout annotations
-  # are a second reason to collect rows, and they switch themselves on inside
-  # GitHub Actions, so pin them off to keep the answer independent of the
-  # ambient CI environment.
+  # and the step-summary append are a second reason to collect rows, and both
+  # switch themselves on inside GitHub Actions, so pin them off to keep the
+  # answer independent of the ambient CI environment.
   export BASHUNIT_GHA_ANNOTATIONS=never
+  unset GITHUB_STEP_SUMMARY
 
   # Create temp file for output tests
   _TEMP_OUTPUT_FILE=$(mktemp)
