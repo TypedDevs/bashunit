@@ -20,6 +20,7 @@
 - Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, which was roughly half of a coverage run's wall time and affected both engines equally (#1005)
 
 ### Fixed
+- Build: the standalone binary size budget is 544 KiB, raised from 500 KiB after ordinary feature growth crossed it; the artifact keeps its indentation rather than being minified (#1045)
 - `assert_within_delta` rejects malformed numbers such as `1.2.3` or `5-3` as non-numeric instead of leaking a raw `bc` parse error or silently evaluating them as an expression (#1026)
 - Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
 
