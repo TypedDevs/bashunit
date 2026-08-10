@@ -68,6 +68,7 @@ bashunit test tests/ --parallel --simple
 | `-w, --watch`                  | Watch files and re-run tests on change           |
 | `--log-junit, --report-junit <file>` | Write JUnit XML report                     |
 | `--log-gha <file>`             | Write GitHub Actions workflow-commands log       |
+| `--gha-annotations <mode>`     | Annotations on stdout: `auto` (default), `always` or `never` |
 | `-j, --jobs <N\|auto>`         | Run tests in parallel with max N concurrent jobs (`auto` = CPU cores) |
 | `-p, --parallel`               | Run tests in parallel                            |
 | `--no-parallel`                | Run tests sequentially                           |
@@ -448,15 +449,48 @@ bashunit test tests/ --log-junit results.xml
 bashunit test tests/ --report-html report.html
 ```
 ```bash [GitHub Actions]
-# Stream annotations straight to the runner log:
-bashunit test tests/ --log-gha /dev/stdout
+# Nothing to configure: annotations are automatic on a runner.
+bashunit test tests/
 ```
 ```bash [JSON]
 bashunit test tests/ --report-json report.json
 ```
 :::
 
-The `--log-gha` flag writes GitHub Actions workflow commands (`::error`, `::warning`, `::notice`) for failed, risky and incomplete tests, including the failing test's `file` and `line`. Point it at `/dev/stdout` (or stream a log file to stdout) on a runner and the failures appear as inline annotations in the "Files changed" tab of a pull request.
+### GitHub Actions annotations
+
+Inside GitHub Actions, bashunit annotates failing tests on the pull request by
+itself. No flag, no configuration:
+
+```
+::error file=tests/math_test.sh,line=42,title=Sums::Expected '4' but got '5'
+```
+
+GitHub parses workflow commands from the **job log**, so the annotations go to
+stdout. They carry the failing test's `file` and `line`, which is what puts them
+on the right line of the "Files changed" tab: `::error` for failures, `::warning`
+for risky and flaky tests, `::notice` for incomplete ones. Messages are
+percent-encoded, so a multi-line failure stays a single annotation.
+
+Detection is `GITHUB_ACTIONS=true`, and `--gha-annotations` overrides it:
+
+| Mode | Behaviour |
+|------|-----------|
+| `auto` | On inside GitHub Actions, silent everywhere else. The default. |
+| `always` | On everywhere, useful for another CI that understands the format |
+| `never` | Off, including inside GitHub Actions |
+
+```bash
+bashunit test tests/ --gha-annotations never
+```
+
+`auto` also stays quiet under `--output tap`, whose stdout is a machine format an
+annotation line would corrupt.
+
+The separate `--log-gha <file>` flag still writes the same workflow commands to a
+file. It is independent of the stdout annotations, so using both does not
+duplicate anything in the job log.
+
 
 The `--report-json` flag writes machine-readable results for scripts, dashboards and bots. Strings are escaped in pure Bash, so no `jq` is needed to produce it. Its schema is:
 

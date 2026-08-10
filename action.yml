@@ -27,6 +27,10 @@ inputs:
     description: 'If set, run "bashunit <args>" after installing (e.g. "tests/ --strict"). Empty = install only.'
     required: false
     default: ''
+  annotations:
+    description: 'Annotate failing tests on the pull request. bashunit detects GitHub Actions on its own, so this only needs setting to turn them off ("never").'
+    required: false
+    default: 'auto'
 
 outputs:
   path:
@@ -47,6 +51,7 @@ runs:
         BASHUNIT_ADD_TO_PATH: ${{ inputs.add-to-path }}
         BASHUNIT_VERIFY_CHECKSUM: ${{ inputs.verify-checksum }}
         BASHUNIT_ARGS: ${{ inputs.args }}
+        BASHUNIT_GHA_ANNOTATIONS: ${{ inputs.annotations }}
         BASHUNIT_ACTION_PATH: ${{ github.action_path }}
       run: |
         set -euo pipefail

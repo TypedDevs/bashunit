@@ -125,6 +125,8 @@ Options:
                               Supports 'a&&b' (AND) and '!a' (NOT)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
   --log-junit, --report-junit <file>  Write JUnit XML report
+  --log-gha <file>            Write GitHub Actions annotations to a file
+  --gha-annotations <mode>    Annotations on stdout: auto (in GitHub Actions), always or never
   -j, --jobs <N|auto>         Run tests in parallel with max N concurrent jobs ("auto" = CPU cores)
   -p, --parallel              Run tests in parallel (unlimited concurrency)
   --no-parallel               Run tests sequentially

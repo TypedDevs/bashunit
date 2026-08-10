@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# When to print GitHub Actions annotations to stdout: auto|always|never
+_BASHUNIT_DEFAULT_GHA_ANNOTATIONS="auto"
 # Run each selected test n times; the test fails if any iteration fails
 _BASHUNIT_DEFAULT_REPEAT="1"
 # Treat a test that only passed after a retry as a failure for the exit code
@@ -316,6 +318,22 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 : "${BASHUNIT_ORDER_BY:=$_BASHUNIT_DEFAULT_ORDER_BY}"
 : "${BASHUNIT_FAIL_ON_FLAKY:=$_BASHUNIT_DEFAULT_FAIL_ON_FLAKY}"
 : "${BASHUNIT_REPEAT:=$_BASHUNIT_DEFAULT_REPEAT}"
+: "${BASHUNIT_GHA_ANNOTATIONS:=$_BASHUNIT_DEFAULT_GHA_ANNOTATIONS}"
+
+# GITHUB_ACTIONS is inherited by every child process, so a nested bashunit run
+# (bashunit's own acceptance suite, or a user's script under test that calls
+# bashunit) would annotate the parent's job log with its own fixtures'
+# failures. Only the outermost run owns that log.
+#
+# Deliberately exported, unlike the run-mode flags: the nested run is exactly
+# the consumer that has to see it. Reading it before claiming it is what makes
+# the outermost process the one that wins.
+if [ -n "${_BASHUNIT_GHA_ANNOTATIONS_CLAIMED:-}" ]; then
+  _BASHUNIT_IS_OUTERMOST_RUN=false
+else
+  _BASHUNIT_IS_OUTERMOST_RUN=true
+fi
+export _BASHUNIT_GHA_ANNOTATIONS_CLAIMED=1
 : "${BASHUNIT_SHARD_INDEX:=$_BASHUNIT_DEFAULT_SHARD_INDEX}"
 : "${BASHUNIT_SHARD_TOTAL:=$_BASHUNIT_DEFAULT_SHARD_TOTAL}"
 # No bare RERUN_FAILED alias, same reasoning as RETRY/SEED above. The default
@@ -630,6 +648,24 @@ function bashunit::env::is_list_enabled() {
 
 function bashunit::env::is_fail_on_risky_enabled() {
   [ "$BASHUNIT_FAIL_ON_RISKY" = "true" ]
+}
+
+##
+# Whether workflow-command annotations go to stdout. GitHub parses them from the
+# job log, so stdout is the only sink that reaches a pull request.
+#
+# `auto` stays quiet outside GitHub Actions, and quiet under --output tap, whose
+# stdout is a machine format an annotation line would corrupt.
+##
+function bashunit::env::should_print_gha_annotations() {
+  case "${BASHUNIT_GHA_ANNOTATIONS:-auto}" in
+  never) return 1 ;;
+  always) return 0 ;;
+  esac
+
+  [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ] &&
+    [ "${GITHUB_ACTIONS:-}" = "true" ] &&
+    ! bashunit::env::is_tap_output_enabled
 }
 
 function bashunit::env::is_fail_on_flaky_enabled() {

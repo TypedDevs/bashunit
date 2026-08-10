@@ -69,6 +69,7 @@ _bashunit() {
     '--exclude-filter[Skip tests whose name matches]:name:' \
     '--exclude-tag[Skip tests with matching @tag]:tag:' \
     '--log-junit[Write JUnit XML report]:file:_files' \
+    '--gha-annotations[GitHub Actions annotations on stdout]:mode:(auto always never)' \
     '--report-junit[Write JUnit XML report]:file:_files' \
     '--log-gha[Write GitHub Actions workflow-commands log]:file:_files' \
     '(-j --jobs)'{-j,--jobs}'[Max N parallel jobs, or auto]:jobs:(auto)' \

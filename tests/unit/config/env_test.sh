@@ -501,3 +501,89 @@ function test_create_scratch_dirs_fails_loudly_when_a_directory_cannot_be_create
   assert_contains "cannot create the scratch directory" "$output"
   assert_contains "$base/blocker/run" "$output"
 }
+
+function _gha_annotations_decision() {
+  if bashunit::env::should_print_gha_annotations; then echo "print"; else echo "quiet"; fi
+}
+
+function test_gha_annotations_auto_prints_for_an_outermost_run_in_github_actions() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=auto
+    GITHUB_ACTIONS=true
+    _BASHUNIT_IS_OUTERMOST_RUN=true
+    BASHUNIT_OUTPUT_FORMAT=""
+    _gha_annotations_decision
+  )
+
+  assert_same "print" "$decision"
+}
+
+function test_gha_annotations_auto_stays_quiet_outside_github_actions() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=auto
+    GITHUB_ACTIONS=""
+    _BASHUNIT_IS_OUTERMOST_RUN=true
+    _gha_annotations_decision
+  )
+
+  assert_same "quiet" "$decision"
+}
+
+function test_gha_annotations_auto_stays_quiet_in_a_nested_run() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=auto
+    GITHUB_ACTIONS=true
+    _BASHUNIT_IS_OUTERMOST_RUN=false
+    BASHUNIT_OUTPUT_FORMAT=""
+    _gha_annotations_decision
+  )
+
+  assert_same "quiet" "$decision"
+}
+
+# TAP owns stdout as a machine format; an annotation line would corrupt it.
+function test_gha_annotations_auto_stays_quiet_under_tap_output() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=auto
+    GITHUB_ACTIONS=true
+    _BASHUNIT_IS_OUTERMOST_RUN=true
+    BASHUNIT_OUTPUT_FORMAT=tap
+    _gha_annotations_decision
+  )
+
+  assert_same "quiet" "$decision"
+}
+
+function test_gha_annotations_always_prints_even_when_nested_and_outside_ci() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=always
+    GITHUB_ACTIONS=""
+    _BASHUNIT_IS_OUTERMOST_RUN=false
+    _gha_annotations_decision
+  )
+
+  assert_same "print" "$decision"
+}
+
+function test_gha_annotations_never_wins_over_github_actions() {
+  local decision
+  # shellcheck disable=SC2034  # read by the predicate through the environment
+  decision=$(
+    BASHUNIT_GHA_ANNOTATIONS=never
+    GITHUB_ACTIONS=true
+    _BASHUNIT_IS_OUTERMOST_RUN=true
+    _gha_annotations_decision
+  )
+
+  assert_same "quiet" "$decision"
+}

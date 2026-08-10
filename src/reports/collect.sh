@@ -60,7 +60,8 @@ function bashunit::reports::is_enabled() {
     [ -n "${BASHUNIT_REPORT_HTML:-}" ] ||
     [ -n "${BASHUNIT_LOG_GHA:-}" ] ||
     [ -n "${BASHUNIT_REPORT_TAP:-}" ] ||
-    [ -n "${BASHUNIT_REPORT_JSON:-}" ]
+    [ -n "${BASHUNIT_REPORT_JSON:-}" ] ||
+    bashunit::env::should_print_gha_annotations
 }
 
 function bashunit::reports::add_test() {

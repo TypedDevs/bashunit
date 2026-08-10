@@ -240,6 +240,11 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_LOG_GHA
       shift
       ;;
+    --gha-annotations)
+      BASHUNIT_GHA_ANNOTATIONS="$2"
+      export -n BASHUNIT_GHA_ANNOTATIONS
+      shift
+      ;;
     -r | --report-html)
       BASHUNIT_REPORT_HTML="$2"
       export -n BASHUNIT_REPORT_HTML
