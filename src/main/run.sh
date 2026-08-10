@@ -148,6 +148,31 @@ function bashunit::main::exec_tests() {
   bashunit::console_results::render_result
   exit_code=$?
 
+  # Rows first, and the Markdown summary before print_profile_and_reset below
+  # removes the profile records that summary reads.
+  bashunit::reports::load_spooled
+
+  # Coverage data is turned into numbers here rather than with the reports
+  # below, because the Markdown summary quotes the same percentage and would
+  # otherwise read it before the hit records exist — 0% for a covered run.
+  if bashunit::env::is_coverage_enabled; then
+    # Turn captured xtrace output into hit records (no-op for the trap engine)
+    bashunit::coverage::finalize
+
+    # Aggregate per-process coverage data from parallel runs
+    if bashunit::parallel::is_enabled; then
+      bashunit::coverage::aggregate_parallel
+    fi
+
+    bashunit::coverage::precompute_file_stats
+  fi
+
+  if [ -n "$BASHUNIT_REPORT_MD" ]; then
+    bashunit::reports::generate_report_md "$BASHUNIT_REPORT_MD"
+  elif bashunit::env::should_append_step_summary; then
+    bashunit::reports::append_step_summary
+  fi
+
   if bashunit::env::is_profile_enabled; then
     bashunit::console_results::print_profile_and_reset
   fi
@@ -157,8 +182,6 @@ function bashunit::main::exec_tests() {
   if bashunit::env::is_snapshot_report_unused_enabled; then
     bashunit::snapshot::report_unused ${test_files[@]+"${test_files[@]}"}
   fi
-
-  bashunit::reports::load_spooled
 
   # To stdout, not to a file: GitHub reads workflow commands from the job log.
   # After load_spooled so a --parallel run annotates the rows its workers
@@ -187,18 +210,8 @@ function bashunit::main::exec_tests() {
     bashunit::reports::generate_report_json "$BASHUNIT_REPORT_JSON"
   fi
 
-  # Generate coverage report if enabled
+  # Render the coverage reports; the data behind them was computed above.
   if bashunit::env::is_coverage_enabled; then
-    # Turn captured xtrace output into hit records (no-op for the trap engine)
-    bashunit::coverage::finalize
-
-    # Aggregate per-process coverage data from parallel runs
-    if bashunit::parallel::is_enabled; then
-      bashunit::coverage::aggregate_parallel
-    fi
-
-    bashunit::coverage::precompute_file_stats
-
     if bashunit::coverage::is_diff_enabled; then
       bashunit::coverage::report_diff
     else

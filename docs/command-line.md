@@ -75,6 +75,7 @@ bashunit test tests/ --parallel --simple
 | `-r, --report-html <file>`     | Write HTML report                                |
 | `--report-tap <file>`          | Write TAP version 13 report to a file            |
 | `--report-json <file>`         | Write machine-readable JSON report to a file     |
+| `--report-md <file>`           | Write a Markdown summary (auto-appended to `$GITHUB_STEP_SUMMARY`) |
 | `-R, --run-all`                | Run all assertions (don't stop on first failure) |
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
@@ -457,6 +458,54 @@ bashunit test tests/
 bashunit test tests/ --report-json report.json
 ```
 :::
+
+### Markdown summary
+
+> `bashunit test --report-md <file>`
+
+Every other report format targets a machine. This one targets the page a
+developer actually looks at first:
+
+```markdown
+## bashunit
+
+❌ **3 failed**, 409 passed in 12.3s
+
+| Result | Count |
+|--------|-------|
+| Passed | 409 |
+| Failed | 3 |
+
+## Failures
+
+### Sums two numbers
+
+`tests/math_test.sh:42`
+
+```
+Expected '4'
+but got  '5'
+```
+```
+
+Inside GitHub Actions there is **nothing to configure**: with
+`GITHUB_STEP_SUMMARY` set and no explicit path, the summary is appended to it
+and renders on the job page. Appended, never written, because that file belongs
+to the whole job and truncating it would discard the other steps' output. An
+explicit `--report-md` path wins over the step summary.
+
+The report always carries the verdict, a counts table and the failures with
+their `file:line` and message. Two sections appear only when the data exists:
+coverage percentage after a `--coverage` run, and the slowest tests under
+[`--profile`](#profile).
+
+Failure messages are ANSI-stripped and go inside a fence, so they render
+verbatim. Test names are escaped, so a name containing `|`, `*`, `_` or a
+backtick cannot break the table.
+
+Like the annotations, only the outermost run writes the step summary: a nested
+bashunit run inherits `GITHUB_STEP_SUMMARY` and would otherwise append its own
+fixtures' results to the parent's job page.
 
 ### GitHub Actions annotations
 

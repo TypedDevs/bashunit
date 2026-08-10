@@ -164,6 +164,7 @@ _BASHUNIT_DEFAULT_LOG_GHA=""
 _BASHUNIT_DEFAULT_REPORT_HTML=""
 _BASHUNIT_DEFAULT_REPORT_TAP=""
 _BASHUNIT_DEFAULT_REPORT_JSON=""
+_BASHUNIT_DEFAULT_REPORT_MD=""
 
 # Coverage defaults (following kcov, bashcov, SimpleCov conventions)
 _BASHUNIT_DEFAULT_COVERAGE="false"
@@ -323,6 +324,8 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 : "${BASHUNIT_FAIL_ON_FLAKY:=$_BASHUNIT_DEFAULT_FAIL_ON_FLAKY}"
 : "${BASHUNIT_REPEAT:=$_BASHUNIT_DEFAULT_REPEAT}"
 : "${BASHUNIT_GHA_ANNOTATIONS:=$_BASHUNIT_DEFAULT_GHA_ANNOTATIONS}"
+# No bare REPORT_MD alias: the newer report flags never grew one.
+: "${BASHUNIT_REPORT_MD:=$_BASHUNIT_DEFAULT_REPORT_MD}"
 
 # GITHUB_ACTIONS is inherited by every child process, so a nested bashunit run
 # (bashunit's own acceptance suite, or a user's script under test that calls
@@ -670,6 +673,18 @@ function bashunit::env::should_print_gha_annotations() {
   [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ] &&
     [ "${GITHUB_ACTIONS:-}" = "true" ] &&
     ! bashunit::env::is_tap_output_enabled
+}
+
+##
+# Whether the Markdown summary is appended to the job's step summary. Same
+# outermost-run posture as the annotations: GITHUB_STEP_SUMMARY is inherited by
+# every child, so a nested run would append its own fixtures' results to the
+# parent's job page.
+##
+function bashunit::env::should_append_step_summary() {
+  [ -n "${GITHUB_STEP_SUMMARY:-}" ] || return 1
+
+  [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ]
 }
 
 function bashunit::env::is_fail_on_flaky_enabled() {

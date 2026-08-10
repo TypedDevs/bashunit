@@ -135,7 +135,7 @@ function bashunit::main::validate_config_or_exit() {
 
   local _report_var _report_path
   for _report_var in BASHUNIT_LOG_JUNIT BASHUNIT_LOG_GHA BASHUNIT_REPORT_HTML \
-    BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON; do
+    BASHUNIT_REPORT_TAP BASHUNIT_REPORT_JSON BASHUNIT_REPORT_MD; do
     _report_path=${!_report_var:-}
     if [ -n "$_report_path" ]; then
       bashunit::main::require_writable_path_or_exit "$_report_path" "$_report_var"

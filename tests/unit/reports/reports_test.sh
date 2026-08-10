@@ -25,10 +25,12 @@ function set_up() {
   unset BASHUNIT_REPORT_TAP
 
   # These tests ask whether a *file* report was configured. Stdout annotations
-  # are a second reason to collect rows, and they switch themselves on inside
-  # GitHub Actions, so pin them off to keep the answer independent of the
-  # ambient CI environment.
+  # and the Markdown step summary are two further reasons to collect rows, and
+  # both switch themselves on inside GitHub Actions, so pin them off to keep the
+  # answer independent of the ambient CI environment.
   export BASHUNIT_GHA_ANNOTATIONS=never
+  unset GITHUB_STEP_SUMMARY
+  unset BASHUNIT_REPORT_MD
 
   # Create temp file for output tests
   _TEMP_OUTPUT_FILE=$(mktemp)
@@ -43,6 +45,7 @@ function tear_down() {
   unset BASHUNIT_REPORT_HTML
   unset BASHUNIT_LOG_GHA
   unset BASHUNIT_GHA_ANNOTATIONS
+  unset BASHUNIT_REPORT_MD
 }
 
 function _reports_is_enabled_state() {

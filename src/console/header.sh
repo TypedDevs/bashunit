@@ -133,6 +133,7 @@ Options:
   -r, --report-html <file>    Write HTML report
   --report-tap <file>         Write TAP version 13 report
   --report-json <file>        Write machine-readable JSON report
+  --report-md <file>          Write a Markdown summary (auto-appended to \$GITHUB_STEP_SUMMARY)
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
   --output <format>           Output format: tap (TAP version 13)
