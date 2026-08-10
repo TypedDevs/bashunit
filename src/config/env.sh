@@ -179,6 +179,8 @@ _BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS="false"
 # Tracing engine: auto|xtrace|trap. auto takes the xtrace fast path wherever
 # BASH_XTRACEFD exists (Bash 4.1+) and the DEBUG trap below it (ADR-009, #860)
 _BASHUNIT_DEFAULT_COVERAGE_ENGINE="auto"
+# Restrict the coverage text report to lines changed against this ref
+_BASHUNIT_DEFAULT_COVERAGE_DIFF=""
 
 : "${BASHUNIT_DEFAULT_PATH:=${DEFAULT_PATH:=$_BASHUNIT_DEFAULT_DEFAULT_PATH}}"
 : "${BASHUNIT_DEV_LOG:=${DEV_LOG:=$_BASHUNIT_DEFAULT_DEV_LOG}}"
@@ -212,6 +214,8 @@ BASHUNIT_WATCH_INTERVAL=$(bashunit::env::positive_int_or_default \
 # No bare COVERAGE_ENGINE alias: the unprefixed forms are deprecated, so a new
 # setting only ever ships under the BASHUNIT_ prefix.
 : "${BASHUNIT_COVERAGE_ENGINE:=$_BASHUNIT_DEFAULT_COVERAGE_ENGINE}"
+# No bare COVERAGE_DIFF alias, same reasoning as COVERAGE_ENGINE above.
+: "${BASHUNIT_COVERAGE_DIFF:=$_BASHUNIT_DEFAULT_COVERAGE_DIFF}"
 
 # Booleans
 _BASHUNIT_DEFAULT_PARALLEL_RUN="false"

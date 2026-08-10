@@ -176,6 +176,7 @@ Coverage:
   --coverage-report [file]     Output file (default: coverage/lcov.info)
   --coverage-report-html [dir] HTML report (default: coverage/html)
   --coverage-min <pct>         Fail if coverage below percentage
+  --coverage-diff <ref>        Report coverage only for lines changed since ref
   --no-coverage-report         Disable file output, console only
 
 Examples:

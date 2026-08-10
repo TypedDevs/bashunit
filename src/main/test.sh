@@ -355,6 +355,14 @@ function bashunit::main::cmd_test() {
       _bashunit_coverage_opt_set=true
       shift
       ;;
+    --coverage-diff)
+      # The base ref is required rather than defaulted: an optional value would
+      # make `--coverage-diff tests/` swallow the path as a ref.
+      # shellcheck disable=SC2034
+      BASHUNIT_COVERAGE_DIFF="$2"
+      _bashunit_coverage_opt_set=true
+      shift
+      ;;
     --no-coverage-report)
       # shellcheck disable=SC2034
       BASHUNIT_COVERAGE_REPORT=""

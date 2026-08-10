@@ -175,6 +175,30 @@ function bashunit::main::validate_config_or_exit() {
     ;;
   esac
 
+  # --coverage-diff needs a repository and a resolvable ref. Left unchecked, a
+  # shallow CI clone (where the base ref is simply absent) would report every
+  # file as "no changed lines" and pass a diff threshold while measuring
+  # nothing — a silent false pass, not a missing feature.
+  if [ -n "${BASHUNIT_COVERAGE_DIFF:-}" ]; then
+    if ! bashunit::dependencies::has_git; then
+      printf "%sError: --coverage-diff needs git, which was not found.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+    if ! bashunit::helper::git_is_repo; then
+      printf "%sError: --coverage-diff needs a git repository; '%s' is not inside one.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$(pwd)" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+    if ! bashunit::helper::git_ref_exists "${BASHUNIT_COVERAGE_DIFF}"; then
+      printf "%sError: --coverage-diff base '%s' does not resolve to a commit. \
+On a shallow clone, fetch it first (git fetch --depth=... origin %s).%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_COVERAGE_DIFF}" \
+        "${BASHUNIT_COVERAGE_DIFF}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      exit 1
+    fi
+  fi
+
   # Same shape as --output above: an unrecognised name would otherwise fall
   # through to the default renderer and look like it worked.
   case "${BASHUNIT_LIST_FORMAT:-}" in

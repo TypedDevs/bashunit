@@ -87,6 +87,48 @@ function bashunit::helper::git_changed_files() {
 }
 
 ##
+# Echoes the line numbers added or modified in one file since the ref, one per
+# line, ascending and deduplicated.
+#
+# Merges the same three sources as git_changed_files, for the same reason: the
+# commit range misses working-tree edits and neither knows about a file no
+# commit has seen. An untracked file counts as changed in full.
+#
+# Only the "+" side of each hunk is reported: a pure deletion (`+N,0`) leaves no
+# line that coverage could hold an opinion about.
+# Arguments: $1 - the ref, $2 - path to the file
+##
+function bashunit::helper::git_changed_lines() {
+  local ref=$1
+  local file=$2
+
+  if git ls-files --error-unmatch -- "$file" >/dev/null 2>&1; then
+    {
+      git diff --unified=0 -M "$ref...HEAD" -- "$file" 2>/dev/null
+      git diff --unified=0 -M HEAD -- "$file" 2>/dev/null
+    } | awk '
+      /^@@ / {
+        # @@ -old,count +new,count @@
+        plus = $3
+        sub(/^\+/, "", plus)
+        n = index(plus, ",")
+        if (n == 0) { start = plus + 0; len = 1 }
+        else { start = substr(plus, 1, n - 1) + 0; len = substr(plus, n + 1) + 0 }
+        for (i = 0; i < len; i++) { seen[start + i] = 1 }
+      }
+      END { for (l in seen) { print l + 0 } }
+    ' | sort -n -u
+    return 0
+  fi
+
+  # Untracked (and not ignored): every line is new.
+  if [ -f "$file" ] &&
+    [ -n "$(git ls-files --others --exclude-standard -- "$file" 2>/dev/null)" ]; then
+    awk 'END { for (i = 1; i <= NR; i++) print i }' "$file"
+  fi
+}
+
+##
 # Echoes the given candidate files that changed since the ref, preserving the
 # caller order and path spelling. A leading "./" is ignored on both sides:
 # discovery emits the paths the user typed, git always emits repo-relative ones.
