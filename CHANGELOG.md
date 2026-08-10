@@ -19,6 +19,7 @@
 - The coverage engine in use is reported by `--verbose`, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` that the running Bash cannot honour now warns instead of being silently ignored (#1005)
 
 ### Changed
+- The JUnit XML shape changed: one `<testsuite>` per test file (with its own counts, time and timestamp) instead of a single flat suite, `classname` on every `<testcase>`, `<failure message="...">` carrying the first informative line of the real message with `type="AssertionFailed"`, `<system-out>` with the test's captured output, and aggregate totals on `<testsuites>`. Consumers that group by suite or classname (Jenkins, GitLab, dorny/test-reporter) now get real groupings (#1016)
 - Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, which was roughly half of a coverage run's wall time and affected both engines equally (#1005)
 
 ### Fixed

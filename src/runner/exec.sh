@@ -450,6 +450,10 @@ function bashunit::runner::run_test() {
   local runtime_output=$attempt_display_output
   local runtime_error=$attempt_runtime_error
 
+  # Retain the test's captured output for the report writers (JUnit
+  # <system-out>): add_test consumes it in whichever status branch fires below.
+  bashunit::reports::set_current_test_output "$runtime_output"
+
   # parse_result accumulates _BASHUNIT_TEST_EXIT_CODE; reset it so each test's
   # exit code is read in isolation (a non-zero/timed-out test must not poison
   # the next one).

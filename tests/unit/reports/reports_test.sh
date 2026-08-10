@@ -16,6 +16,8 @@ function set_up() {
   _BASHUNIT_REPORTS_TEST_FAILURES=()
   _BASHUNIT_REPORTS_TEST_LINES=()
   _BASHUNIT_REPORTS_TEST_RETRIES=()
+  _BASHUNIT_REPORTS_TEST_OUTPUTS=()
+  _BASHUNIT_REPORTS_CURRENT_OUTPUT=""
   _BASHUNIT_TEST_LOCATION=""
 
   # Unset report env vars by default
@@ -189,7 +191,7 @@ function test_generate_junit_xml_creates_valid_xml_header() {
   content=$(cat "$_TEMP_OUTPUT_FILE")
 
   assert_contains '<?xml version="1.0" encoding="UTF-8"?>' "$content"
-  assert_contains '<testsuites>' "$content"
+  assert_contains '<testsuites name="bashunit"' "$content"
   assert_contains '</testsuites>' "$content"
 }
 
@@ -203,12 +205,11 @@ function test_generate_junit_xml_includes_testsuite_attributes() {
   local content
   content=$(cat "$_TEMP_OUTPUT_FILE")
 
-  assert_contains '<testsuite name="bashunit"' "$content"
-  assert_contains 'tests="1"' "$content"
-  assert_contains 'failures="1"' "$content"
-  assert_contains 'skipped="3"' "$content"
-  assert_contains 'errors="0"' "$content"
-  assert_contains 'time="1.234"' "$content"
+  # One suite per test file; the counts derive from the recorded rows, not the
+  # global state counters (#1016).
+  assert_contains '<testsuite name="test.sh" tests="1" failures="0" skipped="0" errors="0"' "$content"
+  assert_contains '<testsuites name="bashunit" tests="1" failures="0" skipped="0" errors="0"' "$content"
+  assert_contains 'time="0.100"' "$content"
 }
 
 function test_generate_junit_xml_includes_testcase_elements() {
@@ -221,8 +222,8 @@ function test_generate_junit_xml_includes_testcase_elements() {
   local content
   content=$(cat "$_TEMP_OUTPUT_FILE")
 
-  assert_contains '<testcase file="my_test.sh"' "$content"
-  assert_contains 'name="test_example"' "$content"
+  assert_contains '<testcase classname="my_test" name="test_example"' "$content"
+  assert_contains 'file="my_test.sh"' "$content"
   assert_contains 'time="0.500"' "$content"
   assert_not_contains 'status=' "$content"
   assert_not_contains 'assertions=' "$content"
@@ -270,7 +271,7 @@ function test_generate_junit_xml_incomplete_testcase() {
   assert_not_contains '<failure' "$content"
 }
 
-function test_generate_junit_xml_failure_element_without_type() {
+function test_generate_junit_xml_failure_message_carries_the_real_reason() {
   _mock_state_functions
   BASHUNIT_LOG_JUNIT="report.xml"
 
@@ -281,9 +282,9 @@ function test_generate_junit_xml_failure_element_without_type() {
   local content
   content=$(cat "$_TEMP_OUTPUT_FILE")
 
-  assert_contains '<failure message="Test failed">' "$content"
+  assert_contains "<failure message=\"$failure_msg\" type=\"AssertionFailed\">" "$content"
   assert_contains "$failure_msg</failure>" "$content"
-  assert_not_contains 'type=' "$content"
+  assert_not_contains 'message="Test failed"' "$content"
 }
 
 function test_generate_junit_xml_failure_element_with_xml_escaping() {
