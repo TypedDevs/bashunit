@@ -138,6 +138,7 @@ Options:
   -S, --stop-on-failure       Stop on first failure
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)
   --retry <n>                 Re-run a failed test up to N extra times (0 = off)
+  --repeat <n>                Run each selected test N times; it fails if any iteration fails
   --random-order              Randomize test execution order
   --order-by <mode>           Execution order: defined (default), defects (last run's failures first) or random
   --seed <n>                  Seed for --random-order (reproducible shuffle)

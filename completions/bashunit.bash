@@ -20,7 +20,7 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage
 --filter --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \
 --no-progress --no-snapshot-create --order-by --output --parallel --profile \
---random-order --report-html \
+--random-order --repeat --report-html \
 --report-json --report-junit --report-tap --rerun-failed --retry --run-all \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
 --skip-env-file --snapshot-report-unused --snapshot-update \
@@ -84,7 +84,7 @@ _bashunit_completions() {
     COMPREPLY=($(compgen -W "defined defects random" -- "$cur"))
     return 0
     ;;
-  -f | --filter | --exclude-filter | --tag | --exclude-tag | --retry | --seed | --shard | --test-timeout)
+  -f | --filter | --exclude-filter | --tag | --exclude-tag | --repeat | --retry | --seed | --shard | --test-timeout)
     return 0
     ;;
   esac
