@@ -21,6 +21,36 @@ function test_bashunit_when_log_junit_env() {
   rm log-junit.xml
 }
 
+function test_junit_carries_classname_suites_and_captured_output() {
+  local fixture=tests/acceptance/fixtures/test_bashunit_junit_shape.sh
+  local report
+  report="$(bashunit::temp_file)"
+
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --log-junit "$report" "$fixture" >/dev/null 2>&1 || true
+
+  local content
+  content="$(cat "$report")"
+  assert_contains "<testsuite name=\"$fixture\" tests=\"2\" failures=\"1\"" "$content"
+  assert_contains 'classname="tests.acceptance.fixtures.test_bashunit_junit_shape"' "$content"
+  assert_contains '<system-out>hello from the test body</system-out>' "$content"
+  assert_contains 'message="Expected &apos;expected junit value&apos;"' "$content"
+}
+
+# Regression guard for #1004: the rows are spooled by the workers and replayed
+# in the parent, so the new columns must survive the fork boundary too.
+function test_junit_captured_output_survives_parallel() {
+  local fixture=tests/acceptance/fixtures/test_bashunit_junit_shape.sh
+  local report
+  report="$(bashunit::temp_file)"
+
+  ./bashunit --parallel --env "$TEST_ENV_FILE" --log-junit "$report" "$fixture" >/dev/null 2>&1 || true
+
+  local content
+  content="$(cat "$report")"
+  assert_contains '<system-out>hello from the test body</system-out>' "$content"
+  assert_contains 'classname="tests.acceptance.fixtures.test_bashunit_junit_shape"' "$content"
+}
+
 function test_bashunit_report_junit_is_alias_of_log_junit() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_log_junit.sh
   local report=report-junit-alias.xml

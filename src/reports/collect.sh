@@ -18,6 +18,17 @@ _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
 _BASHUNIT_REPORTS_TEST_FAILURES=()
 _BASHUNIT_REPORTS_TEST_LINES=()
 _BASHUNIT_REPORTS_TEST_RETRIES=()
+_BASHUNIT_REPORTS_TEST_OUTPUTS=()
+
+# The captured output of the test about to be recorded. The runner sets this
+# once per test before the add_test_* dispatch, so the report writers can carry
+# it (JUnit <system-out>) without threading one more argument through every
+# wrapper; add_test consumes and clears it.
+_BASHUNIT_REPORTS_CURRENT_OUTPUT=""
+
+function bashunit::reports::set_current_test_output() {
+  _BASHUNIT_REPORTS_CURRENT_OUTPUT="$1"
+}
 
 function bashunit::reports::add_test_snapshot() {
   bashunit::reports::add_test "$1" "$2" "$3" "$4" "snapshot"
@@ -77,6 +88,8 @@ function bashunit::reports::add_test() {
   local status="$5"
   local failure_message="${6:-}"
   local retries="${7:-0}"
+  local test_output="$_BASHUNIT_REPORTS_CURRENT_OUTPUT"
+  _BASHUNIT_REPORTS_CURRENT_OUTPUT=""
 
   # Capture the line number from the current test location ("file:line"),
   # but only when it belongs to this test's file, so a stale location from a
@@ -102,7 +115,7 @@ function bashunit::reports::add_test() {
   # Fields are base64-encoded because a failure message carries newlines and
   # arbitrary text, either of which would break a delimited line.
   if bashunit::parallel::is_enabled; then
-    printf '%s|%s|%s|%s|%s|%s|%s|%s\n' \
+    printf '%s|%s|%s|%s|%s|%s|%s|%s|%s\n' \
       "$(bashunit::helper::encode_base64 "$file")" \
       "$(bashunit::helper::encode_base64 "$test_name")" \
       "$(bashunit::helper::encode_base64 "$status")" \
@@ -111,6 +124,7 @@ function bashunit::reports::add_test() {
       "$(bashunit::helper::encode_base64 "$failure_message")" \
       "$(bashunit::helper::encode_base64 "$line")" \
       "$(bashunit::helper::encode_base64 "$retries")" \
+      "$(bashunit::helper::encode_base64 "$test_output")" \
       >>"${REPORTS_OUTPUT_PATH:-/dev/null}" 2>/dev/null || true
   fi
 
@@ -122,6 +136,7 @@ function bashunit::reports::add_test() {
   _BASHUNIT_REPORTS_TEST_FAILURES[${#_BASHUNIT_REPORTS_TEST_FAILURES[@]}]="$failure_message"
   _BASHUNIT_REPORTS_TEST_LINES[${#_BASHUNIT_REPORTS_TEST_LINES[@]}]="$line"
   _BASHUNIT_REPORTS_TEST_RETRIES[${#_BASHUNIT_REPORTS_TEST_RETRIES[@]}]="$retries"
+  _BASHUNIT_REPORTS_TEST_OUTPUTS[${#_BASHUNIT_REPORTS_TEST_OUTPUTS[@]}]="$test_output"
 }
 
 ##
@@ -133,8 +148,8 @@ function bashunit::reports::load_spooled() {
   bashunit::reports::is_enabled || return 0
   [ -f "${REPORTS_OUTPUT_PATH:-}" ] || return 0
 
-  local file test_name status duration assertions failure_message line retries n
-  while IFS='|' read -r file test_name status duration assertions failure_message line retries; do
+  local file test_name status duration assertions failure_message line retries test_output n
+  while IFS='|' read -r file test_name status duration assertions failure_message line retries test_output; do
     [ -n "$file" ] || continue
     local n=${#_BASHUNIT_REPORTS_TEST_FILES[@]}
     _BASHUNIT_REPORTS_TEST_FILES[n]=$(bashunit::helper::decode_base64 "$file")
@@ -145,5 +160,6 @@ function bashunit::reports::load_spooled() {
     _BASHUNIT_REPORTS_TEST_FAILURES[n]=$(bashunit::helper::decode_base64 "$failure_message")
     _BASHUNIT_REPORTS_TEST_LINES[n]=$(bashunit::helper::decode_base64 "$line")
     _BASHUNIT_REPORTS_TEST_RETRIES[n]=$(bashunit::helper::decode_base64 "$retries")
+    _BASHUNIT_REPORTS_TEST_OUTPUTS[n]=$(bashunit::helper::decode_base64 "$test_output")
   done <"$REPORTS_OUTPUT_PATH"
 }
