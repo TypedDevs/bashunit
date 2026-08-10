@@ -32,6 +32,10 @@ indent_size = unset
 [.claude/**.md]
 indent_size = unset
 
+# Vendored verbatim (Cobertura's coverage-04.dtd); not ours to reformat.
+[**.dtd]
+indent_size = unset
+
 # The two HTML page emitters are template-heavy: their long lines are single
 # printf'd markup rows that reflowing would only make harder to read. Scoped to
 # these two files on purpose -- every other src/coverage/ module honours the

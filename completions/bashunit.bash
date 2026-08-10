@@ -15,7 +15,7 @@ _BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watc
 _BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"
 
 _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage-exclude \
---coverage-diff --coverage-min --coverage-paths --coverage-report --coverage-report-html \
+--coverage-diff --coverage-min --coverage-paths --coverage-report --coverage-report-cobertura --coverage-report-html \
 --debug --detailed --dry-run --env --exclude-filter --exclude-tag --fail-on-flaky --fail-on-risky --failures-only \
 --filter --gha-annotations --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \

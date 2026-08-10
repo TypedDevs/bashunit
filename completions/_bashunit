@@ -120,6 +120,7 @@ _bashunit() {
     '--coverage-exclude[Coverage exclusion patterns]:pattern:' \
     '--coverage-report[LCOV output path]:file:_files' \
     '--coverage-report-html[Generate HTML coverage report]::dir:_files' \
+    '--coverage-report-cobertura[Cobertura XML coverage report]::file:_files' \
     '--coverage-min[Minimum coverage threshold]:percent:' \
     '--coverage-diff[Report coverage only for lines changed since ref]:ref:' \
     '--no-coverage-report[Console coverage output only]' \

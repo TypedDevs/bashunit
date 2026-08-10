@@ -53,7 +53,7 @@ Seventeen, in load order. The order is the dependency layering: leaves first.
 | 3 | `util/` | 4 | 474 | computation: strings, arithmetic, time |
 | 4 | `api/` | 5 | 205 | the surface a user's test file calls (except assertions) |
 | 5 | `config/` | 4 | 961 | `BASHUNIT_*` defaults, scratch dirs, parallel mode, rerun cache |
-| 6 | `coverage/` | 14 | 2917 | line/branch tracking, diff coverage and the four report formats |
+| 6 | `coverage/` | 15 | 3102 | line/branch tracking, diff coverage and the five report formats |
 | 7 | `state/` | 6 | 474 | counters, per-test context, result payload, parallel aggregation |
 | 8 | `console/` | 9 | 1278 | everything printed: palette, header, per-test lines, totals |
 | 9 | `helper/` | 8 | 948 | naming, discovery, data providers, tags, encoding |
