@@ -199,7 +199,11 @@ function bashunit::main::exec_tests() {
 
     bashunit::coverage::precompute_file_stats
 
-    bashunit::coverage::report_text
+    if bashunit::coverage::is_diff_enabled; then
+      bashunit::coverage::report_diff
+    else
+      bashunit::coverage::report_text
+    fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
       bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"

@@ -167,7 +167,14 @@ function bashunit::coverage::check_threshold() {
   fi
 
   local pct
-  pct=$(bashunit::coverage::get_percentage)
+  # Under --coverage-diff the report is about the changed lines, so the gate
+  # must be too: keeping the whole-file percentage here would fail a PR for
+  # untouched code it did not write.
+  if bashunit::coverage::is_diff_enabled && [ -n "$_BASHUNIT_COVERAGE_DIFF_PCT_OUT" ]; then
+    pct="$_BASHUNIT_COVERAGE_DIFF_PCT_OUT"
+  else
+    pct=$(bashunit::coverage::get_percentage)
+  fi
 
   if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
     printf "%sCoverage %d%% is below minimum %d%%%s\n" \

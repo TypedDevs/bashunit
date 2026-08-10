@@ -115,6 +115,7 @@ bashunit test tests/ --parallel --simple
 | `--coverage-report [file]`     | LCOV output path (default: `coverage/lcov.info`) |
 | `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`)  |
 | `--coverage-min <percent>`     | Minimum coverage threshold                       |
+| `--coverage-diff <ref>`        | Report coverage only for lines changed since ref |
 | `--no-coverage-report`         | Console output only, no LCOV file                |
 
 ### Standalone Assert
@@ -1160,10 +1161,69 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 | `--coverage-report [file]`      | LCOV output file path (default: `coverage/lcov.info`)                       |
 | `--coverage-report-html [dir]`  | Generate HTML report (default: `coverage/html`)                             |
 | `--coverage-min <percent>`      | Minimum coverage percentage; fails if below                                 |
+| `--coverage-diff <ref>`         | Report only the lines changed since `<ref>`                                 |
 | `--no-coverage-report`          | Show console report only, don't generate LCOV file                          |
 
 ::: tip
 Coverage works with parallel execution (`-p`). Each worker tracks coverage independently, and results are aggregated before reporting.
+:::
+
+### Diff coverage
+
+> `bashunit test --coverage --coverage-diff <base-ref>`
+
+Answers the question a pull request actually asks — *are the lines I touched
+covered?* — instead of reporting a whole-file percentage that moves for reasons
+unrelated to the change under review.
+
+```bash
+bashunit test tests/ --coverage --coverage-diff main
+```
+
+```
+Diff Coverage (vs main)
+---------------
+src/parser.sh                              7/  9 lines ( 77%)
+---------------
+Total: 7/9 (77%)
+```
+
+Only lines **added or modified** since the ref are counted, from three sources
+merged together: commits since the merge base, staged and unstaged edits, and
+untracked files (counted in full). A pure deletion contributes nothing — there
+is no line left to hold an opinion about — and changed lines that are not
+executable (comments, `fi`, blank) are ignored, so a comment-only commit is not
+penalised.
+
+The base ref is **required**. It is not defaulted, because an optional value
+would make `--coverage-diff tests/` swallow the path as a ref.
+
+**With `--coverage-min`, the gate follows the report:** the threshold applies to
+the diff percentage, so a change that fully covers itself passes even inside a
+poorly covered file.
+
+```bash
+bashunit test tests/ --coverage --coverage-diff origin/main --coverage-min 90
+```
+
+A change with no executable lines scores **100%**, not 0% — otherwise a
+docs-only commit would fail the gate.
+
+`--coverage-diff` restricts the **console report only**. LCOV and HTML stay
+whole-file, because their consumers (`genhtml`, Codecov) do their own diffing
+and expect complete records.
+
+::: warning Shallow clones
+This needs `git` and a ref that resolves locally. CI checkouts are often shallow
+and have no base ref, which would otherwise report "no changed lines" and pass a
+threshold while measuring nothing — so an unresolvable ref is a hard error
+instead. Fetch it first:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+```
 :::
 
 ## bench
