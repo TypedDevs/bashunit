@@ -142,6 +142,7 @@ Options:
   --seed <n>                  Seed for --random-order (reproducible shuffle)
   --shard <i>/<n>             Run shard i of n (split the suite across runners)
   --rerun-failed              Replay only the tests that failed on the last run (.bashunit/last-failed)
+  --changed [<ref>]           Run only the test files changed since <ref> (default: origin/HEAD, then HEAD)
   --list, --dry-run           Print the tests that would run, then exit without running them
   --list-format <fmt>         Rendering for --list: text (default) or json
   --snapshot-update           Rewrite existing snapshots from the actual value (combine with --filter)

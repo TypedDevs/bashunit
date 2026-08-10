@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes. Deletions are dropped, a rename selects its new path, and a missing work tree or unresolvable ref fails the run instead of selecting nothing (#1010)
 - `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
 - `--exclude-filter <name>` skips tests by name, the counterpart of `--exclude-tag`. Repeatable, OR'd, and wins over `--filter` (#1009)
 - `# @tags a b` above any top-level line applies those tags to every test in the file, unioned with per-function `# @tag` (#1008)

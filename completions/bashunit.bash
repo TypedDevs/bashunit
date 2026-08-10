@@ -14,7 +14,7 @@ _BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watc
 # Flags accepted by the doc subcommand.
 _BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"
 
-_BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --coverage --coverage-exclude \
+_BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage-exclude \
 --coverage-min --coverage-paths --coverage-report --coverage-report-html \
 --debug --detailed --dry-run --env --exclude-filter --exclude-tag --fail-on-risky --failures-only \
 --filter --help --jobs --list --list-format --log-gha --log-junit --login --no-color \

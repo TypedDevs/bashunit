@@ -255,6 +255,10 @@ _BASHUNIT_DEFAULT_SHARD_INDEX=""
 _BASHUNIT_DEFAULT_SHARD_TOTAL=""
 # Replay only the tests recorded as failing by the previous run
 _BASHUNIT_DEFAULT_RERUN_FAILED="false"
+# Run only the test files git reports as changed since a ref
+_BASHUNIT_DEFAULT_CHANGED="false"
+# The ref --changed diffs against (empty = origin/HEAD, then HEAD)
+_BASHUNIT_DEFAULT_CHANGED_REF=""
 # Skip tests whose name matches (comma-separated; the counterpart of --filter)
 _BASHUNIT_DEFAULT_EXCLUDE_FILTER=""
 # Print the tests that would run and exit, without running any of them
@@ -307,6 +311,11 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 # lives here rather than inline in rerun.sh so every BASHUNIT_* default has one
 # home; bashunit::rerun::is_enabled keeps its :- guard for callers that unset it.
 : "${BASHUNIT_RERUN_FAILED:=$_BASHUNIT_DEFAULT_RERUN_FAILED}"
+# No bare CHANGED/CHANGED_REF aliases, same reasoning: `CHANGED` in the
+# environment silently cutting a full run down to a handful of files is the
+# surprise the unprefixed forms caused (#866).
+: "${BASHUNIT_CHANGED:=$_BASHUNIT_DEFAULT_CHANGED}"
+: "${BASHUNIT_CHANGED_REF:=$_BASHUNIT_DEFAULT_CHANGED_REF}"
 # No bare LIST/LIST_FORMAT aliases: `LIST` is far too generic a name to let the
 # environment turn a real run into a no-op query.
 # No bare EXCLUDE_FILTER alias: a generic name silently dropping tests from a
@@ -381,6 +390,10 @@ function bashunit::env::seed() {
 
 function bashunit::env::is_shard_enabled() {
   [ -n "${BASHUNIT_SHARD_INDEX:-}" ] && [ -n "${BASHUNIT_SHARD_TOTAL:-}" ]
+}
+
+function bashunit::env::is_changed_enabled() {
+  [ "${BASHUNIT_CHANGED:-false}" = "true" ]
 }
 
 function bashunit::env::shard_index() {

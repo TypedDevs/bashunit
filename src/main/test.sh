@@ -153,6 +153,19 @@ function bashunit::main::cmd_test() {
       BASHUNIT_RERUN_FAILED=true
       export -n BASHUNIT_RERUN_FAILED
       ;;
+    --changed)
+      BASHUNIT_CHANGED=true
+      export -n BASHUNIT_CHANGED
+      # The ref is optional, so $2 is only taken when it cannot be the run's path
+      # argument: an existing path there is a path, never a ref. A ref that also
+      # names a file on disk has to be written as `--changed ./main` or set
+      # through BASHUNIT_CHANGED_REF.
+      if [ -n "${2:-}" ] && [ "${2#-}" = "${2:-}" ] && [ ! -e "$2" ]; then
+        BASHUNIT_CHANGED_REF="$2"
+        export -n BASHUNIT_CHANGED_REF
+        shift
+      fi
+      ;;
     --list | --dry-run)
       BASHUNIT_LIST_TESTS=true
       export -n BASHUNIT_LIST_TESTS
@@ -437,6 +450,7 @@ function bashunit::main::cmd_test() {
     [ -n "$exclude_tag_filter" ] && _partial_flag="--exclude-tag"
     [ -n "${BASHUNIT_SHARD_INDEX:-}" ] && _partial_flag="--shard"
     bashunit::rerun::is_enabled && _partial_flag="--rerun-failed"
+    bashunit::env::is_changed_enabled && _partial_flag="--changed"
     if [ -n "$_partial_flag" ]; then
       printf "%sError: --snapshot-report-unused needs a full run; %s only runs a subset.%s\n" \
         "${_BASHUNIT_COLOR_FAILED}" "$_partial_flag" "${_BASHUNIT_COLOR_DEFAULT}" >&2
