@@ -85,6 +85,7 @@ _bashunit() {
     '--test-timeout[Fail a test running longer than N seconds]:seconds:' \
     '--retry[Rerun a failed test up to N extra times]:count:' \
     '--random-order[Randomize test execution order]' \
+    '--order-by[Execution order]:mode:(defined defects random)' \
     '--seed[Seed for random order]:seed:' \
     '--shard[Run shard i of n]:shard:' \
     '--rerun-failed[Replay only the tests that failed on the last run]' \

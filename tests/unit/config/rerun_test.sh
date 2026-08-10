@@ -125,3 +125,72 @@ function test_filter_functions_keeps_only_allowed() {
   assert_same "test_one test_three" \
     "$(bashunit::rerun::filter_functions "tests/a_test.sh" "test_one test_two test_three")"
 }
+
+# Writes a cache and loads it, so the ordering tests read as data -> expectation.
+function _rerun_cache_with() {
+  local cache
+  cache="$(bashunit::rerun::cache_file)"
+  mkdir -p "$(dirname "$cache")"
+  printf '%s' "$1" >"$cache"
+  bashunit::rerun::load
+}
+
+function test_order_files_puts_recorded_files_first() {
+  _rerun_cache_with 'tests/c_test.sh:test_three
+tests/a_test.sh:test_one
+'
+
+  assert_same "tests/c_test.sh
+tests/a_test.sh
+tests/b_test.sh" \
+    "$(bashunit::rerun::order_files tests/a_test.sh tests/b_test.sh tests/c_test.sh)"
+}
+
+function test_order_files_keeps_every_file_exactly_once() {
+  _rerun_cache_with 'tests/a_test.sh:test_one
+tests/a_test.sh:test_two
+'
+
+  assert_same "tests/a_test.sh
+tests/b_test.sh" "$(bashunit::rerun::order_files tests/a_test.sh tests/b_test.sh)"
+}
+
+function test_order_files_ignores_recorded_files_this_run_did_not_discover() {
+  _rerun_cache_with 'tests/gone_test.sh:test_gone
+tests/b_test.sh:test_two
+'
+
+  assert_same "tests/b_test.sh
+tests/a_test.sh" "$(bashunit::rerun::order_files tests/a_test.sh tests/b_test.sh)"
+}
+
+function test_order_files_is_a_no_op_without_a_cache() {
+  _rerun_cache_with ''
+
+  assert_same "tests/a_test.sh
+tests/b_test.sh" "$(bashunit::rerun::order_files tests/a_test.sh tests/b_test.sh)"
+}
+
+function test_order_functions_puts_recorded_functions_first_in_recorded_order() {
+  _rerun_cache_with 'tests/a_test.sh:test_three
+tests/a_test.sh:test_one
+'
+
+  assert_same "test_three test_one test_two" \
+    "$(bashunit::rerun::order_functions "tests/a_test.sh" "test_one test_two test_three")"
+}
+
+function test_order_functions_ignores_entries_recorded_for_another_file() {
+  _rerun_cache_with 'tests/b_test.sh:test_two
+'
+
+  assert_same "test_one test_two" \
+    "$(bashunit::rerun::order_functions "tests/a_test.sh" "test_one test_two")"
+}
+
+function test_order_functions_is_a_no_op_without_a_cache() {
+  _rerun_cache_with ''
+
+  assert_same "test_one test_two" \
+    "$(bashunit::rerun::order_functions "tests/a_test.sh" "test_one test_two")"
+}

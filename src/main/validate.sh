@@ -144,6 +144,17 @@ function bashunit::main::validate_config_or_exit() {
     ;;
   esac
 
+  # Same shape as --output above: an unrecognised mode would otherwise leave the
+  # suite in definition order and look like it was honoured.
+  case "${BASHUNIT_ORDER_BY:-defined}" in
+  defined | defects | random) ;;
+  *)
+    printf "%sError: unsupported order '%s' for --order-by. Supported: defined, defects, random.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_ORDER_BY}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
+
   # Same shape as --output above: an unrecognised name would otherwise fall
   # through to the default renderer and look like it worked.
   case "${BASHUNIT_LIST_FORMAT:-}" in

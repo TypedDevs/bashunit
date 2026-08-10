@@ -81,6 +81,7 @@ bashunit test tests/ --parallel --simple
 | `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
 | `--retry <n>`                  | Re-run a failed test up to N extra times         |
 | `--random-order`               | Randomize test execution order                   |
+| `--order-by <mode>`            | Execution order: `defined` (default), `defects` or `random` |
 | `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
@@ -818,6 +819,46 @@ bashunit test --rerun-failed    # replay just those
 ```
 ```bash [Env variable]
 BASHUNIT_RERUN_FAILED=true bashunit test tests/
+```
+:::
+
+### Order by
+
+> `bashunit test --order-by <mode>`
+
+Choose the execution order. Three modes:
+
+| Mode | Order |
+|------|-------|
+| `defined` | Definition order. The default. |
+| `defects` | Tests that failed on the last recorded run first, then everything else. |
+| `random` | Shuffled, the same mode `--random-order` selects. |
+
+`defects` reads the same `.bashunit/last-failed` cache
+[`--rerun-failed`](#rerun-failed) writes, but it **reorders instead of
+narrowing**: the whole suite still runs. Paired with `--stop-on-failure`, that
+turns the pre-push check from minutes into seconds, because the tests most
+likely to fail run first.
+
+```bash
+bashunit test tests/ --order-by defects --stop-on-failure
+```
+
+Notes:
+
+- With no cache file the order falls back to `defined`, silently.
+- `--order-by random` and `--random-order` are the same mode, and `--seed`
+  applies to both.
+- Combining it with `--rerun-failed` is allowed: `--rerun-failed` still narrows
+  the selection, `--order-by` only orders what survives.
+- Under `--parallel` the recorded failures are dispatched first.
+
+::: code-group
+```bash [Fail fast on known-bad tests]
+bashunit test --order-by defects --stop-on-failure
+```
+```bash [Env variable]
+BASHUNIT_ORDER_BY=defects bashunit test tests/
 ```
 :::
 

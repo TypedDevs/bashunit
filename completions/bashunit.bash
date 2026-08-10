@@ -19,7 +19,7 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage
 --debug --detailed --dry-run --env --exclude-filter --exclude-tag --fail-on-risky --failures-only \
 --filter --help --jobs --list --list-format --log-gha --log-junit --login --no-color \
 --no-coverage-report --no-output --no-output-on-failure --no-parallel \
---no-progress --no-snapshot-create --output --parallel --profile \
+--no-progress --no-snapshot-create --order-by --output --parallel --profile \
 --random-order --report-html \
 --report-json --report-junit --report-tap --rerun-failed --retry --run-all \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
@@ -78,6 +78,10 @@ _bashunit_completions() {
     ;;
   --list-format)
     COMPREPLY=($(compgen -W "text json" -- "$cur"))
+    return 0
+    ;;
+  --order-by)
+    COMPREPLY=($(compgen -W "defined defects random" -- "$cur"))
     return 0
     ;;
   -f | --filter | --exclude-filter | --tag | --exclude-tag | --retry | --seed | --shard | --test-timeout)

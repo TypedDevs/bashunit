@@ -139,6 +139,7 @@ Options:
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)
   --retry <n>                 Re-run a failed test up to N extra times (0 = off)
   --random-order              Randomize test execution order
+  --order-by <mode>           Execution order: defined (default), defects (last run's failures first) or random
   --seed <n>                  Seed for --random-order (reproducible shuffle)
   --shard <i>/<n>             Run shard i of n (split the suite across runners)
   --rerun-failed              Replay only the tests that failed on the last run (.bashunit/last-failed)

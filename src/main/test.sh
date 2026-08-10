@@ -140,6 +140,11 @@ function bashunit::main::cmd_test() {
       BASHUNIT_RANDOM_ORDER=true
       export -n BASHUNIT_RANDOM_ORDER
       ;;
+    --order-by)
+      BASHUNIT_ORDER_BY="$2"
+      export -n BASHUNIT_ORDER_BY
+      shift
+      ;;
     --seed)
       BASHUNIT_SEED="$2"
       export -n BASHUNIT_SEED
