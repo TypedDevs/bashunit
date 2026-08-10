@@ -189,6 +189,12 @@ function bashunit::math::is_le() {
     return
   fi
 
+  # bc cannot parse a leading `+`: it answers with a parse error on stderr and an
+  # empty result, which reads as "greater than" here. The fixed-point path above
+  # handles the sign itself, so only the fallbacks need it stripped.
+  left=${left#+}
+  right=${right#+}
+
   if bashunit::dependencies::has_bc; then
     [ "$(echo "$left <= $right" | bc)" = "1" ]
     return

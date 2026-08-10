@@ -226,6 +226,13 @@ function test_range_assertions_reject_invalid_inputs_as_usage_errors() {
   assert_same "bashunit: assertion usage error: $assertion $expected_detail" "$output"
 }
 
+# Operands wider than the fork-free fixed-point path fall through to bc, which
+# cannot parse the leading `+` that the assertions otherwise accept.
+function test_range_assertions_accept_a_leading_plus_on_wide_operands() {
+  assert_empty "$(assert_between "+1" "+9999999999999999999999" "+5" 2>&1)"
+  assert_empty "$(assert_not_between "+1" "+10" "+9999999999999999999999" 2>&1)"
+}
+
 function provide_invalid_range_assertion_inputs() {
   bashunit::data_set assert_between abc 10 5 \
     "expects numeric min, max, and actual values, got 'abc', '10', '5'"
@@ -262,6 +269,24 @@ function test_unsuccessful_assert_within_delta_with_a_non_numeric_value() {
     "Unsuccessful assert within delta with a non numeric value" \
     "abc 105 3" "to all be numeric" "but got a non-numeric value")" \
     "$(assert_within_delta "abc" "105" "3")"
+}
+
+# A second dot and an inner sign both reached bc before: the first leaked a raw
+# `Parse error` into the report, the second silently evaluated `5-3` as 2.
+function test_assert_within_delta_rejects_a_second_decimal_point() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert within delta rejects a second decimal point" \
+    "1.2.3 1 0.5" "to all be numeric" "but got a non-numeric value")" \
+    "$(assert_within_delta "1.2.3" "1" "0.5" 2>&1)"
+}
+
+function test_assert_within_delta_rejects_an_inner_sign() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Assert within delta rejects an inner sign" \
+    "5-3 1 0.5" "to all be numeric" "but got a non-numeric value")" \
+    "$(assert_within_delta "5-3" "1" "0.5" 2>&1)"
 }
 
 # bc cannot parse a leading `+`, but bashunit::assert::_is_numeric accepts one,
