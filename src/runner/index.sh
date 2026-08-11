@@ -4,9 +4,10 @@
 # for the reason recorded in adrs/adr-011-source-layout-and-build-pipeline.md.
 #
 # Sourced in dependency layers, leaves first:
-#   context · payload · diagnostics → parallel · hooks · result → provider · exec
+#   context · sandbox · payload · diagnostics → parallel · hooks · result → provider · exec
 #   → list → discovery · bench
 source "$BASHUNIT_ROOT_DIR/src/runner/context.sh"
+source "$BASHUNIT_ROOT_DIR/src/runner/sandbox.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/payload.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/diagnostics.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/parallel.sh"

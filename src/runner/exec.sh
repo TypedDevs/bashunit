@@ -217,6 +217,10 @@ function bashunit::runner::execute_test_body() {
     exit 0
   fi
 
+  # From here on the test may only reach what it mocked or the run allowed.
+  # Placed before set_up so a hook cannot smuggle a real command in either.
+  bashunit::sandbox::activate
+
   # Run set_up and capture exit code without || to preserve errexit behavior
   _BASHUNIT_SETUP_COMPLETED=false
 
@@ -369,6 +373,10 @@ function bashunit::runner::run_test() {
   if [ -n "$_BASHUNIT_ANNOT_TIMEOUT_OUT" ]; then
     _BASHUNIT_RUNNER_TIMEOUT_SECS=$_BASHUNIT_ANNOT_TIMEOUT_OUT
   fi
+
+  # Names this test's violation file before the body forks, so the shims and
+  # the check below agree on where it is.
+  bashunit::sandbox::begin_test
 
   bashunit::env::resolve_retry_count
   local retry_max=$_BASHUNIT_RETRY_VALIDATED

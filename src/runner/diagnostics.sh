@@ -165,6 +165,22 @@ $usage_after"
   127) _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="command not found (exit code 127)" ;;
   126) _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="not executable (exit code 126)" ;;
   esac
+
+  # Under --sandbox the shim recorded the blocked command in a file, so this
+  # holds even mid-test -- the scans above only see the LAST command's exit
+  # code, and a test that redirects stderr hides the message entirely. Without
+  # it, `curl …` followed by a passing assertion is a green test that never
+  # reached the network it believed it did.
+  if bashunit::sandbox::violation_of_test; then
+    local blocked=$_BASHUNIT_SANDBOX_COMMAND_OUT
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="Sandbox: '$blocked' is not mocked and"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT not"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT allowed."
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT Mock it with"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT bashunit::mock,"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT or run with"
+    _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT --sandbox-allow $blocked."
+  fi
 }
 
 ##

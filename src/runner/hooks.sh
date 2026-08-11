@@ -45,6 +45,13 @@ function bashunit::runner::cleanup_on_exit() {
     bashunit::state::set_test_exit_code "$exit_code"
   fi
 
+  # A command the sandbox blocked fails the test even when the body swallowed
+  # its status. The code travels in the payload, which is the only channel a
+  # --parallel worker has to the parent.
+  if bashunit::sandbox::peek_violation; then
+    bashunit::state::set_test_exit_code 127
+  fi
+
   bashunit::state::export_subshell_context
 }
 

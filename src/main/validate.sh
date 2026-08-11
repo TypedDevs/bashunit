@@ -194,6 +194,17 @@ function bashunit::main::validate_config_or_exit() {
     ;;
   esac
 
+  # A typo'd allowlist silently narrows the sandbox instead of widening it, so
+  # the shape is checked here rather than discovered as a blocked command.
+  case "${BASHUNIT_SANDBOX_ALLOW:-}" in
+  '') ;;
+  *[!A-Za-z0-9_.+,-]*)
+    printf "%sError: invalid --sandbox-allow value '%s'. Expected a comma-separated list of commands.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_SANDBOX_ALLOW}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    exit 1
+    ;;
+  esac
+
   # Same shape as --output above: an unrecognised mode would otherwise fall back
   # to auto and look like it was honoured.
   case "${BASHUNIT_GHA_ANNOTATIONS:-auto}" in

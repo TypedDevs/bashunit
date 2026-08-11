@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--sandbox` fails a test that runs an external command it did not mock, naming the command; `--sandbox-allow <cmd,...>` widens the baseline allowlist of what bashunit itself needs. Builtins are unaffected, `bashunit::unmock` puts the block back, and the mechanism is recorded in ADR-012 (#1022)
 - Named suites: a `[suite:<name>]` section in `.bashunitrc` groups paths and options, `--suite <name>` runs one (repeatable, union of their paths) and `--list-suites` prints the defined names; precedence is CLI flags > suite settings > global `.bashunitrc` > `.env` > defaults, and an explicit path replaces the suite's `paths` (#1021)
 - Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations in the comment block above a test, overriding the run-wide `--test-timeout` and `--retry` in both directions (`@timeout 0` opts a test out of a global timeout); a malformed value aborts the run, and the scan rides on the existing per-file pass so it costs no extra fork (#1020)
 - `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command` and `bashunit::skip_on <windows|macos|linux>` mark the test skipped **and** end it, replacing the `bashunit::skip && return` idiom whose missing `return` silently kept the body running; an unknown OS name is a usage error, not a test that never skips (#1019)

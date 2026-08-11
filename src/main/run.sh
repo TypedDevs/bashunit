@@ -84,6 +84,10 @@ function bashunit::main::exec_tests() {
     bashunit::parallel::init
   fi
 
+  # Builds the allowed-command directory once, in this shell: every test
+  # subshell (and every --parallel worker) inherits its path.
+  bashunit::sandbox::prepare
+
   # --list is a query: stdout must be nothing but test ids, so the banner and
   # the seed line are suppressed and the run header never prints (#1007).
   if bashunit::env::is_list_enabled; then

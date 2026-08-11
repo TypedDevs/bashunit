@@ -323,8 +323,9 @@ function test_built_binary_contains_no_source_lines() {
 
 # The budget is a guard against the artifact growing without anyone noticing,
 # not a hard product limit. It was raised from 512000 to 557056 (544 KiB) in
-# #1045, after a run of features crossed the old line by 0.3%: the alternatives
-# to raising it were both worse.
+# #1045, and from there to 589824 (576 KiB) in #1022, after --output json/junit,
+# the per-test annotations, named suites and sandbox mode together added ~11 KiB
+# (559865 bytes measured). The #1045 alternatives to raising it were both worse:
 #
 #   as-is                518493 bytes   over
 #   strip blank lines    515249 bytes   still over — and unsafe, because a blank
@@ -335,7 +336,7 @@ function test_built_binary_contains_no_source_lines() {
 # So: keep the artifact readable and move the line, with headroom for a few more
 # features. Raise it deliberately and record the number again when it is hit —
 # do not silence it.
-function test_built_binary_stays_below_544_kib() {
+function test_built_binary_stays_below_576_kib() {
   if ! build_optimizer_is_available; then
     bashunit::skip "shfmt and jq are required for standalone optimization"
     return
@@ -348,7 +349,7 @@ function test_built_binary_stays_below_544_kib() {
 
   local bytes
   bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
-  assert_less_or_equal_than 557056 "$bytes"
+  assert_less_or_equal_than 589824 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {

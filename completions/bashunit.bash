@@ -22,6 +22,7 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage
 --no-progress --no-snapshot-create --order-by --output --parallel --profile \
 --random-order --repeat --report-html \
 --report-json --report-junit --report-md --report-tap --rerun-failed --retry --run-all \
+--sandbox --sandbox-allow \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
 --skip-env-file --snapshot-report-unused --snapshot-update \
 --stop-on-failure --strict --suite --tag \
@@ -88,7 +89,7 @@ _bashunit_completions() {
     COMPREPLY=($(compgen -W "auto always never" -- "$cur"))
     return 0
     ;;
-  -f | --filter | --exclude-filter | --suite | --tag | --exclude-tag | --repeat | --retry | --seed | --shard | --test-timeout)
+  -f | --filter | --exclude-filter | --sandbox-allow | --suite | --tag | --exclude-tag | --repeat | --retry | --seed | --shard | --test-timeout)
     return 0
     ;;
   esac

@@ -55,6 +55,24 @@ The two files are read differently, which is why they behave differently: `.env`
 empty entry is unconditional (hence the preservation rule above), while `.bashunitrc` is
 parsed as literal `KEY=value` lines and only fills names that are not already set.
 
+## Sandbox
+
+> `BASHUNIT_SANDBOX=true|false`
+> `BASHUNIT_SANDBOX_ALLOW=cmd,cmd`
+
+Fail any test that runs an external command it did not mock. `false` by
+default. `BASHUNIT_SANDBOX_ALLOW` widens the baseline allowlist with a
+comma-separated list of commands.
+
+Same as the [`--sandbox`](/command-line#sandbox) option on the command line;
+see [test doubles](/test-doubles#sandbox-mode) for what the sandbox does and
+does not cover.
+
+```bash [.bashunitrc]
+BASHUNIT_SANDBOX=true
+BASHUNIT_SANDBOX_ALLOW=curl,jq
+```
+
 ## Named suites
 
 A project with more than one tier of tests can name each tier in `.bashunitrc`
