@@ -178,6 +178,7 @@ Coverage:
   --coverage-exclude <pats>    Patterns to exclude (comma-separated)
   --coverage-report [file]     Output file (default: coverage/lcov.info)
   --coverage-report-html [dir] HTML report (default: coverage/html)
+  --coverage-report-cobertura [file] Cobertura XML for GitLab/Azure/Jenkins (default: coverage/cobertura.xml)
   --coverage-min <pct>         Fail if coverage below percentage
   --coverage-diff <ref>        Report coverage only for lines changed since ref
   --no-coverage-report         Disable file output, console only

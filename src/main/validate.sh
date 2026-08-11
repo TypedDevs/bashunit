@@ -51,6 +51,38 @@ function bashunit::main::require_writable_path_or_exit() {
 }
 
 ##
+# Like require_writable_path_or_exit, but for writers that mkdir -p their
+# target directory: missing ancestors are acceptable as long as the first
+# existing one is a writable directory, so `coverage/cobertura.xml` passes
+# with no coverage/ dir while `/unwritable/x.xml` still fails fast.
+#
+# The first existing ancestor must be a directory, not merely writable: a
+# regular file in the path prefix makes `mkdir -p` impossible for every user,
+# root included, and root passes a bare -w test on it.
+# Arguments: $1 - path, $2 - setting name for the error message
+##
+function bashunit::main::require_creatable_path_or_exit() {
+  local path=$1
+  local ancestor=$1
+  while [ -n "$ancestor" ] && [ ! -e "$ancestor" ]; do
+    case "$ancestor" in
+      */*) ancestor=${ancestor%/*} ;;
+      *) ancestor="." ;;
+    esac
+  done
+  [ -z "$ancestor" ] && ancestor="/"
+
+  if [ -d "$ancestor" ] && [ -w "$ancestor" ] &&
+    { [ ! -e "$path" ] || [ -w "$path" ]; }; then
+    return 0
+  fi
+
+  printf "%sError: %s cannot be written: '%s'.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED}" "$2" "$path" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+  exit 1
+}
+
+##
 # Validates the resolved configuration and exits non-zero on a bad value.
 # Runs after flag parsing so it covers both the flags and the BASHUNIT_* env
 # vars, which bypass the parser entirely. The numeric settings are compared with
@@ -141,6 +173,15 @@ function bashunit::main::validate_config_or_exit() {
       bashunit::main::require_writable_path_or_exit "$_report_path" "$_report_var"
     fi
   done
+
+  # The coverage writers mkdir -p their target directory, so missing ancestors
+  # are fine; what must fail fast is a target whose first existing ancestor
+  # cannot be written, which otherwise surfaces as a raw mkdir error after the
+  # whole suite already ran (#875).
+  if [ -n "${BASHUNIT_COVERAGE_REPORT_COBERTURA:-}" ]; then
+    bashunit::main::require_creatable_path_or_exit \
+      "$BASHUNIT_COVERAGE_REPORT_COBERTURA" "BASHUNIT_COVERAGE_REPORT_COBERTURA"
+  fi
 
   # Only TAP is implemented; an unrecognised name used to fall back to the
   # default renderer without a word, so `--output tpa` looked like it worked.

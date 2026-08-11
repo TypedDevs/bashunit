@@ -111,7 +111,7 @@ bashunit test tests/ --parallel --simple
 | `-l, --login`                  | Run tests in login shell context                 |
 | `--no-color`                   | Disable colored output                           |
 | `-h, --help`                   | Show the test help                               |
-| `--coverage*`                  | Eight coverage flags, see [Coverage](#coverage)  |
+| `--coverage*`                  | Nine coverage flags, see [Coverage](#coverage)   |
 
 ### Standalone Assert
 
@@ -1216,6 +1216,7 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 | `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh,*Test.sh`) |
 | `--coverage-report [file]`      | LCOV output file path (default: `coverage/lcov.info`)                       |
 | `--coverage-report-html [dir]`  | Generate HTML report (default: `coverage/html`)                             |
+| `--coverage-report-cobertura [file]` | Cobertura XML for GitLab, Azure and Jenkins (default: `coverage/cobertura.xml`) |
 | `--coverage-min <percent>`      | Minimum coverage percentage; fails if below                                 |
 | `--coverage-diff <ref>`         | Report only the lines changed since `<ref>`                                 |
 | `--no-coverage-report`          | Show console report only, don't generate LCOV file                          |
@@ -1228,6 +1229,27 @@ told apart from a test path, so write the path before them: `bashunit tests/ --c
 ::: tip
 Coverage works with parallel execution (`-p`). Each worker tracks coverage independently, and results are aggregated before reporting.
 :::
+
+### Cobertura XML
+
+> `bashunit test --coverage --coverage-report-cobertura [file]`
+
+LCOV feeds Codecov and Coveralls; Cobertura is the format the CI platforms with built-in coverage UIs consume: GitLab merge-request coverage visualisation, Azure DevOps `PublishCodeCoverageResults` and the Jenkins Coverage plugin. The report groups files into packages by directory, emits per-line hits with `condition-coverage` on branch lines, and keeps `filename` attributes repository-relative — GitLab silently shows nothing for absolute paths. It coexists with the LCOV and HTML reports in a single run.
+
+```bash
+bashunit test tests/ --coverage --coverage-report-cobertura
+```
+
+```yaml
+# .gitlab-ci.yml
+test:
+  script: bashunit test tests/ --coverage --coverage-report-cobertura
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage/cobertura.xml
+```
 
 ### Diff coverage
 

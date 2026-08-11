@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--coverage-report-cobertura [file]` writes Cobertura XML (default `coverage/cobertura.xml`), the coverage format GitLab merge-request visualisation, Azure DevOps and Jenkins consume. Repo-relative filenames, per-line hits, `condition-coverage` on branch lines, and it coexists with the LCOV and HTML reports (#1017)
 - `--coverage-diff <ref>` limits the coverage console report to lines changed since a base ref; `--coverage-min` then gates on that diff percentage (#1032)
 - `assert_command_available <command>` asserts a command, shell builtin or function resolves through `command -v` (#1027)
 - `assert_between <min> <max> <actual>` and `assert_not_between` add inclusive numeric-range assertions for integers and decimals (#1026)

@@ -222,6 +222,10 @@ function bashunit::main::exec_tests() {
       bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
     fi
 
+    if [ -n "$BASHUNIT_COVERAGE_REPORT_COBERTURA" ]; then
+      bashunit::coverage::report_cobertura "$BASHUNIT_COVERAGE_REPORT_COBERTURA"
+    fi
+
     if [ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]; then
       bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
     fi

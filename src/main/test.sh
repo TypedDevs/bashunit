@@ -400,6 +400,24 @@ function bashunit::main::cmd_test() {
       fi
       _bashunit_coverage_opt_set=true
       ;;
+    --coverage-report-cobertura)
+      # shellcheck disable=SC2034
+      # Use default if no value provided or next arg is a flag
+      if [ -z "${2:-}" ]; then
+        BASHUNIT_COVERAGE_REPORT_COBERTURA="coverage/cobertura.xml"
+      else
+        case "${2:-}" in
+        -*)
+          BASHUNIT_COVERAGE_REPORT_COBERTURA="coverage/cobertura.xml"
+          ;;
+        *)
+          BASHUNIT_COVERAGE_REPORT_COBERTURA="$2"
+          shift
+          ;;
+        esac
+      fi
+      _bashunit_coverage_opt_set=true
+      ;;
     -*)
       # Anything option-shaped reaching here matched no branch above. It used to
       # be filed under test paths, so a typo degraded the run silently and still
