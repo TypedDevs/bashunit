@@ -36,9 +36,18 @@ function bashunit::reports::__junit_classname() {
   _BASHUNIT_REPORTS_CLASSNAME_OUT="${path//\//.}"
 }
 
+##
+# Writes the JUnit XML report to the given file.
+# Arguments: $1 - output file
+##
 function bashunit::reports::generate_junit_xml() {
-  local output_file="$1"
+  bashunit::reports::print_junit_xml >"$1"
+}
 
+##
+# Renders the JUnit XML report on stdout, for `--output junit`.
+##
+function bashunit::reports::print_junit_xml() {
   local timestamp
   timestamp=$(date '+%Y-%m-%dT%H:%M:%S')
 
@@ -181,5 +190,5 @@ retries\">$escaped_flaky</flakyFailure>
     done
 
     echo "</testsuites>"
-  } >"$output_file"
+  }
 }

@@ -16,8 +16,18 @@ function bashunit::reports::__json_escape() {
   printf '%s' "$text"
 }
 
+##
+# Writes the JSON report to the given file.
+# Arguments: $1 - output file
+##
 function bashunit::reports::generate_report_json() {
-  local output_file="$1"
+  bashunit::reports::print_report_json >"$1"
+}
+
+##
+# Renders the JSON report on stdout, for `--output json`.
+##
+function bashunit::reports::print_report_json() {
   local total="${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
 
   local passed=0 failed=0 skipped=0 incomplete=0 flaky=0 duration_total=0
@@ -65,5 +75,5 @@ function bashunit::reports::generate_report_json() {
     done
     printf '  ]\n'
     printf '}\n'
-  } >"$output_file"
+  }
 }

@@ -44,6 +44,13 @@ message and the exact source line:
 }
 ```
 
+`--output json` prints that same document on stdout instead, so an agent can pipe a run
+straight into a parser without a temp file:
+
+```bash
+bashunit tests/ --output json | jq '.tests[] | select(.status == "failed")'
+```
+
 `--output tap` prints [TAP version 13](https://testanything.org) on stdout, which most
 harnesses already understand:
 

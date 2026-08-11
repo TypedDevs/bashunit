@@ -136,7 +136,7 @@ Options:
   --report-md <file>          Write a Markdown summary (auto-appended to \$GITHUB_STEP_SUMMARY)
   -s, --simple                Simple output (dots)
   --detailed                  Detailed output (default)
-  --output <format>           Output format: tap (TAP version 13)
+  --output <format>           Report on stdout: text (default), tap, json or junit
   -R, --run-all               Run all assertions (don't stop on first failure)
   -S, --stop-on-failure       Stop on first failure
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)

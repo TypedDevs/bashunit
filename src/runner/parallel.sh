@@ -72,8 +72,9 @@ function bashunit::runner::spinner() {
     return
   fi
 
-  # Don't show spinner in no-progress mode
-  if bashunit::env::is_no_progress_enabled; then
+  # Don't show spinner in no-progress mode, nor when stdout carries a machine
+  # format the frames would corrupt.
+  if bashunit::env::is_no_progress_enabled || bashunit::env::is_machine_output_enabled; then
     while true; do sleep 1; done
     return
   fi

@@ -65,7 +65,7 @@ _bashunit_completions() {
   # Value hints for options that take an argument.
   case "$prev" in
   --output)
-    COMPREPLY=($(compgen -W "tap" -- "$cur"))
+    COMPREPLY=($(compgen -W "text tap json junit" -- "$cur"))
     return 0
     ;;
   -j | --jobs)

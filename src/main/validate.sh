@@ -183,12 +183,12 @@ function bashunit::main::validate_config_or_exit() {
       "$BASHUNIT_COVERAGE_REPORT_COBERTURA" "BASHUNIT_COVERAGE_REPORT_COBERTURA"
   fi
 
-  # Only TAP is implemented; an unrecognised name used to fall back to the
-  # default renderer without a word, so `--output tpa` looked like it worked.
+  # An unrecognised name used to fall back to the default renderer without a
+  # word, so `--output tpa` looked like it worked.
   case "${BASHUNIT_OUTPUT_FORMAT:-}" in
-  '' | tap) ;;
+  '' | text | tap | json | junit) ;;
   *)
-    printf "%sError: unsupported output format '%s' for --output. Supported: tap.%s\n" \
+    printf "%sError: unsupported output format '%s' for --output. Supported: text, tap, json, junit.%s\n" \
       "${_BASHUNIT_COLOR_FAILED}" "${BASHUNIT_OUTPUT_FORMAT}" "${_BASHUNIT_COLOR_DEFAULT}" >&2
     exit 1
     ;;

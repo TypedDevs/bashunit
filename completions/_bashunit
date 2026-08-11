@@ -81,7 +81,7 @@ _bashunit() {
     '--report-md[Write a Markdown summary]:file:_files' \
     '(-s --simple)'{-s,--simple}'[Simple output with dots]' \
     '--detailed[Detailed output, the default]' \
-    '--output[Output format]:format:(tap)' \
+    '--output[Output format]:format:(text tap json junit)' \
     '(-R --run-all)'{-R,--run-all}'[Run all assertions without stopping on first failure]' \
     '(-S --stop-on-failure)'{-S,--stop-on-failure}'[Stop on first failure]' \
     '--test-timeout[Fail a test running longer than N seconds]:seconds:' \

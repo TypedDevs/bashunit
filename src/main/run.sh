@@ -90,6 +90,9 @@ function bashunit::main::exec_tests() {
     :
   elif bashunit::env::is_tap_output_enabled; then
     printf "TAP version 13\n"
+  elif bashunit::env::is_machine_output_enabled; then
+    # json/junit print one document at the end; a banner would precede it.
+    :
   else
     bashunit::console_header::print_version_with_env "$filter" "${test_files[@]}"
   fi
@@ -101,7 +104,7 @@ function bashunit::main::exec_tests() {
       BASHUNIT_SEED=$RANDOM
       export -n BASHUNIT_SEED
     fi
-    if ! bashunit::env::is_tap_output_enabled && ! bashunit::env::is_list_enabled; then
+    if ! bashunit::env::is_machine_output_enabled && ! bashunit::env::is_list_enabled; then
       bashunit::console_header::print_random_order_seed "$BASHUNIT_SEED"
     fi
   fi
@@ -139,7 +142,7 @@ function bashunit::main::exec_tests() {
     printf "\r%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
-  if ! bashunit::env::is_tap_output_enabled; then
+  if ! bashunit::env::is_machine_output_enabled; then
     bashunit::console_results::print_failing_tests_and_reset
     bashunit::console_results::print_risky_tests_and_reset
     bashunit::console_results::print_incomplete_tests_and_reset
@@ -173,7 +176,9 @@ function bashunit::main::exec_tests() {
     bashunit::reports::append_step_summary
   fi
 
-  if bashunit::env::is_profile_enabled; then
+  # The slowest-tests table is console rendering: it would sit in the middle of
+  # a machine format's stdout.
+  if bashunit::env::is_profile_enabled && ! bashunit::env::is_machine_output_enabled; then
     bashunit::console_results::print_profile_and_reset
   fi
 
@@ -210,11 +215,27 @@ function bashunit::main::exec_tests() {
     bashunit::reports::generate_report_json "$BASHUNIT_REPORT_JSON"
   fi
 
+  # The same writers, aimed at stdout instead of a file, so a pipeline needs no
+  # temp file. Independent of the --report-* flags: both can be asked for in
+  # one run. Only one format can be active, hence the elif.
+  if bashunit::env::is_json_output_enabled; then
+    bashunit::reports::print_report_json
+  elif bashunit::env::is_junit_output_enabled; then
+    bashunit::reports::print_junit_xml
+  fi
+
   # Render the coverage reports; the data behind them was computed above.
   if bashunit::env::is_coverage_enabled; then
     if bashunit::coverage::is_diff_enabled; then
-      bashunit::coverage::report_diff
-    else
+      if bashunit::env::is_machine_output_enabled; then
+        # The pass still runs because it resolves the percentage
+        # --coverage-min gates on; only its table is dropped, since stdout
+        # belongs to the machine format.
+        bashunit::coverage::report_diff >/dev/null
+      else
+        bashunit::coverage::report_diff
+      fi
+    elif ! bashunit::env::is_machine_output_enabled; then
       bashunit::coverage::report_text
     fi
 

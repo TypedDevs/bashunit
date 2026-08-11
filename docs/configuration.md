@@ -521,11 +521,13 @@ BASHUNIT_SHOW_EXECUTION_TIME=false
 
 ## Output format
 
-> `BASHUNIT_OUTPUT_FORMAT=tap`
+> `BASHUNIT_OUTPUT_FORMAT=text|tap|json|junit`
 
-Select an alternative output format. Currently supported: `tap` for
+Send the report to stdout in a machine-readable format instead of the console
+rendering: `tap` for
 [TAP version 13](https://testanything.org/tap-version-13-specification.html),
-useful for CI/CD integrations.
+`json` for the `--report-json` document and `junit` for JUnit XML. `text`, the
+default, keeps the human-readable output.
 
 Similar as using `--output` option on the [command line](/command-line#output-format).
 
@@ -620,7 +622,8 @@ Similar as using `--report-md` option on the [command line](/command-line#report
 > `BASHUNIT_GHA_ANNOTATIONS=auto|always|never`
 
 Controls GitHub Actions annotations on stdout. `auto` by default: on inside GitHub Actions,
-quiet everywhere else. Never emitted under `--output tap`.
+quiet everywhere else. Never emitted under a machine `--output` format
+(`tap`, `json`, `junit`).
 
 Similar as using `--gha-annotations` option on the [command line](/command-line#gha-annotations).
 

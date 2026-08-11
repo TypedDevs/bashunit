@@ -73,6 +73,8 @@ function bashunit::reports::is_enabled() {
     [ -n "${BASHUNIT_REPORT_TAP:-}" ] ||
     [ -n "${BASHUNIT_REPORT_JSON:-}" ] ||
     [ -n "${BASHUNIT_REPORT_MD:-}" ] ||
+    bashunit::env::is_json_output_enabled ||
+    bashunit::env::is_junit_output_enabled ||
     bashunit::env::should_append_step_summary ||
     bashunit::env::should_print_gha_annotations
 }

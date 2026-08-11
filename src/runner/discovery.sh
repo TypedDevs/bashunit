@@ -206,7 +206,12 @@ function bashunit::runner::load_test_files() {
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" 2>/dev/null || true
     kill "$spinner_pid" 2>/dev/null || true
-    printf "\r  \r" # Clear the spinner output
+    # Clear the spinner output, but only where it was drawn: under a machine
+    # --output format these bytes landed in front of the report (an XML
+    # declaration must start the document).
+    if ! bashunit::env::is_machine_output_enabled; then
+      printf "\r  \r"
+    fi
 
     local _stderr_idx=0
     while [ "$_stderr_idx" -lt "$worker_stderr_count" ]; do

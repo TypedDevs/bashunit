@@ -19,6 +19,25 @@ function bashunit::console_results::render_result() {
     return 0
   fi
 
+  # json/junit: the totals live in the document the run prints at the end, so
+  # this only resolves the exit code -- walking the same ladder as the console
+  # renderer below, since the exit code may not depend on the output format.
+  if bashunit::env::is_machine_output_enabled; then
+    if [ "$_BASHUNIT_TESTS_FAILED" -gt 0 ]; then
+      return 1
+    fi
+    if [ "$_BASHUNIT_TESTS_FLAKY" -gt 0 ] && bashunit::env::is_fail_on_flaky_enabled; then
+      return 1
+    fi
+    local machine_total=$((_BASHUNIT_TESTS_PASSED + _BASHUNIT_TESTS_SKIPPED +
+      _BASHUNIT_TESTS_INCOMPLETE + _BASHUNIT_TESTS_SNAPSHOT +
+      _BASHUNIT_TESTS_FAILED + _BASHUNIT_TESTS_RISKY))
+    if [ "$machine_total" -eq 0 ]; then
+      return 1
+    fi
+    return 0
+  fi
+
   if bashunit::env::is_simple_output_enabled; then
     printf "\n\n"
   fi
@@ -189,7 +208,7 @@ function bashunit::console_results::print_hook_completed() {
     return
   fi
 
-  if bashunit::env::is_tap_output_enabled; then
+  if bashunit::env::is_machine_output_enabled; then
     return
   fi
 

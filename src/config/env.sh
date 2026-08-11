@@ -647,6 +647,30 @@ function bashunit::env::is_tap_output_enabled() {
   [ "$BASHUNIT_OUTPUT_FORMAT" = "tap" ]
 }
 
+function bashunit::env::is_json_output_enabled() {
+  [ "$BASHUNIT_OUTPUT_FORMAT" = "json" ]
+}
+
+function bashunit::env::is_junit_output_enabled() {
+  [ "$BASHUNIT_OUTPUT_FORMAT" = "junit" ]
+}
+
+##
+# Whether stdout belongs to a machine format. Every human rendering — header,
+# progress, summary, coverage table, profile — is suppressed for these so the
+# stream stays parseable; diagnostics still go to stderr.
+#
+# The formats are listed rather than tested as "not text", so a value that
+# somehow bypassed validation renders the console instead of silently emitting
+# nothing at all.
+##
+function bashunit::env::is_machine_output_enabled() {
+  case "$BASHUNIT_OUTPUT_FORMAT" in
+  tap | json | junit) return 0 ;;
+  esac
+  return 1
+}
+
 function bashunit::env::is_snapshot_report_unused_enabled() {
   [ "$BASHUNIT_SNAPSHOT_REPORT_UNUSED" = "true" ]
 }
@@ -671,8 +695,8 @@ function bashunit::env::is_fail_on_risky_enabled() {
 # Whether workflow-command annotations go to stdout. GitHub parses them from the
 # job log, so stdout is the only sink that reaches a pull request.
 #
-# `auto` stays quiet outside GitHub Actions, and quiet under --output tap, whose
-# stdout is a machine format an annotation line would corrupt.
+# `auto` stays quiet outside GitHub Actions, and quiet under a machine --output
+# format, whose stdout an annotation line would corrupt.
 ##
 function bashunit::env::should_print_gha_annotations() {
   case "${BASHUNIT_GHA_ANNOTATIONS:-auto}" in
@@ -682,7 +706,7 @@ function bashunit::env::should_print_gha_annotations() {
 
   [ "${_BASHUNIT_IS_OUTERMOST_RUN:-true}" = true ] &&
     [ "${GITHUB_ACTIONS:-}" = "true" ] &&
-    ! bashunit::env::is_tap_output_enabled
+    ! bashunit::env::is_machine_output_enabled
 }
 
 ##

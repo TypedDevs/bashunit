@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `--output <text|tap|json|junit>` sends the JSON and JUnit reports to stdout, so a pipeline needs no temp file; the console rendering, coverage table, slowest-tests table and GitHub Actions annotations are suppressed for the machine formats, diagnostics stay on stderr, exit codes are unchanged, and `--output json --report-json f.json` produces both (#1018)
+
 ## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
 
 ### Added
