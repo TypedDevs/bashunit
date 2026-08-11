@@ -85,6 +85,16 @@ bashunit::print_line          # 70 dashes
 bashunit::print_line 40 '='   # 40 equals signs
 ```
 
+## Conditional skips
+
+These mark the test skipped **and end it**, so no `&& return` is needed. See
+[Skipping and incomplete tests](/skipping-incomplete#conditional-skips).
+
+- `bashunit::skip_if <condition> [reason]` — skip when the condition succeeds.
+- `bashunit::skip_unless <condition> [reason]` — skip when it fails.
+- `bashunit::skip_unless_command <cmd> [cmd...]` — skip when a command is missing.
+- `bashunit::skip_on <windows|macos|linux> [reason]` — skip on that platform.
+
 ## Custom assertion helpers
 
 These helpers are intended for building [custom assertions](/custom-asserts).

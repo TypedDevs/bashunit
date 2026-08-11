@@ -38,10 +38,7 @@ function test_calculate_zero_result() {
 }
 
 function test_calculate_with_bc_for_decimal() {
-  if ! bashunit::dependencies::has_bc; then
-    bashunit::skip "bc not available"
-    return
-  fi
+  bashunit::skip_unless_command bc
 
   local result
   result=$(bashunit::math::calculate "1.5 + 2.5")
@@ -50,10 +47,7 @@ function test_calculate_with_bc_for_decimal() {
 }
 
 function test_calculate_fallback_to_awk_for_decimal() {
-  if ! bashunit::dependencies::has_awk; then
-    bashunit::skip "awk not available"
-    return
-  fi
+  bashunit::skip_unless_command awk
 
   bashunit::mock bashunit::dependencies::has_bc false
 

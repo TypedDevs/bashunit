@@ -46,6 +46,58 @@ Some tests skipped
 ```
 :::
 
+## Conditional skips
+
+`bashunit::skip` marks the test skipped but does **not** stop it, which is why
+every example above ends in `&& return`. The four helpers below do both: they
+mark the test skipped and end it right there.
+
+> `bashunit::skip_if <condition> "[reason]"`
+> `bashunit::skip_unless <condition> "[reason]"`
+> `bashunit::skip_unless_command <command> [<command>…]`
+> `bashunit::skip_on <windows|macos|linux> "[reason]"`
+
+The condition of `skip_if`/`skip_unless` is evaluated as a shell command, so it
+may carry arguments. `skip_unless_command` takes any number of commands and
+reports `requires <command>` for the first one missing. `skip_on` accepts
+`windows`, `macos` or `linux`; any other name is a usage error rather than a
+test that silently never skips.
+
+::: code-group
+```bash [Example]
+function test_file_permissions() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+
+  assert_file_permissions 644 "$file"
+}
+
+function test_decimal_math() {
+  bashunit::skip_unless_command bc
+
+  assert_equals "4.0" "$(calculate "1.5 + 2.5")"
+}
+
+function test_only_locally() {
+  bashunit::skip_if "[ -n \"${CI:-}\" ]" "too slow for CI"
+
+  assert_successful_code "$(long_running_job)"
+}
+```
+```[Output]
+↷ Skipped: File permissions
+    Git Bash fakes POSIX permissions
+↷ Skipped: Decimal math
+    requires bc
+
+Tests:      2 skipped, 1 passed, 3 total
+```
+:::
+
+::: tip
+Called from inside a test's own `$(...)` subshell, these helpers end that
+subshell only — the same as any `exit`. Call them from the test body.
+:::
+
 ## bashunit::todo
 > `bashunit::todo "[pending]"`
 
