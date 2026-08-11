@@ -56,7 +56,7 @@ Seventeen, in load order. The order is the dependency layering: leaves first.
 | 6 | `coverage/` | 15 | 3102 | line/branch tracking, diff coverage and the five report formats |
 | 7 | `state/` | 6 | 474 | counters, per-test context, result payload, parallel aggregation |
 | 8 | `console/` | 9 | 1278 | everything printed: palette, header, per-test lines, totals |
-| 9 | `helper/` | 8 | 948 | naming, discovery, data providers, tags, encoding |
+| 9 | `helper/` | 9 | 1071 | naming, discovery, data providers, tags, per-test annotations, encoding |
 | 10 | `cli/` | 5 | 445 | the `doc`/`init`/`upgrade`/`watch` subcommand implementations |
 | 11 | `assert/` | 11 | 2326 | every assertion |
 | 12 | `doubles/` | 4 | 505 | spies and mocks — **sourced by `assert/index.sh`, not the entrypoint** |

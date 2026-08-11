@@ -56,6 +56,47 @@ function test_handles_invalid_input() {
 The provided title is used only for display purposes. The original function name is still
 used internally, and custom titles are reset automatically after each test.
 
+## Per-test annotations
+
+`--test-timeout` and `--retry` are run-wide, but the need is usually per test:
+one integration test needs 30 seconds while the other 400 stay strict. Write
+the annotation in the comment block directly above the function, the same place
+`# @tag` goes:
+
+::: code-group
+```bash [Example]
+# @tag integration
+# @timeout 30
+# @retry 3
+function test_slow_integration() {
+  assert_successful_code "$(sync_with_the_api)"
+}
+
+# @skip needs a live database
+function test_reads_from_the_database() {
+  # never executed, not even set_up
+  assert_not_empty "$(query "select 1")"
+}
+```
+```[Output]
+↷ Skipped: Reads from the database
+    needs a live database
+```
+:::
+
+| Annotation | Effect |
+|---------------------|-------------------------------------------------------------|
+| `@timeout <seconds>` | Overrides `--test-timeout` for this test, in both directions. `0` disables the timeout for this test even when the run sets one. |
+| `@retry <n>`         | Overrides `--retry` for this test. |
+| `@skip [reason]`     | Reports the test as skipped with the reason; the body and the hooks never run. |
+
+The association follows the `# @tag` rule: other comment lines keep the block
+open, a **blank line breaks it**, and both `function test_x` and `test_x()`
+definition styles are recognised. A value that is not a non-negative integer
+(`# @timeout abc`, `# @retry -1`) aborts the run with an error rather than
+silently falling back to the default — the run would otherwise not be the one
+the annotation asked for.
+
 ## `set_up` function
 
 The `set_up` auxiliary function is called, if it is present in the test file, before each test function in the test file is executed.

@@ -13,7 +13,17 @@ function bashunit::skip::__mark() {
   # not abort the run with an unbound FUNCNAME entry under strict mode.
   label="$(bashunit::helper::normalize_test_function_name "${FUNCNAME[$depth]:-}")"
 
-  bashunit::console_results::print_skipped_test "${label}" "${reason}"
+  bashunit::skip::__mark_with_label "$label" "$reason"
+}
+
+##
+# Marks the running test skipped under an explicit label, for callers that know
+# the test function without standing on its stack -- the `# @skip` annotation
+# is applied by the runner itself.
+# Arguments: $1 - label, $2 - reason (optional)
+##
+function bashunit::skip::__mark_with_label() {
+  bashunit::console_results::print_skipped_test "${1}" "${2-}"
 
   bashunit::state::add_assertions_skipped
 }
