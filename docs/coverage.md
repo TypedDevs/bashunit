@@ -43,9 +43,16 @@ Coverage report written to: coverage/lcov.info
 bashunit records which lines ran, then classifies and reports them:
 
 1. **Capture**: every executed line's file path and line number is recorded, either from a `DEBUG` trap or from `xtrace` — see [Tracing engine](#tracing-engine)
-2. **Filtering**: only files matching your coverage paths (and not excluded) are tracked
+2. **Filtering**: a recorded file is tracked only when it matches your coverage paths and no exclude pattern
 3. **Aggregation**: after tests complete, hit data is aggregated
 4. **Reporting**: each source line is classified as executable or not, and the executable ones are matched against the hits
+
+::: warning Only executed files are reported
+A file enters the report the first time one of its lines runs. A source file that no test
+touched at all is **absent** from the report rather than shown at 0%, so the percentage is
+measured over the files that ran, not over everything under `BASHUNIT_COVERAGE_PATHS`.
+Tracked in [#1053](https://github.com/TypedDevs/bashunit/issues/1053).
+:::
 
 ::: tip Performance
 Coverage roughly doubles to quadruples wall-clock time, depending on Bash version
@@ -108,39 +115,22 @@ For most projects following standard naming conventions, you can simply run `bas
 
 ### Environment Variables
 
-You can also configure coverage via [environment variables](/configuration) in your `.env` file:
+Every coverage flag has a matching setting. The full list, with defaults, lives in
+[Configuration > Coverage](/configuration#coverage). The short version:
 
 ```bash
-# Enable coverage
-BASHUNIT_COVERAGE=true
-
-# Paths to track (comma-separated)
-BASHUNIT_COVERAGE_PATHS=src/,lib/
-
-# Patterns to exclude (comma-separated)
-BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh
-
-# LCOV report output path
+BASHUNIT_COVERAGE=true                     # enable tracking
+BASHUNIT_COVERAGE_PATHS=src/,lib/          # paths to track
 BASHUNIT_COVERAGE_REPORT=coverage/lcov.info
-
-# HTML report output directory (generates line-by-line coverage view)
 BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
-
-# Minimum coverage percentage (optional)
-BASHUNIT_COVERAGE_MIN=80
-
-# Color thresholds for console output
-BASHUNIT_COVERAGE_THRESHOLD_LOW=50   # Red below this
-BASHUNIT_COVERAGE_THRESHOLD_HIGH=80  # Green above this, yellow between
-
-# Tracing engine: auto (default), xtrace or trap
-BASHUNIT_COVERAGE_ENGINE=auto
-
-# Optional text-report blocks (off by default, opt-in for verbose runs)
-BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true   # Print per-function coverage
-BASHUNIT_COVERAGE_SHOW_UNCOVERED=true   # Print missed line ranges per file
-BASHUNIT_COVERAGE_SHOW_LINE_HITS=true   # Print per-line execution counts (lineno:count)
+BASHUNIT_COVERAGE_MIN=80                   # fail below this percentage
+BASHUNIT_COVERAGE_ENGINE=auto              # auto, xtrace or trap
 ```
+
+Three opt-in blocks add detail to the console report:
+`BASHUNIT_COVERAGE_SHOW_FUNCTIONS` (per-function table),
+`BASHUNIT_COVERAGE_SHOW_UNCOVERED` (missed line ranges),
+`BASHUNIT_COVERAGE_SHOW_LINE_HITS` (per-line execution counts).
 
 ### Tracing engine
 
