@@ -1020,6 +1020,14 @@ Directory for the browsable HTML coverage report. Empty by default (not generate
 
 Similar as using `--coverage-report-html` option on the [command line](/command-line#coverage).
 
+### Coverage report Cobertura
+
+> `BASHUNIT_COVERAGE_REPORT_COBERTURA=file`
+
+Path for the Cobertura XML coverage report, the format GitLab merge-request coverage visualisation, Azure DevOps and Jenkins consume. Empty by default (not generated); `--coverage-report-cobertura` with no value uses `coverage/cobertura.xml`.
+
+Similar as using `--coverage-report-cobertura` option on the [command line](/command-line#coverage).
+
 ### Coverage diff
 
 > `BASHUNIT_COVERAGE_DIFF=<ref>`
