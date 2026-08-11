@@ -214,8 +214,8 @@ a simple dependency manager for bash.
 # Ensure bashdep is installed
 [ ! -f lib/bashdep ] && {
   mkdir -p lib
-  curl -sLo lib/bashdep \
-    https://github.com/Chemaclass/bashdep/releases/download/0.1/bashdep
+  curl -fsSLo lib/bashdep \
+    https://github.com/Chemaclass/bashdep/releases/latest/download/bashdep
   chmod +x lib/bashdep
 }
 
@@ -236,8 +236,8 @@ bashdep::install "${DEPENDENCIES[@]}"
 # Ensure bashdep is installed
 [ ! -f lib/bashdep ] && {
   mkdir -p lib
-  curl -sLo lib/bashdep \
-    https://github.com/Chemaclass/bashdep/releases/download/0.1/bashdep
+  curl -fsSLo lib/bashdep \
+    https://github.com/Chemaclass/bashdep/releases/latest/download/bashdep
   chmod +x lib/bashdep
 }
 
@@ -254,6 +254,25 @@ bashdep::install "${DEPENDENCIES[@]}"
 ```[Output]
 Downloading 'bashunit' to 'lib'...
 > bashunit installed successfully in 'lib'
+> installed 1, skipped 0, failed 0
+```
+:::
+
+Installs are idempotent: bashdep records what it fetched in `lib/.bashdep.lock`,
+so a second run prints `> bashunit already exists in 'lib', skipping.` and only
+re-downloads when you bump the version in the URL.
+
+::: tip Pin bashdep itself for reproducible builds
+`releases/latest/download` always fetches the newest bashdep. For byte-identical
+installs across machines and CI, swap it for an explicit tag and verify it against
+the published checksum:
+
+```bash
+curl -fsSLo lib/bashdep \
+  https://github.com/Chemaclass/bashdep/releases/download/0.9.0/bashdep
+curl -fsSLo checksum \
+  https://github.com/Chemaclass/bashdep/releases/download/0.9.0/checksum
+( cd lib && shasum -a 256 -c ../checksum ) && chmod +x lib/bashdep
 ```
 :::
 
