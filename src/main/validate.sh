@@ -53,8 +53,12 @@ function bashunit::main::require_writable_path_or_exit() {
 ##
 # Like require_writable_path_or_exit, but for writers that mkdir -p their
 # target directory: missing ancestors are acceptable as long as the first
-# existing one is writable, so `coverage/cobertura.xml` passes with no
-# coverage/ dir while `/unwritable/x.xml` still fails fast.
+# existing one is a writable directory, so `coverage/cobertura.xml` passes
+# with no coverage/ dir while `/unwritable/x.xml` still fails fast.
+#
+# The first existing ancestor must be a directory, not merely writable: a
+# regular file in the path prefix makes `mkdir -p` impossible for every user,
+# root included, and root passes a bare -w test on it.
 # Arguments: $1 - path, $2 - setting name for the error message
 ##
 function bashunit::main::require_creatable_path_or_exit() {
@@ -68,7 +72,8 @@ function bashunit::main::require_creatable_path_or_exit() {
   done
   [ -z "$ancestor" ] && ancestor="/"
 
-  if [ -w "$ancestor" ] && { [ ! -e "$path" ] || [ -w "$path" ]; }; then
+  if [ -d "$ancestor" ] && [ -w "$ancestor" ] &&
+    { [ ! -e "$path" ] || [ -w "$path" ]; }; then
     return 0
   fi
 

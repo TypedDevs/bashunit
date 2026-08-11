@@ -76,16 +76,20 @@ function test_cobertura_coexists_with_lcov_in_one_run() {
   assert_contains '<coverage' "$(cat "$dir/cobertura.xml")"
 }
 
-function test_cobertura_unwritable_path_fails_fast() {
+# The blocker is a regular file rather than a chmod'ed directory: CI runs the
+# Bash 3.0 jobs as root inside a container, where every permission bit is
+# writable, but no user can mkdir through a file.
+function test_cobertura_uncreatable_path_fails_fast() {
   local dir ec=0 output
   dir="$(_cobertura_project)"
+  echo "not a directory" >"$dir/blocker"
 
   # No sed pipe here: the assertion is on bashunit's own exit code.
   output="$(
     cd "$dir" || exit 1
     BASHUNIT_COVERAGE_PATHS="$dir" BASHUNIT_COVERAGE_REPORT="" \
       "$OLDPWD/bashunit" --no-parallel --coverage \
-      --coverage-report-cobertura /nonexistent-root-dir/report.xml ./suite_test.sh 2>&1
+      --coverage-report-cobertura blocker/report.xml ./suite_test.sh 2>&1
   )" || ec=$?
 
   assert_general_error "" "" "$ec"
