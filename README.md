@@ -29,7 +29,7 @@
 ## Why bashunit
 
 A lightweight, fast testing framework for **Bash 3.0+**, focused on developer experience.
-It ships 77 assertions plus spies, mocks, data providers, snapshots and more.
+It ships 84 assertions plus spies, mocks, data providers, snapshots and more.
 
 ## Quick start
 

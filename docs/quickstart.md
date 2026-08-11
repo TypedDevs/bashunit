@@ -30,17 +30,6 @@ npm install -g bashunit
 bashunit tests/
 ```
 
-```bash [Windows]
-# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
-#
-# Step 1: Install WSL if you haven't already
-#   - Open PowerShell as Administrator
-#   - Run: wsl --install
-#   - Restart your computer
-#
-# Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.com/install.sh | bash
-```
 :::
 
 The `install.sh` route creates `lib/bashunit`; the npm route exposes `bashunit` via `npx` or your global `PATH`.
@@ -55,7 +44,15 @@ You can bootstrap a ready to use test suite with the `init` subcommand:
 ./lib/bashunit init tests
 ```
 
-This will create a `tests` directory containing a sample test and bootstrap file.
+It creates, in the current directory:
+
+- `tests/bootstrap.sh` — sourced before your tests; put shared setup here
+- `tests/example_test.sh` — a sample test
+- `.github/workflows/tests.yml` — a CI workflow using the official action
+- `.env` — with `BASHUNIT_BOOTSTRAP=tests/bootstrap.sh`, which is what makes the bootstrap load
+
+If `.env` already sets `BASHUNIT_BOOTSTRAP`, `init` comments that line out and appends the
+new one, so check the diff before committing.
 
 Alternatively, create your tests manually:
 
@@ -77,14 +74,14 @@ Alternatively, create your tests manually:
 
 3.  Finally, run the **bashunit** executable:
     ```bash
-    ./lib/bashunit ./tests
+    ./lib/bashunit tests
     ```
 
 4.  If everything works correctly, you should see an output similar to the following:
     ```-vue
     bashunit - {{ pkg.version }} | Tests: 1
     Running tests/example_test.sh
-    ✓ Passed: Bashunit is working                                          16ms
+    ✓ Passed: Bashunit is working
 
     Tests:      1 passed, 1 total
     Assertions: 1 passed, 1 total
@@ -93,7 +90,21 @@ Alternatively, create your tests manually:
     Time taken: 90ms
     ```
 
+    A per-test duration column appears when the platform has a cheap clock source;
+    `BASHUNIT_SHOW_EXECUTION_TIME` controls it.
+
 5.  Now you can start testing the functionalities of your own Bash scripts.
+
+## Running your suite
+
+With no path, bashunit runs `tests/` (`BASHUNIT_DEFAULT_PATH`):
+
+```bash
+./lib/bashunit                      # run tests/
+./lib/bashunit --filter user        # only tests whose name matches
+./lib/bashunit --parallel tests/    # run files concurrently
+./lib/bashunit --changed            # only test files touched since origin/HEAD
+```
 
 ## Learning bashunit interactively
 
@@ -114,6 +125,8 @@ Dive deeper into the documentation:
 - **[Data providers](/data-providers)** - Write parameterized tests efficiently
 - **[Snapshots](snapshots)** - Test complex output easily
 - **[Test files](/test-files)** - Understand test file structure and lifecycle hooks
+- **[Command line](/command-line)** - Every flag, from `--filter` to `--shard`
+- **[Configuration](/configuration)** - `.env` and `BASHUNIT_*` variables
 
 <script setup>
 import pkg from '../package.json'

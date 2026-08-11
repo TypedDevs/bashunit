@@ -8,7 +8,18 @@ description: "Install bashunit via install.sh, npm, Brew, MacPorts or bashdep: a
 
 ## Requirements
 
-bashunit requires **Bash 3.0** or newer. On Windows use [WSL](https://learn.microsoft.com/windows/wsl/install).
+bashunit requires **Bash 3.0** or newer.
+
+On Windows, install [WSL](https://learn.microsoft.com/windows/wsl/install) (`wsl --install`
+from an elevated PowerShell, then reboot) and run every command below inside the WSL shell.
+
+Everything else is optional, but some features need it:
+
+| Tool | Needed for | Without it |
+|------|------------|------------|
+| `jq` | [JSON assertions](/assertions#assert-json-key-exists) | the test is **skipped**, not failed |
+| `git` | `--changed`, `--coverage-diff`, `upgrade`, failure diffs | those flags error out; diffs print plain values |
+| `inotifywait` (Linux) / `fswatch` (macOS) | [`watch`](/command-line#watch) | falls back to polling |
 
 ## install.sh
 
@@ -19,26 +30,21 @@ There is a tool that will generate an executable with the whole library in a sin
 curl -s https://bashunit.com/install.sh | bash
 ```
 
-```bash [Windows]
-# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
-#
-# Step 1: Install WSL if you haven't already
-#   - Open PowerShell as Administrator
-#   - Run: wsl --install
-#   - Restart your computer
-#
-# Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.com/install.sh | bash
-```
 :::
 
 This will create a file inside a lib folder, such as `lib/bashunit`.
 
 ::: tip Automatic checksum verification
-`install.sh` verifies the download against the release `checksum` asset by default and
-aborts on a mismatch, so a tampered or corrupted download never lands. Set
-`BASHUNIT_VERIFY_CHECKSUM=false` to opt out (e.g. for old releases published before
-checksum assets existed). The manual check below is only needed when you opt out.
+`install.sh` verifies the download against the release `checksum` asset and aborts on a
+mismatch, so a tampered or corrupted download never lands. There are three states:
+
+- **unset** (default): verifies, aborts on a mismatch, and only *warns and continues* when
+  the checksum asset or a sha256 tool is unavailable
+- `BASHUNIT_VERIFY_CHECKSUM=true`: also aborts when verification is impossible
+- `BASHUNIT_VERIFY_CHECKSUM=false`: skips verification entirely
+
+The GitHub Action always passes the variable, so `verify-checksum: 'true'` (its default) is
+the strict mode. The manual check below is only needed when you skip verification.
 :::
 
 #### Verify
@@ -64,17 +70,6 @@ The installation script can receive arguments (in any order):
 curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
 ```
 
-```bash [Windows]
-# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
-#
-# Step 1: Install WSL if you haven't already
-#   - Open PowerShell as Administrator
-#   - Run: wsl --install
-#   - Restart your computer
-#
-# Step 2: Open your WSL terminal and run:
-curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
-```
 :::
 
 - `[dir]`: the destiny directory to save the executable bashunit; `lib` by default
@@ -236,14 +231,7 @@ bashdep::install "${DEPENDENCIES[@]}"
 ```
 
 ```bash-vue [Windows - install-dependencies.sh]
-# IMPORTANT: You need WSL (Windows Subsystem for Linux) to run bashunit
-#
-# Step 1: Install WSL if you haven't already
-#   - Open PowerShell as Administrator
-#   - Run: wsl --install
-#   - Restart your computer
-#
-# Step 2: Open your WSL terminal and run:
+# Run this inside the WSL shell, see Requirements above.
 
 # Ensure bashdep is installed
 [ ! -f lib/bashdep ] && {
@@ -290,10 +278,11 @@ jobs:
       # For an immutable pin use a commit SHA: TypedDevs/bashunit@<sha> # {{ pkg.version }}
       - uses: TypedDevs/bashunit@v0
         with:
-          version: '{{ pkg.version }}' # or "latest" (default)
+          version: '{{ pkg.version }}' # omit for the version pinned at this ref
           directory: lib               # optional, "lib" by default
           add-to-path: 'true'          # optional, "true" by default
           verify-checksum: 'true'      # optional, "true" by default
+          annotations: auto            # optional, "auto" by default ("never" to turn off)
       # add-to-path puts the binary on $PATH, so just call "bashunit":
       - run: bashunit tests
 ```
@@ -343,7 +332,7 @@ jobs:
 ```
 :::
 
-**Inputs:** `version` (default `latest`), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`), `args` (default empty — when set, runs `bashunit <args>` after installing).
+**Inputs:** `version` (default: the release pinned at this action ref, e.g. `0.45.0` on `@v0`; pass `latest` to always take the newest), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`), `args` (default empty — when set, runs `bashunit <args>` after installing), `annotations` (default `auto` — GitHub Actions annotations for failing tests; `never` turns them off, `always` forces them).
 **Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
 
 `verify-checksum` validates the downloaded binary against the release `checksum`
@@ -387,8 +376,26 @@ Either way you get bashunit updates as routine pull requests — no manual re-pi
 `curl | bash` bumps to remember. Review the PR, let CI run, merge.
 
 ::: tip
-See bashunit's own pipeline for a real example: https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/tests.yml
+See the action's own end-to-end test for a real example, covering `version`, `directory`,
+`add-to-path` and `args`:
+https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/test-action.yml
+
+bashunit's `tests.yml` runs the in-repo entrypoint instead, so it is not an install example.
 :::
+
+## Updating
+
+For the `install.sh`, GitHub Action and bashdep routes, upgrade the binary in place:
+
+```bash
+./lib/bashunit upgrade
+```
+
+It downloads the newest release over the same file, and prints
+`> You are already on latest version` when there is nothing to do.
+
+Package-manager installs update through their own manager instead: `brew upgrade bashunit`,
+`sudo port upgrade bashunit`, `npm install --save-dev bashunit@latest`.
 
 ## Shell completion
 
