@@ -14,6 +14,18 @@ other helper does take the `bashunit::` prefix; see [Globals](/globals).
 Run `bashunit doc` to print this catalogue in your terminal, or `bashunit doc <filter>`
 to narrow it (`bashunit doc json`).
 
+Any assertion here also runs from the shell without a test file:
+`bashunit assert contains "world" "hello world"`. See [Standalone](/standalone).
+
+`assert_same`, `assert_equals`, `assert_not_same`, `assert_not_equals` and the numeric
+comparisons take an optional last argument used as the failure label:
+`assert_same "1" "2" "my custom label"` reports `✗ Failed: my custom label`.
+
+The string assertions whose signature ends in `...` take a variadic value: every argument
+after the first is joined with **newlines** and compared as one value. They accept no
+trailing label override, so `assert_contains "zzz" "abc" "my label"` searches
+`abc\nmy label` instead of relabelling the failure.
+
 ## Quick reference
 
 | Group | Assertions |
@@ -55,9 +67,10 @@ above.
 A purpose-built assertion is usually clearer still — `assert_directory_exists`
 rather than a hand-rolled `test -d`.
 
-Reports an error if the argument result in a truthy value: `true` or `0`.
+Reports an error **unless** the argument results in a truthy value: `true` or `0`, or a
+command or function that exits `0`.
 
-- [assert_false](#assert-false) is similar but different.
+- [assert_false](#assert-false) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -88,9 +101,10 @@ function mock_false() {
 ## assert_false
 > `assert_false bool|function|command [args...]`
 
-Reports an error if the argument result in a falsy value: `false` or `1`.
+Reports an error **unless** the argument results in a falsy value: `false` or `1`, or a
+command or function that exits non-zero.
 
-- [assert_true](#assert-true) is similar but different.
+- [assert_true](#assert-true) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -148,17 +162,17 @@ Reports an error if the two variables `expected` and `actual` are not equal igno
 ::: code-group
 ```bash [Example]
 function test_success() {
-  assert_equals "foo" "\e[31mfoo"
+  assert_equals "foo" $'\e[31mfoo'
 }
 
 function test_failure() {
-  assert_equals "\e[31mfoo" "\e[31mfoo"
+  assert_equals "foo" $'\e[31mbar'
 }
 ```
 :::
 
 ## assert_contains
-> `assert_contains "needle" "haystack"`
+> `assert_contains "needle" "haystack"...`
 
 Reports an error if `needle` is not a substring of `haystack`.
 
@@ -214,9 +228,13 @@ function test_failure() {
 :::
 
 ## assert_matches
-> `assert_matches "pattern" "value"`
+> `assert_matches "pattern" "value"...`
 
 Reports an error if `value` does not match the regular expression `pattern`.
+
+`pattern` is an ERE evaluated by `grep -E`. If it does not match as written, the value is
+retried with every newline replaced by a space, so a single-line pattern can match across
+lines: `assert_matches 'one two'` matches the two-line value `one\ntwo`.
 
 - [assert_not_matches](#assert-not-matches) is the inverse of this assertion and takes the same arguments.
 
@@ -233,7 +251,7 @@ function test_failure() {
 :::
 
 ## assert_string_starts_with
-> `assert_string_starts_with "needle" "haystack"`
+> `assert_string_starts_with "needle" "haystack"...`
 
 Reports an error if `haystack` does not starts with `needle`.
 
@@ -252,7 +270,7 @@ function test_failure() {
 :::
 
 ## assert_string_ends_with
-> `assert_string_ends_with "needle" "haystack"`
+> `assert_string_ends_with "needle" "haystack"...`
 
 Reports an error if `haystack` does not ends with `needle`.
 
@@ -280,7 +298,7 @@ Reports an error if `value` does not match the `format` string. The format strin
 | `%d` | One or more digits |
 | `%i` | Signed integer (e.g. `+1`, `-42`) |
 | `%f` | Floating point number (e.g. `3.14`) |
-| `%s` | One or more non-whitespace characters |
+| `%s` | One or more characters other than a space (tabs and newlines match) |
 | `%x` | Hexadecimal (e.g. `ff00ab`) |
 | `%e` | Scientific notation (e.g. `1.5e10`) |
 | `%%` | Literal `%` character |
@@ -301,9 +319,12 @@ function test_failure() {
 :::
 
 ## assert_line_count
-> `assert_line_count "count" "haystack"`
+> `assert_line_count "count" "haystack"...`
 
 Reports an error if `haystack` does not contain `count` lines.
+
+A literal `\n` (backslash followed by `n`) counts as a line break too, so
+`assert_line_count 2 'one\ntwo'` passes even though the value holds no real newline.
 
 ::: code-group
 ```bash [Example]
@@ -345,7 +366,7 @@ function test_failure() {
 
 Reports an error if `actual` is not less than or equal to `expected`.
 
-- [assert_greater_than](#assert-greater-or-equal-than) is the inverse of this assertion and takes the same arguments.
+- [assert_greater_or_equal_than](#assert-greater-or-equal-than) is the counterpart of this assertion and takes the same arguments.
 
 ::: code-group
 ```bash [Example]
@@ -411,6 +432,10 @@ function test_failure() {
 Reports an error if `actual` is outside the inclusive numeric range from `min` to `max`.
 Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
 
+A non-numeric argument, or `min` greater than `max`, is a **usage error**: the assertion
+returns 2 and the test is reported as an Error rather than a failure, with a message such
+as `assert_between expects min <= max, got '500' and '100'`.
+
 - [assert_not_between](#assert-not-between) is the exact negation and takes the same arguments.
 
 ::: code-group
@@ -432,6 +457,10 @@ function test_failure() {
 Reports an error if `actual` is inside the inclusive numeric range from `min` to `max`.
 Integers, decimals, and negative values are supported. `min` must not be greater than `max`.
 
+A non-numeric argument, or `min` greater than `max`, is a **usage error**: the assertion
+returns 2 and the test is reported as an Error rather than a failure, with a message such
+as `assert_between expects min <= max, got '500' and '100'`.
+
 - [assert_between](#assert-between) is the exact negation and takes the same arguments.
 
 ::: code-group
@@ -452,6 +481,10 @@ function test_failure() {
 Reports an error if `actual` is not within `delta` of `expected`
 (i.e. `|actual - expected| > delta`). Supports floating-point values.
 Useful for timing or measured values where exact equality is too strict.
+
+The bound is inclusive, so `|actual - expected| == delta` passes. An operand that is not a
+number, such as `1.2.3` or `5-3`, fails the assertion with `to all be numeric` instead of
+being evaluated as an expression. A leading `+` is accepted.
 
 ::: code-group
 ```bash [Example]
@@ -480,6 +513,10 @@ Inputs are automatically converted to epoch seconds. Supported formats:
 
 You can mix formats in the same assertion (e.g., one epoch, one ISO).
 
+Anything else, including an empty string, fails the assertion with
+`Expected '<value>' to be 'a valid date'` rather than being coerced to `0`. This applies to
+all five date assertions.
+
 ::: code-group
 ```bash [Example]
 function test_success() {
@@ -500,7 +537,7 @@ function test_failure() {
 
 Reports an error if `actual` is not before `expected` (i.e. `actual` must be less than `expected`).
 
-Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert-date-equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -519,7 +556,7 @@ function test_failure() {
 
 Reports an error if `actual` is not after `expected` (i.e. `actual` must be greater than `expected`).
 
-Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert-date-equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -538,7 +575,7 @@ function test_failure() {
 
 Reports an error if `actual` does not fall between `from` and `to` (inclusive).
 
-Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert-date-equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -557,7 +594,10 @@ function test_failure() {
 
 Reports an error if `actual` is not within `delta` seconds of `expected`.
 
-Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert_date_equals) for supported formats.
+`delta` is required: omitting it produces a shell error reported as an Error, not an
+assertion failure.
+
+Inputs are automatically converted to epoch seconds. See [assert_date_equals](#assert-date-equals) for supported formats.
 
 ::: code-group
 ```bash [Example]
@@ -634,6 +674,11 @@ Use `--stdin` to feed input into interactive commands (e.g. commands using
 Use `--stdout-contains` / `--stdout-not-contains` (and the `stderr-*` variants)
 for substring matching when you don't want to assert against the full output.
 
+Unrecognised arguments are silently dropped, so a mistyped flag such as
+`--stdout-contain` checks nothing and the assertion passes on exit status alone. Extra
+words after the command are dropped too: put arguments inside the command string,
+`assert_exec "echo hello" --stdout "hello"`.
+
 ::: code-group
 ```bash [Example]
 function sample() {
@@ -697,7 +742,12 @@ function test_failure() {
 ## assert_array_contains
 > `assert_array_contains "needle" "haystack"`
 
-Reports an error if `needle` is not an element of `haystack`.
+Reports an error if `needle` is not found in `haystack`.
+
+`needle` is matched as a **substring of the array joined with spaces**, not element by
+element, so `assert_array_contains "oob" foobar baz` and
+`assert_array_contains "foo bar" foo bar baz` both pass. Use
+[assert_arrays_equal](#assert-arrays-equal) when you need exact element comparison.
 
 - [assert_array_not_contains](#assert-array-not-contains) is the inverse of this assertion and takes the same arguments.
 
@@ -960,7 +1010,9 @@ function test_failure() {
 ## assert_file_contains
 > `assert_file_contains "file" "search"`
 
-Reports an error if `file` does not contains the search string.
+Reports an error if `file` does not contain the search string.
+
+`search` is matched **literally** (`grep -F`); regex metacharacters have no special meaning.
 
 - [assert_file_not_contains](#assert-file-not-contains) is the inverse of this assertion and takes the same arguments.
 
@@ -1158,8 +1210,8 @@ Reports an error if `directory` is not an empty directory.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  local directory="/home/user/empty_directory"
-  mkdir "$directory"
+  local directory
+  directory="$(bashunit::temp_dir)"
 
   assert_is_directory_empty "$directory"
 }
@@ -1188,7 +1240,8 @@ function test_success() {
 }
 
 function test_failure() {
-  local directory="/home/user/test"
+  local directory
+  directory="$(bashunit::temp_dir)"
   chmod -r "$directory"
 
   assert_is_directory_readable "$directory"
@@ -1212,7 +1265,8 @@ function test_success() {
 }
 
 function test_failure() {
-  local directory="/home/user/test"
+  local directory
+  directory="$(bashunit::temp_dir)"
   chmod -w "$directory"
 
   assert_is_directory_writable "$directory"
@@ -1299,7 +1353,7 @@ function test_failure() {
 :::
 
 ## assert_not_contains
-> `assert_not_contains "needle" "haystack"`
+> `assert_not_contains "needle" "haystack"...`
 
 Reports an error if `needle` is a substring of `haystack`.
 
@@ -1318,7 +1372,7 @@ function test_failure() {
 :::
 
 ## assert_string_not_starts_with
-> `assert_string_not_starts_with "needle" "haystack"`
+> `assert_string_not_starts_with "needle" "haystack"...`
 
 Reports an error if `haystack` does starts with `needle`.
 
@@ -1337,7 +1391,7 @@ function test_failure() {
 :::
 
 ## assert_string_not_ends_with
-> `assert_string_not_ends_with "needle" "haystack"`
+> `assert_string_not_ends_with "needle" "haystack"...`
 
 Reports an error if `haystack` does ends with `needle`.
 
@@ -1375,7 +1429,7 @@ function test_failure() {
 :::
 
 ## assert_not_matches
-> `assert_not_matches "pattern" "value"`
+> `assert_not_matches "pattern" "value"...`
 
 Reports an error if `value` matches the regular expression `pattern`.
 
@@ -1415,7 +1469,11 @@ function test_failure() {
 ## assert_array_not_contains
 > `assert_array_not_contains "needle" "haystack"`
 
-Reports an error if `needle` is an element of `haystack`.
+Reports an error if `needle` is found in `haystack`.
+
+`needle` is matched as a **substring of the array joined with spaces**, not element by
+element, so `assert_array_not_contains "foo bar" foo bar` fails even though no single
+element is `foo bar`.
 
 - [assert_array_contains](#assert-array-contains) is the inverse of this assertion and takes the same arguments.
 
@@ -1466,6 +1524,10 @@ function test_failed() {
 > `assert_file_not_contains "file" "search"`
 
 Reports an error if `file` contains the search string.
+
+`search` is matched as a **basic regular expression** (`grep`), unlike
+[assert_file_contains](#assert-file-contains) which matches literally, so
+`assert_file_not_contains file 'a.c'` fails on a file containing `abc`.
 
 - [assert_file_contains](#assert-file-contains) is the inverse of this assertion and takes the same arguments.
 
@@ -1526,8 +1588,8 @@ function test_success() {
 }
 
 function test_failure() {
-  local directory="/home/user/empty_directory"
-  mkdir "$directory"
+  local directory
+  directory="$(bashunit::temp_dir)"
 
   assert_is_directory_not_empty "$directory"
 }
@@ -1544,7 +1606,8 @@ Reports an error if `directory` is readable.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  local directory="/home/user/test"
+  local directory
+  directory="$(bashunit::temp_dir)"
   chmod -r "$directory"
 
   assert_is_directory_not_readable "$directory"
@@ -1568,7 +1631,8 @@ Reports an error if `directory` is writable.
 ::: code-group
 ```bash [Example]
 function test_success() {
-  local directory="/home/user/test"
+  local directory
+  directory="$(bashunit::temp_dir)"
   chmod -w "$directory"
 
   assert_is_directory_not_writable "$directory"
@@ -1586,7 +1650,7 @@ function test_failure() {
 ## assert_files_not_equals
 > `assert_files_not_equals "expected" "actual"`
 
-Reports an error if `expected` and `actual` are not equals.
+Reports an error if `expected` and `actual` have the same contents.
 
 - [assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
 
@@ -1627,6 +1691,10 @@ function test_failure() {
 
 Reports an error if `key` does not exist in the JSON string. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
 
+A key whose value is `null` or `false` is reported as missing, because `jq -e` treats both
+as absent. `0` and `""` are fine. To assert a false or null value, use
+`assert_json_contains ".flag" "false" "$json"`.
+
 ::: code-group
 ```bash [Example]
 function test_success() {
@@ -1644,6 +1712,9 @@ function test_failure() {
 > `assert_json_contains "key" "expected" "json"`
 
 Reports an error if `key` does not exist in the JSON string or its value does not equal `expected`. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+A key whose value is `null` or `false` is reported as missing, the same guard
+[assert_json_key_exists](#assert-json-key-exists) uses.
 
 ::: code-group
 ```bash [Example]
@@ -1680,6 +1751,10 @@ function test_failure() {
 > `assert_duration "command" threshold_ms`
 
 Reports an error if `command` takes longer than `threshold_ms` milliseconds to execute. Uses the framework's portable clock internally.
+
+Requires `awk`, plus `bc` or `awk` for the arithmetic. Unlike the JSON assertions, the
+duration assertions do **not** skip when the tool is missing: the test is reported as an
+Error.
 
 ::: code-group
 ```bash [Example]
@@ -1798,6 +1873,11 @@ function test_colored_render_modes() {
 
 Reports an error if the spied `command` was never called. Requires `bashunit::spy command` first — see [Test doubles](/test-doubles).
 
+Every `assert_have_been_called*` and `assert_not_called` fails with
+`was never registered as a spy` when the name was never passed to `bashunit::spy`,
+including `assert_not_called`, which does **not** pass for an unspied name. Spies are
+cleared between tests, so spy inside the test that asserts on it.
+
 ::: code-group
 ```bash [Example]
 function test_success() {
@@ -1818,7 +1898,12 @@ function test_failure() {
 ## assert_have_been_called_with
 > `assert_have_been_called_with "command" "expected_args" [nth]`
 
-Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one; the failure names the call it compared. To match any call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
+Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one; the failure names the call it compared.
+Because `nth` is detected as a trailing all-digits argument, an expectation whose last
+argument is a number is read as the selector: `assert_have_been_called_with git commit -m 5`
+compares `commit -m` against call 5. Pass the expectation as one quoted string,
+`assert_have_been_called_with git "commit -m 5"`, or use
+[assert_have_been_called_with_args](#assert-have-been-called-with-args), which has no `nth`. To match any call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
 
 Note the argument order: the spy comes first here, but *second* in [assert_have_been_called_times](#assert-have-been-called-times).
 
@@ -2045,3 +2130,4 @@ function test_failure() {
 - [Test doubles](/test-doubles) — mocks and spies for isolated tests
 - [Data providers](/data-providers) — run the same assertions over many inputs
 - [Globals](/globals) — `bashunit::` helper functions
+- [Standalone](/standalone) — run these assertions straight from the command line

@@ -23,6 +23,10 @@ Inputs are automatically converted to epoch seconds. Supported formats:
 
 You can mix formats in the same assertion (e.g., one epoch, one ISO).
 
+Anything else, including an empty string, fails the assertion with
+`Expected '<value>' to be 'a valid date'` rather than being coerced to `0`. This applies to
+all five date assertions.
+
 
 ## assert_files_equals
 --------------
@@ -46,7 +50,7 @@ Reports an error if the two variables `expected` and `actual` are equal ignoring
 --------------
 > `assert_files_not_equals "expected" "actual"`
 
-Reports an error if `expected` and `actual` are not equals.
+Reports an error if `expected` and `actual` have the same contents.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
 
