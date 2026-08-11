@@ -157,6 +157,8 @@ Options:
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output
   --failures-only             Only show failures (suppress passed/skipped/incomplete)
+  --show-skipped              Show the skipped tests summary at the end
+  --show-incomplete           Show the incomplete tests summary at the end
   --fail-on-risky             Treat risky tests (no assertions) as failures
   --fail-on-flaky             Treat flaky tests (passed only after a retry) as failures
   --profile                   Report the slowest tests (count: BASHUNIT_PROFILE_COUNT, default 10)

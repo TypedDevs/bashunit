@@ -3,28 +3,28 @@
 ## Unreleased
 
 ### Added
-- `--coverage-diff <ref>` restricts the coverage console report to lines changed since a base ref, and `--coverage-min` then gates on that diff percentage (#1032)
-- `--report-md <file>` writes a Markdown run summary: verdict, counts table, failures with their message, plus coverage and slowest tests when those ran. Inside GitHub Actions it is appended to `$GITHUB_STEP_SUMMARY` automatically, so failures render on the job page (#1015)
-- `--gha-annotations <auto|always|never>` controls GitHub Actions annotations on stdout; `auto` turns them on inside GitHub Actions and stays quiet everywhere else (#1014)
-- `--repeat <n>` runs each selected test n times so flakiness can be hunted before it reaches CI. The test is reported once with the aggregate outcome, a failure names the iteration it happened on, and repeat wraps `--retry` rather than the other way round (#1013)
-- Flaky is a first-class outcome: a test that only passed after a retry is counted separately, kept inside the pass total so the exit code is unchanged, and carried into JUnit (`<flakyFailure>`), TAP, JSON, HTML and GitHub Actions along with the first attempt's failure message. `--fail-on-flaky` turns such a run red (#1012)
-- `--order-by <mode>` picks the execution order: `defined` (default), `defects` (last run's failures first, whole suite still runs) or `random`. `--random-order` and `--seed` keep working unchanged (#1011)
-- `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes. Deletions are dropped, a rename selects its new path, and a missing work tree or unresolvable ref fails the run instead of selecting nothing (#1010)
+- `--coverage-diff <ref>` limits the coverage console report to lines changed since a base ref; `--coverage-min` then gates on that diff percentage (#1032)
+- `assert_command_available <command>` asserts a command, shell builtin or function resolves through `command -v` (#1027)
 - `assert_between <min> <max> <actual>` and `assert_not_between` add inclusive numeric-range assertions for integers and decimals (#1026)
-- `--list` (alias `--dry-run`) prints the tests a run would execute, without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
+- `--report-md <file>` writes a Markdown run summary: verdict, counts table, failures with their message, plus coverage and slowest tests when those ran. Inside GitHub Actions it is also appended to `$GITHUB_STEP_SUMMARY` (#1015)
+- `--gha-annotations <auto|always|never>` controls GitHub Actions annotations on stdout; `auto` enables them only inside GitHub Actions (#1014)
+- `--repeat <n>` runs each selected test n times to hunt flakiness before CI does. One report line with the aggregate outcome, a failure names its iteration, and repeat wraps `--retry` (#1013)
+- Flaky is a first-class outcome: a test that only passed after a retry is counted separately, stays inside the pass total so the exit code is unchanged, and is carried into JUnit (`<flakyFailure>`), TAP, JSON, HTML and GitHub Actions with the first attempt's failure message. `--fail-on-flaky` turns such a run red (#1012)
+- `--order-by <mode>` picks the execution order: `defined` (default), `defects` (last run's failures first, whole suite still runs) or `random`. `--random-order` and `--seed` are unchanged (#1011)
+- `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes. Deletions are dropped, a rename selects its new path, and a missing work tree or unresolvable ref fails the run (#1010)
 - `--exclude-filter <name>` skips tests by name, the counterpart of `--exclude-tag`. Repeatable, OR'd, and wins over `--filter` (#1009)
-- `# @tags a b` above any top-level line applies those tags to every test in the file, unioned with per-function `# @tag` (#1008)
 - `--tag` accepts expressions: `'a&&b'` (AND) and `'!a'` (NOT), combinable as `'a&&!b'`. Repeated `--tag` flags keep OR semantics, and `--exclude-tag` still wins (#1008)
-- `assert_command_available <command>` asserts that an external command, shell builtin or function resolves through `command -v` (#1027)
-- The coverage engine in use is reported by `--verbose`, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` that the running Bash cannot honour now warns instead of being silently ignored (#1005)
+- `# @tags a b` above any top-level line tags every test in the file, unioned with per-function `# @tag` (#1008)
+- `--list` (alias `--dry-run`) prints the tests a run would execute without running them; `--list-format json` emits file, function, name, line and tags. Honours every selection flag, including `--shard` and `--random-order --seed` ordering (#1007)
+- `--verbose` reports the coverage engine in use, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` the running Bash cannot honour now warns instead of being silently ignored (#1005)
 
 ### Changed
-- The JUnit XML shape changed: one `<testsuite>` per test file (with its own counts, time and timestamp) instead of a single flat suite, `classname` on every `<testcase>`, `<failure message="...">` carrying the first informative line of the real message with `type="AssertionFailed"`, `<system-out>` with the test's captured output, and aggregate totals on `<testsuites>`. Consumers that group by suite or classname (Jenkins, GitLab, dorny/test-reporter) now get real groupings (#1016)
-- Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, which was roughly half of a coverage run's wall time and affected both engines equally (#1005)
+- JUnit XML: one `<testsuite>` per test file with its own counts, time and timestamp instead of a single flat suite, `classname` on every `<testcase>`, `<failure message="...">` carrying the first informative line of the real message with `type="AssertionFailed"`, `<system-out>` with the test's captured output, and aggregate totals on `<testsuites>`. Consumers that group by suite or classname (Jenkins, GitLab, dorny/test-reporter) now get real groupings (#1016)
+- Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, roughly half of a coverage run's wall time on both engines (#1005)
 
 ### Fixed
 - Build: the standalone binary size budget is 544 KiB, raised from 500 KiB after ordinary feature growth crossed it; the artifact keeps its indentation rather than being minified (#1045)
-- `assert_within_delta` rejects malformed numbers such as `1.2.3` or `5-3` as non-numeric instead of leaking a raw `bc` parse error or silently evaluating them as an expression (#1026)
+- `assert_within_delta` rejects malformed numbers such as `1.2.3` or `5-3` as non-numeric instead of leaking a raw `bc` parse error or evaluating them as an expression (#1026)
 - Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
 
 ## [0.45.0](https://github.com/TypedDevs/bashunit/compare/0.44.0...0.45.0) - 2026-08-09

@@ -177,6 +177,9 @@ _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW="50"
 _BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH="80"
 # Per-line execution counts in the text coverage report (#856)
 _BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS="false"
+# Opt-in text-report blocks, read by src/coverage/report_text.sh
+_BASHUNIT_DEFAULT_COVERAGE_SHOW_FUNCTIONS="false"
+_BASHUNIT_DEFAULT_COVERAGE_SHOW_UNCOVERED="false"
 # Tracing engine: auto|xtrace|trap. auto takes the xtrace fast path wherever
 # BASH_XTRACEFD exists (Bash 4.1+) and the DEBUG trap below it (ADR-009, #860)
 _BASHUNIT_DEFAULT_COVERAGE_ENGINE="auto"
@@ -212,6 +215,10 @@ BASHUNIT_WATCH_INTERVAL=$(bashunit::env::positive_int_or_default \
 # no-op consolidation, whereas adding the alias would widen the public API.
 # bashunit::coverage keeps its :- guard for callers that unset it.
 : "${BASHUNIT_COVERAGE_SHOW_LINE_HITS:=$_BASHUNIT_DEFAULT_COVERAGE_SHOW_LINE_HITS}"
+# Same reasoning for the other two text-report blocks, which shipped read-only
+# from src/coverage/report_text.sh and had no default registered here.
+: "${BASHUNIT_COVERAGE_SHOW_FUNCTIONS:=$_BASHUNIT_DEFAULT_COVERAGE_SHOW_FUNCTIONS}"
+: "${BASHUNIT_COVERAGE_SHOW_UNCOVERED:=$_BASHUNIT_DEFAULT_COVERAGE_SHOW_UNCOVERED}"
 # No bare COVERAGE_ENGINE alias: the unprefixed forms are deprecated, so a new
 # setting only ever ships under the BASHUNIT_ prefix.
 : "${BASHUNIT_COVERAGE_ENGINE:=$_BASHUNIT_DEFAULT_COVERAGE_ENGINE}"
