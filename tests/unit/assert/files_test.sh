@@ -193,10 +193,7 @@ function test_fails_assert_file_not_contains() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_file_permissions() {
-  # Windows (Git Bash) fakes POSIX permissions, so chmod/stat are unreliable there.
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
 
   local file="/tmp/test_successful_assert_file_permissions_$$"
   touch "$file"
@@ -209,9 +206,7 @@ function test_successful_assert_file_permissions() {
 
 # shellcheck disable=SC2155
 function test_successful_assert_file_permissions_accepts_leading_zero() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
 
   local file="/tmp/test_assert_file_permissions_leading_zero_$$"
   touch "$file"
@@ -224,9 +219,7 @@ function test_successful_assert_file_permissions_accepts_leading_zero() {
 
 # shellcheck disable=SC2155
 function test_unsuccessful_assert_file_permissions() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
 
   local file="/tmp/test_unsuccessful_assert_file_permissions_$$"
   touch "$file"
@@ -258,9 +251,7 @@ function symlink_fixture_dir() {
 }
 
 function test_successful_assert_is_symlink() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/target"
@@ -271,9 +262,7 @@ function test_successful_assert_is_symlink() {
 
 # The case nothing covers today: a link whose target is gone is still a link.
 function test_successful_assert_is_symlink_when_the_target_is_missing() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   ln -s "$dir/never_created" "$dir/dangling"
@@ -282,9 +271,7 @@ function test_successful_assert_is_symlink_when_the_target_is_missing() {
 }
 
 function test_unsuccessful_assert_is_symlink_on_a_regular_file() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/plain"
@@ -297,9 +284,7 @@ function test_unsuccessful_assert_is_symlink_on_a_regular_file() {
 }
 
 function test_successful_assert_is_not_symlink() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/plain"
@@ -308,9 +293,7 @@ function test_successful_assert_is_not_symlink() {
 }
 
 function test_unsuccessful_assert_is_not_symlink() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/target"
@@ -324,9 +307,7 @@ function test_unsuccessful_assert_is_not_symlink() {
 }
 
 function test_successful_assert_symlink_to() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/target"
@@ -336,9 +317,7 @@ function test_successful_assert_symlink_to() {
 }
 
 function test_unsuccessful_assert_symlink_to_reports_both_targets() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/target"
@@ -352,9 +331,7 @@ function test_unsuccessful_assert_symlink_to_reports_both_targets() {
 }
 
 function test_unsuccessful_assert_symlink_to_on_a_regular_file() {
-  if bashunit::check_os::is_windows; then
-    bashunit::skip && return
-  fi
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
   local dir
   dir=$(symlink_fixture_dir)
   : >"$dir/plain"

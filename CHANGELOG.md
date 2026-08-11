@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command` and `bashunit::skip_on <windows|macos|linux>` mark the test skipped **and** end it, replacing the `bashunit::skip && return` idiom whose missing `return` silently kept the body running; an unknown OS name is a usage error, not a test that never skips (#1019)
 - `--output <text|tap|json|junit>` sends the JSON and JUnit reports to stdout, so a pipeline needs no temp file; the console rendering, coverage table, slowest-tests table and GitHub Actions annotations are suppressed for the machine formats, diagnostics stay on stderr, exit codes are unchanged, and `--output json --report-json f.json` produces both (#1018)
 
 ## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
