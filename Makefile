@@ -52,6 +52,7 @@ help:
 	@echo "  docker/alpine            Run into a Docker Linux/Alpine:latest image"
 	@echo "  pre_commit/install       Install the pre-commit hook"
 	@echo "  pre_commit/run           Function that will be called when the pre-commit hook runs"
+	@echo "  test/strict              Run the suite the way CI's strict job does"
 	@echo "  sa                       Run shellcheck static analysis tool"
 	@echo "  lint                     Run editorconfig linter tool"
 	@echo "  docs/install             Install docs npm dependencies (in docs/)"
@@ -100,8 +101,15 @@ pre_commit/install:
 pre_commit/run:
 	@$(MAKE) -j3 test/parallel sa lint
 
+# The option sets live in .bashunitrc as named suites; the file list stays here
+# because it is the one `find` that excludes tests/**/fixtures/.
 test/parallel: $(TEST_SCRIPTS)
-	@bash ./bashunit --parallel --simple $(TEST_SCRIPTS)
+	@bash ./bashunit --suite parallel $(TEST_SCRIPTS)
+
+# What CI's strict job runs: the mode that catches set -euo pipefail breakage
+# a plain sequential run never sees.
+test/strict: $(TEST_SCRIPTS)
+	@bash ./bashunit --suite strict $(TEST_SCRIPTS)
 
 # sa: xargs (unlike `find -exec {} \;`) propagates shellcheck's exit code, so
 # findings actually fail the target; the excludes mirror the CI workflow's

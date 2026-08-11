@@ -9,8 +9,14 @@ BASH_COMPLETION_FILE="completions/bashunit.bash"
 ZSH_COMPLETION_FILE="completions/_bashunit"
 
 # Flags accepted by cmd_test, straight from the option-parsing case arms.
+#
+# Two sources, because --suite and --list-suites are resolved by the pre-scan
+# in apply_suites and removed from argv before the loop below ever sees them.
 function completions_expected_test_flags() {
-  awk '/# Parse test-specific options/,/^  done$/' src/main/test.sh |
+  {
+    awk '/# Parse test-specific options/,/^  done$/' src/main/test.sh
+    awk '/^function bashunit::main::apply_suites\(\)/,/^}$/' src/main/test.sh
+  } |
     grep -E '^[[:space:]]+--?[a-zA-Z][a-zA-Z0-9-]*( \| --?[a-zA-Z][a-zA-Z0-9-]*)*\)' |
     sed 's/)$//' | tr -d ' ' | tr '|' '\n' |
     LC_ALL=C sort -u

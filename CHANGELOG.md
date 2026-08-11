@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Named suites: a `[suite:<name>]` section in `.bashunitrc` groups paths and options, `--suite <name>` runs one (repeatable, union of their paths) and `--list-suites` prints the defined names; precedence is CLI flags > suite settings > global `.bashunitrc` > `.env` > defaults, and an explicit path replaces the suite's `paths` (#1021)
 - Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations in the comment block above a test, overriding the run-wide `--test-timeout` and `--retry` in both directions (`@timeout 0` opts a test out of a global timeout); a malformed value aborts the run, and the scan rides on the existing per-file pass so it costs no extra fork (#1020)
 - `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command` and `bashunit::skip_on <windows|macos|linux>` mark the test skipped **and** end it, replacing the `bashunit::skip && return` idiom whose missing `return` silently kept the body running; an unknown OS name is a usage error, not a test that never skips (#1019)
 - `--output <text|tap|json|junit>` sends the JSON and JUnit reports to stdout, so a pipeline needs no temp file; the console rendering, coverage table, slowest-tests table and GitHub Actions annotations are suppressed for the machine formats, diagnostics stay on stderr, exit codes are unchanged, and `--output json --report-json f.json` produces both (#1018)

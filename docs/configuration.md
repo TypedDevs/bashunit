@@ -55,6 +55,61 @@ The two files are read differently, which is why they behave differently: `.env`
 empty entry is unconditional (hence the preservation rule above), while `.bashunitrc` is
 parsed as literal `KEY=value` lines and only fills names that are not already set.
 
+## Named suites
+
+A project with more than one tier of tests can name each tier in `.bashunitrc`
+and select it with [`--suite`](/command-line#suites), instead of keeping the
+paths and their flags in a Makefile:
+
+```ini
+# .bashunitrc
+BASHUNIT_SHOW_HEADER=false      # global settings still live at the top level
+
+[suite:unit]
+paths = tests/unit
+parallel = true
+
+[suite:acceptance]
+paths = tests/acceptance
+no-parallel = true
+test-timeout = 60
+
+[suite:ci]
+paths = tests/unit tests/functional
+tag = !slow
+```
+
+```bash
+bashunit --suite unit
+bashunit --suite unit --suite acceptance   # the union of their paths
+bashunit --list-suites
+```
+
+Inside a section:
+
+- `paths` is the list of files or directories the suite runs, separated by spaces.
+- **Every other key is a long option without its leading dashes.** Underscores
+  read as dashes, so `test_timeout` and `test-timeout` are the same key.
+- `= true` means the bare flag, `= false` leaves it out, anything else is the
+  option's value. A value may contain spaces (`report-md = a report.md`) but
+  not newlines.
+
+Precedence is the same chain as everywhere else, with suites sitting between
+the command line and the global config: **CLI flags → suite settings → global
+`.bashunitrc` → `.env` → defaults.** An explicit path argument likewise
+replaces the suite's `paths` and keeps its options.
+
+An unknown suite name exits non-zero listing the defined ones, and a line
+inside a section that is not `key = value` — or an option that is not a real
+flag — exits non-zero quoting it, rather than running something other than what
+was asked for.
+
+::: tip
+A suite does not have to carry `paths`. bashunit's own `.bashunitrc` defines
+option-only suites (`parallel`, `strict`) that its `Makefile` combines with the
+file list it already computes.
+:::
+
 ## Default path
 
 > `BASHUNIT_DEFAULT_PATH=directory|file`

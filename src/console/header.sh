@@ -121,6 +121,8 @@ Options:
   -e, --env, --boot <file>    Load a custom env/bootstrap file  (supports args)
   -f, --filter <name>         Only run tests matching the name
   --exclude-filter <name>     Skip tests whose name matches (repeatable)
+  --suite <name>              Run a [suite:<name>] from .bashunitrc (repeatable)
+  --list-suites               Print the suites defined in .bashunitrc and exit
   --tag <expr>                Only run tests with matching @tag (repeatable, OR logic).
                               Supports 'a&&b' (AND) and '!a' (NOT)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
