@@ -63,6 +63,8 @@ bashunit test tests/ --parallel --simple
 | `-f, --filter <name>`          | Only run tests matching name                     |
 | `--exclude-filter <name>`      | Skip tests whose name matches (repeatable)       |
 | `--suite <name>`               | Run a `[suite:<name>]` from `.bashunitrc` (repeatable) |
+| `--sandbox`                    | Fail a test that runs an external command it did not mock |
+| `--sandbox-allow <cmd,...>`    | Commands the sandbox still allows (repeatable)   |
 | `--list-suites`                | Print the suites defined in `.bashunitrc` and exit |
 | `--tag <expr>`                 | Only run tests with matching `@tag`; supports `a&&b` and `!a` |
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
@@ -239,6 +241,20 @@ Use [`--list`](#list) to check what an expression actually selects:
 
 ```bash
 bashunit --list --tag 'db&&!slow' tests/
+```
+
+### Sandbox
+
+> `bashunit test --sandbox [--sandbox-allow <cmd,...>]`
+
+Fails any test that reaches an external command it did not mock, so a typo in a
+mock name shows up as a failure instead of a real network call. Builtins and
+the commands bashunit itself needs are unaffected. Full description in
+[test doubles](/test-doubles#sandbox-mode).
+
+```bash
+bashunit tests/ --sandbox
+bashunit tests/ --sandbox --sandbox-allow curl,jq
 ```
 
 ### Suites

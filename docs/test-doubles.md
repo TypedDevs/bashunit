@@ -155,6 +155,55 @@ Each test runs in its own subshell, so `bashunit::unmock` only affects the test 
 
 Reach for it when a single test needs the real command back after exercising the mocked path, or when it needs a spy's recorded calls to start over mid-test. Re-declaring a double does not require it: a second `bashunit::mock` or `bashunit::spy` on the same command replaces the first.
 
+## Sandbox mode
+
+> `bashunit test --sandbox`
+> `bashunit test --sandbox-allow <cmd,...>`
+
+A double only protects the command you remembered to double. A typo in the
+mock name, or a `bashunit::unmock` earlier in the file, and the test reaches
+the real `curl` — and passes, slowly and differently in CI.
+
+Under `--sandbox` a test may only run commands it **mocked** or the run
+**allowed**. Anything else fails the test with a message naming it:
+
+::: code-group
+```bash [Example]
+function test_fetches_the_user() {
+  curl "https://api.example.com/user/1"   # not mocked
+}
+```
+```[Output]
+✗ Error: Fetches the user
+    Sandbox: 'curl' is not mocked and not allowed. Mock it with
+    bashunit::mock, or run with --sandbox-allow curl.
+```
+:::
+
+Mock it and the same test passes, because a mock is a shell function and
+functions win over anything on `PATH`:
+
+```bash
+bashunit::mock curl echo '{"id":1}'
+```
+
+Notes:
+
+- **Shell builtins are unaffected** (`echo`, `printf`, `[`, `test`, `read`),
+  and so is everything bashunit itself needs while a test runs — the baseline
+  allowlist covers `awk`, `sed`, `grep`, `cat`, `date`, `mktemp`, `git` and
+  friends. The point is to constrain the test's reach to *services*, not to
+  take coreutils away from it.
+- `--sandbox-allow curl,jq` widens the allowlist; the flag is repeatable.
+- `bashunit::unmock curl` inside a sandboxed test puts the block back, rather
+  than handing the test the real command.
+- A command invoked by **absolute path** (`/usr/bin/curl`) is not blocked, and
+  neither is one that appears in `PATH` after the run started. See
+  [ADR-012](https://github.com/TypedDevs/bashunit/blob/main/adrs/adr-012-sandbox-mode.md)
+  for the mechanism and what it cannot see.
+- Off by default. Enable it per run, or with `BASHUNIT_SANDBOX=true` in
+  `.bashunitrc`.
+
 ## bashunit::spy
 > `bashunit::spy "function"`
 

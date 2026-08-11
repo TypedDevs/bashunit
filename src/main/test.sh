@@ -163,6 +163,20 @@ function bashunit::main::cmd_test() {
       fi
       shift
       ;;
+    --sandbox)
+      BASHUNIT_SANDBOX=true
+      export -n BASHUNIT_SANDBOX
+      ;;
+    --sandbox-allow)
+      # Repeatable and comma separated; both forms end up in one list.
+      if [ -z "$BASHUNIT_SANDBOX_ALLOW" ]; then
+        BASHUNIT_SANDBOX_ALLOW="$2"
+      else
+        BASHUNIT_SANDBOX_ALLOW="$BASHUNIT_SANDBOX_ALLOW,$2"
+      fi
+      export -n BASHUNIT_SANDBOX_ALLOW
+      shift
+      ;;
     -s | --simple)
       BASHUNIT_SIMPLE_OUTPUT=true
       export -n BASHUNIT_SIMPLE_OUTPUT

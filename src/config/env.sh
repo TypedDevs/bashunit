@@ -255,6 +255,8 @@ _BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
 _BASHUNIT_DEFAULT_NO_PROGRESS="false"
 _BASHUNIT_DEFAULT_OUTPUT_FORMAT=""
 _BASHUNIT_DEFAULT_FAIL_ON_RISKY="false"
+_BASHUNIT_DEFAULT_SANDBOX="false"
+_BASHUNIT_DEFAULT_SANDBOX_ALLOW=""
 _BASHUNIT_DEFAULT_PROFILE="false"
 _BASHUNIT_DEFAULT_PROFILE_COUNT="10"
 # Per-test timeout in seconds (0 = disabled)
@@ -319,6 +321,10 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 : "${BASHUNIT_NO_PROGRESS:=${NO_PROGRESS:=$_BASHUNIT_DEFAULT_NO_PROGRESS}}"
 : "${BASHUNIT_OUTPUT_FORMAT:=${OUTPUT_FORMAT:=$_BASHUNIT_DEFAULT_OUTPUT_FORMAT}}"
 : "${BASHUNIT_FAIL_ON_RISKY:=${FAIL_ON_RISKY:=$_BASHUNIT_DEFAULT_FAIL_ON_RISKY}}"
+# No unprefixed alias on purpose: SANDBOX is generic enough that an unrelated
+# tool exporting it would silently constrain the suite (#866).
+: "${BASHUNIT_SANDBOX:=$_BASHUNIT_DEFAULT_SANDBOX}"
+: "${BASHUNIT_SANDBOX_ALLOW:=$_BASHUNIT_DEFAULT_SANDBOX_ALLOW}"
 : "${BASHUNIT_PROFILE:=${PROFILE:=$_BASHUNIT_DEFAULT_PROFILE}}"
 : "${BASHUNIT_PROFILE_COUNT:=${PROFILE_COUNT:=$_BASHUNIT_DEFAULT_PROFILE_COUNT}}"
 : "${BASHUNIT_TEST_TIMEOUT:=${TEST_TIMEOUT:=$_BASHUNIT_DEFAULT_TEST_TIMEOUT}}"
@@ -689,6 +695,13 @@ function bashunit::env::is_list_enabled() {
 
 function bashunit::env::is_fail_on_risky_enabled() {
   [ "$BASHUNIT_FAIL_ON_RISKY" = "true" ]
+}
+
+##
+# Whether a test may only reach commands it mocked or the run allowed.
+##
+function bashunit::env::is_sandbox_enabled() {
+  [ "${BASHUNIT_SANDBOX:-false}" = "true" ]
 }
 
 ##

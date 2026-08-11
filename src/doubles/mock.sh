@@ -16,6 +16,9 @@ function bashunit::unmock() {
     if [ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" = "$command" ]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
       unset -f "$command"
+      # Under --sandbox the command was a blocking shim before it was mocked;
+      # dropping the mock must not hand the test the real thing.
+      bashunit::sandbox::restore_shim "$command"
       local variable
       variable="$(bashunit::helper::normalize_variable_name "$command")"
       local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"

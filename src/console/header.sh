@@ -126,6 +126,8 @@ Options:
   --tag <expr>                Only run tests with matching @tag (repeatable, OR logic).
                               Supports 'a&&b' (AND) and '!a' (NOT)
   --exclude-tag <name>        Skip tests with matching @tag (repeatable, exclude wins)
+  --sandbox                   Fail a test that runs an external command it did not mock
+  --sandbox-allow <cmd,...>   Commands the sandbox still allows (repeatable)
   --log-junit, --report-junit <file>  Write JUnit XML report
   --log-gha <file>            Write GitHub Actions annotations to a file
   --gha-annotations <mode>    Annotations on stdout: auto (in GitHub Actions), always or never
