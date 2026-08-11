@@ -37,6 +37,7 @@ function bashunit::helper::build_provider_map() {
     _BASHUNIT_PROVIDER_MAP_FNS=()
     _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
     _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
+    bashunit::helper::annotations_reset
     return
   fi
 
@@ -49,17 +50,32 @@ function bashunit::helper::build_provider_map() {
   _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
   _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
 
+  bashunit::helper::annotations_reset
+
   local count=0
-  local fn provider
+  local fn provider annot_timeout annot_retry annot_skip annot_reason
   # Single awk pass emits "<fn>\t<provider>" for every function whose
   # definition is at most two lines below a `# @data_provider` (or
   # `# data_provider`) annotation, mirroring the previous grep -B2 + sed.
   # A reserved sentinel fn name carries the no-parallel-tests flag out of the
   # single awk pass; real fn names are identifiers so they never collide.
-  while IFS=$'\t' read -r fn provider; do
+  #
+  # The per-test `# @timeout` / `# @retry` / `# @skip` markers ride on this same
+  # pass, as "@@annot@@" rows: this scan already visits every file exactly once
+  # in the main shell, and the fork budget leaves no room for a second awk per
+  # file (#773). Unlike the provider marker, those follow the `# @tag` rule --
+  # the contiguous comment block directly above the definition.
+  while IFS=$'\t' read -r fn provider annot_timeout annot_retry annot_skip annot_reason; do
     [ -z "$fn" ] && continue
     if [ "$fn" = "@@no_parallel@@" ]; then
       [ "$provider" = "1" ] && _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=true
+      continue
+    fi
+    if [ "$fn" = "@@annot@@" ]; then
+      [ "$annot_timeout" = "@@none@@" ] && annot_timeout=""
+      [ "$annot_retry" = "@@none@@" ] && annot_retry=""
+      bashunit::helper::annotations_record \
+        "$provider" "$annot_timeout" "$annot_retry" "$annot_skip" "$annot_reason"
       continue
     fi
     _BASHUNIT_PROVIDER_MAP_FNS[count]="$fn"
@@ -75,18 +91,63 @@ function bashunit::helper::build_provider_map() {
       pending_line = NR
       next
     }
+    /^[[:space:]]*#[[:space:]]*@timeout([[:space:]]|=)/ {
+      v = $0
+      sub(/^[[:space:]]*#[[:space:]]*@timeout[[:space:]=]+/, "", v)
+      sub(/[[:space:]]+$/, "", v)
+      a_timeout = v
+      next
+    }
+    /^[[:space:]]*#[[:space:]]*@retry([[:space:]]|=)/ {
+      v = $0
+      sub(/^[[:space:]]*#[[:space:]]*@retry[[:space:]=]+/, "", v)
+      sub(/[[:space:]]+$/, "", v)
+      a_retry = v
+      next
+    }
+    /^[[:space:]]*#[[:space:]]*@skip([[:space:]]|$)/ {
+      v = $0
+      sub(/^[[:space:]]*#[[:space:]]*@skip[[:space:]]*/, "", v)
+      sub(/[[:space:]]+$/, "", v)
+      a_skip = 1
+      a_reason = v
+      next
+    }
+    # Any other comment keeps the block open, the same rule @tag follows.
+    /^[[:space:]]*#/ { next }
     {
+      is_fn = match($0, /^[[:space:]]*(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)
+      if (is_fn) {
+        fn = $0
+        sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
+        sub(/[[:space:]]*\(\).*/, "", fn)
+      }
+
       if (pending != "" && NR - pending_line <= 2) {
-        if (match($0, /^[[:space:]]*(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)) {
-          fn = $0
-          sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
-          sub(/[[:space:]]*\(\).*/, "", fn)
+        if (is_fn) {
           printf "%s\t%s\n", fn, pending
           pending = ""
         }
       } else if (pending != "" && NR - pending_line > 2) {
         pending = ""
       }
+
+      if (is_fn && (a_timeout != "" || a_retry != "" || a_skip != "")) {
+        # Tab is an IFS whitespace character, so `read` collapses a run of them
+        # and an empty interior field would shift every later one. Absent
+        # values therefore travel as a sentinel; the reason is last and may be
+        # empty.
+        printf "@@annot@@\t%s\t%s\t%s\t%s\t%s\n", fn,
+          (a_timeout == "" ? "@@none@@" : a_timeout),
+          (a_retry == "" ? "@@none@@" : a_retry),
+          (a_skip == "" ? "0" : a_skip), a_reason
+      }
+      # A blank or code line ends the block for the next definition, whether or
+      # not this line was one.
+      a_timeout = ""
+      a_retry = ""
+      a_skip = ""
+      a_reason = ""
     }
     END { printf "@@no_parallel@@\t%d\n", no_parallel }
   ' "$script" 2>/dev/null)

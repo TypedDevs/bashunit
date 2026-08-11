@@ -85,8 +85,12 @@ function bashunit::runner::call_test_functions() {
   local _test_ordinal=0
 
   # Scan the file once; per-test provider lookups below are pure-bash (#763).
-  # The same pass also detects the no-parallel-tests opt-out (#774).
+  # The same pass also detects the no-parallel-tests opt-out (#774) and the
+  # per-test @timeout/@retry/@skip annotations (#1020).
   bashunit::helper::build_provider_map "$script"
+  # Before anything runs: a value the runner cannot honour would otherwise run
+  # a different test than the annotation asked for.
+  bashunit::helper::annotations_validate_or_exit "$script"
 
   local allow_test_parallel=true
   if [ "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL" = true ]; then
@@ -162,6 +166,9 @@ function bashunit::runner::call_test_functions() {
 # Result slots for the timeout-aware execution path (see run_with_timeout).
 _BASHUNIT_RUNNER_EXEC_OUT=""
 _BASHUNIT_RUNNER_TIMED_OUT="false"
+# The timeout in force for the test being run: the run-wide setting unless a
+# `# @timeout` annotation overrides it.
+_BASHUNIT_RUNNER_TIMEOUT_SECS=0
 
 ##
 # Runs a single test inside the capture subshell: sets up the EXIT trap that
@@ -197,8 +204,22 @@ function bashunit::runner::execute_test_body() {
     bashunit::coverage::enable_trap
   fi
 
+  # `# @skip` is applied here rather than by filtering the function out earlier:
+  # inside the capture subshell the skip is reported, counted and carried into
+  # the reports by the same path bashunit::skip uses, and not even set_up runs.
+  # It must precede _BASHUNIT_SETUP_COMPLETED=false: cleanup_on_exit reads that
+  # flag as "the subshell died inside set_up" and would report a hook failure.
+  bashunit::helper::annotations_for_function "$fn_name"
+  if [ "$_BASHUNIT_ANNOT_SKIP_OUT" = true ]; then
+    bashunit::helper::normalize_test_function_name_to_slot "$fn_name"
+    bashunit::skip::__mark_with_label \
+      "$_BASHUNIT_HELPER_NORMALIZED_OUT" "$_BASHUNIT_ANNOT_REASON_OUT"
+    exit 0
+  fi
+
   # Run set_up and capture exit code without || to preserve errexit behavior
   _BASHUNIT_SETUP_COMPLETED=false
+
   local setup_exit_code=0
   bashunit::runner::run_set_up "$test_file"
   setup_exit_code=$?
@@ -253,8 +274,9 @@ function bashunit::runner::run_with_timeout() {
   shift
   local fn_name=$1
   shift
-  local secs
-  secs=$(bashunit::env::test_timeout_secs)
+  # Resolved per test by run_test: the annotation may raise, lower or disable
+  # the run-wide value.
+  local secs=$_BASHUNIT_RUNNER_TIMEOUT_SECS
 
   # NOTE: these must NOT use bashunit::temp_file — that prefixes the current
   # test id, and cleanup_on_exit (run inside the test subshell) would unlink
@@ -334,8 +356,25 @@ function bashunit::runner::run_test() {
 
   local test_execution_result
   local timed_out="false"
+
+  # Per-test annotations override the run-wide flags in both directions: a test
+  # may be stricter than --test-timeout, and `@timeout 0` opts out of it while
+  # the rest of the suite keeps it (#1020).
+  bashunit::helper::annotations_for_function "$fn_name"
+  if bashunit::env::is_test_timeout_enabled; then
+    _BASHUNIT_RUNNER_TIMEOUT_SECS=${BASHUNIT_TEST_TIMEOUT:-0}
+  else
+    _BASHUNIT_RUNNER_TIMEOUT_SECS=0
+  fi
+  if [ -n "$_BASHUNIT_ANNOT_TIMEOUT_OUT" ]; then
+    _BASHUNIT_RUNNER_TIMEOUT_SECS=$_BASHUNIT_ANNOT_TIMEOUT_OUT
+  fi
+
   bashunit::env::resolve_retry_count
   local retry_max=$_BASHUNIT_RETRY_VALIDATED
+  if [ -n "$_BASHUNIT_ANNOT_RETRY_OUT" ]; then
+    retry_max=$_BASHUNIT_ANNOT_RETRY_OUT
+  fi
   local retries_used=0
   # The losing attempts are overwritten by the next iteration, so the first
   # failure -- the only evidence of what the flakiness looks like -- is kept here
@@ -364,7 +403,7 @@ function bashunit::runner::run_test() {
         bashunit::clock::now_to_slot
         start_time=$_BASHUNIT_CLOCK_NOW_OUT
       fi
-      if bashunit::env::is_test_timeout_enabled; then
+      if [ "$_BASHUNIT_RUNNER_TIMEOUT_SECS" -gt 0 ]; then
         bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
         test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
         timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
@@ -533,7 +572,7 @@ function bashunit::runner::run_test() {
 
     # A test that exceeded BASHUNIT_TEST_TIMEOUT gets a clear, specific message.
     if [ "$timed_out" = "true" ]; then
-      error_message="Test timed out after $(bashunit::env::test_timeout_secs)s"
+      error_message="Test timed out after ${_BASHUNIT_RUNNER_TIMEOUT_SECS}s"
     fi
 
     error_message="$error_message$repeat_note"
