@@ -19,10 +19,14 @@
 - `--verbose` reports the coverage engine in use, and an explicit `BASHUNIT_COVERAGE_ENGINE=xtrace` the running Bash cannot honour now warns instead of being silently ignored (#1005)
 
 ### Changed
+- `bashunit test --help` lists `--show-skipped` and `--show-incomplete`, both accepted by the parser but never advertised. `BASHUNIT_COVERAGE_SHOW_FUNCTIONS` and `BASHUNIT_COVERAGE_SHOW_UNCOVERED` are registered in `src/config/env.sh` like every other setting, and `.env.example` now lists all 66 settings, 19 of which were missing
+- Docs: a full audit of the reference pages against the code. `docs/configuration.md` gained the 17 settings it never documented, `docs/command-line.md` gained the `assert` subcommand section and had every stale example output replaced with a real one, the `assert_equals` examples in `docs/assertions.md` were inverted, and the coverage settings and diff-coverage narrative now live in one place instead of two that had drifted
 - JUnit XML: one `<testsuite>` per test file with its own counts, time and timestamp instead of a single flat suite, `classname` on every `<testcase>`, `<failure message="...">` carrying the first informative line of the real message with `type="AssertionFailed"`, `<system-out>` with the test's captured output, and aggregate totals on `<testsuites>`. Consumers that group by suite or classname (Jenkins, GitLab, dorny/test-reporter) now get real groupings (#1016)
 - Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, roughly half of a coverage run's wall time on both engines (#1005)
 
 ### Fixed
+- `--coverage-report` with no value uses `coverage/lcov.info` instead of aborting the run with `$2: unbound variable`, and no longer consumes a following flag as its filename. Write the test path before it, since an optional value cannot be told apart from a path
+- `--list --list-format json` reports each tag as its own array element. The emitter split the tag list on whitespace while every other consumer splits it on commas, so a test with two tags rendered as `["slow,fileTag"]` and a tag containing spaces was split into one element per word
 - Build: the standalone binary size budget is 544 KiB, raised from 500 KiB after ordinary feature growth crossed it; the artifact keeps its indentation rather than being minified (#1045)
 - `assert_within_delta` rejects malformed numbers such as `1.2.3` or `5-3` as non-numeric instead of leaking a raw `bc` parse error or evaluating them as an expression (#1026)
 - Report formats are no longer empty under `--parallel`. `--report-junit`, `--report-tap`, `--report-json`, `--report-html` and `--log-junit` all recorded zero tests, because the rows were collected inside the per-test worker and nothing rebuilt them in the parent (#1004)
