@@ -1,0 +1,19 @@
+# bashunit's own project config.
+#
+# No global settings on purpose: the defaults are what a contributor should
+# get. What lives here are the named suites the Makefile and CI run, so the
+# option sets have one home instead of being repeated per target.
+#
+# The suites carry options only, not `paths`: the file list comes from the
+# Makefile's `find`, which excludes tests/**/fixtures/ -- four fixture files
+# end in _test.sh but are inputs to other tests, not tests. An explicit path
+# argument replaces a suite's `paths`, so the two compose.
+
+[suite:parallel]
+parallel = true
+simple = true
+
+[suite:strict]
+parallel = true
+simple = true
+strict = true

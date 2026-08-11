@@ -62,6 +62,8 @@ bashunit test tests/ --parallel --simple
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
 | `--exclude-filter <name>`      | Skip tests whose name matches (repeatable)       |
+| `--suite <name>`               | Run a `[suite:<name>]` from `.bashunitrc` (repeatable) |
+| `--list-suites`                | Print the suites defined in `.bashunitrc` and exit |
 | `--tag <expr>`                 | Only run tests with matching `@tag`; supports `a&&b` and `!a` |
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
 | `--output <format>`            | Report on stdout: `text` (default), `tap`, `json`, `junit` |
@@ -238,6 +240,34 @@ Use [`--list`](#list) to check what an expression actually selects:
 ```bash
 bashunit --list --tag 'db&&!slow' tests/
 ```
+
+### Suites
+
+> `bashunit test --suite <name>`
+> `bashunit test --list-suites`
+
+A project with several tiers of tests can name them in `.bashunitrc` instead of
+keeping the paths and their flags in a Makefile. See
+[named suites](/configuration#named-suites) for the file syntax.
+
+```bash
+bashunit --suite unit                 # that suite's paths, with its options
+bashunit --suite unit --suite e2e     # the union of both
+bashunit --list-suites                # print the defined names, exit 0
+```
+
+Precedence, from strongest: **CLI flags → suite settings → global
+`.bashunitrc` settings → `.env` → built-in defaults.** A suite's options are
+placed before the ones you type, so `--suite unit --no-parallel` runs
+sequentially even when the suite asks for `parallel = true`. In the same way an
+explicit path argument **replaces** the suite's `paths`, keeping its options:
+
+```bash
+bashunit --suite unit tests/unit/assert/basic_test.sh
+```
+
+An unknown name exits non-zero and lists the defined suites; a suite section
+that is not `key = value` exits non-zero quoting the offending line.
 
 ### Output format
 

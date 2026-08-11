@@ -2,6 +2,90 @@
 
 # Flag parsing for the default 'test' subcommand.
 
+# The argv the suite pre-scan produces, read by cmd_test below.
+_BASHUNIT_MAIN_SUITE_ARGV=()
+
+##
+# Resolves `--suite <name>` (repeatable) and `--list-suites` before the main
+# parse loop and rewrites argv into _BASHUNIT_MAIN_SUITE_ARGV.
+#
+# The suites' own options are placed FIRST, so a flag the caller typed is
+# parsed later and wins -- the documented precedence is
+# CLI flags > suite settings > global .bashunitrc > .env > defaults. An
+# explicit path argument likewise replaces the suites' paths rather than
+# adding to them.
+#
+# `--list-suites` prints and exits here: it is a query about the config file,
+# and nothing below it in the run has anything to add.
+##
+function bashunit::main::apply_suites() {
+  local -a suite_names=()
+  local -a rest=()
+  local -a cli_paths=()
+  local has_suite=false
+
+  while [ $# -gt 0 ]; do
+    case "$1" in
+    --suite)
+      if [ -z "${2:-}" ]; then
+        printf "%sError: --suite requires a name.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED:-}" "${_BASHUNIT_COLOR_DEFAULT:-}" >&2
+        exit 1
+      fi
+      has_suite=true
+      suite_names[${#suite_names[@]}]="$2"
+      shift
+      ;;
+    --list-suites)
+      bashunit::suites::load ".bashunitrc"
+      bashunit::suites::names
+      exit 0
+      ;;
+    -*)
+      rest[${#rest[@]}]="$1"
+      ;;
+    *)
+      cli_paths[${#cli_paths[@]}]="$1"
+      rest[${#rest[@]}]="$1"
+      ;;
+    esac
+    shift
+  done
+
+  if [ "$has_suite" = false ]; then
+    _BASHUNIT_MAIN_SUITE_ARGV=(${rest[@]+"${rest[@]}"})
+    return 0
+  fi
+
+  bashunit::suites::load ".bashunitrc"
+
+  local -a expanded=()
+  local -a suite_paths=()
+  local name entry path
+  for name in ${suite_names[@]+"${suite_names[@]}"}; do
+    bashunit::suites::resolve "$name"
+    while IFS= read -r entry; do
+      [ -z "$entry" ] && continue
+      expanded[${#expanded[@]}]="$entry"
+    done <<EOF
+$_BASHUNIT_SUITE_ARGS_OUT
+EOF
+    for path in $_BASHUNIT_SUITE_PATHS_OUT; do
+      suite_paths[${#suite_paths[@]}]="$path"
+    done
+  done
+
+  # Only when the caller named no path of their own: an explicit path is the
+  # more specific instruction, the same way an explicit flag is.
+  if [ "${#cli_paths[@]}" -eq 0 ]; then
+    for path in ${suite_paths[@]+"${suite_paths[@]}"}; do
+      expanded[${#expanded[@]}]="$path"
+    done
+  fi
+
+  _BASHUNIT_MAIN_SUITE_ARGV=(${expanded[@]+"${expanded[@]}"} ${rest[@]+"${rest[@]}"})
+}
+
 function bashunit::main::cmd_test() {
   local filter=""
   local tag_filter=""
@@ -13,6 +97,11 @@ function bashunit::main::cmd_test() {
   local args_count=0
   local assert_fn=""
   local _bashunit_coverage_opt_set=false
+
+  # Named suites are resolved into plain flags and paths before anything is
+  # parsed, so the loop below never has to know about them.
+  bashunit::main::apply_suites "$@"
+  set -- ${_BASHUNIT_MAIN_SUITE_ARGV[@]+"${_BASHUNIT_MAIN_SUITE_ARGV[@]}"}
 
   # Parse test-specific options.
   #

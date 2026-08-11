@@ -19,3 +19,4 @@
 source "$BASHUNIT_ROOT_DIR/src/config/parallel.sh"
 source "$BASHUNIT_ROOT_DIR/src/config/env.sh"
 source "$BASHUNIT_ROOT_DIR/src/config/rerun.sh"
+source "$BASHUNIT_ROOT_DIR/src/config/suites.sh"
