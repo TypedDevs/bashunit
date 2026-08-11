@@ -25,11 +25,48 @@ function test_my_test_case() {
 ```
 :::
 
+The annotation must sit within **two lines** of the function definition. A `# @tag` line or
+a one-line docstring in between is fine; anything longer and bashunit stops seeing the
+annotation, and the test runs once with no arguments instead of reporting an error.
+
 ## Implementing a data provider
 
 A data provider function contains one or more `bashunit::data_set` lines. Each `bashunit::data_set` results in a separate run of the test function with the individual `bashunit::data_set` arguments being passed to it as positional arguments (`$1`, `$2`, ...).
 
 Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
+
+Under `--parallel` every row is dispatched as its own concurrent job, so rows sharing a
+file, a temp path or an environment variable will race. Serialise them with the
+`# bashunit: no-parallel-tests` directive at the top of the file (see
+[Parallel](/command-line#parallel)), or give each row its own scratch path with
+`bashunit::temp_file`.
+
+The annotation must be in the test file, but the provider function only has to be defined
+by the time the run starts. Put shared providers in your bootstrap file (`--boot` or
+`BASHUNIT_BOOTSTRAP`) and reference them by name from any test file:
+
+::: code-group
+```bash [tests/bootstrap.sh]
+function provider_supported_shells() {
+  bashunit::data_set "bash"
+  bashunit::data_set "zsh"
+}
+```
+```bash [tests/any_test.sh]
+# @data_provider provider_supported_shells
+function test_shell_is_available() {
+  assert_command_available "$1"
+}
+```
+:::
+
+::: warning A provider with no rows makes its test disappear
+A provider that does not exist, or that emits no `bashunit::data_set` line, makes its test
+run **zero** times, and bashunit does not error: the header still counts the test, nothing
+runs, and the suite stays green. Compare the header count with the reported total (`Tests: 2`
+in the header but `1 total` at the bottom means a provider produced no rows), or check the
+selection with `./bashunit --list <file>`.
+:::
 
 A data provider function is implemented as follows:
 
@@ -150,6 +187,33 @@ Running example_test.sh
 ✓ Passed: Directory exists ('outro', '/var')
 ```
 :::
+
+## Failing rows
+
+A failing row's result line is labelled with the test name only: the arguments are **not**
+appended the way they are on a passing row.
+
+```[Output]
+✓ Passed: Directory exists ('/usr')
+✓ Passed: Directory exists ('/etc')
+✗ Failed: Directory exists
+    Expected '/nope'
+    to exist but 'do not exist'
+    at example_test.sh:5
+```
+
+Identify the row from the `Expected` value, or use `::1::` interpolation in the test title,
+which does put the arguments in the name.
+
+## Combining with other options
+
+| Option | Effect on a provider |
+|--------|----------------------|
+| `--repeat <n>` | Every row runs n times; each row still reports one line |
+| `--retry <n>` | Only the failing row is retried |
+| `# @tag` / `--tag` | Tags belong to the test function, so they select all its rows |
+| `--filter` | Matches the **function name**, not the interpolated title: `--filter directory_exists`, not `--filter "Directory exists"` |
+| `--list` | Lists the function once; the row count is a property of the run (see [Command line](/command-line#list)) |
 
 ## Related
 
