@@ -35,11 +35,9 @@ Runs `cmd` and marks the assertion passed or failed accordingly, in a single cal
 | `actual` | The actual value received |
 | `cmd [args...]` | The command deciding the verdict: exit `0` passes, anything else fails |
 
-Returns `0` when the command succeeds and `1` when it fails, so it can be chained.
-
-Do not leave it as the **last** statement of your custom assertion: the non-zero status
-escapes the test function and the runner reports an extra `✗ Error` on top of the failure.
-End the function with `return 0`.
+Returns `0` when the command succeeds and `1` when it fails, so it can be chained. Leaving
+it as the last statement of your custom assertion is fine: a failed assertion is reported
+once, as a failure.
 
 The command is invoked directly, without `eval`, so arguments keep their word
 boundaries and nothing is re-parsed by the shell.
@@ -89,7 +87,6 @@ so the two counters cannot drift apart:
 ```bash
 function assert_positive_number() {
   bashunit::assert_that "positive number" "$1" test "$1" -gt 0
-  return 0
 }
 
 function test_value_is_positive() {
@@ -106,12 +103,10 @@ Any command works as the verdict, not only `test`:
 ```bash
 function assert_valid_json() {
   bashunit::assert_that "valid JSON" "$1" jq -e . <<< "$1"
-  return 0
 }
 
 function assert_file_is_executable() {
   bashunit::assert_that "an executable file" "$1" test -x "$1"
-  return 0
 }
 ```
 
@@ -359,7 +354,7 @@ function assert_http_success() {
 
 ## Best practices
 
-1. **Prefer `bashunit::assert_that`**: one call marks the assertion passed or failed, so you cannot forget the `return` after a failure (which would bump both counters) or forget `bashunit::assertion_passed` (which would leave the test with zero assertions, reported as risky). End the function with `return 0` so its failure status does not escape the test.
+1. **Prefer `bashunit::assert_that`**: one call marks the assertion passed or failed, so you cannot forget the `return` after a failure (which would bump both counters) or forget `bashunit::assertion_passed` (which would leave the test with zero assertions, reported as risky).
 
 2. **Always return after failure**: when writing the long form by hand, call `return` after `bashunit::assertion_failed` or `bashunit::fail` to stop execution of your custom assertion.
 

@@ -498,7 +498,18 @@ function bashunit::runner::run_test() {
     failure_function="$hook_failure"
   fi
 
-  if [ -n "$runtime_error" ] || [ "$test_exit_code" -ne 0 ]; then
+  # A failed assertion already explains a non-zero exit status, so it must not be
+  # reported a second time as an execution error. `bashunit::assert_that` returns
+  # 1 on failure by design, so any custom assertion ending with it makes the test
+  # body exit 1 and used to print a spurious `✗ Error` on top of the `✗ Failed`.
+  # A real runtime error still wins: it sets $runtime_error regardless of counts.
+  local exit_code_is_unexplained=false
+  if [ "$test_exit_code" -ne 0 ] &&
+    [ "$_BASHUNIT_RUNNER_COUNTS_FAILED_OUT" -eq 0 ]; then
+    exit_code_is_unexplained=true
+  fi
+
+  if [ -n "$runtime_error" ] || [ "$exit_code_is_unexplained" = true ]; then
     bashunit::state::add_tests_failed
     bashunit::rerun::record "$test_file" "$fn_name"
     local error_message="$runtime_error"

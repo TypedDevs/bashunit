@@ -25,6 +25,7 @@
 - Performance: `--coverage` is about 1.6x to 2.3x faster. Executable-line classification no longer forks `grep` per source line, roughly half of a coverage run's wall time on both engines (#1005)
 
 ### Fixed
+- A failed assertion is no longer reported twice. `bashunit::assert_that` returns 1 on failure by design, so a custom assertion ending with it made the test body exit non-zero and the runner printed a spurious `✗ Error` on top of the `✗ Failed`. Custom assertions no longer need a trailing `return 0`; a real runtime error is still reported as an error
 - `--coverage-report` with no value uses `coverage/lcov.info` instead of aborting the run with `$2: unbound variable`, and no longer consumes a following flag as its filename. Write the test path before it, since an optional value cannot be told apart from a path
 - `--list --list-format json` reports each tag as its own array element. The emitter split the tag list on whitespace while every other consumer splits it on commas, so a test with two tags rendered as `["slow,fileTag"]` and a tag containing spaces was split into one element per word
 - Build: the standalone binary size budget is 544 KiB, raised from 500 KiB after ordinary feature growth crossed it; the artifact keeps its indentation rather than being minified (#1045)
