@@ -25,14 +25,14 @@ features:
   - icon:
       src: /flexible.svg
     title: Flexible
-    details: Robust assertions for comparing, matching, and validating results, ensuring thorough testing of your codebase.
+    details: 84 assertions plus mocks, spies, data providers and snapshots, for comparing, matching and validating anything your scripts produce.
   - icon:
       src: /accessible.svg
-    title: Accessible
-    details: An intuitive API and clear documentation for a smooth developer experience, reducing testing complexity.
+    title: Fast and CI-ready
+    details: Run in parallel or shard the suite across runners, run only what changed, measure coverage, and publish JUnit, TAP, JSON, HTML or Markdown reports.
   - icon:
       src: /updated.svg
-    title: Updated
+    title: Community
     details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
   - icon:
       src: /multiplatform.svg

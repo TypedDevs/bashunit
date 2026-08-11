@@ -349,10 +349,20 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --coverage-report)
+      # The value is optional, matching --coverage-report-html below and the
+      # `[file]` notation the docs use. Reading "$2" unconditionally aborted the
+      # run with `$2: unbound variable`, or took a following flag as the path.
       # shellcheck disable=SC2034
-      BASHUNIT_COVERAGE_REPORT="$2"
+      case "${2:-}" in
+      '' | -*)
+        BASHUNIT_COVERAGE_REPORT="$_BASHUNIT_DEFAULT_COVERAGE_REPORT"
+        ;;
+      *)
+        BASHUNIT_COVERAGE_REPORT="$2"
+        shift
+        ;;
+      esac
       _bashunit_coverage_opt_set=true
-      shift
       ;;
     --coverage-min)
       # shellcheck disable=SC2034

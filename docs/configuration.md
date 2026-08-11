@@ -7,9 +7,12 @@ description: "Configure bashunit with environment variables and config files to 
 Environment variables and config files control **bashunit** behavior across your project.
 
 It serves to configure the behavior of bashunit in your project.
-You need to create a `.env` file in the root directory,
-but you can give it another name if you pass it as an argument to the command with
-`--env` [option](/command-line#environment-bootstrap).
+`.env` and `.bashunitrc` are project files, always read from the working directory.
+
+`-e, --env` (alias `--boot`) loads an **additional** bootstrap file whose assignments
+override them; it does not rename `.env`. See
+[the option](/command-line#environment-bootstrap). `--skip-env-file` is the only way to
+stop `.env` and `.bashunitrc` from being read at all.
 
 ## Config file (.bashunitrc)
 
@@ -27,10 +30,16 @@ It is meant for committing sensible project defaults. Precedence, from highest
 to lowest:
 
 1. CLI flags (e.g. `--simple`)
-2. `.env` entries that have a value
-3. Environment variables
-4. `.bashunitrc`
-5. Built-in defaults
+2. The file given to `-e, --env, --boot`
+3. `.env` entries that have a value
+4. Environment variables
+5. `.bashunitrc`
+6. Built-in defaults
+
+The `--env` file is sourced during flag parsing, so it overrides `.env`, `.bashunitrc` and
+the ambient environment, and it loses only to flags written **after** it on the command
+line: `bashunit --simple --env custom.env` uses the file's value, `bashunit --env custom.env --simple`
+uses the flag. Unlike `.env`, an empty entry in that file does wipe a value.
 
 An entry left **empty** in `.env` means "not configured here" and does not
 override the environment, so `BASHUNIT_OUTPUT_FORMAT=tap ./bashunit` keeps
@@ -41,11 +50,17 @@ committed project config is for.
 `.bashunitrc` only fills values that are not already set, so anything above it
 always wins. `--skip-env-file` skips both `.env` and `.bashunitrc`.
 
+The two files are read differently, which is why they behave differently: `.env` is
+**sourced** as a shell script under `allexport`, so it can hold arbitrary shell and an
+empty entry is unconditional (hence the preservation rule above), while `.bashunitrc` is
+parsed as literal `KEY=value` lines and only fills names that are not already set.
+
 ## Default path
 
 > `BASHUNIT_DEFAULT_PATH=directory|file`
 
-Specifies the `directory` or `file` containing the tests to be run. `empty` by default.
+Specifies the `directory` or `file` containing the tests to be run. `tests` by default,
+so a run with no path argument searches `tests/` for files ending in `test.sh`.
 
 If a directory is specified, it will execute tests within files ending in `test.sh`.
 When running benchmarks (`bashunit bench`), the same path is used to search for files ending in `bench.sh`.
@@ -71,9 +86,12 @@ BASHUNIT_DEFAULT_PATH=tests/**/*_test.sh
 
 Enables simplified output to the console. `false` by default.
 
-Verbose is the default output, but it can be overridden by the environment configuration.
+Detailed output is the default, but it can be overridden by the environment configuration.
 
-Similar as using `-s|--simple | -vvv|--detailed` option on the [command line](/command-line#output-style).
+Similar as using `-s|--simple` / `--detailed` on the [command line](/command-line#output-style).
+
+This is a different setting from [`BASHUNIT_VERBOSE`](#verbose): `-vvv|--verbose` adds the
+execution-details block and does not change the result style.
 
 ::: code-group
 ```bash [Simple output]
@@ -85,7 +103,7 @@ BASHUNIT_SIMPLE_OUTPUT=true
 :::
 
 ::: code-group
-```[Verbose output]
+```[Detailed output]
 Running tests/functional/logic_test.sh
 ✓ Passed: Other way of using the exit code
 ✓ Passed: Should validate a non ok exit code
@@ -101,7 +119,14 @@ BASHUNIT_SIMPLE_OUTPUT=false
 
 > `BASHUNIT_PARALLEL_RUN=true|false`
 
-Runs the tests in child processes with randomized execution, which may improve overall testing speed, especially for larger test suites.
+Runs the tests in child processes, one worker per test, which may improve overall testing
+speed, especially for larger test suites. `false` by default.
+
+Dispatch keeps definition order, but **completion** order is nondeterministic, so tests
+must not depend on each other. Parallel never shuffles: shuffling is opt-in through
+[`BASHUNIT_RANDOM_ORDER`](#random-order) or `BASHUNIT_ORDER_BY=random`. Cap the concurrency
+with [`BASHUNIT_PARALLEL_JOBS`](#parallel-jobs), and use `--no-parallel` to opt out of a
+configured parallel run.
 
 ::: warning
 Parallel execution is supported on **macOS**, **Ubuntu**, **Alpine**, and
@@ -179,6 +204,25 @@ BASHUNIT_RETRY=0
 ```
 :::
 
+## Repeat
+
+> `BASHUNIT_REPEAT=<n>`
+
+Run each selected test `n` times so flakiness surfaces before CI hits it. `1` by default.
+The test is reported once with the aggregate outcome, and a failure names the iteration it
+happened on. Repeat wraps [`BASHUNIT_RETRY`](#retry), not the other way round.
+
+Similar as using `--repeat` option on the [command line](/command-line#repeat).
+
+## Fail on flaky
+
+> `BASHUNIT_FAIL_ON_FLAKY=true|false`
+
+Turn a run red when a test passed only after a retry. `false` by default, so a flaky test
+stays inside the pass total and the exit code is unchanged.
+
+Similar as using `--fail-on-flaky` option on the [command line](/command-line#fail-on-flaky).
+
 ## Random order
 
 > `BASHUNIT_RANDOM_ORDER=true|false` and `BASHUNIT_SEED=<n>`
@@ -200,6 +244,51 @@ BASHUNIT_SEED=12345
 BASHUNIT_RANDOM_ORDER=false
 ```
 :::
+
+## Execution order
+
+> `BASHUNIT_ORDER_BY=defined|defects|random`
+
+Execution order. `defined` by default (definition order). `defects` runs the last run's
+failures first and still runs the whole suite. `random` is the same mode as
+[`BASHUNIT_RANDOM_ORDER=true`](#random-order).
+
+Similar as using `--order-by` option on the [command line](/command-line#order-by).
+
+## Exclude filter
+
+> `BASHUNIT_EXCLUDE_FILTER=name`
+
+Skip tests whose name matches. Empty by default. It wins over a `--filter` match.
+
+Similar as using `--exclude-filter` option on the [command line](/command-line#exclude-filter).
+
+## Changed files only
+
+> `BASHUNIT_CHANGED=true|false` and `BASHUNIT_CHANGED_REF=<ref>`
+
+Run only the test files git reports as changed. `false` by default.
+`BASHUNIT_CHANGED_REF` is empty by default, which means `origin/HEAD`, then `HEAD`.
+
+Similar as using `--changed` option on the [command line](/command-line#changed).
+
+## Shard
+
+> `BASHUNIT_SHARD_INDEX=<i>` and `BASHUNIT_SHARD_TOTAL=<n>`
+
+Run shard `i` of `n` to split the suite across runners. Both are empty (disabled) by
+default, and sharding needs both.
+
+Similar as using `--shard` option on the [command line](/command-line#shard).
+
+## List tests
+
+> `BASHUNIT_LIST_TESTS=true|false` and `BASHUNIT_LIST_FORMAT=text|json`
+
+Print the tests a run would execute and exit without running them. `false` and `text` by
+default.
+
+Similar as using `--list` / `--list-format` options on the [command line](/command-line#list).
 
 ## Snapshot update
 
@@ -242,6 +331,15 @@ BASHUNIT_SNAPSHOT_CREATE=false
 BASHUNIT_SNAPSHOT_CREATE=true
 ```
 :::
+
+## Snapshot report unused
+
+> `BASHUNIT_SNAPSHOT_REPORT_UNUSED=true|false`
+
+List the snapshot files no test resolved. `false` by default. Full runs only, and it deletes
+nothing.
+
+Similar as using `--snapshot-report-unused` option on the [command line](/command-line#snapshot-report-unused).
 
 ## Rerun failed
 
@@ -507,6 +605,25 @@ The report destination is checked before the suite runs — an unwritable path f
 immediately instead of after a passing run. See [Invalid input](/command-line#invalid-input).
 :::
 
+## Report Markdown
+
+> `BASHUNIT_REPORT_MD=file`
+
+Write a Markdown run summary: verdict, counts table, failures with their message, plus
+coverage and slowest tests when those ran. Empty by default. Inside GitHub Actions it is
+also appended to `$GITHUB_STEP_SUMMARY`, for the outermost run only.
+
+Similar as using `--report-md` option on the [command line](/command-line#report-md).
+
+## GitHub Actions annotations
+
+> `BASHUNIT_GHA_ANNOTATIONS=auto|always|never`
+
+Controls GitHub Actions annotations on stdout. `auto` by default: on inside GitHub Actions,
+quiet everywhere else. Never emitted under `--output tap`.
+
+Similar as using `--gha-annotations` option on the [command line](/command-line#gha-annotations).
+
 ## Bootstrap
 
 > `BASHUNIT_BOOTSTRAP=file`
@@ -577,7 +694,7 @@ bashunit::log "I am tracing something..."
 bashunit::log "error" "an" "error" "message"
 bashunit::log "warning" "different log level messages!"
 ```
-```bash [Output: out.log]
+```[Output: dev.log]
 2024-10-03 21:27:23 [INFO]: I am tracing something... #tests/sample.sh:11
 2024-10-03 21:27:23 [ERROR]: an error message #tests/sample.sh:27
 2024-10-03 21:27:24 [WARNING]: different log level messages! #tests/sample.sh:21
@@ -588,6 +705,13 @@ quickly `tail -f` it while the tests run.
 
 > All internal messages emitted by bashunit are prefixed with `[INTERNAL]`.
 > You can toggle internal messages with `BASHUNIT_INTERNAL_LOG=true|false`.
+
+## Bench mode
+
+> `BASHUNIT_BENCH_MODE=true|false`
+
+Set by the `bashunit bench` subcommand and not meant to be configured by hand. `false` by
+default.
 
 ## Verbose
 
@@ -738,9 +862,12 @@ BASHUNIT_NO_DIFF=true
 
 ## Color output
 
-> `NO_COLOR=1`
+> `BASHUNIT_NO_COLOR=true|false`
 
-Disables ANSI color codes in output. Follows the [no-color.org](https://no-color.org) standard.
+Disables ANSI color codes in output. `false` by default.
+
+`NO_COLOR` is the honored external standard: a non-empty `NO_COLOR` forces
+`BASHUNIT_NO_COLOR=true`. Follows [no-color.org](https://no-color.org).
 
 When set to any value, bashunit will output plain text without color formatting.
 
@@ -872,17 +999,48 @@ BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh,*_mock.sh
 
 Path for the LCOV format coverage report. `coverage/lcov.info` by default.
 
-Set to empty string to disable file generation (console report only).
+An empty entry means "not configured", so the default path still applies. To skip the file
+and keep the console report only, use the `--no-coverage-report` flag.
 
 ::: code-group
 ```bash [.env]
 # Custom path
 BASHUNIT_COVERAGE_REPORT=reports/coverage.lcov
-
-# Disable file output
-BASHUNIT_COVERAGE_REPORT=
+```
+```bash [Console only]
+bashunit tests/ --coverage --no-coverage-report
 ```
 :::
+
+### Coverage report HTML
+
+> `BASHUNIT_COVERAGE_REPORT_HTML=dir`
+
+Directory for the browsable HTML coverage report. Empty by default (not generated).
+
+Similar as using `--coverage-report-html` option on the [command line](/command-line#coverage).
+
+### Coverage diff
+
+> `BASHUNIT_COVERAGE_DIFF=<ref>`
+
+Restrict the console coverage report to the lines changed since `<ref>`. Empty by default.
+`BASHUNIT_COVERAGE_MIN` then gates on that diff percentage instead of the whole-file one.
+LCOV and HTML stay whole-file.
+
+Similar as using `--coverage-diff` option on the [command line](/command-line#coverage).
+
+### Coverage detail blocks
+
+> `BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true|false`
+>
+> `BASHUNIT_COVERAGE_SHOW_UNCOVERED=true|false`
+>
+> `BASHUNIT_COVERAGE_SHOW_LINE_HITS=true|false`
+
+Opt-in blocks appended to the console coverage report: a per-function table, the executable
+lines never hit (as compressed ranges), and per-line execution counts. All `false` by
+default.
 
 ### Coverage engine
 
@@ -925,9 +1083,9 @@ BASHUNIT_COVERAGE_MIN=80
 
 Thresholds for color-coding the coverage output. Defaults: `50` and `80`.
 
-- Below `THRESHOLD_LOW`: Red
-- Between thresholds: Yellow
-- Above `THRESHOLD_HIGH`: Green
+- At or above `THRESHOLD_HIGH`: green
+- At or above `THRESHOLD_LOW`: yellow
+- Below `THRESHOLD_LOW`: red
 
 ::: code-group
 ```bash [.env]
@@ -938,9 +1096,9 @@ BASHUNIT_COVERAGE_THRESHOLD_HIGH=90
 
 ## Deprecations
 
-Every setting also answers to an **unprefixed** name — `VERBOSE` as well as
-`BASHUNIT_VERBOSE`. Those unprefixed aliases predate the `BASHUNIT_` prefix
-introduced in 0.15.0 and are deprecated: the names are generic enough that an
+Many settings also answer to an **unprefixed** name — `VERBOSE` as well as
+`BASHUNIT_VERBOSE`. Those are the ones that predate the `BASHUNIT_` prefix introduced in
+0.15.0, and they are deprecated: the names are generic enough that an
 unrelated tool exporting `COVERAGE=true` or `VERBOSE=true` silently
 reconfigures bashunit. Always use the prefixed name.
 
@@ -949,6 +1107,10 @@ When a deprecated form is what supplied a value, bashunit says so on stderr:
 ```
 Deprecated: the unprefixed `VERBOSE`. Use `BASHUNIT_VERBOSE` instead.
 ```
+
+Settings added after the prefix ship **only** under `BASHUNIT_`, so an unprefixed form for
+them is ignored rather than warned about. `--retry`, `--seed`, `--order-by`, `--list`, and
+the snapshot and shard settings are all prefix-only.
 
 The warning goes to stderr, so it never corrupts a report on stdout. Silence it
 with:

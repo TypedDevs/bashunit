@@ -12,6 +12,10 @@ Check the internal functional tests: `tests/functional/custom_asserts_test.sh` (
 
 ::: info Assertion behavior
 When using the bashunit facade, assertions automatically respect the guard behavior: if a previous assertion in the same test already failed, subsequent assertions are skipped. This matches popular testing libraries default behavior.
+
+This is the default. `-R`/`--run-all` (`BASHUNIT_STOP_ON_ASSERTION_FAILURE=false`) disables
+the guard, so every assertion inside your custom assertion runs and counts even after an
+earlier failure.
 :::
 
 ::: info Test name detection
@@ -31,7 +35,9 @@ Runs `cmd` and marks the assertion passed or failed accordingly, in a single cal
 | `actual` | The actual value received |
 | `cmd [args...]` | The command deciding the verdict: exit `0` passes, anything else fails |
 
-Returns `0` when the command succeeds and `1` when it fails, so it can be chained.
+Returns `0` when the command succeeds and `1` when it fails, so it can be chained. Leaving
+it as the last statement of your custom assertion is fine: a failed assertion is reported
+once, as a failure.
 
 The command is invoked directly, without `eval`, so arguments keep their word
 boundaries and nothing is re-parsed by the shell.
@@ -64,6 +70,12 @@ Marks the current assertion as failed and prints a failure message.
 > `bashunit::assertion_passed`
 
 Marks the current assertion as passed. Call this when your custom assertion succeeds.
+
+### fail
+> `bashunit::fail <message?>`
+
+Marks the current assertion as failed and prints `Message: '<message>'` instead of the
+Expected/but-got block. Use it when there is no meaningful expected value.
 
 ## Examples
 
@@ -123,7 +135,7 @@ function assert_http_success() {
 function assert_foo() {
   local actual="$1"
 
-  if [[ "foo" != "$actual" ]]; then
+  if [ "foo" != "$actual" ]; then
     bashunit::assertion_failed "foo" "$actual"
     return
   fi
@@ -136,7 +148,7 @@ function test_value_is_foo() {
 }
 
 function test_value_is_not_foo() {
-  assert_foo "bar"  # Fails with: "Failed: Value is not foo"
+  assert_foo "bar"  # Fails with: "Expected 'foo' but got 'bar'"
 }
 ```
 
@@ -204,10 +216,7 @@ Assertions: 1 passed, 1 failed, 2 total
 The failure now reads `Expected 'a 2xx status' but got '500'`, labelled with the
 test that called it.
 
-| Parameter | Description |
-|-----------|-------------|
-| `label` | What the assertion expects, shown in the failure block. Omit it to keep reporting the innermost failure message |
-| `actual` | The actual value shown against that label |
+Parameters: see [assert_once](#assert-once).
 
 Notes:
 
@@ -228,7 +237,7 @@ Notes:
 function assert_positive_number() {
   local actual="$1"
 
-  if [[ "$actual" -le 0 ]]; then
+  if [ "$actual" -le 0 ]; then
     bashunit::assertion_failed "positive number" "$actual" "got"
     return
   fi
@@ -310,14 +319,19 @@ assertions, it appends them too, rendering the comment block above each one:
 ```bash
 ./bashunit doc --boot tests/bootstrap.sh     # built-ins, then a "Custom assertions" section
 ./bashunit doc --custom --boot tests/bootstrap.sh  # only your own
-./bashunit doc --custom http                 # ...narrowed by a filter
+./bashunit doc --custom --boot tests/bootstrap.sh http  # ...narrowed by a filter
 ```
 
 ```
 ## assert_http_success
 --------------
 Asserts that the status code is a 2xx.
+Arguments: $1 - the status code
 ```
+
+The whole comment run above the function is printed, so a two-line docstring renders as two
+lines. A function with no comment block prints its heading and the divider with nothing
+under them.
 
 With `BASHUNIT_BOOTSTRAP` set, the `--boot` flag can be omitted. A bootstrap is
 required either way: it is the only point at which your assertions are
@@ -344,7 +358,7 @@ function assert_http_success() {
 
 2. **Always return after failure**: when writing the long form by hand, call `return` after `bashunit::assertion_failed` or `bashunit::fail` to stop execution of your custom assertion.
 
-3. **Always mark success**: Call `bashunit::assertion_passed` or `state::add_assertions_passed` when your assertion succeeds.
+3. **Always mark success**: call `bashunit::assertion_passed` when your assertion succeeds.
 
 4. **Use descriptive names**: Name your custom assertions clearly, e.g., `assert_valid_email`, `assert_file_contains_header`.
 

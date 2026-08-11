@@ -18,7 +18,7 @@ bashunit tests/ --coverage
 bashunit tests/ --coverage-paths src/
 ```
 ```bash [Output]
-bashunit - 0.37.0 | Tests: 5
+bashunit | Tests: 5
 .....
 
 Tests:      5 passed, 5 total
@@ -43,9 +43,16 @@ Coverage report written to: coverage/lcov.info
 bashunit records which lines ran, then classifies and reports them:
 
 1. **Capture**: every executed line's file path and line number is recorded, either from a `DEBUG` trap or from `xtrace` — see [Tracing engine](#tracing-engine)
-2. **Filtering**: only files matching your coverage paths (and not excluded) are tracked
+2. **Filtering**: a recorded file is tracked only when it matches your coverage paths and no exclude pattern
 3. **Aggregation**: after tests complete, hit data is aggregated
 4. **Reporting**: each source line is classified as executable or not, and the executable ones are matched against the hits
+
+::: warning Only executed files are reported
+A file enters the report the first time one of its lines runs. A source file that no test
+touched at all is **absent** from the report rather than shown at 0%, so the percentage is
+measured over the files that ran, not over everything under `BASHUNIT_COVERAGE_PATHS`.
+Tracked in [#1053](https://github.com/TypedDevs/bashunit/issues/1053).
+:::
 
 ::: tip Performance
 Coverage roughly doubles to quadruples wall-clock time, depending on Bash version
@@ -82,9 +89,10 @@ Warning: coverage engine 'xtrace' needs Bash 4.1+ (running 3.2); using 'trap'.
 | `--coverage` | Enable code coverage tracking |
 | `--coverage-paths <paths>` | Comma-separated paths to track (default: auto-discover from test files) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
-| `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
+| `--coverage-report [file]` | LCOV report output path (default: `coverage/lcov.info`) |
 | `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`) |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
+| `--coverage-diff <ref>` | Report only the lines changed since `<ref>`, see [Diff coverage](#diff-coverage) |
 | `--no-coverage-report` | Disable LCOV file generation (console only) |
 
 ::: tip Auto-enable
@@ -108,39 +116,22 @@ For most projects following standard naming conventions, you can simply run `bas
 
 ### Environment Variables
 
-You can also configure coverage via [environment variables](/configuration) in your `.env` file:
+Every coverage flag has a matching setting. The full list, with defaults, lives in
+[Configuration > Coverage](/configuration#coverage). The short version:
 
 ```bash
-# Enable coverage
-BASHUNIT_COVERAGE=true
-
-# Paths to track (comma-separated)
-BASHUNIT_COVERAGE_PATHS=src/,lib/
-
-# Patterns to exclude (comma-separated)
-BASHUNIT_COVERAGE_EXCLUDE=tests/*,vendor/*,*_test.sh
-
-# LCOV report output path
+BASHUNIT_COVERAGE=true                     # enable tracking
+BASHUNIT_COVERAGE_PATHS=src/,lib/          # paths to track
 BASHUNIT_COVERAGE_REPORT=coverage/lcov.info
-
-# HTML report output directory (generates line-by-line coverage view)
 BASHUNIT_COVERAGE_REPORT_HTML=coverage/html
-
-# Minimum coverage percentage (optional)
-BASHUNIT_COVERAGE_MIN=80
-
-# Color thresholds for console output
-BASHUNIT_COVERAGE_THRESHOLD_LOW=50   # Red below this
-BASHUNIT_COVERAGE_THRESHOLD_HIGH=80  # Green above this, yellow between
-
-# Tracing engine: auto (default), xtrace or trap
-BASHUNIT_COVERAGE_ENGINE=auto
-
-# Optional text-report blocks (off by default, opt-in for verbose runs)
-BASHUNIT_COVERAGE_SHOW_FUNCTIONS=true   # Print per-function coverage
-BASHUNIT_COVERAGE_SHOW_UNCOVERED=true   # Print missed line ranges per file
-BASHUNIT_COVERAGE_SHOW_LINE_HITS=true   # Print per-line execution counts (lineno:count)
+BASHUNIT_COVERAGE_MIN=80                   # fail below this percentage
+BASHUNIT_COVERAGE_ENGINE=auto              # auto, xtrace or trap
 ```
+
+Three opt-in blocks add detail to the console report:
+`BASHUNIT_COVERAGE_SHOW_FUNCTIONS` (per-function table),
+`BASHUNIT_COVERAGE_SHOW_UNCOVERED` (missed line ranges),
+`BASHUNIT_COVERAGE_SHOW_LINE_HITS` (per-line execution counts).
 
 ### Tracing engine
 
@@ -559,6 +550,64 @@ wiring the coverage engine into CI without a third-party coverage service.
 Note the workflow excludes the engine's own meta-tests (`tests/unit/coverage_*_test.sh`)
 from the measured run: executing them under `--coverage` double-instruments
 `src/coverage.sh` and corrupts their assertions.
+
+## Diff coverage
+
+> `bashunit test --coverage --coverage-diff <base-ref>`
+
+Answers the question a pull request actually asks — *are the lines I touched
+covered?* — instead of reporting a whole-file percentage that moves for reasons
+unrelated to the change under review.
+
+```bash
+bashunit test tests/ --coverage --coverage-diff main
+```
+
+```
+Diff Coverage (vs main)
+---------------
+src/parser.sh                              7/  9 lines ( 77%)
+---------------
+Total: 7/9 (77%)
+```
+
+Only lines **added or modified** since the ref are counted, from three sources
+merged together: commits since the merge base, staged and unstaged edits, and
+untracked files (counted in full). A pure deletion contributes nothing — there
+is no line left to hold an opinion about — and changed lines that are not
+executable (comments, `fi`, blank) are ignored, so a comment-only commit is not
+penalised.
+
+The base ref is **required**. It is not defaulted, because an optional value
+would make `--coverage-diff tests/` swallow the path as a ref.
+
+**With `--coverage-min`, the gate follows the report:** the threshold applies to
+the diff percentage, so a change that fully covers itself passes even inside a
+poorly covered file.
+
+```bash
+bashunit test tests/ --coverage --coverage-diff origin/main --coverage-min 90
+```
+
+A change with no executable lines scores **100%**, not 0% — otherwise a
+docs-only commit would fail the gate.
+
+`--coverage-diff` restricts the **console report only**. LCOV and HTML stay
+whole-file, because their consumers (`genhtml`, Codecov) do their own diffing
+and expect complete records.
+
+::: warning Shallow clones
+This needs `git` and a ref that resolves locally. CI checkouts are often shallow
+and have no base ref, which would otherwise report "no changed lines" and pass a
+threshold while measuring nothing — so an unresolvable ref is a hard error
+instead. Fetch it first:
+
+```yaml
+- uses: actions/checkout@v4
+  with:
+    fetch-depth: 0
+```
+:::
 
 ## Related
 
