@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
+
 ### Added
 - `--changed [<ref>]` runs only the test files git reports as touched since `<ref>` (default `origin/HEAD`, then `HEAD`), covering committed, staged, unstaged and untracked changes (#1010)
 - `--order-by <defined|defects|random>` picks the execution order; `defects` runs the last run's failures first and still runs the whole suite (#1011)
