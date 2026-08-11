@@ -14,6 +14,7 @@ ALPHA="$FIXTURES_PATH/alpha.sh"
 BETA="$FIXTURES_PATH/beta.sh"
 TAGGED="$FIXTURES_PATH/tagged.sh"
 ORDER="$FIXTURES_PATH/order.sh"
+MULTITAG="$FIXTURES_PATH/multitag.sh"
 
 function test_list_prints_every_test_as_file_and_function() {
   local output
@@ -175,6 +176,35 @@ function test_list_format_json_reports_tags() {
   output="$(./bashunit --list --list-format json --tag slow "$TAGGED" 2>/dev/null)"
 
   assert_same "slow" "$(printf '%s' "$output" | jq -r '.tests[0].tags[0]')"
+}
+
+# The JSON emitter used to split the tag list on whitespace while every other
+# consumer splits it on commas, so a test with two tags rendered as the single
+# element "slow,fileTag" and the documented jq recipe matched nothing.
+function test_list_format_json_reports_each_tag_as_its_own_element() {
+  if ! command -v jq >/dev/null 2>&1; then
+    bashunit::skip "jq is required to validate the JSON shape" && return
+  fi
+
+  local output
+  output="$(./bashunit --list --list-format json "$MULTITAG" 2>/dev/null)"
+
+  assert_same "2" "$(printf '%s' "$output" | jq -r '.tests[0].tags | length')"
+  assert_same "slow" "$(printf '%s' "$output" | jq -r '.tests[0].tags[0]')"
+  assert_same "fileTag" "$(printf '%s' "$output" | jq -r '.tests[0].tags[1]')"
+}
+
+# A tag may contain spaces (`# @tag needs a db`), so it must survive as one
+# element rather than being split into three.
+function test_list_format_json_keeps_a_tag_containing_spaces_intact() {
+  if ! command -v jq >/dev/null 2>&1; then
+    bashunit::skip "jq is required to validate the JSON shape" && return
+  fi
+
+  local output
+  output="$(./bashunit --list --list-format json "$MULTITAG" 2>/dev/null)"
+
+  assert_same "needs a db" "$(printf '%s' "$output" | jq -r '.tests[1].tags[0]')"
 }
 
 function test_list_format_json_is_valid_for_an_empty_selection() {

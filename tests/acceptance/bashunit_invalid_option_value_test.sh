@@ -126,3 +126,32 @@ function test_bashunit_still_accepts_tap_output() {
   assert_successful_code "" "" "$ec"
   assert_contains "TAP version 13" "$output"
 }
+
+# `--coverage-report` is documented with the page's optional notation
+# (`[file]`), and --coverage-report-html already defaults its value. Omitting the
+# value used to abort the run with `$2: unbound variable` before any test ran,
+# and a following flag was consumed as the filename.
+function test_coverage_report_without_a_value_uses_the_default_path() {
+  local dir output
+  dir="$(bashunit::temp_dir)"
+
+  # The path goes first: an optional value cannot be told apart from a test path,
+  # which is why --coverage-diff requires its ref (src/main/test.sh).
+  output=$(cd "$dir" && "$OLDPWD/bashunit" --env "$OLDPWD/$TEST_ENV_FILE" \
+    "$OLDPWD/$TEST_FILE" --coverage --coverage-report 2>&1) || true
+
+  assert_not_contains "unbound variable" "$output"
+  assert_file_exists "$dir/coverage/lcov.info"
+}
+
+function test_coverage_report_does_not_swallow_the_next_flag_as_its_value() {
+  local dir output
+  dir="$(bashunit::temp_dir)"
+
+  output=$(cd "$dir" && "$OLDPWD/bashunit" --env "$OLDPWD/$TEST_ENV_FILE" \
+    --coverage --coverage-report --no-color "$OLDPWD/$TEST_FILE" 2>&1) || true
+
+  assert_not_contains "unbound variable" "$output"
+  assert_not_contains "No such file or directory" "$output"
+  assert_file_exists "$dir/coverage/lcov.info"
+}

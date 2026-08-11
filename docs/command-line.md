@@ -1220,6 +1220,11 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 | `--coverage-diff <ref>`         | Report only the lines changed since `<ref>`                                 |
 | `--no-coverage-report`          | Show console report only, don't generate LCOV file                          |
 
+Both `--coverage-report` and `--coverage-report-html` take an optional value and fall back
+to their default path when the next argument is another flag or absent. A value cannot be
+told apart from a test path, so write the path before them: `bashunit tests/ --coverage-report`.
+
+
 ::: tip
 Coverage works with parallel execution (`-p`). Each worker tracks coverage independently, and results are aggregated before reporting.
 :::

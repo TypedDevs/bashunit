@@ -55,7 +55,19 @@ function bashunit::runner::list_functions() {
     tags="$_BASHUNIT_TAGS_OUT"
 
     tags_json=""
+    # Tags are comma-separated because a tag may contain spaces (`# @tag needs a
+    # db`), the same split every other consumer uses (src/helper/tags.sh:137).
+    # IFS is restored right after the split: the helpers called below run under
+    # the caller's dynamic scope and must not see a comma-only IFS.
+    local old_ifs="$IFS"
+    IFS=','
+    local -a tag_list=()
     for tag in $tags; do
+      tag_list[${#tag_list[@]}]="$tag"
+    done
+    IFS="$old_ifs"
+
+    for tag in ${tag_list[@]+"${tag_list[@]}"}; do
       [ -z "$tag" ] && continue
       [ -n "$tags_json" ] && tags_json="$tags_json,"
       tags_json="$tags_json\"$(bashunit::reports::__json_escape "$tag")\""

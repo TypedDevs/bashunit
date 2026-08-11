@@ -89,7 +89,7 @@ Warning: coverage engine 'xtrace' needs Bash 4.1+ (running 3.2); using 'trap'.
 | `--coverage` | Enable code coverage tracking |
 | `--coverage-paths <paths>` | Comma-separated paths to track (default: auto-discover from test files) |
 | `--coverage-exclude <patterns>` | Comma-separated exclusion patterns |
-| `--coverage-report <file>` | LCOV report output path (default: `coverage/lcov.info`) |
+| `--coverage-report [file]` | LCOV report output path (default: `coverage/lcov.info`) |
 | `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`) |
 | `--coverage-min <percent>` | Minimum coverage threshold (fails if below) |
 | `--coverage-diff <ref>` | Report only the lines changed since `<ref>`, see [Diff coverage](#diff-coverage) |
