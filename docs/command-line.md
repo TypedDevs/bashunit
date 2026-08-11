@@ -58,7 +58,7 @@ bashunit test tests/ --parallel --simple
 
 | Option                         | Description                                      |
 |--------------------------------|--------------------------------------------------|
-| `-a, --assert <fn> <args>`     | Run a standalone assert function                 |
+| `-a, --assert <fn> <args>`     | Run a standalone assert function (deprecated: use [`bashunit assert`](#assert)) |
 | `-e, --env, --boot <file>`     | Load custom env/bootstrap file (supports args)   |
 | `-f, --filter <name>`          | Only run tests matching name                     |
 | `--exclude-filter <name>`      | Skip tests whose name matches (repeatable)       |
@@ -110,18 +110,17 @@ bashunit test tests/ --parallel --simple
 | `--skip-env-file`              | Skip `.env` loading, use shell environment only  |
 | `-l, --login`                  | Run tests in login shell context                 |
 | `--no-color`                   | Disable colored output                           |
-| `--coverage`                   | Enable code coverage tracking                    |
-| `--coverage-paths <paths>`     | Paths to track (default: auto-discover)          |
-| `--coverage-exclude <pat>`     | Exclusion patterns                               |
-| `--coverage-report [file]`     | LCOV output path (default: `coverage/lcov.info`) |
-| `--coverage-report-html [dir]` | Generate HTML report (default: `coverage/html`)  |
-| `--coverage-min <percent>`     | Minimum coverage threshold                       |
-| `--coverage-diff <ref>`        | Report coverage only for lines changed since ref |
-| `--no-coverage-report`         | Console output only, no LCOV file                |
+| `-h, --help`                   | Show the test help                               |
+| `--coverage*`                  | Eight coverage flags, see [Coverage](#coverage)  |
 
 ### Standalone Assert
 
 > `bashunit test -a|--assert function "arg1" "arg2"`
+
+::: warning Deprecated
+Use the [`assert` subcommand](#assert) instead. This form still works and prints a
+deprecation notice on stderr.
+:::
 
 Run a core assert function standalone without a test context.
 
@@ -130,7 +129,8 @@ Run a core assert function standalone without a test context.
 bashunit test --assert equals "foo" "bar"
 ```
 ```[Output]
-✗ Failed: Main::exec assert
+Deprecated: `bashunit test --assert`. Use `bashunit assert` instead.
+✗ Failed: assert equals
     Expected 'foo'
     but got  'bar'
 ```
@@ -485,8 +485,10 @@ developer actually looks at first:
 `tests/math_test.sh:42`
 
 ```
-Expected '4'
-but got  '5'
+✗ Failed: Sums two numbers
+    Expected '4'
+    but got  '5'
+    at tests/math_test.sh:42
 ```
 ```
 
@@ -515,7 +517,7 @@ Inside GitHub Actions, bashunit annotates failing tests on the pull request by
 itself. No flag, no configuration:
 
 ```
-::error file=tests/math_test.sh,line=42,title=Sums::Expected '4' but got '5'
+::error file=tests/math_test.sh,line=42,title=Sums two numbers::✗ Failed: Sums two numbers%0A    Expected '4'%0A    but got  '5'%0A    at tests/math_test.sh:42
 ```
 
 GitHub parses workflow commands from the **job log**, so the annotations go to
@@ -548,15 +550,15 @@ The `--report-json` flag writes machine-readable results for scripts, dashboards
 
 ```json
 {
-  "summary": { "total": 3, "passed": 2, "failed": 1, "skipped": 0, "incomplete": 0, "duration_ms": 42 },
+  "summary": { "total": 3, "passed": 2, "failed": 1, "skipped": 0, "incomplete": 0, "flaky": 0, "duration_ms": 42 },
   "tests": [
-    { "file": "tests/math_test.sh", "name": "it adds", "status": "passed", "duration_ms": 5, "message": "" },
-    { "file": "tests/math_test.sh", "name": "it divides", "status": "failed", "duration_ms": 3, "message": "Expected 2 but got 3" }
+    { "file": "tests/math_test.sh", "name": "it adds", "status": "passed", "duration_ms": 5, "retries": 0, "message": "" },
+    { "file": "tests/math_test.sh", "name": "it divides", "status": "failed", "duration_ms": 3, "retries": 0, "message": "Expected 2 but got 3" }
   ]
 }
 ```
 
-`status` is one of `passed`, `failed`, `skipped`, `incomplete` (`snapshot` and `risky` are also emitted per test and counted as passed in the summary). Like the other file reporters, per-test rows come from a sequential run; under `--parallel` the file is still valid JSON.
+`status` is one of `passed`, `failed`, `skipped`, `incomplete`, `flaky` (`snapshot` and `risky` are also emitted per test and counted as passed in the summary). Per-test rows are complete in both modes; under `--parallel` the row order follows completion order rather than definition order.
 
 ### Show Output on Failure
 
@@ -606,12 +608,12 @@ Tests:      10 passed, 10 total
 Assertions: 25 passed, 25 total
 
  All tests passed
+Time taken: 1.60s
 
 Slowest tests:
   1.20s  test_slow_database_query (tests/integration_test.sh)
   340ms  test_http_client_timeout (tests/http_test.sh)
   12ms   test_parse_config (tests/unit/config_test.sh)
-Time taken: 1.60s
 ```
 ```bash [Custom count]
 BASHUNIT_PROFILE_COUNT=3 bashunit test tests/ --profile
@@ -667,8 +669,11 @@ bashunit test tests/ --retry 2
 ```[Output]
 ✓ Passed: A flaky test (retry 1/2)
 
-Tests:      1 passed, 1 total
+Tests:      1 passed, 1 flaky, 1 total
 ```
+
+A test that recovered on retry is counted as [flaky](#flaky-tests) as well as passed, so
+the exit code stays `0` unless `--fail-on-flaky` is set.
 :::
 
 It can also be set via the `BASHUNIT_RETRY` environment variable (see
@@ -1111,7 +1116,7 @@ This is useful for:
 bashunit test tests/ --no-progress
 ```
 ```[Output]
-bashunit - 0.34.1 | Tests: 10
+bashunit | Tests: 10
 Tests:      10 passed, 10 total
 Assertions: 25 passed, 25 total
 
@@ -1208,7 +1213,7 @@ bashunit test tests/ --coverage --coverage-paths src/,lib/ --coverage-min 80
 |---------------------------------|-----------------------------------------------------------------------------|
 | `--coverage`                    | Enable coverage tracking                                                    |
 | `--coverage-paths <paths>`      | Comma-separated paths to track (default: auto-discover from test files)     |
-| `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh`) |
+| `--coverage-exclude <patterns>` | Comma-separated patterns to exclude (default: `tests/*,vendor/*,*_test.sh,*Test.sh`) |
 | `--coverage-report [file]`      | LCOV output file path (default: `coverage/lcov.info`)                       |
 | `--coverage-report-html [dir]`  | Generate HTML report (default: `coverage/html`)                             |
 | `--coverage-min <percent>`      | Minimum coverage percentage; fails if below                                 |
@@ -1223,59 +1228,30 @@ Coverage works with parallel execution (`-p`). Each worker tracks coverage indep
 
 > `bashunit test --coverage --coverage-diff <base-ref>`
 
-Answers the question a pull request actually asks — *are the lines I touched
-covered?* — instead of reporting a whole-file percentage that moves for reasons
-unrelated to the change under review.
+Restrict the console report to the lines changed since a base ref, so a pull request is
+judged on the code it touched. See [Coverage > Diff coverage](/coverage#diff-coverage).
 
-```bash
-bashunit test tests/ --coverage --coverage-diff main
+## assert
+
+> `bashunit assert <function> [args...]`
+>
+> `bashunit assert "<command>" <assertion> <arg> [<assertion> <arg>...]`
+
+Run assertions without creating a test file. The function name works with or without the
+`assert_` prefix.
+
+::: code-group
+```bash [Single assertion]
+bashunit assert equals "foo" "foo"
+bashunit assert exit_code 0 "echo 'success'"
 ```
-
-```
-Diff Coverage (vs main)
----------------
-src/parser.sh                              7/  9 lines ( 77%)
----------------
-Total: 7/9 (77%)
-```
-
-Only lines **added or modified** since the ref are counted, from three sources
-merged together: commits since the merge base, staged and unstaged edits, and
-untracked files (counted in full). A pure deletion contributes nothing — there
-is no line left to hold an opinion about — and changed lines that are not
-executable (comments, `fi`, blank) are ignored, so a comment-only commit is not
-penalised.
-
-The base ref is **required**. It is not defaulted, because an optional value
-would make `--coverage-diff tests/` swallow the path as a ref.
-
-**With `--coverage-min`, the gate follows the report:** the threshold applies to
-the diff percentage, so a change that fully covers itself passes even inside a
-poorly covered file.
-
-```bash
-bashunit test tests/ --coverage --coverage-diff origin/main --coverage-min 90
-```
-
-A change with no executable lines scores **100%**, not 0% — otherwise a
-docs-only commit would fail the gate.
-
-`--coverage-diff` restricts the **console report only**. LCOV and HTML stay
-whole-file, because their consumers (`genhtml`, Codecov) do their own diffing
-and expect complete records.
-
-::: warning Shallow clones
-This needs `git` and a ref that resolves locally. CI checkouts are often shallow
-and have no base ref, which would otherwise report "no changed lines" and pass a
-threshold while measuring nothing — so an unresolvable ref is a hard error
-instead. Fetch it first:
-
-```yaml
-- uses: actions/checkout@v4
-  with:
-    fetch-depth: 0
+```bash [Several assertions on one command]
+bashunit assert "./my_script.sh" exit_code "0" contains "success" not_contains "error"
 ```
 :::
+
+See [Standalone](/standalone) for the full story. `bashunit test --assert` is the
+deprecated form of the first mode.
 
 ## bench
 
@@ -1307,6 +1283,8 @@ bashunit bench --filter "parse"
 | `-vvv, --verbose` | Show execution details |
 | `--skip-env-file` | Skip `.env` loading, use shell environment only |
 | `-l, --login` | Run in login shell context |
+| `--no-color` | Disable colored output (honors `NO_COLOR`) |
+| `-h, --help` | Show the bench help |
 
 ## watch
 
@@ -1314,10 +1292,13 @@ bashunit bench --filter "parse"
 
 Dedicated watch subcommand that uses **OS file-event notifications** (no
 polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
-by `bashunit test` is also accepted here.
+by `bashunit test` is also accepted here, **but put the path first**: apart from
+`-f/--filter`, an option's value is otherwise taken as the watch path, so
+`bashunit watch --tag slow` watches a directory named `slow`. Write
+`bashunit watch tests/ --tag slow`.
 
 When neither `inotifywait` nor `fswatch` is installed, it no longer fails:
-it falls back to a **pure-shell polling loop** and prints a one-line notice.
+it falls back to a **pure-shell polling loop** and prints a short notice.
 Polling checks every `BASHUNIT_WATCH_INTERVAL` seconds (default `2`) using
 `find -newer`, so it detects created and modified `.sh` files; deleted files
 are not detected on the fallback path. Install one of the tools above for
@@ -1344,8 +1325,9 @@ bashunit watch tests/ --simple
 - **macOS:** `fswatch` (`brew install fswatch`)
 
 Without either tool, bashunit degrades to polling (see above) instead of
-failing. The portable [`-w/--watch`](#watch-mode) flag on `bashunit test`
-also uses polling.
+failing. The portable [`-w/--watch`](#watch-mode) flag on `bashunit test` also polls, but
+on a fixed 1-second loop: `BASHUNIT_WATCH_INTERVAL` applies to this subcommand's fallback
+only.
 :::
 
 ## doc
@@ -1405,13 +1387,21 @@ bashunit init
 bashunit init spec
 ```
 ```[Output]
+> Created tests/bootstrap.sh
+> Created tests/example_test.sh
+> Created .github/workflows/tests.yml
 > bashunit initialized in tests
 ```
 :::
 
 Creates:
-- `bootstrap.sh` - Setup file for test configuration
-- `example_test.sh` - Sample test file to get started
+- `tests/bootstrap.sh` - Setup file for test configuration
+- `tests/example_test.sh` - Sample test file to get started
+- `.github/workflows/tests.yml` - CI workflow using the official action
+- `.env` with `BASHUNIT_BOOTSTRAP=tests/bootstrap.sh`
+
+An existing `BASHUNIT_BOOTSTRAP=` line in `.env` is commented out first, so the new value
+takes effect.
 
 ## learn
 
@@ -1463,7 +1453,7 @@ bashunit upgrade
 ```
 ```[Output]
 > Upgrading bashunit to latest version
-> bashunit upgraded successfully to latest version 0.34.1
+> bashunit upgraded successfully to latest version <x.y.z>
 ```
 :::
 
@@ -1549,7 +1539,9 @@ Without this, `--parralel` ran the suite **sequentially** and still exited `0`, 
 ### Invalid values
 
 `--jobs`, `--retry`, `--test-timeout`, `--coverage-min` and `--seed` require a
-non-negative integer; `--output` accepts only `tap`; `--shard` requires `<index>/<total>`:
+non-negative integer; `--repeat` requires an integer of at least `1`; `--output` accepts
+only `tap`; `--shard` requires `<index>/<total>`; and `--gha-annotations`, `--order-by` and
+`--list-format` accept only their listed modes:
 
 ```bash
 bashunit --jobs abc tests/
@@ -1592,3 +1584,4 @@ risky also exits `0`. Add [`--fail-on-risky`](#test-options) or read the counts 
 <script setup>
 import pkg from '../package.json'
 </script>
+- [Standalone](/standalone) — run assertions without a test file
