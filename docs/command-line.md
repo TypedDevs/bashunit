@@ -64,7 +64,7 @@ bashunit test tests/ --parallel --simple
 | `--exclude-filter <name>`      | Skip tests whose name matches (repeatable)       |
 | `--tag <expr>`                 | Only run tests with matching `@tag`; supports `a&&b` and `!a` |
 | `--exclude-tag <name>`         | Skip tests with matching `@tag` (repeatable)     |
-| `--output <format>`            | Output format (`tap` for TAP version 13)         |
+| `--output <format>`            | Report on stdout: `text` (default), `tap`, `json`, `junit` |
 | `-w, --watch`                  | Watch files and re-run tests on change           |
 | `--log-junit, --report-junit <file>` | Write JUnit XML report                     |
 | `--log-gha <file>`             | Write GitHub Actions workflow-commands log       |
@@ -243,11 +243,36 @@ bashunit --list --tag 'db&&!slow' tests/
 
 > `bashunit test --output <format>`
 
-Select an alternative output format. Currently supported:
+Send the report to **stdout** in a machine-readable format instead of the
+human-readable console rendering. Supported values:
 
+- `text` — the default console rendering, identical to passing no flag.
 - `tap` — [TAP version 13](https://testanything.org/tap-version-13-specification.html) for CI/CD integrations.
+- `json` — the same document [`--report-json`](#reports) writes to a file.
+- `junit` — the same JUnit XML [`--report-junit`](#reports) writes to a file.
 
-The `TAP version 13` header comes first, each test file is announced via a
+For every format but `text` the header, progress, summary, coverage table and
+slowest-tests table are suppressed, so stdout holds nothing but the report and
+can be piped straight into a parser. Diagnostics keep going to stderr, and the
+exit code is the one the run would produce anyway.
+
+`--output` and the file reporters (`--report-json`, `--report-junit`) are
+independent: asking for both in the same run prints the document **and** writes
+the file.
+
+::: code-group
+```bash [JSON]
+bashunit tests/ --output json | jq '.tests[] | select(.status == "failed") | .name'
+```
+```bash [JUnit]
+bashunit tests/ --output junit > report.xml
+```
+```bash [Both sinks]
+bashunit tests/ --output json --report-json report.json | jq '.summary'
+```
+:::
+
+For `tap`, the `TAP version 13` header comes first, each test file is announced via a
 `# <path>` diagnostic line, each test emits an `ok <n> - <name>` or
 `not ok <n> - <name>` line (failures include a YAML `--- ... ...` block with
 expected/actual), and the `1..N` plan line closes the report.
@@ -538,8 +563,8 @@ Detection is `GITHUB_ACTIONS=true`, and `--gha-annotations` overrides it:
 bashunit test tests/ --gha-annotations never
 ```
 
-`auto` also stays quiet under `--output tap`, whose stdout is a machine format an
-annotation line would corrupt.
+`auto` also stays quiet under a machine `--output` format (`tap`, `json`,
+`junit`), whose stdout an annotation line would corrupt.
 
 The separate `--log-gha <file>` flag still writes the same workflow commands to a
 file. It is independent of the stdout annotations, so using both does not
@@ -1567,7 +1592,8 @@ Without this, `--parralel` ran the suite **sequentially** and still exited `0`, 
 
 `--jobs`, `--retry`, `--test-timeout`, `--coverage-min` and `--seed` require a
 non-negative integer; `--repeat` requires an integer of at least `1`; `--output` accepts
-only `tap`; `--shard` requires `<index>/<total>`; and `--gha-annotations`, `--order-by` and
+only `text`, `tap`, `json` and `junit`; `--shard` requires `<index>/<total>`;
+and `--gha-annotations`, `--order-by` and
 `--list-format` accept only their listed modes:
 
 ```bash

@@ -177,8 +177,16 @@ function bashunit::coverage::check_threshold() {
   fi
 
   if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
-    printf "%sCoverage %d%% is below minimum %d%%%s\n" \
-      "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT"
+    local message
+    message=$(printf "%sCoverage %d%% is below minimum %d%%%s" \
+      "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT")
+    # Under a machine --output the gate still speaks, but on stderr: on stdout
+    # it would sit next to the JSON or XML document and break the parser.
+    if bashunit::env::is_machine_output_enabled; then
+      printf "%s\n" "$message" >&2
+    else
+      printf "%s\n" "$message"
+    fi
     return 1
   fi
 

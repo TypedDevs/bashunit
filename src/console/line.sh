@@ -30,6 +30,12 @@ function bashunit::console_results::print_line() {
     return
   fi
 
+  # json/junit render one document at the end of the run, so a progress char
+  # here would sit in front of it and break the parser.
+  if bashunit::env::is_machine_output_enabled; then
+    return
+  fi
+
   if ! bashunit::env::is_simple_output_enabled; then
     printf "%s\n" "$line"
     return

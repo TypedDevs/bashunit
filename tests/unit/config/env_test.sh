@@ -232,6 +232,56 @@ function test_is_tap_output_disabled_when_format_is_not_tap() {
   assert_successful_code 0
 }
 
+function test_is_json_output_enabled_only_for_the_json_format() {
+  local original="$BASHUNIT_OUTPUT_FORMAT"
+  export BASHUNIT_OUTPUT_FORMAT="json"
+
+  bashunit::env::is_json_output_enabled
+  local enabled=$?
+  export BASHUNIT_OUTPUT_FORMAT="junit"
+  local disabled=0
+  bashunit::env::is_json_output_enabled || disabled=$?
+
+  export BASHUNIT_OUTPUT_FORMAT="$original"
+  assert_equals "0" "$enabled"
+  assert_equals "1" "$disabled"
+}
+
+function test_is_junit_output_enabled_only_for_the_junit_format() {
+  local original="$BASHUNIT_OUTPUT_FORMAT"
+  export BASHUNIT_OUTPUT_FORMAT="junit"
+
+  bashunit::env::is_junit_output_enabled
+  local enabled=$?
+  export BASHUNIT_OUTPUT_FORMAT="json"
+  local disabled=0
+  bashunit::env::is_junit_output_enabled || disabled=$?
+
+  export BASHUNIT_OUTPUT_FORMAT="$original"
+  assert_equals "0" "$enabled"
+  assert_equals "1" "$disabled"
+}
+
+# @data_provider machine_output_formats_provider
+function test_is_machine_output_enabled_per_format() {
+  local original="$BASHUNIT_OUTPUT_FORMAT"
+  export BASHUNIT_OUTPUT_FORMAT="$1"
+
+  local actual=0
+  bashunit::env::is_machine_output_enabled || actual=$?
+
+  export BASHUNIT_OUTPUT_FORMAT="$original"
+  assert_equals "$2" "$actual"
+}
+
+function machine_output_formats_provider() {
+  echo "tap 0"
+  echo "json 0"
+  echo "junit 0"
+  echo "text 1"
+  echo "'' 1"
+}
+
 function test_active_internet_connection_returns_failure_when_no_network() {
   local original="${BASHUNIT_NO_NETWORK:-}"
   export BASHUNIT_NO_NETWORK="true"
