@@ -105,6 +105,7 @@ _bashunit() {
     '--list-format[Rendering for --list]:format:(text json)' \
     '--snapshot-update[Rewrite existing snapshots from the actual value]' \
     '--no-snapshot-create[Fail instead of recording a missing snapshot]' \
+    '--snapshot-prune[Delete snapshot files no test resolved]' \
     '--snapshot-report-unused[List snapshot files no test resolved]' \
     '(-vvv --verbose)'{-vvv,--verbose}'[Show execution details]' \
     '--debug[Enable shell debug mode]::file:_files' \

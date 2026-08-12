@@ -73,11 +73,17 @@ PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 # fixtures/ is excluded by path: those files are inputs to other tests, not
 # tests. Four of them end in _test.sh and a naive recursive glob collects them.
 # tests/unit/project/collection_test.sh keeps this list honest.
-TEST_SCRIPTS = $(shell find $(TEST_SCRIPTS_DIR) -name '*[tT]est.sh' -not -path '*/fixtures/*' | sort)
+# The one definition of "a test file": both the list `make test` runs and the
+# list `make test/list` prints expand from it, so the two cannot drift.
+TEST_SCRIPTS_FIND = find $(TEST_SCRIPTS_DIR) -name '*[tT]est.sh' -not -path '*/fixtures/*'
+TEST_SCRIPTS = $(shell $(TEST_SCRIPTS_FIND) | sort)
 
+# Runs the find rather than expanding the ~14 KB variable into the recipe:
+# Git Bash handed back a truncated command line once the suite grew past it,
+# and the collection contract failed on Windows for that alone.
 test/list:
 	@echo "Test scripts found:"
-	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
+	@$(TEST_SCRIPTS_FIND) | sort
 
 test: $(TEST_SCRIPTS)
 	@bash ./bashunit $(TEST_SCRIPTS)

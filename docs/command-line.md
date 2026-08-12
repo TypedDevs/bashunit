@@ -98,6 +98,7 @@ bashunit test tests/ --parallel --simple
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
+| `--snapshot-prune`             | Delete the snapshot files no test resolved (full runs only) |
 | `--show-skipped`               | Show skipped tests summary at end                |
 | `--show-incomplete`            | Show incomplete tests summary at end             |
 | `-vvv, --verbose`              | Show execution details                           |
@@ -857,6 +858,17 @@ instead of everything else in the same `snapshots/` directory. A run that
 executes a *subset of the tests* in those files would still be misleading, so
 the flag is refused alongside `--filter`, `--tag`, `--exclude-tag`, `--shard`,
 `--rerun-failed` and `--changed`.
+
+### Snapshot prune
+
+> `bashunit test --snapshot-prune`
+
+Deletes exactly what the report above lists, printing every path it removes.
+It refuses the same partial runs, and additionally deletes nothing when the run
+has failures: a test that stopped at an earlier assertion never resolved its
+snapshot either, so "unused" there can mean "not run".
+
+See [snapshots](/snapshots#deleting-them).
 
 ### No snapshot create
 

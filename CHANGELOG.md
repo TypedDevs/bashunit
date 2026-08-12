@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `--snapshot-prune` deletes the snapshot files no test resolved, printing every path; like `--snapshot-report-unused` it is a full-run-only flag, and it additionally refuses to delete anything on a run with failures, where an unresolved snapshot only means the test never got there (#1030)
 - `bashunit bench --baseline <file>` fails a run when a benchmark is more than `--baseline-tolerance` percent (default 10) slower than the recorded run, comparing medians and printing a per-benchmark delta; `--baseline-update <file>` records the new reference, a new benchmark is reported rather than failed, and a missing or malformed baseline exits non-zero instead of quietly passing (#1029)
 - `bashunit bench --report-json <file>` and `--report-junit <file>` write the benchmark run to disk — per benchmark the revs, its, every iteration, average, min, max, median and the `@max_ms` verdict, plus run-level timestamp, duration, bashunit/bash version and OS — so a CI run leaves an artifact to store, chart and compare (#1028)
 - `assert_is_file_readable` / `assert_is_file_not_readable`, `assert_is_file_writable` / `assert_is_file_not_writable`, `assert_is_file_executable` / `assert_is_file_not_executable` and `assert_is_file_not_empty` give files the parity directories already had; a failure distinguishes a path that does not exist from one that is not a file from a mode that is wrong (#1024)

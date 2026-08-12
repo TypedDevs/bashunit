@@ -89,11 +89,17 @@ function bashunit::snapshot::normalize_path() {
   builtin echo "$path"
 }
 
-# Lists the snapshot files under $@ that no test resolved this run, and says so.
-# Deliberately reports only: a snapshot deleted by mistake is re-recorded on the
-# next run and never fails again, so an automatic cleanup could quietly turn a
-# real assertion into one that asserts nothing.
-function bashunit::snapshot::report_unused() {
+_BASHUNIT_SNAPSHOT_UNUSED_OUT=""
+_BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT=0
+
+# Collects the snapshot files under $@ that no test resolved this run into
+# _BASHUNIT_SNAPSHOT_UNUSED_OUT (one path per line) and their count into
+# _BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT.
+#
+# Shared by --snapshot-report-unused and --snapshot-prune so the list one prints
+# is exactly the list the other deletes; two implementations of "unused" is how
+# a cleanup ends up removing a live snapshot.
+function bashunit::snapshot::collect_unused() {
   local -a search_paths=()
   local path
   for path in "$@"; do
@@ -155,16 +161,81 @@ function bashunit::snapshot::report_unused() {
     done
   done < <(find "${search_paths[@]}" -type d -name snapshots 2>/dev/null | sort -u)
 
-  if [ "$total" -eq 0 ]; then
+  _BASHUNIT_SNAPSHOT_UNUSED_OUT="$unused"
+  _BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT="$total"
+}
+
+# Lists the snapshot files that no test resolved this run, and says so.
+# Reports only: a snapshot deleted by mistake is re-recorded on the next run and
+# never fails again, so an unasked-for cleanup could quietly turn a real
+# assertion into one that asserts nothing. --snapshot-prune is that cleanup,
+# asked for.
+function bashunit::snapshot::report_unused() {
+  bashunit::snapshot::collect_unused "$@"
+
+  if [ "$_BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT" -eq 0 ]; then
     printf "\n%sNo unused snapshots.%s\n" \
       "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}"
     return
   fi
 
   printf "\n%sUnused snapshots (%s), no test resolved them:%s\n%s" \
-    "${_BASHUNIT_COLOR_SKIPPED}" "$total" "${_BASHUNIT_COLOR_DEFAULT}" "$unused"
-  printf "%sNothing was deleted. Delete them yourself once you have checked the tests are gone.%s\n" \
+    "${_BASHUNIT_COLOR_SKIPPED}" "$_BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT" \
+    "${_BASHUNIT_COLOR_DEFAULT}" "$_BASHUNIT_SNAPSHOT_UNUSED_OUT"
+  printf "%sNothing was deleted. Run with --snapshot-prune to remove them.%s\n" \
     "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}"
+}
+
+##
+# Deletes the snapshot files no test resolved, printing each path as it goes.
+#
+# Refuses on a failing run: a test that never reached its assertion did not
+# resolve its snapshot either, so "unused" there means "not run". The full-run
+# rule is enforced earlier, in the parser, so this is never reached for a
+# --filter/--shard/--changed run.
+#
+# Only paths the collector produced are removed, one file at a time, each one
+# printed first and each checked to be a regular *.snapshot file: no glob of
+# this function's own making ever reaches rm.
+# Arguments: $@ - the test files of this run
+##
+function bashunit::snapshot::prune_unused() {
+  if [ "${_BASHUNIT_TESTS_FAILED:-0}" -gt 0 ]; then
+    printf "\n%sSnapshots were not pruned: the run has failing tests, so a%s\n" \
+      "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+    printf "%ssnapshot may be unresolved rather than unused.%s\n" \
+      "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+    return
+  fi
+
+  bashunit::snapshot::collect_unused "$@"
+
+  if [ "$_BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT" -eq 0 ]; then
+    printf "\n%sNo unused snapshots.%s\n" \
+      "${_BASHUNIT_COLOR_FAINT}" "${_BASHUNIT_COLOR_DEFAULT}"
+    return
+  fi
+
+  printf "\n%sDeleted %s unused snapshot(s):%s\n" \
+    "${_BASHUNIT_COLOR_SKIPPED}" "$_BASHUNIT_SNAPSHOT_UNUSED_COUNT_OUT" \
+    "${_BASHUNIT_COLOR_DEFAULT}"
+
+  local entry path
+  while IFS= read -r entry; do
+    # The collector indents its lines for the report; the path is what is left.
+    path="${entry#"${entry%%[![:space:]]*}"}"
+    [ -n "$path" ] || continue
+    case "$path" in
+    *.snapshot) ;;
+    *) continue ;;
+    esac
+    [ -f "$path" ] || continue
+
+    printf "  %s\n" "$path"
+    rm -f "$path"
+  done <<EOF
+$_BASHUNIT_SNAPSHOT_UNUSED_OUT
+EOF
 }
 
 # The shared tail of both snapshot assertions: record a first-time snapshot,
@@ -175,7 +246,12 @@ function bashunit::snapshot::assert() {
   local snapshot_file="$2"
   local test_fn="$3"
 
-  if bashunit::env::is_snapshot_report_unused_enabled; then
+  # Recording the resolved snapshot is what both --snapshot-report-unused and
+  # --snapshot-prune subtract from the files on disk. Pruning without it would
+  # find every snapshot "unused" and delete the lot -- so the two flags must
+  # gate this identically.
+  if bashunit::env::is_snapshot_report_unused_enabled ||
+    bashunit::env::is_snapshot_prune_enabled; then
     printf '%s\n' "$snapshot_file" >>"${SNAPSHOT_USED_OUTPUT_PATH:-/dev/null}" 2>/dev/null || true
   fi
 

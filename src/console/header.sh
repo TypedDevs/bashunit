@@ -157,6 +157,7 @@ Options:
   --snapshot-update           Rewrite existing snapshots from the actual value (combine with --filter)
   --no-snapshot-create        Fail on a missing snapshot instead of recording it (for CI)
   --snapshot-report-unused    List snapshot files no test resolved (full runs only, deletes nothing)
+  --snapshot-prune            Delete the snapshot files no test resolved (full runs only)
   -vvv, --verbose             Show execution details
   --debug [file]              Enable shell debug mode
   --no-output                 Suppress all output

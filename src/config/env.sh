@@ -255,6 +255,7 @@ _BASHUNIT_DEFAULT_SHOW_OUTPUT_ON_FAILURE="true"
 _BASHUNIT_DEFAULT_NO_PROGRESS="false"
 _BASHUNIT_DEFAULT_OUTPUT_FORMAT=""
 _BASHUNIT_DEFAULT_FAIL_ON_RISKY="false"
+_BASHUNIT_DEFAULT_SNAPSHOT_PRUNE="false"
 _BASHUNIT_DEFAULT_BENCH_BASELINE=""
 _BASHUNIT_DEFAULT_BENCH_BASELINE_TOLERANCE="10"
 _BASHUNIT_DEFAULT_BENCH_BASELINE_UPDATE=""
@@ -328,6 +329,7 @@ _BASHUNIT_DEFAULT_SNAPSHOT_REPORT_UNUSED="false"
 : "${BASHUNIT_FAIL_ON_RISKY:=${FAIL_ON_RISKY:=$_BASHUNIT_DEFAULT_FAIL_ON_RISKY}}"
 # No unprefixed alias on purpose: SANDBOX is generic enough that an unrelated
 # tool exporting it would silently constrain the suite (#866).
+: "${BASHUNIT_SNAPSHOT_PRUNE:=$_BASHUNIT_DEFAULT_SNAPSHOT_PRUNE}"
 : "${BASHUNIT_BENCH_BASELINE:=$_BASHUNIT_DEFAULT_BENCH_BASELINE}"
 : "${BASHUNIT_BENCH_BASELINE_TOLERANCE:=$_BASHUNIT_DEFAULT_BENCH_BASELINE_TOLERANCE}"
 : "${BASHUNIT_BENCH_BASELINE_UPDATE:=$_BASHUNIT_DEFAULT_BENCH_BASELINE_UPDATE}"
@@ -685,6 +687,10 @@ function bashunit::env::is_machine_output_enabled() {
   tap | json | junit) return 0 ;;
   esac
   return 1
+}
+
+function bashunit::env::is_snapshot_prune_enabled() {
+  [ "${BASHUNIT_SNAPSHOT_PRUNE:-false}" = "true" ]
 }
 
 function bashunit::env::is_snapshot_report_unused_enabled() {

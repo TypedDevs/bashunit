@@ -169,7 +169,7 @@ test orphans its snapshot: nothing reads it, nothing reports it, and it stays on
 ```
 Unused snapshots (1), no test resolved them:
   tests/snapshots/header_test_sh.test_old_name.snapshot
-Nothing was deleted. Delete them yourself once you have checked the tests are gone.
+Nothing was deleted. Run with --snapshot-prune to remove them.
 ```
 
 It never deletes anything — a snapshot removed by mistake is re-recorded on the next run
@@ -177,6 +177,34 @@ and never fails again, so an automatic cleanup could quietly turn a real asserti
 rubber stamp. Only snapshots belonging to the test files of the run are considered, and
 the flag is refused with `--filter`, `--tag`, `--exclude-tag`, `--shard` and
 `--rerun-failed`, whose partial runs would report live files as unused.
+
+### Deleting them
+
+`--snapshot-prune` deletes exactly the files the report lists, printing each
+path as it goes:
+
+```bash
+./bashunit --snapshot-prune tests/
+```
+```
+Deleted 1 unused snapshot(s):
+  tests/snapshots/header_test_sh.test_old_name.snapshot
+```
+
+Two guards, both about the same risk — deleting a snapshot that was merely not
+reached:
+
+- **Full runs only.** `--filter`, `--tag`, `--exclude-tag`, `--shard`,
+  `--rerun-failed` and `--changed` run a subset, so the snapshots of the tests
+  they skipped would look unused. Combining them exits non-zero **before**
+  running anything.
+- **Not on a failing run.** A test that stopped at an earlier assertion never
+  resolved its snapshot either, so "unused" there can mean "not run". Pruning
+  says so and deletes nothing.
+
+`--snapshot-update` and `--snapshot-prune` compose: update rewrites what the
+tests resolved, prune removes what nothing resolved, and the two sets are
+disjoint by construction.
 
 ## Snapshots in CI
 

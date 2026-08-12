@@ -439,6 +439,15 @@ nothing.
 
 Similar as using `--snapshot-report-unused` option on the [command line](/command-line#snapshot-report-unused).
 
+## Snapshot prune
+
+> `BASHUNIT_SNAPSHOT_PRUNE=true|false`
+
+Delete the snapshot files no test resolved. `false` by default. Full runs only,
+and never on a run with failures.
+
+Similar as using `--snapshot-prune` option on the [command line](/command-line#snapshot-prune).
+
 ## Rerun failed
 
 > `BASHUNIT_RERUN_FAILED=true|false`
