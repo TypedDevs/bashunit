@@ -24,7 +24,7 @@ _BASHUNIT_COMPLETIONS_TEST_OPTS="--assert --boot --changed --coverage --coverage
 --report-json --report-junit --report-md --report-tap --rerun-failed --retry --run-all \
 --sandbox --sandbox-allow \
 --seed --shard --show-incomplete --show-output --show-skipped --simple \
---skip-env-file --snapshot-report-unused --snapshot-update \
+--skip-env-file --snapshot-prune --snapshot-report-unused --snapshot-update \
 --stop-on-failure --strict --suite --tag \
 --test-timeout --verbose \
 --watch -R -S -a -e -f -h -j -l -p -r -s -vvv -w"

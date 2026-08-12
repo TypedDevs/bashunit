@@ -192,6 +192,12 @@ function bashunit::main::exec_tests() {
     bashunit::snapshot::report_unused ${test_files[@]+"${test_files[@]}"}
   fi
 
+  # In the parent, after the parallel results were aggregated: each worker
+  # resolves its own snapshots, so the used-set only exists here (#1004).
+  if bashunit::env::is_snapshot_prune_enabled; then
+    bashunit::snapshot::prune_unused ${test_files[@]+"${test_files[@]}"}
+  fi
+
   # To stdout, not to a file: GitHub reads workflow commands from the job log.
   # After load_spooled so a --parallel run annotates the rows its workers
   # spooled, which the parent would otherwise never have seen (#1004).

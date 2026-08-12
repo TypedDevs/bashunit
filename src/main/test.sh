@@ -296,6 +296,10 @@ function bashunit::main::cmd_test() {
       BASHUNIT_SNAPSHOT_CREATE=false
       export -n BASHUNIT_SNAPSHOT_CREATE
       ;;
+    --snapshot-prune)
+      BASHUNIT_SNAPSHOT_PRUNE=true
+      export -n BASHUNIT_SNAPSHOT_PRUNE
+      ;;
     --snapshot-report-unused)
       BASHUNIT_SNAPSHOT_REPORT_UNUSED=true
       export -n BASHUNIT_SNAPSHOT_REPORT_UNUSED
@@ -606,7 +610,12 @@ function bashunit::main::cmd_test() {
   # A run that executes a subset resolves a subset of the snapshots, so every
   # snapshot the subset skipped would be reported as unused. Refusing beats
   # printing a list that invites deleting live files.
-  if bashunit::env::is_snapshot_report_unused_enabled; then
+  if bashunit::env::is_snapshot_report_unused_enabled ||
+    bashunit::env::is_snapshot_prune_enabled; then
+    local _snapshot_flag="--snapshot-report-unused"
+    if bashunit::env::is_snapshot_prune_enabled; then
+      _snapshot_flag="--snapshot-prune"
+    fi
     local _partial_flag=""
     [ -n "$filter" ] && _partial_flag="--filter"
     [ -n "$tag_filter" ] && _partial_flag="--tag"
@@ -615,8 +624,9 @@ function bashunit::main::cmd_test() {
     bashunit::rerun::is_enabled && _partial_flag="--rerun-failed"
     bashunit::env::is_changed_enabled && _partial_flag="--changed"
     if [ -n "$_partial_flag" ]; then
-      printf "%sError: --snapshot-report-unused needs a full run; %s only runs a subset.%s\n" \
-        "${_BASHUNIT_COLOR_FAILED}" "$_partial_flag" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+      printf "%sError: %s needs a full run; %s only runs a subset.%s\n" \
+        "${_BASHUNIT_COLOR_FAILED}" "$_snapshot_flag" "$_partial_flag" \
+        "${_BASHUNIT_COLOR_DEFAULT}" >&2
       exit 1
     fi
   fi
