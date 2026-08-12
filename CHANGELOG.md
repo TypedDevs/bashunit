@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- `bashunit::mock_sequence <cmd> <answer>…` answers each call with the next entry, so retry loops and polling can be doubled without a hand-rolled counter file; the last entry repeats once exhausted, and a spy over the sequence still records every call (#1023)
+- `assert_have_never_been_called <cmd>` asserts a spied command never ran, printing the recorded calls when it did (#1023)
 - `assert_json_key_not_exists` checks that a JSON path is absent, while `assert_json_length` checks the size of an array, object, or string (#1025)
 - `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, suppressing every console rendering so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
 - `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return`, whose missing `return` silently kept the body running (#1019)

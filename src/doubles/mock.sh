@@ -23,6 +23,9 @@ function bashunit::unmock() {
       variable="$(bashunit::helper::normalize_variable_name "$command")"
       local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
       local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+      local sequence_file_var="_BASHUNIT_MOCK_${variable}_SEQUENCE_FILE"
+      [ -f "${!sequence_file_var-}" ] && rm -f "${!sequence_file_var}"
+      unset "$sequence_file_var"
       [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
       [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
       unset "$times_file_var"
@@ -62,3 +65,87 @@ function bashunit::mock() {
   _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
 
+
+##
+# Replaces a command with a sequence of answers: each call consumes the next
+# entry, and the last entry repeats once the sequence is exhausted (so a loop
+# that runs one iteration more than the test planned keeps the final answer
+# rather than falling off a cliff).
+#
+# Entries follow the same convention as bashunit::mock -- an all-digits entry
+# is an exit code, anything else is a body -- which is also what keeps the
+# generated `return N` free of anything but a number.
+#
+# Defining a sequence over an existing spy keeps the recording: the generated
+# body calls the same recorder the spy's does.
+# Arguments: $1 - command, $@ - the answers, in order
+##
+function bashunit::mock_sequence() {
+  local command=$1
+  shift
+
+  if [ $# -eq 0 ]; then
+    bashunit::assert::usage_error_detail "bashunit::mock_sequence" \
+      "expects at least one answer after the command"
+    return 2
+  fi
+
+  local variable
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
+
+  local test_id="${BASHUNIT_CURRENT_TEST_ID:-global}"
+  local step_file
+  step_file=$(bashunit::temp_file "${test_id}_${variable}_sequence")
+  builtin echo 1 >"$step_file"
+  export "_BASHUNIT_MOCK_${variable}_SEQUENCE_FILE"="$step_file"
+
+  local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
+  local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local record=""
+  if [ -n "${!times_file_var-}" ]; then
+    record="bashunit::doubles::record_call '${!params_file_var}' '${!times_file_var}' \"\$@\""
+  fi
+
+  local total=$#
+  local index=0
+  local arms=""
+  local entry body
+  for entry in "$@"; do
+    index=$((index + 1))
+    if bashunit::doubles::is_exit_code "$entry"; then
+      body="return $entry"
+    else
+      body="$entry \"\$@\""
+    fi
+    # The last arm is the default one, which is what makes the final answer
+    # repeat instead of the sequence running out.
+    if [ "$index" -eq "$total" ]; then
+      arms="$arms
+    *) $body ;;"
+    else
+      arms="$arms
+    $index) $body ;;"
+    fi
+  done
+
+  eval "function $command() {
+    $record
+    local _step=1
+    read -r _step < '$step_file' 2>/dev/null || _step=1
+    case \"\$_step\" in '' | *[!0-9]*) _step=1 ;; esac
+    if [ \"\$_step\" -lt $total ]; then
+      builtin echo \"\$((_step + 1))\" > '$step_file'
+    fi
+    case \"\$_step\" in$arms
+    esac
+  }"
+
+  export -f "${command?}"
+  # The recorder travels with the double: an exported spy that reaches an
+  # external script (bash 4+) would otherwise call a function the child has
+  # never heard of.
+  export -f bashunit::doubles::record_call
+
+  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+}

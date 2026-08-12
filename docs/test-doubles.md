@@ -126,6 +126,56 @@ test_example() {
 ```
 :::
 
+## bashunit::mock_sequence
+> `bashunit::mock_sequence "command" <answer> [<answer>…]`
+
+A `bashunit::mock` gives the same answer forever, which cannot express the code
+that most needs a double: retry loops, polling and backoff. A sequence answers
+each call with the next entry.
+
+Entries follow the same rule as `bashunit::mock`: an all-digits entry is an
+**exit code**, anything else is a **body**, and the two can be mixed.
+
+::: code-group
+```bash [Example]
+function test_retries_until_the_service_answers() {
+  bashunit::mock_sequence curl 1 1 0
+
+  assert_successful_code "$(fetch_with_retries 5)"
+}
+
+function test_mixes_codes_and_bodies() {
+  bashunit::mock_sequence status 1 "echo ready"
+
+  assert_general_error "$(status)"
+  assert_same "ready" "$(status)"
+}
+```
+:::
+
+The **last entry repeats** once the sequence is exhausted, so a loop that runs
+one iteration more than the test planned keeps the final answer instead of
+falling off a cliff:
+
+```bash
+bashunit::mock_sequence flaky 1 0
+flaky   # 1
+flaky   # 0
+flaky   # 0, and so on
+```
+
+Sequences live in the same registry as every other double, so they are undone
+after the test and never leak into the next one — including under `--parallel`.
+Declaring a sequence over a [spy](#bashunit-spy) keeps the recording, so the
+calls can still be asserted:
+
+```bash
+bashunit::spy curl
+bashunit::mock_sequence curl 1 0
+
+assert_have_been_called_times 2 curl
+```
+
 ## bashunit::unmock
 > `bashunit::unmock "function"`
 
@@ -416,6 +466,37 @@ function test_failure() {
 }
 ```
 :::
+
+## assert_have_never_been_called
+> `assert_have_never_been_called "command"`
+
+Asserts a spied command was **never** called. Same check as
+`assert_have_been_called_times 0`, written the way the case that matters reads:
+a destructive command that must not run.
+
+::: code-group
+```bash [Example]
+function test_a_dry_run_deletes_nothing() {
+  bashunit::spy rm
+
+  deploy --dry-run
+
+  assert_have_never_been_called rm
+}
+```
+```[Output]
+✗ Failed: A dry run deletes nothing
+    Expected 'rm'
+    to have never been called
+    actual '1 time'
+    Recorded calls to 'rm' (1):
+      1: -rf /tmp/build
+```
+:::
+
+Failing prints the recorded calls, so the report says *what* ran rather than
+only that something did. As with every assertion in this family, a command that
+was never spied fails the assertion instead of passing vacuously.
 
 ## assert_not_called
 > `assert_not_called "spy"`
