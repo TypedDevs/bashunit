@@ -142,6 +142,10 @@ function bashunit::mock_sequence() {
   }"
 
   export -f "${command?}"
+  # The recorder travels with the double: an exported spy that reaches an
+  # external script (bash 4+) would otherwise call a function the child has
+  # never heard of.
+  export -f bashunit::doubles::record_call
 
   _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
 }
