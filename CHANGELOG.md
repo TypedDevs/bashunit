@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Coverage counted a statement whose line ends in `)` as a `case` arm, so `x=$(foo)` was dropped from the denominator while `x=$(printf '%s\n')` was not — an accident of the pre-#1005 regex, where a backslash inside a bracket expression suppressed the match. A `)` now only closes an arm when no `(` opened earlier on the line, which recovers 456 executable lines of this repo's own `src/` and correctly stops counting `case` arms that contain a backslash. **Coverage percentages move in both directions per file; the denominator is the honest one** (#1055)
+
 ### Changed
 - Performance: `--coverage` rejects a line from an untracked file inside the DEBUG trap instead of inside the recorder it used to call. A run where nothing matches the coverage paths went from 2609ms to 497ms on the same test file — the no-coverage baseline is 480ms — and a run tracking `src` from 9604ms to 7624ms (#1060)
 - Performance: the coverage hit data is grouped once per run instead of scanned once per file. Counting a file's hits was `grep | cut | sort | uniq -c` over the whole data file — 4 forks and a full scan per tracked file — and every report section repeated it; one awk pass now writes a small block per file, measured 1294ms to 203ms for 121 files and 10,890 records (6.4x), with byte-identical LCOV, Cobertura and text reports (#1057)
