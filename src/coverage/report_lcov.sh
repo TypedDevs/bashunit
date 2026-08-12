@@ -68,25 +68,11 @@ function bashunit::coverage::report_lcov() {
       echo "BRF:$br_total"
       echo "BRH:$br_hit"
 
-      local lineno=0 executable=0 hit=0 line
-      local -a lcov_lines=()
-      local _lli=0 _ll
-      while IFS= read -r _ll || [ -n "$_ll" ]; do
-        lcov_lines[_lli]="$_ll"
-        ((++_lli))
-      done <"$file"
-
-      for line in "${lcov_lines[@]}"; do
-        ((++lineno))
-        bashunit::coverage::is_executable_line "$line" "$lineno" || continue
-        ((++executable))
-        local lh="${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}"
-        [ "$lh" -gt 0 ] && ((++hit))
-        echo "DA:${lineno},${lh}"
-      done
-
-      echo "LF:$executable"
-      echo "LH:$hit"
+      # One awk pass for the whole file instead of a Bash loop over every
+      # line calling the classifier per line: an 18,000-line file scan written
+      # as a Bash loop is the shape perf-fork-budget.md says loses to awk
+      # (#1059). One fork per file, not per line.
+      bashunit::coverage::awk_lcov_lines "$file"
       echo "end_of_record"
     done < <(bashunit::coverage::get_tracked_files)
   } >"$output_file"
