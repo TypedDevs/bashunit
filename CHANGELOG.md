@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Performance: the coverage report's per-file lookup is flat instead of quadratic. The stats, tracked-file and path caches stored their entries in one string scanned with a leading-`*` glob, which on Bash 3.2 cost 0.38ms per lookup at 11 entries, 3.4ms at 40 and 26.7ms at 121; they now use the variable table, measured at 0.25ms at every size — 109x faster at 121 tracked files, with byte-identical reports (#1056)
+
 ### Added
 - `--snapshot-prune` deletes the snapshot files no test resolved, printing every path; like `--snapshot-report-unused` it is a full-run-only flag, and it additionally refuses to delete anything on a run with failures, where an unresolved snapshot only means the test never got there (#1030)
 - `bashunit bench --baseline <file>` fails a run when a benchmark is more than `--baseline-tolerance` percent (default 10) slower than the recorded run, comparing medians and printing a per-benchmark delta; `--baseline-update <file>` records the new reference, a new benchmark is reported rather than failed, and a missing or malformed baseline exits non-zero instead of quietly passing (#1029)

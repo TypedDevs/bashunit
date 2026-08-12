@@ -91,8 +91,11 @@ function bashunit::coverage::init() {
   _BASHUNIT_COVERAGE_BUFFER=""
   _BASHUNIT_COVERAGE_BUFFER_COUNT=0
   _BASHUNIT_COVERAGE_HITS_BUFFER=""
-  _BASHUNIT_COVERAGE_TRACK_CACHE=""
-  _BASHUNIT_COVERAGE_PATH_CACHE=""
+  # The lookups live in the variable table now, so clearing them means dropping
+  # their namespaces: a second run in the same shell must not inherit a
+  # tracking decision or a normalized path from the first.
+  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_TRACK_"
+  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_PATH_"
   _BASHUNIT_COVERAGE_IS_PARALLEL=""
   _BASHUNIT_COVERAGE_STATS_FILES=()
   _BASHUNIT_COVERAGE_STATS_EXEC=()
@@ -100,7 +103,7 @@ function bashunit::coverage::init() {
   _BASHUNIT_COVERAGE_STATS_PCT=()
   _BASHUNIT_COVERAGE_STATS_CLASS=()
   _BASHUNIT_COVERAGE_STATS_COUNT=0
-  _BASHUNIT_COVERAGE_STATS_LOOKUP=""
+  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_STATS_"
 
   _BASHUNIT_COVERAGE_ENGINE_RESOLVED=$(bashunit::coverage::resolve_engine)
 
