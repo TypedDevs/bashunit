@@ -51,7 +51,26 @@ function bashunit::coverage::enable_trap() {
 
   # Set DEBUG trap to record line execution
   # Use ${VAR:-} to handle unset variables when set -u is active (in subshells)
-  trap 'bashunit::coverage::record_line "${BASH_SOURCE[0]:-}" "${LINENO:-}"' DEBUG
+  #
+  # The `case` runs inside the trap, before any function call: a line from a
+  # file no coverage path can admit is rejected there instead of paying a call
+  # into record_line to be rejected inside it (#1060).
+  # shellcheck disable=SC2064  # the body is built here on purpose: what must
+  # survive to trap time is the ${BASH_SOURCE}/${LINENO} inside the
+  # single-quoted string, and the glob has to be baked in as syntax.
+  local record='bashunit::coverage::record_line "${BASH_SOURCE[0]:-}" "${LINENO:-}"'
+  if [ -n "${_BASHUNIT_COVERAGE_TRAP_GLOB:-}" ]; then
+    # The alternation has to reach the trap as syntax, not as an expanded
+    # variable: `case $x in $pattern)` does not split a `|` that arrived
+    # through a parameter.
+    local guarded='case "${BASH_SOURCE[0]:-}" in '
+    guarded="$guarded${_BASHUNIT_COVERAGE_TRAP_GLOB}) $record ;; esac"
+    # shellcheck disable=SC2064
+    trap "$guarded" DEBUG
+  else
+    # shellcheck disable=SC2064
+    trap "$record" DEBUG
+  fi
 }
 
 function bashunit::coverage::disable_trap() {
