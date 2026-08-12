@@ -340,3 +340,75 @@ function test_stats_to_slots_leaves_the_slots_empty_for_no_durations() {
 
   assert_empty "$_BASHUNIT_BENCH_STATS_MIN_OUT"
 }
+
+function test_baseline_delta_reports_a_signed_percentage() {
+  local delta verdict
+  IFS=$'\t' read -r delta verdict < <(bashunit::benchmark::baseline_delta 100 120 10)
+
+  assert_same "+20.0%" "$delta"
+  assert_same "yes" "$verdict"
+}
+
+function test_baseline_delta_does_not_flag_an_improvement() {
+  local delta verdict
+  IFS=$'\t' read -r delta verdict < <(bashunit::benchmark::baseline_delta 100 80 10)
+
+  assert_same "-20.0%" "$delta"
+  assert_same "no" "$verdict"
+}
+
+function test_baseline_delta_allows_a_regression_inside_the_tolerance() {
+  local delta verdict
+  IFS=$'\t' read -r delta verdict < <(bashunit::benchmark::baseline_delta 100 109 10)
+
+  assert_same "no" "$verdict"
+}
+
+# Dividing by a baseline of zero would report every run as an infinite
+# regression; there is nothing to compare against, so the run is not gated.
+function test_baseline_delta_reports_an_unusable_baseline_as_not_available() {
+  local delta verdict
+  IFS=$'\t' read -r delta verdict < <(bashunit::benchmark::baseline_delta 0 50 10)
+
+  assert_same "n/a" "$delta"
+  assert_same "no" "$verdict"
+}
+
+function test_baseline_delta_keeps_a_dot_decimal_separator_in_any_locale() {
+  local delta verdict
+  IFS=$'\t' read -r delta verdict < <(
+    LC_ALL=es_ES.UTF-8 LC_NUMERIC=es_ES.UTF-8 bashunit::benchmark::baseline_delta 100 112 10
+  )
+
+  assert_same "+12.0%" "$delta"
+}
+
+function test_baseline_load_reads_the_medians_of_a_report() {
+  local file
+  file="$(bashunit::temp_file)"
+  cat >"$file" <<'JSON'
+{
+  "benchmarks": [
+    { "function": "bench_a", "median_ms": 12.500 },
+    { "function": "bench_b", "median_ms": 3.000 }
+  ]
+}
+JSON
+
+  bashunit::benchmark::baseline_load "$file"
+
+  assert_same "2" "${#_BASHUNIT_BASELINE_NAMES[@]}"
+  bashunit::benchmark::baseline_median_of "bench_b"
+  assert_same "3.000" "$_BASHUNIT_BASELINE_MEDIAN_OUT"
+}
+
+function test_baseline_median_of_returns_failure_for_an_unknown_benchmark() {
+  _BASHUNIT_BASELINE_NAMES=("bench_a")
+  _BASHUNIT_BASELINE_MEDIANS=("1")
+
+  local ec=0
+  bashunit::benchmark::baseline_median_of "bench_missing" || ec=$?
+
+  assert_equals "1" "$ec"
+  assert_empty "$_BASHUNIT_BASELINE_MEDIAN_OUT"
+}

@@ -67,6 +67,19 @@ Empty by default, which is what keeps a bench run printing only its table.
 Same as the `--report-json` / `--report-junit` options of
 [`bashunit bench`](/benchmarks#machine-readable-reports).
 
+## Benchmark baseline
+
+> `BASHUNIT_BENCH_BASELINE=file`
+> `BASHUNIT_BENCH_BASELINE_TOLERANCE=percentage`
+> `BASHUNIT_BENCH_BASELINE_UPDATE=file`
+
+Compare a `bashunit bench` run against a previous `--report-json` result and
+fail when a benchmark is more than `TOLERANCE` percent slower (default `10`).
+`BASHUNIT_BENCH_BASELINE_UPDATE` records the current run as the new baseline.
+
+Same as the `--baseline` options of
+[`bashunit bench`](/benchmarks#failing-on-a-regression).
+
 ## Sandbox
 
 > `BASHUNIT_SANDBOX=true|false`

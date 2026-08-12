@@ -173,6 +173,53 @@ The JUnit file reports one `<testcase>` per benchmark, with a `<failure
 type="PerformanceRegression">` for each one over its `@max_ms`, so a CI test
 reporter shows benchmarks next to tests.
 
+### Failing on a regression
+
+`@max_ms` is an absolute ceiling. To survive the slowest CI runner it has to be
+loose, so it only catches catastrophes — a 30% slowdown that stays under the
+ceiling passes. `--baseline` compares this run against a previous one instead:
+
+::: code-group
+```bash [Record]
+./bashunit bench --baseline-update bench-baseline.json
+```
+```bash [Compare]
+./bashunit bench --baseline bench-baseline.json
+```
+```bash [Stricter gate]
+./bashunit bench --baseline bench-baseline.json --baseline-tolerance 5
+```
+```[Output]
+Baseline comparison (median ms, tolerance 10%)
+================================================================================
+Name                                     Baseline      Current      Delta
+bench_string_operations                    12.000       12.400      +3.3%
+bench_api_call                             45.000       58.000     +28.9%
+bench_added_later                               -        7.000        new
+bench_deleted                               3.000            -    removed
+
+Performance regression in 1 benchmark(s)
+```
+:::
+
+- The run **exits non-zero** when a benchmark is slower than
+  `baseline × (1 + tolerance/100)`. The default tolerance is 10 percent.
+- An improvement never fails the run, and the delta is printed either way.
+- A benchmark the baseline does not know is reported as **new**, not as a
+  failure; one only in the baseline is reported as **removed**. Neither is
+  fatal: the commit that deletes a benchmark must not fail on its absence.
+- A missing or malformed baseline file **exits non-zero**. A gate that quietly
+  compares against nothing would report every run green, which is worse than
+  no gate at all.
+
+The comparison uses the **median**, not the average: one descheduled iteration
+on a shared runner moves the mean far more than the middle value, and a gate
+that cries wolf gets disabled.
+
+The baseline file is simply the [`--report-json`](#machine-readable-reports)
+document of an earlier run, so a CI job can publish today's run as an artifact
+and the next one can compare against it.
+
 ## Status Column
 
 The status column indicates threshold results:
