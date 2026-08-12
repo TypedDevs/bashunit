@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_json_key_not_exists` checks that a JSON path is absent, while `assert_json_length` checks the size of an array, object, or string (#1025)
 - `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, suppressing every console rendering so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
 - `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return`, whose missing `return` silently kept the body running (#1019)
 - Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations override the run-wide `--test-timeout` and `--retry` in both directions; `@timeout 0` opts one test out of a global timeout and a malformed value aborts the run (#1020)

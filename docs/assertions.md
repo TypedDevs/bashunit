@@ -38,7 +38,7 @@ trailing label override, so `assert_contains "zzz" "abc" "my label"` searches
 | **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
 | **Directories** | [assert_directory_exists](#assert-directory-exists) · [assert_directory_not_exists](#assert-directory-not-exists) · [assert_is_directory](#assert-is-directory) · [assert_is_directory_empty](#assert-is-directory-empty) · [assert_is_directory_not_empty](#assert-is-directory-not-empty) · [assert_is_directory_readable](#assert-is-directory-readable) · [assert_is_directory_not_readable](#assert-is-directory-not-readable) · [assert_is_directory_writable](#assert-is-directory-writable) · [assert_is_directory_not_writable](#assert-is-directory-not-writable) |
 | **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
-| **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) |
+| **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) · [assert_json_key_not_exists](#assert-json-key-not-exists) · [assert_json_length](#assert-json-length) |
 | **Duration** | [assert_duration](#assert-duration) · [assert_duration_less_than](#assert-duration-less-than) · [assert_duration_greater_than](#assert-duration-greater-than) |
 | **Snapshots** | [assert_match_snapshot](#assert-match-snapshot) · [assert_match_named_snapshot](#assert-match-named-snapshot) · [assert_match_snapshot_ignore_colors](#assert-match-snapshot-ignore-colors) · [assert_match_named_snapshot_ignore_colors](#assert-match-named-snapshot-ignore-colors) |
 | **Spies** | [assert_have_been_called](#assert-have-been-called) · [assert_not_called](#assert-not-called) · [assert_have_been_called_with](#assert-have-been-called-with) · [assert_have_been_called_with_any](#assert-have-been-called-with-any) · [assert_have_been_called_with_args](#assert-have-been-called-with-args) · [assert_have_been_called_nth_with](#assert-have-been-called-nth-with) · [assert_have_been_called_times](#assert-have-been-called-times) |
@@ -1730,6 +1730,25 @@ function test_failure() {
 ```
 :::
 
+## assert_json_key_not_exists
+> `assert_json_key_not_exists "key" "json"`
+
+Reports an error if `key` exists in the JSON string. Uses [jq](https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+A key with a `null` value still exists and makes this assertion fail. Invalid JSON also fails the assertion.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_key_not_exists ".user.password" '{"user":{"name":"bashunit"}}'
+}
+
+function test_failure() {
+  assert_json_key_not_exists ".user.password" '{"user":{"password":null}}'
+}
+```
+:::
+
 ## assert_json_equals
 > `assert_json_equals "expected" "actual"`
 
@@ -1743,6 +1762,25 @@ function test_success() {
 
 function test_failure() {
   assert_json_equals '{"a":1}' '{"a":2}'
+}
+```
+:::
+
+## assert_json_length
+> `assert_json_length "expected" "key" "json"`
+
+Reports an error if the array, object, or string at `key` does not have the expected length. Arrays count elements, objects count key-value pairs, and strings count Unicode codepoints, following `jq`'s `length` behavior. A missing path, unsupported value type, invalid JSON, or non-numeric expected length fails instead of being compared as empty or zero. Requires `jq` to be installed; if missing the test is skipped.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_json_length 3 ".items" '{"items":[1,2,3]}'
+  assert_json_length 2 ".metadata" '{"metadata":{"page":1,"total":3}}'
+}
+
+function test_failure() {
+  assert_json_length 2 ".items" '{"items":[1,2,3]}'
+  assert_json_length 0 ".missing" '{"items":[]}'
 }
 ```
 :::
