@@ -198,7 +198,9 @@ Notes:
 - `bashunit::unmock curl` inside a sandboxed test puts the block back, rather
   than handing the test the real command.
 - A command invoked by **absolute path** (`/usr/bin/curl`) is not blocked, and
-  neither is one that appears in `PATH` after the run started. See
+  neither is one that appears in `PATH` after the run started. On Windows a
+  command reached from a **child process** (`bash -c 'curl …'`) is not blocked
+  either, because narrowing `PATH` is not workable under Git Bash. See
   [ADR-012](https://github.com/TypedDevs/bashunit/blob/main/adrs/adr-012-sandbox-mode.md)
   for the mechanism and what it cannot see.
 - Off by default. Enable it per run, or with `BASHUNIT_SANDBOX=true` in

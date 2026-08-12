@@ -135,6 +135,13 @@ function bashunit::sandbox::prepare() {
   _BASHUNIT_SANDBOX_DIR="$dir"
   export _BASHUNIT_SANDBOX_DIR
 
+  # Layer 2 only: activate() explains why Windows keeps its PATH. The shims
+  # below are layer 1 and are built on every platform.
+  local link_allowed=true
+  if bashunit::check_os::is_windows; then
+    link_allowed=false
+  fi
+
   local entry name target
   local path_dir
   local IFS=':'
@@ -142,11 +149,17 @@ function bashunit::sandbox::prepare() {
     [ -n "$path_dir" ] || continue
     [ -d "$path_dir" ] || continue
     for entry in "$path_dir"/*; do
-      [ -f "$entry" ] || continue
-      [ -x "$entry" ] || continue
+      # Two stat calls per PATH entry is the cost of this walk, and Windows
+      # pays it dearly (thousands of entries on a runner). There it only needs
+      # the names -- nothing is linked -- and shimming a name that turns out
+      # not to be executable blocks nothing that would have run anyway.
+      if [ "$link_allowed" = true ]; then
+        [ -f "$entry" ] || continue
+        [ -x "$entry" ] || continue
+      fi
       name=${entry##*/}
       if bashunit::sandbox::is_allowed "$name"; then
-        if [ ! -e "$dir/$name" ]; then
+        if [ "$link_allowed" = true ] && [ ! -e "$dir/$name" ]; then
           ln -s "$entry" "$dir/$name" 2>/dev/null || true
         fi
         continue
@@ -154,6 +167,8 @@ function bashunit::sandbox::prepare() {
       bashunit::sandbox::shim "$name"
     done
   done
+
+  [ "$link_allowed" = true ] || return 0
 
   # An allowed command that PATH does not currently reach (a shell builtin, or
   # one this machine simply lacks) needs no link; `command -v` settles it
@@ -175,6 +190,15 @@ function bashunit::sandbox::prepare() {
 function bashunit::sandbox::activate() {
   bashunit::env::is_sandbox_enabled || return 0
   [ -n "$_BASHUNIT_SANDBOX_DIR" ] || return 0
+
+  # Not on Windows. Git Bash has no usable symlinks, so the allowed commands
+  # would have to be copies -- and Windows will not execute a PE image whose
+  # name lost its .exe, so narrowing PATH there breaks the allowed commands
+  # instead of the blocked ones. Layer 1 (the function shims) still applies,
+  # so a direct call is caught; only a call from a child process is not.
+  if bashunit::check_os::is_windows; then
+    return 0
+  fi
 
   PATH="$_BASHUNIT_SANDBOX_DIR"
   export PATH

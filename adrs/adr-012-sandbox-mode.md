@@ -75,6 +75,10 @@ result does.
 * A command invoked by absolute path (`/usr/bin/curl`) is not blocked. Neither
   mechanism can see it; documented rather than pretended away.
 * A command that appears in `PATH` only after the run started is not shimmed.
+* Layer 2 is skipped on Windows. Git Bash has no usable symlinks, and Windows
+  refuses to execute a PE image whose name lost its `.exe`, so a narrowed
+  `PATH` there breaks the *allowed* commands rather than the blocked ones.
+  Direct calls are still caught by layer 1; a call from a child process is not.
 * The allowlist is a baseline of what bashunit itself needs, so a test using
   `sed` directly is not blocked. The goal is to constrain the test body's
   reach to *services*, not to sandbox coreutils away from it.
