@@ -170,6 +170,7 @@ substr($0, 1, 1) == fsc {
 # before aggregate_parallel, from the main shell.
 ##
 function bashunit::coverage::finalize() {
+  bashunit::coverage::invalidate_hits_aggregation
   if [ "${_BASHUNIT_COVERAGE_ENGINE_RESOLVED:-}" != "xtrace" ]; then
     return 0
   fi
@@ -290,6 +291,7 @@ function bashunit::coverage::_resolve_output_files() {
 }
 
 function bashunit::coverage::flush_buffer() {
+  bashunit::coverage::invalidate_hits_aggregation
   [ -z "$_BASHUNIT_COVERAGE_BUFFER" ] && return 0
 
   bashunit::coverage::_resolve_output_files
@@ -312,6 +314,7 @@ function bashunit::coverage::flush_buffer() {
 }
 
 function bashunit::coverage::aggregate_parallel() {
+  bashunit::coverage::invalidate_hits_aggregation
   # Aggregate per-process coverage files created during parallel execution
   local base_file="$_BASHUNIT_COVERAGE_DATA_FILE"
   local tracked_base="$_BASHUNIT_COVERAGE_TRACKED_FILES"

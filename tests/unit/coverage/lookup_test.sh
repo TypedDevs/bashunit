@@ -72,3 +72,79 @@ function test_resetting_a_namespace_leaves_the_coverage_config_alone() {
 
   assert_same "/tmp/files.dat" "$kept"
 }
+
+# --- one-pass hit aggregation (#1057) ---------------------------------------
+
+function hits_fixture() { # $1 = work dir
+  _BASHUNIT_COVERAGE_DATA_FILE="$1/coverage.dat"
+  mkdir -p "$1"
+  {
+    printf '%s:2\n' "$1/a.sh"
+    printf '%s:2\n' "$1/a.sh"
+    printf '%s:5\n' "$1/a.sh"
+    printf '%s:9\n' "$1/b.sh"
+  } >"$_BASHUNIT_COVERAGE_DATA_FILE"
+  printf 'x\ny\nz\n' >"$1/a.sh"
+  printf 'x\ny\nz\n' >"$1/b.sh"
+  bashunit::coverage::invalidate_hits_aggregation
+}
+
+function test_the_aggregation_counts_repeated_events_per_line() {
+  local work
+  work="$(bashunit::temp_dir)/agg"
+  hits_fixture "$work"
+
+  bashunit::coverage::load_hits_by_line "$work/a.sh"
+
+  assert_same "2" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[2]:-}"
+  assert_same "1" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[5]:-}"
+}
+
+function test_each_file_gets_its_own_block() {
+  local work
+  work="$(bashunit::temp_dir)/agg2"
+  hits_fixture "$work"
+
+  bashunit::coverage::load_hits_by_line "$work/b.sh"
+
+  assert_same "1" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[9]:-}"
+  assert_empty "${_BASHUNIT_COVERAGE_HITS_BY_LINE[2]:-}"
+}
+
+function test_a_file_with_no_recorded_hits_loads_empty() {
+  local work
+  work="$(bashunit::temp_dir)/agg3"
+  hits_fixture "$work"
+  printf 'x\n' >"$work/c.sh"
+
+  bashunit::coverage::load_hits_by_line "$work/c.sh"
+
+  assert_empty "${_BASHUNIT_COVERAGE_HITS_BY_LINE[1]:-}"
+}
+
+# Reloading the same file is a no-op, which is what stops report_lcov and
+# compute_branch_hits from each paying for the same file.
+function test_loading_the_same_file_twice_keeps_the_data() {
+  local work
+  work="$(bashunit::temp_dir)/agg4"
+  hits_fixture "$work"
+
+  bashunit::coverage::load_hits_by_line "$work/a.sh"
+  bashunit::coverage::load_hits_by_line "$work/a.sh"
+
+  assert_same "2" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[2]:-}"
+}
+
+# New records after an aggregation must not be read through the old blocks.
+function test_invalidation_picks_up_records_written_later() {
+  local work
+  work="$(bashunit::temp_dir)/agg5"
+  hits_fixture "$work"
+  bashunit::coverage::load_hits_by_line "$work/a.sh"
+
+  printf '%s:7\n' "$work/a.sh" >>"$_BASHUNIT_COVERAGE_DATA_FILE"
+  bashunit::coverage::invalidate_hits_aggregation
+  bashunit::coverage::load_hits_by_line "$work/a.sh"
+
+  assert_same "1" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[7]:-}"
+}

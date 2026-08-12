@@ -212,6 +212,94 @@ function bashunit::coverage::_ends_with_continuation() {
 
 # Get all line hits for a file in one pass (performance optimization)
 # Output format: one "lineno:count" per line
+
+# The one-pass hit aggregation, and where each file's block lives.
+#
+# The capture path writes one record per execution event ("<file>:<line>"), so
+# counting used to mean scanning the whole data file per tracked file. One awk
+# pass now groups every record by file and line and writes a small block per
+# file, which the report reads directly: the data file is read once per run
+# instead of once per file.
+_BASHUNIT_COVERAGE_HITS_AGGREGATED=false
+_BASHUNIT_COVERAGE_HITS_FILE_OUT=""
+
+##
+# The path of the aggregated block for a source file, into
+# _BASHUNIT_COVERAGE_HITS_FILE_OUT (empty when coverage has no data dir).
+#
+# The name is the source path with everything but [a-zA-Z0-9] collapsed, the
+# same rule the lookup keys use; two sources can therefore share a block name,
+# so each block records the path it belongs to on its first line.
+# Arguments: $1 - source file
+##
+function bashunit::coverage::hits_file_for() {
+  _BASHUNIT_COVERAGE_HITS_FILE_OUT=""
+  [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ] || return 0
+
+  local dir="${_BASHUNIT_COVERAGE_DATA_FILE%/*}/hits"
+  local name="${1//[^a-zA-Z0-9]/_}"
+  _BASHUNIT_COVERAGE_HITS_FILE_OUT="$dir/$name"
+}
+
+##
+# Invalidates the aggregation. Called wherever the data file grows, so a report
+# never reads counts that predate the records it is reporting on.
+##
+function bashunit::coverage::invalidate_hits_aggregation() {
+  _BASHUNIT_COVERAGE_HITS_AGGREGATED=false
+  # The loaded array came from the old aggregation, so it is stale too.
+  _BASHUNIT_COVERAGE_HITS_BY_LINE_FILE=""
+}
+
+##
+# Groups the coverage data file by file and line, once per run.
+##
+function bashunit::coverage::ensure_hits_aggregated() {
+  if [ "$_BASHUNIT_COVERAGE_HITS_AGGREGATED" = true ]; then
+    return 0
+  fi
+  _BASHUNIT_COVERAGE_HITS_AGGREGATED=true
+
+  [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ] || return 0
+  [ -f "$_BASHUNIT_COVERAGE_DATA_FILE" ] || return 0
+
+  local dir="${_BASHUNIT_COVERAGE_DATA_FILE%/*}/hits"
+  rm -rf "$dir" 2>/dev/null || true
+  mkdir -p "$dir" 2>/dev/null || return 0
+
+  # The record is "<path>:<line>", and a path may itself contain a colon, so the
+  # split is on the LAST one. Each block is written sorted by line number, which
+  # is the order the reader wants and awk can produce here because the counts
+  # are only known at END.
+  env LC_ALL=C awk -v dir="$dir" '
+    {
+      i = length($0)
+      while (i > 0 && substr($0, i, 1) != ":") { i-- }
+      if (i == 0) { next }
+      path = substr($0, 1, i - 1)
+      line = substr($0, i + 1)
+      if (line !~ /^[0-9]+$/) { next }
+      key = path SUBSEP line
+      if (!(key in counts)) { order[++n] = key }
+      counts[key]++
+    }
+    END {
+      for (j = 1; j <= n; j++) {
+        split(order[j], parts, SUBSEP)
+        name = parts[1]
+        gsub(/[^a-zA-Z0-9]/, "_", name)
+        print parts[2], counts[order[j]] > (dir "/" name)
+      }
+      for (j = 1; j <= n; j++) {
+        split(order[j], parts, SUBSEP)
+        name = parts[1]
+        gsub(/[^a-zA-Z0-9]/, "_", name)
+        close(dir "/" name)
+      }
+    }
+  ' "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null || true
+}
+
 #
 # Bash's DEBUG trap attributes a multi-line statement's execution to the line
 # where the statement starts; backslash continuation lines never receive their
@@ -225,16 +313,28 @@ function bashunit::coverage::get_all_line_hits() {
     return
   fi
 
-  # Extract all lines for this file, count occurrences of each line number.
+  # Read this file's counts out of the per-file block the aggregation wrote.
+  # This used to be `grep | cut | sort | uniq -c` over the WHOLE data file, run
+  # once per tracked file: 4 forks and a full scan each, so 484 forks and 121
+  # scans at 121 files (#1057). The aggregation is one awk pass for the run,
+  # triggered by load_hits_by_line in the parent shell; a direct caller of this
+  # function (a unit test) gets it here instead.
+  bashunit::coverage::ensure_hits_aggregated
+
   local -a counts=()
   local count lineno maxln=0
-  while read -r count lineno; do
-    if [ -n "$lineno" ]; then
-      counts[lineno]=$count
-      [ "$lineno" -gt "$maxln" ] && maxln=$lineno
-    fi
-  done < <(grep "^${file}:" "$_BASHUNIT_COVERAGE_DATA_FILE" 2>/dev/null |
-    cut -d: -f2 | sort | uniq -c)
+  local hits_file
+  bashunit::coverage::hits_file_for "$file"
+  hits_file=$_BASHUNIT_COVERAGE_HITS_FILE_OUT
+
+  if [ -n "$hits_file" ] && [ -f "$hits_file" ]; then
+    while read -r lineno count; do
+      if [ -n "$count" ]; then
+        counts[lineno]=$count
+        [ "$lineno" -gt "$maxln" ] && maxln=$lineno
+      fi
+    done <"$hits_file"
+  fi
 
   if [ "$maxln" -eq 0 ]; then
     return
@@ -289,10 +389,26 @@ function bashunit::coverage::get_all_line_hits() {
 # instead (return-slot pattern, see bash-style.md). Callers must consume the
 # result before the next call; there is no adjacent-call isolation.
 declare -a _BASHUNIT_COVERAGE_HITS_BY_LINE
+# Which file the array currently holds. report_lcov loads a file and then calls
+# compute_branch_hits, which used to load the same file again and clobber it;
+# every other report section reloaded it too. Remembering the file makes the
+# repeat a no-op instead of a second pass (#1057).
+_BASHUNIT_COVERAGE_HITS_BY_LINE_FILE=""
 
 function bashunit::coverage::load_hits_by_line() {
   local file="$1"
+
+  if [ -n "$file" ] && [ "$file" = "$_BASHUNIT_COVERAGE_HITS_BY_LINE_FILE" ]; then
+    return 0
+  fi
+
+  # Here, not inside get_all_line_hits: that runs in the process substitution
+  # below, and a flag set in a subshell dies with it -- the aggregation would
+  # run again for every file, which is slower than the scan it replaced.
+  bashunit::coverage::ensure_hits_aggregated
+
   _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+  _BASHUNIT_COVERAGE_HITS_BY_LINE_FILE="$file"
   local hl_lineno hl_count
   while IFS=: read -r hl_lineno hl_count; do
     [ -n "$hl_lineno" ] && _BASHUNIT_COVERAGE_HITS_BY_LINE[hl_lineno]=$hl_count

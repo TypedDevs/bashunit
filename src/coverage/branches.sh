@@ -223,6 +223,8 @@ function bashunit::coverage::_arm_taken() {
 function bashunit::coverage::compute_branch_hits() {
   local file="$1"
 
+  # A no-op when the caller (report_lcov) already loaded this file: the loader
+  # remembers which file its array holds.
   bashunit::coverage::load_hits_by_line "$file"
 
   local -a src_lines=()
