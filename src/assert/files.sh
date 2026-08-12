@@ -52,6 +52,232 @@ function assert_is_file_empty() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# The permission and emptiness checks for files, mirroring the directory
+# family in folders.sh.
+#
+# They distinguish three failures where the folder assertions collapse two: a
+# path that does not exist, a path that exists but is not a file, and a file
+# whose mode is wrong. "not readable" for a path that was never created sends
+# the reader to check permissions on something that is not there.
+#
+# Arguments: $1 - path, $2 - optional label override
+##
+function bashunit::assert::file_state() {
+  local path=$1
+  if [ ! -e "$path" ]; then
+    _BASHUNIT_ASSERT_FILE_STATE_OUT="missing"
+  elif [ ! -f "$path" ]; then
+    _BASHUNIT_ASSERT_FILE_STATE_OUT="not-a-file"
+  else
+    _BASHUNIT_ASSERT_FILE_STATE_OUT="file"
+  fi
+}
+_BASHUNIT_ASSERT_FILE_STATE_OUT=""
+
+function assert_is_file_readable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be readable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be readable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ ! -r "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be readable" "but is not readable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_not_readable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be readable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be readable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ -r "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be readable" "but is readable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_writable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be writable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be writable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ ! -w "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be writable" "but is not writable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_not_writable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be writable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be writable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ -w "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be writable" "but is writable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_executable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be executable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be executable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ ! -x "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to be executable" "but is not executable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_not_executable() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be executable" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be executable" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ -x "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be executable" "but is executable"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+function assert_is_file_not_empty() {
+  bashunit::assert::should_skip && return 0
+
+  if [ $# -lt 1 ]; then
+    bashunit::assert::usage_error "${FUNCNAME[0]}" 1 "path" "$#"
+    return 2
+  fi
+
+  local expected="$1"
+  bashunit::assert::file_state "$expected"
+  case "$_BASHUNIT_ASSERT_FILE_STATE_OUT" in
+  missing)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be empty" "but does not exist"
+    return
+    ;;
+  not-a-file)
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be empty" "but is not a file"
+    return
+    ;;
+  esac
+
+  if [ ! -s "$expected" ]; then
+    bashunit::assert::fail_with "${2:-}" "${expected}" "to not be empty" "but is empty"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
 function assert_files_equals() {
   bashunit::assert::should_skip && return 0
 

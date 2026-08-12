@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- `assert_is_file_readable` / `assert_is_file_not_readable`, `assert_is_file_writable` / `assert_is_file_not_writable`, `assert_is_file_executable` / `assert_is_file_not_executable` and `assert_is_file_not_empty` give files the parity directories already had; a failure distinguishes a path that does not exist from one that is not a file from a mode that is wrong (#1024)
 - `bashunit::mock_sequence <cmd> <answer>…` answers each call with the next entry, so retry loops and polling can be doubled without a hand-rolled counter file; the last entry repeats once exhausted, and a spy over the sequence still records every call (#1023)
 - `assert_have_never_been_called <cmd>` asserts a spied command never ran, printing the recorded calls when it did (#1023)
 - `assert_json_key_not_exists` checks that a JSON path is absent, while `assert_json_length` checks the size of an array, object, or string (#1025)

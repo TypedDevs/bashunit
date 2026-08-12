@@ -35,7 +35,7 @@ trailing label override, so `assert_contains "zzz" "abc" "my label"` searches
 | **Numbers** | [assert_less_than](#assert-less-than) · [assert_less_or_equal_than](#assert-less-or-equal-than) · [assert_greater_than](#assert-greater-than) · [assert_greater_or_equal_than](#assert-greater-or-equal-than) · [assert_between](#assert-between) · [assert_not_between](#assert-not-between) · [assert_within_delta](#assert-within-delta) |
 | **Dates** | [assert_date_equals](#assert-date-equals) · [assert_date_before](#assert-date-before) · [assert_date_after](#assert-date-after) · [assert_date_within_range](#assert-date-within-range) · [assert_date_within_delta](#assert-date-within-delta) |
 | **Exit codes and commands** | [assert_exit_code](#assert-exit-code) · [assert_successful_code](#assert-successful-code) · [assert_unsuccessful_code](#assert-unsuccessful-code) · [assert_general_error](#assert-general-error) · [assert_command_available](#assert-command-available) · [assert_command_not_found](#assert-command-not-found) · [assert_exec](#assert-exec) |
-| **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
+| **Files** | [assert_file_exists](#assert-file-exists) · [assert_file_not_exists](#assert-file-not-exists) · [assert_file_contains](#assert-file-contains) · [assert_file_not_contains](#assert-file-not-contains) · [assert_is_file](#assert-is-file) · [assert_is_file_empty](#assert-is-file-empty) · [assert_is_file_not_empty](#assert-is-file-not-empty) · [assert_is_file_readable](#assert-is-file-readable) · [assert_is_file_not_readable](#assert-is-file-not-readable) · [assert_is_file_writable](#assert-is-file-writable) · [assert_is_file_not_writable](#assert-is-file-not-writable) · [assert_is_file_executable](#assert-is-file-executable) · [assert_is_file_not_executable](#assert-is-file-not-executable) · [assert_is_symlink](#assert-is-symlink) · [assert_is_not_symlink](#assert-is-not-symlink) · [assert_symlink_to](#assert-symlink-to) · [assert_file_permissions](#assert-file-permissions) · [assert_files_equals](#assert-files-equals) · [assert_files_not_equals](#assert-files-not-equals) |
 | **Directories** | [assert_directory_exists](#assert-directory-exists) · [assert_directory_not_exists](#assert-directory-not-exists) · [assert_is_directory](#assert-is-directory) · [assert_is_directory_empty](#assert-is-directory-empty) · [assert_is_directory_not_empty](#assert-is-directory-not-empty) · [assert_is_directory_readable](#assert-is-directory-readable) · [assert_is_directory_not_readable](#assert-is-directory-not-readable) · [assert_is_directory_writable](#assert-is-directory-writable) · [assert_is_directory_not_writable](#assert-is-directory-not-writable) |
 | **Arrays** | [assert_arrays_equal](#assert-arrays-equal) · [assert_array_contains](#assert-array-contains) · [assert_array_not_contains](#assert-array-not-contains) · [assert_array_length](#assert-array-length) |
 | **JSON** | [assert_json_equals](#assert-json-equals) · [assert_json_contains](#assert-json-contains) · [assert_json_key_exists](#assert-json-key-exists) · [assert_json_key_not_exists](#assert-json-key-not-exists) · [assert_json_length](#assert-json-length) |
@@ -1156,6 +1156,129 @@ function test_failure() {
 ```
 :::
 
+
+## assert_is_file_not_empty
+> `assert_is_file_not_empty "file"`
+
+Reports an error if `file` is empty. A file holding a single newline counts as
+not empty.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  generate_report > report.txt
+
+  assert_is_file_not_empty "report.txt"
+}
+```
+:::
+
+## assert_is_file_readable
+> `assert_is_file_readable "file"`
+
+Reports an error if `file` is not readable.
+
+The failure says which of the three things went wrong: the path does not exist,
+it exists but is not a file, or it is a file the current user cannot read. The
+same applies to every assertion below.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_is_file_readable "/etc/hosts"
+}
+```
+```[Output]
+✗ Failed: Success
+    Expected '/tmp/nope'
+    to be readable
+    but does not exist
+```
+:::
+
+## assert_is_file_not_readable
+> `assert_is_file_not_readable "file"`
+
+Reports an error if `file` is readable.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  chmod 000 "$secret"
+
+  assert_is_file_not_readable "$secret"
+}
+```
+:::
+
+::: warning
+Running as root bypasses the permission bits, so this assertion passes for
+nothing under `sudo` or in a root container. Skip such a test there:
+`bashunit::skip_if "[ \"$(id -u)\" -eq 0 ]" "root reads anything"`.
+:::
+
+## assert_is_file_writable
+> `assert_is_file_writable "file"`
+
+Reports an error if `file` is not writable.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_is_file_writable "$log_file"
+}
+```
+:::
+
+## assert_is_file_not_writable
+> `assert_is_file_not_writable "file"`
+
+Reports an error if `file` is writable.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  chmod 444 "$config"
+
+  assert_is_file_not_writable "$config"
+}
+```
+:::
+
+## assert_is_file_executable
+> `assert_is_file_executable "file"`
+
+Reports an error if `file` is not executable — the thing a shell project most
+often wants to assert about a file it generated.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  ./build.sh
+
+  assert_is_file_executable "bin/tool"
+}
+```
+```[Output]
+✗ Failed: Success
+    Expected 'bin/tool'
+    to be executable
+    but is not executable
+```
+:::
+
+## assert_is_file_not_executable
+> `assert_is_file_not_executable "file"`
+
+Reports an error if `file` is executable.
+
+::: code-group
+```bash [Example]
+function test_success() {
+  assert_is_file_not_executable "README.md"
+}
+```
+:::
 ## assert_directory_exists
 > `assert_directory_exists "directory"`
 
