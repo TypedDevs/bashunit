@@ -473,6 +473,61 @@ Reports an error if `file` is not a file.
 Reports an error if `file` is not empty.
 
 
+## assert_is_file_not_empty
+--------------
+> `assert_is_file_not_empty "file"`
+
+Reports an error if `file` is empty. A file holding a single newline counts as
+not empty.
+
+
+## assert_is_file_readable
+--------------
+> `assert_is_file_readable "file"`
+
+Reports an error if `file` is not readable.
+
+The failure says which of the three things went wrong: the path does not exist,
+it exists but is not a file, or it is a file the current user cannot read. The
+same applies to every assertion below.
+
+
+## assert_is_file_not_readable
+--------------
+> `assert_is_file_not_readable "file"`
+
+Reports an error if `file` is readable.
+
+
+## assert_is_file_writable
+--------------
+> `assert_is_file_writable "file"`
+
+Reports an error if `file` is not writable.
+
+
+## assert_is_file_not_writable
+--------------
+> `assert_is_file_not_writable "file"`
+
+Reports an error if `file` is writable.
+
+
+## assert_is_file_executable
+--------------
+> `assert_is_file_executable "file"`
+
+Reports an error if `file` is not executable — the thing a shell project most
+often wants to assert about a file it generated.
+
+
+## assert_is_file_not_executable
+--------------
+> `assert_is_file_not_executable "file"`
+
+Reports an error if `file` is executable.
+
+
 ## assert_directory_exists
 --------------
 > `assert_directory_exists "directory"`

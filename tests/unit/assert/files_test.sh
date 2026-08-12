@@ -342,3 +342,195 @@ function test_unsuccessful_assert_symlink_to_on_a_regular_file() {
       "$dir/plain" "to be a symlink" "but is not a symlink")" \
     "$(assert_symlink_to "$dir/whatever" "$dir/plain")"
 }
+
+# Files had no readable/writable/executable checks and no not-empty, so a test
+# of a generated script fell back to `assert_true test -x`, losing the message
+# that is the reason these assertions exist (#1024).
+
+function file_perm_fixture() { # $1 = basename, $2 = mode, $3 = content
+  local file="$(bashunit::temp_dir)/$1"
+  printf '%s' "${3:-}" >"$file"
+  chmod "$2" "$file"
+  printf '%s' "$file"
+}
+
+function test_successful_assert_is_file_readable() {
+  local file
+  file="$(file_perm_fixture readable 644 "x")"
+
+  assert_empty "$(assert_is_file_readable "$file")"
+}
+
+function test_unsuccessful_assert_is_file_readable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  bashunit::skip_if "[ \"$(id -u)\" -eq 0 ]" "root reads a file whatever its mode"
+  local file
+  file="$(file_perm_fixture unreadable 000 "x")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file readable" \
+      "$file" "to be readable" "but is not readable")" \
+    "$(assert_is_file_readable "$file")"
+}
+
+function test_assert_is_file_readable_says_a_missing_path_does_not_exist() {
+  local file="$(bashunit::temp_dir)/nope"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert is file readable says a missing path does not exist" \
+      "$file" "to be readable" "but does not exist")" \
+    "$(assert_is_file_readable "$file")"
+}
+
+function test_assert_is_file_readable_rejects_a_directory() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert is file readable rejects a directory" \
+      "$dir" "to be readable" "but is not a file")" \
+    "$(assert_is_file_readable "$dir")"
+}
+
+function test_successful_assert_is_file_not_readable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  bashunit::skip_if "[ \"$(id -u)\" -eq 0 ]" "root reads a file whatever its mode"
+  local file
+  file="$(file_perm_fixture unreadable_ok 000 "x")"
+
+  assert_empty "$(assert_is_file_not_readable "$file")"
+}
+
+function test_unsuccessful_assert_is_file_not_readable() {
+  local file
+  file="$(file_perm_fixture readable_fail 644 "x")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file not readable" \
+      "$file" "to not be readable" "but is readable")" \
+    "$(assert_is_file_not_readable "$file")"
+}
+
+function test_successful_assert_is_file_writable() {
+  local file
+  file="$(file_perm_fixture writable 644 "x")"
+
+  assert_empty "$(assert_is_file_writable "$file")"
+}
+
+function test_unsuccessful_assert_is_file_writable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  bashunit::skip_if "[ \"$(id -u)\" -eq 0 ]" "root writes a file whatever its mode"
+  local file
+  file="$(file_perm_fixture unwritable 444 "x")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file writable" \
+      "$file" "to be writable" "but is not writable")" \
+    "$(assert_is_file_writable "$file")"
+}
+
+function test_successful_assert_is_file_not_writable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  bashunit::skip_if "[ \"$(id -u)\" -eq 0 ]" "root writes a file whatever its mode"
+  local file
+  file="$(file_perm_fixture unwritable_ok 444 "x")"
+
+  assert_empty "$(assert_is_file_not_writable "$file")"
+}
+
+function test_successful_assert_is_file_executable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  local file
+  file="$(file_perm_fixture executable 755 "#!/usr/bin/env bash")"
+
+  assert_empty "$(assert_is_file_executable "$file")"
+}
+
+function test_unsuccessful_assert_is_file_executable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  local file
+  file="$(file_perm_fixture not_executable 644 "x")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file executable" \
+      "$file" "to be executable" "but is not executable")" \
+    "$(assert_is_file_executable "$file")"
+}
+
+function test_successful_assert_is_file_not_executable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  local file
+  file="$(file_perm_fixture not_executable_ok 644 "x")"
+
+  assert_empty "$(assert_is_file_not_executable "$file")"
+}
+
+function test_unsuccessful_assert_is_file_not_executable() {
+  bashunit::skip_on windows "Git Bash fakes POSIX permissions"
+  local file
+  file="$(file_perm_fixture executable_fail 755 "x")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file not executable" \
+      "$file" "to not be executable" "but is executable")" \
+    "$(assert_is_file_not_executable "$file")"
+}
+
+function test_successful_assert_is_file_not_empty() {
+  local file
+  file="$(file_perm_fixture not_empty 644 "content")"
+
+  assert_empty "$(assert_is_file_not_empty "$file")"
+}
+
+# A file holding a single newline is not empty: `[ -s ]` agrees, and a test
+# asserting "the report was written" should not care that it is one line.
+function test_assert_is_file_not_empty_accepts_a_single_newline() {
+  local file
+  file="$(file_perm_fixture newline_only 644 "
+")"
+
+  assert_empty "$(assert_is_file_not_empty "$file")"
+}
+
+function test_unsuccessful_assert_is_file_not_empty() {
+  local file
+  file="$(file_perm_fixture zero_bytes 644 "")"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Unsuccessful assert is file not empty" \
+      "$file" "to not be empty" "but is empty")" \
+    "$(assert_is_file_not_empty "$file")"
+}
+
+# Consistent with every filesystem assertion but the assert_is_symlink family
+# (#981): the check follows through to the target.
+function test_the_new_file_assertions_follow_a_symlink_to_its_target() {
+  bashunit::skip_on windows "Git Bash does not create real symlinks"
+  local dir target link
+  dir="$(bashunit::temp_dir)"
+  target="$dir/symlink_target"
+  link="$dir/symlink_to_target"
+  printf 'content' >"$target"
+  chmod 755 "$target"
+  ln -s "$target" "$link"
+
+  assert_empty "$(assert_is_file_readable "$link")"
+  assert_empty "$(assert_is_file_executable "$link")"
+  assert_empty "$(assert_is_file_not_empty "$link")"
+}
+
+function test_the_new_file_assertions_report_a_missing_argument_as_a_usage_error() {
+  local output
+  local ec=0
+  # `|| ec=$?`: the assertion returns 2, and under --strict a bare assignment
+  # from a failing command substitution ends the test.
+  output="$(assert_is_file_executable 2>&1)" || ec=$?
+
+  assert_equals "2" "$ec"
+  assert_contains "usage error" "$output"
+  assert_contains "assert_is_file_executable" "$output"
+}
