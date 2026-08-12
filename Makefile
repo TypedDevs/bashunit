@@ -75,9 +75,13 @@ PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 # tests/unit/project/collection_test.sh keeps this list honest.
 TEST_SCRIPTS = $(shell find $(TEST_SCRIPTS_DIR) -name '*[tT]est.sh' -not -path '*/fixtures/*' | sort)
 
+# One echo per file, not one echo of every file: the single ~14 KB argument
+# that `echo $(TEST_SCRIPTS)` produced came back truncated mid-path under Git
+# Bash, which made the collection contract fail on Windows as the suite grew.
+# Still expanded from TEST_SCRIPTS, so the list stays the one `make test` runs.
 test/list:
 	@echo "Test scripts found:"
-	@echo $(TEST_SCRIPTS) | tr ' ' '\n'
+	@$(foreach f,$(TEST_SCRIPTS),echo $(f);)
 
 test: $(TEST_SCRIPTS)
 	@bash ./bashunit $(TEST_SCRIPTS)
