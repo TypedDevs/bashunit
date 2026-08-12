@@ -354,3 +354,40 @@ function test_spy_with_impl_records_calls_and_delegates() {
   assert_have_been_called_nth_with 1 ps "first"
   assert_have_been_called_nth_with 2 ps "second"
 }
+
+function expected_call_log() {
+  bashunit::spy::call_log_to_slot "$1"
+  printf '%s' "$_BASHUNIT_SPY_CALL_LOG_OUT"
+}
+
+function test_assert_have_never_been_called_passes_for_a_spy_that_never_ran() {
+  bashunit::spy a_never_called_command
+
+  assert_have_never_been_called a_never_called_command
+}
+
+function test_assert_have_never_been_called_fails_when_the_command_ran() {
+  bashunit::spy a_called_command
+  a_called_command "danger"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert have never been called fails when the command ran" \
+      "a_called_command" "to have never been called" "" \
+      "actual" "1 time" "$(expected_call_log a_called_command)")" \
+    "$(assert_have_never_been_called a_called_command)"
+}
+
+# #895: a command nobody spied fails the assertion instead of passing. Compared
+# against the renderer rather than the captured text, because --simple mode
+# prints a one-char marker and would make an assert_contains here vacuous.
+function test_assert_have_never_been_called_fails_for_a_command_that_was_never_spied() {
+  local expected
+  expected="$(bashunit::console_results::print_failed_test \
+    "Assert have never been called fails for a command that was never spied" \
+    "a_command_nobody_spied" \
+    "was never registered as a spy; call it first with" \
+    "bashunit::spy a_command_nobody_spied")"
+
+  assert_same "$expected" "$(assert_have_never_been_called a_command_nobody_spied)"
+}

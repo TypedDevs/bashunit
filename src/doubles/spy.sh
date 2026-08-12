@@ -164,6 +164,33 @@ function bashunit::spy::serialize_args_to_slot() {
 }
 
 
+##
+# Records one call of a double: the raw and per-argument forms in the params
+# file, and the incremented count in the times file. Shared by the spy and by
+# a sequenced mock defined over one, so the two record identically.
+# Arguments: $1 - params file, $2 - times file, $@ - the call's arguments
+##
+function bashunit::doubles::record_call() {
+  local params_file=$1
+  local times_file=$2
+  shift 2
+
+  local raw="$*"
+  local serialized=""
+  local arg
+  for arg in "$@"; do
+    serialized="$serialized$(builtin printf '%q' "$arg")"$'\x1f'
+  done
+  serialized=${serialized%$'\x1f'}
+  builtin printf '%s\x1e%s\n' "$raw" "$serialized" >>"$params_file"
+
+  local count=""
+  read -r count <"$times_file" 2>/dev/null || count=""
+  case "$count" in '' | *[!0-9]*) count=0 ;; esac
+  builtin echo "$((count + 1))" >"$times_file"
+}
+
+
 function bashunit::spy() {
   local command=$1
   local exit_code_or_impl="${2:-}"
@@ -190,19 +217,7 @@ function bashunit::spy() {
   fi
 
   eval "function $command() {
-    local raw=\"\$*\"
-    local serialized=\"\"
-    local arg
-    for arg in \"\$@\"; do
-      serialized=\"\$serialized\$(builtin printf '%q' \"\$arg\")\"$'\\x1f'
-    done
-    serialized=\${serialized%$'\\x1f'}
-    builtin printf '%s\x1e%s\\n' \"\$raw\" \"\$serialized\" >> '$params_file'
-    local _c=\"\"
-    read -r _c < '$times_file' 2>/dev/null || _c=\"\"
-    case \"\$_c\" in '' | *[!0-9]*) _c=0 ;; esac
-    _c=\$((_c+1))
-    builtin echo \"\$_c\" > '$times_file'
+    bashunit::doubles::record_call '$params_file' '$times_file' \"\$@\"
     $body_suffix
   }"
 

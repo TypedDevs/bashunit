@@ -263,6 +263,46 @@ function assert_have_been_called_nth_with() {
 }
 
 
+##
+# Asserts a spied command was never called. The counterpart of
+# assert_have_been_called: `assert_have_been_called_times 0 rm` reads backwards
+# for the case that matters most -- a destructive command that must not run.
+##
+function assert_have_never_been_called() {
+  local command=$1
+  bashunit::spy::times_to_slot "$command"
+  local times=$_BASHUNIT_SPY_TIMES_OUT
+  local label="${2:-}"
+  if [ -z "$label" ]; then
+    bashunit::helper::normalize_test_function_name_to_slot "${FUNCNAME[1]}"
+    label=$_BASHUNIT_HELPER_NORMALIZED_OUT
+  fi
+
+  # #895: a command nobody spied is a broken test, not a vacuous pass -- and
+  # this assertion is the one where a vacuous pass is most reassuring and most
+  # wrong.
+  if [ "$_BASHUNIT_SPY_REGISTERED_OUT" = false ]; then
+    bashunit::spy::fail_unregistered "$command" "$label"
+    return
+  fi
+
+  if [ "$times" -ne 0 ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
+    local unit="times"
+    if [ "$times" -eq 1 ]; then
+      unit="time"
+    fi
+    bashunit::console_results::print_failed_test "${label}" "${command}" \
+      "to have never been called" "" \
+      "actual" "${times} ${unit}" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+    return
+  fi
+
+  bashunit::state::add_assertions_passed
+}
+
+
 function assert_not_called() {
   local command=$1
   local label="${2:-}"

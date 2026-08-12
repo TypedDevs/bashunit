@@ -311,3 +311,42 @@ function test_spy_on_printf_does_not_hang() {
 
   assert_have_been_called printf
 }
+
+# Retry logic is the code that most needs a double and could not be doubled:
+# "fail twice, then succeed" used to mean a hand-rolled counter file per test.
+function retry_until_success() { # $1 = attempts
+  local attempts=$1
+  local i=0
+  while [ "$i" -lt "$attempts" ]; do
+    i=$((i + 1))
+    if an_unreliable_service; then
+      builtin echo "$i"
+      return 0
+    fi
+  done
+  return 1
+}
+
+function test_a_sequence_drives_a_retry_loop() {
+  bashunit::mock_sequence an_unreliable_service 1 1 0
+
+  assert_same "3" "$(retry_until_success 5)"
+}
+
+function test_a_retry_loop_gives_up_when_the_sequence_never_succeeds() {
+  bashunit::mock_sequence an_unreliable_service 1
+
+  local code=0
+  retry_until_success 3 >/dev/null || code=$?
+
+  assert_same "1" "$code"
+}
+
+function test_a_destructive_command_is_never_reached() {
+  bashunit::spy a_destructive_command
+  bashunit::mock_sequence an_unreliable_service 0
+
+  retry_until_success 3 >/dev/null
+
+  assert_have_never_been_called a_destructive_command
+}
