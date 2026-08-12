@@ -50,6 +50,8 @@ function provide_core_assertions_requiring_arguments() {
   bashunit::data_set assert_string_matches_format 2 "format, actual"
   bashunit::data_set assert_string_not_matches_format 2 "format, actual"
   bashunit::data_set assert_command_available 1 "command"
+  bashunit::data_set assert_json_key_not_exists 2 "key, json"
+  bashunit::data_set assert_json_length 3 "expected, key, json"
 }
 
 function test_empty_values_still_count_as_supplied_arguments() {

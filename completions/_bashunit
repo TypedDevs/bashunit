@@ -30,7 +30,7 @@ _bashunit() {
       assert_is_directory_not_empty assert_is_directory_not_readable
       assert_is_directory_not_writable assert_is_directory_readable
       assert_is_directory_writable assert_is_file assert_is_file_empty assert_is_not_symlink assert_is_symlink
-      assert_json_contains assert_json_equals assert_json_key_exists
+      assert_json_contains assert_json_equals assert_json_key_exists assert_json_key_not_exists assert_json_length
       assert_less_or_equal_than assert_less_than assert_line_count
       assert_match_named_snapshot assert_match_named_snapshot_ignore_colors
       assert_match_snapshot assert_match_snapshot_ignore_colors assert_matches

@@ -698,11 +698,27 @@ A key whose value is `null` or `false` is reported as missing, the same guard
 assert_json_key_exists uses.
 
 
+## assert_json_key_not_exists
+--------------
+> `assert_json_key_not_exists "key" "json"`
+
+Reports an error if `key` exists in the JSON string. Uses jq(https://jqlang.github.io/jq/) syntax for key paths. Requires `jq` to be installed; if missing the test is skipped.
+
+A key with a `null` value still exists and makes this assertion fail. Invalid JSON also fails the assertion.
+
+
 ## assert_json_equals
 --------------
 > `assert_json_equals "expected" "actual"`
 
 Reports an error if the two JSON strings are not structurally equal. Key order is ignored. Requires `jq` to be installed; if missing the test is skipped.
+
+
+## assert_json_length
+--------------
+> `assert_json_length "expected" "key" "json"`
+
+Reports an error if the array, object, or string at `key` does not have the expected length. Arrays count elements, objects count key-value pairs, and strings count Unicode codepoints, following `jq`'s `length` behavior. A missing path, unsupported value type, invalid JSON, or non-numeric expected length fails instead of being compared as empty or zero. Requires `jq` to be installed; if missing the test is skipped.
 
 
 ## assert_duration
