@@ -3,11 +3,11 @@
 ## Unreleased
 
 ### Added
-- `--sandbox` fails a test that runs an external command it did not mock, naming the command; `--sandbox-allow <cmd,...>` widens the baseline allowlist of what bashunit itself needs. Builtins are unaffected, `bashunit::unmock` puts the block back, and the mechanism is recorded in ADR-012 (#1022)
-- Named suites: a `[suite:<name>]` section in `.bashunitrc` groups paths and options, `--suite <name>` runs one (repeatable, union of their paths) and `--list-suites` prints the defined names; precedence is CLI flags > suite settings > global `.bashunitrc` > `.env` > defaults, and an explicit path replaces the suite's `paths` (#1021)
-- Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations in the comment block above a test, overriding the run-wide `--test-timeout` and `--retry` in both directions (`@timeout 0` opts a test out of a global timeout); a malformed value aborts the run, and the scan rides on the existing per-file pass so it costs no extra fork (#1020)
-- `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command` and `bashunit::skip_on <windows|macos|linux>` mark the test skipped **and** end it, replacing the `bashunit::skip && return` idiom whose missing `return` silently kept the body running; an unknown OS name is a usage error, not a test that never skips (#1019)
-- `--output <text|tap|json|junit>` sends the JSON and JUnit reports to stdout, so a pipeline needs no temp file; the console rendering, coverage table, slowest-tests table and GitHub Actions annotations are suppressed for the machine formats, diagnostics stay on stderr, exit codes are unchanged, and `--output json --report-json f.json` produces both (#1018)
+- `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, suppressing every console rendering so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
+- `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return`, whose missing `return` silently kept the body running (#1019)
+- Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations override the run-wide `--test-timeout` and `--retry` in both directions; `@timeout 0` opts one test out of a global timeout and a malformed value aborts the run (#1020)
+- `[suite:<name>]` sections in `.bashunitrc` name a set of paths and options; `--suite <name>` runs one (repeatable), `--list-suites` lists them, and a flag or path on the command line wins over the suite (#1021)
+- `--sandbox` fails a test that runs an external command it did not mock, naming it, and `--sandbox-allow <cmd,...>` widens the baseline allowlist; builtins are unaffected and `bashunit::unmock` puts the block back (ADR-012) (#1022)
 
 ## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
 
