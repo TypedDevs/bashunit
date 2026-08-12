@@ -92,16 +92,23 @@ function bashunit::coverage::is_executable_line() {
   esac
 
   # Case patterns: something, then `)`, then end of line or a comment —
-  # `--option)`, `*) # note`. The pattern this replaced spelled the leading
-  # segment `[^\)]+`, and inside a POSIX bracket expression a backslash is a
-  # literal member of the set, so a backslash anywhere before that `)`
-  # suppressed the match. `x=$(foo)` is therefore classified non-executable
-  # while `x=$(printf '%s\n')` is executable; both are preserved here.
+  # `--option)`, `*) # note`. A case arm is a decision, and the decision is
+  # already accounted for by branch coverage, so an arm line counts as
+  # non-executable.
+  #
+  # The `)` has to actually close an arm. Any `(` earlier on the line means it
+  # closes that instead -- `x=$(foo)`, `((i++))`, `cmd <(sub)` -- and those are
+  # statements. The rule this replaced asked a different question: its leading
+  # segment was spelled `[^\)]+`, and inside a POSIX bracket expression a
+  # backslash is a literal member of the set, so a backslash anywhere before
+  # the `)` suppressed the match. That made `x=$(foo)` non-executable while
+  # `x=$(printf '%s\n')` was executable, and dropped 236 real statements of
+  # this repo's own src/ out of every denominator (#1055).
   case "$line" in
   *')'*)
     local cp_before="${line%%')'*}"
     case "$cp_before" in
-    '' | *[\\]*) : ;;
+    '' | *'('*) : ;;
     *)
       local cp_after="${line#*')'}"
       cp_after="${cp_after#"${cp_after%%[![:space:]]*}"}"

@@ -378,3 +378,54 @@ function test_coverage_get_all_line_hits_does_not_propagate_without_continuation
 
   assert_equals "1:1" "$result"
 }
+
+# --- the case-pattern rule (#1055) ------------------------------------------
+
+# A command substitution that closes at end of line used to be read as a case
+# arm, which dropped it from the denominator.
+function test_a_command_substitution_closing_the_line_is_executable() {
+  assert_successful_code "$(bashunit::coverage::is_executable_line 'x=$(foo)' 1 && echo ok)"
+}
+
+function test_a_command_substitution_with_a_backslash_stays_executable() {
+  local line='x=$(printf "%s\n")'
+  assert_successful_code "$(bashunit::coverage::is_executable_line "$line" 1 && echo ok)"
+}
+
+function test_an_arithmetic_command_closing_the_line_is_executable() {
+  assert_successful_code "$(bashunit::coverage::is_executable_line '((i++))' 1 && echo ok)"
+}
+
+function test_a_process_substitution_closing_the_line_is_executable() {
+  local line='diff <(a) <(b)'
+  assert_successful_code "$(bashunit::coverage::is_executable_line "$line" 1 && echo ok)"
+}
+
+# A real case arm is still a decision, not a statement: branch coverage
+# accounts for it.
+function test_a_case_arm_is_not_executable() {
+  local ec=0
+  bashunit::coverage::is_executable_line '  --option)' 1 || ec=$?
+
+  assert_equals "1" "$ec"
+}
+
+function test_a_case_arm_with_a_trailing_comment_is_not_executable() {
+  local ec=0
+  bashunit::coverage::is_executable_line '  *) # fallthrough' 1 || ec=$?
+
+  assert_equals "1" "$ec"
+}
+
+function test_a_case_arm_with_alternatives_is_not_executable() {
+  local ec=0
+  bashunit::coverage::is_executable_line '  a|b|c)' 1 || ec=$?
+
+  assert_equals "1" "$ec"
+}
+
+# A statement that merely contains a paren and continues is untouched.
+function test_a_statement_after_the_paren_is_executable() {
+  local line='printf ")" >&2'
+  assert_successful_code "$(bashunit::coverage::is_executable_line "$line" 1 && echo ok)"
+}
