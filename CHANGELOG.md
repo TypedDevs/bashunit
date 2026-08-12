@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Performance: the coverage hit data is grouped once per run instead of scanned once per file. Counting a file's hits was `grep | cut | sort | uniq -c` over the whole data file — 4 forks and a full scan per tracked file — and every report section repeated it; one awk pass now writes a small block per file, measured 1294ms to 203ms for 121 files and 10,890 records (6.4x), with byte-identical LCOV, Cobertura and text reports (#1057)
 - Performance: the coverage report's per-file lookup is flat instead of quadratic. The stats, tracked-file and path caches stored their entries in one string scanned with a leading-`*` glob, which on Bash 3.2 cost 0.38ms per lookup at 11 entries, 3.4ms at 40 and 26.7ms at 121; they now use the variable table, measured at 0.25ms at every size — 109x faster at 121 tracked files, with byte-identical reports (#1056)
 
 ### Added

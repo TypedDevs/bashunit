@@ -94,6 +94,7 @@ function bashunit::coverage::init() {
   # The lookups live in the variable table now, so clearing them means dropping
   # their namespaces: a second run in the same shell must not inherit a
   # tracking decision or a normalized path from the first.
+  bashunit::coverage::invalidate_hits_aggregation
   bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_TRACK_"
   bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_PATH_"
   _BASHUNIT_COVERAGE_IS_PARALLEL=""
