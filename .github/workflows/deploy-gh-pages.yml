@@ -51,6 +51,9 @@ jobs:
         working-directory: docs
         run: npm run build
 
+      - name: Check sitemap
+        run: ./tools/check_sitemap.sh
+
       - name: Copy installer into site root
         run: cp install.sh docs/.vitepress/dist/install.sh
 

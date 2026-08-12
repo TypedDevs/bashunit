@@ -78,7 +78,25 @@ export default defineConfig({
   },
 
   sitemap: {
-    hostname: 'https://bashunit.com'
+    hostname: 'https://bashunit.com',
+    // lastmod drives Google's recrawl scheduling, but only while it stays
+    // verifiably accurate. Git mtime lies twice here: a repo-wide touch-up
+    // re-stamps years-old announcements as fresh (five 2024 posts all claimed
+    // 2026-06-03), and /blog/ never moves even though its listing is rebuilt
+    // from posts.data.ts on every new post.
+    transformItems(items) {
+      const publishedAt = (url: string) => url.match(/^blog\/(\d{4}-\d{2}-\d{2})-/)?.[1]
+      const newestPost = items
+        .map((item) => publishedAt(item.url))
+        .filter((date): date is string => !!date)
+        .sort()
+        .pop()
+
+      return items.map((item) => {
+        const date = item.url === 'blog/' ? newestPost : publishedAt(item.url)
+        return date ? { ...item, lastmod: new Date(`${date}T00:00:00Z`) } : item
+      })
+    }
   },
 
   // Generate /llms-full.txt: the full documentation concatenated for LLMs and agents.
