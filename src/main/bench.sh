@@ -20,6 +20,23 @@ function bashunit::main::cmd_bench() {
       filter="$2"
       shift
       ;;
+    --report-json)
+      BASHUNIT_BENCH_REPORT_JSON="$2"
+      export -n BASHUNIT_BENCH_REPORT_JSON
+      # require_writable_path_or_exit, not the creatable variant: these writers
+      # do not mkdir their directory, and the creatable check rejects a target
+      # that already exists (its ancestor walk stops on the file itself).
+      bashunit::main::require_writable_path_or_exit \
+        "$BASHUNIT_BENCH_REPORT_JSON" "BASHUNIT_BENCH_REPORT_JSON"
+      shift
+      ;;
+    --report-junit)
+      BASHUNIT_BENCH_REPORT_JUNIT="$2"
+      export -n BASHUNIT_BENCH_REPORT_JUNIT
+      bashunit::main::require_writable_path_or_exit \
+        "$BASHUNIT_BENCH_REPORT_JUNIT" "BASHUNIT_BENCH_REPORT_JUNIT"
+      shift
+      ;;
     -s | --simple)
       BASHUNIT_SIMPLE_OUTPUT=true
       export -n BASHUNIT_SIMPLE_OUTPUT

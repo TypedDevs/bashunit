@@ -7,13 +7,25 @@ _BASHUNIT_BENCH_REVS=()
 _BASHUNIT_BENCH_ITS=()
 _BASHUNIT_BENCH_AVERAGES=()
 _BASHUNIT_BENCH_MAX_MILLIS=()
+# Only the reports read these two: the console table has never shown the file
+# or the individual iterations, and a run without --report-* pays nothing for
+# them beyond two string assignments.
+_BASHUNIT_BENCH_FILES=()
+_BASHUNIT_BENCH_DURATIONS=()
 
+##
+# Arguments: $1 - function, $2 - revs, $3 - its, $4 - average ms,
+#            $5 - @max_ms threshold (may be empty), $6 - bench file,
+#            $7 - space-separated per-iteration durations in ms
+##
 function bashunit::benchmark::add_result() {
   _BASHUNIT_BENCH_NAMES[${#_BASHUNIT_BENCH_NAMES[@]}]="$1"
   _BASHUNIT_BENCH_REVS[${#_BASHUNIT_BENCH_REVS[@]}]="$2"
   _BASHUNIT_BENCH_ITS[${#_BASHUNIT_BENCH_ITS[@]}]="$3"
   _BASHUNIT_BENCH_AVERAGES[${#_BASHUNIT_BENCH_AVERAGES[@]}]="$4"
   _BASHUNIT_BENCH_MAX_MILLIS[${#_BASHUNIT_BENCH_MAX_MILLIS[@]}]="$5"
+  _BASHUNIT_BENCH_FILES[${#_BASHUNIT_BENCH_FILES[@]}]="${6:-}"
+  _BASHUNIT_BENCH_DURATIONS[${#_BASHUNIT_BENCH_DURATIONS[@]}]="${7:-}"
 }
 
 function bashunit::benchmark::print_results() {

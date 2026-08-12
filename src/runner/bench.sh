@@ -86,7 +86,7 @@ function bashunit::runner::call_bench_functions() {
     local parsed_annotations
     parsed_annotations=$(bashunit::benchmark::parse_annotations "$fn_name" "$script") || exit 1
     read -r revs its max_ms <<<"$parsed_annotations"
-    bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms"
+    bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms" "$script"
     unset -v fn_name
   done
 

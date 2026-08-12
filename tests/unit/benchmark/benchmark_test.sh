@@ -314,3 +314,29 @@ function test_parse_annotations_accepts_a_function_with_no_annotation_at_all() {
   assert_successful_code "" "" "$ec"
   assert_same "1 1" "$output"
 }
+
+function test_stats_to_slots_reports_min_max_and_median_of_an_odd_list() {
+  bashunit::benchmark::stats_to_slots "5 1 3"
+
+  assert_same "1.000" "$_BASHUNIT_BENCH_STATS_MIN_OUT"
+  assert_same "5.000" "$_BASHUNIT_BENCH_STATS_MAX_OUT"
+  assert_same "3.000" "$_BASHUNIT_BENCH_STATS_MEDIAN_OUT"
+}
+
+function test_stats_to_slots_averages_the_two_middle_values_of_an_even_list() {
+  bashunit::benchmark::stats_to_slots "4 1 3 2"
+
+  assert_same "2.500" "$_BASHUNIT_BENCH_STATS_MEDIAN_OUT"
+}
+
+function test_stats_to_slots_keeps_a_dot_decimal_separator_in_any_locale() {
+  LC_ALL=es_ES.UTF-8 LC_NUMERIC=es_ES.UTF-8 bashunit::benchmark::stats_to_slots "1.5 2.5"
+
+  assert_same "2.000" "$_BASHUNIT_BENCH_STATS_MEDIAN_OUT"
+}
+
+function test_stats_to_slots_leaves_the_slots_empty_for_no_durations() {
+  bashunit::benchmark::stats_to_slots ""
+
+  assert_empty "$_BASHUNIT_BENCH_STATS_MIN_OUT"
+}
