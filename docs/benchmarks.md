@@ -123,6 +123,56 @@ bench_api_call                         10      3         45      ≤ 50
 ```
 :::
 
+### Machine-readable reports
+
+The console table is for a human reading a terminal. For CI, write the run to a
+file that can be stored as an artifact, charted over time, or compared by a
+later run:
+
+::: code-group
+```bash [JSON]
+./bashunit bench --report-json bench.json
+```
+```bash [JUnit]
+./bashunit bench --report-junit bench.xml
+```
+```json [bench.json]
+{
+  "run": {
+    "timestamp": "2026-08-12T21:52:36",
+    "duration_ms": 209,
+    "bashunit_version": "0.46.0",
+    "bash_version": "5.2.21",
+    "os": "Linux"
+  },
+  "benchmarks": [
+    {
+      "file": "tests/benchmark/example_bench.sh",
+      "function": "bench_api_call",
+      "name": "Bench api call",
+      "revs": 10,
+      "its": 3,
+      "iterations_ms": [43, 47, 45],
+      "average_ms": 45,
+      "min_ms": 43.000,
+      "max_ms": 47.000,
+      "median_ms": 45.000,
+      "threshold_ms": 50,
+      "within_threshold": true
+    }
+  ]
+}
+```
+:::
+
+`threshold_ms` and `within_threshold` are `null` for a benchmark with no
+[`@max_ms`](#setting-thresholds) — an absent threshold is not a threshold of
+zero, and a chart has to be able to tell those apart.
+
+The JUnit file reports one `<testcase>` per benchmark, with a `<failure
+type="PerformanceRegression">` for each one over its `@max_ms`, so a CI test
+reporter shows benchmarks next to tests.
+
 ## Status Column
 
 The status column indicates threshold results:

@@ -305,6 +305,15 @@ function bashunit::main::exec_benchmarks() {
 
   bashunit::benchmark::print_results
 
+  # After the table, so a writer failure cannot swallow the results a human
+  # was going to read anyway.
+  if [ -n "${BASHUNIT_BENCH_REPORT_JSON:-}" ]; then
+    bashunit::benchmark::report_json "$BASHUNIT_BENCH_REPORT_JSON"
+  fi
+  if [ -n "${BASHUNIT_BENCH_REPORT_JUNIT:-}" ]; then
+    bashunit::benchmark::report_junit "$BASHUNIT_BENCH_REPORT_JUNIT"
+  fi
+
   bashunit::internal_log "Finished benchmarks"
 }
 

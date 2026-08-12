@@ -11,3 +11,4 @@
 source "$BASHUNIT_ROOT_DIR/src/benchmark/results.sh"
 source "$BASHUNIT_ROOT_DIR/src/benchmark/annotations.sh"
 source "$BASHUNIT_ROOT_DIR/src/benchmark/run.sh"
+source "$BASHUNIT_ROOT_DIR/src/benchmark/reports.sh"

@@ -55,6 +55,18 @@ The two files are read differently, which is why they behave differently: `.env`
 empty entry is unconditional (hence the preservation rule above), while `.bashunitrc` is
 parsed as literal `KEY=value` lines and only fills names that are not already set.
 
+## Benchmark reports
+
+> `BASHUNIT_BENCH_REPORT_JSON=file`
+> `BASHUNIT_BENCH_REPORT_JUNIT=file`
+
+Write the results of a `bashunit bench` run to a file: JSON for charting and
+comparison, JUnit XML so a CI test reporter shows benchmarks next to tests.
+Empty by default, which is what keeps a bench run printing only its table.
+
+Same as the `--report-json` / `--report-junit` options of
+[`bashunit bench`](/benchmarks#machine-readable-reports).
+
 ## Sandbox
 
 > `BASHUNIT_SANDBOX=true|false`

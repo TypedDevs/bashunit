@@ -210,6 +210,8 @@ Arguments:
 Options:
   -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
   -f, --filter <name>         Only run benchmarks matching the name
+  --report-json <file>        Write machine-readable benchmark results
+  --report-junit <file>       Write JUnit XML benchmark results
   -s, --simple                Simple output
   --detailed                  Detailed output (default)
   -vvv, --verbose             Show execution details
@@ -222,6 +224,7 @@ Examples:
   bashunit bench
   bashunit bench benchmarks/
   bashunit bench --filter "parse"
+  bashunit bench --report-json bench.json
 EOF
 }
 

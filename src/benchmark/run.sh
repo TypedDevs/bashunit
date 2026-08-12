@@ -7,6 +7,7 @@ function bashunit::benchmark::run_function() {
   local revs=$2
   local its=$3
   local max_ms=$4
+  local bench_file=${5:-}
   local IFS=$' \t\n'
   local -a durations=()
   local durations_count=0
@@ -38,6 +39,8 @@ function bashunit::benchmark::run_function() {
     sum=$(bashunit::math::calculate "$sum + $d")
   done
   local avg=$(bashunit::math::calculate "$sum / ${#durations[@]}")
-  bashunit::benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms"
+  local joined="${durations[*]+${durations[*]}}"
+  bashunit::benchmark::add_result "$fn_name" "$revs" "$its" "$avg" "$max_ms" \
+    "$bench_file" "$joined"
 }
 
