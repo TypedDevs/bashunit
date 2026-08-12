@@ -94,6 +94,62 @@ function bashunit::coverage::get_tracked_files() {
   sort -u "$_BASHUNIT_COVERAGE_TRACKED_FILES"
 }
 
+##
+# The `case` pattern the DEBUG trap uses to reject a file before calling into
+# the recorder, built once per run from BASHUNIT_COVERAGE_PATHS.
+#
+# The trap fires for every executed line, including every line of bashunit's
+# own code running inside the test body and the hooks; most of those events
+# used to pay a function call, two locals and a cache lookup only to be
+# rejected (#1060). This pattern is a pre-filter, deliberately a SUPERSET of
+# what should_track admits -- exclusions and the real decision stay there.
+#
+# Each configured path contributes four alternatives, because the trap sees
+# ${BASH_SOURCE[0]} exactly as the source wrote it: resolved absolute, as
+# given, and the two forms of "somewhere under a directory of that name",
+# which is what keeps a test that `cd`s (issue #529) from losing coverage.
+#
+# Writes _BASHUNIT_COVERAGE_TRAP_GLOB; empty means "no filtering", which is
+# what an unset BASHUNIT_COVERAGE_PATHS must produce so behaviour cannot change.
+##
+_BASHUNIT_COVERAGE_TRAP_GLOB=""
+
+function bashunit::coverage::build_trap_glob() {
+  _BASHUNIT_COVERAGE_TRAP_GLOB=""
+
+  [ -n "${BASHUNIT_COVERAGE_PATHS:-}" ] || return 0
+
+  local glob=""
+  local cwd
+  cwd=$(pwd)
+  local old_ifs="$IFS"
+  IFS=','
+  local path resolved relative
+  for path in $BASHUNIT_COVERAGE_PATHS; do
+    [ -n "$path" ] || continue
+    case "$path" in
+    /*) resolved="$path" ;;
+    *) resolved="$cwd/$path" ;;
+    esac
+
+    # An absolute coverage path still has to admit the relative spellings: the
+    # trap sees ${BASH_SOURCE[0]} as the source wrote it, and a file sourced as
+    # "src/util/str.sh" never matches "/repo/src/util*".
+    relative="$path"
+    case "$relative" in
+    "$cwd"/*) relative="${relative#"$cwd"/}" ;;
+    esac
+
+    if [ -n "$glob" ]; then
+      glob="$glob|"
+    fi
+    glob="$glob${resolved}*|${relative}*|./${relative}*|*/${relative}/*|*/${relative}"
+  done
+  IFS="$old_ifs"
+
+  _BASHUNIT_COVERAGE_TRAP_GLOB="$glob"
+}
+
 function bashunit::coverage::should_track() {
   local file="$1"
 

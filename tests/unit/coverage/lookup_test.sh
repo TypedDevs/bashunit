@@ -148,3 +148,74 @@ function test_invalidation_picks_up_records_written_later() {
 
   assert_same "1" "${_BASHUNIT_COVERAGE_HITS_BY_LINE[7]:-}"
 }
+
+# --- DEBUG trap pre-filter (#1060) ------------------------------------------
+
+function glob_matches() { # $1 = glob, $2 = candidate
+  local matched="no"
+  eval "case \"\$2\" in $1) matched=yes ;; esac"
+  printf '%s' "$matched"
+}
+
+function test_the_trap_glob_admits_a_relative_coverage_path() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS="src/util"
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  assert_contains "src/util*" "$glob"
+  assert_contains "*/src/util/*" "$glob"
+}
+
+# An absolute coverage path still has to admit the relative spellings: the trap
+# sees ${BASH_SOURCE[0]} as the source wrote it.
+function test_the_trap_glob_of_an_absolute_path_admits_the_relative_form() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS="$(pwd)/src/util"
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  assert_contains "$(pwd)/src/util*" "$glob"
+  assert_contains "|src/util*" "$glob"
+}
+
+function test_the_trap_glob_covers_every_configured_path() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS="src/util,src/system"
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  assert_contains "*/src/util/*" "$glob"
+  assert_contains "*/src/system/*" "$glob"
+}
+
+# No configured path means no filtering, so the trap keeps its old shape and
+# behaviour cannot change.
+function test_no_coverage_path_produces_no_glob() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS=""
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  assert_empty "$glob"
+}
+
+function test_the_glob_matches_the_paths_the_trap_will_see() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS="src/util"
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  # eval, because `|` is alternation only when the pattern is parsed as
+  # syntax -- which is exactly how the trap uses it, and is not what a `case`
+  # against an expanded variable would do.
+  assert_same "yes" "$(glob_matches "$glob" "$(pwd)/src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "./src/util/str.sh")"
+  assert_same "no" "$(glob_matches "$glob" "/somewhere/else/tests/foo_test.sh")"
+}
