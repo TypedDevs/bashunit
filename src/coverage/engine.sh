@@ -223,33 +223,29 @@ function bashunit::coverage::record_line() {
   [ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ] && return 0
 
   # Fast in-memory should_track cache (avoids grep + file I/O per line)
-  case "$_BASHUNIT_COVERAGE_TRACK_CACHE" in
-  *"|${file}:0|"*) return 0 ;;
-  *"|${file}:1|"*) ;;
-  *)
-    # Not cached yet — run full check and cache result
+  local decision=""
+  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_TRACK_" "$file"; then
+    decision="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
+  else
     if bashunit::coverage::should_track "$file"; then
-      _BASHUNIT_COVERAGE_TRACK_CACHE="${_BASHUNIT_COVERAGE_TRACK_CACHE}|${file}:1|"
+      decision=1
     else
-      _BASHUNIT_COVERAGE_TRACK_CACHE="${_BASHUNIT_COVERAGE_TRACK_CACHE}|${file}:0|"
-      return 0
+      decision=0
     fi
-    ;;
-  esac
+    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_TRACK_" "$file" "$decision"
+  fi
+  if [ "$decision" = "0" ]; then
+    return 0
+  fi
 
   # Fast in-memory path normalization cache (avoids cd + pwd subshell per line)
   local normalized_file=""
-  case "$_BASHUNIT_COVERAGE_PATH_CACHE" in
-  *"|${file}="*)
-    # Extract cached value
-    normalized_file="${_BASHUNIT_COVERAGE_PATH_CACHE#*"|${file}="}"
-    normalized_file="${normalized_file%%"|"*}"
-    ;;
-  *)
+  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_PATH_" "$file"; then
+    normalized_file="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
+  else
     normalized_file=$(bashunit::coverage::normalize_path "$file")
-    _BASHUNIT_COVERAGE_PATH_CACHE="${_BASHUNIT_COVERAGE_PATH_CACHE}|${file}=${normalized_file}|"
-    ;;
-  esac
+    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_PATH_" "$file" "$normalized_file"
+  fi
 
   # Buffer the coverage data in memory
   _BASHUNIT_COVERAGE_BUFFER="${_BASHUNIT_COVERAGE_BUFFER}${normalized_file}:${lineno}

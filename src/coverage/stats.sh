@@ -70,7 +70,6 @@ _BASHUNIT_COVERAGE_STATS_HIT=()
 _BASHUNIT_COVERAGE_STATS_PCT=()
 _BASHUNIT_COVERAGE_STATS_CLASS=()
 _BASHUNIT_COVERAGE_STATS_COUNT=0
-_BASHUNIT_COVERAGE_STATS_LOOKUP=""
 
 
 # Pre-compute stats for all tracked files (call once before reports)
@@ -81,7 +80,7 @@ function bashunit::coverage::precompute_file_stats() {
   _BASHUNIT_COVERAGE_STATS_PCT=()
   _BASHUNIT_COVERAGE_STATS_CLASS=()
   _BASHUNIT_COVERAGE_STATS_COUNT=0
-  _BASHUNIT_COVERAGE_STATS_LOOKUP=""
+  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_STATS_"
 
   local file
   while IFS= read -r file; do
@@ -96,22 +95,21 @@ function bashunit::coverage::precompute_file_stats() {
     _BASHUNIT_COVERAGE_STATS_PCT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT"
     _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT"
     _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
-    _BASHUNIT_COVERAGE_STATS_LOOKUP="${_BASHUNIT_COVERAGE_STATS_LOOKUP}|${file}=${idx}|"
+    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_STATS_" "$file" "$idx"
   done < <(bashunit::coverage::get_tracked_files)
 }
 
 # Look up cached stats for a file, returns "executable:hit:pct:class"
 function bashunit::coverage::get_cached_stats() {
   local file="$1"
-  case "$_BASHUNIT_COVERAGE_STATS_LOOKUP" in
-  *"|${file}="*)
-    local idx="${_BASHUNIT_COVERAGE_STATS_LOOKUP#*"|${file}="}"
-    idx="${idx%%"|"*}"
+
+  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_STATS_" "$file"; then
+    local idx="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
     echo "${_BASHUNIT_COVERAGE_STATS_EXEC[idx]}:${_BASHUNIT_COVERAGE_STATS_HIT[idx]}\
 :${_BASHUNIT_COVERAGE_STATS_PCT[idx]}:${_BASHUNIT_COVERAGE_STATS_CLASS[idx]}"
     return 0
-    ;;
-  esac
+  fi
+
   bashunit::coverage::get_file_stats "$file"
 }
 
