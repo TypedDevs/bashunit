@@ -32,6 +32,12 @@ function bash_classification() { # $1 = file
 }
 
 function test_both_classifiers_agree_on_every_shell_file_in_the_repo() {
+  # 460 files, each an awk fork plus a Bash loop over its lines: 4.8s here,
+  # but minutes under Git Bash, where the shard hung until CI cancelled it.
+  # GNU awk (Ubuntu) and BusyBox awk (Alpine) both run this, which is what the
+  # port needed proving against.
+  bashunit::skip_on windows "460 awk forks per run takes minutes under Git Bash"
+
   local disagreements=""
   local file
   for file in $(cd "$ROOT_DIR" && git ls-files '*.sh'); do
