@@ -210,6 +210,9 @@ Arguments:
 Options:
   -e, --env, --boot <file>    Load a custom env/bootstrap file (supports args)
   -f, --filter <name>         Only run benchmarks matching the name
+  --baseline <file>           Compare against a previous --report-json result
+  --baseline-tolerance <pct>  Allowed regression before failing (default: 10)
+  --baseline-update <file>    Write this run as the new baseline
   --report-json <file>        Write machine-readable benchmark results
   --report-junit <file>       Write JUnit XML benchmark results
   -s, --simple                Simple output
@@ -225,6 +228,7 @@ Examples:
   bashunit bench benchmarks/
   bashunit bench --filter "parse"
   bashunit bench --report-json bench.json
+  bashunit bench --baseline bench.json --baseline-tolerance 5
 EOF
 }
 

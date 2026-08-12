@@ -314,6 +314,19 @@ function bashunit::main::exec_benchmarks() {
     bashunit::benchmark::report_junit "$BASHUNIT_BENCH_REPORT_JUNIT"
   fi
 
+  # Recording the new baseline before comparing against the old one: a run
+  # meant to refresh the reference should write it whatever the verdict.
+  if [ -n "${BASHUNIT_BENCH_BASELINE_UPDATE:-}" ]; then
+    bashunit::benchmark::report_json "$BASHUNIT_BENCH_BASELINE_UPDATE"
+  fi
+
+  if [ -n "${BASHUNIT_BENCH_BASELINE:-}" ]; then
+    bashunit::benchmark::baseline_load "$BASHUNIT_BENCH_BASELINE"
+    if ! bashunit::benchmark::baseline_compare "${BASHUNIT_BENCH_BASELINE_TOLERANCE:-10}"; then
+      exit 1
+    fi
+  fi
+
   bashunit::internal_log "Finished benchmarks"
 }
 

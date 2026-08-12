@@ -62,7 +62,7 @@ Seventeen, in load order. The order is the dependency layering: leaves first.
 | 12 | `doubles/` | 4 | 505 | spies and mocks — **sourced by `assert/index.sh`, not the entrypoint** |
 | 13 | `reports/` | 8 | 738 | JUnit, TAP, JSON, GHA, HTML and Markdown writers |
 | 14 | `runner/` | 13 | 2664 | the file loop, per-test execution, retry, result parsing, `--list` |
-| 15 | `benchmark/` | 5 | 454 | the bench implementation (`runner/bench.sh` is its loop) |
+| 15 | `benchmark/` | 6 | 649 | the bench implementation (`runner/bench.sh` is its loop) |
 | 16 | `learn/` | 14 | 1296 | the interactive tutorial (9 of those files are `learn/lessons/`) |
 | 17 | `main/` | 8 | 1473 | flag parsing per subcommand and the run lifecycle |
 

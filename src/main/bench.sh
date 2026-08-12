@@ -20,6 +20,30 @@ function bashunit::main::cmd_bench() {
       filter="$2"
       shift
       ;;
+    --baseline)
+      BASHUNIT_BENCH_BASELINE="$2"
+      export -n BASHUNIT_BENCH_BASELINE
+      shift
+      ;;
+    --baseline-tolerance)
+      BASHUNIT_BENCH_BASELINE_TOLERANCE="$2"
+      export -n BASHUNIT_BENCH_BASELINE_TOLERANCE
+      case "$BASHUNIT_BENCH_BASELINE_TOLERANCE" in
+      '' | *[!0-9.]*)
+        printf "%sError: --baseline-tolerance expects a percentage, got '%s'.%s\n" \
+          "${_BASHUNIT_COLOR_FAILED}" "$2" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+        exit 1
+        ;;
+      esac
+      shift
+      ;;
+    --baseline-update)
+      BASHUNIT_BENCH_BASELINE_UPDATE="$2"
+      export -n BASHUNIT_BENCH_BASELINE_UPDATE
+      bashunit::main::require_writable_path_or_exit \
+        "$BASHUNIT_BENCH_BASELINE_UPDATE" "BASHUNIT_BENCH_BASELINE_UPDATE"
+      shift
+      ;;
     --report-json)
       BASHUNIT_BENCH_REPORT_JSON="$2"
       export -n BASHUNIT_BENCH_REPORT_JSON
