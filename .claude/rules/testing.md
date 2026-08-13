@@ -95,6 +95,28 @@ assert_match_named_snapshot "stderr" "$stderr" # multiple snapshots in one test
 # Re-record deliberately: ./bashunit --snapshot-update --filter "test name" tests/
 ```
 
+## Writing a test that generates test files
+
+The duplicate-test-function check scans a file **textually**, so a fixture body
+embedded in a string counts as a definition of the *enclosing* file:
+
+```bash
+function test_one() {
+  run_fixture 'function test_x() { assert_same 1 1; }'   # ← counted
+}
+function test_two() {
+  run_fixture 'function test_x() { assert_same 2 2; }'   # ← counted: duplicate
+}
+```
+
+That fails the whole run before any test executes, and the message names a
+function this file never defines. Give every embedded fixture function a name
+unique across the file. The report includes the line of each definition
+(`test_x (lines 30, 40)`), which is what identifies the strings.
+
+It cannot be fixed by tracking quote state — an apostrophe in any comment
+(`# doesn't work`) would flip it and mask real duplicates.
+
 ## Test Isolation
 
 - Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` (auto-cleaned) for file
