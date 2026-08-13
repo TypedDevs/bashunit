@@ -6,7 +6,7 @@ function bashunit::coverage::generate_file_html() {
   local file="$1"
   local output_file="$2"
 
-  local display_file="${file#"$(pwd)"/}"
+  local display_file="${file#"$PWD"/}"
   local executable hit pct class stats
   stats=$(bashunit::coverage::get_cached_stats "$file")
   bashunit::coverage::split_stats "$stats"
@@ -26,6 +26,16 @@ function bashunit::coverage::generate_file_html() {
     file_lines[_fli]="$_fl"
     ((++_fli))
   done <"$file"
+
+  # And their escaped form, in ONE awk pass for the whole file. Escaping per
+  # line cost a command substitution and a sed each -- about 22,000 processes
+  # for this repo, 58.7s of HTML report (#1096).
+  local -a escaped_lines=()
+  local _eli=0 _el
+  while IFS= read -r _el || [ -n "$_el" ]; do
+    escaped_lines[_eli]="$_el"
+    ((++_eli))
+  done < <(bashunit::coverage::html_escape_file "$file")
 
   # Pre-load test hits data into indexed array (for tooltips)
   # Index: line number, Value: newline-separated list of "test_file:test_function"
@@ -53,8 +63,7 @@ function bashunit::coverage::generate_file_html() {
   done < <(bashunit::coverage::get_all_line_tests "$file")
 
   # Count total lines and functions
-  local total_lines
-  total_lines=$(wc -l <"$file" | tr -d ' ')
+  local total_lines="${#file_lines[@]}"
   local non_executable=$((total_lines - executable))
 
   {
@@ -65,7 +74,7 @@ function bashunit::coverage::generate_file_html() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 EOF
-    echo "  <title>$(basename "$display_file") | Coverage Report</title>"
+    echo "  <title>${display_file##*/} | Coverage Report</title>"
     cat <<'EOF'
   <style>
     :root {
@@ -204,7 +213,7 @@ EOF
         <a href="../index.html" class="back-btn">← Back to Overview</a>
         <div class="file-title">
 EOF
-    echo "          <span class=\"file-name\">$(basename "$display_file")</span>"
+    echo "          <span class=\"file-name\">${display_file##*/}</span>"
     cat <<'EOF'
         </div>
       </div>
@@ -306,7 +315,10 @@ EOF
         done
 
         local fn_pct fn_class row_class
-        fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
+        fn_pct=0
+        if [ "$fn_executable" -gt 0 ]; then
+          fn_pct=$((fn_hit * 100 / fn_executable))
+        fi
         bashunit::coverage::class_to_slot "$fn_pct"
         fn_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
         case "$fn_class" in
@@ -354,8 +366,7 @@ EOF
     for line in "${file_lines[@]}"; do
       ((++lineno))
 
-      local escaped_line
-      escaped_line=$(bashunit::coverage::html_escape "$line")
+      local escaped_line="${escaped_lines[$((lineno - 1))]:-}"
 
       local row_class=""
       local hits_display=""
@@ -375,8 +386,7 @@ EOF
             local test_file test_fn
             while IFS=':' read -r test_file test_fn; do
               [ -z "$test_file" ] && continue
-              local short_file
-              short_file=$(basename "$test_file")
+              local short_file="${test_file##*/}"
               tooltip_html="$tooltip_html<li><span class=\"hits-tooltip-file\">${short_file}</span>:<span class=\"hits-tooltip-fn\">${test_fn}</span></li>"
             done <<<"$test_info"
             tooltip_html="$tooltip_html</ul></div>"

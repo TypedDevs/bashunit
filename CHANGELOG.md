@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Performance: `--coverage-report-html` no longer forks twice per source line to escape it — 58.7s to 9.5s for 128 files here, with the escaping done once per file and the per-page `wc`, `basename` and `pwd` calls replaced by parameter expansions (#1096)
 - Performance: the coverage report picks its colours without a subshell per file and per function — the text report over 128 files went from 387ms to 318ms, and 4042ms to 3116ms with `BASHUNIT_COVERAGE_SHOW_FUNCTIONS` on (#1092)
 
 ## [0.47.0](https://github.com/TypedDevs/bashunit/compare/0.46.0...0.47.0) - 2026-08-13

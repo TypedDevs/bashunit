@@ -2,11 +2,42 @@
 
 # HTML coverage report: orchestration and shared helpers.
 
-# Escape HTML special characters
-# Uses sed for cross-version bash compatibility (bash 3.2 vs 4.4+ handle & differently in replacement strings)
+# Escape HTML special characters.
+#
+# This cannot be `${text//&/&amp;}`. Bash 5.2 made a bare `&` in the
+# REPLACEMENT mean "the matched text", so `${text//</&lt;}` yields `<lt;`
+# there, while escaping it as `\&` to satisfy 5.2 emits a literal backslash on
+# 3.2. No single pattern-substitution form is right across the supported range,
+# and both failure modes are silent, so the escaping goes through a tool with
+# stable semantics.
 function bashunit::coverage::html_escape() {
   local text="$1"
   printf "%s" "$text" | sed "s/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g"
+}
+
+# The same escaping for a whole file, one awk pass, emitting one escaped line
+# per source line in order.
+#
+# The per-line call above cost a command substitution AND a `sed` for every
+# line of every page: about 22,000 processes for this repo, which is why an
+# HTML report took 58.7s (#1096). In awk the replacement metacharacter is `&`
+# too, hence the `\&` in each replacement.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_HTML_ESCAPE='
+{
+  gsub(/&/, "\\&amp;")
+  gsub(/</, "\\&lt;")
+  gsub(/>/, "\\&gt;")
+  print
+}
+'
+
+##
+# Escapes every line of $1, one line of output per line of input.
+# Arguments: $1 - source file
+##
+function bashunit::coverage::html_escape_file() {
+  env LC_ALL=C "$AWK" "$_BASHUNIT_COVERAGE_AWK_HTML_ESCAPE" "$1"
 }
 
 function bashunit::coverage::report_html() {
