@@ -99,8 +99,7 @@ function bashunit::coverage::init() {
   bashunit::coverage::build_trap_glob
   export _BASHUNIT_COVERAGE_TRAP_GLOB
   bashunit::coverage::invalidate_hits_aggregation
-  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_TRACK_"
-  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_PATH_"
+  bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_FILE_"
   _BASHUNIT_COVERAGE_IS_PARALLEL=""
   _BASHUNIT_COVERAGE_STATS_FILES=()
   _BASHUNIT_COVERAGE_STATS_EXEC=()
