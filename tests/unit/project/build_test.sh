@@ -336,7 +336,18 @@ function test_built_binary_contains_no_source_lines() {
 # So: keep the artifact readable and move the line, with headroom for a few more
 # features. Raise it deliberately and record the number again when it is hit —
 # do not silence it.
-function test_built_binary_stays_below_608_kib() {
+#
+# Raised again to 655360 (640 KiB) after the coverage rewrite: the report phase
+# and the capture path grew several embedded awk programs (#1084, #1088, #1090,
+# #1096, #1098, #1099), which are code and survive the comment strip. Measured
+# 622526 bytes at that point — 66 bytes under the old line, so the next change
+# of any size would have tripped it.
+#
+# Note this check needs shfmt and jq, and skips without them. It runs in the
+# Build & Verify workflow, which installs shfmt; the copy of the suite in the
+# Tests workflow skips it, as does a contributor without those tools. So a
+# green local run is not evidence the artifact is inside the budget (#1125).
+function test_built_binary_stays_below_640_kib() {
   if ! build_optimizer_is_available; then
     bashunit::skip "shfmt and jq are required for standalone optimization"
     return
@@ -349,7 +360,7 @@ function test_built_binary_stays_below_608_kib() {
 
   local bytes
   bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
-  assert_less_or_equal_than 622592 "$bytes"
+  assert_less_or_equal_than 655360 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {
