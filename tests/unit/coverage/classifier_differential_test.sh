@@ -13,9 +13,22 @@ function set_up_before_script() {
 # $2 overrides the rule source, which is how the mutation below is injected.
 function awk_classification() { # $1 = file, $2 = optional rule source
   local rules="${2:-$(bashunit::coverage::awk_rules)}"
-  env LC_ALL=C "$AWK" "$rules"'
+  local out status=0
+  out=$(env LC_ALL=C "$AWK" "$rules"'
     { printf "%s %s\n", FNR, bu_is_executable($0) }
-  ' "$1"
+  ' "$1") || status=$?
+
+  # An awk that failed prints nothing, and empty output is indistinguishable
+  # from "every line classified differently" once it reaches the diff -- so a
+  # transient fork failure under load reported as "the classifiers disagree",
+  # which is the most alarming message this suite can produce and was not what
+  # happened (#1143). Say which it was.
+  if [ "$status" -ne 0 ]; then
+    printf 'AWK-FAILED(exit %s) on %s\n' "$status" "$1"
+    return 0
+  fi
+
+  printf '%s\n' "$out"
 }
 
 # Classifies every line of $1 with the Bash reference, same format.
@@ -96,4 +109,15 @@ function test_the_classifiers_agree_on_the_quirk_cases() {
   } >"$fixture"
 
   assert_same "$(bash_classification "$fixture")" "$(awk_classification "$fixture")"
+}
+
+# The differential compares two outputs, so anything that empties one of them
+# reads as a total disagreement. A transient awk failure under CI load did
+# exactly that, reporting "the classifiers disagree on every shell file" when
+# nothing had disagreed (#1143).
+function test_a_failing_awk_is_reported_as_a_failure_not_a_disagreement() {
+  local out
+  out=$(awk_classification "/definitely/not/a/file.sh")
+
+  assert_contains "AWK-FAILED" "$out"
 }
