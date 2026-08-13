@@ -14,6 +14,20 @@ function bashunit::reports::__tap_message() {
 }
 
 ##
+# Escapes a test description for a TAP `ok`/`not ok` line.
+#
+# TAP 13 reads an unescaped `#` as the start of a directive, so a passing test
+# called "check # SKIP me" is reported as skipped and vanishes from the count
+# (#1119). The backslash goes first, or an escape written by this function
+# would itself be re-escaped.
+##
+function bashunit::reports::__tap_description() {
+  local text="$1"
+  text="${text//\\/\\\\}"
+  printf '%s' "${text//#/\\#}"
+}
+
+##
 # Writes results in TAP version 13 format (https://testanything.org).
 # Passing/snapshot -> "ok", failed -> "not ok" with a YAML diagnostic,
 # skipped/risky -> "# SKIP", incomplete -> "# TODO".
@@ -30,7 +44,8 @@ function bashunit::reports::generate_report_tap() {
     local i seq=0
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
       seq=$((seq + 1))
-      local name="${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+      local name
+      name="$(bashunit::reports::__tap_description "${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}")"
       local status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
       local failure_message="${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
 

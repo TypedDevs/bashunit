@@ -536,6 +536,41 @@ function test_generate_report_tap_ok_for_passed_test() {
   assert_contains "ok 1 - test_one" "$(cat "$_TEMP_OUTPUT_FILE")"
 }
 
+# TAP reads an unescaped `#` as the start of a directive, so a passing test
+# named "check # SKIP me" was reported as skipped and disappeared from the
+# count on any dashboard consuming the file (#1119).
+function test_generate_report_tap_escapes_a_hash_in_the_test_name() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "check # SKIP me" "100" "2" "passed"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains 'ok 1 - check \# SKIP me' "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
+# A directive bashunit itself emits comes after the description and must stay
+# readable as one.
+function test_generate_report_tap_keeps_its_own_skip_directive_unescaped() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" "test_one" "100" "2" "skipped"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains "ok 1 - test_one # SKIP" "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
+function test_generate_report_tap_escapes_a_backslash_before_the_hash() {
+  _mock_state_functions
+  BASHUNIT_REPORT_TAP="report.tap"
+
+  bashunit::reports::add_test "test.sh" 'path\to # thing' "100" "2" "passed"
+  bashunit::reports::generate_report_tap "$_TEMP_OUTPUT_FILE"
+
+  assert_contains 'ok 1 - path\\to \# thing' "$(cat "$_TEMP_OUTPUT_FILE")"
+}
+
 function test_generate_report_tap_not_ok_for_failed_test() {
   _mock_state_functions
   BASHUNIT_REPORT_TAP="report.tap"
