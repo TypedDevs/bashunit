@@ -59,11 +59,17 @@ A file created *after* that point is not seeded, though it is still tracked if i
 :::
 
 ::: tip Performance
-Coverage roughly doubles to quadruples wall-clock time, depending on Bash version
-and engine. Capture dominates: the report phase is a handful of `awk` passes for
-the whole run, while capture pays per executed line. If that is too slow to keep
-on while you work, narrow `BASHUNIT_COVERAGE_PATHS` — both halves scale with the
-number of tracked source lines, not with the size of the test suite.
+Coverage costs somewhere between 2x and 6x wall-clock time — how much depends on
+how much *tracked* code the suite actually executes, not on how many tests there
+are. Running this repo's own `tests/unit/assert/basic_test.sh` against all 128
+files of `src` sits at the top of that range: 0.6s to 3.4s on Bash 3.2, and 0.3s
+to 2.0s on Bash 5.
+
+Capture dominates: the report phase is a handful of `awk` passes for the whole
+run, while capture pays per executed line, through a `DEBUG` trap that fires for
+every command. If it is too slow to keep on while you work, narrow
+`BASHUNIT_COVERAGE_PATHS` — the cost follows the number of tracked source lines
+that run.
 :::
 
 ### Seeing which engine ran
