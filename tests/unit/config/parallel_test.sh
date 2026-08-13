@@ -23,7 +23,10 @@ function set_up() {
   _ORIGINAL_TEMP_DIR_PARALLEL="${TEMP_DIR_PARALLEL_TEST_SUITE:-}"
   _ORIGINAL_TEMP_FILE_STOP="${TEMP_FILE_PARALLEL_STOP_ON_FAILURE:-}"
 
-  export TEMP_DIR_PARALLEL_TEST_SUITE="$_TEST_TEMP_DIR/bashunit/parallel/suite"
+  # Mirrors the production shape "<tmp>/bashunit/parallel/<os>/<token>": the
+  # cleanup guard requires the token segment, because the per-OS parent is
+  # shared between concurrent runs and deleting it takes their data too (#1165).
+  export TEMP_DIR_PARALLEL_TEST_SUITE="$_TEST_TEMP_DIR/bashunit/parallel/OSX/suite"
   export TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$_TEST_TEMP_DIR/stop_on_failure"
 }
 
@@ -207,6 +210,24 @@ function test_cleanup_removes_temp_directory() {
 
   assert_directory_not_exists "$TEMP_DIR_PARALLEL_TEST_SUITE"
 }
+
+# The per-OS parent is shared by every concurrent run, and the guard used to
+# accept it because it only looked for "/bashunit/parallel/" anywhere in the
+# path. A run whose random token came out empty would resolve there and take
+# every other run's suite directory with it (#1165).
+function test_cleanup_refuses_the_shared_per_os_parent() {
+  local parent="$_TEST_TEMP_DIR/bashunit/parallel/OSX"
+  local sibling="$parent/another_run"
+  mkdir -p "$sibling"
+  export TEMP_DIR_PARALLEL_TEST_SUITE="$parent"
+
+  local rc=0
+  bashunit::parallel::cleanup >/dev/null 2>&1 || rc=$?
+
+  assert_same 1 "$rc"
+  assert_directory_exists "$sibling"
+}
+
 
 function test_cleanup_refuses_path_outside_bashunit_parallel() {
   local unsafe_dir="$_TEST_TEMP_DIR/not_bashunit"

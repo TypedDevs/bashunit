@@ -497,6 +497,48 @@ function test_cleanup_run_output_dir_removes_the_run_dir() {
   assert_same "removed" "$out"
 }
 
+# The run directory is "<tmp>/bashunit/run/<os>/<random token>", and the guard
+# only required "/bashunit/run/" to appear somewhere in the path -- so the
+# per-OS parent passed it. A run whose token came out empty would therefore
+# point at that parent and delete every *concurrent* run's scratch directory on
+# the machine, not just its own (#1165).
+function test_cleanup_run_output_dir_refuses_the_shared_per_os_parent() {
+  local base sibling
+  base="$(bashunit::temp_dir)/bashunit/run/OSX"
+  sibling="$base/another_run"
+  mkdir -p "$sibling"
+  touch "$sibling/failures"
+
+  local status=0
+  (
+    _BASHUNIT_RUN_OUTPUT_DIR="$base"
+    bashunit::env::cleanup_run_output_dir >/dev/null 2>&1
+  ) || status=$?
+
+  assert_same 1 "$status"
+  assert_file_exists "$sibling/failures"
+}
+
+# Same path with a trailing slash, which is what an empty token actually
+# produces: "<tmp>/bashunit/run/OSX/" .
+function test_cleanup_run_output_dir_refuses_an_empty_token() {
+  local base sibling
+  base="$(bashunit::temp_dir)/bashunit/run/OSX"
+  sibling="$base/another_run"
+  mkdir -p "$sibling"
+  touch "$sibling/failures"
+
+  local status=0
+  (
+    _BASHUNIT_RUN_OUTPUT_DIR="$base/"
+    bashunit::env::cleanup_run_output_dir >/dev/null 2>&1
+  ) || status=$?
+
+  assert_same 1 "$status"
+  assert_file_exists "$sibling/failures"
+}
+
+
 function test_cleanup_run_output_dir_refuses_paths_outside_the_run_tree() {
   local dir
   dir="$(bashunit::temp_dir)/precious_data"
