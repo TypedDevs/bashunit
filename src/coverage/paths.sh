@@ -78,12 +78,30 @@ function bashunit::coverage::reset_lookup_namespace() {
 function bashunit::coverage::normalize_path() {
   local file="$1"
 
-  # Normalize path to absolute
-  if [ -f "$file" ]; then
-    echo "$(cd "$(dirname "$file")" && pwd)/$(basename "$file")"
-  else
-    echo "$file"
+  [ -f "$file" ] || {
+    # `builtin printf` throughout: a test spying or mocking printf must not be
+    # able to shadow a path the coverage engine depends on (#724).
+    builtin printf '%s' "$file"
+    return 0
+  }
+
+  # One fork, not four. This runs on every cache miss in the DEBUG trap -- 494
+  # times in a single run of one test file -- and `$(cd "$(dirname X)" && pwd)`
+  # plus `$(basename X)` is a command substitution each: 2081ms per 500 calls
+  # against 424ms this way (#1102).
+  #
+  # The `cd` stays: it resolves symlinks, so `/tmp/x` normalizes to
+  # `/private/tmp/x` on macOS the way the rest of the tracking expects. Pure
+  # string manipulation would be faster still and would report the unresolved
+  # path, which no longer matches the tracked roots.
+  local dir="${file%/*}" base="${file##*/}"
+  if [ "$dir" = "$file" ]; then
+    dir="."
+  elif [ -z "$dir" ]; then
+    dir="/"
   fi
+
+  builtin printf '%s/%s' "$(cd "$dir" 2>/dev/null && pwd)" "$base"
 }
 
 # Get deduplicated list of tracked files
