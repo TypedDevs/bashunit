@@ -87,9 +87,11 @@ function bashunit::main::cmd_bench() {
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
       set -o allexport
-      # `source` is a special builtin: a syntax error in the file, or a bare
-      # `exit`, ends this shell here and nothing below runs. The marker is what
-      # the EXIT trap reports when it was never cleared (#1181).
+      # Two ways this never returns: a syntax error makes `source` return
+      # non-zero, which ends the shell because `set -e` is active here, and a
+      # bare `exit` in the file ends it regardless. Either way nothing below
+      # runs, so the marker is what the EXIT trap reports when it was never
+      # cleared (#1181).
       _BASHUNIT_LOADING_BOOTSTRAP="$boot_file"
       # shellcheck disable=SC1090,SC2086
       source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
@@ -145,12 +147,11 @@ function bashunit::main::cmd_bench() {
   # error left the run with no tests, no summary and exit 0, and CI passed
   # having executed nothing (#1179).
   if [ -f "${BASHUNIT_BOOTSTRAP:-}" ]; then
-    # `source` is a POSIX special builtin: a syntax error in the file, or a
-    # bare `exit`, terminates this shell right here -- so nothing after the
-    # call can report it, and the run ended with no tests, no summary and
-    # exit 0 (#1179). Pre-validating with `bash -n` would cost an interpreter
-    # fork on every invocation, which the cold-start budget forbids, so leave
-    # a marker instead and let the EXIT trap notice it was never cleared.
+    # Two ways this never returns: a syntax error makes `source` return
+    # non-zero, which ends the shell because `set -e` is active here, and a
+    # bare `exit` in the file ends it regardless. Either way nothing below
+    # runs, so the marker is what the EXIT trap reports when it was never
+    # cleared (#1179).
     _BASHUNIT_LOADING_BOOTSTRAP="$BASHUNIT_BOOTSTRAP"
     # shellcheck disable=SC1090,SC2086
     source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}

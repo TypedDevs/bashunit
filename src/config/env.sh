@@ -949,9 +949,9 @@ function bashunit::env::cleanup_run_output_dir() {
 # subshells never inherit EXIT traps, so a parallel worker cannot remove the
 # directory mid-run.
 # Set while a bootstrap file is being sourced, cleared immediately after. A
-# `source` that never returns -- special-builtin semantics on a syntax error or
-# a bare `exit` -- leaves it set, which is the only trace such a failure leaves
-# (#1179).
+# `source` that never returns -- a syntax error while `set -e` is active, or a
+# bare `exit` in the file -- leaves it set, which is the only trace such a
+# failure leaves (#1179).
 _BASHUNIT_LOADING_BOOTSTRAP=""
 
 function bashunit::env::report_unfinished_bootstrap() {
