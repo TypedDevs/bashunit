@@ -133,6 +133,17 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
   fork-free (sequential) or mktemp-only (parallel); budgets are enforced by
   `tests/acceptance/bashunit_*forks*_test.sh` on three platforms — a "harmless"
   `echo | sed` in a per-test path will fail CI.
+- **`call_test_functions` is a background subshell under `--parallel`**
+  (`discovery.sh` backgrounds it per file). Anything it sets in shell state —
+  counters, flags, error records — dies with the worker. Only two things cross
+  back: per-test `.result` payloads, and files written to disk. This produced
+  two silent-green bugs in one day: a data-provider error printed while the run
+  exited 0 (#1145), and duplicate-test-function detection being entirely off in
+  the mode CI uses (#1147). Before adding a check anywhere under that call, ask
+  which side of the fork it belongs on — a whole-file check almost always
+  belongs in the parent loop, before dispatch.
+  **Verify both modes.** Sequential and `--parallel` disagreeing is the
+  signature of this bug, and it is invisible to a sequential-only test.
 - **Binaries pinned at startup** (`$GREP`, `$MKTEMP`, `$CAT` in env.sh) so test
   doubles/PATH games can't hijack the framework's own plumbing.
 - **Snapshots assume 80-col non-tty width** (`tput cols` fallback); anything
