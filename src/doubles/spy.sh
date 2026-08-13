@@ -194,6 +194,11 @@ function bashunit::doubles::record_call() {
 function bashunit::spy() {
   local command=$1
   local exit_code_or_impl="${2:-}"
+
+  if bashunit::doubles::refuse_unusable_name "spy" "$command"; then
+    return 1
+  fi
+
   local variable
   bashunit::helper::normalize_variable_name_to_slot "$command"
   variable=$_BASHUNIT_HELPER_VARNAME_OUT

@@ -350,3 +350,33 @@ function test_a_destructive_command_is_never_reached() {
 
   assert_have_never_been_called a_destructive_command
 }
+
+# All three doubles build the double with `eval "function $command() { … }"`, so
+# a name carrying whitespace or shell syntax used to surface as a raw bash
+# syntax error pointing at bashunit's internals (#1136). Passing the arguments
+# along with the command is the easy way to hit it.
+function test_mock_refuses_a_name_with_arguments() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Mock refuses a name with arguments" \
+      "ls -l" "is not a usable command name for mock; pass arguments after it, as in" "mock ls -l")" \
+    "$(bashunit::mock "ls -l" echo hi)"
+}
+
+function test_spy_refuses_a_name_with_shell_syntax() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test "Spy refuses a name with shell syntax" \
+      "foo;bar" "is not a usable command name for spy; pass arguments after it, as in" "spy ls -l")" \
+    "$(bashunit::spy "foo;bar")"
+}
+
+# Narrow on purpose: these are legal function names in bash and legitimate
+# commands to mock, so the guard must not reject them.
+function test_mock_accepts_names_bash_allows() {
+  bashunit::mock foo-bar echo one
+  bashunit::mock a.b echo two
+  bashunit::mock a:b echo three
+
+  assert_same "one" "$(foo-bar)"
+  assert_same "two" "$(a.b)"
+  assert_same "three" "$(a:b)"
+}

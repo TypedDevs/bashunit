@@ -48,9 +48,45 @@ function bashunit::doubles::is_exit_code() {
 }
 
 
+# Refuses a name the doubles cannot build a function from.
+#
+# All three doubles run `eval "function $command() { … }"`, so a name carrying
+# whitespace or shell syntax is a syntax error and the user sees bashunit's
+# internals rather than their mistake -- `mock "ls -l" echo hi` reported
+# `syntax error near unexpected token '-l'` (#1136).
+#
+# Narrow on purpose: `foo-bar`, `a.b`, `x+y`, `a$b` and `a:b` are all legal
+# function names in bash and legitimate commands to mock, so only the
+# characters that actually break the eval are rejected.
+function bashunit::doubles::refuse_unusable_name() {
+  local fn=$1 command=$2
+
+  case "$command" in
+  '')
+    bashunit::assert::fail_with "" "$fn" "expects a command name, got" "nothing"
+    return 0
+    ;;
+  *[[:space:]\;\|\&\(\)\{\}\<\>\"\'\`]*)
+    # Through fail_with, like an assertion: it labels the failure with the test
+    # name and counts it, so the misuse is visible in a default run rather than
+    # only under --strict.
+    bashunit::assert::fail_with "" "$command" \
+      "is not a usable command name for $fn; pass arguments after it, as in" "$fn ls -l"
+    return 0
+    ;;
+  esac
+
+  return 1
+}
+
+
 function bashunit::mock() {
   local command=$1
   shift
+
+  if bashunit::doubles::refuse_unusable_name "mock" "$command"; then
+    return 1
+  fi
 
   if [ $# -eq 1 ] && bashunit::doubles::is_exit_code "$1"; then
     eval "function $command() { return $1; }"
@@ -83,6 +119,10 @@ function bashunit::mock() {
 function bashunit::mock_sequence() {
   local command=$1
   shift
+
+  if bashunit::doubles::refuse_unusable_name "mock_sequence" "$command"; then
+    return 1
+  fi
 
   if [ $# -eq 0 ]; then
     bashunit::assert::usage_error_detail "bashunit::mock_sequence" \
