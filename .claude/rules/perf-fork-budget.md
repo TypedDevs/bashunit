@@ -154,6 +154,37 @@ sides still overlap — serialising them was measurably slower) and compare with
   lines on Bash 3.x, and no amount of buffering or flushing changes that
   (#1101, #1112).
 
+## Where the time actually goes, per test vs per assertion
+
+Measured on macOS, sequential, fork-free paths (repeat before trusting; single
+runs vary):
+
+| shape | wall | per unit |
+|---|---|---|
+| 1 test, 500 `assert_same` | ~73 ms | **0.15 ms** per assertion |
+| 500 tests, 1 assertion each | ~3.9 s | **7.8 ms** per test |
+| 2000 `assert_same` | ~130 ms | 0.065 ms |
+| 500 `assert_matches` | ~1.25 s | 2.5 ms (the `grep -E` fork) |
+
+**A test costs ~50x an assertion.** Shaving microseconds off an assertion is
+close to pointless next to anything that touches the per-test path -- which is
+why #801-#851 went after per-test forks and not the assertion layer.
+
+Two things that were checked and are *not* the explanation, so nobody re-checks
+them:
+
+- **Not forks.** A PATH-shim census over 30 binaries counts **12 forks for 500
+  tests** (3 perl, 2 rm, 2 awk, and one each of uname/tput/mkdir/bc/base64).
+  The per-test path is genuinely fork-free.
+- **Not the capture subshell.** A bare `$( )` costs ~0.46 ms here, about 6% of
+  the 7.8 ms. The rest is bash work in the per-test machinery.
+- **Not quadratic.** Per-test cost is 7.17 ms at 100 tests and 8.06 ms at 1000
+  -- +12% over a 10x range, so the #830 fn-accumulation fix still holds. A
+  regression there would show as per-test cost climbing with suite size.
+
+No win was found in this pass; the numbers are here so the next attempt starts
+from them rather than re-deriving them.
+
 ## Current budgets (Bash 3.2 macOS)
 
 **Sequential 1-test file run:** 2 `awk` (provider map — built once in the main
