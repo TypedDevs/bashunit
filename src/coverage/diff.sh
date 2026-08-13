@@ -85,6 +85,64 @@ function bashunit::coverage::changed_line_stats() {
 }
 
 ##
+# The files diff coverage reports on: everything changed since $1 that coverage
+# would track.
+#
+# It used to iterate the tracked files, which only holds what executed at least
+# once -- so a brand new file no test touched was skipped, the changed-line
+# total stayed 0, and the empty-set-is-100% rule (right for a docs-only commit)
+# passed a fully untested file through a 90% gate (#1054). "Nothing changed"
+# and "the changed file never ran" were the same input.
+#
+# should_track is the filter, so a changed file outside the coverage paths or
+# matched by an exclude pattern is still not counted, and a deleted file is
+# skipped by git_changed_files' --diff-filter=d plus the -f test in the caller.
+# Arguments: $1 - base ref
+##
+function bashunit::coverage::diff_files() {
+  local base=$1
+  local changed
+  changed="$(bashunit::helper::git_changed_files "$base")"
+  [ -n "$changed" ] || return 0
+
+  # Everything coverage seeds is *.sh, and a changed README under the coverage
+  # path is not code -- counting its lines as uncovered would fail the gate for
+  # a docs-only commit, which is the case #1032 wrote the empty-set rule for.
+  # A file without the extension still counts once it has executed, which is
+  # how an extensionless script reaches the report at all.
+  local tracked
+  tracked="$(bashunit::coverage::get_tracked_files)"
+
+  local file normalized
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    [ -f "$file" ] || continue
+
+    normalized="$(bashunit::coverage::normalize_path "$file")"
+    case "$file" in
+    *.sh) ;;
+    *)
+      case "
+$tracked
+" in
+      *"
+$normalized
+"*) ;;
+      *) continue ;;
+      esac
+      ;;
+    esac
+
+    if bashunit::coverage::should_track "$file"; then
+      printf '%s\n' "$normalized"
+    fi
+  done <<EOF
+$changed
+EOF
+}
+
+
+##
 # Renders the diff coverage report, replacing the whole-file text report.
 # Returns: 0 always; the threshold gate is checked separately.
 ##
@@ -119,7 +177,7 @@ function bashunit::coverage::report_diff() {
     local display_file="${file#"$(pwd)"/}"
     printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
       "$color" "$display_file" "$hit" "$changed" "$pct" "$reset"
-  done < <(bashunit::coverage::get_tracked_files)
+  done < <(bashunit::coverage::diff_files "$base")
 
   if [ "$has_files" = false ]; then
     echo "No changed executable lines."

@@ -162,3 +162,104 @@ function test_running_outside_a_repository_fails_loudly() {
 
   assert_contains "needs a git repository" "$output"
 }
+
+# --- a changed file that no test executed (#1054) ---------------------------
+
+# The gate exists to catch exactly this: a PR adding a fully untested file used
+# to pass, because the report iterated the files that RAN, so the new file was
+# skipped, the changed-line total stayed 0, and the empty-set-is-100% rule
+# (right for a docs-only commit) applied.
+function test_a_new_file_no_test_executed_is_reported_at_zero() {
+  local repo
+  repo="$(_diff_project)"
+  {
+    echo '#!/usr/bin/env bash'
+    echo 'function never_called() {'
+    echo '  echo "one"'
+    echo '  echo "two"'
+    echo '}'
+  } >"$repo/brand_new.sh"
+
+  local output
+  output="$(_run_diff_coverage "$repo" --coverage-diff base)"
+
+  assert_contains "brand_new.sh" "$output"
+  assert_matches "brand_new.sh[[:space:]]+0/" "$output"
+}
+
+function test_the_gate_fails_for_a_new_untested_file() {
+  local repo
+  repo="$(_diff_project)"
+  {
+    echo '#!/usr/bin/env bash'
+    echo 'function never_called() {'
+    echo '  echo "one"'
+    echo '}'
+  } >"$repo/brand_new.sh"
+
+  local ec=0
+  (
+    cd "$repo" || exit 1
+    BASHUNIT_COVERAGE_PATHS="$repo" BASHUNIT_COVERAGE_REPORT="" \
+      "$OLDPWD/bashunit" --no-parallel --coverage --coverage-diff base \
+      --coverage-min 90 ./suite_test.sh >/dev/null 2>&1
+  ) || ec=$?
+
+  assert_equals "1" "$ec"
+}
+
+# #1032's behaviour, preserved: nothing changed anywhere is still 100% and
+# still passes, which is what keeps a docs-only commit green.
+function test_no_changed_executable_lines_still_passes_the_gate() {
+  local repo
+  repo="$(_diff_project)"
+  printf 'docs only\n' >"$repo/README.md"
+
+  local ec=0
+  (
+    cd "$repo" || exit 1
+    BASHUNIT_COVERAGE_PATHS="$repo" BASHUNIT_COVERAGE_REPORT="" \
+      "$OLDPWD/bashunit" --no-parallel --coverage --coverage-diff base \
+      --coverage-min 90 ./suite_test.sh >/dev/null 2>&1
+  ) || ec=$?
+
+  assert_equals "0" "$ec"
+}
+
+# A changed file the coverage paths do not cover must not be counted, however
+# untested it is.
+function test_a_changed_file_outside_the_coverage_paths_is_not_counted() {
+  local repo
+  repo="$(_diff_project)"
+  mkdir -p "$repo/outside"
+  {
+    echo '#!/usr/bin/env bash'
+    echo 'function elsewhere() { echo "x"; }'
+  } >"$repo/outside/other.sh"
+
+  local output
+  output="$(
+    cd "$repo" || exit 1
+    BASHUNIT_COVERAGE_PATHS="$repo/lib.sh" BASHUNIT_COVERAGE_REPORT="" \
+      "$OLDPWD/bashunit" --no-parallel --coverage --coverage-diff base \
+      ./suite_test.sh 2>&1 | sed 's/\x1B\[[0-9;]*m//g'
+  )"
+
+  assert_not_contains "other.sh" "$output"
+}
+
+function test_a_deleted_file_does_not_break_the_report() {
+  local repo
+  repo="$(_diff_project)"
+  # `|| true`: under --strict a non-zero from this setup would end the test
+  # before it asserts anything.
+  (cd "$repo" && git rm -q lib.sh) >/dev/null 2>&1 || true
+
+  # `|| true`: the suite sources the file this test just deleted, so the child
+  # run exits non-zero, and under --strict (pipefail) that would end this test
+  # at the assignment instead of at the assertion.
+  local output
+  output="$(_run_diff_coverage "$repo" --coverage-diff base || true)"
+
+  assert_contains "Diff Coverage" "$output"
+}
