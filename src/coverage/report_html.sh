@@ -76,9 +76,8 @@ function bashunit::coverage::report_html() {
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
-    local stats executable hit pct
-    stats=$(bashunit::coverage::get_cached_stats "$file")
-    bashunit::coverage::split_stats "$stats"
+    local executable hit pct
+    bashunit::coverage::cached_stats_to_slots "$file"
     executable="$_BASHUNIT_COVERAGE_SPLIT_EXEC_OUT"
     hit="$_BASHUNIT_COVERAGE_SPLIT_HIT_OUT"
     pct="$_BASHUNIT_COVERAGE_SPLIT_PCT_OUT"
@@ -86,9 +85,9 @@ function bashunit::coverage::report_html() {
     total_executable=$((total_executable + executable))
     total_hit=$((total_hit + hit))
 
-    local display_file="${file#"$(pwd)"/}"
-    local safe_filename
-    safe_filename=$(bashunit::coverage::path_to_filename "$file")
+    local display_file="${file#"$PWD"/}"
+    bashunit::coverage::path_to_filename_to_slot "$file"
+    local safe_filename="$_BASHUNIT_COVERAGE_SAFE_NAME_OUT"
 
     file_data[file_data_count]="$display_file|$hit|$executable|$pct|$safe_filename"
     file_data_count=$((file_data_count + 1))

@@ -179,6 +179,30 @@ function bashunit::coverage::_precompute_batch() {
 }
 
 # Look up cached stats for a file, returns "executable:hit:pct:class"
+##
+# Fills the four split slots for a file, without the command substitution
+# get_cached_stats costs its callers (#1117).
+# Arguments: $1 - source file
+##
+function bashunit::coverage::cached_stats_to_slots() {
+  local file="$1"
+
+  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_STATS_" "$file"; then
+    local idx="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
+    _BASHUNIT_COVERAGE_SPLIT_EXEC_OUT="${_BASHUNIT_COVERAGE_STATS_EXEC[idx]}"
+    _BASHUNIT_COVERAGE_SPLIT_HIT_OUT="${_BASHUNIT_COVERAGE_STATS_HIT[idx]}"
+    _BASHUNIT_COVERAGE_SPLIT_PCT_OUT="${_BASHUNIT_COVERAGE_STATS_PCT[idx]}"
+    _BASHUNIT_COVERAGE_SPLIT_CLASS_OUT="${_BASHUNIT_COVERAGE_STATS_CLASS[idx]}"
+    return 0
+  fi
+
+  bashunit::coverage::_compute_file_stats "$file"
+  _BASHUNIT_COVERAGE_SPLIT_EXEC_OUT="$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT"
+  _BASHUNIT_COVERAGE_SPLIT_HIT_OUT="$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT"
+  _BASHUNIT_COVERAGE_SPLIT_PCT_OUT="$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT"
+  _BASHUNIT_COVERAGE_SPLIT_CLASS_OUT="$_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT"
+}
+
 function bashunit::coverage::get_cached_stats() {
   local file="$1"
 
