@@ -2050,6 +2050,30 @@ Reports an error if `actual` differs from the stored snapshot. On the first run 
 
 Pass `snapshot_file` to share one snapshot between tests; by default each test gets its own, named after the test function.
 
+::: warning A `@data_provider` test shares one snapshot
+The filename comes from the test **function**, and a provider runs that function
+once per value — so every value compares against the same file. The first value
+to run creates it; the rest fail with `Expected to match the snapshot` even
+though nothing is wrong with them:
+
+```bash
+function provide_values() { echo "alpha"; echo "beta"; }
+
+# @data_provider provide_values
+function test_shared() {
+  assert_match_snapshot "value is $1"        # one file for both values
+}
+
+# @data_provider provide_values
+function test_per_value() {
+  assert_match_named_snapshot "$1" "value is $1"   # one file per value
+}
+```
+
+Use [assert_match_named_snapshot](#assert-match-named-snapshot) with the value
+as the name to give each data set its own.
+:::
+
 See [Snapshots](/snapshots) for the full workflow, including how to update a snapshot after an intentional change.
 
 ::: code-group
