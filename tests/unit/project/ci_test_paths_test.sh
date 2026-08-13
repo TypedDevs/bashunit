@@ -112,7 +112,11 @@ function ci_referenced_test_paths() {
   # The match is anchored on a boundary so `sample_tests/pass_test.sh` -- a file
   # test-action.yml writes at runtime -- is not read as a `tests/` path. An
   # unanchored `tests/` matched its tail and reported it missing.
-  "$GREP" -rhv '^[[:space:]]*#' "$ROOT_DIR"/.github/workflows/ --include='*.yml' 2>/dev/null |
+  # An explicit glob rather than `-r --include`: BusyBox grep does not honour
+  # --include, so on Alpine this produced nothing at all and the check below
+  # passed by having no paths to resolve. The directory is flat, so the glob
+  # is equivalent everywhere else (#1161).
+  "$GREP" -hv '^[[:space:]]*#' "$ROOT_DIR"/.github/workflows/*.yml 2>/dev/null |
     "$GREP" -oE '(^|[[:space:]"'"'"'=])tests/[A-Za-z0-9_*/.-]+' |
     sed 's/^[^t]//' | LC_ALL=C sort -u
 }
