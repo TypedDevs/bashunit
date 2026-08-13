@@ -41,20 +41,45 @@ function awk_branches() { # $1 = file, $2 = optional scanner source
   fi
 }
 
+# Renders the difference between two strings, for the report of a file that
+# really disagrees. Deliberately not used to *decide* agreement -- that cost a
+# diff fork per file and dragged in the process substitutions that flake under
+# load (#1152).
+function diff_of() { # $1 = bash side, $2 = awk side
+  local a b
+  a=$(bashunit::temp_file diff_a)
+  b=$(bashunit::temp_file diff_b)
+  printf '%s\n' "$1" >"$a"
+  printf '%s\n' "$2" >"$b"
+  diff "$a" "$b" 2>&1 || true
+}
+
+
 function test_both_branch_scanners_agree_on_every_shell_file_in_the_repo() {
   # One awk fork per file plus a Bash loop over its lines: seconds here, but
   # minutes under Git Bash, where forks are slow enough to hang a shard.
   bashunit::skip_on windows "an awk fork per repo file takes minutes under Git Bash"
 
   local disagreements=""
-  local file
+  local file tmp_a tmp_b
+  tmp_a=$(bashunit::temp_file br_a)
+  tmp_b=$(bashunit::temp_file br_b)
   for file in $(cd "$ROOT_DIR" && git ls-files '*.sh'); do
-    local diff_out
-    diff_out=$(diff <(bashunit::coverage::extract_branches "$ROOT_DIR/$file") \
-      <(awk_branches "$ROOT_DIR/$file") 2>&1) || true
-    # A process substitution reports no status at all, so awk_branches marks its
-    # own failure in-band rather than leaving the diff to guess.
-    if [ -n "$diff_out" ]; then
+    # `diff <(...) <(...)` cost a fork per file and, under a loaded parallel
+    # suite, failed with "diff: /dev/fd/N: Bad file descriptor" -- whose stderr
+    # then read as a disagreement naming an arbitrary file (#1152). Real files
+    # instead, still written concurrently so the two sides overlap the way the
+    # process substitutions did, and compared by the shell: $(<file) costs no
+    # fork, and only a file that really differs pays for a diff.
+    local bash_out awk_out diff_out
+    bashunit::coverage::extract_branches "$ROOT_DIR/$file" >"$tmp_a" &
+    awk_branches "$ROOT_DIR/$file" >"$tmp_b"
+    wait
+    bash_out=$(<"$tmp_a")
+    awk_out=$(<"$tmp_b")
+
+    if [ "$bash_out" != "$awk_out" ]; then
+      diff_out=$(diff_of "$bash_out" "$awk_out")
       disagreements="$disagreements
 $file
 $diff_out"
