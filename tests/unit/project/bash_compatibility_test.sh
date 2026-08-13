@@ -33,6 +33,22 @@ function test_src_has_no_compound_array_assignment_attached_to_local() {
   assert_empty "$offenders"
 }
 
+# `${var//#pat/repl}` and `${var//%pat/repl}` anchor the match to the start or
+# the end. So a bare `#` or `%` as the WHOLE pattern is ambiguous, and Bash 3.0
+# resolves it as the anchor with an empty pattern: the replacement is
+# prepended/appended and the text is left untouched. `${t//#/\#}` on
+# "check # SKIP me" gives "\#check # SKIP me" there, and `${t//%/%25}` on
+# "100%" gives "100%%25" -- both silent, and both shipped (#1119, #1121).
+#
+# Write the pattern as a bracket expression: `${var//[#]/…}`, `${var//[%]/…}`.
+function test_src_has_no_bare_hash_or_percent_substitution_pattern() {
+  local offenders
+  offenders=$(bashunit::compat::offenders \
+    '\$\{[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?//[#%][^a-zA-Z0-9_[]')
+
+  assert_empty "$offenders"
+}
+
 # `printf -v` is Bash 3.1+. Use the return-slot pattern documented in
 # .claude/rules/bash-style.md instead (which also avoids its dynamic-scope trap).
 function test_src_has_no_printf_assignment() {
