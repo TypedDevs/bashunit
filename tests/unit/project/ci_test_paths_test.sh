@@ -38,6 +38,23 @@ function ci_test_paths() {
   grep -oE 'test_path: "[^"]+"' "$WORKFLOW" | sed 's/test_path: "//; s/"$//'
 }
 
+# Both checks below collect what did NOT resolve and assert that set is empty,
+# so an extractor that stops matching -- the `test_path:` key renamed, the
+# workflow directory moved -- makes them pass by finding nothing to check.
+# Proven by mutation: breaking the `test_path:` pattern leaves all three tests
+# in this file green, and this file exists because CI path rot has shipped
+# twice already (#960, and the coverage.yml case documented below).
+#
+# The floors sit under the current counts -- 18 `test_path:` keys, and 3
+# distinct `tests/` references once the workflows are deduplicated (fewer than
+# it looks, because most jobs share the same paths). They catch an extractor
+# returning nothing, which is what rot looks like.
+function test_the_extractors_still_find_the_paths_they_parse() {
+  assert_greater_than 8 "$(cd "$ROOT_DIR" && ci_test_paths | wc -l)"
+  assert_greater_than 1 "$(cd "$ROOT_DIR" && ci_referenced_test_paths | wc -l)"
+}
+
+
 function test_every_ci_test_path_resolves_to_at_least_one_test_file() {
   local unresolved=""
   local line
@@ -95,7 +112,11 @@ function ci_referenced_test_paths() {
   # The match is anchored on a boundary so `sample_tests/pass_test.sh` -- a file
   # test-action.yml writes at runtime -- is not read as a `tests/` path. An
   # unanchored `tests/` matched its tail and reported it missing.
-  "$GREP" -rhv '^[[:space:]]*#' "$ROOT_DIR"/.github/workflows/ --include='*.yml' 2>/dev/null |
+  # An explicit glob rather than `-r --include`: BusyBox grep does not honour
+  # --include, so on Alpine this produced nothing at all and the check below
+  # passed by having no paths to resolve. The directory is flat, so the glob
+  # is equivalent everywhere else (#1161).
+  "$GREP" -hv '^[[:space:]]*#' "$ROOT_DIR"/.github/workflows/*.yml 2>/dev/null |
     "$GREP" -oE '(^|[[:space:]"'"'"'=])tests/[A-Za-z0-9_*/.-]+' |
     sed 's/^[^t]//' | LC_ALL=C sort -u
 }
