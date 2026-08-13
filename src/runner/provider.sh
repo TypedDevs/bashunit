@@ -22,6 +22,16 @@ function bashunit::runner::parse_data_provider_args() {
     has_metachar=true
   fi
 
+  # An odd run of trailing backslashes escapes the `)` the eval below adds, so
+  # eval sees `args=(C:\)` -- unterminated, a SYNTAX error rather than a failed
+  # command. Inside a command substitution, which is how exec.sh calls this,
+  # that kills the subshell: no output, and the argument reaches the test unset
+  # instead of as `C:` (#1134). The fallback parser handles it, so skip eval.
+  local trailing="${input##*[!\\]}"
+  if [ $((${#trailing} % 2)) -eq 1 ]; then
+    has_metachar=true
+  fi
+
   # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
   if [ "$has_metachar" = false ] && eval "args=($input)" 2>/dev/null; then
     # Check if args has elements after eval
