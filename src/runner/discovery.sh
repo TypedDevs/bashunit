@@ -67,6 +67,16 @@ function bashunit::runner::load_test_files() {
     # run-dir cleanup removes it, saving a mktemp and an rm fork per file.
     local source_err_file source_err source_status
     source_err_file="$_BASHUNIT_RUN_OUTPUT_DIR/source_err"
+    # A missing scratch dir makes the redirect below fail, and bash reports that
+    # as the *command* failing: exit 1 with nothing written to the capture file,
+    # which read as "this test file failed to source" against a file that was
+    # complete and valid (#1137). Restore the directory, and fall back to
+    # /dev/null if even that is refused -- losing a file's stderr capture is
+    # worth far less than failing the file for a reason that is not its own.
+    if [ ! -d "$_BASHUNIT_RUN_OUTPUT_DIR" ] &&
+      ! mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null; then
+      source_err_file=/dev/null
+    fi
     # shellcheck source=/dev/null
     source "$test_file" 2>"$source_err_file"
     source_status=$?
