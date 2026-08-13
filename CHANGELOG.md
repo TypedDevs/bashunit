@@ -2,27 +2,18 @@
 
 ## Unreleased
 
-### Fixed
-- GitHub Actions annotations are percent-encoded on Bash 3.0 too: the encoder's `${text//%/%25}` silently did nothing there, so a message containing `%` reached GitHub unencoded with a stray `%25` appended (#1121)
-- TAP escapes a `#` in a test name, so a passing test called `check # SKIP me` is no longer read as a directive and reported as skipped by whatever consumes the file (#1119)
-- `assert_file_contains` accepts a needle that starts with a dash instead of failing with `grep: invalid option`, and `assert_file_not_contains` matches literally like its counterpart, so `a.c` no longer matches `abc` (#1108)
-- `assert_equals` no longer expands backslash escapes while normalizing, so `C:\` and `C:\\` compare as different, and a literal `\t` is no longer equal to a real tab. It still ignores ANSI sequences and control characters, which is what it documents (#1108)
-
 ### Added
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
-### Fixed
-- Coverage no longer loses hits recorded inside a command substitution: the DEBUG-trap engine buffered them in a shell variable, which dies with the subshell that filled it, so on Bash 5 a run reported 196 of 236 real hits while Bash 3.2 reported all of them — the same project measured differently per Bash version. Records go straight to disk, which is also 14-24% faster than the buffer was (#1101)
-
 ### Changed
-- Performance: the HTML report reads a page's stats and name from return slots instead of forking three command substitutions per page — 3393ms to 3130ms for a 128-file report (#1117)
-- Performance: the HTML report gets each function's line counts from the pass that already scanned the file, instead of walking every function's lines again in Bash — a 128-file report from 4.8s to 3.5s (#1099)
-- Performance: the coverage trap looks a file up once per executed line instead of twice, keeping the tracked decision and the normalized path under one key — about 8% off a `--coverage` run (#1110)
-- Performance: the coverage tracking decision cache is read once per process instead of `grep`-ing the file per lookup — 2ms to 0.064ms per lookup, and a `--coverage` run of one test file from 4.4s to 3.3s (#1104)
-- Performance: coverage normalizes a source path with one fork instead of four, which the DEBUG trap pays on every cache miss — 2081ms to 424ms per 500 calls, taking a `--coverage` run of one test file from 6.4s to 4.7s (#1102)
-- Performance: the HTML report emits each page's code table in one awk pass and stops forking `cat` for every markup block — 9.5s to 4.5s for 128 files, and 58.7s to 4.5s together with the escaping fix (#1098)
-- Performance: `--coverage-report-html` no longer forks twice per source line to escape it — 58.7s to 9.5s for 128 files here, with the escaping done once per file and the per-page `wc`, `basename` and `pwd` calls replaced by parameter expansions (#1096)
-- Performance: the coverage report picks its colours without a subshell per file and per function — the text report over 128 files went from 387ms to 318ms, and 4042ms to 3116ms with `BASHUNIT_COVERAGE_SHOW_FUNCTIONS` on (#1092)
+- Performance: `--coverage` is roughly 5x faster and `--coverage-report-html` roughly 19x — a run over this repo went from 16.2s to 2.9s, and a 128-file HTML report from 58.7s to 3.1s. The report phase emits each format in one awk invocation per run instead of Bash loops and forks per file and per row, and the capture path writes records straight to disk, normalizes a path with one fork instead of four, and reads each cache once (#1092, #1096, #1098, #1099, #1102, #1104, #1110, #1117)
+
+### Fixed
+- `assert_equals` no longer expands backslash escapes while normalizing, so `C:\` and `C:\\` compare as different and a literal `\t` is no longer equal to a real tab. It still ignores ANSI sequences and control characters, which is what it documents (#1108)
+- `assert_file_contains` accepts a needle that starts with a dash instead of failing with `grep: invalid option`, and `assert_file_not_contains` matches literally like its counterpart, so `a.c` no longer matches `abc` (#1108)
+- Coverage no longer loses hits recorded inside a command substitution: the DEBUG-trap engine buffered them in a shell variable that dies with the subshell, so on Bash 5 a run reported 196 of 236 real hits while Bash 3.2 reported all of them. Records go straight to disk, which is also 14-24% faster than the buffer was (#1101)
+- TAP escapes a `#` in a test name, so a passing test called `check # SKIP me` is no longer read as a directive and reported as skipped (#1119)
+- GitHub Actions annotations are percent-encoded on Bash 3.0 too: the encoder's substitution silently did nothing there, so a message containing `%` reached GitHub unencoded with a stray `%25` appended (#1121)
 
 ## [0.47.0](https://github.com/TypedDevs/bashunit/compare/0.46.0...0.47.0) - 2026-08-13
 
