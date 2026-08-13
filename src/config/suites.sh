@@ -162,8 +162,20 @@ $entry"
 function bashunit::suites::names() {
   local i=0
   local total=${#_BASHUNIT_SUITE_NAMES[@]}
+  # Two sections with the same name printed it twice, here and in the
+  # unknown-suite error (#1131). resolve() returns the first match, so the
+  # first occurrence is the one that exists as far as a run is concerned.
+  local seen=""
+  local name
   while [ "$i" -lt "$total" ]; do
-    printf '%s\n' "${_BASHUNIT_SUITE_NAMES[i]}"
+    name="${_BASHUNIT_SUITE_NAMES[i]}"
+    case "$seen" in
+    *"|$name|"*) ;;
+    *)
+      seen="$seen|$name|"
+      printf '%s\n' "$name"
+      ;;
+    esac
     i=$((i + 1))
   done
 }
