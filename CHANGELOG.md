@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- Sequential and `--parallel` are compared directly by an acceptance test over every outcome shape a run can produce (failure, runtime error, hook failures, syntax error, risky, skipped, unusable data provider, duplicate test function), so a check that only works in one mode fails in CI instead of in the field — the shape both #1145 and #1147 took (#1150)
 - The classifier differential test distinguishes a failed `awk` from a genuine rule disagreement: an awk that failed printed nothing, which diffed as "every line classified differently" and reported as the rules disagreeing (#1143)
 - A test file that fails to source without writing to stderr now reports its size and says there was no stderr, so a truncated file can be told apart from one whose last command returned non-zero (#1137)
 - Performance: cold start makes two fewer forks — `check_os::init` ran twice, once at source time and again from the entrypoint, and the root directory came from `$(dirname …)` — worth about 4ms of a 65ms startup, on every invocation (#1124)
