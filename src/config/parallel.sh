@@ -10,9 +10,16 @@ function bashunit::parallel::must_stop_on_failure() {
 
 function bashunit::parallel::cleanup() {
   local target="$TEMP_DIR_PARALLEL_TEST_SUITE"
+  # Same anchoring as cleanup_run_output_dir: the per-OS parent is shared
+  # between concurrent runs, so an empty token must not resolve to it (#1165).
+  # A trailing slash is what an empty token leaves, and it would otherwise
+  # satisfy the pattern below via the parent segment; drop it so such a path
+  # falls through to the refusal.
+  target="${target%/}"
   case "$target" in
-  */bashunit/parallel/*)
+  */bashunit/parallel/*/?*)
     rm -rf "$target"
+    return 0
     ;;
   *)
     bashunit::internal_log "parallel::cleanup" "refused unsafe path:$target"

@@ -919,9 +919,20 @@ bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_D
 # a run and on SIGINT; without it every invocation leaks one directory.
 function bashunit::env::cleanup_run_output_dir() {
   local target="$_BASHUNIT_RUN_OUTPUT_DIR"
+  # The path is "<tmp>/bashunit/run/<os>/<token>". Matching only on
+  # "/bashunit/run/" also accepted the per-OS parent, so a run whose token came
+  # out empty -- a failed `$(...)` fork under load is the way that happens --
+  # would delete every *concurrent* run's directory on the machine rather than
+  # its own. Require the token, and refuse a trailing slash, which is exactly
+  # what an empty token leaves behind (#1165).
+  # A trailing slash is what an empty token leaves, and it would otherwise
+  # satisfy the pattern below via the parent segment; drop it so such a path
+  # falls through to the refusal.
+  target="${target%/}"
   case "$target" in
-  */bashunit/run/*)
+  */bashunit/run/*/?*)
     rm -rf "$target"
+    return 0
     ;;
   *)
     bashunit::internal_log "env::cleanup_run_output_dir" "refused unsafe path:$target"
