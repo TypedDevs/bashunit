@@ -49,6 +49,15 @@ function test_built_binary_docs_should_match_dev_docs() {
     return
   fi
 
+  # The binary is gitignored, so switching branches leaves whatever the last
+  # build produced. Comparing a stale artifact against current docs fails for
+  # a reason that has nothing to do with the change under test, so say what to
+  # do instead (#1117).
+  if [ "docs/assertions.md" -nt "$built_bin" ]; then
+    bashunit::skip "Built binary is older than docs/assertions.md - run ./build.sh"
+    return
+  fi
+
   local dev_output built_output
 
   dev_output=$(./bashunit doc equals)

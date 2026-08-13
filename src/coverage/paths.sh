@@ -437,10 +437,25 @@ function bashunit::coverage::should_track() {
 }
 
 # Convert file path to safe filename for HTML
-function bashunit::coverage::path_to_filename() {
+# Return slot for path_to_filename_to_slot.
+_BASHUNIT_COVERAGE_SAFE_NAME_OUT=""
+
+##
+# Sets _BASHUNIT_COVERAGE_SAFE_NAME_OUT to the page name for a source path.
+#
+# `$PWD` rather than `$(pwd)`: the HTML report calls this once per page and the
+# subshell cost more than the string work it wrapped (#1117).
+# Arguments: $1 - source file
+##
+function bashunit::coverage::path_to_filename_to_slot() {
   local file="$1"
-  local display_file="${file#"$(pwd)"/}"
+  local display_file="${file#"$PWD"/}"
   # Replace / with _ and . with _
   local safe_name="${display_file//\//_}"
-  echo "${safe_name//./_}"
+  _BASHUNIT_COVERAGE_SAFE_NAME_OUT="${safe_name//./_}"
+}
+
+function bashunit::coverage::path_to_filename() {
+  bashunit::coverage::path_to_filename_to_slot "$1"
+  echo "$_BASHUNIT_COVERAGE_SAFE_NAME_OUT"
 }
