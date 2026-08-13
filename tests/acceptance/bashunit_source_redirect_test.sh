@@ -37,6 +37,25 @@ function test_removes_the_scratch_dir() { assert_same 1 1; }' >"$dir/a_killer_te
   assert_not_contains "Failed to source" "$output"
 }
 
+# Surviving the disappearance silently teaches nobody anything: #1137 is open
+# precisely because a scratch directory goes missing on CI and no one can say
+# what removed it. Say so once, on stderr, naming the directory.
+function test_the_disappearance_is_reported_once() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  printf '%s\n' 'rm -rf "$_BASHUNIT_RUN_OUTPUT_DIR"
+function test_removes_it() { assert_same 1 1; }' >"$dir/a_killer_test.sh"
+  printf '%s\n' 'function test_runs_anyway() { assert_same 2 2; }' >"$dir/b_victim_test.sh"
+
+  local output
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" \
+    "$dir/a_killer_test.sh" "$dir/b_victim_test.sh" 2>&1 || true)"
+  output="$(printf '%s' "$output" | strip_ansi)"
+
+  assert_contains "scratch directory" "$output"
+  assert_contains "bashunit/run/" "$output"
+}
+
 # The genuine case must keep reporting: a file whose top level returns non-zero
 # is still a source failure, and the message still says so.
 function test_a_real_source_failure_is_still_reported() {

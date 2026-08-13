@@ -73,9 +73,20 @@ function bashunit::runner::load_test_files() {
     # complete and valid (#1137). Restore the directory, and fall back to
     # /dev/null if even that is refused -- losing a file's stderr capture is
     # worth far less than failing the file for a reason that is not its own.
-    if [ ! -d "$_BASHUNIT_RUN_OUTPUT_DIR" ] &&
-      ! mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null; then
-      source_err_file=/dev/null
+    #
+    # Say so when it happens, once per run: #1137 is open precisely because a
+    # scratch directory goes missing on CI and nobody can say what removed it.
+    # Surviving it silently would keep it that way.
+    if [ ! -d "$_BASHUNIT_RUN_OUTPUT_DIR" ]; then
+      if [ "${_BASHUNIT_RUN_DIR_VANISHED:-false}" = false ]; then
+        _BASHUNIT_RUN_DIR_VANISHED=true
+        printf 'bashunit: the run scratch directory disappeared mid-run: %s\n' \
+          "$_BASHUNIT_RUN_OUTPUT_DIR" >&2
+        printf 'bashunit: recreating it; please report this with the run log (#1137).\n' >&2
+      fi
+      if ! mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null; then
+        source_err_file=/dev/null
+      fi
     fi
     # shellcheck source=/dev/null
     source "$test_file" 2>"$source_err_file"
