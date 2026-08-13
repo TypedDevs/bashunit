@@ -57,6 +57,43 @@ function bashunit::runner::order_functions_for_script() {
 # filter/tag/rerun-filtered by load_test_files (never empty: the caller skips
 # the file when no function survives filtering).
 ##
+function bashunit::runner::report_unusable_provider() {
+  local test_file="$1"
+  local fn_name="$2"
+  local provider="$3"
+
+  # Both cases drop the test; only the wording differs, and the difference is
+  # exactly what tells a typo apart from a provider that returned nothing.
+  local reason
+  if declare -F "$provider" >/dev/null 2>&1; then
+    reason="data provider '$provider' produced no data, so the test never ran"
+  else
+    reason="data provider '$provider' is not defined, so the test never ran"
+  fi
+
+  bashunit::state::add_tests_failed
+  bashunit::console_results::print_error_test "$fn_name" "$reason"
+  local _normalized_fn
+  _normalized_fn="$(bashunit::helper::normalize_test_function_name "$fn_name")"
+  bashunit::reports::add_test_failed "$test_file" "$_normalized_fn" 0 0 "$reason"
+  bashunit::runner::write_failure_result_output "$test_file" "$fn_name" "$reason"
+
+  # Under --parallel the per-file loop is a background subshell, so the counter
+  # above dies with it and only .result files reach the aggregate. Without this
+  # the run printed the error and still exited 0. TEST_EXIT_CODE marks the test
+  # failed without inventing a failed assertion -- none ran.
+  if bashunit::parallel::is_enabled; then
+    bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+    local suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
+    [ -d "$suite_dir" ] || mkdir -p "$suite_dir"
+    local payload="##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0"
+    payload="$payload##ASSERTIONS_INCOMPLETE=0##ASSERTIONS_SNAPSHOT=0##TEST_EXIT_CODE=1##"
+    printf '%s\n' "$payload" \
+      >"${suite_dir}/${_BASHUNIT_RUNNER_RESULT_ORDINAL}.result"
+  fi
+}
+
+
 function bashunit::runner::call_test_functions() {
   local script="$1"
   local cached_functions="${2:-}"
@@ -133,6 +170,20 @@ function bashunit::runner::call_test_functions() {
       provider_data[provider_data_count]="$line"
       provider_data_count=$((provider_data_count + 1))
     done <<<"$(bashunit::helper::execute_function_if_exists "$_BASHUNIT_PROVIDER_FN_OUT")"
+
+    # No data sets means the per-data-set loop below never runs, so the test
+    # would leave the run without a trace and the summary would blame a missing
+    # test rather than the provider that produced nothing (#1145).
+    if [ "$provider_data_count" -eq 0 ]; then
+      # Claim an ordinal the same way the dispatch branches do, so the .result
+      # file the reporter writes cannot collide with a worker's.
+      _test_ordinal=$((_test_ordinal + 1))
+      _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
+      bashunit::runner::report_unusable_provider \
+        "$script" "$fn_name" "$_BASHUNIT_PROVIDER_FN_OUT"
+      unset -v fn_name
+      continue
+    fi
 
     # Execute the test function for each line of data
     local data
