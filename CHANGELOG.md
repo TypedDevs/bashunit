@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
+
 ### Fixed
 - Coverage no longer loses hits recorded inside a command substitution: the DEBUG-trap engine buffered them in a shell variable, which dies with the subshell that filled it, so on Bash 5 a run reported 196 of 236 real hits while Bash 3.2 reported all of them — the same project measured differently per Bash version. Records go straight to disk, which is also 14-24% faster than the buffer was (#1101)
 
