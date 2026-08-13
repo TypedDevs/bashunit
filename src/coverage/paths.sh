@@ -266,6 +266,69 @@ function bashunit::coverage::_seed_emit() {
   printf '%s\n' "$file" >>"$_BASHUNIT_COVERAGE_TRACKED_FILES"
 }
 
+# The decision cache on disk, read into memory once per process.
+#
+# It used to be consulted with `grep "^$file:" | head -1`, three processes per
+# lookup, on every in-memory miss -- and the in-memory caches die with each
+# test subshell, so that was 1427 lookups in a single run of one test file:
+# 2ms each against 0.064ms for an in-memory scan of the same 13 entries
+# (#1104). The same shape #1076 removed from the stats cache.
+#
+# Entries this process writes are appended to both, so the file is read once
+# and never re-read. A worker that misses an entry another worker appended
+# afterwards just recomputes it, which is the same decision at a little cost.
+_BASHUNIT_COVERAGE_DISKCACHE_FILE=""
+_BASHUNIT_COVERAGE_DISKCACHE_KEYS=()
+_BASHUNIT_COVERAGE_DISKCACHE_VALUES=()
+_BASHUNIT_COVERAGE_DISKCACHE_COUNT=0
+
+function bashunit::coverage::_diskcache_load() {
+  local cache_file="$1"
+  [ "$_BASHUNIT_COVERAGE_DISKCACHE_FILE" = "$cache_file" ] && return 0
+
+  _BASHUNIT_COVERAGE_DISKCACHE_FILE="$cache_file"
+  _BASHUNIT_COVERAGE_DISKCACHE_KEYS=()
+  _BASHUNIT_COVERAGE_DISKCACHE_VALUES=()
+  _BASHUNIT_COVERAGE_DISKCACHE_COUNT=0
+  [ -f "$cache_file" ] || return 0
+
+  local line idx=0
+  while IFS= read -r line || [ -n "$line" ]; do
+    [ -n "$line" ] || continue
+    _BASHUNIT_COVERAGE_DISKCACHE_KEYS[idx]="${line%:*}"
+    _BASHUNIT_COVERAGE_DISKCACHE_VALUES[idx]="${line##*:}"
+    idx=$((idx + 1))
+  done <"$cache_file"
+  _BASHUNIT_COVERAGE_DISKCACHE_COUNT=$idx
+}
+
+# Sets _BASHUNIT_COVERAGE_DISKCACHE_OUT to the cached decision, or returns 1.
+_BASHUNIT_COVERAGE_DISKCACHE_OUT=""
+
+function bashunit::coverage::_diskcache_get() {
+  local file="$1" idx=0
+  while [ "$idx" -lt "$_BASHUNIT_COVERAGE_DISKCACHE_COUNT" ]; do
+    if [ "${_BASHUNIT_COVERAGE_DISKCACHE_KEYS[idx]}" = "$file" ]; then
+      _BASHUNIT_COVERAGE_DISKCACHE_OUT="${_BASHUNIT_COVERAGE_DISKCACHE_VALUES[idx]}"
+      return 0
+    fi
+    idx=$((idx + 1))
+  done
+  return 1
+}
+
+# Records a decision in the file and in the copy this process is reading.
+function bashunit::coverage::_diskcache_put() {
+  local cache_file="$1" file="$2" decision="$3"
+  { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } || return 0
+
+  echo "${file}:${decision}" >>"$cache_file"
+  local idx="$_BASHUNIT_COVERAGE_DISKCACHE_COUNT"
+  _BASHUNIT_COVERAGE_DISKCACHE_KEYS[idx]="$file"
+  _BASHUNIT_COVERAGE_DISKCACHE_VALUES[idx]="$decision"
+  _BASHUNIT_COVERAGE_DISKCACHE_COUNT=$((idx + 1))
+}
+
 function bashunit::coverage::should_track() {
   local file="$1"
 
@@ -281,15 +344,16 @@ function bashunit::coverage::should_track() {
   local cache_file="$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
   if bashunit::parallel::is_enabled && [ -n "$cache_file" ]; then
     cache_file="${cache_file}.$$"
-    # Initialize per-process cache if needed
-    [ ! -f "$cache_file" ] && [ -d "$(dirname "$cache_file")" ] && : >"$cache_file"
+    # Initialize per-process cache if needed. `${cache_file%/*}` rather than
+    # dirname: this runs per call, and a fork here is a fork per file.
+    if [ ! -f "$cache_file" ] && [ -d "${cache_file%/*}" ]; then
+      : >"$cache_file"
+    fi
   fi
-  if [ -n "$cache_file" ] && [ -f "$cache_file" ]; then
-    local cached_decision
-    # Use || true to prevent exit in strict mode when grep finds no match
-    cached_decision=$(grep "^${file}:" "$cache_file" 2>/dev/null | head -1) || true
-    if [ -n "$cached_decision" ]; then
-      [ "${cached_decision##*:}" = "1" ] && return 0 || return 1
+  if [ -n "$cache_file" ]; then
+    bashunit::coverage::_diskcache_load "$cache_file"
+    if bashunit::coverage::_diskcache_get "$file"; then
+      [ "$_BASHUNIT_COVERAGE_DISKCACHE_OUT" = "1" ] && return 0 || return 1
     fi
   fi
 
@@ -307,7 +371,7 @@ function bashunit::coverage::should_track() {
     *$pattern*)
       IFS="$old_ifs"
       # Cache exclusion decision (use per-process cache in parallel mode)
-      { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:0" >>"$cache_file"
+      bashunit::coverage::_diskcache_put "$cache_file" "$file" "0"
       return 1
       ;;
     esac
@@ -347,12 +411,12 @@ function bashunit::coverage::should_track() {
 
   if [ "$matched" = "false" ]; then
     # Cache exclusion decision (use per-process cache in parallel mode)
-    { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:0" >>"$cache_file"
+    bashunit::coverage::_diskcache_put "$cache_file" "$file" "0"
     return 1
   fi
 
   # Cache tracking decision (use per-process cache in parallel mode)
-  { [ -n "$cache_file" ] && [ -f "$cache_file" ]; } && echo "${file}:1" >>"$cache_file"
+  bashunit::coverage::_diskcache_put "$cache_file" "$file" "1"
 
   # Track this file for later reporting
   # In parallel mode, use a per-process file to avoid race conditions
