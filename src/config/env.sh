@@ -858,6 +858,9 @@ AWK="$(command -v awk)"
 # not be pre-created. The random suffix keeps the directory unique across
 # recursive and parallel invocations, matching TEMP_DIR_PARALLEL_TEST_SUITE.
 _BASHUNIT_RUN_OUTPUT_DIR="${TMPDIR:-/tmp}/bashunit/run/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
+# Set once if the directory above is found missing during a run, so the warning
+# is printed a single time rather than per file (#1137).
+_BASHUNIT_RUN_DIR_VANISHED=false
 FAILURES_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/failures"
 SKIPPED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/skipped"
 INCOMPLETE_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/incomplete"
