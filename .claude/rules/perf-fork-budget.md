@@ -74,6 +74,10 @@ only** — toggling it in the caller's shell clobbers caller state (#808).
   because 3.2 changed whether a quoted right-hand side is a regex or a literal,
   so at the 3.0 floor the same pattern would match differently across supported
   versions. Removing the fork means picking one semantic and breaking the other.
+  Measured cost of keeping it, so the trade is at least quantified: 2000
+  `assert_same` run in ~130 ms (0.065 ms each), 500 `assert_matches` in ~1.25 s
+  (**2.5 ms each, ~38x**). That is the fork, and it is the price of the 3.0
+  floor -- not a regression to chase.
 - **Single-file build artifact**: sourcing `bin/bashunit` is *not* faster than
   sourcing `src/*.sh` (parse time dominates, file opens don't).
 - **`tput cols` at startup**: returns 80 on non-tty; snapshots depend on that
