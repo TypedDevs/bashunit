@@ -171,8 +171,9 @@ function bashunit::coverage::report_diff() {
     total_hit=$((total_hit + hit))
 
     pct=$(bashunit::coverage::diff_percentage "$changed" "$hit")
-    color=$(bashunit::coverage::get_color_for_class \
-      "$(bashunit::coverage::get_coverage_class "$pct")")
+    bashunit::coverage::class_to_slot "$pct"
+    bashunit::coverage::color_to_slot "$_BASHUNIT_COVERAGE_CLASS_OUT"
+    color="$_BASHUNIT_COVERAGE_COLOR_OUT"
 
     local display_file="${file#"$(pwd)"/}"
     printf "%s%-40s %3d/%3d lines (%3d%%)%s\n" \
@@ -186,8 +187,9 @@ function bashunit::coverage::report_diff() {
   echo "---------------"
   local total_pct
   total_pct=$(bashunit::coverage::diff_percentage "$total_changed" "$total_hit")
-  color=$(bashunit::coverage::get_color_for_class \
-    "$(bashunit::coverage::get_coverage_class "$total_pct")")
+  bashunit::coverage::class_to_slot "$total_pct"
+  bashunit::coverage::color_to_slot "$_BASHUNIT_COVERAGE_CLASS_OUT"
+  color="$_BASHUNIT_COVERAGE_COLOR_OUT"
   printf "%sTotal: %d/%d (%d%%)%s\n" \
     "$color" "$total_hit" "$total_changed" "$total_pct" "$reset"
 

@@ -307,7 +307,8 @@ EOF
 
         local fn_pct fn_class row_class
         fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
-        fn_class=$(bashunit::coverage::get_coverage_class "$fn_pct")
+        bashunit::coverage::class_to_slot "$fn_pct"
+        fn_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
         case "$fn_class" in
         high) row_class="fn-covered" ;;
         medium) row_class="fn-partial" ;;

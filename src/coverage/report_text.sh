@@ -53,7 +53,8 @@ function bashunit::coverage::report_text() {
     total_hit=$((total_hit + hit))
 
     local color reset="$_BASHUNIT_COLOR_DEFAULT"
-    color=$(bashunit::coverage::get_color_for_class "$class")
+    bashunit::coverage::color_to_slot "$class"
+    color="$_BASHUNIT_COVERAGE_COLOR_OUT"
 
     # Display relative path
     local display_file="${file#"$(pwd)"/}"
@@ -72,10 +73,12 @@ function bashunit::coverage::report_text() {
   # Total
   local total_pct total_class
   total_pct=$(bashunit::coverage::calculate_percentage "$total_hit" "$total_executable")
-  total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
+  bashunit::coverage::class_to_slot "$total_pct"
+  total_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
 
   local color reset="$_BASHUNIT_COLOR_DEFAULT"
-  color=$(bashunit::coverage::get_color_for_class "$total_class")
+  bashunit::coverage::color_to_slot "$total_class"
+  color="$_BASHUNIT_COVERAGE_COLOR_OUT"
 
   printf "%sTotal: %d/%d (%d%%)%s\n" \
     "$color" "$total_hit" "$total_executable" "$total_pct" "$reset"
@@ -264,8 +267,10 @@ function bashunit::coverage::report_text_functions() {
       done
 
       fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
-      fn_class=$(bashunit::coverage::get_coverage_class "$fn_pct")
-      color=$(bashunit::coverage::get_color_for_class "$fn_class")
+      bashunit::coverage::class_to_slot "$fn_pct"
+      fn_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
+      bashunit::coverage::color_to_slot "$fn_class"
+      color="$_BASHUNIT_COVERAGE_COLOR_OUT"
 
       printf "  %s%-38s %3d/%3d lines (%3d%%)%s\n" \
         "$color" "$fn_name" "$fn_hit" "$fn_executable" "$fn_pct" "$reset"
