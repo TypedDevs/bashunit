@@ -131,8 +131,17 @@ Check out the two versions of the file into one tree and alternate rounds.
 shell since #817, the header count reads a return slot so the cache survives
 into the runner — plus the duplicate check), `perl` ×2 clock reads (start/end;
 no `EPOCHREALTIME` before Bash 5), 1 `base64` capability probe, 1 `mkdir`,
-1 `tput`. Per-test cost is fork-free. Cold start ~45-50ms, ~31ms of which is
-sourcing `src/` (irreducible without lazy-loading, rejected in #798).
+1 `tput`. Per-test cost is fork-free.
+
+**Cold start: 3 forks** — `uname` (OS detect), `tput` (snapshot width), `perl`
+(clock before Bash 5). It was 5 until #1124: `check_os::init` ran twice, once
+at source time and again from the entrypoint, and `BASHUNIT_ROOT_DIR` came from
+`$(dirname …)`. Sourcing `src/` is the rest of it and is irreducible without
+lazy-loading, rejected in #798.
+
+Measuring a change this small needs ~200 invocations per sample: the two forks
+are ~4ms against a ~65ms startup, and single runs vary by ±10ms. The acceptance
+suite is useless for it — consecutive runs there differ by 5s.
 `--coverage` adds ~3 forks per unique file first seen by the DEBUG trap
 (decision-cache miss: grep|head + dirname) — bounded by file count, nightly
 non-gating workflow, not worth chasing.
