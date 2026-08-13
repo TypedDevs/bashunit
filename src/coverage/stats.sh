@@ -2,24 +2,50 @@
 
 # Coverage percentages, the precomputed per-file stats cache and the threshold gate.
 
-# Get coverage class (high/medium/low) based on percentage
-function bashunit::coverage::get_coverage_class() {
+# Return slots for the class and colour helpers below.
+_BASHUNIT_COVERAGE_CLASS_OUT=""
+_BASHUNIT_COVERAGE_COLOR_OUT=""
+
+##
+# Sets _BASHUNIT_COVERAGE_CLASS_OUT to high/medium/low for a percentage.
+# Arguments: $1 - percentage
+##
+function bashunit::coverage::class_to_slot() {
   local pct="$1"
   if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
-    echo "high"
+    _BASHUNIT_COVERAGE_CLASS_OUT="high"
   elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" ]; then
-    echo "medium"
+    _BASHUNIT_COVERAGE_CLASS_OUT="medium"
   else
-    echo "low"
+    _BASHUNIT_COVERAGE_CLASS_OUT="low"
   fi
 }
 
-function bashunit::coverage::get_color_for_class() {
+##
+# Sets _BASHUNIT_COVERAGE_COLOR_OUT to the colour of a class.
+# Arguments: $1 - high, medium or low
+##
+function bashunit::coverage::color_to_slot() {
   case "$1" in
-  high) printf '%s' "$_BASHUNIT_COLOR_PASSED" ;;
-  medium) printf '%s' "$_BASHUNIT_COLOR_SKIPPED" ;;
-  low) printf '%s' "$_BASHUNIT_COLOR_FAILED" ;;
+  high) _BASHUNIT_COVERAGE_COLOR_OUT="$_BASHUNIT_COLOR_PASSED" ;;
+  medium) _BASHUNIT_COVERAGE_COLOR_OUT="$_BASHUNIT_COLOR_SKIPPED" ;;
+  low) _BASHUNIT_COVERAGE_COLOR_OUT="$_BASHUNIT_COLOR_FAILED" ;;
+  *) _BASHUNIT_COVERAGE_COLOR_OUT="" ;;
   esac
+}
+
+# The two above are the decision; these are the same thing for a caller that
+# wants it on stdout. Every per-file and per-function caller uses the slots: a
+# subshell to pick one of three constants cost 168ms of the 253ms the text
+# report spent on 128 files (#1092).
+function bashunit::coverage::get_coverage_class() {
+  bashunit::coverage::class_to_slot "$1"
+  echo "$_BASHUNIT_COVERAGE_CLASS_OUT"
+}
+
+function bashunit::coverage::get_color_for_class() {
+  bashunit::coverage::color_to_slot "$1"
+  printf '%s' "$_BASHUNIT_COVERAGE_COLOR_OUT"
 }
 
 # Calculate percentage from hit and executable counts
@@ -65,13 +91,8 @@ function bashunit::coverage::_derive_file_stats() {
   fi
   _BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT="$pct"
 
-  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
-    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="high"
-  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" ]; then
-    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="medium"
-  else
-    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="low"
-  fi
+  bashunit::coverage::class_to_slot "$pct"
+  _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="$_BASHUNIT_COVERAGE_CLASS_OUT"
 }
 
 # Get file coverage stats as "executable:hit:pct:class"

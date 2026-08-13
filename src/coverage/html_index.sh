@@ -29,7 +29,8 @@ function bashunit::coverage::generate_index_html() {
 
   # Determine coverage level and colors for gauge
   local total_class gauge_color_start gauge_color_end gauge_text_gradient
-  total_class=$(bashunit::coverage::get_coverage_class "$total_pct")
+  bashunit::coverage::class_to_slot "$total_pct"
+  total_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
   case "$total_class" in
   high)
     gauge_color_start="#10b981"
@@ -318,7 +319,8 @@ EOF
       IFS='|' read -r display_file hit executable pct safe_filename <<<"$data"
 
       local class
-      class=$(bashunit::coverage::get_coverage_class "$pct")
+      bashunit::coverage::class_to_slot "$pct"
+      class="$_BASHUNIT_COVERAGE_CLASS_OUT"
 
       echo "            <tr onclick=\"window.location='files/${safe_filename}.html'\">"
       echo "              <td>"

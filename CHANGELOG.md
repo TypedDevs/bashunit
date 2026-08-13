@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Performance: the coverage report picks its colours without a subshell per file and per function — the text report over 128 files went from 387ms to 318ms, and 4042ms to 3116ms with `BASHUNIT_COVERAGE_SHOW_FUNCTIONS` on (#1092)
+
 ## [0.47.0](https://github.com/TypedDevs/bashunit/compare/0.46.0...0.47.0) - 2026-08-13
 
 ### Added
