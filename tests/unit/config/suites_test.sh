@@ -109,3 +109,20 @@ paths = tests/unit'
 
   assert_same "tests/unit" "$_BASHUNIT_SUITE_PATHS_OUT"
 }
+
+# Two sections with the same name printed it twice, in --list-suites and in the
+# unknown-suite error. resolve() takes the first match, so the first occurrence
+# is the one a run actually sees.
+function test_a_duplicate_section_is_listed_once() {
+  load_rc '[suite:dup]
+paths = tests/a
+
+[suite:dup]
+paths = tests/b
+
+[suite:other]
+paths = tests/c'
+
+  assert_same "dup
+other" "$(bashunit::suites::names)"
+}
