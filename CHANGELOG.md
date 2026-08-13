@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- Coverage now reports every file under `--coverage-paths`, not only the files a test happened to execute: a file nothing reached shows as `0/N (0%)` instead of being absent, in the text, LCOV, Cobertura and HTML reports, and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files and a denominator of 2,200 against a real 9,285. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
 - Coverage counted a statement whose line ends in `)` as a `case` arm, so `x=$(foo)` was dropped from the denominator while `x=$(printf '%s\n')` was not — an accident of the pre-#1005 regex, where a backslash inside a bracket expression suppressed the match. A `)` now only closes an arm when no `(` opened earlier on the line, which recovers 456 executable lines of this repo's own `src/` and correctly stops counting `case` arms that contain a backslash. **Coverage percentages move in both directions per file; the denominator is the honest one** (#1055)
 
 ### Changed

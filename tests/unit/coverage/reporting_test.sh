@@ -258,9 +258,14 @@ function test_coverage_get_tracked_files_returns_empty_when_no_file() {
   assert_empty "$result"
 }
 
+# BASHUNIT_COVERAGE_PATHS is emptied first: init seeds the tracked list from it
+# now (#1053), and this asserts on exactly what the test itself wrote.
 function test_coverage_get_tracked_files_returns_sorted_unique() {
   BASHUNIT_COVERAGE="true"
+  local original_paths="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS=""
   bashunit::coverage::init
+  BASHUNIT_COVERAGE_PATHS="$original_paths"
 
   {
     echo "/path/to/b.sh"
@@ -379,8 +384,12 @@ EOF
   rm -f "$temp_file"
 }
 
+# BASHUNIT_COVERAGE_PATHS stays empty across precompute: it seeds the tracked
+# list from that variable now (#1053), and this asserts on exactly the one file
+# the test wrote. The test subshell dies with the value, so nothing restores it.
 function test_coverage_precompute_file_stats_populates_cache() {
   BASHUNIT_COVERAGE="true"
+  BASHUNIT_COVERAGE_PATHS=""
   bashunit::coverage::init
 
   local temp_file
