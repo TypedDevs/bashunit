@@ -56,10 +56,19 @@ function test_strip_ansi_percent_is_unchanged() {
   assert_same "100% done" "$(bashunit::str::strip_ansi "100% done")"
 }
 
-function test_strip_ansi_backslash_escape_is_expanded_then_stripped() {
-  # A literal backslash sends input through the slow path, where echo -e
-  # expands "\t" to a tab and sed then strips it as a control char
-  assert_same "col1col2" "$(bashunit::str::strip_ansi "col1\\tcol2")"
+function test_strip_ansi_keeps_a_literal_backslash_escape() {
+  # A literal backslash sends input through the slow path, which used to run
+  # `echo -e` and expand "\t" into a tab that sed then stripped -- so
+  # assert_equals could not tell `a\tb` from a real tab, nor `C:\` from `C:\\`
+  # (#1108). Normalizing ANSI and control bytes must not rewrite the text.
+  assert_same "col1\\tcol2" "$(bashunit::str::strip_ansi "col1\\tcol2")"
+}
+
+function test_strip_ansi_still_strips_a_real_control_character() {
+  local with_tab
+  with_tab="$(printf 'col1\tcol2')"
+
+  assert_same "col1col2" "$(bashunit::str::strip_ansi "$with_tab")"
 }
 
 function test_rpad_default_width_padding_and_empty_left_text() {

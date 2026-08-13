@@ -170,6 +170,36 @@ function test_fails_assert_file_contains() {
   rm "$file"
 }
 
+# A pattern that starts with a dash is a pattern, not an option. grep read it
+# as one and failed the assertion with "grep: invalid option" (#1108).
+function test_assert_file_contains_accepts_a_pattern_starting_with_a_dash() {
+  local file
+  file="$(bashunit::temp_file dash_pattern)"
+  printf 'ssh -o BatchMode=yes host uptime\n' >"$file"
+
+  # A passing assertion prints nothing; the bug printed grep's usage text.
+  assert_empty "$(assert_file_contains "$file" "-o BatchMode=yes" 2>&1)"
+}
+
+function test_assert_file_not_contains_accepts_a_pattern_starting_with_a_dash() {
+  local file
+  file="$(bashunit::temp_file dash_pattern_absent)"
+  printf 'ssh host uptime\n' >"$file"
+
+  assert_empty "$(assert_file_not_contains "$file" "-o BatchMode=yes" 2>&1)"
+}
+
+# The needle is a literal string in both directions: assert_file_contains says
+# so with `grep -F`, and its negative counterpart has to agree or `a.c` matches
+# `abc` only when you assert the absence (#1108).
+function test_assert_file_not_contains_treats_the_needle_as_a_literal() {
+  local file
+  file="$(bashunit::temp_file literal_needle)"
+  printf 'abc\n' >"$file"
+
+  assert_empty "$(assert_file_not_contains "$file" "a.c" 2>&1)"
+}
+
 function test_successful_assert_file_not_contains() {
   local file="/tmp/test_successful_assert_file_not_contains"
   echo -e "original content" >"$file"

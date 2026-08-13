@@ -157,6 +157,10 @@ function test_failure() {
 
 Reports an error if the two variables `expected` and `actual` are not equal ignoring the special chars like ANSI Escape Sequences (colors) and other special chars like tabs and new lines.
 
+Those are *characters*, not escape sequences. A backslash followed by `t` is
+two characters and stays two characters, so comparing it against a real tab
+fails; only the tab itself is stripped.
+
 - [assert_same](#assert-same) is similar but including special chars.
 
 ::: code-group
