@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.47.0](https://github.com/TypedDevs/bashunit/compare/0.46.0...0.47.0) - 2026-08-13
+
 ### Added
 - `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
 - `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return` (#1019)
