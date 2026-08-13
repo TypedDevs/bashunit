@@ -88,10 +88,7 @@ function bashunit::coverage::init() {
   : >"$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
   : >"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
 
-  # Reset in-memory caches and buffers
-  _BASHUNIT_COVERAGE_BUFFER=""
-  _BASHUNIT_COVERAGE_BUFFER_COUNT=0
-  _BASHUNIT_COVERAGE_HITS_BUFFER=""
+  # Reset in-memory caches
   # The lookups live in the variable table now, so clearing them means dropping
   # their namespaces: a second run in the same shell must not inherit a
   # tracking decision or a normalized path from the first.
