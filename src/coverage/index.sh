@@ -8,6 +8,7 @@
 #     → report_text · report_lcov · report_html → html_index · html_file
 source "$BASHUNIT_ROOT_DIR/src/coverage/config.sh"
 source "$BASHUNIT_ROOT_DIR/src/coverage/paths.sh"
+source "$BASHUNIT_ROOT_DIR/src/coverage/rules_awk.sh"
 source "$BASHUNIT_ROOT_DIR/src/coverage/lines.sh"
 source "$BASHUNIT_ROOT_DIR/src/coverage/functions.sh"
 source "$BASHUNIT_ROOT_DIR/src/coverage/engine.sh"
