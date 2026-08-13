@@ -38,7 +38,19 @@ _check_bash_version
 declare -r BASHUNIT_VERSION="0.47.0"
 
 # shellcheck disable=SC2155
-declare -r BASHUNIT_ROOT_DIR="$(dirname "${BASH_SOURCE[0]}")"
+# `${x%/*}` rather than `$(dirname "$x")`: one fork on every invocation, and
+# the acceptance suite spawns hundreds of them (#1124). The expansion differs
+# from dirname only when the path holds no slash -- invoked as a bare name off
+# PATH -- which is what the guard covers.
+_bashunit_root="${BASH_SOURCE[0]%/*}"
+# No slash means a bare name off PATH (dirname: "."); empty means the
+# filesystem root (dirname: "/").
+case "$_bashunit_root" in
+"${BASH_SOURCE[0]}") _bashunit_root="." ;;
+"") _bashunit_root="/" ;;
+esac
+declare -r BASHUNIT_ROOT_DIR="$_bashunit_root"
+unset _bashunit_root
 export BASHUNIT_ROOT_DIR
 
 # Capture working directory at startup (before any test changes it)
@@ -81,7 +93,10 @@ source "$BASHUNIT_ROOT_DIR/src/benchmark/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/learn/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/main/index.sh"
 
-bashunit::check_os::init
+# check_os.sh runs its own init when sourced, above; calling it again here cost
+# a second `uname` on every invocation, plus the `grep /etc/os-release` inside
+# is_nixos on Linux (#1124). The tests re-init deliberately with a mocked
+# `uname`, so the function itself must stay re-runnable.
 bashunit::clock::init
 
 # Subcommand detection
