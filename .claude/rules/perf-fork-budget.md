@@ -111,6 +111,12 @@ Check out the two versions of the file into one tree and alternate rounds.
   supported range, and **both failure modes are silent** — this is why HTML
   escaping goes through `awk` and not parameter expansion (#1096). Grep for
   `&` in any replacement before writing one.
+- **`${var//#/…}` does not substitute on Bash 3.0.** The `#` right after `//`
+  is read as the anchor-to-start syntax with an empty pattern, so the
+  replacement is *prepended* and the text is left alone: `check # SKIP me`
+  became `\#check # SKIP me`. Write the pattern as `[#]` (or quote it), which
+  means the same thing on 3.0, 3.2, 4.4 and 5 (#1119). Same family as the `&`
+  trap above: silent, and only on some versions.
 - **`\x` escapes are not POSIX awk.** They happen to work in macOS awk,
   BusyBox awk and mawk, but pass the byte in with `-v` instead of relying on
   it (#1098).
