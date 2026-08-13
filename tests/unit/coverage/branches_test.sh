@@ -364,3 +364,56 @@ EOF
 
   rm -f "$fixture"
 }
+
+# --- per-arm execution counts (#1061) ---------------------------------------
+
+# BRDA's fourth field is an execution count to an LCOV consumer, so reporting 1
+# for an arm taken 5,000 times and 1 for one grazed by a single test loses the
+# distinction that makes branch data useful.
+function test_an_arm_reports_how_many_times_it_ran() {
+  # shellcheck disable=SC2034  # _arm_taken reads src_lines from the caller's
+  # scope: Bash 3.0 cannot pass an array into a function.
+  local src_lines=("if true; then" "  echo one" "fi")
+  _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+  _BASHUNIT_COVERAGE_HITS_BY_LINE[2]=10
+
+  bashunit::coverage::_arm_taken 2 2
+
+  assert_same "10" "$_BASHUNIT_ARM_TAKEN_OUT"
+}
+
+function test_an_arm_never_taken_reports_zero() {
+  # shellcheck disable=SC2034  # read from the caller's scope by _arm_taken
+  local src_lines=("if true; then" "  echo one" "fi")
+  _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+
+  bashunit::coverage::_arm_taken 2 2
+
+  assert_same "0" "$_BASHUNIT_ARM_TAKEN_OUT"
+}
+
+# Documented rule: the FIRST executable line's count. Entering an arm executes
+# that line once per entry, while a later line can run more often (a loop) or
+# fewer times (an early return).
+function test_an_arm_counts_its_first_executable_line_not_the_maximum() {
+  # shellcheck disable=SC2034  # read from the caller's scope by _arm_taken
+  local src_lines=("if true; then" "  echo entry" "  while :; do" "    echo inner" "  done" "fi")
+  _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+  _BASHUNIT_COVERAGE_HITS_BY_LINE[2]=3
+  _BASHUNIT_COVERAGE_HITS_BY_LINE[4]=30
+
+  bashunit::coverage::_arm_taken 2 5
+
+  assert_same "3" "$_BASHUNIT_ARM_TAKEN_OUT"
+}
+
+function test_an_arm_skips_non_executable_lines_when_counting() {
+  # shellcheck disable=SC2034  # read from the caller's scope by _arm_taken
+  local src_lines=("if true; then" "  # a comment" "  echo real" "fi")
+  _BASHUNIT_COVERAGE_HITS_BY_LINE=()
+  _BASHUNIT_COVERAGE_HITS_BY_LINE[3]=7
+
+  bashunit::coverage::_arm_taken 2 3
+
+  assert_same "7" "$_BASHUNIT_ARM_TAKEN_OUT"
+}

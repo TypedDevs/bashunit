@@ -339,7 +339,7 @@ end_of_record
 | `FNDA:` | Function call data: `count,name` (1 if any line in body was hit, else 0) | `FNDA:1,add` |
 | `FNF:` | Functions Found | `FNF:2` |
 | `FNH:` | Functions Hit | `FNH:1` |
-| `BRDA:` | Branch data: `decision_line,block,arm,taken` | `BRDA:12,0,1,1` |
+| `BRDA:` | Branch data: `decision_line,block,arm,execution_count` | `BRDA:12,0,1,7` |
 | `BRF:` | Branches Found | `BRF:6` |
 | `BRH:` | Branches Hit | `BRH:4` |
 | `DA:` | Line Data: `line_number,hit_count` | `DA:15,3` (line 15 hit 3 times) |
@@ -428,7 +428,14 @@ Beyond line and function coverage, bashunit emits **branch coverage** records in
 | `if X; then ... elif Y; then ... else ... fi` | 3 (one per arm) |
 | `case X in a) ... ;; b) ... ;; *) ... ;; esac` | one per pattern |
 
-An arm is reported as **taken** iff at least one executable line inside its range was hit by tests.
+An arm is reported as **taken** iff at least one executable line inside its range was hit
+by tests, and the `BRDA` count is **how many times it ran** — the execution count of the
+arm's first executable line.
+
+That line is the one that answers "how often was this branch taken": entering an arm runs
+it exactly once per entry, while a later line can run more often (a loop inside the arm)
+or fewer times (an early return). `BRF` and `BRH` are unchanged by this: `BRH` still counts
+the arms whose count is non-zero.
 
 ### Verbose Output Helpers
 
@@ -493,7 +500,8 @@ end_of_record
 ```
 
 **Reading the branch records:**
-- `BRDA:3,0,0,1`: decision on line 3, block 0, arm 0 (`then`/GET), taken.
+- `BRDA:3,0,0,1`: decision on line 3, block 0, arm 0 (`then`/GET), taken once. An arm
+  entered 12 times reads `BRDA:3,0,0,12`.
 - `BRDA:3,0,1,0`: same decision, arm 1 (`elif`/POST), not taken.
 - `BRDA:3,0,2,0`: same decision, arm 2 (`else`/405), not taken.
 - `BRF:3` `BRH:1`: 3 branches found, 1 taken.
