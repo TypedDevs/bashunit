@@ -387,6 +387,12 @@ function test_built_binary_defines_watch_run() {
 function test_built_binary_embeds_each_src_file_exactly_once() {
   local build_dir=$SHARED_BUILD_DIR
 
+  # Without this the test passes on a missing artifact: `grep` over a file that
+  # is not there prints nothing, and "nothing is duplicated" is exactly what the
+  # assertion below wants to see. Proven by mutation -- blanking the shared
+  # build killed only two of these four tests.
+  assert_file_exists "$build_dir/bashunit"
+
   local duplicated
   duplicated=$(grep -E '^# src/[a-z_0-9/]+\.sh$' "$build_dir/bashunit" | sort | uniq -d)
 
@@ -397,6 +403,10 @@ function test_built_binary_embeds_each_src_file_exactly_once() {
 # spelling; this one catches the symptom directly, whatever the cause.
 function test_built_binary_defines_each_bashunit_function_exactly_once() {
   local build_dir=$SHARED_BUILD_DIR
+
+  # Same vacuity guard as above: an absent artifact greps to nothing, which
+  # reads as "no duplicates".
+  assert_file_exists "$build_dir/bashunit"
 
   # Scoped to the bashunit:: namespace on purpose: an unqualified `^function `
   # also matches the example code inside the embedded docs/assertions.md heredoc.
