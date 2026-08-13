@@ -265,6 +265,129 @@ EOF
   rm -f "$temp_file"
 }
 
+# The span of a function is decided by brace balance, so a nested block inside
+# the body must not close it early.
+function test_coverage_extract_functions_spans_nested_braces() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function outer() {
+  local map="${x:-fallback}"
+  if [ -n "$map" ]; then
+    echo "deep"
+  fi
+}
+function after() {
+  echo "after"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "outer|2|7
+after|8|10" "$result"
+
+  rm -f "$temp_file"
+}
+
+# A body that opens and closes on the declaration line is one record whose start
+# and end are the same line.
+function test_coverage_extract_functions_reports_a_single_line_function() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function one_liner() { echo "hi"; }
+bare_liner() { echo "there"; }
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "one_liner|2|2
+bare_liner|3|3" "$result"
+
+  rm -f "$temp_file"
+}
+
+# The three declaration spellings bash accepts, plus an indented one: `name()`,
+# `function name()` and `function name` with no parentheses at all.
+function test_coverage_extract_functions_accepts_every_declaration_spelling() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+bare() {
+  echo "a"
+}
+function keyword() {
+  echo "b"
+}
+function no_parens {
+  echo "c"
+}
+  indented() {
+    echo "d"
+  }
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "bare|2|4
+keyword|5|7
+no_parens|8|10
+indented|11|13" "$result"
+
+  rm -f "$temp_file"
+}
+
+# An unbalanced file still reports the function, ending at the last line, so a
+# truncated or generated file cannot drop a record silently.
+function test_coverage_extract_functions_closes_an_unclosed_function_at_eof() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function unclosed() {
+  echo "no closing brace"
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "unclosed|2|3" "$result"
+
+  rm -f "$temp_file"
+}
+
+# A name is only a name inside [a-zA-Z0-9_:] and starting with a letter or `_`,
+# and the declaration must continue with `()` or `{` -- a call is not a
+# definition.
+function test_coverage_extract_functions_rejects_non_declarations() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+9lives() {
+  echo "starts with a digit"
+}
+call_me arg
+real_fn() {
+  echo "yes"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "real_fn|6|8" "$result"
+
+  rm -f "$temp_file"
+}
+
 # === Line hits tests ===
 
 function test_coverage_get_all_line_hits_counts_per_line() {
