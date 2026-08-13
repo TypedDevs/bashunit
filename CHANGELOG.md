@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Coverage no longer loses hits recorded inside a command substitution: the DEBUG-trap engine buffered them in a shell variable, which dies with the subshell that filled it, so on Bash 5 a run reported 196 of 236 real hits while Bash 3.2 reported all of them — the same project measured differently per Bash version. Records go straight to disk, which is also 14-24% faster than the buffer was (#1101)
+
 ### Changed
 - Performance: the HTML report emits each page's code table in one awk pass and stops forking `cat` for every markup block — 9.5s to 4.5s for 128 files, and 58.7s to 4.5s together with the escaping fix (#1098)
 - Performance: `--coverage-report-html` no longer forks twice per source line to escape it — 58.7s to 9.5s for 128 files here, with the escaping done once per file and the per-page `wc`, `basename` and `pwd` calls replaced by parameter expansions (#1096)

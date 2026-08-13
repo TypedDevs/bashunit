@@ -268,19 +268,20 @@ function test_coverage_record_line_writes_to_file() {
   assert_contains "$test_file:20" "$content"
 }
 
-function test_coverage_flush_buffer_writes_even_when_printf_is_spied() {
+# The write happens inside record_line now (#1101), so the spy has to be in
+# place before it, not before a flush.
+function test_coverage_records_even_when_printf_is_spied() {
   BASHUNIT_COVERAGE="true"
   BASHUNIT_COVERAGE_PATHS="/"
   BASHUNIT_COVERAGE_EXCLUDE=""
   bashunit::coverage::init
 
   local test_file="/some/path/script.sh"
-  bashunit::coverage::record_line "$test_file" "10"
-  bashunit::coverage::record_line "$test_file" "20"
 
   # Spying printf must not shadow the coverage write (issue #724)
   bashunit::spy printf
-  bashunit::coverage::flush_buffer
+  bashunit::coverage::record_line "$test_file" "10"
+  bashunit::coverage::record_line "$test_file" "20"
   bashunit::unmock printf
 
   local data_file="$_BASHUNIT_COVERAGE_DATA_FILE"

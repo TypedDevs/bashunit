@@ -3,10 +3,6 @@
 # Line capture: DEBUG-trap and xtrace engines, buffering, teardown and parallel merge.
 
 # In-memory buffer for coverage data (reduces file I/O)
-_BASHUNIT_COVERAGE_BUFFER=""
-_BASHUNIT_COVERAGE_BUFFER_COUNT=0
-_BASHUNIT_COVERAGE_BUFFER_LIMIT=100
-_BASHUNIT_COVERAGE_HITS_BUFFER=""
 
 
 # Field separator inside an xtrace PS4 prefix. A control character keeps the
@@ -81,8 +77,6 @@ function bashunit::coverage::disable_trap() {
 
   trap - DEBUG
   set +T
-  # Flush any remaining buffered coverage data
-  bashunit::coverage::flush_buffer
 }
 
 # Point xtrace at a per-worker trace file and mark the test boundary.
@@ -267,25 +261,33 @@ function bashunit::coverage::record_line() {
     bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_PATH_" "$file" "$normalized_file"
   fi
 
-  # Buffer the coverage data in memory
-  _BASHUNIT_COVERAGE_BUFFER="${_BASHUNIT_COVERAGE_BUFFER}${normalized_file}:${lineno}
-"
-  # Also buffer test hit data if in a test context
+  # Write the record out now rather than buffering it in a variable.
+  #
+  # A buffer that lives in a shell variable dies with the subshell that filled
+  # it, so every hit recorded inside a `$( )` was lost unless that subshell
+  # happened to reach the flush threshold first: 196 of 236 hits on Bash 5,
+  # deterministically, while Bash 3.2 lost none -- the same project reporting
+  # different coverage per Bash version. Appending is also FASTER than growing
+  # the string was (8896ms to 6739ms on 3.2, 4612ms to 3988ms on 5), and a
+  # one-line append interleaves better between parallel workers than a
+  # multi-kilobyte flush (#1101).
+  #
+  # `builtin printf` so a test spying or mocking printf cannot shadow the
+  # coverage write and silently drop data (#724).
+  bashunit::coverage::_resolve_output_files
+  builtin printf '%s:%s\n' "$normalized_file" "$lineno" \
+    >>"$_BASHUNIT_COVERAGE_DATA_TARGET_OUT"
+
   if [ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE:-}" ] &&
     [ -n "${_BASHUNIT_COVERAGE_CURRENT_TEST_FN:-}" ]; then
-    _BASHUNIT_COVERAGE_HITS_BUFFER="${_BASHUNIT_COVERAGE_HITS_BUFFER}\
-${normalized_file}:${lineno}|\
-${_BASHUNIT_COVERAGE_CURRENT_TEST_FILE}:${_BASHUNIT_COVERAGE_CURRENT_TEST_FN}
-"
+    builtin printf '%s:%s|%s:%s\n' "$normalized_file" "$lineno" \
+      "$_BASHUNIT_COVERAGE_CURRENT_TEST_FILE" "$_BASHUNIT_COVERAGE_CURRENT_TEST_FN" \
+      >>"$_BASHUNIT_COVERAGE_HITS_TARGET_OUT"
   fi
 
-  _BASHUNIT_COVERAGE_BUFFER_COUNT=$((_BASHUNIT_COVERAGE_BUFFER_COUNT + 1))
-
-  # Flush buffer to disk when threshold is reached
-  if [ "$_BASHUNIT_COVERAGE_BUFFER_COUNT" -ge \
-    "$_BASHUNIT_COVERAGE_BUFFER_LIMIT" ]; then
-    bashunit::coverage::flush_buffer
-  fi
+  # The report must not read counts that predate these records.
+  _BASHUNIT_COVERAGE_HITS_AGGREGATED=false
+  _BASHUNIT_COVERAGE_HITS_BY_LINE_FILE=""
 }
 
 # Resolve the parallel-safe destinations for hit records into the return slots
@@ -309,27 +311,16 @@ function bashunit::coverage::_resolve_output_files() {
   fi
 }
 
+##
+# Makes the records written so far readable by the report.
+#
+# It used to write out an in-memory buffer; records go straight to disk now
+# (#1101), so all that remains is dropping the aggregation computed before
+# them. Kept because callers mean "publish what I recorded", not "write a
+# buffer".
+##
 function bashunit::coverage::flush_buffer() {
   bashunit::coverage::invalidate_hits_aggregation
-  [ -z "$_BASHUNIT_COVERAGE_BUFFER" ] && return 0
-
-  bashunit::coverage::_resolve_output_files
-  local data_file="$_BASHUNIT_COVERAGE_DATA_TARGET_OUT"
-  local test_hits_file="$_BASHUNIT_COVERAGE_HITS_TARGET_OUT"
-
-  # Write buffered data in a single I/O operation.
-  # Use `builtin printf` so a user test spying/mocking the printf builtin
-  # cannot shadow the coverage write and silently drop data (see issue #724).
-  builtin printf '%s' "$_BASHUNIT_COVERAGE_BUFFER" >>"$data_file"
-
-  if [ -n "$_BASHUNIT_COVERAGE_HITS_BUFFER" ]; then
-    builtin printf '%s' "$_BASHUNIT_COVERAGE_HITS_BUFFER" >>"$test_hits_file"
-  fi
-
-  # Reset buffer
-  _BASHUNIT_COVERAGE_BUFFER=""
-  _BASHUNIT_COVERAGE_HITS_BUFFER=""
-  _BASHUNIT_COVERAGE_BUFFER_COUNT=0
 }
 
 function bashunit::coverage::aggregate_parallel() {

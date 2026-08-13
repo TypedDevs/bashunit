@@ -31,13 +31,15 @@ function _skip_when_unsupported_context() {
     bashunit::skip "DEBUG trap + set -T behavior is unstable on Git Bash"
     return 0
     ;;
-  Darwin*)
-    # The DEBUG-trap recorder does not propagate into subshells on the
-    # macOS system Bash (3.2); this works on Linux for all supported Bash.
-    bashunit::skip "DEBUG trap + set -T does not reach subshells on macOS Bash"
-    return 0
-    ;;
   esac
+  # Before Bash 4 the DEBUG trap does not reach a subshell even under `set -T`,
+  # so the lines inside one are never recorded and there is nothing to assert.
+  # This was written as a macOS skip, on the assumption that it was the system
+  # Bash 3.2 being odd -- the Bash 3.0 job shows it is the version, not the OS.
+  if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+    bashunit::skip "the DEBUG trap does not reach subshells before Bash 4"
+    return 0
+  fi
   return 1
 }
 
@@ -157,10 +159,10 @@ EOF
   local hit_count
   hit_count=$(_run_fixture_under_coverage "$fixture")
 
-  # Documented limitation: writes from inside ( ... ) hit the in-memory
-  # buffer of the subshell, which is discarded on subshell exit. Only
-  # the outer `echo "after"` line is recorded back in the parent.
-  assert_equals "1" "$hit_count"
+  # Both lines: the one inside ( ... ) and the trailing echo. Records used to
+  # go into an in-memory buffer that died with the subshell, so the inner line
+  # was lost and this asserted 1 (#1101).
+  assert_equals "2" "$hit_count"
 
   rm -f "$fixture"
 }
@@ -197,9 +199,9 @@ EOF
   local hit_count
   hit_count=$(_run_fixture_under_coverage "$fixture")
 
-  # Consumer side of <(...) is tracked: the `while` line, the loop body,
-  # and the trailing echo (3 distinct hit lines).
-  assert_equals "3" "$hit_count"
+  # The `while` line, the loop body, the trailing echo, and the `echo "a"`
+  # inside <(...) -- that last one used to die with its subshell (#1101).
+  assert_equals "4" "$hit_count"
 
   rm -f "$fixture"
 }
@@ -219,10 +221,10 @@ EOF
   local hit_count
   hit_count=$(_run_fixture_under_coverage "$fixture")
 
-  # Documented limitation: the function body runs inside the $(...)
-  # subshell, so its hits are lost. Only the caller line and trailing
-  # echo are recorded in the parent's data file.
-  assert_equals "2" "$hit_count"
+  # The declaration, the caller, the trailing echo, and the helper body that
+  # runs inside the $(...) subshell -- the body used to be lost with the
+  # subshell buffer, so this asserted 2 (#1101).
+  assert_equals "4" "$hit_count"
 
   rm -f "$fixture"
 }
