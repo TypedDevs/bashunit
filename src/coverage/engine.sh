@@ -236,29 +236,25 @@ function bashunit::coverage::record_line() {
   # Skip if coverage data file doesn't exist (trap inherited by child process)
   [ -z "$_BASHUNIT_COVERAGE_DATA_FILE" ] && return 0
 
-  # Fast in-memory should_track cache (avoids grep + file I/O per line)
-  local decision=""
-  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_TRACK_" "$file"; then
-    decision="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
+  # One cache, not two: the decision and the normalized path live under a
+  # single key, so a line pays the ${file//[^a-zA-Z0-9]/_} key rebuild once
+  # instead of twice (#1110). Value is "0" or "1 <normalized path>".
+  local entry="" decision="" normalized_file=""
+  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_FILE_" "$file"; then
+    entry="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
+    decision="${entry%% *}"
+    [ "$decision" = "0" ] && return 0
+    normalized_file="${entry#* }"
   else
     if bashunit::coverage::should_track "$file"; then
       decision=1
+      normalized_file=$(bashunit::coverage::normalize_path "$file")
+      bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_FILE_" "$file" \
+        "1 $normalized_file"
     else
-      decision=0
+      bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_FILE_" "$file" "0"
+      return 0
     fi
-    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_TRACK_" "$file" "$decision"
-  fi
-  if [ "$decision" = "0" ]; then
-    return 0
-  fi
-
-  # Fast in-memory path normalization cache (avoids cd + pwd subshell per line)
-  local normalized_file=""
-  if bashunit::coverage::lookup_get "_BASHUNIT_COVLOOKUP_PATH_" "$file"; then
-    normalized_file="$_BASHUNIT_COVERAGE_LOOKUP_OUT"
-  else
-    normalized_file=$(bashunit::coverage::normalize_path "$file")
-    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_PATH_" "$file" "$normalized_file"
   fi
 
   # Write the record out now rather than buffering it in a variable.
