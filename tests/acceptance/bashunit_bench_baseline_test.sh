@@ -63,10 +63,18 @@ function test_the_tolerance_is_overridable() {
   write_baseline 1
 
   local ec=0
-  # 100000% of 1ms is 1 second: the same run that fails at the default passes.
-  NO_COLOR=1 ./bashunit bench --baseline "$BASELINE" --baseline-tolerance 100000 \
-    "$FIXTURE" >/dev/null 2>&1 || ec=$?
+  local output
+  # The benchmark sleeps 10ms against a 1ms baseline, so the override has to
+  # cover the overshoot with room to spare: 100000% allowed only 1 second, and
+  # a loaded macOS runner exceeded it (#1141). 10000000% is 100 seconds, which
+  # timing cannot plausibly reach, and the default still fails the same run --
+  # which is what this asserts.
+  output=$(NO_COLOR=1 ./bashunit bench --baseline "$BASELINE" \
+    --baseline-tolerance 10000000 "$FIXTURE" 2>&1) || ec=$?
 
+  # Keeping the output means the next failure says why, instead of only
+  # "expected 0, got 1".
+  assert_not_contains "regression" "$output"
   assert_successful_code "" "" "$ec"
 }
 
