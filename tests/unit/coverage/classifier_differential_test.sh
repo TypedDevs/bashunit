@@ -28,7 +28,11 @@ function awk_classification() { # $1 = file, $2 = optional rule source
     return 0
   fi
 
-  printf '%s\n' "$out"
+  # A file with no output must stay empty: printf '%s\n' "" emits a blank line,
+  # which diffs against awk's genuine no-output as a disagreement.
+  if [ -n "$out" ]; then
+    printf '%s\n' "$out"
+  fi
 }
 
 # Classifies every line of $1 with the Bash reference, same format.
