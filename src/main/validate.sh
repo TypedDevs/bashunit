@@ -33,11 +33,31 @@ function bashunit::main::require_non_negative_int_or_exit() {
 # raw redirect error on a run that had already reported success (#875).
 # Arguments: $1 - path, $2 - the setting name to quote in the error
 ##
+##
+# Exits with the same shape as the writability errors, but says which mistake
+# it was: "cannot be written" sends the reader to permissions, and a directory
+# is almost always a forgotten filename.
+# Arguments: $1 - path, $2 - setting name
+##
+function bashunit::main::report_path_is_a_directory() {
+  printf "%sError: %s is a directory, not a file: '%s'.%s\n" \
+    "$_BASHUNIT_COLOR_FAILED" "${2:-path}" "$1" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  exit 1
+}
+
+
 function bashunit::main::require_writable_path_or_exit() {
   local path=$1
   local parent=${1%/*}
   [ "$parent" = "$1" ] && parent="."
   [ -z "$parent" ] && parent="/"
+
+  # A directory satisfies both -e and -w, so it used to pass here and fail much
+  # later inside the writer -- with a raw bash message naming a bashunit source
+  # file, and an exit status of 0 (#1177).
+  if [ -d "$path" ]; then
+    bashunit::main::report_path_is_a_directory "$path" "${2:-}"
+  fi
 
   if [ -e "$path" ]; then
     [ -w "$path" ] && return 0
@@ -71,6 +91,10 @@ function bashunit::main::require_creatable_path_or_exit() {
     esac
   done
   [ -z "$ancestor" ] && ancestor="/"
+
+  if [ -d "$path" ]; then
+    bashunit::main::report_path_is_a_directory "$path" "${2:-}"
+  fi
 
   if [ -d "$ancestor" ] && [ -w "$ancestor" ] &&
     { [ ! -e "$path" ] || [ -w "$path" ]; }; then
