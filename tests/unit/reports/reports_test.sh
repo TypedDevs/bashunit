@@ -470,6 +470,24 @@ function test_print_gha_annotations_failed_only_to_stdout() {
   assert_not_contains 'test_risky' "$output"
 }
 
+# The encoder writes %25 first so its own escapes stay literal, and on Bash 3.0
+# that substitution silently did nothing: `${text//%/%25}` reads the `%` after
+# `//` as the anchor-to-end form, so the replacement was appended and the text
+# left unencoded (#1121).
+function test_gha_annotation_percent_encodes_a_percent_sign() {
+  _mock_state_functions
+  BASHUNIT_LOG_GHA="gha.log"
+
+  bashunit::reports::add_test "tests/foo_test.sh" "test_bad" "100" "1" "failed" \
+    "coverage 80% -> 90%"
+
+  local output
+  output=$(bashunit::reports::print_gha_annotations failed-only)
+
+  assert_contains "coverage 80%25 -> 90%25" "$output"
+  assert_not_contains "80% " "$output"
+}
+
 function test_generate_gha_log_encodes_newlines_in_message() {
   _mock_state_functions
   BASHUNIT_LOG_GHA="gha.log"

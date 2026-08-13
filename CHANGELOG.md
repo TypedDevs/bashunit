@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Fixed
+- GitHub Actions annotations are percent-encoded on Bash 3.0 too: the encoder's `${text//%/%25}` silently did nothing there, so a message containing `%` reached GitHub unencoded with a stray `%25` appended (#1121)
 - TAP escapes a `#` in a test name, so a passing test called `check # SKIP me` is no longer read as a directive and reported as skipped by whatever consumes the file (#1119)
 - `assert_file_contains` accepts a needle that starts with a dash instead of failing with `grep: invalid option`, and `assert_file_not_contains` matches literally like its counterpart, so `a.c` no longer matches `abc` (#1108)
 - `assert_equals` no longer expands backslash escapes while normalizing, so `C:\` and `C:\\` compare as different, and a literal `\t` is no longer equal to a real tab. It still ignores ANSI sequences and control characters, which is what it documents (#1108)

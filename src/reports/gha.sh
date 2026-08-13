@@ -8,7 +8,11 @@ function bashunit::reports::__gha_encode() {
   # Percent-encode reserved chars per GHA workflow-commands spec.
   # Bash 3.0+ parameter expansion avoids extra awk/sed calls.
   # Order matters: encode '%' first so the sequences we inject stay literal.
-  text="${text//%/%25}"
+  # `[%]`, not `%`: Bash 3.0 reads the `%` right after `//` as the anchor-to-end
+  # syntax with an empty pattern, appending the replacement instead of
+  # substituting -- `100% and 50%` came out as `100% and 50%%25`, so an
+  # annotation reached GitHub unencoded (#1121). Same trap as #1119 with `#`.
+  text="${text//[%]/%25}"
   text="${text//$'\r'/%0D}"
   text="${text//$'\n'/%0A}"
   printf '%s' "$text"
