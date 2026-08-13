@@ -112,7 +112,9 @@ function bashunit::runner::call_test_functions() {
     return
   fi
 
-  bashunit::helper::check_duplicate_functions "$script" || true
+  # The duplicate check runs in load_test_files, before this function is
+  # dispatched: under --parallel this body is a background subshell, so state
+  # set here never reaches the summary (#1147).
 
   local -a provider_data=()
   local provider_data_count=0

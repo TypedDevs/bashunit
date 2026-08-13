@@ -7,7 +7,12 @@ function bashunit::console_results::render_result() {
     bashunit::console_results::print_execution_time
     printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
     printf "File with duplicate functions: %s\n" "$(bashunit::state::get_file_with_duplicated_function_names)"
-    printf "Duplicate functions: %s\n" "$(bashunit::state::get_duplicated_function_names)"
+    local _dup_detail
+    _dup_detail="$(bashunit::state::get_duplicated_function_details)"
+    if [ -z "$_dup_detail" ]; then
+      _dup_detail="$(bashunit::state::get_duplicated_function_names)"
+    fi
+    printf "Duplicate functions: %s\n" "$_dup_detail"
     return 1
   fi
 
