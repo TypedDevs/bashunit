@@ -123,6 +123,23 @@ function test_an_unwritable_report_path_fails_fast() {
   assert_contains "cannot be written" "$output"
 }
 
+# A directory satisfies both `-e` and `-w`, so it passed the writability check
+# and the run continued to the writer, which failed with a raw bash message
+# naming a bashunit source file -- and the run still exited 0. A CI job
+# publishing that report would find no file and nothing red to explain it
+# (#1177).
+function test_a_report_path_that_is_a_directory_fails_fast() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+
+  local ec=0
+  local output
+  output=$(./bashunit bench --report-json "$dir" "$FIXTURE" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "is a directory" "$output"
+}
+
 function test_the_flags_are_advertised_by_bench_help() {
   local output
   output=$(./bashunit bench --help 2>&1)
