@@ -24,7 +24,11 @@ function bashunit::reports::__tap_message() {
 function bashunit::reports::__tap_description() {
   local text="$1"
   text="${text//\\/\\\\}"
-  printf '%s' "${text//#/\\#}"
+  # `[#]`, not `#`: Bash 3.0 reads the `#` right after `//` as the
+  # anchor-to-start syntax with an empty pattern and prepends the replacement
+  # instead of substituting. A bracket expression means the same thing to every
+  # supported Bash -- verified on 3.0, 3.2, 4.4 and 5.
+  printf '%s' "${text//[#]/\\#}"
 }
 
 ##
