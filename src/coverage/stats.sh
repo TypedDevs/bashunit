@@ -47,12 +47,31 @@ function bashunit::coverage::_compute_file_stats() {
   local file="$1"
   local stats
   stats=$(bashunit::coverage::compute_file_coverage "$file")
-  _BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT="${stats%%:*}"
-  _BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT="${stats##*:}"
-  _BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT=$(bashunit::coverage::calculate_percentage \
-    "$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT" "$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT")
-  _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT=$(bashunit::coverage::get_coverage_class \
-    "$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT")
+  bashunit::coverage::_derive_file_stats "${stats%%:*}" "${stats##*:}"
+}
+
+# Fills the four slots from an executable/hit pair. Split out so the batch pass
+# and the per-file path derive pct and class the same way, and so neither forks
+# for them: percentage and class each used to cost a subshell per file, which
+# at 128 tracked files was more than the arithmetic they wrapped (#1088).
+function bashunit::coverage::_derive_file_stats() {
+  local executable="$1" hit="$2"
+  _BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT="$executable"
+  _BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT="$hit"
+
+  local pct=0
+  if [ "$executable" -gt 0 ]; then
+    pct=$((hit * 100 / executable))
+  fi
+  _BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT="$pct"
+
+  if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
+    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="high"
+  elif [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}" ]; then
+    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="medium"
+  else
+    _BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT="low"
+  fi
 }
 
 # Get file coverage stats as "executable:hit:pct:class"
@@ -86,21 +105,68 @@ function bashunit::coverage::precompute_file_stats() {
   _BASHUNIT_COVERAGE_STATS_COUNT=0
   bashunit::coverage::reset_lookup_namespace "_BASHUNIT_COVLOOKUP_STATS_"
 
+  if bashunit::coverage::_precompute_batch; then
+    return 0
+  fi
+
   local file
   while IFS= read -r file; do
     { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
 
     bashunit::coverage::_compute_file_stats "$file"
-
-    local idx="$_BASHUNIT_COVERAGE_STATS_COUNT"
-    _BASHUNIT_COVERAGE_STATS_FILES[idx]="$file"
-    _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT"
-    _BASHUNIT_COVERAGE_STATS_HIT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT"
-    _BASHUNIT_COVERAGE_STATS_PCT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT"
-    _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT"
-    _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
-    bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_STATS_" "$file" "$idx"
+    bashunit::coverage::_record_file_stats "$file" \
+      "$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT" "$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT"
   done < <(bashunit::coverage::get_tracked_files)
+}
+
+# Appends one file to the stats cache.
+function bashunit::coverage::_record_file_stats() {
+  local file="$1"
+  bashunit::coverage::_derive_file_stats "$2" "$3"
+
+  local idx="$_BASHUNIT_COVERAGE_STATS_COUNT"
+  _BASHUNIT_COVERAGE_STATS_FILES[idx]="$file"
+  _BASHUNIT_COVERAGE_STATS_EXEC[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_EXEC_OUT"
+  _BASHUNIT_COVERAGE_STATS_HIT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_HIT_OUT"
+  _BASHUNIT_COVERAGE_STATS_PCT[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_PCT_OUT"
+  _BASHUNIT_COVERAGE_STATS_CLASS[idx]="$_BASHUNIT_COVERAGE_FILE_STATS_CLASS_OUT"
+  _BASHUNIT_COVERAGE_STATS_COUNT=$((idx + 1))
+  bashunit::coverage::lookup_put "_BASHUNIT_COVLOOKUP_STATS_" "$file" "$idx"
+}
+
+# Fills the whole cache with one awk invocation, and reports whether it could.
+#
+# Returns 1 without touching the cache when there is nowhere to write the
+# manifest or the pass produced nothing for a non-empty tracked list, so the
+# caller falls back to the per-file path and a report is never silently empty.
+function bashunit::coverage::_precompute_batch() {
+  local data_dir="${_BASHUNIT_COVERAGE_DATA_FILE%/*}"
+  { [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ] && [ -d "$data_dir" ]; } || return 1
+
+  bashunit::coverage::ensure_hits_aggregated
+
+  local manifest="$data_dir/stats-manifest"
+  local tracked=0 file
+  {
+    while IFS= read -r file; do
+      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+      tracked=$((tracked + 1))
+      bashunit::coverage::hits_file_for "$file"
+      printf '%s\t%s\n' "$_BASHUNIT_COVERAGE_HITS_FILE_OUT" "$file"
+    done < <(bashunit::coverage::get_tracked_files)
+  } >"$manifest" 2>/dev/null || return 1
+
+  if [ "$tracked" -eq 0 ]; then
+    return 0
+  fi
+
+  local executable hit
+  while IFS="$(printf '\t')" read -r executable hit file; do
+    [ -n "$file" ] || continue
+    bashunit::coverage::_record_file_stats "$file" "$executable" "$hit"
+  done < <(bashunit::coverage::awk_file_stats "$manifest" 2>/dev/null)
+
+  [ "$_BASHUNIT_COVERAGE_STATS_COUNT" -gt 0 ]
 }
 
 # Look up cached stats for a file, returns "executable:hit:pct:class"
