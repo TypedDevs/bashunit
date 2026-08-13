@@ -142,6 +142,13 @@ the command line and the global config: **CLI flags → suite settings → globa
 `.bashunitrc` → `.env` → defaults.** An explicit path argument likewise
 replaces the suite's `paths` and keeps its options.
 
+When several suites are named and they set the *same* option to different
+values, the one named later on the command line wins — so
+`--suite a --suite b` and `--suite b --suite a` run the union of the same paths
+but can run them in different modes if, say, one sets `parallel = true` and the
+other `no-parallel = true`. Their paths are always unioned regardless of order;
+it is only conflicting options that depend on it.
+
 An unknown suite name exits non-zero listing the defined ones, and a line
 inside a section that is not `key = value` — or an option that is not a real
 flag — exits non-zero quoting it, rather than running something other than what
