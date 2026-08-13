@@ -12,6 +12,21 @@ function bashunit::coverage::report_lcov() {
   # Create output directory if needed
   mkdir -p "$(dirname "$output_file")"
 
+  # One awk invocation for the whole report: three forks and two Bash loops per
+  # tracked file was 3133ms for 128 files against 262ms this way, and the awk
+  # work itself is a rounding error either way (#1090). The per-file path below
+  # stays as the fallback for when the batch pass cannot run.
+  if bashunit::coverage::write_batch_manifest "lcov-manifest"; then
+    if [ -z "$_BASHUNIT_COVERAGE_MANIFEST_OUT" ]; then
+      echo "TN:" >"$output_file"
+      return 0
+    fi
+    if bashunit::coverage::awk_lcov_report "$_BASHUNIT_COVERAGE_MANIFEST_OUT" \
+      >"$output_file" 2>/dev/null && [ -s "$output_file" ]; then
+      return 0
+    fi
+  fi
+
   # Generate LCOV format
   {
     echo "TN:"

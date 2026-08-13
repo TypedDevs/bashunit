@@ -208,6 +208,118 @@ _BASHUNIT_COVERAGE_AWK_STATS='
 }
 '
 
+# The whole LCOV report, in one awk invocation.
+#
+# report_lcov used to run three awk forks and two Bash loops per tracked file:
+# 3133ms for 128 files, of which the awk work itself was a rounding error. This
+# reads the same manifest as the stats pass and emits every record a file needs
+# from a single walk that already holds the source lines and the propagated hit
+# counts: 262ms, byte-identical output (#1090).
+#
+# Composed with the classifier rules, the declaration scanner and the branch
+# scanner, all of which are included ahead of it.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_LCOV_ALL='
+# An arm ran as often as its FIRST executable line did (#1061).
+function bu_arm_taken(s, e,   ln) {
+  for (ln = s; ln <= e; ln++) {
+    if (!bu_is_executable(sl[ln])) { continue }
+    return (ln in hits) ? hits[ln] : 0
+  }
+  return 0
+}
+
+BEGIN { print "TN:" }
+
+{
+  hitsfile = $0
+  sub(/\t.*$/, "", hitsfile)
+  src = $0
+  sub(/^[^\t]*\t/, "", src)
+
+  split("", hits)
+  if (hitsfile != "") {
+    while ((getline hline < hitsfile) > 0) {
+      split(hline, hp, " ")
+      hits[hp[1] + 0] = hp[2] + 0
+    }
+    close(hitsfile)
+  }
+
+  total = 0
+  split("", sl)
+  while ((getline sline < src) > 0) {
+    total++
+    sl[total] = sline
+  }
+  close(src)
+
+  # The DEBUG trap attributes a multi-line statement to its starting line, so
+  # the count carries forward across the backslash chain (#722).
+  carry = 0
+  for (ln = 1; ln <= total; ln++) {
+    h = (ln in hits) ? hits[ln] : 0
+    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
+    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
+  }
+
+  bu_fn_reset()
+  bu_br_reset()
+  for (ln = 1; ln <= total; ln++) {
+    bu_fn_line(sl[ln], ln)
+    bu_br_line(sl[ln], ln)
+  }
+  bu_fn_finish(total)
+
+  print "SF:" src
+
+  # FN lines as we walk, the matching FNDA lines after them, per LCOV
+  # convention.
+  fn_hit = 0
+  fnda = ""
+  for (i = 1; i <= fn_count; i++) {
+    print "FN:" fns[i] "," fnn[i]
+    any = 0
+    for (ln = fns[i]; ln <= fne[i]; ln++) {
+      if ((ln in hits) && hits[ln] > 0) { any = 1; break }
+    }
+    fnda = fnda "FNDA:" any "," fnn[i] "\n"
+    if (any == 1) { fn_hit++ }
+  }
+  printf "%s", fnda
+  print "FNF:" fn_count
+  print "FNH:" fn_hit
+
+  br_total = 0
+  br_hit = 0
+  for (i = 1; i <= br_count; i++) {
+    n = split(br_arms[i], arms, ",")
+    for (a = 1; a <= n; a++) {
+      split(arms[a], se, ":")
+      taken = bu_arm_taken(se[1] + 0, se[2] + 0)
+      print "BRDA:" br_dec[i] "," (i - 1) "," (a - 1) "," taken
+      br_total++
+      if (taken > 0) { br_hit++ }
+    }
+  }
+  print "BRF:" br_total
+  print "BRH:" br_hit
+
+  executable = 0
+  hit = 0
+  for (ln = 1; ln <= total; ln++) {
+    if (!bu_is_executable(sl[ln])) { continue }
+    executable++
+    h = (ln in hits) ? hits[ln] : 0
+    if (h > 0) { hit++ }
+    print "DA:" ln "," h
+  }
+  print "LF:" executable
+  print "LH:" hit
+  print "end_of_record"
+}
+'
+
 ##
 # The awk source of the shared classification rules.
 ##
@@ -243,5 +355,17 @@ function bashunit::coverage::awk_lcov_lines() {
 function bashunit::coverage::awk_file_stats() {
   env LC_ALL=C "$AWK" \
     "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_STATS}" \
+    "$1"
+}
+
+##
+# Emits the whole LCOV report for every pair in the manifest, in one awk
+# invocation.
+# Arguments: $1 - manifest of "<hits block>\t<source>" lines
+##
+function bashunit::coverage::awk_lcov_report() {
+  env LC_ALL=C "$AWK" \
+    "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_FUNCTIONS}\
+${_BASHUNIT_COVERAGE_AWK_BRANCHES}${_BASHUNIT_COVERAGE_AWK_LCOV_ALL}" \
     "$1"
 }

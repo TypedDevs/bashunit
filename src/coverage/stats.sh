@@ -140,27 +140,15 @@ function bashunit::coverage::_record_file_stats() {
 # manifest or the pass produced nothing for a non-empty tracked list, so the
 # caller falls back to the per-file path and a report is never silently empty.
 function bashunit::coverage::_precompute_batch() {
-  local data_dir="${_BASHUNIT_COVERAGE_DATA_FILE%/*}"
-  { [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ] && [ -d "$data_dir" ]; } || return 1
+  bashunit::coverage::write_batch_manifest "stats-manifest" || return 1
+  local manifest="$_BASHUNIT_COVERAGE_MANIFEST_OUT"
 
-  bashunit::coverage::ensure_hits_aggregated
-
-  local manifest="$data_dir/stats-manifest"
-  local tracked=0 file
-  {
-    while IFS= read -r file; do
-      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
-      tracked=$((tracked + 1))
-      bashunit::coverage::hits_file_for "$file"
-      printf '%s\t%s\n' "$_BASHUNIT_COVERAGE_HITS_FILE_OUT" "$file"
-    done < <(bashunit::coverage::get_tracked_files)
-  } >"$manifest" 2>/dev/null || return 1
-
-  if [ "$tracked" -eq 0 ]; then
+  if [ -z "$manifest" ]; then
+    # Nothing tracked is a valid, empty report -- not a reason to fall back.
     return 0
   fi
 
-  local executable hit
+  local executable hit file
   while IFS="$(printf '\t')" read -r executable hit file; do
     [ -n "$file" ] || continue
     bashunit::coverage::_record_file_stats "$file" "$executable" "$hit"
