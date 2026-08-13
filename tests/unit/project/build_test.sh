@@ -4,6 +4,11 @@ ROOT_DIR=""
 
 function set_up_before_script() {
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+  # Four tests below inspect the same unoptimized artifact and only ever read
+  # it, so they built it four times over -- ~0.9s each, and four builds
+  # competing for CPU under --parallel. Build it once for the file.
+  SHARED_BUILD_DIR="$(bashunit::temp_dir shared_build)"
+  build_unoptimized "$SHARED_BUILD_DIR" >/dev/null 2>&1
 }
 
 function src_files_sourced_by_entrypoint() {
@@ -312,10 +317,7 @@ function test_build_process_file_embeds_same_basename_from_two_module_dirs() {
 # surviving one would try to read a src/ tree the installed binary does not ship
 # with (regressions: bench #0.31.0, watch #735).
 function test_built_binary_contains_no_source_lines() {
-  local build_dir
-  build_dir=$(bashunit::temp_dir)
-
-  build_unoptimized "$build_dir" >/dev/null 2>&1
+  local build_dir=$SHARED_BUILD_DIR
 
   assert_file_exists "$build_dir/bashunit"
   assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
@@ -376,20 +378,14 @@ function test_build_assert_valid_syntax_rejects_broken_file() {
 }
 
 function test_built_binary_defines_watch_run() {
-  local build_dir
-  build_dir=$(bashunit::temp_dir)
-
-  build_unoptimized "$build_dir" >/dev/null 2>&1
+  local build_dir=$SHARED_BUILD_DIR
 
   assert_file_exists "$build_dir/bashunit"
   assert_equals "1" "$(grep -c 'function bashunit::watch::run()' "$build_dir/bashunit")"
 }
 
 function test_built_binary_embeds_each_src_file_exactly_once() {
-  local build_dir
-  build_dir=$(bashunit::temp_dir)
-
-  build_unoptimized "$build_dir" >/dev/null 2>&1
+  local build_dir=$SHARED_BUILD_DIR
 
   local duplicated
   duplicated=$(grep -E '^# src/[a-z_0-9/]+\.sh$' "$build_dir/bashunit" | sort | uniq -d)
@@ -400,10 +396,7 @@ function test_built_binary_embeds_each_src_file_exactly_once() {
 # The marker guard above only catches a file embedded twice under the *same*
 # spelling; this one catches the symptom directly, whatever the cause.
 function test_built_binary_defines_each_bashunit_function_exactly_once() {
-  local build_dir
-  build_dir=$(bashunit::temp_dir)
-
-  build_unoptimized "$build_dir" >/dev/null 2>&1
+  local build_dir=$SHARED_BUILD_DIR
 
   # Scoped to the bashunit:: namespace on purpose: an unqualified `^function `
   # also matches the example code inside the embedded docs/assertions.md heredoc.
