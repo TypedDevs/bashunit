@@ -34,6 +34,24 @@ function _documented_in_configuration() {
   grep -oE 'BASHUNIT_[A-Z_]+' "$CONFIG_DOC" | sort -u
 }
 
+# Each check below is a one-directional `comm`, so an extractor that stops
+# matching produces an empty set and "nothing is missing" holds -- the guard
+# that catches an undocumented new setting passes precisely when it has stopped
+# working. Proven by mutation: pointing ENV_FILE at a missing file left both
+# "is documented" tests green.
+#
+# The floors are deliberately far below the current counts (79 settings each),
+# since these only ever grow; they exist to catch an extractor returning
+# nothing or almost nothing, not to track the exact number.
+function test_every_extractor_still_finds_the_names_it_parses() {
+  assert_greater_than 40 "$(_registered_settings | wc -l)"
+  assert_greater_than 40 "$(_documented_in_env_example | wc -l)"
+  assert_greater_than 40 "$(_documented_in_configuration | wc -l)"
+  assert_greater_than 20 "$(_help_flags | wc -l)"
+  assert_greater_than 20 "$(_cli_doc_flags | wc -l)"
+}
+
+
 function test_every_registered_setting_appears_in_env_example() {
   local missing
   missing="$(comm -23 <(_registered_settings) <(_documented_in_env_example) | tr '\n' ' ')"
