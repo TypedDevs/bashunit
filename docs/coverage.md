@@ -60,9 +60,9 @@ A file created *after* that point is not seeded, though it is still tracked if i
 
 ::: tip Performance
 Coverage roughly doubles to quadruples wall-clock time, depending on Bash version
-and engine. Cost is split fairly evenly between capture and reporting, and the
-reporting half is the same whichever engine ran. If that is too slow to keep on
-while you work, narrow `BASHUNIT_COVERAGE_PATHS` — both halves scale with the
+and engine. Capture dominates: the report phase is a handful of `awk` passes for
+the whole run, while capture pays per executed line. If that is too slow to keep
+on while you work, narrow `BASHUNIT_COVERAGE_PATHS` — both halves scale with the
 number of tracked source lines, not with the size of the test suite.
 :::
 
@@ -156,12 +156,16 @@ with `xtrace` costs roughly a quarter of what the `DEBUG` trap costs per
 executed line.
 
 The two engines are held to producing identical LCOV output by
-`tests/acceptance/coverage_engine_test.sh`. One difference is not a bug in
-either: the `trap` engine buffers hits in a shell variable, so hits recorded
-inside a `$(...)` command substitution are lost when that subshell exits unless
-the buffer happens to fill. The `xtrace` engine writes through a file
-descriptor and keeps them, so it can report *more* covered lines on
-subshell-heavy code.
+`tests/acceptance/coverage_engine_test.sh`. They used to disagree on
+subshell-heavy code, because the `trap` engine buffered hits in a shell
+variable and anything recorded inside a `$(...)` died with that subshell; hits
+are written as they happen now, so both engines keep them.
+
+On **Bash 3.x the `DEBUG` trap does not reach a subshell at all**, even under
+`set -T`, so lines executed inside `( … )`, `$( … )` or `<( … )` are not
+recorded there. That is a limitation of the shell, not of the engine, and it
+means the same project can report a slightly lower percentage on Bash 3.x than
+on Bash 4+. `xtrace`, where available, does not have this blind spot.
 
 Per-line execution counts are always written to the LCOV report as the count
 field of each `DA:<line>,<count>` record (consumable by `genhtml`, Codecov and
