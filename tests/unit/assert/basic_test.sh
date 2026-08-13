@@ -256,3 +256,37 @@ function test_assert_true_variadic_reports_a_missing_command() {
       "unknown command: definitely_not_a_command --flag")" \
     "$(assert_true definitely_not_a_command --flag)"
 }
+
+# assert_equals normalizes ANSI and control characters, which it did by piping
+# through `echo -e` -- and that interprets backslash escapes, so a trailing
+# backslash and an escaped one compared equal, as did a literal `\t` and a real
+# tab. Normalizing must not rewrite the values it is comparing (#1108).
+function test_assert_equals_distinguishes_a_backslash_from_an_escaped_one() {
+  # Built with printf so the backslashes are unambiguous to reader and linter
+  # alike: one trailing backslash against two.
+  local bs one two
+  # shellcheck disable=SC1003  # a lone backslash is the value under test
+  bs="$(printf '\\')"
+  one="C:$bs"
+  two="C:$bs$bs"
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert equals distinguishes a backslash from an escaped one" \
+      "$one" "but got " "$two")" \
+    "$(assert_equals "$one" "$two")"
+}
+
+function test_assert_equals_distinguishes_an_escape_sequence_from_the_character() {
+  local with_real_tab
+  with_real_tab="$(printf 'a\tb')"
+
+  # The reported values are the normalized ones, which is the point of the
+  # normalization: the real tab is a control byte and is stripped, so `ab` is
+  # what the comparison saw. The literal `a\tb` keeps its backslash.
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert equals distinguishes an escape sequence from the character" \
+      'a\tb' "but got " "ab")" \
+    "$(assert_equals 'a\tb' "$with_real_tab")"
+}

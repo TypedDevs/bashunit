@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+- `assert_file_contains` accepts a needle that starts with a dash instead of failing with `grep: invalid option`, and `assert_file_not_contains` matches literally like its counterpart, so `a.c` no longer matches `abc` (#1108)
+- `assert_equals` no longer expands backslash escapes while normalizing, so `C:\` and `C:\\` compare as different, and a literal `\t` is no longer equal to a real tab. It still ignores ANSI sequences and control characters, which is what it documents (#1108)
+
 ### Added
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 

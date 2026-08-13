@@ -75,7 +75,11 @@ function bashunit::str::strip_ansi_to_slot() {
     fi
     ;;
   esac
-  _BASHUNIT_STR_STRIPPED_OUT=$(echo -e "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g')
+  # `printf '%s'`, never `echo -e`: this normalizes ANSI and control bytes for
+  # the comparison, and interpreting backslash escapes on the way made
+  # assert_equals read `C:\` and `C:\\` as the same value, and a literal
+  # `\t` as a real tab (#1108). Normalizing must not rewrite what it compares.
+  _BASHUNIT_STR_STRIPPED_OUT=$(printf '%s' "$input" | sed -E 's/\x1B\[[0-9;]*[mK]//g; s/[[:cntrl:]]//g')
 }
 
 # Strip ANSI escape codes and control characters, echoing the result.

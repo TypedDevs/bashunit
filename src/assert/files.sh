@@ -314,7 +314,9 @@ function assert_file_contains() {
   local file="$1"
   local string="$2"
 
-  if ! grep -F -q "$string" "$file"; then
+  # `-e` and `--`: a needle starting with a dash is a pattern, not an option,
+  # and a file named like one is still a file (#1108).
+  if ! grep -F -q -e "$string" -- "$file"; then
     bashunit::assert::fail_with "" "${file}" "to contain" "${string}"
     return
   fi
@@ -328,7 +330,9 @@ function assert_file_not_contains() {
   local file="$1"
   local string="$2"
 
-  if grep -q "$string" "$file"; then
+  # -F for the same reason assert_file_contains uses it: the needle is a
+  # literal, so `a.c` must not match `abc` here either (#1108).
+  if grep -F -q -e "$string" -- "$file"; then
     bashunit::assert::fail_with "" "${file}" "to not contain" "${string}"
     return
   fi
