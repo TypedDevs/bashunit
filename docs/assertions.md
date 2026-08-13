@@ -837,6 +837,25 @@ function test_failure() {
 ```
 :::
 
+::: warning Under `set -e`, pass the code as the third argument
+A non-zero exit aborts the test before the assertion runs, so the code has to
+be captured first — and capturing it sets `$?` to zero:
+
+```bash
+local code=0
+some_command || code=$?
+
+assert_successful_code            # reads $? — the assignment's 0
+assert_successful_code "$code"    # the first argument is ignored, same result
+
+assert_successful_code "" "" "$code"   # correct: read from the third argument
+```
+
+`assert_exit_code` takes a captured code the same way, but its first argument
+is the *expected* code: `assert_exit_code 7 "" "$code"`.
+:::
+
+
 ## assert_unsuccessful_code
 > `assert_unsuccessful_code`
 
@@ -882,6 +901,25 @@ function test_failure() {
 ```
 :::
 
+::: warning Under `set -e`, pass the code as the third argument
+A non-zero exit aborts the test before the assertion runs, so the code has to
+be captured first — and capturing it sets `$?` to zero:
+
+```bash
+local code=0
+some_command || code=$?
+
+assert_unsuccessful_code            # reads $? — the assignment's 0
+assert_unsuccessful_code "$code"    # the first argument is ignored, same result
+
+assert_unsuccessful_code "" "" "$code"   # correct: read from the third argument
+```
+
+`assert_exit_code` takes a captured code the same way, but its first argument
+is the *expected* code: `assert_exit_code 7 "" "$code"`.
+:::
+
+
 ## assert_general_error
 > `assert_general_error`
 
@@ -926,6 +964,25 @@ function test_failure() {
 }
 ```
 :::
+
+::: warning Under `set -e`, pass the code as the third argument
+A non-zero exit aborts the test before the assertion runs, so the code has to
+be captured first — and capturing it sets `$?` to zero:
+
+```bash
+local code=0
+some_command || code=$?
+
+assert_general_error            # reads $? — the assignment's 0
+assert_general_error "$code"    # the first argument is ignored, same result
+
+assert_general_error "" "" "$code"   # correct: read from the third argument
+```
+
+`assert_exit_code` takes a captured code the same way, but its first argument
+is the *expected* code: `assert_exit_code 7 "" "$code"`.
+:::
+
 
 ## assert_command_available
 > `assert_command_available "command"`
@@ -984,6 +1041,25 @@ function test_failure_with_existing_command() {
 }
 ```
 :::
+
+::: warning Under `set -e`, pass the code as the third argument
+A non-zero exit aborts the test before the assertion runs, so the code has to
+be captured first — and capturing it sets `$?` to zero:
+
+```bash
+local code=0
+some_command || code=$?
+
+assert_command_not_found            # reads $? — the assignment's 0
+assert_command_not_found "$code"    # the first argument is ignored, same result
+
+assert_command_not_found "" "" "$code"   # correct: read from the third argument
+```
+
+`assert_exit_code` takes a captured code the same way, but its first argument
+is the *expected* code: `assert_exit_code 7 "" "$code"`.
+:::
+
 
 ## assert_file_exists
 > `assert_file_exists "file"`
