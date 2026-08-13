@@ -5,6 +5,23 @@
 # Uses `tput clear` when available (queries terminfo for the right sequence)
 # and falls back to the ANSI sequence \033[2J\033[H otherwise.
 ##
+##
+# Echoes the byte size of $1, or "unknown" when it cannot be read.
+#
+# `wc -c` is a fork, which is why this is not on any hot path: it exists for
+# the failure message in discovery.sh, where one fork buys the difference
+# between "the file was truncated" and "its last command returned non-zero"
+# (#1137).
+##
+function bashunit::io::file_size() {
+  local bytes
+  bytes=$(wc -c <"$1" 2>/dev/null | tr -d ' ') || bytes=""
+  if [ -z "$bytes" ]; then
+    bytes="unknown"
+  fi
+  printf '%s' "$bytes"
+}
+
 function bashunit::io::clear_screen() {
   if bashunit::dependencies::has_tput; then
     local out
