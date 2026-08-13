@@ -158,6 +158,7 @@ function provide_two_args_with_spaces() {
 # command substitution the runner calls the parser inside, so the argument
 # reached the test unset rather than as `C:` (#1134).
 function provide_trailing_backslash() {
+  # shellcheck disable=SC1003  # a lone trailing backslash is the case under test
   echo 'C:\'
   echo 'plain'
 }
