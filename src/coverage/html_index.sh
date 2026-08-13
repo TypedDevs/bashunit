@@ -325,7 +325,7 @@ EOF
       echo "            <tr onclick=\"window.location='files/${safe_filename}.html'\">"
       echo "              <td>"
       echo "                <div class=\"file-info\">"
-      echo "                  <a href=\"files/${safe_filename}.html\" class=\"file-name\">$(basename "$display_file")</a>"
+      echo "                  <a href=\"files/${safe_filename}.html\" class=\"file-name\">${display_file##*/}</a>"
       echo "                  <div class=\"file-path\">./${display_file}</div>"
       echo "                </div>"
       echo "              </td>"

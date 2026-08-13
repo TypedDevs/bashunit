@@ -266,7 +266,10 @@ function bashunit::coverage::report_text_functions() {
         [ "${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}" -gt 0 ] && fn_hit=$((fn_hit + 1))
       done
 
-      fn_pct=$(bashunit::coverage::calculate_percentage "$fn_hit" "$fn_executable")
+      fn_pct=0
+      if [ "$fn_executable" -gt 0 ]; then
+        fn_pct=$((fn_hit * 100 / fn_executable))
+      fi
       bashunit::coverage::class_to_slot "$fn_pct"
       fn_class="$_BASHUNIT_COVERAGE_CLASS_OUT"
       bashunit::coverage::color_to_slot "$fn_class"
