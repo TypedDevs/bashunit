@@ -74,6 +74,10 @@ _BASHUNIT_COVERAGE_STATS_COUNT=0
 
 # Pre-compute stats for all tracked files (call once before reports)
 function bashunit::coverage::precompute_file_stats() {
+  # The report is about the files the user asked for, not only the ones that
+  # happened to run (#1053).
+  bashunit::coverage::seed_tracked_files
+
   _BASHUNIT_COVERAGE_STATS_FILES=()
   _BASHUNIT_COVERAGE_STATS_EXEC=()
   _BASHUNIT_COVERAGE_STATS_HIT=()

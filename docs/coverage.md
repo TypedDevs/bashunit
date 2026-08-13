@@ -45,13 +45,17 @@ bashunit records which lines ran, then classifies and reports them:
 1. **Capture**: every executed line's file path and line number is recorded, either from a `DEBUG` trap or from `xtrace` — see [Tracing engine](#tracing-engine)
 2. **Filtering**: a recorded file is tracked only when it matches your coverage paths and no exclude pattern
 3. **Aggregation**: after tests complete, hit data is aggregated
-4. **Reporting**: each source line is classified as executable or not, and the executable ones are matched against the hits
+4. **Seeding**: every file under your coverage paths joins the report, whether or not a test reached it
+5. **Reporting**: each source line is classified as executable or not, and the executable ones are matched against the hits
 
-::: warning Only executed files are reported
-A file enters the report the first time one of its lines runs. A source file that no test
-touched at all is **absent** from the report rather than shown at 0%, so the percentage is
-measured over the files that ran, not over everything under `BASHUNIT_COVERAGE_PATHS`.
-Tracked in [#1053](https://github.com/TypedDevs/bashunit/issues/1053).
+::: tip A file no test touched is reported at 0%
+The denominator is every non-excluded file under `BASHUNIT_COVERAGE_PATHS`, not only the
+files that happened to run — so untested code lowers the percentage instead of being
+invisible. Before [#1053](https://github.com/TypedDevs/bashunit/issues/1053) this repo
+reported 11 files of its own 121 and a denominator of 2,200 against a real 9,285.
+
+Seeding happens once, when the report is built, so a capture-only run pays nothing for it.
+A file created *after* that point is not seeded, though it is still tracked if it executes.
 :::
 
 ::: tip Performance

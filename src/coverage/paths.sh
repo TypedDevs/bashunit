@@ -150,6 +150,104 @@ function bashunit::coverage::build_trap_glob() {
   _BASHUNIT_COVERAGE_TRAP_GLOB="$glob"
 }
 
+##
+# Writes every file under BASHUNIT_COVERAGE_PATHS into the tracked list, before
+# a single test runs.
+#
+# A file entered that list the first time one of its lines executed, so a file
+# no test ever reached was absent from the report and could not lower the
+# percentage: coverage was measured over the files that ran, not over the files
+# the user asked about. On this repo that was 11 files of 121, and a
+# denominator of 2,200 against a real 9,285 (#1053).
+#
+# The capture path still adds files as it sees them, so nothing changes for
+# executed code; get_tracked_files already sorts and dedupes. Cost is one find
+# per run, bounded by the project rather than by the test count. A file created
+# after this point is not seeded -- it is still tracked if it executes.
+##
+_BASHUNIT_COVERAGE_SEEDED=false
+
+function bashunit::coverage::seed_tracked_files() {
+  # Once per run, and at report time rather than at init: the denominator is a
+  # reporting concern, and seeding in init made every capture-only run -- and
+  # every unit test that calls init -- walk the whole project for nothing.
+  if [ "$_BASHUNIT_COVERAGE_SEEDED" = true ]; then
+    return 0
+  fi
+  _BASHUNIT_COVERAGE_SEEDED=true
+
+  [ -n "${BASHUNIT_COVERAGE_PATHS:-}" ] || return 0
+  [ -n "${_BASHUNIT_COVERAGE_TRACKED_FILES:-}" ] || return 0
+
+  local old_ifs="$IFS"
+  IFS=','
+  local path
+  for path in $BASHUNIT_COVERAGE_PATHS; do
+    [ -n "$path" ] || continue
+    IFS="$old_ifs"
+    bashunit::coverage::_seed_one_path "$path"
+    IFS=','
+  done
+  IFS="$old_ifs"
+}
+
+##
+# Seeds one configured path.
+#
+# The exclusion test is inlined rather than delegated to should_track: that
+# normalizes every path it is given, which is a subshell per file, and seeding
+# walks the whole project. `find` is given an absolute root, so what it prints
+# is already normalized, and the patterns are applied with a `case` -- the same
+# `*pattern*` match should_track uses, so the seeded set and the captured set
+# agree.
+# Arguments: $1 - configured path
+##
+function bashunit::coverage::_seed_one_path() {
+  local path="$1"
+  local root
+
+  case "$path" in
+  /*) root="$path" ;;
+  *) root="$(pwd)/$path" ;;
+  esac
+
+  if [ -f "$root" ]; then
+    root="$(bashunit::coverage::normalize_path "$root")"
+    bashunit::coverage::_seed_emit "$root"
+    return 0
+  fi
+  [ -d "$root" ] || return 0
+  root="$(cd "$root" && pwd)"
+
+  local file
+  while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    bashunit::coverage::_seed_emit "$file"
+  done < <(find "$root" -type f -name '*.sh' 2>/dev/null)
+}
+
+##
+# Writes one already-absolute path to the tracked list unless an exclude
+# pattern matches it.
+##
+function bashunit::coverage::_seed_emit() {
+  local file="$1"
+  local old_ifs="$IFS"
+  IFS=','
+  local pattern
+  for pattern in ${BASHUNIT_COVERAGE_EXCLUDE:-}; do
+    case "$file" in
+    *$pattern*)
+      IFS="$old_ifs"
+      return 0
+      ;;
+    esac
+  done
+  IFS="$old_ifs"
+
+  printf '%s\n' "$file" >>"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+}
+
 function bashunit::coverage::should_track() {
   local file="$1"
 
@@ -211,6 +309,14 @@ function bashunit::coverage::should_track() {
       resolved_path="$(pwd)/$path"
       ;;
     esac
+    # Collapse doubled slashes the way normalize_path's cd/pwd does, or a
+    # configured path that arrived with one ("$TMPDIR/src" where TMPDIR ends in
+    # a slash) never prefixes the normalized file and the whole tree reads as
+    # untracked. Parameter expansion, not a cd/pwd subshell: should_track runs
+    # once per file on a cache miss, and a fork here is a fork per file.
+    while [ "$resolved_path" != "${resolved_path//\/\//\/}" ]; do
+      resolved_path="${resolved_path//\/\//\/}"
+    done
 
     case "$normalized_file" in
     "$resolved_path"*)

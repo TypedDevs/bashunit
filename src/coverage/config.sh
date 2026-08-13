@@ -84,6 +84,7 @@ function bashunit::coverage::init() {
   # Initialize empty files
   : >"$_BASHUNIT_COVERAGE_DATA_FILE"
   : >"$_BASHUNIT_COVERAGE_TRACKED_FILES"
+  _BASHUNIT_COVERAGE_SEEDED=false
   : >"$_BASHUNIT_COVERAGE_TRACKED_CACHE_FILE"
   : >"$_BASHUNIT_COVERAGE_TEST_HITS_FILE"
 
