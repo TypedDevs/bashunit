@@ -28,6 +28,7 @@
 - Coverage reports every file under `--coverage-paths`, not only the ones a test executed: an untouched file shows as `0/N (0%)` and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
 - `--coverage-diff` counts a changed file that no test executed, instead of skipping it and letting a brand new untested file pass a `--coverage-min 90` gate. A docs-only commit still reports 100% (#1054)
 - Coverage read a statement ending in `)` as a `case` arm, so `x=$(foo)` left the denominator while `x=$(printf '%s\n')` stayed. A `)` now closes an arm only when no `(` opened earlier on the line, recovering 456 executable lines of this repo's `src/`. **Percentages move in both directions per file** (#1055)
+- A brace inside a comment, a string or a heredoc no longer counts towards a function's span, so a single stray `{` stops swallowing every later function in the file — 11 functions in this repo's `src/coverage/lines.sh` were reported as 1, and `END {` inside an embedded awk program was reported as a function. `FN`, `FNDA`, `FNF` and `FNH` change; lines and branches do not (#1086)
 
 ## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
 
