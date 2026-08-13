@@ -79,6 +79,46 @@ only** — toggling it in the caller's shell clobbers caller state (#808).
 - **`tput cols` at startup**: returns 80 on non-tty; snapshots depend on that
   width. Not removable.
 
+## Estimating: three ways an estimate lied, all in one day
+
+The coverage work in #1084-#1112 produced three wrong predictions, each of
+which cost a full implement-and-measure cycle. Check against these before
+believing a number.
+
+- **A micro-benchmark of a function the DEBUG trap calls overstates the win.**
+  A same-file memo for `record_line`'s path lookups predicted 5x from a loop
+  benchmark and delivered **4%** in situ (#1102). Whatever the trap costs
+  around the call swamps what the call itself costs.
+- **Stubbing tells you what a stage costs, not what removing a syscall from it
+  saves.** Returning early from `record_line` attributed 705 ms to its two
+  `>>` appends; holding the files open on persistent descriptors recovered
+  **184 ms** of it, not 705 (#1110).
+- **A benchmark path must be the path that occurs.** `${file//[^a-zA-Z0-9]/_}`
+  costs 7.8 µs at 7 characters, 131 µs at 59 and 549 µs at 121 — so measuring
+  it with an absolute path when the trap actually sees `./src/x.sh` inflated
+  the estimate by 4x (#1102).
+
+**A/B in the same tree.** Comparing a worktree under `/private/tmp` against the
+repo under `/Users` made a 70 ms *improvement* read as a 40 ms regression.
+Check out the two versions of the file into one tree and alternate rounds.
+
+## Where pure bash LOSES on some Bash versions but not others
+
+- **`${var//&/…}` is not portable.** Bash 5.2 made a bare `&` in a substitution
+  REPLACEMENT mean "the matched text", so `${line//</&lt;}` yields `<lt;` on
+  5.2+ while producing `&lt;` on 3.2 and 4.4. Escaping it as `\&` for 5.2 emits
+  a literal backslash on 3.2. There is no spelling that is right across the
+  supported range, and **both failure modes are silent** — this is why HTML
+  escaping goes through `awk` and not parameter expansion (#1096). Grep for
+  `&` in any replacement before writing one.
+- **`\x` escapes are not POSIX awk.** They happen to work in macOS awk,
+  BusyBox awk and mawk, but pass the byte in with `-v` instead of relying on
+  it (#1098).
+- **The DEBUG trap does not reach a subshell before Bash 4**, even under
+  `set -T`. Anything measuring or recording per executed line will see fewer
+  lines on Bash 3.x, and no amount of buffering or flushing changes that
+  (#1101, #1112).
+
 ## Current budgets (Bash 3.2 macOS)
 
 **Sequential 1-test file run:** 2 `awk` (provider map — built once in the main
