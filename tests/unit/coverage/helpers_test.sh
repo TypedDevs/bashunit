@@ -388,6 +388,185 @@ FIXTURE
   rm -f "$temp_file"
 }
 
+# A function ends where its braces balance, so a brace that is not code at all
+# must not count. One stray `{` in a comment or a string used to keep the
+# function open and swallow every later declaration in the file: 11 functions
+# in src/coverage/lines.sh collapsed into 1 (#1086).
+function test_coverage_extract_functions_ignores_a_brace_in_a_comment() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function first() {
+  # a stray { in a comment
+  echo "one"
+}
+function second() {
+  echo "two"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "first|2|5
+second|6|8" "$result"
+
+  rm -f "$temp_file"
+}
+
+function test_coverage_extract_functions_ignores_a_brace_in_a_string() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function first() {
+  local open="{"
+  local close='}'
+  echo "$open$close"
+}
+function second() {
+  echo "two"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "first|2|6
+second|7|9" "$result"
+
+  rm -f "$temp_file"
+}
+
+# An embedded awk program is a single-quoted string spanning many lines. Its
+# `END {` was read as a declaration of a function called END, and its braces
+# were counted as if they belonged to the enclosing file.
+function test_coverage_extract_functions_ignores_a_multi_line_quoted_program() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+PROGRAM='
+{ print "{" }
+END { print "}" }
+'
+function after_program() {
+  echo "after"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "after_program|6|8" "$result"
+
+  rm -f "$temp_file"
+}
+
+# A heredoc body is data, not code: neither its braces nor a line that looks
+# like a declaration belong to the file being scanned.
+function test_coverage_extract_functions_skips_a_heredoc_body() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function emits() {
+  cat <<'BODY'
+function not_a_function() {
+BODY
+  echo "done"
+}
+function after_heredoc() {
+  echo "after"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "emits|2|7
+after_heredoc|8|10" "$result"
+
+  rm -f "$temp_file"
+}
+
+# `<<<` is a here-string, not a heredoc: it has no body to skip, so scanning
+# must not swallow the rest of the file waiting for a terminator.
+function test_coverage_extract_functions_treats_a_here_string_as_one_line() {
+  local temp_file
+  temp_file=$(mktemp)
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+function reads() {
+  local item
+  while IFS= read -r item; do
+    echo "$item"
+  done <<<"$list"
+}
+function after_here_string() {
+  echo "after"
+}
+FIXTURE
+
+  local result
+  result=$(bashunit::coverage::extract_functions "$temp_file")
+
+  assert_same "reads|2|7
+after_here_string|8|10" "$result"
+
+  rm -f "$temp_file"
+}
+
+# Bash itself is the oracle: under `extdebug`, `declare -F` reports the real
+# start line of every function it sourced. Extraction has to agree with it on a
+# file holding all of the shapes above. extdebug is enabled inside the
+# subshell only -- in the caller it clobbers state the runner depends on (#808).
+function test_coverage_extract_functions_agrees_with_bash_on_the_hard_shapes() {
+  local temp_file
+  temp_file="$(bashunit::temp_file extract_oracle).sh"
+  cat >"$temp_file" <<'FIXTURE'
+#!/usr/bin/env bash
+PROGRAM='
+{ print "{" }
+END { print "}" }
+'
+function first() {
+  # a stray { in a comment
+  local brace="{"
+  echo "$brace"
+}
+function second() {
+  cat <<'BODY'
+function not_a_function() {
+BODY
+  echo "done"
+}
+third() { echo "one line"; }
+function fourth() {
+  local closing
+  closing=$(printf '%s' "}")
+  echo "$closing"
+}
+FIXTURE
+
+  local oracle
+  oracle=$(
+    shopt -s extdebug
+    # shellcheck source=/dev/null
+    source "$temp_file"
+    local fn
+    for fn in first second third fourth; do
+      declare -F "$fn"
+    done | awk '{ print $1 "|" $2 }'
+  )
+
+  local extracted
+  extracted=$(bashunit::coverage::extract_functions "$temp_file" | awk -F'|' '{ print $1 "|" $2 }')
+
+  assert_same "$oracle" "$extracted"
+}
+
 # === Line hits tests ===
 
 function test_coverage_get_all_line_hits_counts_per_line() {
