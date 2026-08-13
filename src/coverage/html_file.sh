@@ -91,6 +91,72 @@ END {
 }
 '
 
+# Function spans with their line counts, in one awk pass.
+#
+# The page used to call extract_functions and then, for every function, walk
+# fn_start..fn_end in Bash calling the classifier per line -- a second full
+# classification pass over every file, about 22,000 calls for this repo and
+# ~1.5s of a 4.5s report (#1099). The scanner already runs here, so the counts
+# come out of the same walk.
+#
+# Output: "<name>|<start>|<end>|<executable>|<hit>".
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_HTML_FUNCTIONS='
+FILENAME == hitsfile {
+  hits[$1 + 0] = $2 + 0
+  next
+}
+
+{
+  total++
+  sl[total] = $0
+}
+
+END {
+  carry = 0
+  for (ln = 1; ln <= total; ln++) {
+    h = (ln in hits) ? hits[ln] : 0
+    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
+    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
+  }
+
+  bu_fn_reset()
+  for (ln = 1; ln <= total; ln++) { bu_fn_line(sl[ln], ln) }
+  bu_fn_finish(total)
+
+  for (i = 1; i <= fn_count; i++) {
+    executable = 0
+    hit = 0
+    for (ln = fns[i]; ln <= fne[i]; ln++) {
+      if (!bu_is_executable(sl[ln])) { continue }
+      executable++
+      if ((ln in hits) && hits[ln] > 0) { hit++ }
+    }
+    print fnn[i] "|" fns[i] "|" fne[i] "|" executable "|" hit
+  }
+}
+'
+
+##
+# Emits "<name>|<start>|<end>|<executable>|<hit>" for every function in $1.
+# Arguments: $1 - source file
+##
+function bashunit::coverage::html_function_rows() {
+  local file="$1"
+
+  bashunit::coverage::ensure_hits_aggregated
+  bashunit::coverage::hits_file_for "$file"
+  local hits_file="$_BASHUNIT_COVERAGE_HITS_FILE_OUT"
+  if [ -z "$hits_file" ] || [ ! -f "$hits_file" ]; then
+    hits_file="/dev/null"
+  fi
+
+  env LC_ALL=C "$AWK" -v hitsfile="$hits_file" \
+    "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_FUNCTIONS}\
+${_BASHUNIT_COVERAGE_AWK_HTML_FUNCTIONS}" \
+    "$hits_file" "$file"
+}
+
 ##
 # Emits the code-table rows of one page.
 # Arguments: $1 - source file, $2 - file holding its per-line test list
@@ -357,7 +423,7 @@ EOF
 
     # Extract functions and generate summary table
     local functions_data
-    functions_data=$(bashunit::coverage::extract_functions "$file")
+    functions_data=$(bashunit::coverage::html_function_rows "$file")
 
     if [ -n "$functions_data" ]; then
       bashunit::coverage::emit_block <<'EOF'
@@ -375,27 +441,16 @@ EOF
       local fn_entry
       while IFS= read -r fn_entry; do
         [ -z "$fn_entry" ] && continue
-        local fn_name fn_start fn_end
+        # name|start|end|executable|hit, all five from the one awk pass above.
+        local fn_name fn_start fn_executable fn_hit rest
         fn_name="${fn_entry%%|*}"
-        local rest="${fn_entry#*|}"
+        rest="${fn_entry#*|}"
         fn_start="${rest%%|*}"
-        fn_end="${rest#*|}"
-
-        # Calculate function coverage using pre-loaded hits data
-        local fn_executable=0
-        local fn_hit=0
-        local ln
-        for ((ln = fn_start; ln <= fn_end; ln++)); do
-          local ln_content
-          ln_content="${file_lines[$((ln - 1))]:-}"
-          if bashunit::coverage::is_executable_line "$ln_content" "$ln"; then
-            ((++fn_executable))
-            local ln_hits=${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}
-            if [ "$ln_hits" -gt 0 ]; then
-              ((++fn_hit))
-            fi
-          fi
-        done
+        # The end line is only the awk pass's business now, so skip past it.
+        rest="${rest#*|}"
+        rest="${rest#*|}"
+        fn_executable="${rest%%|*}"
+        fn_hit="${rest#*|}"
 
         local fn_pct fn_class row_class
         fn_pct=0

@@ -9,6 +9,7 @@
 - Coverage no longer loses hits recorded inside a command substitution: the DEBUG-trap engine buffered them in a shell variable, which dies with the subshell that filled it, so on Bash 5 a run reported 196 of 236 real hits while Bash 3.2 reported all of them — the same project measured differently per Bash version. Records go straight to disk, which is also 14-24% faster than the buffer was (#1101)
 
 ### Changed
+- Performance: the HTML report gets each function's line counts from the pass that already scanned the file, instead of walking every function's lines again in Bash — a 128-file report from 4.8s to 3.5s (#1099)
 - Performance: the coverage trap looks a file up once per executed line instead of twice, keeping the tracked decision and the normalized path under one key — about 8% off a `--coverage` run (#1110)
 - Performance: the coverage tracking decision cache is read once per process instead of `grep`-ing the file per lookup — 2ms to 0.064ms per lookup, and a `--coverage` run of one test file from 4.4s to 3.3s (#1104)
 - Performance: coverage normalizes a source path with one fork instead of four, which the DEBUG trap pays on every cache miss — 2081ms to 424ms per 500 calls, taking a `--coverage` run of one test file from 6.4s to 4.7s (#1102)
