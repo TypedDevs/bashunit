@@ -33,6 +33,21 @@ _BASHUNIT_COVERAGE_AWK_HTML_ESCAPE='
 '
 
 ##
+# Writes a heredoc block to stdout without forking.
+#
+# `cat <<EOF` is an external command, and the page emitter has 15 such blocks:
+# 1935 forks for a 129-page report, about 3 seconds of it (#1098). A read loop
+# over the same heredoc is a builtin, so the markup stays where it is and the
+# fork does not happen.
+##
+function bashunit::coverage::emit_block() {
+  local _line
+  while IFS= read -r _line || [ -n "$_line" ]; do
+    printf '%s\n' "$_line"
+  done
+}
+
+##
 # Escapes every line of $1, one line of output per line of input.
 # Arguments: $1 - source file
 ##

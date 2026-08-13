@@ -2,6 +2,116 @@
 
 # HTML coverage report: the per-file page.
 
+# The code table of one page, in one awk pass.
+#
+# The Bash loop that did this classified, looked up and echoed per source line:
+# 8116ms for 128 pages over 22,405 lines, with no forks left in it -- Bash is
+# simply the wrong tool for emitting 7MB of markup (#1098). Every input it
+# needs is already a file: the aggregated hits, the per-line test list and the
+# source itself.
+#
+# Composed with the classifier rules, which are included ahead of it.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_HTML_ROWS='
+FILENAME == hitsfile {
+  hits[$1 + 0] = $2 + 0
+  next
+}
+
+FILENAME == testsfile {
+  # "<lineno>|<test_file>:<test_fn>", deduplicated, first-seen order kept.
+  p = index($0, "|")
+  if (p == 0) { next }
+  tln = substr($0, 1, p - 1) + 0
+  info = substr($0, p + 1)
+  key = tln SUBSEP info
+  if (key in seen) { next }
+  seen[key] = 1
+  tests[tln] = (tln in tests) ? tests[tln] "\n" info : info
+  next
+}
+
+{
+  total++
+  sl[total] = $0
+}
+
+function escape(t) {
+  gsub(/&/, "\\&amp;", t)
+  gsub(/</, "\\&lt;", t)
+  gsub(/>/, "\\&gt;", t)
+  return t
+}
+
+END {
+  # The DEBUG trap attributes a multi-line statement to its starting line, so
+  # the count carries forward across the backslash chain (#722).
+  carry = 0
+  for (ln = 1; ln <= total; ln++) {
+    h = (ln in hits) ? hits[ln] : 0
+    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
+    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
+  }
+
+  for (ln = 1; ln <= total; ln++) {
+    row_class = ""
+    hits_display = ""
+
+    if (bu_is_executable(sl[ln])) {
+      h = (ln in hits) ? hits[ln] : 0
+      if (h > 0) {
+        row_class = "covered"
+        if (ln in tests) {
+          tooltip = "<div class=\"hits-tooltip\"><div class=\"hits-tooltip-title\">Tests hitting this line</div><ul class=\"hits-tooltip-list\">"
+          n = split(tests[ln], entries, "\n")
+          for (e = 1; e <= n; e++) {
+            if (entries[e] == "") { continue }
+            c = index(entries[e], ":")
+            if (c == 0) { tfile = entries[e]; tfn = "" } else { tfile = substr(entries[e], 1, c - 1); tfn = substr(entries[e], c + 1) }
+            sub(/^.*\//, "", tfile)
+            tooltip = tooltip "<li><span class=\"hits-tooltip-file\">" tfile "</span>:<span class=\"hits-tooltip-fn\">" tfn "</span></li>"
+          }
+          tooltip = tooltip "</ul></div>"
+          hits_display = "<span class=\"hits-badge has-tooltip\">" h times tooltip "</span>"
+        } else {
+          hits_display = "<span class=\"hits-badge\">" h times "</span>"
+        }
+      } else {
+        row_class = "uncovered"
+        hits_display = "<span class=\"hits-badge\">" h times "</span>"
+      }
+    }
+
+    printf "          <tr id=\"line-%s\" class=\"%s line-anchor\">\n", ln, row_class
+    printf "            <td class=\"line-num\">%s</td>\n", ln
+    printf "            <td class=\"hits\">%s</td>\n", hits_display
+    printf "            <td class=\"code\">%s</td>\n", escape(sl[ln])
+    printf "          </tr>\n"
+  }
+}
+'
+
+##
+# Emits the code-table rows of one page.
+# Arguments: $1 - source file, $2 - file holding its per-line test list
+##
+function bashunit::coverage::html_code_rows() {
+  local file="$1" tests_file="$2"
+
+  bashunit::coverage::ensure_hits_aggregated
+  bashunit::coverage::hits_file_for "$file"
+  local hits_file="$_BASHUNIT_COVERAGE_HITS_FILE_OUT"
+  if [ -z "$hits_file" ] || [ ! -f "$hits_file" ]; then
+    hits_file="/dev/null"
+  fi
+
+  # The multiplication sign comes in as a value, not as an awk escape: `\x` is
+  # not POSIX awk, so the byte sequence stays on the shell side.
+  env LC_ALL=C "$AWK" -v hitsfile="$hits_file" -v testsfile="$tests_file" -v times="×" \
+    "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_HTML_ROWS}" \
+    "$hits_file" "$tests_file" "$file"
+}
+
 function bashunit::coverage::generate_file_html() {
   local file="$1"
   local output_file="$2"
@@ -27,47 +137,20 @@ function bashunit::coverage::generate_file_html() {
     ((++_fli))
   done <"$file"
 
-  # And their escaped form, in ONE awk pass for the whole file. Escaping per
-  # line cost a command substitution and a sed each -- about 22,000 processes
-  # for this repo, 58.7s of HTML report (#1096).
-  local -a escaped_lines=()
-  local _eli=0 _el
-  while IFS= read -r _el || [ -n "$_el" ]; do
-    escaped_lines[_eli]="$_el"
-    ((++_eli))
-  done < <(bashunit::coverage::html_escape_file "$file")
-
-  # Pre-load test hits data into indexed array (for tooltips)
-  # Index: line number, Value: newline-separated list of "test_file:test_function"
-  # Using indexed array for Bash 3.0 compatibility (no associative arrays)
-  local -a tests_by_line=()
-  local _line_and_test
-  while IFS= read -r _line_and_test; do
-    [ -z "$_line_and_test" ] && continue
-    local _tln="${_line_and_test%%|*}"
-    local _tinfo="${_line_and_test#*|}"
-    if [ -n "${tests_by_line[_tln]:-}" ]; then
-      # Append only if not already present (avoid duplicates)
-      # Use newline boundaries to prevent false positives (e.g., test_foo matching test_foo_bar)
-      case $'\n'"${tests_by_line[_tln]}"$'\n' in
-      *$'\n'"$_tinfo"$'\n'*)
-        # already present, skip
-        ;;
-      *)
-        tests_by_line[_tln]="${tests_by_line[_tln]}"$'\n'"${_tinfo}"
-        ;;
-      esac
-    else
-      tests_by_line[_tln]="$_tinfo"
-    fi
-  done < <(bashunit::coverage::get_all_line_tests "$file")
+  # The per-line test list, for the tooltips. It goes to a file because the row
+  # emitter below is one awk pass that reads it alongside the hits and the
+  # source (#1098).
+  local tests_file="${_BASHUNIT_COVERAGE_DATA_FILE%/*}/page-tests"
+  if ! bashunit::coverage::get_all_line_tests "$file" >"$tests_file" 2>/dev/null; then
+    : >"$tests_file"
+  fi
 
   # Count total lines and functions
   local total_lines="${#file_lines[@]}"
   local non_executable=$((total_lines - executable))
 
   {
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,7 +158,7 @@ function bashunit::coverage::generate_file_html() {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 EOF
     echo "  <title>${display_file##*/} | Coverage Report</title>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
   <style>
     :root {
       --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
@@ -214,20 +297,20 @@ EOF
         <div class="file-title">
 EOF
     echo "          <span class=\"file-name\">${display_file##*/}</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
       </div>
       <div class="stats-section">
         <div class="stat-item">
 EOF
     echo "          <span class=\"stat-badge coverage $class\">${pct}%</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           <span class="stat-label">Coverage</span>
         </div>
         <div class="stat-item">
 EOF
     echo "          <span class=\"stat-badge lines\">${hit}/${executable}</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           <span class="stat-label">Lines</span>
         </div>
       </div>
@@ -240,12 +323,12 @@ EOF
           <span class="progress-label">Line Coverage Progress</span>
 EOF
     echo "          <span class=\"progress-percent $class\">${pct}%</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
         <div class="progress-bar">
 EOF
     echo "          <div class=\"progress-fill $class\" style=\"width: ${pct}%;\"></div>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
       </div>
       <div class="legend">
@@ -253,19 +336,19 @@ EOF
           <span class="legend-color covered"></span>
 EOF
     echo "          <span>${hit} lines covered</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
         <div class="legend-item">
           <span class="legend-color uncovered"></span>
 EOF
     echo "          <span>${uncovered} lines uncovered</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
         <div class="legend-item">
           <span class="legend-color neutral"></span>
 EOF
     echo "          <span>${non_executable} non-executable</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </div>
       </div>
     </div>
@@ -277,7 +360,7 @@ EOF
     functions_data=$(bashunit::coverage::extract_functions "$file")
 
     if [ -n "$functions_data" ]; then
-      cat <<'EOF'
+      bashunit::coverage::emit_block <<'EOF'
   <div class="function-summary">
     <table class="function-table">
       <thead>
@@ -339,14 +422,14 @@ EOF
         echo "        </tr>"
       done <<<"$functions_data"
 
-      cat <<'EOF'
+      bashunit::coverage::emit_block <<'EOF'
       </tbody>
     </table>
   </div>
 EOF
     fi
 
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
   <div class="code-container">
     <div class="code-wrapper">
       <div class="code-header">
@@ -355,59 +438,15 @@ EOF
     echo "        <div class=\"code-stats\">"
     echo "          <span>${total_lines} total lines</span>"
     echo "        </div>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
       </div>
       <div class="code-body">
         <table class="code-table">
 EOF
 
-    local lineno=0
-    local line
-    for line in "${file_lines[@]}"; do
-      ((++lineno))
+    bashunit::coverage::html_code_rows "$file" "$tests_file"
 
-      local escaped_line="${escaped_lines[$((lineno - 1))]:-}"
-
-      local row_class=""
-      local hits_display=""
-
-      if bashunit::coverage::is_executable_line "$line" "$lineno"; then
-        # O(1) lookup from pre-loaded array
-        local hits=${_BASHUNIT_COVERAGE_HITS_BY_LINE[$lineno]:-0}
-
-        if [ "$hits" -gt 0 ]; then
-          row_class="covered"
-
-          # Check if we have test info for this line
-          local test_info="${tests_by_line[$lineno]:-}"
-          if [ -n "$test_info" ]; then
-            # Build tooltip with test information
-            local tooltip_html="<div class=\"hits-tooltip\"><div class=\"hits-tooltip-title\">Tests hitting this line</div><ul class=\"hits-tooltip-list\">"
-            local test_file test_fn
-            while IFS=':' read -r test_file test_fn; do
-              [ -z "$test_file" ] && continue
-              local short_file="${test_file##*/}"
-              tooltip_html="$tooltip_html<li><span class=\"hits-tooltip-file\">${short_file}</span>:<span class=\"hits-tooltip-fn\">${test_fn}</span></li>"
-            done <<<"$test_info"
-            tooltip_html="$tooltip_html</ul></div>"
-            hits_display="<span class=\"hits-badge has-tooltip\">${hits}×${tooltip_html}</span>"
-          else
-            hits_display="<span class=\"hits-badge\">${hits}×</span>"
-          fi
-        else
-          row_class="uncovered"
-          hits_display="<span class=\"hits-badge\">${hits}×</span>"
-        fi
-      fi
-
-      echo "          <tr id=\"line-${lineno}\" class=\"$row_class line-anchor\">"
-      echo "            <td class=\"line-num\">$lineno</td>"
-      echo "            <td class=\"hits\">$hits_display</td>"
-      echo "            <td class=\"code\">$escaped_line</td>"
-      echo "          </tr>"
-    done
-
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </table>
       </div>
     </div>

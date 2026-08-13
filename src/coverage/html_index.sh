@@ -50,7 +50,7 @@ function bashunit::coverage::generate_index_html() {
   esac
 
   {
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -89,7 +89,7 @@ function bashunit::coverage::generate_index_html() {
     .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; width: 100%; }
 EOF
     echo "    .gauge-percent { font-size: 3.5rem; font-weight: 800; background: ${gauge_text_gradient}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1; margin: 0; display: block; }"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
     .gauge-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; margin: 0; display: block; }
     .gauge-info { flex: 1; }
     .gauge-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
@@ -179,7 +179,7 @@ EOF
         </div>
 EOF
     echo "        <div class=\"header-badge\">v${BASHUNIT_VERSION:-0.0.0}</div>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
       </div>
       <h1 class="header-title">Code Coverage Report</h1>
       <p class="header-subtitle">Comprehensive line-by-line coverage analysis for your bash scripts</p>
@@ -194,18 +194,18 @@ EOF
 EOF
     echo "              <stop offset=\"0%\" style=\"stop-color:${gauge_color_start}\"/>"
     echo "              <stop offset=\"100%\" style=\"stop-color:${gauge_color_end}\"/>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
             </linearGradient>
           </defs>
           <circle class="gauge-bg" cx="80" cy="80" r="70"/>
 EOF
     echo "          <circle class=\"gauge-fill\" cx=\"80\" cy=\"80\" r=\"70\" stroke-dasharray=\"440\" stroke-dashoffset=\"${gauge_offset}\"/>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
         </svg>
         <div class="gauge-text">
 EOF
     echo "          <div class=\"gauge-percent\">${total_pct}%</div>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           <div class="gauge-label">Coverage</div>
         </div>
       </div>
@@ -213,7 +213,7 @@ EOF
         <h2 class="gauge-title">Overall Code Coverage</h2>
 EOF
     echo "        <p class=\"gauge-description\"><strong>${total_hit} of ${total_executable}</strong> executable lines covered across <strong>${file_count} files</strong>.</p>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
 
         <div class="compact-metrics">
           <div class="metrics-group coverage-group">
@@ -224,21 +224,21 @@ EOF
                 <span class="breakdown-label">Total:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${total_executable} lines</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
               <div class="breakdown-item">
                 <span class="breakdown-dot covered"></span>
                 <span class="breakdown-label">Covered:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${total_hit} lines</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
               <div class="breakdown-item">
                 <span class="breakdown-dot uncovered"></span>
                 <span class="breakdown-label">Uncovered:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${total_uncovered} lines</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
             </div>
           </div>
@@ -250,28 +250,28 @@ EOF
                 <span class="breakdown-label">Files:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${file_count}</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
               <div class="breakdown-item">
                 <span class="breakdown-dot tests"></span>
                 <span class="breakdown-label">Tests:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${tests_total} total</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
               <div class="breakdown-item">
                 <span class="breakdown-dot tests-passed"></span>
                 <span class="breakdown-label">Passed:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${tests_passed}</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
               <div class="breakdown-item">
                 <span class="breakdown-dot tests-failed"></span>
                 <span class="breakdown-label">Failed:</span>
 EOF
     echo "                <span class=\"breakdown-value\">${tests_failed}</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
               </div>
             </div>
           </div>
@@ -286,19 +286,19 @@ EOF
             <span class="legend-color high"></span>
 EOF
     echo "            <span>≥${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}% High</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           </div>
           <div class="legend-item">
             <span class="legend-color medium"></span>
 EOF
     echo "            <span>${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}-${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}% Medium</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           </div>
           <div class="legend-item">
             <span class="legend-color low"></span>
 EOF
     echo "            <span>&lt;${BASHUNIT_COVERAGE_THRESHOLD_LOW:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_LOW}% Low</span>"
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           </div>
         </div>
       </div>
@@ -346,7 +346,7 @@ EOF
       echo "            </tr>"
     done
 
-    cat <<'EOF'
+    bashunit::coverage::emit_block <<'EOF'
           </tbody>
         </table>
       </div>
