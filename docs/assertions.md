@@ -254,6 +254,20 @@ function test_failure() {
 ```
 :::
 
+::: tip Cost in a hot loop
+This assertion runs `grep -E` in a subprocess for every call, so it is far more
+expensive than a string comparison: measured here, 500 `assert_matches` take
+~1.25 s against ~130 ms for 2000 `assert_same` — about **38x per call**.
+
+That subprocess is deliberate. Bash 3.2 changed whether a quoted right-hand side
+of `[[ =~ ]]` is a regex or a literal, so at bashunit's Bash 3.0 floor the same
+pattern would match differently across supported versions.
+
+It is irrelevant for ordinary suites. If you are asserting inside a large loop
+and the pattern is a fixed substring or a glob, prefer
+[assert_contains](#assert-contains).
+:::
+
 ## assert_string_starts_with
 > `assert_string_starts_with "needle" "haystack"...`
 

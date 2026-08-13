@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- Docs: `assert_matches` notes that it runs `grep -E` in a subprocess per call — measured at ~2.5ms against ~0.065ms for `assert_same`, about 38x — and points at `assert_contains` for hot loops where the pattern is a fixed substring. The subprocess is deliberate: Bash 3.2 changed whether a quoted right-hand side of `[[ =~ ]]` is a regex or a literal, so at the Bash 3.0 floor the same pattern would match differently across supported versions (#1187)
 - Docs: `assert_match_snapshot` warns that a `@data_provider` test shares one snapshot across all its values — the filename comes from the test function, so the first value creates it and the rest fail against its content. `assert_match_named_snapshot "$1"` gives each value its own (#1185)
 - A test file that fails to source without writing to stderr now reports its size and says there was no stderr, so a truncated file can be told apart from one whose last command returned non-zero (#1137)
 - Performance: cold start makes two fewer forks — `check_os::init` ran twice, once at source time and again from the entrypoint, and the root directory came from `$(dirname …)` — worth about 4ms of a 65ms startup, on every invocation (#1124)
