@@ -87,8 +87,13 @@ function bashunit::main::cmd_bench() {
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)
       set -o allexport
+      # `source` is a special builtin: a syntax error in the file, or a bare
+      # `exit`, ends this shell here and nothing below runs. The marker is what
+      # the EXIT trap reports when it was never cleared (#1181).
+      _BASHUNIT_LOADING_BOOTSTRAP="$boot_file"
       # shellcheck disable=SC1090,SC2086
       source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+      _BASHUNIT_LOADING_BOOTSTRAP=""
       set +o allexport
       shift
       ;;

@@ -145,3 +145,49 @@ function test_an_absent_bootstrap_is_still_ignored() {
   assert_same 0 "$ec"
   assert_not_contains "bootstrap" "$output"
 }
+
+# #1180 covered the BASHUNIT_BOOTSTRAP env path. The --env/--boot *flag* sources
+# its file at a different call site, and had the same hole: exit 0, no tests,
+# no summary (#1181).
+function test_an_env_flag_file_with_a_syntax_error_fails_the_run() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'function broken( {\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env boot.sh t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_general_error "" "" "$ec"
+  assert_contains "bootstrap" "$output"
+}
+
+function test_an_env_flag_file_that_exits_says_so() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'exit 3\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env boot.sh t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_not_same 0 "$ec"
+  assert_contains "bootstrap" "$output"
+}
+
+# A healthy --env file must still be sourced and its values reach the run.
+function test_a_healthy_env_flag_file_still_loads() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'BASHUNIT_SHOW_HEADER=false\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env boot.sh t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_same 0 "$ec"
+  assert_contains "1 passed" "$output"
+}

@@ -43,8 +43,13 @@ function bashunit::main::cmd_doc() {
         exit 1
       fi
     else
+      # `source` is a special builtin: a syntax error in the file, or a bare
+      # `exit`, ends this shell here and nothing below runs. The marker is what
+      # the EXIT trap reports when it was never cleared (#1181).
+      _BASHUNIT_LOADING_BOOTSTRAP="$boot_file"
       # shellcheck disable=SC1090,SC2086
       source "$boot_file" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+      _BASHUNIT_LOADING_BOOTSTRAP=""
     fi
   fi
 
