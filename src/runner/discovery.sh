@@ -92,7 +92,18 @@ function bashunit::runner::load_test_files() {
     fi
     if [ "$source_failed" = true ]; then
       local message="$source_err"
-      [ -z "$message" ] && message="Failed to source '$test_file' (exit $source_status)"
+      if [ -z "$message" ]; then
+        # Non-zero with nothing on stderr is the puzzling case: the file exists
+        # and parsed, so the size distinguishes a truncated or empty file from
+        # one whose last command simply returned non-zero. #1137 is exactly
+        # this, seen only on loaded CI, and the message as it stood carried no
+        # way to tell those apart.
+        local source_bytes="unknown"
+        if [ -f "$test_file" ]; then
+          source_bytes=$(bashunit::io::file_size "$test_file")
+        fi
+        message="Failed to source '$test_file' (exit $source_status, $source_bytes bytes, no stderr)"
+      fi
       bashunit::runner::record_file_hook_failure \
         "source" "$test_file" "$message" 1 true
       bashunit::runner::clean_set_up_and_tear_down_after_script

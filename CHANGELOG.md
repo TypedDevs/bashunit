@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- A test file that fails to source without writing to stderr now reports its size and says there was no stderr, so a truncated file can be told apart from one whose last command returned non-zero (#1137)
 - Performance: cold start makes two fewer forks — `check_os::init` ran twice, once at source time and again from the entrypoint, and the root directory came from `$(dirname …)` — worth about 4ms of a 65ms startup, on every invocation (#1124)
 - Performance: `--coverage` is roughly 5x faster and `--coverage-report-html` roughly 19x — a run over this repo went from 16.2s to 2.9s, and a 128-file HTML report from 58.7s to 3.1s. The report phase emits each format in one awk invocation per run instead of Bash loops and forks per file and per row, and the capture path writes records straight to disk, normalizes a path with one fork instead of four, and reads each cache once (#1092, #1096, #1098, #1099, #1102, #1104, #1110, #1117)
 
