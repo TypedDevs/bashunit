@@ -92,16 +92,10 @@ function bu_is_executable(line,   tmp, stripped, trimmed, first, rest, fn_rest, 
 
   return 1
 }
-'
 
-# The DA/LF/LH block of one file's LCOV record, in one pass.
-#
-# Reads the file's aggregated hit block first (#1057), then the source, and
-# applies the same continuation propagation the Bash reader does: the DEBUG
-# trap attributes a multi-line statement to its starting line, so the count
-# carries forward across the backslash chain (#722).
-# shellcheck disable=SC2016
-_BASHUNIT_COVERAGE_AWK_LCOV='
+# Whether a source line ends with a line continuation: an odd number of
+# trailing backslashes, and not a comment. Lives here because both the LCOV
+# emitter and the stats pass propagate hits along a continuation chain (#722).
 function bu_ends_with_continuation(line,   lead, i, n) {
   lead = line
   sub(/^[ \t]+/, "", lead)
@@ -112,7 +106,16 @@ function bu_ends_with_continuation(line,   lead, i, n) {
   }
   return (n % 2) == 1
 }
+'
 
+# The DA/LF/LH block of one file's LCOV record, in one pass.
+#
+# Reads the file's aggregated hit block first (#1057), then the source, and
+# applies the same continuation propagation the Bash reader does: the DEBUG
+# trap attributes a multi-line statement to its starting line, so the count
+# carries forward across the backslash chain (#722).
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_LCOV='
 # The guard is FILENAME, not the usual `FNR == NR`: a run with no recorded hits
 # passes an EMPTY first file, and `FNR == NR` is then true for the first record
 # of the SECOND file, which would swallow the source line 1.
@@ -149,6 +152,62 @@ END {
 }
 '
 
+# Executable and hit counts for MANY files, in one awk invocation.
+#
+# The report needs a count per tracked file, and computing it per file meant a
+# Bash loop over every line of every file: 1956ms for 128 files, the last
+# per-line Bash loop in the report phase. Reading the manifest and walking each
+# pair with getline pays the cost of a fork once for the whole run (#1088).
+#
+# Input is a manifest of "<hits block>\t<source>" lines; output is
+# "<executable>\t<hit>\t<source>". The source path comes last so a path holding
+# a tab still reads back whole.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_STATS='
+{
+  hitsfile = $0
+  sub(/\t.*$/, "", hitsfile)
+  src = $0
+  sub(/^[^\t]*\t/, "", src)
+
+  split("", hits)
+  if (hitsfile != "") {
+    while ((getline hline < hitsfile) > 0) {
+      split(hline, hp, " ")
+      hits[hp[1] + 0] = hp[2] + 0
+    }
+    close(hitsfile)
+  }
+
+  total = 0
+  split("", sl)
+  while ((getline sline < src) > 0) {
+    total++
+    sl[total] = sline
+  }
+  close(src)
+
+  # The DEBUG trap attributes a multi-line statement to its starting line, so
+  # the count carries forward across the backslash chain (#722).
+  carry = 0
+  for (ln = 1; ln <= total; ln++) {
+    h = (ln in hits) ? hits[ln] : 0
+    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
+    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
+  }
+
+  executable = 0
+  hit = 0
+  for (ln = 1; ln <= total; ln++) {
+    if (!bu_is_executable(sl[ln])) { continue }
+    executable++
+    if ((ln in hits) && hits[ln] > 0) { hit++ }
+  }
+
+  print executable "\t" hit "\t" src
+}
+'
+
 ##
 # The awk source of the shared classification rules.
 ##
@@ -174,4 +233,15 @@ function bashunit::coverage::awk_lcov_lines() {
   env LC_ALL=C "$AWK" -v hitsfile="$hits_file" \
     "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_LCOV}" \
     "$hits_file" "$file"
+}
+
+##
+# Emits "<executable>\t<hit>\t<source>" for every pair in the manifest, in one
+# awk invocation.
+# Arguments: $1 - manifest of "<hits block>\t<source>" lines
+##
+function bashunit::coverage::awk_file_stats() {
+  env LC_ALL=C "$AWK" \
+    "${_BASHUNIT_COVERAGE_AWK_RULES}${_BASHUNIT_COVERAGE_AWK_STATS}" \
+    "$1"
 }

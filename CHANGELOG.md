@@ -23,6 +23,7 @@
 - Performance: the DEBUG trap rejects a line from an untracked file before calling the recorder — a run matching no coverage path went from 2609ms to 497ms, against a 480ms no-coverage baseline (#1060)
 - Performance: the LCOV emitter classifies and writes each file in one awk pass instead of a Bash loop per line — 8520ms to 6632ms for 40 files of 752 lines. The awk rules are diffed against the Bash reference line by line over every shell file in the repo (#1059)
 - Performance: function declarations are scanned in one awk pass instead of a Bash loop counting braces with pattern substitution — 2238ms to 399ms for 128 files, and a `--coverage` run over `src` from 9.23s to 6.81s (#1084)
+- Performance: every tracked file's line stats are computed by one awk invocation for the whole run instead of a Bash loop and three subshells per file — 2585ms to 153ms for 128 files, taking that `--coverage` run to 3.77s (#1088)
 
 ### Fixed
 - Coverage reports every file under `--coverage-paths`, not only the ones a test executed: an untouched file shows as `0/N (0%)` and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
