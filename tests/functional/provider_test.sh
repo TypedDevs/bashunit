@@ -152,3 +152,17 @@ function test_two_args_with_spaces_from_data_provider() {
 function provide_two_args_with_spaces() {
   bashunit::data_set "first test" "second test"
 }
+
+# A value ending in an odd run of backslashes escaped the `)` of the parser's
+# `eval "args=($input)"` fast path, making it a syntax error -- which kills the
+# command substitution the runner calls the parser inside, so the argument
+# reached the test unset rather than as `C:` (#1134).
+function provide_trailing_backslash() {
+  echo 'C:\'
+  echo 'plain'
+}
+
+# @data_provider provide_trailing_backslash
+function test_a_value_ending_in_a_backslash_still_arrives() {
+  assert_not_empty "${1-}"
+}
