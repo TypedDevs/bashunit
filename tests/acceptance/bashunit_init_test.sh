@@ -97,3 +97,51 @@ function test_bashunit_init_reports_the_env_file_it_writes() {
 
   assert_file_contains "$TMP_DIR/init.log" ".env"
 }
+
+# A bootstrap that fails to load left the run with nothing: no tests, no
+# summary, and exit 0 -- so CI passed having executed nothing. The file is
+# optional (BASHUNIT_BOOTSTRAP defaults to tests/bootstrap.sh, which most
+# projects do not have), but a file that exists and is broken is a different
+# thing from one that is absent (#1179).
+function test_a_bootstrap_with_a_syntax_error_fails_the_run() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'function broken( {\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$(BASHUNIT_BOOTSTRAP=boot.sh "$BASHUNIT_PATH" --no-parallel t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_general_error "" "" "$ec"
+  assert_contains "bootstrap" "$output"
+}
+
+function test_a_bootstrap_that_exits_non_zero_says_so() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'exit 3\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$(BASHUNIT_BOOTSTRAP=boot.sh "$BASHUNIT_PATH" --no-parallel t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_not_same 0 "$ec"
+  assert_contains "bootstrap" "$output"
+}
+
+# An absent bootstrap stays silent: the default path is one most projects do
+# not have, and failing on it would break every one of them.
+function test_an_absent_bootstrap_is_still_ignored() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$(BASHUNIT_BOOTSTRAP=tests/bootstrap.sh "$BASHUNIT_PATH" --no-parallel t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_same 0 "$ec"
+  assert_not_contains "bootstrap" "$output"
+}

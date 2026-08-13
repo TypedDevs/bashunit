@@ -948,7 +948,24 @@ function bashunit::env::cleanup_run_output_dir() {
 # replaces this trap in main.sh and calls the cleanup explicitly instead; child
 # subshells never inherit EXIT traps, so a parallel worker cannot remove the
 # directory mid-run.
-trap 'bashunit::env::cleanup_run_output_dir' EXIT
+# Set while a bootstrap file is being sourced, cleared immediately after. A
+# `source` that never returns -- special-builtin semantics on a syntax error or
+# a bare `exit` -- leaves it set, which is the only trace such a failure leaves
+# (#1179).
+_BASHUNIT_LOADING_BOOTSTRAP=""
+
+function bashunit::env::report_unfinished_bootstrap() {
+  if [ -n "${_BASHUNIT_LOADING_BOOTSTRAP:-}" ]; then
+    printf "%sError: the bootstrap file did not load: '%s'.%s\n" \
+      "${_BASHUNIT_COLOR_FAILED}" "$_BASHUNIT_LOADING_BOOTSTRAP" \
+      "${_BASHUNIT_COLOR_DEFAULT}" >&2
+    printf "%s\n" "It ended the shell before any test ran (a syntax error, or an 'exit')." >&2
+    _BASHUNIT_LOADING_BOOTSTRAP=""
+    exit 1
+  fi
+}
+
+trap 'bashunit::env::report_unfinished_bootstrap; bashunit::env::cleanup_run_output_dir' EXIT
 
 if bashunit::env::is_dev_mode_enabled; then
   bashunit::internal_log "info" "Dev log enabled" "file:$BASHUNIT_DEV_LOG"
