@@ -38,6 +38,23 @@ function ci_test_paths() {
   grep -oE 'test_path: "[^"]+"' "$WORKFLOW" | sed 's/test_path: "//; s/"$//'
 }
 
+# Both checks below collect what did NOT resolve and assert that set is empty,
+# so an extractor that stops matching -- the `test_path:` key renamed, the
+# workflow directory moved -- makes them pass by finding nothing to check.
+# Proven by mutation: breaking the `test_path:` pattern leaves all three tests
+# in this file green, and this file exists because CI path rot has shipped
+# twice already (#960, and the coverage.yml case documented below).
+#
+# The floors sit under the current counts -- 18 `test_path:` keys, and 3
+# distinct `tests/` references once the workflows are deduplicated (fewer than
+# it looks, because most jobs share the same paths). They catch an extractor
+# returning nothing, which is what rot looks like.
+function test_the_extractors_still_find_the_paths_they_parse() {
+  assert_greater_than 8 "$(cd "$ROOT_DIR" && ci_test_paths | wc -l)"
+  assert_greater_than 1 "$(cd "$ROOT_DIR" && ci_referenced_test_paths | wc -l)"
+}
+
+
 function test_every_ci_test_path_resolves_to_at_least_one_test_file() {
   local unresolved=""
   local line
