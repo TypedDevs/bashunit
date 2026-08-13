@@ -95,8 +95,10 @@ function bu_scan(line,   i, n, c, rest, delim, q) {
   }
 }
 
-{
-  line = $0
+# Feeds one line to the scanner, recording a declaration when it opens and its
+# span when the braces balance. A caller reads the records out of fnn/fns/fne,
+# which is what lets the per-file API below and the batch report share this.
+function bu_fn_line(line, lineno,   stripped, name, after, ok) {
   bu_scan(line)
 
   if (in_function == 0 && code_start) {
@@ -136,34 +138,56 @@ function bu_scan(line,   i, n, c, rest, delim, q) {
       if (ok) {
         in_function = 1
         current_fn = name
-        fn_start = NR
+        fn_start = lineno
         brace_count = nopen - nclose
         # Single-line function: braces balance on the same line, both present.
-        if (brace_count == 0 && nopen > 0 && nclose > 0) {
-          print current_fn "|" fn_start "|" NR
-          in_function = 0
-          current_fn = ""
-        }
-        next
+        if (brace_count == 0 && nopen > 0 && nclose > 0) { bu_fn_emit(lineno) }
+        return
       }
     }
   }
 
   if (in_function == 1) {
     brace_count = brace_count + nopen - nclose
-    if (brace_count <= 0) {
-      print current_fn "|" fn_start "|" NR
-      in_function = 0
-      current_fn = ""
-      brace_count = 0
-    }
+    if (brace_count <= 0) { bu_fn_emit(lineno) }
   }
+}
+
+function bu_fn_emit(endline) {
+  fn_count++
+  fnn[fn_count] = current_fn
+  fns[fn_count] = fn_start
+  fne[fn_count] = endline
+  in_function = 0
+  current_fn = ""
+  brace_count = 0
 }
 
 # An unclosed function (should not happen in valid code) still gets a record,
 # ending at the last line, so a truncated file cannot drop one silently.
+function bu_fn_finish(lastline) {
+  if (in_function == 1 && current_fn != "") { bu_fn_emit(lastline) }
+}
+
+# Clears the per-file state: quote and heredoc carry-over, the open
+# declaration, and the records collected so far.
+function bu_fn_reset() {
+  in_s = 0; in_d = 0; hd = ""; hd_strip = 0
+  in_function = 0; current_fn = ""; brace_count = 0
+  fn_count = 0
+}
+'
+
+# The per-file driver: feed every line, then print the records.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_FUNCTIONS_MAIN='
+{ bu_fn_line($0, NR) }
+
 END {
-  if (in_function == 1 && current_fn != "") { print current_fn "|" fn_start "|" NR }
+  bu_fn_finish(NR)
+  for (bu_i = 1; bu_i <= fn_count; bu_i++) {
+    print fnn[bu_i] "|" fns[bu_i] "|" fne[bu_i]
+  }
 }
 '
 
@@ -173,5 +197,6 @@ END {
 # Arguments: $1 - source file
 ##
 function bashunit::coverage::extract_functions() {
-  env LC_ALL=C "$AWK" "$_BASHUNIT_COVERAGE_AWK_FUNCTIONS" "$1"
+  env LC_ALL=C "$AWK" \
+    "${_BASHUNIT_COVERAGE_AWK_FUNCTIONS}${_BASHUNIT_COVERAGE_AWK_FUNCTIONS_MAIN}" "$1"
 }

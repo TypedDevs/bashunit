@@ -248,6 +248,46 @@ function bashunit::coverage::hits_file_for() {
   _BASHUNIT_COVERAGE_HITS_FILE_OUT="$dir/$name"
 }
 
+# The path of the manifest written by write_batch_manifest, empty when there is
+# nothing to report on.
+_BASHUNIT_COVERAGE_MANIFEST_OUT=""
+
+##
+# Writes a "<hits block>\t<source>" line per tracked file into $1 under the
+# coverage data dir, for the awk passes that do the whole run in one call
+# (#1088, #1090). The source path comes last so a path holding a tab still
+# reads back whole.
+#
+# Sets _BASHUNIT_COVERAGE_MANIFEST_OUT to the manifest path, or to the empty
+# string when nothing is tracked. Returns 1 when there is nowhere to write it,
+# which is the caller's signal to use the per-file path instead.
+# Arguments: $1 - manifest file name
+##
+function bashunit::coverage::write_batch_manifest() {
+  _BASHUNIT_COVERAGE_MANIFEST_OUT=""
+
+  local data_dir="${_BASHUNIT_COVERAGE_DATA_FILE%/*}"
+  { [ -n "${_BASHUNIT_COVERAGE_DATA_FILE:-}" ] && [ -d "$data_dir" ]; } || return 1
+
+  bashunit::coverage::ensure_hits_aggregated
+
+  local manifest="$data_dir/$1"
+  local tracked=0 file
+  {
+    while IFS= read -r file; do
+      { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
+      tracked=$((tracked + 1))
+      bashunit::coverage::hits_file_for "$file"
+      printf '%s\t%s\n' "$_BASHUNIT_COVERAGE_HITS_FILE_OUT" "$file"
+    done < <(bashunit::coverage::get_tracked_files)
+  } >"$manifest" 2>/dev/null || return 1
+
+  if [ "$tracked" -gt 0 ]; then
+    _BASHUNIT_COVERAGE_MANIFEST_OUT="$manifest"
+  fi
+  return 0
+}
+
 ##
 # Invalidates the aggregation. Called wherever the data file grows, so a report
 # never reads counts that predate the records it is reporting on.

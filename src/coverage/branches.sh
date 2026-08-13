@@ -125,6 +125,116 @@ function bashunit::coverage::_branch_emit_loop() {
   loop_depth=$idx
 }
 
+# The branch extractor, as awk source.
+#
+# Same rules as extract_branches below, which stays the reference: the two are
+# diffed line by line over every shell file in the repo by
+# tests/unit/coverage/branches_differential_test.sh. This one exists so the
+# whole LCOV report can be emitted in one awk invocation (#1090); the Bash one
+# still serves the per-file API and the fallback path.
+#
+# Records land in br_dec/br_kind/br_arms rather than being printed, so the
+# caller decides what to do with them.
+# shellcheck disable=SC2016
+_BASHUNIT_COVERAGE_AWK_BRANCHES='
+function bu_br_append_arm(existing, s, e) {
+  return (existing == "") ? (s ":" e) : (existing "," s ":" e)
+}
+
+# A case-pattern opener ends with `)`, optionally followed by a comment. This
+# does not exclude a `(` earlier on the line -- the reference does not either.
+function bu_br_is_case_pattern(t,   before, after) {
+  if (index(t, ")") == 0) { return 0 }
+  before = t
+  sub(/\).*$/, "", before)
+  after = substr(t, length(before) + 2)
+  sub(/^[ \t]+/, "", after)
+  return (after == "" || substr(after, 1, 1) == "#")
+}
+
+function bu_br_add(decision, kind, arms) {
+  br_count++
+  br_dec[br_count] = decision
+  br_kind[br_count] = kind
+  br_arms[br_count] = arms
+}
+
+function bu_br_line(line, lineno,   trimmed, first, idx) {
+  trimmed = line
+  sub(/^[ \t]+/, "", trimmed)
+  if (trimmed == "" || substr(trimmed, 1, 1) == "#") { return }
+
+  first = trimmed
+  sub(/[ \t;].*$/, "", first)
+
+  if (first == "if") {
+    if_decision_line[if_depth] = lineno
+    if_arms[if_depth] = ""
+    if_arm_start[if_depth] = lineno + 1
+    if_depth++
+  } else if (first == "elif" || first == "else") {
+    if (if_depth > 0) {
+      idx = if_depth - 1
+      if_arms[idx] = bu_br_append_arm(if_arms[idx], if_arm_start[idx], lineno - 1)
+      if_arm_start[idx] = lineno + 1
+    }
+  } else if (first == "fi") {
+    if (if_depth > 0) {
+      idx = if_depth - 1
+      bu_br_add(if_decision_line[idx], "if", bu_br_append_arm(if_arms[idx], if_arm_start[idx], lineno - 1))
+      if_depth = idx
+    }
+  } else if (first == "case") {
+    case_decision_line[case_depth] = lineno
+    case_arms[case_depth] = ""
+    case_arm_start[case_depth] = 0
+    case_in_pattern[case_depth] = 0
+    case_depth++
+  } else if (first == "esac") {
+    if (case_depth > 0) {
+      idx = case_depth - 1
+      if (case_in_pattern[idx] == 1) {
+        case_arms[idx] = bu_br_append_arm(case_arms[idx], case_arm_start[idx], lineno - 1)
+        case_in_pattern[idx] = 0
+      }
+      if (case_arms[idx] != "") { bu_br_add(case_decision_line[idx], "case", case_arms[idx]) }
+      case_depth = idx
+    }
+  } else if (first == "while" || first == "until" || first == "for" || first == "select") {
+    loop_decision_line[loop_depth] = lineno
+    loop_arm_start[loop_depth] = lineno + 1
+    loop_depth++
+  } else if (first == "done") {
+    if (loop_depth > 0) {
+      idx = loop_depth - 1
+      bu_br_add(loop_decision_line[idx], "loop", loop_arm_start[idx] ":" (lineno - 1))
+      loop_depth = idx
+    }
+  } else if (case_depth > 0) {
+    idx = case_depth - 1
+    if (trimmed ~ /^;;&/ || trimmed ~ /^;;/ || trimmed ~ /^;&/) {
+      if (case_in_pattern[idx] == 1) {
+        case_arms[idx] = bu_br_append_arm(case_arms[idx], case_arm_start[idx], lineno - 1)
+        case_in_pattern[idx] = 0
+      }
+    } else if (bu_br_is_case_pattern(trimmed)) {
+      case_arm_start[idx] = lineno + 1
+      case_in_pattern[idx] = 1
+    }
+  }
+}
+
+# The depths must be numeric before they index anything: an uninitialised awk
+# variable is the empty string as a subscript, so the first push would land in
+# arr[""] and the matching pop would read arr[0].
+function bu_br_reset() {
+  if_depth = 0
+  case_depth = 0
+  loop_depth = 0
+  br_count = 0
+}
+'
+
 function bashunit::coverage::extract_branches() {
   local file="$1"
 

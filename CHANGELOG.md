@@ -24,6 +24,7 @@
 - Performance: the LCOV emitter classifies and writes each file in one awk pass instead of a Bash loop per line — 8520ms to 6632ms for 40 files of 752 lines. The awk rules are diffed against the Bash reference line by line over every shell file in the repo (#1059)
 - Performance: function declarations are scanned in one awk pass instead of a Bash loop counting braces with pattern substitution — 2238ms to 399ms for 128 files, and a `--coverage` run over `src` from 9.23s to 6.81s (#1084)
 - Performance: every tracked file's line stats are computed by one awk invocation for the whole run instead of a Bash loop and three subshells per file — 2585ms to 153ms for 128 files, taking that `--coverage` run to 3.77s (#1088)
+- Performance: the LCOV report is emitted by one awk invocation instead of three forks and two Bash loops per file — 3133ms to 267ms for 128 files, taking a `--coverage` run over `src` to 0.96s, from 9.23s before this series (#1090)
 
 ### Fixed
 - Coverage reports every file under `--coverage-paths`, not only the ones a test executed: an untouched file shows as `0/N (0%)` and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
