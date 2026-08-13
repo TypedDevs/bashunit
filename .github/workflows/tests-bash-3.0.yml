@@ -42,11 +42,19 @@ jobs:
               && rm -rf /var/lib/apt/lists/*
 
           WORKDIR /tmp
-          RUN curl -LO https://ftp.gnu.org/gnu/bash/bash-3.0.tar.gz \
+          # ftp.gnu.org times out often enough to have failed two unrelated PRs
+          # in one afternoon (curl exit 28). Retry, and fall back to a GNU
+          # mirror before giving up, so a red tick means the code is red.
+          RUN (curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused --connect-timeout 20 \
+                    -o bash-3.0.tar.gz https://ftp.gnu.org/gnu/bash/bash-3.0.tar.gz \
+                || curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused --connect-timeout 20 \
+                    -o bash-3.0.tar.gz https://mirrors.kernel.org/gnu/bash/bash-3.0.tar.gz) \
               && tar xzf bash-3.0.tar.gz \
               && cd bash-3.0 \
-              && curl -fsSL -o support/config.guess 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.guess' \
-              && curl -fsSL -o support/config.sub 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.sub' \
+              && curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused --connect-timeout 20 \
+                    -o support/config.guess 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.guess' \
+              && curl -fsSL --retry 5 --retry-delay 3 --retry-connrefused --connect-timeout 20 \
+                    -o support/config.sub 'https://raw.githubusercontent.com/gcc-mirror/gcc/master/config.sub' \
               && chmod +x support/config.guess support/config.sub \
               && ./configure --prefix=/opt/bash-3.0 \
               && make \
