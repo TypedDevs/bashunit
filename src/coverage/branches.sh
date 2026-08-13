@@ -193,12 +193,18 @@ function bashunit::coverage::extract_branches() {
 }
 
 
-# Sets _BASHUNIT_ARM_TAKEN_OUT to 1 iff any executable line in
-# [arm_start..arm_end] has a recorded hit, else 0. Reads hit counts from
-# the shared _BASHUNIT_COVERAGE_HITS_BY_LINE global (see
-# load_hits_by_line); caller must have populated the src_lines array in
-# scope -- Bash 3.0 cannot pass arrays into a function. Result is
-# returned via the global to avoid a per-arm subshell.
+# Sets _BASHUNIT_ARM_TAKEN_OUT to how many times the arm [arm_start..arm_end]
+# ran, or 0 when it never did.
+#
+# The count is the FIRST executable line's, not the maximum across the arm.
+# Entering an arm executes its first line exactly once per entry, while a later
+# line can run more often (a loop) or fewer times (an early return), so the
+# first line is the one that answers "how often was this branch taken" (#1061).
+#
+# Reads hit counts from the shared _BASHUNIT_COVERAGE_HITS_BY_LINE global (see
+# load_hits_by_line); the caller must have populated the src_lines array in
+# scope -- Bash 3.0 cannot pass arrays into a function. Result is returned via
+# the global to avoid a per-arm subshell.
 _BASHUNIT_ARM_TAKEN_OUT=0
 
 function bashunit::coverage::_arm_taken() {
@@ -206,10 +212,8 @@ function bashunit::coverage::_arm_taken() {
   for ((ln = arm_start; ln <= arm_end; ln++)); do
     bashunit::coverage::is_executable_line \
       "${src_lines[$((ln - 1))]:-}" "$ln" || continue
-    if [ "${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}" -gt 0 ]; then
-      _BASHUNIT_ARM_TAKEN_OUT=1
-      return
-    fi
+    _BASHUNIT_ARM_TAKEN_OUT="${_BASHUNIT_COVERAGE_HITS_BY_LINE[$ln]:-0}"
+    return
   done
   _BASHUNIT_ARM_TAKEN_OUT=0
 }
@@ -217,6 +221,8 @@ function bashunit::coverage::_arm_taken() {
 # Compute branch hit data for a file.
 # Output format: <decision_line>|<block>|<branch_index>|<taken_count>
 # block = sequential id per decision (0..N-1), branch_index = arm index (0..M-1).
+# taken_count is the execution count of the arm's first executable line, which
+# is what an LCOV consumer reads out of the BRDA fourth field.
 # An arm is "taken" iff at least one executable line inside its range
 # has a recorded hit. taken_count is 0 or 1 — MVP does not preserve
 # per-arm hit counts.

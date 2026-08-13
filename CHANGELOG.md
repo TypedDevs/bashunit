@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- LCOV `BRDA` records carry the arm's execution count instead of a 0/1 taken flag — the fourth field is a count to every LCOV consumer, and reporting `1` for an arm entered 5,000 times lost what makes branch data useful. The count is the arm's first executable line, which is the line that runs once per entry; `BRF` and `BRH` are unchanged (#1061)
+
 ### Fixed
 - `--coverage-diff` counts a changed file that no test executed instead of skipping it: the report iterated the files that had run, so a brand new untested file left the changed-line total at 0 and the empty-set-is-100% rule passed it through a `--coverage-min 90` gate — the exact case the gate exists to catch. A docs-only commit still reports 100% and still passes (#1054)
 - Coverage now reports every file under `--coverage-paths`, not only the files a test happened to execute: a file nothing reached shows as `0/N (0%)` instead of being absent, in the text, LCOV, Cobertura and HTML reports, and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files and a denominator of 2,200 against a real 9,285. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
