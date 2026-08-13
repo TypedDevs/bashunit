@@ -10,6 +10,7 @@
 - Performance: `--coverage` is roughly 5x faster and `--coverage-report-html` roughly 19x — a run over this repo went from 16.2s to 2.9s, and a 128-file HTML report from 58.7s to 3.1s. The report phase emits each format in one awk invocation per run instead of Bash loops and forks per file and per row, and the capture path writes records straight to disk, normalizes a path with one fork instead of four, and reads each cache once (#1092, #1096, #1098, #1099, #1102, #1104, #1110, #1117)
 
 ### Fixed
+- `mock`, `mock_sequence` and `spy` report a usable-name error instead of a raw bash syntax error when the command name carries whitespace or shell syntax — `mock "ls -l" echo hi` used to print `syntax error near unexpected token '-l'` from inside bashunit (#1136)
 - A data-provider value ending in a backslash reaches the test instead of vanishing: it escaped the `)` of the parser's `eval` fast path, and a syntax error inside `eval` kills the command substitution the runner calls it in, so the argument arrived unset (#1134)
 - `assert_equals` no longer expands backslash escapes while normalizing, so `C:\` and `C:\\` compare as different and a literal `\t` is no longer equal to a real tab. It still ignores ANSI sequences and control characters, which is what it documents (#1108)
 - `assert_file_contains` accepts a needle that starts with a dash instead of failing with `grep: invalid option`, and `assert_file_not_contains` matches literally like its counterpart, so `a.c` no longer matches `abc` (#1108)
