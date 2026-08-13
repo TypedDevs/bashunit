@@ -14,8 +14,15 @@ function test_bashunit_terminates_a_hanging_test_with_timeout() {
 }
 
 function test_bashunit_keeps_running_tests_after_a_timed_out_one() {
+  # The only case here that asserts on the FAST test, so the only one whose
+  # budget has to cover how long that test takes to run rather than how long
+  # the blocked one sleeps. One second did not: the watchdog marks a test that
+  # is still running when the budget expires, and on a CI runner already busy
+  # with the parallel suite even an immediate assertion crossed it, so the run
+  # reported `2 failed` and the job went red (#1093). Five seconds against a
+  # thirty-second sleep still proves both halves.
   local output
-  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 1 "$FIXTURE")" || true
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 5 "$FIXTURE")" || true
 
   # The fast test still ran and passed and the run reached its summary instead
   # of hanging forever on the blocked test.
