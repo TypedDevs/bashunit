@@ -4,6 +4,7 @@
 
 _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
 _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
+_BASHUNIT_DUPLICATED_FUNCTION_DETAILS=""
 _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=false
 
 function bashunit::state::is_duplicated_test_functions_found() {
@@ -36,9 +37,22 @@ function bashunit::state::set_file_with_duplicated_function_names() {
 }
 
 
+function bashunit::state::get_duplicated_function_details() {
+  echo "$_BASHUNIT_DUPLICATED_FUNCTION_DETAILS"
+}
+
+
+function bashunit::state::set_duplicated_function_details() {
+  _BASHUNIT_DUPLICATED_FUNCTION_DETAILS="$1"
+}
+
+
+# Arguments: $1 - file, $2 - duplicate names, $3 - the same names with the line
+# numbers of every definition (optional; the summary falls back to $2)
 function bashunit::state::set_duplicated_functions_merged() {
   bashunit::state::set_duplicated_test_functions_found
   bashunit::state::set_file_with_duplicated_function_names "$1"
   bashunit::state::set_duplicated_function_names "$2"
+  bashunit::state::set_duplicated_function_details "${3:-}"
 }
 

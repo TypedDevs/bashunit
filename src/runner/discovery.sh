@@ -185,6 +185,11 @@ function bashunit::runner::load_test_files() {
       continue
     fi
     local _cached_fns="$functions_for_script"
+    # In the parent, before dispatch: under --parallel call_test_functions is a
+    # background subshell, so a check run inside it sets state that dies with
+    # the subshell and the run reports "All tests passed" over a file where one
+    # of two same-named tests never ran (#1147).
+    bashunit::helper::check_duplicate_functions "$test_file" || true
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
       # Capture rather than discard: a worker's stderr cannot be written

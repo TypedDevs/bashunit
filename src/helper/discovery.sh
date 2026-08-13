@@ -25,6 +25,13 @@ function bashunit::helper::check_duplicate_functions() {
           if (++seen[name] == 2) {
             dup[name] = 1
           }
+          # Recorded for every occurrence, the first included: the report needs
+          # both definitions to be worth anything.
+          if (lines[name] == "") {
+            lines[name] = FNR
+          } else {
+            lines[name] = lines[name] ", " FNR
+          }
           break
         }
       }
@@ -44,12 +51,32 @@ function bashunit::helper::check_duplicate_functions() {
         names[j + 1] = v
       }
       for (i = 1; i <= n; i++) {
-        print names[i]
+        print names[i] "\t" lines[names[i]]
       }
     }
   ' "$script")
   if [ -n "$duplicates" ]; then
-    bashunit::state::set_duplicated_functions_merged "$script" "$duplicates"
+    # Split the "<name>\t<lines>" pairs into the bare names the state has
+    # always exposed and the display form the summary prints. The list is one
+    # or two entries in practice, so a bash loop costs nothing here.
+    local names=""
+    local detail=""
+    local dup_name dup_lines
+    while IFS="$(printf '\t')" read -r dup_name dup_lines; do
+      if [ -z "$dup_name" ]; then
+        continue
+      fi
+      names="$names$dup_name
+"
+      detail="$detail$dup_name (lines $dup_lines)
+"
+    done <<EOF
+$duplicates
+EOF
+    bashunit::state::set_duplicated_functions_merged \
+      "$script" "${names%
+}" "${detail%
+}"
     return 1
   fi
   return 0
