@@ -29,7 +29,11 @@ jobs:
 
       - name: Build Bash 3.0 Docker image
         run: |
-          docker build -t bashunit-bash3 -f - . <<'EOF'
+          # Docker Hub answers 502 often enough to have failed this job on an
+          # unrelated PR (#1127); the curl retries inside the build (#1107) do
+          # not help, because the base-image pull happens before them. Three
+          # attempts, backing off, and the last one still fails the job.
+          cat >/tmp/bash3.Dockerfile <<'EOF'
           FROM debian:bookworm-slim
 
           RUN apt-get update && apt-get install -y \
@@ -64,6 +68,15 @@ jobs:
           WORKDIR /bashunit
           CMD ["/opt/bash-3.0/bin/bash", "--version"]
           EOF
+
+          for attempt in 1 2 3; do
+            if docker build -t bashunit-bash3 -f /tmp/bash3.Dockerfile .; then
+              exit 0
+            fi
+            echo "docker build failed (attempt $attempt/3)" >&2
+            sleep $((attempt * 10))
+          done
+          exit 1
 
       - name: Save Docker image
         run: docker save bashunit-bash3 -o /tmp/bashunit-bash3.tar
