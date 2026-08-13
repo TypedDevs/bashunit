@@ -102,6 +102,31 @@ believing a number.
 repo under `/Users` made a 70 ms *improvement* read as a 40 ms regression.
 Check out the two versions of the file into one tree and alternate rounds.
 
+## Process substitution as an argument fails under load
+
+`cmd <(a) <(b)` passes `/dev/fd/N` paths that **`cmd` itself must open**. Under
+a loaded parallel suite that open fails:
+
+```
+diff: /dev/fd/62: Bad file descriptor
+```
+
+`diff` then produces no comparison and writes that to stderr, which a caller
+collecting output reads as a real difference. Both coverage differentials did
+this once per repo file — 473 iterations — and failed roughly 1 full suite run
+in 3, each time reporting "the classifiers disagree" over a file that agreed
+perfectly (#1152). Two earlier attempts blamed `awk`; the `AWK-FAILED` marker
+from #1143 is what finally ruled it out.
+
+The redirect form `while read …; done < <(cmd)` is **not** the same shape: the
+shell opens the descriptor and dups it to stdin, so no external process opens
+`/dev/fd/N`. It is used throughout `src/` and has never been seen to fail.
+
+So: never put `<(...)` in an external command's **argument list** inside a loop
+that runs per file or per test. Write real files (concurrently, so the two
+sides still overlap — serialising them was measurably slower) and compare with
+`[ "$a" != "$b" ]`, which the shell does without a fork.
+
 ## Where pure bash LOSES on some Bash versions but not others
 
 - **`${var//&/…}` is not portable.** Bash 5.2 made a bare `&` in a substitution
