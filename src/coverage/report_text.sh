@@ -19,6 +19,18 @@ function bashunit::coverage::print_engine_notice() {
 
   if bashunit::env::is_verbose_enabled; then
     printf "Coverage engine: %s\n" "$(bashunit::coverage::engine_in_use)"
+
+    # Before Bash 4 the DEBUG trap does not reach a subshell even under
+    # `set -T`, so lines executed inside ( ), $( ) or <( ) are never recorded
+    # and the percentage comes out lower than the same project measures on
+    # Bash 4+. Nothing in the numbers hints at it, so say it where the engine
+    # is already being reported (#1112).
+    if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+      printf "%sNote: Bash %s.%s does not report lines run inside a subshell; \
+coverage may read lower than on Bash 4+.%s\n" \
+        "$_BASHUNIT_COLOR_INCOMPLETE" "${BASH_VERSINFO[0]}" "${BASH_VERSINFO[1]}" \
+        "$_BASHUNIT_COLOR_DEFAULT"
+    fi
   fi
 }
 

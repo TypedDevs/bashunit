@@ -163,7 +163,8 @@ are written as they happen now, so both engines keep them.
 
 On **Bash 3.x the `DEBUG` trap does not reach a subshell at all**, even under
 `set -T`, so lines executed inside `( … )`, `$( … )` or `<( … )` are not
-recorded there. That is a limitation of the shell, not of the engine, and it
+recorded there. `--verbose` says so next to the engine it reports, since the
+percentage alone gives no hint. That is a limitation of the shell, not of the engine, and it
 means the same project can report a slightly lower percentage on Bash 3.x than
 on Bash 4+. `xtrace`, where available, does not have this blind spot.
 
