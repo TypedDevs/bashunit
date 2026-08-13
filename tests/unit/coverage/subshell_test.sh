@@ -31,13 +31,15 @@ function _skip_when_unsupported_context() {
     bashunit::skip "DEBUG trap + set -T behavior is unstable on Git Bash"
     return 0
     ;;
-  Darwin*)
-    # The DEBUG-trap recorder does not propagate into subshells on the
-    # macOS system Bash (3.2); this works on Linux for all supported Bash.
-    bashunit::skip "DEBUG trap + set -T does not reach subshells on macOS Bash"
-    return 0
-    ;;
   esac
+  # Before Bash 4 the DEBUG trap does not reach a subshell even under `set -T`,
+  # so the lines inside one are never recorded and there is nothing to assert.
+  # This was written as a macOS skip, on the assumption that it was the system
+  # Bash 3.2 being odd -- the Bash 3.0 job shows it is the version, not the OS.
+  if [ "${BASH_VERSINFO[0]:-0}" -lt 4 ]; then
+    bashunit::skip "the DEBUG trap does not reach subshells before Bash 4"
+    return 0
+  fi
   return 1
 }
 
