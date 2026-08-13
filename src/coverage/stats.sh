@@ -10,6 +10,11 @@ _BASHUNIT_COVERAGE_COLOR_OUT=""
 # Sets _BASHUNIT_COVERAGE_CLASS_OUT to high/medium/low for a percentage.
 # Arguments: $1 - percentage
 ##
+# Executable-line total behind the last get_percentage call, so the threshold
+# gate can tell "nothing covered" from "nothing to cover" (#1171).
+_BASHUNIT_COVERAGE_TOTAL_EXEC_OUT=0
+_BASHUNIT_COVERAGE_TOTAL_HIT_OUT=0
+
 function bashunit::coverage::class_to_slot() {
   local pct="$1"
   if [ "$pct" -ge "${BASHUNIT_COVERAGE_THRESHOLD_HIGH:-$_BASHUNIT_DEFAULT_COVERAGE_THRESHOLD_HIGH}" ]; then
@@ -236,7 +241,15 @@ function bashunit::coverage::split_stats() {
   _BASHUNIT_COVERAGE_SPLIT_CLASS_OUT="${rest#*:}"
 }
 
-function bashunit::coverage::get_percentage() {
+##
+# Totals behind the last percentage, in the CALLER's shell.
+#
+# get_percentage echoes, so every caller wraps it in $( ) -- and a return slot
+# set inside that subshell dies with it, which is why the threshold gate could
+# not see the executable total (#1171). This does the work and sets the slots;
+# get_percentage stays the echoing wrapper it has always been.
+##
+function bashunit::coverage::totals_to_slots() {
   local total_executable=0
   local total_hit=0
 
@@ -259,7 +272,16 @@ function bashunit::coverage::get_percentage() {
     done < <(bashunit::coverage::get_tracked_files)
   fi
 
-  bashunit::coverage::calculate_percentage "$total_hit" "$total_executable"
+  # The gate needs to tell "your tests cover none of it" from "there was
+  # nothing to cover": both are 0%, and only the first is about coverage.
+  _BASHUNIT_COVERAGE_TOTAL_EXEC_OUT=$total_executable
+  _BASHUNIT_COVERAGE_TOTAL_HIT_OUT=$total_hit
+}
+
+function bashunit::coverage::get_percentage() {
+  bashunit::coverage::totals_to_slots
+  bashunit::coverage::calculate_percentage \
+    "$_BASHUNIT_COVERAGE_TOTAL_HIT_OUT" "$_BASHUNIT_COVERAGE_TOTAL_EXEC_OUT"
 }
 
 function bashunit::coverage::check_threshold() {
@@ -274,13 +296,26 @@ function bashunit::coverage::check_threshold() {
   if bashunit::coverage::is_diff_enabled && [ -n "$_BASHUNIT_COVERAGE_DIFF_PCT_OUT" ]; then
     pct="$_BASHUNIT_COVERAGE_DIFF_PCT_OUT"
   else
-    pct=$(bashunit::coverage::get_percentage)
+    # Not `$(get_percentage)`: that subshell would take the totals with it.
+    bashunit::coverage::totals_to_slots
+    pct=$(bashunit::coverage::calculate_percentage \
+      "$_BASHUNIT_COVERAGE_TOTAL_HIT_OUT" "$_BASHUNIT_COVERAGE_TOTAL_EXEC_OUT")
   fi
 
   if [ "$pct" -lt "$BASHUNIT_COVERAGE_MIN" ]; then
     local message
-    message=$(printf "%sCoverage %d%% is below minimum %d%%%s" \
-      "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT")
+    if [ "${_BASHUNIT_COVERAGE_TOTAL_EXEC_OUT:-0}" -eq 0 ]; then
+      # 0% here is arithmetic, not a measurement: nothing was found to measure.
+      # Reporting it as low coverage sends the reader to their tests when the
+      # cause is almost always the paths (#1171). Still fails -- a misconfigured
+      # run quietly satisfying an 80% gate is worse than either message.
+      message=$(printf "%sCoverage gate failed: no executable lines were tracked%s\n%s" \
+        "$_BASHUNIT_COLOR_FAILED" "$_BASHUNIT_COLOR_DEFAULT" \
+        "Check --coverage-paths (BASHUNIT_COVERAGE_PATHS): it matched no shell file with executable code.")
+    else
+      message=$(printf "%sCoverage %d%% is below minimum %d%%%s" \
+        "$_BASHUNIT_COLOR_FAILED" "$pct" "$BASHUNIT_COVERAGE_MIN" "$_BASHUNIT_COLOR_DEFAULT")
+    fi
     # Under a machine --output the gate still speaks, but on stderr: on stdout
     # it would sit next to the JSON or XML document and break the parser.
     if bashunit::env::is_machine_output_enabled; then
