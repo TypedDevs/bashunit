@@ -2,33 +2,31 @@
 
 ## Unreleased
 
+### Added
+- `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
+- `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return` (#1019)
+- Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations override the run-wide flags in both directions; a malformed value aborts the run (#1020)
+- `[suite:<name>]` sections in `.bashunitrc` name a set of paths and options; `--suite <name>` runs one (repeatable) and `--list-suites` lists them (#1021)
+- `--sandbox` fails a test that runs an external command it did not mock, and `--sandbox-allow <cmd,...>` widens the baseline allowlist (ADR-012) (#1022)
+- `bashunit::mock_sequence <cmd> <answer>…` answers each call with the next entry, so retry loops need no hand-rolled counter file; the last entry repeats once exhausted (#1023)
+- `assert_have_never_been_called <cmd>` asserts a spied command never ran, printing the recorded calls when it did (#1023)
+- `assert_is_file_readable`, `assert_is_file_writable`, `assert_is_file_executable`, their negatives and `assert_is_file_not_empty` give files the parity directories already had (#1024)
+- `assert_json_key_not_exists` checks that a JSON path is absent, and `assert_json_length` the size of an array, object or string (#1025)
+- `bashunit bench --report-json <file>` and `--report-junit <file>` write the benchmark run to disk, so a CI run leaves an artifact to store, chart and compare (#1028)
+- `bashunit bench --baseline <file>` fails a run when a benchmark is more than `--baseline-tolerance` percent (default 10) slower than the recorded one, comparing medians; `--baseline-update <file>` records the new reference (#1029)
+- `--snapshot-prune` deletes the snapshot files no test resolved, printing every path; full runs only, and never on a run with failures (#1030)
+
 ### Changed
-- LCOV `BRDA` records carry the arm's execution count instead of a 0/1 taken flag — the fourth field is a count to every LCOV consumer, and reporting `1` for an arm entered 5,000 times lost what makes branch data useful. The count is the arm's first executable line, which is the line that runs once per entry; `BRF` and `BRH` are unchanged (#1061)
+- LCOV `BRDA` carries the arm's execution count instead of a 0/1 taken flag, taken from the arm's first executable line; `BRF` and `BRH` are unchanged (#1061)
+- Performance: coverage lookups use the variable table instead of a string scanned with a leading-`*` glob — 26.7ms to 0.25ms per lookup at 121 tracked files, and flat with file count (#1056)
+- Performance: hit data is grouped once per run by one awk pass, instead of `grep | cut | sort | uniq -c` per file — 1294ms to 203ms at 121 files and 10,890 records (#1057)
+- Performance: the DEBUG trap rejects a line from an untracked file before calling the recorder — a run matching no coverage path went from 2609ms to 497ms, against a 480ms no-coverage baseline (#1060)
+- Performance: the LCOV emitter classifies and writes each file in one awk pass instead of a Bash loop per line — 8520ms to 6632ms for 40 files of 752 lines. The awk rules are diffed against the Bash reference line by line over every shell file in the repo (#1059)
 
 ### Fixed
-- `--coverage-diff` counts a changed file that no test executed instead of skipping it: the report iterated the files that had run, so a brand new untested file left the changed-line total at 0 and the empty-set-is-100% rule passed it through a `--coverage-min 90` gate — the exact case the gate exists to catch. A docs-only commit still reports 100% and still passes (#1054)
-- Coverage now reports every file under `--coverage-paths`, not only the files a test happened to execute: a file nothing reached shows as `0/N (0%)` instead of being absent, in the text, LCOV, Cobertura and HTML reports, and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files and a denominator of 2,200 against a real 9,285. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
-- Coverage counted a statement whose line ends in `)` as a `case` arm, so `x=$(foo)` was dropped from the denominator while `x=$(printf '%s\n')` was not — an accident of the pre-#1005 regex, where a backslash inside a bracket expression suppressed the match. A `)` now only closes an arm when no `(` opened earlier on the line, which recovers 456 executable lines of this repo's own `src/` and correctly stops counting `case` arms that contain a backslash. **Coverage percentages move in both directions per file; the denominator is the honest one** (#1055)
-
-### Changed
-- Performance: the LCOV emitter classifies and writes each file's line records in one awk pass instead of a Bash loop calling the classifier per line — 8520ms to 6632ms for 40 files of 752 lines, 2108ms to 1803ms at 156 lines — with byte-identical output. The awk rules are checked against the Bash reference line by line over every shell file in the repo, on BusyBox awk as well, and the differential is mutation-tested (#1059)
-- Performance: `--coverage` rejects a line from an untracked file inside the DEBUG trap instead of inside the recorder it used to call. A run where nothing matches the coverage paths went from 2609ms to 497ms on the same test file — the no-coverage baseline is 480ms — and a run tracking `src` from 9604ms to 7624ms (#1060)
-- Performance: the coverage hit data is grouped once per run instead of scanned once per file. Counting a file's hits was `grep | cut | sort | uniq -c` over the whole data file — 4 forks and a full scan per tracked file — and every report section repeated it; one awk pass now writes a small block per file, measured 1294ms to 203ms for 121 files and 10,890 records (6.4x), with byte-identical LCOV, Cobertura and text reports (#1057)
-- Performance: the coverage report's per-file lookup is flat instead of quadratic. The stats, tracked-file and path caches stored their entries in one string scanned with a leading-`*` glob, which on Bash 3.2 cost 0.38ms per lookup at 11 entries, 3.4ms at 40 and 26.7ms at 121; they now use the variable table, measured at 0.25ms at every size — 109x faster at 121 tracked files, with byte-identical reports (#1056)
-
-### Added
-- `--snapshot-prune` deletes the snapshot files no test resolved, printing every path; like `--snapshot-report-unused` it is a full-run-only flag, and it additionally refuses to delete anything on a run with failures, where an unresolved snapshot only means the test never got there (#1030)
-- `bashunit bench --baseline <file>` fails a run when a benchmark is more than `--baseline-tolerance` percent (default 10) slower than the recorded run, comparing medians and printing a per-benchmark delta; `--baseline-update <file>` records the new reference, a new benchmark is reported rather than failed, and a missing or malformed baseline exits non-zero instead of quietly passing (#1029)
-- `bashunit bench --report-json <file>` and `--report-junit <file>` write the benchmark run to disk — per benchmark the revs, its, every iteration, average, min, max, median and the `@max_ms` verdict, plus run-level timestamp, duration, bashunit/bash version and OS — so a CI run leaves an artifact to store, chart and compare (#1028)
-- `assert_is_file_readable` / `assert_is_file_not_readable`, `assert_is_file_writable` / `assert_is_file_not_writable`, `assert_is_file_executable` / `assert_is_file_not_executable` and `assert_is_file_not_empty` give files the parity directories already had; a failure distinguishes a path that does not exist from one that is not a file from a mode that is wrong (#1024)
-- `bashunit::mock_sequence <cmd> <answer>…` answers each call with the next entry, so retry loops and polling can be doubled without a hand-rolled counter file; the last entry repeats once exhausted, and a spy over the sequence still records every call (#1023)
-- `assert_have_never_been_called <cmd>` asserts a spied command never ran, printing the recorded calls when it did (#1023)
-- `assert_json_key_not_exists` checks that a JSON path is absent, while `assert_json_length` checks the size of an array, object, or string (#1025)
-- `--output <text|tap|json|junit>` prints the JSON and JUnit reports on stdout, suppressing every console rendering so a pipeline needs no temp file; `--report-json` still writes its file alongside (#1018)
-- `bashunit::skip_if`, `bashunit::skip_unless`, `bashunit::skip_unless_command <cmd>` and `bashunit::skip_on <windows|macos|linux>` mark a test skipped **and** end it, replacing `bashunit::skip && return`, whose missing `return` silently kept the body running (#1019)
-- Per-test `# @timeout <seconds>`, `# @retry <n>` and `# @skip [reason]` annotations override the run-wide `--test-timeout` and `--retry` in both directions; `@timeout 0` opts one test out of a global timeout and a malformed value aborts the run (#1020)
-- `[suite:<name>]` sections in `.bashunitrc` name a set of paths and options; `--suite <name>` runs one (repeatable), `--list-suites` lists them, and a flag or path on the command line wins over the suite (#1021)
-- `--sandbox` fails a test that runs an external command it did not mock, naming it, and `--sandbox-allow <cmd,...>` widens the baseline allowlist; builtins are unaffected and `bashunit::unmock` puts the block back (ADR-012) (#1022)
+- Coverage reports every file under `--coverage-paths`, not only the ones a test executed: an untouched file shows as `0/N (0%)` and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files. **Percentages drop, because the old ones were measured over the files that ran** (#1053)
+- `--coverage-diff` counts a changed file that no test executed, instead of skipping it and letting a brand new untested file pass a `--coverage-min 90` gate. A docs-only commit still reports 100% (#1054)
+- Coverage read a statement ending in `)` as a `case` arm, so `x=$(foo)` left the denominator while `x=$(printf '%s\n')` stayed. A `)` now closes an arm only when no `(` opened earlier on the line, recovering 456 executable lines of this repo's `src/`. **Percentages move in both directions per file** (#1055)
 
 ## [0.46.0](https://github.com/TypedDevs/bashunit/compare/0.45.0...0.46.0) - 2026-08-11
 
