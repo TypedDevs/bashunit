@@ -2,105 +2,101 @@
 
 # Locating function definitions and their line spans, for the reports.
 
-# Extract function definitions from a bash file
-# Output format: function_name:start_line:end_line (one per function)
-function bashunit::coverage::extract_functions() {
-  local file="$1"
-
-  local lineno=0
-  local in_function=0
-  local brace_count=0
-  local current_fn=""
-  local fn_start=0
-  local line
-
-  while IFS= read -r line || [ -n "$line" ]; do
-    ((++lineno))
-
-    # Check for function definition patterns
+# The declaration scanner, as awk source.
+#
+# It was a Bash `while read` loop with two `${line//[^\{]/}` substitutions per
+# line to count braces. Bash 3.2 pattern substitution over a whole file is the
+# single most expensive thing in the report phase: 17.5 ms per file against
+# awk's 3.1 ms, and the report calls this once per file per renderer. One pass
+# in awk instead (#1084).
+#
+# The rules are unchanged, quirks included -- notably that braces are counted
+# without regard for strings or comments, so `echo "{"` inside a body extends
+# the span. Changing that is a numbers change, not a perf change.
+#
+# It lives in a shell string rather than a .awk file because the build flattens
+# *.sh into one artifact (ADR-011); a separate file would not ship.
+# shellcheck disable=SC2016  # the $0 in here is awk's, not the shell's
+_BASHUNIT_COVERAGE_AWK_FUNCTIONS='
+{
+  line = $0
+  if (in_function == 0) {
     # Pattern 1: function name() { or function name {
     # Pattern 2: name() { or name () {
-    if [ "$in_function" -eq 0 ]; then
-      local fn_name=""
+    stripped = line
+    sub(/^[ \t]+/, "", stripped)
+    if (stripped ~ /^function[ \t]/) {
+      sub(/^function/, "", stripped)
+      sub(/^[ \t]+/, "", stripped)
+    }
 
-      # Extract function name using pure Bash string operations (avoids sed subshell)
-      local stripped="${line#"${line%%[![:space:]]*}"}"
+    # The candidate name is the first word, ending at whitespace, `(` or `{`.
+    name = stripped
+    sub(/[ \t({].*$/, "", name)
 
-      # Strip "function " prefix if present
-      case "$stripped" in
-      function[\ \	]*)
-        stripped="${stripped#function}"
-        stripped="${stripped#"${stripped%%[![:space:]]*}"}"
-        ;;
-      esac
+    if (name != "") {
+      ok = 1
+      # A candidate holding anything outside the identifier alphabet is not a
+      # function name. Cutting at the first `{` means `VAR="x${Y}"` yields
+      # `VAR="x$`, whose trailing `{Y}"` then looks like a body opener -- every
+      # such assignment became a phantom FN record, and one containing the
+      # record separator `|` shifted the fields and crashed the arithmetic in
+      # report_lcov (#936). Checking only the first character let all of that
+      # through.
+      if (name ~ /[^a-zA-Z0-9_:]/) {
+        ok = 0
+      } else if (name !~ /^[a-zA-Z_]/) {
+        ok = 0
+      } else {
+        # A declaration continues with `()` or `{`; a call does not.
+        after = substr(stripped, length(name) + 1)
+        sub(/^[ \t]+/, "", after)
+        if (substr(after, 1, 2) != "()" && substr(after, 1, 1) != "{") { ok = 0 }
+      }
 
-      # Extract first word as candidate function name
-      fn_name="${stripped%%[[:space:]\(\{]*}"
+      if (ok) {
+        in_function = 1
+        current_fn = name
+        fn_start = NR
+        tmp = line; nopen = gsub(/\{/, "{", tmp)
+        tmp = line; nclose = gsub(/\}/, "}", tmp)
+        brace_count = nopen - nclose
+        # Single-line function: braces balance on the same line, both present.
+        if (brace_count == 0 && nopen > 0 && nclose > 0) {
+          print current_fn "|" fn_start "|" NR
+          in_function = 0
+          current_fn = ""
+        }
+        next
+      }
+    }
+  }
 
-      # Validate: must BE an identifier, and rest must have () or {
-      if [ -n "$fn_name" ]; then
-        case "$fn_name" in
-        # A candidate holding anything outside the identifier alphabet is not a
-        # function name. Cutting at the first `{` means `VAR="x${Y}"` yields
-        # `VAR="x$`, whose trailing `{Y}"` then looks like a body opener — every
-        # such assignment became a phantom FN record, and one containing the
-        # record separator `|` shifted the fields and crashed report_lcov's
-        # arithmetic (#936). Checking only the first character let all of that
-        # through.
-        *[!a-zA-Z0-9_:]*) fn_name="" ;;
-        [a-zA-Z_]*)
-          local after_name="${stripped#"$fn_name"}"
-          after_name="${after_name#"${after_name%%[![:space:]]*}"}"
-          case "$after_name" in
-          '()'* | '{'*) ;;
-          *) fn_name="" ;;
-          esac
-          ;;
-        *) fn_name="" ;;
-        esac
-      fi
+  if (in_function == 1) {
+    tmp = line; nopen = gsub(/\{/, "{", tmp)
+    tmp = line; nclose = gsub(/\}/, "}", tmp)
+    brace_count = brace_count + nopen - nclose
+    if (brace_count <= 0) {
+      print current_fn "|" fn_start "|" NR
+      in_function = 0
+      current_fn = ""
+      brace_count = 0
+    }
+  }
+}
 
-      if [ -n "$fn_name" ]; then
-        in_function=1
-        current_fn="$fn_name"
-        fn_start=$lineno
-        brace_count=0
+# An unclosed function (should not happen in valid code) still gets a record,
+# ending at the last line, so a truncated file cannot drop one silently.
+END {
+  if (in_function == 1 && current_fn != "") { print current_fn "|" fn_start "|" NR }
+}
+'
 
-        # Count opening braces on this line
-        local open_braces="${line//[^\{]/}"
-        local close_braces="${line//[^\}]/}"
-        local open_count=${#open_braces}
-        local close_count=${#close_braces}
-        brace_count=$((brace_count + open_count - close_count))
-
-        # Single-line function: braces balance on same line and both present
-        if [ "$brace_count" -eq 0 ] && [ "$open_count" -gt 0 ] && [ "$close_count" -gt 0 ]; then
-          echo "${current_fn}|${fn_start}|${lineno}"
-          in_function=0
-          current_fn=""
-        fi
-        continue
-      fi
-    fi
-
-    # Track braces inside function
-    if [ "$in_function" -eq 1 ]; then
-      local open_braces="${line//[^\{]/}"
-      local close_braces="${line//[^\}]/}"
-      brace_count=$((brace_count + ${#open_braces} - ${#close_braces}))
-
-      # Function ended
-      if [ "$brace_count" -le 0 ]; then
-        echo "${current_fn}|${fn_start}|${lineno}"
-        in_function=0
-        current_fn=""
-        brace_count=0
-      fi
-    fi
-  done <"$file"
-
-  # Handle unclosed function (shouldn't happen in valid code)
-  if [ "$in_function" -eq 1 ] && [ -n "$current_fn" ]; then
-    echo "${current_fn}|${fn_start}|${lineno}"
-  fi
+##
+# Extract function definitions from a bash file.
+# Output format: function_name|start_line|end_line (one per function)
+# Arguments: $1 - source file
+##
+function bashunit::coverage::extract_functions() {
+  env LC_ALL=C "$AWK" "$_BASHUNIT_COVERAGE_AWK_FUNCTIONS" "$1"
 }
