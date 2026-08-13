@@ -15,7 +15,8 @@ function set_up_before_script() {
 # $2 overrides the scanner source, which is how the mutation below is injected.
 function awk_branches() { # $1 = file, $2 = optional scanner source
   local scanner="${2:-$_BASHUNIT_COVERAGE_AWK_BRANCHES}"
-  env LC_ALL=C "$AWK" "$scanner"'
+  local out status=0
+  out=$(env LC_ALL=C "$AWK" "$scanner"'
     BEGIN { bu_br_reset() }
     { bu_br_line($0, FNR) }
     END {
@@ -23,7 +24,21 @@ function awk_branches() { # $1 = file, $2 = optional scanner source
         print br_dec[i] "|" br_kind[i] "|" br_arms[i]
       }
     }
-  ' "$1"
+  ' "$1") || status=$?
+
+  # An awk that failed prints nothing, which diffs as "the scanners disagree
+  # about every branch in the file" -- alarming, and not what happened. Say
+  # which it was (#1143).
+  if [ "$status" -ne 0 ]; then
+    printf 'AWK-FAILED(exit %s) on %s\n' "$status" "$1"
+    return 0
+  fi
+
+  # A file with no output must stay empty: printf '%s\n' "" emits a blank line,
+  # which diffs against awk's genuine no-output as a disagreement.
+  if [ -n "$out" ]; then
+    printf '%s\n' "$out"
+  fi
 }
 
 function test_both_branch_scanners_agree_on_every_shell_file_in_the_repo() {
@@ -37,6 +52,8 @@ function test_both_branch_scanners_agree_on_every_shell_file_in_the_repo() {
     local diff_out
     diff_out=$(diff <(bashunit::coverage::extract_branches "$ROOT_DIR/$file") \
       <(awk_branches "$ROOT_DIR/$file") 2>&1) || true
+    # A process substitution reports no status at all, so awk_branches marks its
+    # own failure in-band rather than leaving the diff to guess.
     if [ -n "$diff_out" ]; then
       disagreements="$disagreements
 $file
@@ -94,4 +111,13 @@ function test_the_scanners_agree_on_nested_and_mixed_constructs() {
 
   assert_same "$(bashunit::coverage::extract_branches "$fixture")" \
     "$(awk_branches "$fixture")"
+}
+
+# Same diagnostic gap as the line classifier's: empty output from a failed awk
+# is indistinguishable from a total disagreement once it reaches the diff.
+function test_a_failing_awk_is_reported_as_a_failure_not_a_disagreement() {
+  local out
+  out=$(awk_branches "/definitely/not/a/file.sh")
+
+  assert_contains "AWK-FAILED" "$out"
 }
