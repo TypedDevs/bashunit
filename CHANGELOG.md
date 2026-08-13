@@ -18,13 +18,7 @@
 
 ### Changed
 - LCOV `BRDA` carries the arm's execution count instead of a 0/1 taken flag, taken from the arm's first executable line; `BRF` and `BRH` are unchanged (#1061)
-- Performance: coverage lookups use the variable table instead of a string scanned with a leading-`*` glob — 26.7ms to 0.25ms per lookup at 121 tracked files, and flat with file count (#1056)
-- Performance: hit data is grouped once per run by one awk pass, instead of `grep | cut | sort | uniq -c` per file — 1294ms to 203ms at 121 files and 10,890 records (#1057)
-- Performance: the DEBUG trap rejects a line from an untracked file before calling the recorder — a run matching no coverage path went from 2609ms to 497ms, against a 480ms no-coverage baseline (#1060)
-- Performance: the LCOV emitter classifies and writes each file in one awk pass instead of a Bash loop per line — 8520ms to 6632ms for 40 files of 752 lines. The awk rules are diffed against the Bash reference line by line over every shell file in the repo (#1059)
-- Performance: function declarations are scanned in one awk pass instead of a Bash loop counting braces with pattern substitution — 2238ms to 399ms for 128 files, and a `--coverage` run over `src` from 9.23s to 6.81s (#1084)
-- Performance: every tracked file's line stats are computed by one awk invocation for the whole run instead of a Bash loop and three subshells per file — 2585ms to 153ms for 128 files, taking that `--coverage` run to 3.77s (#1088)
-- Performance: the LCOV report is emitted by one awk invocation instead of three forks and two Bash loops per file — 3133ms to 267ms for 128 files, taking a `--coverage` run over `src` to 0.96s, from 9.23s before this series (#1090)
+- Performance: `--coverage` is about 10x faster — a run over this repo's `src` went from 9.23s to 0.96s. The report phase classifies lines, scans declarations and branches and emits the whole LCOV report in one awk invocation per run instead of Bash loops and forks per file, hit data is grouped once, the DEBUG trap rejects untracked lines before recording, and the caches are read through the variable table (#1056, #1057, #1059, #1060, #1084, #1088, #1090)
 
 ### Fixed
 - Coverage reports every file under `--coverage-paths`, not only the ones a test executed: an untouched file shows as `0/N (0%)` and `--coverage-min` gates on that denominator. This repo reported 11 of its own 121 files. **Percentages drop, because the old ones were measured over the files that ran** (#1053)

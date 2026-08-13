@@ -351,7 +351,7 @@ jobs:
 ```
 :::
 
-**Inputs:** `version` (default: the release pinned at this action ref, e.g. `0.45.0` on `@v0`; pass `latest` to always take the newest), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`), `args` (default empty — when set, runs `bashunit <args>` after installing), `annotations` (default `auto` — GitHub Actions annotations for failing tests; `never` turns them off, `always` forces them).
+**Inputs:** `version` (default: the release pinned at this action ref — `@v0` tracks the newest release at the time it was moved; pass `latest` to always take the newest), `directory` (default `lib`), `add-to-path` (default `true`), `verify-checksum` (default `true`), `args` (default empty — when set, runs `bashunit <args>` after installing), `annotations` (default `auto` — GitHub Actions annotations for failing tests; `never` turns them off, `always` forces them).
 **Outputs:** `path` (binary path relative to the workspace), `version` (installed version).
 
 `verify-checksum` validates the downloaded binary against the release `checksum`
