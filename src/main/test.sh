@@ -655,9 +655,23 @@ function bashunit::main::cmd_test() {
     fi
   fi
 
-  # Optional bootstrap
-  # shellcheck disable=SC1090,SC2086
-  [ -f "${BASHUNIT_BOOTSTRAP:-}" ] && source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+  # Optional bootstrap. Absent is fine -- BASHUNIT_BOOTSTRAP defaults to
+  # tests/bootstrap.sh, which most projects do not have. Present but broken is
+  # not: `[ -f ] && source` swallowed the failure, so a bootstrap with a syntax
+  # error left the run with no tests, no summary and exit 0, and CI passed
+  # having executed nothing (#1179).
+  if [ -f "${BASHUNIT_BOOTSTRAP:-}" ]; then
+    # `source` is a POSIX special builtin: a syntax error in the file, or a
+    # bare `exit`, terminates this shell right here -- so nothing after the
+    # call can report it, and the run ended with no tests, no summary and
+    # exit 0 (#1179). Pre-validating with `bash -n` would cost an interpreter
+    # fork on every invocation, which the cold-start budget forbids, so leave
+    # a marker instead and let the EXIT trap notice it was never cleared.
+    _BASHUNIT_LOADING_BOOTSTRAP="$BASHUNIT_BOOTSTRAP"
+    # shellcheck disable=SC1090,SC2086
+    source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
+    _BASHUNIT_LOADING_BOOTSTRAP=""
+  fi
 
   if [ "${BASHUNIT_NO_OUTPUT:-false}" = true ]; then
     exec >/dev/null 2>&1
