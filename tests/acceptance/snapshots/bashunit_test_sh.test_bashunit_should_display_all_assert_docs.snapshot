@@ -813,7 +813,11 @@ Reports an error if `actual` differs from the stored snapshot. On the first run 
 
 Pass `snapshot_file` to share one snapshot between tests; by default each test gets its own, named after the test function.
 
-See Snapshots(/snapshots) for the full workflow, including how to update a snapshot after an intentional change.
+::: warning A `@data_provider` test shares one snapshot
+The filename comes from the test **function**, and a provider runs that function
+once per value — so every value compares against the same file. The first value
+to run creates it; the rest fail with `Expected to match the snapshot` even
+though nothing is wrong with them:
 
 
 ## assert_match_snapshot_ignore_colors
