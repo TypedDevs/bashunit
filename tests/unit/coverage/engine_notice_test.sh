@@ -41,6 +41,7 @@ function test_bash_four_and_newer_get_no_note() {
 }
 
 function test_the_note_is_verbose_only() {
+  # shellcheck disable=SC2034  # read by the notice under test
   BASHUNIT_VERBOSE=false
 
   local output
