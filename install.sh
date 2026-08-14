@@ -199,19 +199,19 @@ cd "$(dirname "$0")"
 # directory` with no mention of bashunit at all (#1197).
 if [ -e "$DIR" ] && [ ! -d "$DIR" ]; then
   echo "Error: '$DIR' exists and is not a directory." >&2
-  echo "Choose another destination with -d, or remove that file." >&2
+  echo "Choose another destination by passing it as an argument, or remove that file." >&2
   exit 1
 fi
 
 if [ ! -d "$DIR" ] && ! mkdir -p "$DIR" 2>/dev/null; then
   echo "Error: cannot create the '$DIR' folder." >&2
-  echo "Choose another destination with -d, or re-run with sufficient permissions." >&2
+  echo "Choose another destination by passing it as an argument, or re-run with sufficient permissions." >&2
   exit 1
 fi
 
 if [ ! -w "$DIR" ]; then
   echo "Error: cannot write to the '$DIR' folder." >&2
-  echo "Choose another destination with -d, or re-run with sufficient permissions." >&2
+  echo "Choose another destination by passing it as an argument, or re-run with sufficient permissions." >&2
   exit 1
 fi
 
