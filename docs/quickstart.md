@@ -51,8 +51,9 @@ It creates, in the current directory:
 - `.github/workflows/tests.yml` — a CI workflow using the official action
 - `.env` — with `BASHUNIT_BOOTSTRAP=tests/bootstrap.sh`, which is what makes the bootstrap load
 
-If `.env` already sets `BASHUNIT_BOOTSTRAP`, `init` comments that line out and appends the
-new one, so check the diff before committing.
+If `.env` already sets `BASHUNIT_BOOTSTRAP` to that same file, `init` leaves it alone and
+says so, so re-running is safe. If it points somewhere else, the old line is commented out
+and the new one appended — check the diff before committing.
 
 Alternatively, create your tests manually:
 
