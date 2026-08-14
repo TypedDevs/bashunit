@@ -4,6 +4,9 @@ function bashunit::runner::load_test_files() {
   local filter=$1
   local tag_filter="${2:-}"
   local exclude_tag_filter="${3:-}"
+  # Carried to the summary so an empty selection can explain itself: the filter
+  # is a local here, and the report renders long after this returns.
+  _BASHUNIT_ACTIVE_FILTER="$filter"
   shift 3
   local IFS=$' \t\n'
   local -a files

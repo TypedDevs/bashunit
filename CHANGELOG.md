@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- A `--filter` that selects nothing now explains why instead of ending on a bare `No tests found`: filters match the test **function name**, case-sensitively, while the report prints a humanized title, so feeding back the name you just read (`--filter "User login"` for `test_user_login`) silently matched nothing. The run names the test it most likely meant, resolving both the capitalisation and the spaces
 - `bashunit doc <filter>` says `No assertion matches '<filter>'` instead of printing nothing, which was indistinguishable from a broken install. Mirrors the existing `--custom` wording; the exit code stays 0 because `doc` is informational (#1201)
 - `install.sh` destination errors no longer advise a `-d` flag that does not exist — the script takes positional arguments, so following the advice produced `Invalid arguments`. The one message whose job is to tell you how to recover pointed at a form the parser rejects (#1221)
 - The `example/` demo is covered by the suite. `docs/examples.md` and `example/README.md` send new users to `./bashunit example` as their first contact with the framework, and nothing ran it — `make test` collects from `tests/` only — so it could break while CI stayed green. The dead `EXAMPLE_TEST_SCRIPTS` variable, pointing at a file deleted several releases ago, is gone with it (#1219)

@@ -153,6 +153,16 @@ bashunit test tests/ --filter "user_login"
 ```
 :::
 
+The match is against the **function name**, case-sensitively — not the humanized
+title the report prints. So the title `✓ Passed: User login` belongs to
+`test_user_login`, and `--filter "User login"` selects nothing. A filter that
+matches no test says so and names the test it most likely meant:
+
+```
+ No tests found
+No test matches 'User login'. Filters match the function name, not the title: did you mean 'test_user_login'?
+```
+
 ### Exclude filter
 
 > `bashunit test --exclude-filter "name"`
