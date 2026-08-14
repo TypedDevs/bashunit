@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.48.0](https://github.com/TypedDevs/bashunit/compare/0.47.0...0.48.0) - 2026-08-14
+
 ### Added
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a lower percentage there explains itself (#1112)
 
