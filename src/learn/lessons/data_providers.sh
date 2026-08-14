@@ -112,7 +112,7 @@ function test_invalid_emails() {
     return 1
   fi
 
-  if [ "$("$GREP" -c "function data_provider_" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "function data_provider_")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define data provider functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

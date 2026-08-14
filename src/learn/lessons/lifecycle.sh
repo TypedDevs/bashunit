@@ -89,8 +89,8 @@ function test_file_has_content() {
     return 1
   fi
 
-  if [ "$("$GREP" -c "function set_up()" "$test_file" || true)" -eq 0 ] ||
-    [ "$("$GREP" -c "function tear_down()" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "function set_up()")" -eq 0 ] ||
+    [ "$(bashunit::learn::count_in_code "$test_file" "function tear_down()")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should define set_up and tear_down functions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

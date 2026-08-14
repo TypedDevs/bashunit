@@ -75,9 +75,9 @@ function test_multiple_assertions() {
     return 1
   fi
 
-  if [ "$("$GREP" -c "assert_contains" "$test_file" || true)" -eq 0 ] ||
-    [ "$("$GREP" -c "assert_matches" "$test_file" || true)" -eq 0 ] ||
-    [ "$("$GREP" -c "assert_not_empty" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "assert_contains")" -eq 0 ] ||
+    [ "$(bashunit::learn::count_in_code "$test_file" "assert_matches")" -eq 0 ] ||
+    [ "$(bashunit::learn::count_in_code "$test_file" "assert_not_empty")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use all three assertion types${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

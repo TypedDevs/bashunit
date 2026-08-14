@@ -101,12 +101,12 @@ function test_backup_failure_when_source_missing() {
   local -a missing_components=()
   local missing_components_count=0
 
-  if [ "$("$GREP" -c "function set_up()" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "function set_up()")" -eq 0 ]; then
     missing_components[missing_components_count]="set_up function"
     missing_components_count=$((missing_components_count + 1))
   fi
 
-  if [ "$("$GREP" -c "function tear_down()" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "function tear_down()")" -eq 0 ]; then
     missing_components[missing_components_count]="tear_down function"
     missing_components_count=$((missing_components_count + 1))
   fi

@@ -58,7 +58,7 @@ function test_bashunit_works() {
   fi
 
   # Check if file contains assert_same
-  if [ "$("$GREP" -c "assert_same" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "assert_same")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use assert_same${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

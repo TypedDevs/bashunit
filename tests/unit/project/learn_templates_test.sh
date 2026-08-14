@@ -29,9 +29,10 @@ function set_up_before_script() {
 # line in these files sits in the `cat <<'EOF'` lesson text, outside any
 # template. Checked against a perl extractor: both find 10 templates and agree
 # on which parse.
-function _lesson_templates() { # $1 = lessons dir
+function _lesson_templates() { # $1 = a lesson file, or a directory of them
   local file
-  for file in "$1"/*.sh; do
+  for file in "$1" "$1"/*.sh; do
+    [ -f "$file" ] || continue
     awk '
       index($0, "local template=\047") {
         intpl = 1
@@ -99,4 +100,57 @@ function test_the_scan_flags_a_template_that_does_not_parse() {
 # without assertions is risky, which exits 0 unless --fail-on-risky is passed.
 function test_the_lesson_runner_fails_a_test_with_no_assertions() {
   assert_file_contains "$ROOT_DIR/src/learn/session.sh" "--fail-on-risky"
+}
+
+# Lessons gate on "did the learner use this API", but each template carries the
+# API name in its own TODO/Hint comments. A plain grep matched the hint and
+# passed before any work was done, which let a learner finish a lesson with an
+# unrelated passing assertion (#1258).
+#
+# Scoped to the gates that name an *assertion*. The others look for
+# `function set_up()` or `function data_provider_`, which the template declares
+# as a skeleton in code on purpose -- those gates cannot distinguish template
+# from solution and are not meant to; the test run carries that signal, and
+# --fail-on-risky is what makes an unfilled skeleton fail.
+#
+# An earlier version asserted the invariant over *every* gate and passed only
+# because it stopped after the first file. It would have been false for five of
+# them.
+function test_no_assertion_gate_is_satisfied_by_its_own_template() {
+  local offenders=""
+  local file pattern tpl tmp checked=0
+  tmp="$(bashunit::temp_file)"
+
+  for file in "$ROOT_DIR"/src/learn/lessons/*.sh; do
+    while IFS= read -r pattern; do
+      case "$pattern" in
+      assert_*) ;;
+      *) continue ;;
+      esac
+
+      while IFS= read -r -d '' tpl; do
+        printf '%s\n' "$tpl" >"$tmp"
+        checked=$((checked + 1))
+        if [ "$(bashunit::learn::count_in_code "$tmp" "$pattern")" -ne 0 ]; then
+          offenders="$offenders$(basename "$file"):$pattern "
+        fi
+      done < <(_lesson_templates "$file")
+    done < <("$GREP" -oE 'count_in_code "\$test_file" "[^"]+"' "$file" |
+      sed -E 's/.*"\$test_file" "(.*)"/\1/')
+  done
+
+  assert_empty "$offenders"
+  # Guards the guard: zero comparisons would make the assertion above vacuous.
+  assert_greater_than 0 "$checked"
+}
+
+# The helper is what makes that true, so pin it directly: a hint in a comment
+# must not count, the same call in code must.
+function test_count_in_code_ignores_comments() {
+  local f
+  f="$(bashunit::temp_file)"
+  printf '%s\n' '# Hint: assert_contains "x" "$y"' 'assert_same 1 1' >"$f"
+
+  assert_same "0" "$(bashunit::learn::count_in_code "$f" "assert_contains")"
+  assert_same "1" "$(bashunit::learn::count_in_code "$f" "assert_same")"
 }
