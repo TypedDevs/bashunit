@@ -177,6 +177,76 @@ function test_an_env_flag_file_that_exits_says_so() {
   assert_contains "bootstrap" "$output"
 }
 
+# `--env` takes "file arg1 arg2", so it splits its value on the first space.
+# That is deliberate, and it makes a path containing a space unusable -- but
+# the message named a truncated path the user never typed:
+#
+#   Error: cannot read the bootstrap file: 'my'.
+#
+# for `--env "my boot.sh"`. The file is right there, so the reader is told
+# their existing file does not exist. Explain the split and name the way out.
+function test_an_env_path_with_a_space_explains_the_split() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'BASHUNIT_SHOW_HEADER=false\n' >"my boot.sh"
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env "my boot.sh" t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_general_error "" "" "$ec"
+  assert_contains "space" "$output"
+  assert_contains "BASHUNIT_BOOTSTRAP" "$output"
+}
+
+# The advice has to work: the env var is not split, so it takes the path whole.
+function test_the_bootstrap_env_var_accepts_a_path_with_a_space() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'BASHUNIT_SHOW_HEADER=false\n' >"my boot.sh"
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$(BASHUNIT_BOOTSTRAP="my boot.sh" "$BASHUNIT_PATH" --no-parallel t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_same 0 "$ec"
+  assert_contains "1 passed" "$output"
+}
+
+# A genuinely missing file, with no space involved, keeps the plain message:
+# the explanation must not fire where it would be noise.
+function test_a_missing_env_file_without_a_space_stays_terse() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env absent.sh t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_general_error "" "" "$ec"
+  assert_contains "cannot read the bootstrap file" "$output"
+  assert_not_contains "BASHUNIT_BOOTSTRAP" "$output"
+}
+
+# Passing arguments after the file is the reason for the split, so it must keep
+# working: the file resolves and the explanation stays quiet.
+function test_env_arguments_after_the_file_still_work() {
+  pushd "$TMP_DIR" >/dev/null
+  printf 'BASHUNIT_BOOT_ARG="$1"\n' >boot.sh
+  printf 'function test_ok() { assert_same 1 1; }\n' >t_test.sh
+
+  local ec=0
+  local output
+  output=$("$BASHUNIT_PATH" --no-parallel --env "boot.sh hello" t_test.sh 2>&1) || ec=$?
+  popd >/dev/null
+
+  assert_same 0 "$ec"
+  assert_not_contains "cannot read the bootstrap file" "$output"
+}
+
 # A healthy --env file must still be sourced and its values reach the run.
 function test_a_healthy_env_flag_file_still_loads() {
   pushd "$TMP_DIR" >/dev/null
