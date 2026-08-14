@@ -1,8 +1,20 @@
 #!/usr/bin/env bash
 
+##
+# Skips the test when jq is absent, so a JSON assertion reports "skipped"
+# rather than a failure the machine cannot help.
+#
+# The depth is stated explicitly, per the convention in src/api/skip_todo.sh:
+# `bashunit::skip` would read the label two frames up, which is this helper.
+# The test is two frames further -- test -> assert_json_* -> require_jq -- so
+# every JSON test skipped for a missing jq used to be reported under this
+# function's name, and several of them were indistinguishable (#1223).
+#
+# Returns: 0 when jq is available, 1 after marking the test skipped
+##
 function bashunit::assert_json::require_jq() {
   if ! command -v jq >/dev/null 2>&1; then
-    bashunit::skip "jq is required for JSON assertions"
+    bashunit::skip::__mark "jq is required for JSON assertions" 3
     return 1
   fi
   return 0
