@@ -344,3 +344,48 @@ function test_install_rejects_a_destination_it_cannot_write() {
   assert_general_error "" "" "$ec"
   assert_contains "cannot write to" "$output"
 }
+
+# The three destination errors above all end with advice on how to recover, and
+# the advice named a `-d` flag the script never had -- `install.sh` parses
+# positional arguments only, so following it produced "Invalid arguments"
+# (#1221). The assertions covered the diagnosis line and stopped there, which is
+# exactly how an invented flag survives.
+#
+# So run the suggested form instead of string-matching it. This needs no network:
+# the destination is validated first, and an unparseable argument is rejected
+# before that.
+function test_the_recovery_advice_names_a_form_the_parser_accepts() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  cp ./install.sh "$dir/install.sh"
+  printf 'not a dir\n' >"$dir/blocked"
+
+  local output
+  output=$(cd "$dir" && ./install.sh 0.47.0 blocked 2>&1) || true
+  assert_contains "Choose another destination" "$output"
+
+  # The advice must not name a flag. Asserted against the run that actually
+  # prints it: a flag-shaped argument dies in the parser before any of this,
+  # so checking the advice there would compare against nothing at all.
+  assert_not_contains "-d" "$output"
+
+  # And what it does tell the reader to do -- pass a different destination as
+  # an argument -- has to get past argument parsing.
+  local retry
+  retry=$(cd "$dir" && ./install.sh 0.47.0 elsewhere 2>&1) || true
+
+  assert_not_contains "Invalid arguments" "$retry"
+}
+
+# The parser takes positional arguments only, which is what the advice above
+# now describes.
+function test_a_flag_shaped_destination_is_rejected() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  cp ./install.sh "$dir/install.sh"
+
+  local output
+  output=$(cd "$dir" && ./install.sh -d somewhere 2>&1) || true
+
+  assert_contains "Invalid arguments" "$output"
+}
