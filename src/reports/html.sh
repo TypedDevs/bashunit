@@ -3,27 +3,6 @@
 
 # HTML report writer.
 
-##
-# Escapes $1 for HTML: &, < , > and ". Multi-line input keeps its lines, which
-# is what the failure messages need.
-#
-# awk, not ${var//&/&amp;}: a bare `&` in a bash replacement means "the matched
-# text" from 5.2 on while staying literal on 3.2, and no spelling is right
-# across the supported range (#1096). The same rule applies to gsub, hence the
-# escaped \\& below. One fork per call, so this is for the handful of failure
-# messages -- the per-test rows are escaped in a single pass instead.
-# Arguments: $1 - the text to escape
-##
-function bashunit::reports::__html_escape() {
-  printf '%s' "$1" | awk '{
-    gsub(/&/, "\\&amp;")
-    gsub(/</, "\\&lt;")
-    gsub(/>/, "\\&gt;")
-    gsub(/"/, "\\&quot;")
-    print
-  }'
-}
-
 function bashunit::reports::generate_report_html() {
   local output_file="$1"
 
@@ -194,10 +173,10 @@ function bashunit::reports::generate_report_html() {
       fi
 
       local f_name f_file f_line f_message
-      f_name=$(bashunit::reports::__html_escape "${_BASHUNIT_REPORTS_TEST_NAMES[$j]:-}")
-      f_file=$(bashunit::reports::__html_escape "${_BASHUNIT_REPORTS_TEST_FILES[$j]:-}")
+      f_name=$(bashunit::str::html_escape "${_BASHUNIT_REPORTS_TEST_NAMES[$j]:-}")
+      f_file=$(bashunit::str::html_escape "${_BASHUNIT_REPORTS_TEST_FILES[$j]:-}")
       f_line="${_BASHUNIT_REPORTS_TEST_LINES[$j]:-}"
-      f_message=$(bashunit::reports::__html_escape \
+      f_message=$(bashunit::str::html_escape \
         "$(bashunit::reports::__strip_ansi "${_BASHUNIT_REPORTS_TEST_FAILURES[$j]:-}")")
 
       echo "  <h3>$f_name</h3>"

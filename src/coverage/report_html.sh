@@ -89,7 +89,10 @@ function bashunit::coverage::report_html() {
     bashunit::coverage::path_to_filename_to_slot "$file"
     local safe_filename="$_BASHUNIT_COVERAGE_SAFE_NAME_OUT"
 
-    file_data[file_data_count]="$display_file|$hit|$executable|$pct|$safe_filename"
+    # US (0x1f), not `|`: a source file whose name contains a pipe truncated in
+    # the index, silently, while the coverage numbers stayed right (#1254).
+    file_data[file_data_count]="$display_file$(printf '\037')$hit$(printf '\037')$executable"
+    file_data[file_data_count]="${file_data[file_data_count]}$(printf '\037')$pct$(printf '\037')$safe_filename"
     file_data_count=$((file_data_count + 1))
 
     # Generate individual file HTML

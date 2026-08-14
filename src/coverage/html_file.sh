@@ -183,6 +183,11 @@ function bashunit::coverage::generate_file_html() {
   local output_file="$2"
 
   local display_file="${file#"$PWD"/}"
+  # Filenames reach the markup as text; the awk `escape` below covers the
+  # source lines, not these (#1254).
+  local esc_file esc_base
+  esc_file=$(bashunit::str::html_escape "$display_file")
+  esc_base=$(bashunit::str::html_escape "${display_file##*/}")
   local executable hit pct class stats
   stats=$(bashunit::coverage::get_cached_stats "$file")
   bashunit::coverage::split_stats "$stats"
@@ -223,7 +228,7 @@ function bashunit::coverage::generate_file_html() {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 EOF
-    echo "  <title>${display_file##*/} | Coverage Report</title>"
+    echo "  <title>${esc_base} | Coverage Report</title>"
     bashunit::coverage::emit_block <<'EOF'
   <style>
     :root {
@@ -362,7 +367,7 @@ EOF
         <a href="../index.html" class="back-btn">← Back to Overview</a>
         <div class="file-title">
 EOF
-    echo "          <span class=\"file-name\">${display_file##*/}</span>"
+    echo "          <span class=\"file-name\">${esc_base}</span>"
     bashunit::coverage::emit_block <<'EOF'
         </div>
       </div>
@@ -489,7 +494,7 @@ EOF
     <div class="code-wrapper">
       <div class="code-header">
 EOF
-    echo "        <span class=\"code-path\">./${display_file}</span>"
+    echo "        <span class=\"code-path\">./${esc_file}</span>"
     echo "        <div class=\"code-stats\">"
     echo "          <span>${total_lines} total lines</span>"
     echo "        </div>"

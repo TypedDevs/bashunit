@@ -315,8 +315,18 @@ EOF
 EOF
 
     local data display_file hit executable pct safe_filename
+    local _us
+    _us=$(printf '\037')
     for data in ${file_data[@]+"${file_data[@]}"}; do
-      IFS='|' read -r display_file hit executable pct safe_filename <<<"$data"
+      IFS="$_us" read -r display_file hit executable pct safe_filename <<<"$data"
+
+      # Filenames reach the markup as text, so they need escaping the same way
+      # the source lines rendered by html_file.sh do: `a<b>c.sh` was parsed as
+      # a tag and leaked into the document, and `read&write.sh` was invalid
+      # entity syntax (#1254).
+      local esc_name esc_path
+      esc_name=$(bashunit::str::html_escape "${display_file##*/}")
+      esc_path=$(bashunit::str::html_escape "$display_file")
 
       local class
       bashunit::coverage::class_to_slot "$pct"
@@ -325,8 +335,8 @@ EOF
       echo "            <tr onclick=\"window.location='files/${safe_filename}.html'\">"
       echo "              <td>"
       echo "                <div class=\"file-info\">"
-      echo "                  <a href=\"files/${safe_filename}.html\" class=\"file-name\">${display_file##*/}</a>"
-      echo "                  <div class=\"file-path\">./${display_file}</div>"
+      echo "                  <a href=\"files/${safe_filename}.html\" class=\"file-name\">${esc_name}</a>"
+      echo "                  <div class=\"file-path\">./${esc_path}</div>"
       echo "                </div>"
       echo "              </td>"
       echo "              <td>"
