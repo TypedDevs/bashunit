@@ -132,6 +132,22 @@ function bashunit::coverage::get_tracked_files() {
 ##
 _BASHUNIT_COVERAGE_TRAP_GLOB=""
 
+##
+# Wraps $1 in single quotes for embedding in generated shell syntax, escaping
+# any single quote it already contains as '\'' -- otherwise a directory named
+# `it's` would close the quote and break the trap the same way a space did.
+# Arguments: $1 - the literal string
+##
+function bashunit::coverage::_single_quote() {
+  local value=$1
+  # Built from variables rather than written inline: the replacement in
+  # ${var//pat/repl} processes backslashes, so the literal spelling of `'\''`
+  # comes back mangled. q is a quote, esc is quote-backslash-quote-quote.
+  local q="'"
+  local esc="$q\\$q$q"
+  printf "%s%s%s" "$q" "${value//$q/$esc}" "$q"
+}
+
 function bashunit::coverage::build_trap_glob() {
   _BASHUNIT_COVERAGE_TRAP_GLOB=""
 
@@ -158,10 +174,21 @@ function bashunit::coverage::build_trap_glob() {
     "$cwd"/*) relative="${relative#"$cwd"/}" ;;
     esac
 
+    # The literal segments are single-quoted, the `*` and `|` left as syntax.
+    # This whole string is baked into a `case` inside the DEBUG trap, so an
+    # unquoted path containing a space produced a trap that does not parse --
+    # "syntax error near unexpected token" on every executed line, coverage
+    # silently 0%, and the test reported failed although it passed (#1245).
+    # Quoting is also the more correct reading: a coverage path is a literal,
+    # so a `[` or `?` in a directory name must not act as a pattern.
+    local q_resolved q_relative
+    q_resolved=$(bashunit::coverage::_single_quote "$resolved")
+    q_relative=$(bashunit::coverage::_single_quote "$relative")
+
     if [ -n "$glob" ]; then
       glob="$glob|"
     fi
-    glob="$glob${resolved}*|${relative}*|./${relative}*|*/${relative}/*|*/${relative}"
+    glob="$glob${q_resolved}*|${q_relative}*|./${q_relative}*|*/${q_relative}/*|*/${q_relative}"
   done
   IFS="$old_ifs"
 
