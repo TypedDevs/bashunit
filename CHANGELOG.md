@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- `bashunit doc <filter>` says `No assertion matches '<filter>'` instead of printing nothing, which was indistinguishable from a broken install. Mirrors the existing `--custom` wording; the exit code stays 0 because `doc` is informational (#1201)
 - Docs: `assert_matches` runs `grep -E` in a subprocess per call — ~2.5ms against ~0.065ms for `assert_same`, about 38x — so hot loops matching a fixed substring should prefer `assert_contains`. The subprocess is required by the Bash 3.0 floor (#1187)
 - Docs: `assert_match_snapshot` warns that a `@data_provider` test shares one snapshot across all its values — the filename comes from the test function, so the first value creates it and the rest fail against its content. `assert_match_named_snapshot "$1"` gives each value its own (#1185)
 - A test file that fails to source without writing to stderr now reports its size and says there was no stderr, so a truncated file can be told apart from one whose last command returned non-zero (#1137)

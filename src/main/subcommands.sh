@@ -65,7 +65,18 @@ function bashunit::main::cmd_doc() {
     exit 0
   fi
 
-  bashunit::doc::print_asserts "$filter"
+  # Mirrors the --custom branch above: an empty answer to a lookup is
+  # indistinguishable from a broken install (#1201). Emptiness is decided here
+  # rather than by a non-zero return from print_asserts, whose status is part
+  # of its contract -- under `set -e` a capturing caller would abort instead.
+  local rendered
+  rendered=$(bashunit::doc::print_asserts "$filter")
+  if [ -n "$rendered" ]; then
+    printf '%s\n' "$rendered"
+  elif [ -z "$_BASHUNIT_DOC_CUSTOM_FNS_OUT" ]; then
+    printf "No assertion matches '%s'.\n" "$filter"
+    printf 'Run `bashunit doc` without a filter to list them all.\n'
+  fi
 
   if [ -n "$_BASHUNIT_DOC_CUSTOM_FNS_OUT" ]; then
     printf '\n## Custom assertions\n\n'
