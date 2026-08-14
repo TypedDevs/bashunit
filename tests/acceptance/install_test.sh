@@ -304,3 +304,43 @@ function test_install_beta_aborts_when_clone_fails() {
   assert_directory_not_exists "./tmp_install/bin"
   assert_directory_not_exists "./tmp_install/temp_bashunit"
 }
+
+# The destination is validated before any network call, so these need no
+# internet and no downloader. Both used to misdiagnose: an unwritable folder
+# reported "failed to download ... from <url>", pointing at the network or the
+# version, and a path that is a regular file leaked a raw `rm: Not a directory`
+# that never mentioned bashunit (#1197).
+function test_install_rejects_a_destination_that_is_a_regular_file() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  cp ./install.sh "$dir/install.sh"
+  printf 'not a dir\n' >"$dir/blocked"
+
+  local ec=0
+  local output
+  output=$(cd "$dir" && ./install.sh 0.47.0 blocked 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "is not a directory" "$output"
+}
+
+# chmod is a no-op for root, and the Bash 3.0 job runs as root, so this asks
+# the kernel rather than assuming: skip where the block would not hold.
+function test_install_rejects_a_destination_it_cannot_write() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  cp ./install.sh "$dir/install.sh"
+  mkdir "$dir/ro" && chmod 555 "$dir/ro"
+  if [ -w "$dir/ro" ]; then
+    chmod 755 "$dir/ro"
+    bashunit::skip "the current user can write to a 555 directory" && return
+  fi
+
+  local ec=0
+  local output
+  output=$(cd "$dir" && ./install.sh 0.47.0 ro 2>&1) || ec=$?
+  chmod 755 "$dir/ro"
+
+  assert_general_error "" "" "$ec"
+  assert_contains "cannot write to" "$output"
+}
