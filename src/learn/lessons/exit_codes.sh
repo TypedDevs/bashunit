@@ -113,7 +113,7 @@ function test_missing_file_returns_127() {
   fi
 
   local _exit_assert_pattern="assert_successful_code\|assert_exit_code\|assert_general_error"
-  if [ "$("$GREP" -c "$_exit_assert_pattern" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "$_exit_assert_pattern")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should use exit code assertions${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1

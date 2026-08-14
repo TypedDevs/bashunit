@@ -46,6 +46,23 @@ function bashunit::learn::create_example_file() {
 ##
 # Run a lesson test and check results
 ##
+##
+# Counts matches of $2 in $1, ignoring comment lines.
+#
+# Lessons gate on "did the learner use this API", but the template each lesson
+# writes carries the API name in its own TODO/Hint comments -- so a plain grep
+# matched the hint and the gate passed before any work was done. All nine gates
+# were satisfied by their own untouched template, which also let a learner
+# complete a lesson with an unrelated passing assertion (#1258).
+# Arguments: $1 - file to search, $2 - pattern
+##
+function bashunit::learn::count_in_code() {
+  local file=$1
+  local pattern=$2
+
+  "$GREP" -v '^[[:space:]]*#' "$file" | "$GREP" -c "$pattern" || true
+}
+
 function bashunit::learn::run_lesson_test() {
   local test_file=$1
   local lesson_number=$2

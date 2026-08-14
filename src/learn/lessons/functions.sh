@@ -90,7 +90,7 @@ function test_add_negative_numbers() {
     return 1
   fi
 
-  if [ "$("$GREP" -c "source" "$test_file" || true)" -eq 0 ]; then
+  if [ "$(bashunit::learn::count_in_code "$test_file" "source")" -eq 0 ]; then
     echo "${_BASHUNIT_COLOR_FAILED}Your test should source the calculator.sh file${_BASHUNIT_COLOR_DEFAULT}"
     read -p "Press Enter to continue..." -r
     return 1
