@@ -309,10 +309,23 @@ function bashunit::runner::run_tear_down_after_script() {
 
   # Check if hook exists first
   if ! declare -F "tear_down_after_script" >/dev/null 2>&1; then
-    # Add blank line after tests if no tear_down hook
+    # Add blank line after tests if no tear_down hook.
+    #
+    # Console decoration, so it must not reach json or junit: those write one
+    # document at the end of the run, and this landed in front of it.
+    # `bashunit --output junit` -- sequential being the default -- produced XML
+    # that no parser accepts, and the json document gained a leading blank line
+    # that went unnoticed only because JSON tolerates leading whitespace
+    # (#1243).
+    #
+    # Named per format rather than via is_machine_output_enabled, which also
+    # covers tap: TAP streams line by line, so a blank line between files is
+    # valid there and is what its snapshots record.
     if ! bashunit::env::is_simple_output_enabled &&
       ! bashunit::env::is_failures_only_enabled &&
       ! bashunit::env::is_no_progress_enabled &&
+      ! bashunit::env::is_json_output_enabled &&
+      ! bashunit::env::is_junit_output_enabled &&
       ! bashunit::parallel::is_enabled; then
       echo ""
     fi
