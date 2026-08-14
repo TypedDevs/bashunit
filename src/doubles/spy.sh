@@ -195,7 +195,7 @@ function bashunit::spy() {
   local command=$1
   local exit_code_or_impl="${2:-}"
 
-  if bashunit::doubles::refuse_unusable_name "spy" "$command"; then
+  if bashunit::doubles::refuse_unusable_name "bashunit::spy" "$command"; then
     return 1
   fi
 

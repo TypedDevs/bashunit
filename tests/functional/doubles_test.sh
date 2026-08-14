@@ -358,15 +358,48 @@ function test_a_destructive_command_is_never_reached() {
 function test_mock_refuses_a_name_with_arguments() {
   assert_same \
     "$(bashunit::console_results::print_failed_test "Mock refuses a name with arguments" \
-      "ls -l" "is not a usable command name for mock; pass arguments after it, as in" "mock ls -l")" \
+      "ls -l" "is not a usable command name for bashunit::mock; name the command alone, as in" \
+      "bashunit::mock ls")" \
     "$(bashunit::mock "ls -l" echo hi)"
 }
 
 function test_spy_refuses_a_name_with_shell_syntax() {
   assert_same \
     "$(bashunit::console_results::print_failed_test "Spy refuses a name with shell syntax" \
-      "foo;bar" "is not a usable command name for spy; pass arguments after it, as in" "spy ls -l")" \
+      "foo;bar" "is not a usable command name for bashunit::spy; name the command alone, as in" \
+      "bashunit::spy ls")" \
     "$(bashunit::spy "foo;bar")"
+}
+
+# The advice named a bare `mock`, which is `command not found` -- the exact rule
+# this API's docs stress hardest (#1229). The two tests above pin the wording
+# (both sides go through the same renderer, so they hold in every output mode);
+# these run the form that wording recommends, which is what string-matching
+# alone could never do.
+#
+# Do not capture the rendered failure here to inspect it: under `--simple`
+# `print_line` emits a one-character marker, so the message would be "F".
+function test_the_recommended_form_names_the_command_alone() {
+  bashunit::mock ls echo hi
+
+  assert_same "hi" "$(ls)"
+}
+
+# mock forwards the call's own arguments to the replacement, which is why the
+# name never needs to carry them -- the premise of the advice above.
+function test_a_mocked_command_still_receives_its_arguments() {
+  bashunit::mock ls echo hi
+
+  assert_same "hi -l" "$(ls -l)"
+}
+
+# spy takes a single name, so the recommended form is its whole interface.
+function test_a_spy_named_alone_records_a_call_with_arguments() {
+  bashunit::spy ls
+
+  ls -l
+
+  assert_have_been_called ls
 }
 
 # Narrow on purpose: these are legal function names in bash and legitimate
