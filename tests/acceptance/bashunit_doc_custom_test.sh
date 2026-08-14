@@ -101,3 +101,24 @@ function test_doc_exits_zero_when_the_default_bootstrap_is_missing() {
 
   assert_same "0" "$exit_code"
 }
+
+# `--custom` with no matches already says "No custom assertions found", but the
+# plain lookup printed nothing at all for a filter that matches no assertion —
+# indistinguishable from a broken install or missing docs. Substring matching
+# is generous (`equal` still returns 9), so this only bites a genuinely wrong
+# term, but silence is a poor answer to a lookup (#1201).
+function test_doc_says_so_when_the_filter_matches_no_assertion() {
+  local output
+  output=$(./bashunit doc no_such_assertion_xyz 2>&1) || true
+
+  assert_contains "No assertion matches" "$output"
+  assert_contains "no_such_assertion_xyz" "$output"
+}
+
+function test_doc_still_prints_a_matching_assertion() {
+  local output
+  output=$(./bashunit doc assert_same 2>&1) || true
+
+  assert_contains "## assert_same" "$output"
+  assert_not_contains "No assertion matches" "$output"
+}
