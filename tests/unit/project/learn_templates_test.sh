@@ -20,13 +20,34 @@ function set_up_before_script() {
 # Every `local template='…'` block in the lesson files, NUL-separated so an
 # embedded newline does not split one template into several.
 #
-# perl rather than awk: the templates span lines and contain both quote styles,
-# and a line-oriented extractor mangled them -- it reported templates as broken
-# that `bash -n` accepts, which would have made this whole test lie.
+# awk, not perl: Alpine ships without perl, and the snapshot placeholder tests
+# already skip there for that reason -- but template validity does not depend
+# on the platform, so this has to run everywhere rather than skip.
+#
+# The block ends at the first line whose last character is the closing quote.
+# That is safe because no line *inside* a template ends in one; the only such
+# line in these files sits in the `cat <<'EOF'` lesson text, outside any
+# template. Checked against a perl extractor: both find 10 templates and agree
+# on which parse.
 function _lesson_templates() { # $1 = lessons dir
   local file
   for file in "$1"/*.sh; do
-    perl -0ne 'while (/local template=\x27(.*?)\x27;?\n/gs) { print "$1\0" }' "$file"
+    awk '
+      index($0, "local template=\047") {
+        intpl = 1
+        sub(/^.*local template=\047/, "")
+      }
+      intpl {
+        if (substr($0, length($0), 1) == "\047") {
+          sub(/\047$/, "")
+          print
+          printf "%c", 0
+          intpl = 0
+          next
+        }
+        print
+      }
+    ' "$file"
   done
 }
 
