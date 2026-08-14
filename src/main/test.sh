@@ -319,9 +319,7 @@ function bashunit::main::cmd_test() {
       # A missing bootstrap used to leak a raw `source` error, abort the rest of
       # the parse and exit 0 with no tests run at all (#875).
       if [ ! -f "$boot_file" ] || [ ! -r "$boot_file" ]; then
-        printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
-          "${_BASHUNIT_COLOR_FAILED}" "$boot_file" "${_BASHUNIT_COLOR_DEFAULT}" >&2
-        exit 1
+        bashunit::main::report_unreadable_bootstrap "$boot_file" "$2"
       fi
       # Export all variables from the env file so they're available in subshells
       # (e.g., process substitution used in load_test_files)

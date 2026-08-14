@@ -6,6 +6,7 @@
 - `--verbose` warns on Bash 3.x that coverage does not count lines run inside a subshell, so a percentage that reads lower there than on Bash 4+ explains itself (#1112)
 
 ### Changed
+- `--env` with a space in the path explains itself. The flag takes `"file arg1 arg2"` and splits on the first space, so `--env "my boot.sh"` reported `cannot read the bootstrap file: 'my'` — a path the user never typed, for a file that is right there. It now says the value was split and that `BASHUNIT_BOOTSTRAP` takes the path whole; a genuinely missing file keeps the terse message (#1247)
 - A `--filter` that selects nothing now explains why instead of ending on a bare `No tests found`: filters match the test **function name**, case-sensitively, while the report prints a humanized title, so feeding back the name you just read (`--filter "User login"` for `test_user_login`) silently matched nothing. The run names the test it most likely meant, resolving both the capitalisation and the spaces
 - `bashunit doc <filter>` says `No assertion matches '<filter>'` instead of printing nothing, which was indistinguishable from a broken install. Mirrors the existing `--custom` wording; the exit code stays 0 because `doc` is informational (#1201)
 - `install.sh` destination errors no longer advise a `-d` flag that does not exist — the script takes positional arguments, so following the advice produced `Invalid arguments`. The one message whose job is to tell you how to recover pointed at a form the parser rejects (#1221)

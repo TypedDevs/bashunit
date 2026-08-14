@@ -46,6 +46,35 @@ function bashunit::main::report_path_is_a_directory() {
 }
 
 
+##
+# Reports an unreadable bootstrap file and exits.
+#
+# `-e/--env/--boot` takes "file arg1 arg2", so it splits its value on the first
+# space. That is deliberate, and it makes a path containing a space unusable --
+# but the plain message then names a truncated path the user never typed
+# (`--env "my boot.sh"` reported `'my'`), telling them a file that is right
+# there does not exist. When the whole value is readable, say what happened and
+# name the way out: BASHUNIT_BOOTSTRAP is not split (#1247).
+# Arguments: $1 - the file after the split, $2 - the whole flag value
+##
+function bashunit::main::report_unreadable_bootstrap() {
+  local boot_file=$1
+  local raw=${2-}
+
+  printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+    "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+
+  if [ "$raw" != "$boot_file" ] && [ -r "$raw" ]; then
+    printf "%s--env splits its value on the first space to pass bootstrap arguments,%s\n" \
+      "$_BASHUNIT_COLOR_FAINT" "$_BASHUNIT_COLOR_DEFAULT" >&2
+    printf "%sso a path containing one cannot be used. Set BASHUNIT_BOOTSTRAP='%s' instead.%s\n" \
+      "$_BASHUNIT_COLOR_FAINT" "$raw" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  fi
+
+  exit 1
+}
+
+
 function bashunit::main::require_writable_path_or_exit() {
   local path=$1
   local parent=${1%/*}
