@@ -108,7 +108,9 @@ actually make against this API:
 - Run one test: `bashunit --filter <function_name> tests/` — it matches the function
   name (`test_parses_the_header`), not the humanized title shown in the report, so a
   filter with spaces silently matches nothing. Run everything: `bashunit tests/`.
-- Prefer `assert_same` (exact) over `assert_equals` (which trims/normalizes).
+- Prefer `assert_same` (exact) over `assert_equals`, which strips ANSI colour codes,
+  tabs and newlines before comparing — useful for asserting on coloured CLI output,
+  misleading everywhere else. Neither trims spaces: `assert_equals "a" " a "` fails.
 - **Exit-code assertions take the code as the THIRD argument**, not the first:
   `assert_general_error "" "" "$exit_code"`. With no arguments at all they read `$?`.
 - Capture an exit code before asserting, or `set -e` will kill the test first:
