@@ -111,6 +111,13 @@ function test_an_invalid_sandbox_allow_value_is_rejected() {
 # Verified by mutation: prepending the sandbox dir instead fails this test and
 # nothing else. (Dropping the `export` does not -- PATH is exported already.)
 function test_a_child_process_cannot_resolve_an_unmocked_command() {
+  # Windows is the documented exception: narrowing PATH is not workable under
+  # Git Bash, so a command reached from a child process is *not* blocked there.
+  # docs/test-doubles.md says so, and ADR-012 records the mechanism.
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "a child process is not sandboxed under Git Bash" && return
+  fi
+
   local output
   output=$(run_fixture "--sandbox" "test_sandbox_child_process_cannot_resolve_the_command")
 
