@@ -9,6 +9,7 @@ HAS_DOWNLOADER=0
 HAS_GIT=0
 
 function set_up_before_script() {
+  INSTALL_ROOT_DIR="$(pwd)"
   if bashunit::env::active_internet_connection; then
     ACTIVE_INTERNET=0
   else
@@ -26,14 +27,22 @@ function tear_down_after_script() {
   set -e
 }
 
+# `install.sh` resolves its destination relative to its own location (it runs
+# `cd "$(dirname "$0")"`), so running the repository's copy wrote `lib/`,
+# `tmp_install/`, `tmp_deps/` and `tmp_lib/` into the repository itself. Three
+# consequences, all real: a killed run left debris in the working tree, only
+# `lib/` is gitignored so the rest showed up as untracked files, and two suites
+# running at once raced the same `lib/bashunit` -- one installing 0.19.0 while
+# the other installed latest, which fails as a version mismatch that looks like
+# a regression and passes on re-run.
+#
+# Give each test its own copy of the script and run it there. Every relative
+# path in the tests then resolves inside that directory, so the assertions stay
+# as they were, and `bashunit::temp_dir` cleans up.
 function set_up() {
-  rm -f ./lib/bashunit
-  rm -rf ./tmp_install ./tmp_deps ./tmp_lib
-}
-
-function tear_down() {
-  rm -f ./lib/bashunit
-  rm -rf ./tmp_install ./tmp_deps ./tmp_lib
+  SANDBOX="$(bashunit::temp_dir)"
+  cp "$INSTALL_ROOT_DIR/install.sh" "$SANDBOX/install.sh"
+  cd "$SANDBOX" || return 1
 }
 
 function test_install_downloads_the_latest_version() {
