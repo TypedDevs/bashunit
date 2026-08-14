@@ -158,3 +158,26 @@ function bashunit::str::rpad() {
 
   printf "%s%${remaining_space}s %s\n" "$result_left_text" "" "$right_word"
 }
+
+##
+# Escapes $1 for HTML: &, <, > and ". Multi-line input keeps its lines.
+#
+# Lives here because both HTML writers need it: the test report (src/reports)
+# and the coverage pages (src/coverage). util/index.sh is sourced before both,
+# so one copy serves them and neither has to reach into the other's module.
+#
+# awk, not ${var//&/&amp;}: a bare `&` in a bash replacement means "the matched
+# text" from 5.2 on while staying literal on 3.2, and no spelling is right
+# across the supported range (#1096). The same rule applies to gsub, hence the
+# escaped \\& below.
+# Arguments: $1 - the text to escape
+##
+function bashunit::str::html_escape() {
+  printf '%s' "$1" | awk '{
+    gsub(/&/, "\\&amp;")
+    gsub(/</, "\\&lt;")
+    gsub(/>/, "\\&gt;")
+    gsub(/"/, "\\&quot;")
+    print
+  }'
+}
