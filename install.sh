@@ -190,8 +190,32 @@ LATEST_BASHUNIT_VERSION="0.47.0"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 cd "$(dirname "$0")"
+
+# Validate the destination before touching the network. curl writes the binary
+# into this directory with its stderr silenced, so the download check further
+# down owned every failure: an unwritable target reported "failed to download",
+# which sends the reader to their network or the version when the fix is a
+# writable path. A path that is a regular file leaked a raw `rm: Not a
+# directory` with no mention of bashunit at all (#1197).
+if [ -e "$DIR" ] && [ ! -d "$DIR" ]; then
+  echo "Error: '$DIR' exists and is not a directory." >&2
+  echo "Choose another destination with -d, or remove that file." >&2
+  exit 1
+fi
+
+if [ ! -d "$DIR" ] && ! mkdir -p "$DIR" 2>/dev/null; then
+  echo "Error: cannot create the '$DIR' folder." >&2
+  echo "Choose another destination with -d, or re-run with sufficient permissions." >&2
+  exit 1
+fi
+
+if [ ! -w "$DIR" ]; then
+  echo "Error: cannot write to the '$DIR' folder." >&2
+  echo "Choose another destination with -d, or re-run with sufficient permissions." >&2
+  exit 1
+fi
+
 rm -f "$DIR"/bashunit
-[ -d "$DIR" ] || mkdir -p "$DIR"
 cd "$DIR"
 
 if [[ $VERSION == 'beta' ]]; then
