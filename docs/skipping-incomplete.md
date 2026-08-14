@@ -98,6 +98,22 @@ Called from inside a test's own `$(...)` subshell, these helpers end that
 subshell only — the same as any `exit`. Call them from the test body.
 :::
 
+::: warning Do not add `&& return` here
+`bashunit::skip` only marks the test — execution continues, which is why it is
+written `bashunit::skip "reason" && return`. The conditional skips stop the test
+themselves, so they need no `return`, and adding one breaks them:
+
+```bash
+bashunit::skip_if "[ 1 -eq 2 ]" "not met" && return   # ✗ ends the test even though
+                                                      #   the condition did not hold
+assert_same 1 1                                       #   never runs
+```
+
+When the condition does not hold, `skip_if` returns `0`, so `&& return` fires and
+the test finishes having asserted nothing. It is reported as **risky** rather
+than passing, which is the only hint you get.
+:::
+
 ## bashunit::todo
 > `bashunit::todo "[pending]"`
 
