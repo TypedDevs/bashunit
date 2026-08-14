@@ -71,6 +71,12 @@ Run benchmarks using the `bench` command:
 
 If no file is provided, bashunit uses [`BASHUNIT_DEFAULT_PATH`](/configuration) to locate all `*bench.sh` files.
 
+A run that finds nothing to measure — a path that does not exist, or a file
+holding no `bench_` function — reports `No benchmarks found` and **exits
+non-zero**, the same way `bashunit test` reports `No tests found`. A typo in the
+path or in the prefix would otherwise leave a green CI job that benchmarked
+nothing, which is easy to miss when the whole output is numbers.
+
 ## Output Formats
 
 ### Simple Output
