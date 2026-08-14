@@ -1,6 +1,15 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2317
 
+# This file must keep exactly ONE skipped test. bashunit_summary_output_test.sh
+# runs it to demonstrate --show-skipped and asserts the wording "There was 1
+# skipped test:", so a second skip turns that into "There were 2" and fails.
+#
+# A conditional skip is the dangerous kind: a permission test set up with
+# `chmod 000` is a no-op for root, so it runs locally and skips only on the
+# Bash 3.0 CI image -- green here, five jobs red there (#1264). Put those in
+# their own file; bashunit_bootstrap_diagnosis_test.sh exists for that.
+
 set -euo pipefail
 
 BASHUNIT_PATH="$PWD/bashunit"
@@ -227,7 +236,10 @@ function test_a_missing_env_file_without_a_space_stays_terse() {
   popd >/dev/null
 
   assert_general_error "" "" "$ec"
-  assert_contains "cannot read the bootstrap file" "$output"
+  # The point of this test is the *absence* of the space explanation, not the
+  # wording of the error: since #1262 a missing file says "does not exist"
+  # rather than "cannot read", which was only ever true of an unreadable one.
+  assert_contains "bootstrap file does not exist" "$output"
   assert_not_contains "BASHUNIT_BOOTSTRAP" "$output"
 }
 
