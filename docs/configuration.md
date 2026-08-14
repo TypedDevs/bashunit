@@ -39,7 +39,10 @@ to lowest:
 The `--env` file is sourced during flag parsing, so it overrides `.env`, `.bashunitrc` and
 the ambient environment, and it loses only to flags written **after** it on the command
 line: `bashunit --simple --env custom.env` uses the file's value, `bashunit --env custom.env --simple`
-uses the flag. Unlike `.env`, an empty entry in that file does wipe a value.
+uses the flag. Unlike `.env`, an empty entry in that file is **not** treated as "not
+configured here": `BASHUNIT_SHOW_HEADER=` assigns the empty string, which is not the
+built-in default — for a boolean setting it simply is not `true`. Delete the entry to fall
+back to the default; blanking it disables the setting.
 
 An entry left **empty** in `.env` means "not configured here" and does not
 override the environment, so `BASHUNIT_OUTPUT_FORMAT=tap ./bashunit` keeps
@@ -53,7 +56,9 @@ always wins. `--skip-env-file` skips both `.env` and `.bashunitrc`.
 The two files are read differently, which is why they behave differently: `.env` is
 **sourced** as a shell script under `allexport`, so it can hold arbitrary shell and an
 empty entry is unconditional (hence the preservation rule above), while `.bashunitrc` is
-parsed as literal `KEY=value` lines and only fills names that are not already set.
+parsed as literal `KEY=value` lines and only fills names that are not already set. The
+`--env` file is sourced the same way as `.env` but without that preservation pass, which
+is why blanking an entry there assigns an empty value instead of being ignored.
 
 ## Benchmark reports
 
