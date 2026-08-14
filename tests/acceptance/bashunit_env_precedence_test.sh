@@ -26,6 +26,13 @@ function set_up() {
 
 # Says "shown" or "hidden" for the run header. Every call is a fresh process, so
 # the ambient value is passed in rather than exported here.
+#
+# The "unset" case has to unset it *in the subshell* rather than just not
+# setting it: CI runs `cp .env.example .env`, and `.env` is sourced under
+# allexport, so the outer run exports BASHUNIT_SHOW_HEADER to every child. An
+# inherited value outranks `.bashunitrc` -- correctly, per the ladder -- which
+# made the `.bashunitrc` case fail on Linux and the two `--skip-env-file` and
+# `--env` cases pass for the wrong reason.
 function _header() { # $1 = ambient BASHUNIT_SHOW_HEADER ("" for unset), $@ = extra args
   local ambient="$1"
   shift
@@ -34,7 +41,8 @@ function _header() { # $1 = ambient BASHUNIT_SHOW_HEADER ("" for unset), $@ = ex
     output=$(cd "$WORKDIR" && BASHUNIT_SHOW_HEADER="$ambient" \
       "$BASHUNIT_BIN" --no-parallel "$@" t_test.sh 2>&1 | strip_ansi) || true
   else
-    output=$(cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel "$@" t_test.sh 2>&1 | strip_ansi) || true
+    output=$(cd "$WORKDIR" && unset BASHUNIT_SHOW_HEADER &&
+      "$BASHUNIT_BIN" --no-parallel "$@" t_test.sh 2>&1 | strip_ansi) || true
   fi
   # The header is colour-wrapped, so this must run on stripped output: an
   # unstripped match silently never fires and every case reads as "hidden".
@@ -46,7 +54,8 @@ function _header() { # $1 = ambient BASHUNIT_SHOW_HEADER ("" for unset), $@ = ex
 
 function _simple() { # $@ = args; says "simple" or "verbose"
   local output
-  output=$(cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel "$@" t_test.sh 2>&1) || true
+  output=$(cd "$WORKDIR" && unset BASHUNIT_SIMPLE_OUTPUT &&
+    "$BASHUNIT_BIN" --no-parallel "$@" t_test.sh 2>&1) || true
   case "$output" in
   *"Passed"*) echo "verbose" ;;
   *) echo "simple" ;;
