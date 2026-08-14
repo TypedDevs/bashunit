@@ -127,7 +127,7 @@ function test_insert_record() {
   create_table "users"
   insert_record "users" "john@example.com"
 
-  assert_file_contains "john@example.com" "$TEST_DB/users.txt"
+  assert_file_contains "$TEST_DB/users.txt" "john@example.com"
 }
 ```
 :::
@@ -252,9 +252,9 @@ function test_log_creates_file() {
 function test_log_writes_timestamp_and_message() {
   log_message "Error occurred" "$TEST_LOG"
 
-  assert_file_contains "Error occurred" "$TEST_LOG"
+  assert_file_contains "$TEST_LOG" "Error occurred"
   # Check for timestamp pattern (YYYY-MM-DD HH:MM:SS)
-  assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" "$TEST_LOG"
+  assert_matches "[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}" "$(cat "$TEST_LOG")"
 }
 
 function test_log_appends_multiple_messages() {
@@ -659,7 +659,7 @@ function tear_down() {
 function test_create_user() {
   create_test_user "John Doe" "john@example.com"
 
-  assert_file_contains "John Doe" "$TEST_DB/users.csv"
+  assert_file_contains "$TEST_DB/users.csv" "John Doe"
 }
 ```
 :::
