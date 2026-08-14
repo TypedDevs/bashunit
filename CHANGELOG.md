@@ -7,6 +7,7 @@
 
 ### Changed
 - `bashunit doc <filter>` says `No assertion matches '<filter>'` instead of printing nothing, which was indistinguishable from a broken install. Mirrors the existing `--custom` wording; the exit code stays 0 because `doc` is informational (#1201)
+- Docs: an empty entry in the `-e/--env/--boot` file assigns an empty value rather than restoring the built-in default, so blanking a boolean disables it; the guide said it "wipes" the value, which reads as a reset. The rest of the precedence ladder is now covered by tests (#1217)
 - Docs: the test-function name rule is stated correctly — the prefix is a literal, lowercase `test_`, so the guide's own `testRenderAllTestsPassedWhenNotFailedTests` example and its claim that names are case-insensitive were both wrong, and a function named either way is silently never run (#1215)
 - Docs: `assert_matches` runs `grep -E` in a subprocess per call — ~2.5ms against ~0.065ms for `assert_same`, about 38x — so hot loops matching a fixed substring should prefer `assert_contains`. The subprocess is required by the Bash 3.0 floor (#1187)
 - Docs: `assert_match_snapshot` warns that a `@data_provider` test shares one snapshot across all its values — the filename comes from the test function, so the first value creates it and the rest fail against its content. `assert_match_named_snapshot "$1"` gives each value its own (#1185)
