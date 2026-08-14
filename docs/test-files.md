@@ -23,20 +23,31 @@ This is useful regardless of whether your test files are located near your produ
 ## Test function names
 
 **bashunit** will search for and execute all test functions it finds within each test file.
-To distinguish test functions from auxiliary functions, the names must be prefixed with the word `test`.
-The function names are case-insensitive.
+To distinguish test functions from auxiliary functions, the name must start with `test_` —
+lowercase, and the underscore is part of the prefix. Everything after it is yours.
 Below are some example test function names that would work seamlessly:
 
 ::: code-group
 ```bash [Example]
 function test_should_validate_an_ok_exit_code() { ... }
-function testRenderAllTestsPassedWhenNotFailedTests { ... }
-test_getFunctionsToRun_with_filter_should_return_matching_functions() { ... }
+function test_getFunctionsToRun_with_filter_should_return_matching_functions { ... }
+test_render_all_tests_passed_when_not_failed_tests() { ... }
 ```
 :::
 
 ::: tip
-You're free to use any of Bash's syntax options to define these functions.
+You're free to use any of Bash's syntax options to define these functions: `function name()`,
+`name()`, or `function name` without parentheses. The syntax is never what decides whether a
+function runs — only the name is.
+:::
+
+::: warning
+`test_` is matched literally, so `testRenderAllTests` (no underscore) and `TEST_upper`
+(uppercase) are **auxiliary functions**, not tests. bashunit does not warn about them: if the
+file also holds a real test, the run is green and simply contains fewer tests than you wrote.
+Check with [`--list`](/command-line#list) when a test you expected never appears in the output.
+
+This is also what lets a helper named `testdata_path` stay a helper.
 :::
 
 ## Custom test titles
