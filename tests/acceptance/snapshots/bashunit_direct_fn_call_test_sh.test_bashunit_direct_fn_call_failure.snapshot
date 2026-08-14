@@ -1,3 +1,0 @@
-[31m✗ Failed[0m: assert same
-    [90mExpected[0m [1m'foo'[0m
-    [90mbut got [0m [1m'bar'[0m
