@@ -53,7 +53,11 @@ function bashunit::learn::run_lesson_test() {
   echo "${_BASHUNIT_COLOR_BOLD}Running your test...${_BASHUNIT_COLOR_DEFAULT}"
   echo ""
 
-  if "$BASHUNIT_ROOT_DIR/bashunit" "$test_file" --simple; then
+  # --fail-on-risky, or an untouched template completes the lesson: a test whose
+  # body is still only TODO comments records no assertions, which is *risky*,
+  # and risky exits 0 by default. The learner is told "Excellent!" for work they
+  # have not done (#1256).
+  if "$BASHUNIT_ROOT_DIR/bashunit" "$test_file" --simple --fail-on-risky; then
     echo ""
     printf "%s%s✓ Excellent! Lesson %s completed!%s\n" \
       "$_BASHUNIT_COLOR_PASSED" "$_BASHUNIT_COLOR_BOLD" "$lesson_number" "$_BASHUNIT_COLOR_DEFAULT"

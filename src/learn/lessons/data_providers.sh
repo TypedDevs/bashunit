@@ -86,22 +86,26 @@ function set_up() {
 function data_provider_valid_emails() {
   # TODO: Echo valid email addresses, one per line
   # Example: echo "user@example.com"
+  :
 }
 
 function test_valid_emails() {
   # $1 contains the email from data provider
   # TODO: Assert is_valid_email succeeds
   # Hint: assert_successful_code "is_valid_email \"$1\""
+  :
 }
 
 function data_provider_invalid_emails() {
   # TODO: Echo invalid email addresses, one per line
   # Example: echo "not-an-email"
+  :
 }
 
 function test_invalid_emails() {
   # TODO: Assert is_valid_email fails
   # Hint: assert_general_error "is_valid_email \"$1\""
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"

@@ -66,19 +66,23 @@ function set_up() {
   # Create a temp file before each test
   # TODO: export TEST_FILE="/tmp/test_$$"
   # TODO: echo "test content" > "$TEST_FILE"
+  :
 }
 
 function tear_down() {
   # Clean up after each test
   # TODO: rm -f "$TEST_FILE"
+  :
 }
 
 function test_file_exists() {
   # TODO: assert_file_exists "$TEST_FILE"
+  :
 }
 
 function test_file_has_content() {
   # TODO: assert_file_contains "test content" "$TEST_FILE"
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"

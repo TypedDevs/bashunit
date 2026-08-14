@@ -69,18 +69,21 @@ EOF
 function set_up() {
   # TODO: Source calculator.sh from parent directory
   # Hint: source ../calculator.sh
+  :
 }
 
 function test_add_positive_numbers() {
   # TODO: Test that add 2 3 returns "5"
   # Hint: result=$(add 2 3)
   # Hint: assert_same "5" "$result"
+  :
 }
 
 function test_add_negative_numbers() {
   # TODO: Test that add -2 -3 returns "-5"
   # Hint: result=$(add -2 -3)
   # Hint: assert_same "-5" "$result"
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"

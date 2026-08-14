@@ -70,6 +70,7 @@ function test_default_greeting() {
 
   # TODO: Assert output contains "Hello, World!"
   # Hint: assert_contains "Hello, World!" "$output"
+  :
 }
 
 function test_custom_greeting() {
@@ -78,6 +79,7 @@ function test_custom_greeting() {
 
   # TODO: Assert output contains "Hello, Alice!"
   # Hint: assert_contains "Hello, Alice!" "$output"
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"
