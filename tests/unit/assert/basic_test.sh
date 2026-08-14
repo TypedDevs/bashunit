@@ -277,6 +277,25 @@ function test_assert_equals_distinguishes_a_backslash_from_an_escaped_one() {
     "$(assert_equals "$one" "$two")"
 }
 
+# What assert_equals ignores is control characters, not whitespace. The
+# drop-in rules in docs/ai-agents.md called it "trims/normalizes", which reads
+# as whitespace tolerance and is the one part of the docs written to be pasted
+# verbatim into an agent's rules file (#1225). Pin both sides of the boundary.
+function test_assert_equals_ignores_colour_but_not_spaces() {
+  local coloured
+  coloured="$(printf '\033[31mhello\033[0m')"
+
+  # Colour is stripped: this is the case assert_equals exists for.
+  assert_equals "hello" "$coloured"
+
+  # A space is not a control character, so it is compared like any other byte.
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Assert equals ignores colour but not spaces" \
+      "a" "but got " " a ")" \
+    "$(assert_equals "a" " a ")"
+}
+
 function test_assert_equals_distinguishes_an_escape_sequence_from_the_character() {
   local with_real_tab
   with_real_tab="$(printf 'a\tb')"
