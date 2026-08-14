@@ -61,8 +61,26 @@ function bashunit::main::report_unreadable_bootstrap() {
   local boot_file=$1
   local raw=${2-}
 
-  printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
-    "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  # Name the actual cause. All three used to report "cannot read", which is true
+  # of only one: a directory *is* readable -- the check that rejects it is -f,
+  # not -r -- and for a missing path "cannot read" understates "is not there".
+  # Pointing --env at a directory or mistyping a filename are ordinary mistakes,
+  # and one message sent the reader to permissions for both (#1262).
+  if [ ! -e "$boot_file" ]; then
+    printf "%sError: the bootstrap file does not exist: '%s'.%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  elif [ -d "$boot_file" ]; then
+    printf "%sError: the bootstrap path is a directory, not a file: '%s'.%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  elif [ ! -f "$boot_file" ]; then
+    # Readable, but not a regular file -- /dev/null and friends. The caller
+    # rejects on -f, so say that rather than blame permissions.
+    printf "%sError: the bootstrap path is not a regular file: '%s'.%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  else
+    printf "%sError: cannot read the bootstrap file: '%s'.%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$boot_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  fi
 
   if [ "$raw" != "$boot_file" ] && [ -r "$raw" ]; then
     printf "%s--env splits its value on the first space to pass bootstrap arguments,%s\n" \
