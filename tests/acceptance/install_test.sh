@@ -351,14 +351,19 @@ function test_install_rejects_a_destination_it_cannot_write() {
 # (#1221). The assertions covered the diagnosis line and stopped there, which is
 # exactly how an invented flag survives.
 #
-# So run the suggested form instead of string-matching it. This needs no network:
-# the destination is validated first, and an unparseable argument is rejected
-# before that.
+# So run the suggested form instead of string-matching it.
+#
+# Both runs stop before the network: the destination is validated first, and an
+# unparseable argument is rejected before that. The retry therefore names a
+# *second* blocked path rather than a usable one -- pointing it at a writable
+# folder would parse, validate and then download the release, which cost this
+# one test ~10s of the suite and made it fail without internet.
 function test_the_recovery_advice_names_a_form_the_parser_accepts() {
   local dir
   dir="$(bashunit::temp_dir)"
   cp ./install.sh "$dir/install.sh"
   printf 'not a dir\n' >"$dir/blocked"
+  printf 'not a dir either\n' >"$dir/elsewhere"
 
   local output
   output=$(cd "$dir" && ./install.sh 0.47.0 blocked 2>&1) || true
@@ -370,11 +375,13 @@ function test_the_recovery_advice_names_a_form_the_parser_accepts() {
   assert_not_contains "-d" "$output"
 
   # And what it does tell the reader to do -- pass a different destination as
-  # an argument -- has to get past argument parsing.
+  # an argument -- has to get past argument parsing. Reaching the destination
+  # check at all is the proof: that is the stage after parsing.
   local retry
   retry=$(cd "$dir" && ./install.sh 0.47.0 elsewhere 2>&1) || true
 
   assert_not_contains "Invalid arguments" "$retry"
+  assert_contains "Choose another destination" "$retry"
 }
 
 # The parser takes positional arguments only, which is what the advice above
