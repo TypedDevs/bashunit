@@ -154,7 +154,7 @@ function tear_down_after_script() {
 }
 
 function test_server_responds_to_ping() {
-  assert_successful_code "curl -s http://localhost:8080/ping"
+  assert_exec "curl -s http://localhost:8080/ping"
 }
 
 function test_server_returns_json() {
@@ -426,7 +426,7 @@ function test_script_fails_on_error() {
 
 function test_error_handled_gracefully() {
   # Script should catch and handle expected errors
-  assert_successful_code "./src/resilient_script.sh"
+  assert_exec "./src/resilient_script.sh"
 }
 ```
 :::
@@ -539,7 +539,7 @@ function test_json_is_valid() {
   output=$(./src/generate_report.sh --format json)
 
   # Use jq to validate JSON (mock it if jq not available)
-  assert_successful_code "echo '$output' | jq . > /dev/null"
+  assert_exec "echo '$output' | jq . > /dev/null"
 }
 ```
 :::
@@ -769,11 +769,11 @@ function set_up() {
 
 # Test private function directly after sourcing
 function test_private_validate_input_accepts_numbers() {
-  assert_successful_code "_validate_input 123"
+  assert_exec "_validate_input 123"
 }
 
 function test_private_validate_input_rejects_text() {
-  assert_general_error "_validate_input abc"
+  assert_exec "_validate_input abc" --exit 1
 }
 
 # Test through public interface
@@ -809,7 +809,7 @@ function data_provider_valid_emails() {
 }
 
 function test_valid_email_formats() {
-  assert_successful_code "validate_email '$1'"
+  assert_exec "validate_email '$1'"
 }
 
 function data_provider_invalid_emails() {
@@ -820,7 +820,7 @@ function data_provider_invalid_emails() {
 }
 
 function test_invalid_email_formats() {
-  assert_general_error "validate_email '$1'"
+  assert_exec "validate_email '$1'" --exit 1
 }
 ```
 :::
