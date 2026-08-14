@@ -666,12 +666,18 @@ function assert_exec() {
     local stdin_file
     stdin_file=$("$MKTEMP")
     printf '%s' "$stdin_input" >"$stdin_file"
-    eval "$cmd" <"$stdin_file" >"$stdout_file" 2>"$stderr_file"
-    local exit_code=$?
+    # `|| exit_code=$?`, and the local declared first: under --strict the runner
+    # enables set -e, so a command that exits non-zero would abort the test
+    # function on the eval and never reach the next line -- the one assertion
+    # whose job is checking an exit code could not check a failing one (#1207).
+    # Declaring and assigning together would also mask the status behind
+    # `local`'s own.
+    local exit_code=0
+    eval "$cmd" <"$stdin_file" >"$stdout_file" 2>"$stderr_file" || exit_code=$?
     rm -f "$stdin_file"
   else
-    eval "$cmd" >"$stdout_file" 2>"$stderr_file"
-    local exit_code=$?
+    local exit_code=0
+    eval "$cmd" >"$stdout_file" 2>"$stderr_file" || exit_code=$?
   fi
 
   local stdout
