@@ -246,10 +246,16 @@ function bashunit::runner::load_test_files() {
     # Kill the spinner once the aggregation finishes
     disown "$spinner_pid" 2>/dev/null || true
     kill "$spinner_pid" 2>/dev/null || true
-    # Clear the spinner output, but only where it was drawn: under a machine
-    # --output format these bytes landed in front of the report (an XML
-    # declaration must start the document).
-    if ! bashunit::env::is_machine_output_enabled; then
+    # Clear the spinner output, but only where it was drawn. The spinner draws
+    # nothing when stdout is not a terminal, under --no-progress, or under a
+    # machine --output format; erasing regardless emitted a literal "\r  \r"
+    # into every piped run, which is every CI log -- and under a machine format
+    # those bytes landed in front of the report, where an XML declaration must
+    # start the document. The conditions have to match the ones the spinner
+    # itself checks, or the two drift apart again.
+    if [ -t 1 ] &&
+      ! bashunit::env::is_no_progress_enabled &&
+      ! bashunit::env::is_machine_output_enabled; then
       printf "\r  \r"
     fi
 

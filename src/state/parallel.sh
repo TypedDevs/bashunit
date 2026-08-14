@@ -34,7 +34,11 @@ function bashunit::state::aggregate_parallel_results() {
     shopt -u nullglob
 
     if [ ${#result_files[@]} -eq 0 ]; then
-      printf "%sNo tests found%s" "$_BASHUNIT_COLOR_SKIPPED" "$_BASHUNIT_COLOR_DEFAULT"
+      # Newline-terminated: without it this ran into the totals line the
+      # summary prints next, so `--parallel` rendered an empty run as
+      # "No tests found  Tests:      0 total" where sequential rendered
+      # "Tests:      0 total".
+      printf "%sNo tests found%s\n" "$_BASHUNIT_COLOR_SKIPPED" "$_BASHUNIT_COLOR_DEFAULT"
       continue
     fi
 
