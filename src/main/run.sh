@@ -142,8 +142,15 @@ function bashunit::main::exec_tests() {
     wait
   fi
 
-  if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
-    printf "\r%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  # Human output, so it must not reach a machine --output stream: under
+  # `--parallel --stop-on-failure --output json` this line preceded the
+  # document and the result did not parse, and under `--output junit` it
+  # displaced the XML declaration. Snapshots strip carriage returns, which is
+  # why the leading `\r` never showed up in one -- it is dropped here because
+  # the spinner is already erased by the aggregation, where it was drawn.
+  if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure &&
+    ! bashunit::env::is_machine_output_enabled; then
+    printf "%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
   if ! bashunit::env::is_machine_output_enabled; then
