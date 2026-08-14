@@ -691,6 +691,11 @@ BASHUNIT_LOG_GHA=gha.log
 
 Create a report HTML file that contains information about the test results of your bashunit tests.
 
+The page is a summary table plus one table per test file — test name, status and duration —
+followed by a **Failures** section giving each failure its name, `file:line` and the assertion
+message, so the artifact answers *what broke* rather than only *that something did*. A run with
+no failures does not get the section.
+
 ::: code-group
 ```bash [Example]
 BASHUNIT_REPORT_HTML=report.html
