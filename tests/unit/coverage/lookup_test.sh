@@ -157,6 +157,10 @@ function glob_matches() { # $1 = glob, $2 = candidate
   printf '%s' "$matched"
 }
 
+# These assert what the glob *admits*, via glob_matches above, rather than how
+# it is spelled. Substring assertions on the raw pattern broke when the literal
+# segments gained the quoting that makes a path containing a space parse
+# (#1245), while the behaviour they exist to protect had not changed.
 function test_the_trap_glob_admits_a_relative_coverage_path() {
   local original="${BASHUNIT_COVERAGE_PATHS:-}"
   BASHUNIT_COVERAGE_PATHS="src/util"
@@ -164,8 +168,10 @@ function test_the_trap_glob_admits_a_relative_coverage_path() {
   local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
   BASHUNIT_COVERAGE_PATHS="$original"
 
-  assert_contains "src/util*" "$glob"
-  assert_contains "*/src/util/*" "$glob"
+  assert_same "yes" "$(glob_matches "$glob" "src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "./src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "/anywhere/src/util/str.sh")"
+  assert_same "no" "$(glob_matches "$glob" "src/other/str.sh")"
 }
 
 # An absolute coverage path still has to admit the relative spellings: the trap
@@ -177,8 +183,8 @@ function test_the_trap_glob_of_an_absolute_path_admits_the_relative_form() {
   local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
   BASHUNIT_COVERAGE_PATHS="$original"
 
-  assert_contains "$(pwd)/src/util*" "$glob"
-  assert_contains "|src/util*" "$glob"
+  assert_same "yes" "$(glob_matches "$glob" "$(pwd)/src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "src/util/str.sh")"
 }
 
 function test_the_trap_glob_covers_every_configured_path() {
@@ -188,8 +194,23 @@ function test_the_trap_glob_covers_every_configured_path() {
   local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
   BASHUNIT_COVERAGE_PATHS="$original"
 
-  assert_contains "*/src/util/*" "$glob"
-  assert_contains "*/src/system/*" "$glob"
+  assert_same "yes" "$(glob_matches "$glob" "/anywhere/src/util/str.sh")"
+  assert_same "yes" "$(glob_matches "$glob" "/anywhere/src/system/io.sh")"
+  assert_same "no" "$(glob_matches "$glob" "/anywhere/src/assert/core.sh")"
+}
+
+# The quoting must make a path with a space parse *and* still match, which a
+# spelling assertion cannot tell apart from a pattern that parses but matches
+# nothing.
+function test_the_trap_glob_admits_a_path_containing_a_space() {
+  local original="${BASHUNIT_COVERAGE_PATHS:-}"
+  BASHUNIT_COVERAGE_PATHS="my src/util"
+  bashunit::coverage::build_trap_glob
+  local glob="$_BASHUNIT_COVERAGE_TRAP_GLOB"
+  BASHUNIT_COVERAGE_PATHS="$original"
+
+  assert_same "yes" "$(glob_matches "$glob" "my src/util/str.sh")"
+  assert_same "no" "$(glob_matches "$glob" "other/util/str.sh")"
 }
 
 # No configured path means no filtering, so the trap keeps its old shape and
