@@ -3,6 +3,27 @@
 
 # HTML report writer.
 
+##
+# Escapes $1 for HTML: &, < , > and ". Multi-line input keeps its lines, which
+# is what the failure messages need.
+#
+# awk, not ${var//&/&amp;}: a bare `&` in a bash replacement means "the matched
+# text" from 5.2 on while staying literal on 3.2, and no spelling is right
+# across the supported range (#1096). The same rule applies to gsub, hence the
+# escaped \\& below. One fork per call, so this is for the handful of failure
+# messages -- the per-test rows are escaped in a single pass instead.
+# Arguments: $1 - the text to escape
+##
+function bashunit::reports::__html_escape() {
+  printf '%s' "$1" | awk '{
+    gsub(/&/, "\\&amp;")
+    gsub(/</, "\\&lt;")
+    gsub(/>/, "\\&gt;")
+    gsub(/"/, "\\&quot;")
+    print
+  }'
+}
+
 function bashunit::reports::generate_report_html() {
   local output_file="$1"
 
@@ -11,6 +32,11 @@ function bashunit::reports::generate_report_html() {
   local tests_incomplete=$(bashunit::state::get_tests_incomplete)
   local tests_snapshot=$(bashunit::state::get_tests_snapshot)
   local tests_failed=$(bashunit::state::get_tests_failed)
+  # Counted here because the summary otherwise showed a Total the visible
+  # categories could not add up to: a risky test was in the table, with its own
+  # CSS class, but in none of the numbers (#1252).
+  local tests_risky=$(bashunit::state::get_tests_risky)
+  local tests_flaky=$(bashunit::state::get_tests_flaky)
   local time=$(bashunit::clock::total_runtime_in_milliseconds)
 
   # Temporary file to store test cases by file (use mktemp for parallel safety)
@@ -90,6 +116,8 @@ function bashunit::reports::generate_report_html() {
     echo "        <th>Incomplete</th>"
     echo "        <th>Skipped</th>"
     echo "        <th>Snapshot</th>"
+    echo "        <th>Risky</th>"
+    echo "        <th>Flaky</th>"
     echo "        <th>Time (ms)</th>"
     echo "      </tr>"
     echo "    </thead>"
@@ -101,6 +129,8 @@ function bashunit::reports::generate_report_html() {
     echo "        <td>$tests_incomplete</td>"
     echo "        <td>$tests_skipped</td>"
     echo "        <td>$tests_snapshot</td>"
+    echo "        <td>$tests_risky</td>"
+    echo "        <td>$tests_flaky</td>"
     echo "        <td>$time</td>"
     echo "      </tr>"
     echo "    </tbody>"
@@ -140,6 +170,44 @@ function bashunit::reports::generate_report_html() {
       echo "    </tbody>"
       echo "  </table>"
     fi
+
+    # Why each failure failed. The report listed names and statuses only, while
+    # JUnit, JSON, TAP and Markdown all carry the message -- and this is the
+    # format people open in a browser to find out what broke (#1251). Shaped
+    # like the Markdown report's "Failures" section: name, file:line, message.
+    local any_failure=false
+    local j
+    for j in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+      # `failed` is the only status that carries a message: collect.sh stores
+      # snapshot/incomplete/skipped/passed/risky/failed/flaky, and a runtime
+      # error is recorded as failed. Flaky is deliberately not here -- it
+      # passed, and its first-attempt message belongs in JUnit's
+      # <flakyFailure>, not under a heading that says Failures.
+      case "${_BASHUNIT_REPORTS_TEST_STATUSES[$j]:-}" in
+      failed) ;;
+      *) continue ;;
+      esac
+
+      if [ "$any_failure" = false ]; then
+        echo "  <h2>Failures</h2>"
+        any_failure=true
+      fi
+
+      local f_name f_file f_line f_message
+      f_name=$(bashunit::reports::__html_escape "${_BASHUNIT_REPORTS_TEST_NAMES[$j]:-}")
+      f_file=$(bashunit::reports::__html_escape "${_BASHUNIT_REPORTS_TEST_FILES[$j]:-}")
+      f_line="${_BASHUNIT_REPORTS_TEST_LINES[$j]:-}"
+      f_message=$(bashunit::reports::__html_escape \
+        "$(bashunit::reports::__strip_ansi "${_BASHUNIT_REPORTS_TEST_FAILURES[$j]:-}")")
+
+      echo "  <h3>$f_name</h3>"
+      if [ -n "$f_line" ]; then
+        echo "  <p><code>$f_file:$f_line</code></p>"
+      else
+        echo "  <p><code>$f_file</code></p>"
+      fi
+      echo "  <pre>$f_message</pre>"
+    done
 
     echo "</body>"
     echo "</html>"
