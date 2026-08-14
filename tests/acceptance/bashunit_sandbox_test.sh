@@ -102,3 +102,31 @@ function test_an_invalid_sandbox_allow_value_is_rejected() {
   assert_general_error "" "" "$ec"
   assert_contains "invalid --sandbox-allow value" "$output"
 }
+
+# A child process inherits the narrowed PATH, so an unmocked command is not
+# merely unreported there -- it is unresolvable. That is what makes
+# `sh -c 'curl …'` useless as an escape off Windows.
+#
+# It holds because the sandbox *replaces* PATH rather than prepending to it.
+# Verified by mutation: prepending the sandbox dir instead fails this test and
+# nothing else. (Dropping the `export` does not -- PATH is exported already.)
+function test_a_child_process_cannot_resolve_an_unmocked_command() {
+  local output
+  output=$(run_fixture "--sandbox" "test_sandbox_child_process_cannot_resolve_the_command")
+
+  assert_contains "1 passed" "$output"
+  # `command -v` printed nothing: the child could not find it.
+  assert_empty "$(cat "$PROBE_LOG")"
+}
+
+# The documented limitation. Pinned so it stays a deliberate boundary: an
+# absolute path bypasses PATH, so the sandbox cannot see it.
+function test_an_absolute_path_bypasses_the_sandbox_as_documented() {
+  local output
+  SANDBOX_PROBE_ABS="$PROBE_DIR/bashunit_sandbox_probe"
+  export SANDBOX_PROBE_ABS
+  output=$(run_fixture "--sandbox" "test_sandbox_absolute_path_is_not_blocked")
+
+  assert_contains "1 passed" "$output"
+  assert_contains "the real command ran" "$(cat "$PROBE_LOG")"
+}

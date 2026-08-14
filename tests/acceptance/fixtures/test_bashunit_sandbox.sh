@@ -32,3 +32,19 @@ function test_sandbox_after_unmock_the_command_is_blocked_again() {
   bashunit_sandbox_probe >"${SANDBOX_PROBE_LOG:?log required}" 2>/dev/null
   assert_same "ok" "ok"
 }
+
+# The boundary the docs draw. A child process inherits the narrowed PATH, so it
+# cannot resolve the command at all -- that is what makes `sh -c 'curl …'`
+# useless as an escape on Linux and macOS. It holds because the sandbox replaces
+# PATH rather than prepending to it.
+function test_sandbox_child_process_cannot_resolve_the_command() {
+  sh -c 'command -v bashunit_sandbox_probe' >"${SANDBOX_PROBE_LOG:?log required}" 2>/dev/null
+  assert_same "ok" "ok"
+}
+
+# The documented limitation, pinned so it stays a known boundary rather than a
+# surprise: an absolute path skips PATH entirely and is not blocked.
+function test_sandbox_absolute_path_is_not_blocked() {
+  "${SANDBOX_PROBE_ABS:?abs path required}" >"${SANDBOX_PROBE_LOG:?log required}" 2>/dev/null
+  assert_same "ok" "ok"
+}
