@@ -57,14 +57,16 @@ The project uses bashunit to test itself. To execute the full suite, run:
 
 ::: code-group
 ```bash [Quick]
-./bashunit -s -p tests # Regular tests
-./bashunit -s -b tests # Benchmark tests
+./bashunit -s -p tests      # Regular tests
+./bashunit bench -s tests   # Benchmark tests
 ```
 ```bash [Complete]
 ./bashunit --simple --parallel tests # Regular tests
-./bashunit --simple --bench    tests # Benchmark tests
+./bashunit bench --simple      tests # Benchmark tests
 ```
 :::
+
+Benchmarks are a subcommand, not a flag on the test run: `bashunit bench [path]`.
 
 
 > See more command line options: [here](/command-line)
