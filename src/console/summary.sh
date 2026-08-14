@@ -2,6 +2,52 @@
 
 # Run totals, execution time and hook completion.
 
+##
+# Explains an empty selection that `--filter` caused.
+#
+# The report prints a humanized title -- `✓ Passed: Alpha` for `test_alpha` --
+# while the flag matches the *function name*, case-sensitively. So the most
+# natural guess, the name the user just read, selects nothing and the run ends
+# on a bare "No tests found" with nowhere to go.
+#
+# Only the filter is lowercased, never the candidate list: test function names
+# are lowercase by convention, so this catches the reported case without a fork
+# per function on a path that has already decided to run nothing.
+##
+function bashunit::console_results::print_filter_hint() {
+  local filter="${_BASHUNIT_ACTIVE_FILTER:-}"
+  [ -n "$filter" ] || return 0
+
+  local needle="${filter#test_}"
+  local suggestion=""
+  if [ -n "$needle" ]; then
+    local lowered
+    lowered="$(printf '%s' "$needle" | tr '[:upper:]' '[:lower:]')"
+    # A humanized title is the function name with underscores shown as spaces,
+    # so putting them back is what resolves the whole-title copy -- the case
+    # the project's own agent rules warn about.
+    local underscored="${lowered// /_}"
+    local fn
+    for fn in ${_BASHUNIT_CACHED_ALL_FUNCTIONS:-}; do
+      case "$fn" in
+      test_*"$lowered"* | test_*"$underscored"*)
+        suggestion="$fn"
+        break
+        ;;
+      esac
+    done
+  fi
+
+  if [ -n "$suggestion" ]; then
+    printf "%sNo test matches '%s'. Filters match the function name, not the title: did you mean '%s'?%s\n" \
+      "${_BASHUNIT_COLOR_FAINT:-}" "$filter" "$suggestion" "${_BASHUNIT_COLOR_DEFAULT:-}"
+    return 0
+  fi
+
+  printf "%sNo test matches '%s'. Filters match the function name (test_...), not the title in the report.%s\n" \
+    "${_BASHUNIT_COLOR_FAINT:-}" "$filter" "${_BASHUNIT_COLOR_DEFAULT:-}"
+}
+
 function bashunit::console_results::render_result() {
   if [ "$(bashunit::state::is_duplicated_test_functions_found)" = true ]; then
     bashunit::console_results::print_execution_time
@@ -164,6 +210,7 @@ function bashunit::console_results::render_result() {
 
   if [ "$total_tests" -eq 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
+    bashunit::console_results::print_filter_hint
     bashunit::console_results::print_execution_time
     return 1
   fi
