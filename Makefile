@@ -62,7 +62,6 @@ help:
 
 SRC_SCRIPTS_DIR=src
 TEST_SCRIPTS_DIR=tests
-EXAMPLE_TEST_SCRIPTS=./example/logic_test.sh
 PRE_COMMIT_SCRIPTS_FILE=./bin/pre-commit
 
 # Collected recursively so tests/unit/ can mirror the src/ module layout. A
