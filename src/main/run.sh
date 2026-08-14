@@ -309,6 +309,19 @@ function bashunit::main::exec_benchmarks() {
 
   bashunit::runner::load_bench_files "$filter" "${bench_files[@]}"
 
+  # A path that does not exist survives find_files_recursive and
+  # helper::load_bench_files, and is dropped silently by the `[ -f ]` guard
+  # inside the loop -- so the count above is non-zero and the "at least one
+  # file path" check never fires. The run then printed a header and exited 0,
+  # green having measured nothing, which on a benchmark job is invisible
+  # because the whole output is numbers (#1199). Same for a file that holds no
+  # bench_ function. `test` reports "No tests found" and exits 1; match it.
+  if [ "${#_BASHUNIT_BENCH_NAMES[@]}" -eq 0 ]; then
+    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No benchmarks found " \
+      "$_BASHUNIT_COLOR_DEFAULT"
+    exit 1
+  fi
+
   bashunit::benchmark::print_results
 
   # After the table, so a writer failure cannot swallow the results a human
