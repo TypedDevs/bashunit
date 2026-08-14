@@ -70,8 +70,13 @@ function bashunit::doubles::refuse_unusable_name() {
     # Through fail_with, like an assertion: it labels the failure with the test
     # name and counts it, so the misuse is visible in a default run rather than
     # only under --strict.
+    # $fn is the namespaced helper: a bare `mock` is `command not found`, so
+    # advice built from the short name sends the reader nowhere (#1229). The
+    # example names the command alone, which is true for all three callers --
+    # spy takes only a name, and mock forwards the call's own arguments to the
+    # replacement, so the name never carries them.
     bashunit::assert::fail_with "" "$command" \
-      "is not a usable command name for $fn; pass arguments after it, as in" "$fn ls -l"
+      "is not a usable command name for $fn; name the command alone, as in" "$fn ls"
     return 0
     ;;
   esac
@@ -84,7 +89,7 @@ function bashunit::mock() {
   local command=$1
   shift
 
-  if bashunit::doubles::refuse_unusable_name "mock" "$command"; then
+  if bashunit::doubles::refuse_unusable_name "bashunit::mock" "$command"; then
     return 1
   fi
 
@@ -120,7 +125,7 @@ function bashunit::mock_sequence() {
   local command=$1
   shift
 
-  if bashunit::doubles::refuse_unusable_name "mock_sequence" "$command"; then
+  if bashunit::doubles::refuse_unusable_name "bashunit::mock_sequence" "$command"; then
     return 1
   fi
 
