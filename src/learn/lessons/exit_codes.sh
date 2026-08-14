@@ -99,11 +99,13 @@ function tear_down() {
 function test_existing_file_returns_success() {
   # TODO: Assert check_file succeeds with TEST_FILE
   # Hint: assert_successful_code "check_file '\''$TEST_FILE'\''"
+  :
 }
 
 function test_missing_file_returns_127() {
   # TODO: Assert check_file returns exit code 127 for missing file
   # Hint: assert_exit_code 127 "check_file '\''/nonexistent/file'\''"
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"

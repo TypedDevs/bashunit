@@ -69,14 +69,17 @@ function set_up() {
 
 function tear_down() {
   # TODO: Clean up test files
+  :
 }
 
 function test_successful_backup() {
   # TODO: Test backup creation
+  :
 }
 
 function test_backup_failure_when_source_missing() {
   # TODO: Test failure case
+  :
 }
 
 # Add more tests as needed:

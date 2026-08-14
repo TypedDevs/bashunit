@@ -50,6 +50,7 @@ EOF
 function test_bashunit_works() {
   # TODO: Use assert_same to check if "hello" equals "hello"
   # Hint: assert_same "expected" "actual"
+  :
 }'
 
     bashunit::learn::create_example_file "$test_file" "$template"
