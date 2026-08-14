@@ -69,6 +69,42 @@ function test_output_junit_starts_with_the_xml_declaration_under_parallel() {
   assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
 }
 
+# The guard above only ever covered `--parallel`, and parallel is *not* the
+# default. Sequential emitted a blank line between a file's tests and the next,
+# which landed in front of the document: `bashunit --output junit` -- the plain
+# documented command -- produced XML no parser accepts.
+function test_output_junit_starts_with_the_xml_declaration_sequentially() {
+  local output
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
+
+# Asserting the first line is not the same as asserting a parser accepts it.
+function test_output_junit_is_well_formed_xml() {
+  if ! command -v xmllint >/dev/null 2>&1; then
+    bashunit::skip "xmllint required" && return
+  fi
+  local file
+  file="$(bashunit::temp_file)"
+  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" >"$file" 2>/dev/null || true
+
+  local errors
+  errors=$(xmllint --noout "$file" 2>&1) || true
+
+  assert_empty "$errors"
+}
+
+# JSON tolerates leading whitespace, so `jq` accepted the same stray byte and
+# the defect stayed invisible on that side. Assert the document starts where it
+# should rather than only that it parses.
+function test_output_json_starts_with_the_document_sequentially() {
+  local output
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$FIXTURE" 2>/dev/null || true)
+
+  assert_same "{" "${output%%$'\n'*}"
+}
+
 # Regression guard for #1004: the rows are collected inside the per-test worker,
 # so a parallel run used to report zero tests.
 function test_output_json_reports_every_test_under_parallel() {
