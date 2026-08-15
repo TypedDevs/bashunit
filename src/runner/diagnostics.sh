@@ -50,11 +50,13 @@ function bashunit::runner::_scan_diagnostic_lines() {
       *"ambiguous redirect"* | *"integer expression expected"* | \
       *"too many arguments"* | *"value too great"* | \
       *"not a valid identifier"* | *"unexpected EOF"*)
-      # Extract from the whole capture, not the matched line: the message shape
-      # (leading source stripped, newlines removed) is pinned by
-      # tests/unit/runner/diagnostics_test.sh.
-      local runtime_error="${runtime_output#*: }"
-      _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${runtime_error//$'\n'/}"
+      # Extract from the matched line, not the whole capture. A test can both
+      # fail an assertion and hit a runtime error, and bashunit renders the
+      # failure inside the capture subshell -- so its own "✗ Failed: <name>"
+      # text sits ahead of the shell's diagnostic. Stripping to the first ": "
+      # across the whole blob landed inside that rendering and reported the
+      # failure text with the diagnostic glued onto the end.
+      _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT="${line#*: }"
       return
       ;;
     esac

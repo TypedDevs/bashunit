@@ -30,11 +30,17 @@ function test_detect_runtime_error_matches_killed() {
   assert_same "killed" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
 }
 
-function test_detect_runtime_error_strips_newlines_from_extracted_message() {
+# The message is one line because it is *one line of the capture* -- the
+# diagnostic itself, with its source prefix stripped. It used to be the whole
+# capture with the newlines deleted, which glued unrelated output onto the end
+# ("...command not foundextra"). Anything else the test printed is display
+# output, and stays there.
+function test_detect_runtime_error_reports_the_diagnostic_line_not_the_whole_capture() {
   local input=$'bash: line 1: foo: command not found\nextra'
   bashunit::runner::detect_runtime_error "$input"
 
-  assert_same "line 1: foo: command not foundextra" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+  assert_same "line 1: foo: command not found" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+  assert_same "$input" "$_BASHUNIT_RUNNER_RUNTIME_OUTPUT_OUT"
 }
 
 function test_detect_runtime_error_matches_unexpected_eof() {
@@ -121,4 +127,21 @@ function test_detect_runtime_error_prefers_the_matched_text_over_the_exit_code()
     "/tmp/x.sh: line 1: foo: command not found" 127
 
   assert_contains "command not found" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
+}
+
+# A test can both fail an assertion and hit a runtime error. bashunit prints the
+# failure inside the capture subshell, so its own rendering sits in the capture
+# ahead of the shell's diagnostic. Extracting from the whole capture then strips
+# to the first ": " anywhere -- which lands inside "✗ Failed: <name>" -- and the
+# reported error becomes the failure text with the diagnostic glued on the end.
+function test_detect_runtime_error_reports_only_the_diagnostic_not_the_captured_failure() {
+  local input="✗ Failed: Both
+    Expected 'a'
+    but got  'b'
+    at f_test.sh:2
+f_test.sh: line 4: nope: command not found"
+
+  bashunit::runner::detect_runtime_error "$input"
+
+  assert_same "line 4: nope: command not found" "$_BASHUNIT_RUNNER_RUNTIME_ERROR_OUT"
 }
