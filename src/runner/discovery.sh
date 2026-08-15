@@ -7,6 +7,7 @@ function bashunit::runner::load_test_files() {
   # Carried to the summary so an empty selection can explain itself: the filter
   # is a local here, and the report renders long after this returns.
   _BASHUNIT_ACTIVE_FILTER="$filter"
+  _BASHUNIT_ACTIVE_TAG_FILTER="$tag_filter"
   shift 3
   local IFS=$' \t\n'
   local -a files

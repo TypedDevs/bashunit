@@ -2,6 +2,10 @@
 
 # @tag extraction and matching.
 
+# Every tag seen this run, comma separated. Accumulated as each file is scanned
+# so an empty --tag selection can name the tags that exist (#1265).
+_BASHUNIT_SEEN_TAGS=""
+
 #
 # Scans a script once and caches its test-function -> tags pairs.
 # Memoized by resolved path, so repeated calls for the same file do not rescan.
@@ -44,6 +48,21 @@ function bashunit::helper::build_tags_map() {
     [ -z "$fn" ] && continue
     _BASHUNIT_TAGS_MAP_FNS[count]="$fn"
     _BASHUNIT_TAGS_MAP_TAGS[count]="$tags"
+    # Remember every tag the run has seen, so a --tag that selects nothing can
+    # name the ones that exist. The map itself is cached per script, so only
+    # the last file's would survive to the summary. Tags are user-defined
+    # strings with no other way to list them, which is what makes a typo a
+    # dead end (#1265). Per file, not per test: build_tags_map is cached.
+    local _seen_tag
+    local _old_ifs=$IFS
+    IFS=','
+    for _seen_tag in $tags; do
+      case ",$_BASHUNIT_SEEN_TAGS," in
+      *",$_seen_tag,"*) ;;
+      *) _BASHUNIT_SEEN_TAGS="${_BASHUNIT_SEEN_TAGS:+$_BASHUNIT_SEEN_TAGS,}$_seen_tag" ;;
+      esac
+    done
+    IFS=$_old_ifs
     count=$((count + 1))
   done < <(awk '
     # An uninitialised awk variable used as a subscript is the empty string,

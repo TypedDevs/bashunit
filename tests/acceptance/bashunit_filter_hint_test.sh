@@ -87,3 +87,60 @@ function test_the_hint_reaches_a_parallel_run_too() {
   assert_contains "No tests found" "$output"
   assert_contains "test_beta_case" "$output"
 }
+
+# `--filter` explains itself when it selects nothing (#1237); `--tag` did not,
+# and tags are worse off: they are user-defined strings with no way to list
+# them, so a typo leaves you guessing what the file actually declares.
+function _run_tagged() { # $@ = flags
+  {
+    printf '%s\n' '#!/usr/bin/env bash'
+    printf '%s\n' '# @tag integration'
+    printf '%s\n' 'function test_alpha() { assert_same 1 1; }'
+    printf '%s\n' '# @tag slow'
+    printf '%s\n' 'function test_beta() { assert_same 1 1; }'
+  } >"$WORKDIR/tag_test.sh"
+
+  (cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel "$@" tag_test.sh 2>&1 | strip_ansi) || true
+}
+
+function test_a_tag_matching_nothing_names_the_tags_that_exist() {
+  local output
+  output="$(_run_tagged --tag integraton)"
+
+  assert_contains "No tests found" "$output"
+  assert_contains "integration" "$output"
+  assert_contains "slow" "$output"
+}
+
+# The hint must not fire when the tag did select something.
+function test_a_matching_tag_prints_no_hint() {
+  local output
+  output="$(_run_tagged --tag integration)"
+
+  assert_contains "1 passed" "$output"
+  assert_not_contains "Tags in the selected files" "$output"
+}
+
+# And an empty run with no tag filter stays exactly as it was.
+function test_an_empty_run_without_a_tag_is_unchanged() {
+  local output
+  output="$(_run_tagged --filter nothing_like_this)"
+
+  assert_not_contains "Tags in the selected files" "$output"
+}
+
+# A file with no tags at all is a different mistake from a mistyped tag, and
+# naming an empty list ("Tags in the selected files: .") would say nothing.
+function test_a_tag_against_an_untagged_file_says_there_are_none() {
+  printf '%s\n' '#!/usr/bin/env bash' \
+    'function test_untagged() { assert_same 1 1; }' >"$WORKDIR/untagged_test.sh"
+
+  # `|| true`: an empty run exits 1, which under --strict (set -e, pipefail)
+  # would abort the assignment before the assertions ran.
+  local output
+  output="$(cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel --tag anything untagged_test.sh 2>&1 |
+    strip_ansi || true)"
+
+  assert_contains "No test in the selected files carries a '# @tag'" "$output"
+  assert_not_contains "Tags in the selected files" "$output"
+}
