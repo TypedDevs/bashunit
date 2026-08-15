@@ -213,6 +213,20 @@ bashunit test tests/ --exclude-tag integration
 ```
 :::
 
+A tag exists only where someone wrote it, and nothing lists the ones in use, so
+a `--tag` that selects nothing names the tags the run actually saw:
+
+```
+ No tests found
+No test matches tag 'integraton'. Tags in the selected files: integration,slow.
+```
+
+When no test carries a tag at all, it says that instead — a different mistake:
+
+```
+No test matches tag 'anything'. No test in the selected files carries a '# @tag'.
+```
+
 #### File-level tags
 
 `# @tags <list>` applies every name in the list to **all** tests in that file,

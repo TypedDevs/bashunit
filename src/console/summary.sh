@@ -3,6 +3,29 @@
 # Run totals, execution time and hook completion.
 
 ##
+# Explains an empty selection that `--tag` caused, by naming the tags the run
+# actually saw.
+#
+# A tag is a user-defined string and nothing lists them, so a typo leaves the
+# reader with no way to find the right one -- worse off than a bad `--filter`,
+# where the test names are at least visible in a normal run (#1265).
+##
+function bashunit::console_results::print_tag_hint() {
+  local tag_filter="${_BASHUNIT_ACTIVE_TAG_FILTER:-}"
+  [ -n "$tag_filter" ] || return 0
+
+  if [ -n "${_BASHUNIT_SEEN_TAGS:-}" ]; then
+    printf "%sNo test matches tag '%s'. Tags in the selected files: %s.%s\n" \
+      "${_BASHUNIT_COLOR_FAINT:-}" "$tag_filter" "$_BASHUNIT_SEEN_TAGS" \
+      "${_BASHUNIT_COLOR_DEFAULT:-}"
+    return 0
+  fi
+
+  printf "%sNo test matches tag '%s'. No test in the selected files carries a '# @tag'.%s\n" \
+    "${_BASHUNIT_COLOR_FAINT:-}" "$tag_filter" "${_BASHUNIT_COLOR_DEFAULT:-}"
+}
+
+##
 # Explains an empty selection that `--filter` caused.
 #
 # The report prints a humanized title -- `✓ Passed: Alpha` for `test_alpha` --
@@ -211,6 +234,7 @@ function bashunit::console_results::render_result() {
   if [ "$total_tests" -eq 0 ]; then
     printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_filter_hint
+    bashunit::console_results::print_tag_hint
     bashunit::console_results::print_execution_time
     return 1
   fi

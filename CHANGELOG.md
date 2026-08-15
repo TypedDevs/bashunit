@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- A `--tag` that matches nothing names the tags the run saw, or says no test carries one. Tags appear only in `# @tag` comments and nothing lists them, so a typo had no way back (#1265)
+
 ## [0.48.0](https://github.com/TypedDevs/bashunit/compare/0.47.0...0.48.0) - 2026-08-14
 
 ### Added
