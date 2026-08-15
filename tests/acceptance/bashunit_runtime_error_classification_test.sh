@@ -34,3 +34,20 @@ function test_a_real_shell_error_is_still_reported() {
   assert_contains "✗ Error: Hits a real shell error" "$output"
   assert_contains "command not found" "$output"
 }
+
+# A test can fail an assertion *and* hit a shell error. The reported error must
+# be the diagnostic alone: extracting it from the whole capture stripped to the
+# first ": " anywhere, which landed inside bashunit's own "✗ Failed: <name>"
+# rendering, so the error read as the failure text with the diagnostic glued on
+# ("...but got 'b' at file:2file: line 8: nope: command not found").
+function test_an_assertion_failure_does_not_leak_into_the_error_message() {
+  local fixture=tests/acceptance/fixtures/runtime_error/fails_and_errors.sh
+  local output exit_code=0
+
+  output=$(LC_ALL=C NO_COLOR=1 ./bashunit --no-parallel --skip-env-file "$fixture" 2>&1) || exit_code=$?
+
+  assert_same 1 "$exit_code"
+  assert_contains "line 8: no_such_command_from_a_fixture: command not found" "$output"
+  # The failure text must not appear inside the error message line.
+  assert_not_contains "but got  'b'    at" "$output"
+}
