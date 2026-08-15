@@ -23,6 +23,20 @@ function bashunit::is_command_available() {
   command -v "$1" >/dev/null 2>&1
 }
 
+##
+# Records that the owning test created something under BASHUNIT_TEMP_DIR, so
+# the EXIT trap can decide whether to clean up without reading the directory.
+# A redirect, not a fork. Nothing to mark when neither id is set: the file is
+# then not owned by a test and the trap never looks for it.
+# Arguments: $1 - "<id>_" prefix, possibly empty
+##
+function bashunit::_mark_temp_owner() {
+  local test_prefix=$1
+  if [ -n "$test_prefix" ]; then
+    : >"$BASHUNIT_TEMP_DIR/${test_prefix}.mark" 2>/dev/null || true
+  fi
+}
+
 function bashunit::temp_file() {
   local prefix=${1:-bashunit}
   local test_prefix=""
@@ -33,6 +47,7 @@ function bashunit::temp_file() {
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
+  bashunit::_mark_temp_owner "$test_prefix"
   "$MKTEMP" "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
@@ -46,12 +61,26 @@ function bashunit::temp_dir() {
     # We're at script level (e.g., in set_up_before_script) - use script ID
     test_prefix="${BASHUNIT_CURRENT_SCRIPT_ID}_"
   fi
+  bashunit::_mark_temp_owner "$test_prefix"
   "$MKTEMP" -d "$BASHUNIT_TEMP_DIR/${test_prefix}${prefix}.XXXXXXX"
 }
 
 function bashunit::cleanup_testcase_temp_files() {
   bashunit::internal_log "cleanup_testcase_temp_files"
   if [ -n "${BASHUNIT_CURRENT_TEST_ID:-}" ]; then
+    # Stat one known path before globbing. Expanding the glob makes bash read
+    # the whole of BASHUNIT_TEMP_DIR, which is shared and persists between runs
+    # -- every file an interrupted run left behind is then re-examined by every
+    # test of every later run. It can never match one: the id carries this
+    # run's $$, so the scan is pure overhead. Measured on a 100-test file, a
+    # directory holding 5000 leftovers took the run from 498ms to 978ms (#1269).
+    #
+    # The marker is written by temp_file/temp_dir, so its absence means this
+    # test created nothing and there is nothing to remove. It is named with the
+    # same "<id>_" prefix, so the rm below takes it along with the rest.
+    if [ ! -e "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_TEST_ID}_.mark" ]; then
+      return 0
+    fi
     # Probe the glob in pure bash first: most tests create no temp file, so
     # skipping the rm avoids a fork per test (#764). A non-matching glob either
     # stays literal (nullglob off) or yields an empty array (nullglob on);

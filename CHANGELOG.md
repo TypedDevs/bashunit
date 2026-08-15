@@ -5,6 +5,8 @@
 ### Changed
 - A `--tag` matching nothing now names the tags the run saw, or says no test carries one — tags live only in `# @tag` comments and nothing lists them, so a typo had no way back (#1265)
 
+- Performance: per-test cleanup no longer reads the whole of `BASHUNIT_TEMP_DIR`. That directory is shared and survives between runs, so leftovers from an interrupted run taxed every test of every later run — a 100-test file took 978ms against 5000 leftovers and 542ms after, and runtime no longer grows with the directory. A file a test writes there by hand, rather than via `temp_file`/`temp_dir`, is no longer removed for it (#1269)
+
 ### Fixed
 - A test that both fails an assertion and hits a shell error no longer reports the failure text with the diagnostic glued onto the end; the error message is the diagnostic alone (#1267)
 
