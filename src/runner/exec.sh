@@ -41,9 +41,11 @@ function bashunit::runner::order_functions_for_script() {
     _fn_seed=$(((_base + _crc) & 2147483647))
     local -a _shuffled_fns=()
     local _sfn
+    # Here-string, not `< <(…)`: the same per-file descriptor leak documented in
+    # helper/provider.sh applies here whenever --random-order is used (#1271).
     while IFS= read -r _sfn; do
       [ -n "$_sfn" ] && _shuffled_fns[${#_shuffled_fns[@]}]=$_sfn
-    done < <(printf '%s\n' "${ordered[@]+"${ordered[@]}"}" | bashunit::math::shuffle "$_fn_seed")
+    done <<<"$(printf '%s\n' "${ordered[@]+"${ordered[@]}"}" | bashunit::math::shuffle "$_fn_seed")"
     ordered=("${_shuffled_fns[@]+"${_shuffled_fns[@]}"}")
   fi
 

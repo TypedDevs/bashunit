@@ -65,6 +65,15 @@ function bashunit::helper::build_provider_map() {
   # in the main shell, and the fork budget leaves no room for a second awk per
   # file (#773). Unlike the provider marker, those follow the `# @tag` rule --
   # the contiguous comment block directly above the definition.
+  #
+  # Fed by a here-string rather than `< <(awk …)`. Bash 3.x only reaps the
+  # descriptors process substitution allocates when it returns to the top level
+  # or after forking an external command, and this scan runs once per file from
+  # inside a function that the run never leaves -- so each file leaked one, and
+  # the per-file `rm` fork that used to follow was the only thing collecting
+  # them. Removing that fork for #1271 turned the leak loose: with 120 files
+  # under a 120-descriptor limit the run stopped after two assertions and
+  # reported "risky" rather than failing. A here-string allocates nothing.
   while IFS=$'\t' read -r fn provider annot_timeout annot_retry annot_skip annot_reason; do
     [ -z "$fn" ] && continue
     if [ "$fn" = "@@no_parallel@@" ]; then
@@ -81,7 +90,7 @@ function bashunit::helper::build_provider_map() {
     _BASHUNIT_PROVIDER_MAP_FNS[count]="$fn"
     _BASHUNIT_PROVIDER_MAP_PROVIDERS[count]="$provider"
     count=$((count + 1))
-  done < <(awk '
+  done <<<"$(awk '
     /^# bashunit: no-parallel-tests/ { no_parallel = 1; next }
     /^[[:space:]]*#[[:space:]]*@?data_provider[[:space:]]+/ {
       p = $0
@@ -150,7 +159,7 @@ function bashunit::helper::build_provider_map() {
       a_reason = ""
     }
     END { printf "@@no_parallel@@\t%d\n", no_parallel }
-  ' "$script" 2>/dev/null)
+  ' "$script" 2>/dev/null)"
 }
 
 
