@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- A test file with a `tear_down_after_script` no longer makes `--output junit` malformed. The blank line printed after that hook went to stdout ahead of the document, so the XML declaration was not at byte 0 and the report did not parse; the hook did not have to fail, an ordinary one was enough. `--output json` carried the same stray byte but tolerates leading whitespace (#1297)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 

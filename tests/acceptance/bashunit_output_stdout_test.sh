@@ -138,3 +138,21 @@ function test_unknown_output_format_lists_the_supported_ones() {
   assert_general_error "" "" "$ec"
   assert_contains "text, tap, json, junit" "$output"
 }
+
+# The blank line printed after a file's tear_down_after_script is console
+# decoration, and it went to stdout ahead of the document. JSON tolerates
+# leading whitespace so only the XML showed it, but the stray byte was in both.
+# An ordinary lifecycle hook is enough -- the hook does not have to fail.
+function test_output_junit_is_well_formed_with_a_tear_down_after_script() {
+  local dir
+  dir="$(bashunit::temp_dir junit_tear_down)"
+  {
+    echo 'function test_ok() { assert_true true; }'
+    echo 'function tear_down_after_script() { :; }'
+  } >"$dir/td_test.sh"
+
+  local output
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$dir/td_test.sh" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
