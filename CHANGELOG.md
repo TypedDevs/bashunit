@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.49.0](https://github.com/TypedDevs/bashunit/compare/0.48.0...0.49.0) - 2026-08-16
+
 ### Added
 - `--pass-with-no-tests` exits 0 when a run selects no tests, for the case where that is deliberate — a CI matrix whose shards are not all populated, or a changed-files run that touched no tests. The run still reports `No tests found`; only the verdict changes. It does not excuse a path that is not on disk. Same flag, same spelling, as jest, vitest, Playwright and Cypress (#1263)
 - `--list-tags` prints the tags of the selected files, one per line, sorted and deduplicated, and runs nothing. Tags live only in `# @tag` comments, so a mistyped `--tag` had no list to check against (#1265)
