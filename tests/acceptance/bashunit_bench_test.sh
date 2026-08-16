@@ -24,22 +24,28 @@ function test_bench_command_runs_in_dev_mode() {
 # exited 0. A typo in the path or in the prefix gave a CI job that measured
 # nothing, and a benchmark's whole output is numbers nobody notices are
 # missing (#1199).
-function test_bench_fails_on_a_path_that_does_not_exist() {
+# #1263 gave `test` a second answer: a path that is not on disk is a wrong
+# invocation and gets named, while an empty selection keeps "No benchmarks
+# found". `bench` has to follow, or the two drift apart again — which is the
+# exact misalignment #1199 closed.
+function test_bench_names_a_path_that_does_not_exist() {
   local ec=0
   local output
   output=$(./bashunit bench ./no_such_bench_path_test.sh 2>&1) || ec=$?
 
   assert_general_error "" "" "$ec"
-  assert_contains "No benchmarks found" "$output"
+  assert_contains "no_such_bench_path_test.sh" "$output"
+  assert_not_contains "No benchmarks found" "$output"
 }
 
-function test_bench_fails_on_a_directory_that_does_not_exist() {
+function test_bench_names_a_directory_that_does_not_exist() {
   local ec=0
   local output
   output=$(./bashunit bench ./no_such_bench_dir/ 2>&1) || ec=$?
 
   assert_general_error "" "" "$ec"
-  assert_contains "No benchmarks found" "$output"
+  assert_contains "no_such_bench_dir" "$output"
+  assert_not_contains "No benchmarks found" "$output"
 }
 
 function test_bench_fails_when_a_file_holds_no_bench_function() {

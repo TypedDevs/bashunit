@@ -93,6 +93,45 @@ function bashunit::main::report_unreadable_bootstrap() {
 }
 
 
+##
+# Aborts unless a positional path argument exists on disk.
+#
+# An empty result is a real answer -- a directory with no test files, a filter
+# matching nothing, an empty shard -- and every one of those keeps saying "No
+# tests found". A path that is not there is a wrong invocation instead, and
+# giving the first answer to the second question sent the reader after test
+# naming, filters and the discovery glob rather than the typo (#1263).
+#
+# Shared by `test` and `bench` on purpose: #1199 closed exactly the gap where
+# the two disagreed about a path that is not there, and a second copy of this
+# rule is how they would drift apart again.
+#
+# Deliberately NOT part of validate_config_or_exit, which runs before argv is
+# expanded: these are positional arguments, not configuration, and they do not
+# exist yet at that point.
+#
+# Arguments: $1 - the path as the caller typed it
+##
+function bashunit::main::require_existing_path_or_exit() {
+  local path=$1
+
+  # A `*` is exempt: nullglob is off, so a pattern the shell could not expand
+  # arrives literally, and matching nothing is an empty selection.
+  # find_files_recursive decides glob-ness on `*` alone; use the same test here
+  # or the two disagree about what a path even is.
+  case "$path" in
+  *"*"*) return 0 ;;
+  esac
+
+  # -e, not -f: a directory is a valid argument, and a broken symlink is not.
+  [ -e "$path" ] && return 0
+
+  printf "%sError: no such path: '%s'.%s\n" \
+    "${_BASHUNIT_COLOR_FAILED}" "$path" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+  exit 1
+}
+
+
 function bashunit::main::require_writable_path_or_exit() {
   local path=$1
   local parent=${1%/*}
