@@ -12,7 +12,7 @@
 # enforced by these tests -- `[[ ]]` works on every bash we support.
 
 # Returns offending "file:line: text" for a pattern, skipping comment lines so a
-# rule quoted in documentation or in the `learn` tutorial text is not an error.
+# rule quoted in documentation or in a comment is not an error.
 function bashunit::compat::offenders() {
   grep -rnE "$1" src/ 2>/dev/null | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true
 }

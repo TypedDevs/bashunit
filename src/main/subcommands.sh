@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Flag parsing for doc, init, learn, watch and upgrade; each delegates to src/cli/ or src/learn/.
+# Flag parsing for doc, init, watch and upgrade; each delegates to src/cli/.
 
 function bashunit::main::cmd_doc() {
   local filter=""
@@ -98,21 +98,6 @@ function bashunit::main::cmd_init() {
   esac
 
   bashunit::init::project "${1:-}"
-  exit 0
-}
-
-#############################
-# Subcommand: learn
-#############################
-function bashunit::main::cmd_learn() {
-  case "${1:-}" in
-  -h | --help)
-    bashunit::console_header::print_learn_help
-    exit 0
-    ;;
-  esac
-
-  bashunit::learn::start
   exit 0
 }
 

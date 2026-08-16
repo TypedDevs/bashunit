@@ -15,7 +15,6 @@ bashunit watch [path] [options]   # Watch files, re-run tests on change
 bashunit assert <fn> <args>       # Run standalone assertion
 bashunit doc [options] [filter]   # Show assertion documentation
 bashunit init [dir]               # Initialize test directory
-bashunit learn                    # Interactive tutorial
 bashunit upgrade                  # Upgrade to latest version
 bashunit --help                   # Show help
 bashunit --version                # Show version
@@ -1612,44 +1611,6 @@ Creates:
 An existing `BASHUNIT_BOOTSTRAP=` line in `.env` is commented out first, so the new value
 takes effect.
 
-## learn
-
-> `bashunit learn`
-
-Start the interactive learning tutorial with 10 progressive lessons.
-
-::: code-group
-```bash [Example]
-bashunit learn
-```
-```[Output]
-bashunit - Interactive Learning
-
-Choose a lesson:
-
-  1. Basics - Your First Test
-  2. Assertions - Testing Different Conditions
-  3. Setup & Teardown - Managing Test Lifecycle
-  4. Testing Functions - Unit Testing Patterns
-  5. Testing Scripts - Integration Testing
-  6. Mocking - Test Doubles and Mocks
-  7. Spies - Verifying Function Calls
-  8. Data Providers - Parameterized Tests
-  9. Exit Codes - Testing Success and Failure
-  10. Complete Challenge - Real World Scenario
-
-  p. Show Progress
-  r. Reset Progress
-  q. Quit
-
-Enter your choice:
-```
-:::
-
-::: tip
-Perfect for new users getting started with bashunit.
-:::
-
 ## upgrade
 
 > `bashunit upgrade`
@@ -1704,7 +1665,6 @@ Commands:
   assert <fn> <args>  Run standalone assertion
   doc [filter]        Display assertion documentation
   init [dir]          Initialize a new test directory
-  learn               Start interactive tutorial
   watch [path]        Watch files and re-run tests on change
   upgrade             Upgrade bashunit to latest version
 

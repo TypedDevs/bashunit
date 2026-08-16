@@ -44,7 +44,7 @@ statement. That is load-bearing, not stylistic — see the build section — and
 
 ## The modules
 
-Seventeen, in load order. The order is the dependency layering: leaves first.
+Sixteen, in load order. The order is the dependency layering: leaves first.
 
 | # | Module | Files | Lines | Owns |
 |---|---|---|---|---|
@@ -63,16 +63,16 @@ Seventeen, in load order. The order is the dependency layering: leaves first.
 | 13 | `reports/` | 8 | 738 | JUnit, TAP, JSON, GHA, HTML and Markdown writers |
 | 14 | `runner/` | 13 | 2664 | the file loop, per-test execution, retry, result parsing, `--list` |
 | 15 | `benchmark/` | 6 | 649 | the bench implementation (`runner/bench.sh` is its loop) |
-| 16 | `learn/` | 14 | 1296 | the interactive tutorial (9 of those files are `learn/lessons/`) |
-| 17 | `main/` | 8 | 1473 | flag parsing per subcommand and the run lifecycle |
+| 16 | `main/` | 8 | 1473 | flag parsing per subcommand and the run lifecycle |
 
-The file counts sum to 118, which is every `.sh` file in `src/` — that is the check to re-run
+The file counts sum to 114, which is every `.sh` file in `src/` — that is the check to re-run
 when editing this table, because both of its previous errors came from counting the wrong way.
 `doubles/` was absent entirely: the table was generated from the entrypoint's `source` lines,
 and `doubles/` is the one module the entrypoint does not source, so it fell through while the
-prose above said "seventeen" from a directory count. And `learn/` was listed as 5 files / 240
-lines because a one-level `src/learn/*.sh` glob does not descend into `learn/lessons/` — the
-same one-level-glob mistake that `Makefile:67` made with nested tests. Count from the tree.
+prose above said "seventeen" from a directory count. The other was a nested module listed at
+5 files / 240 lines because a one-level `src/<module>/*.sh` glob does not descend into its
+subdirectory — the same one-level-glob mistake that `Makefile:67` made with nested tests. That
+module (`learn/`) has since been removed; the trap it exposed has not. Count from the tree.
 
 Namespaces track directories: `src/runner/` holds `bashunit::runner::*`. Two exceptions are
 deliberate — `assert/` holds bare `assert_*` (the public API is unprefixed) and `console/`

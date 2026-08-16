@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Removed
+- `bashunit learn`, the interactive tutorial. It shipped in 0.28 and in the nine months since drew no issue, question or contribution from anyone but the maintainer — and for most of that time it was broken in ways a learner meets in the first minute: it generated starter files that were not valid bash, and its lesson gates were satisfied by their own hint comments, so every exercise passed whatever the learner wrote (#1256, #1258). Both were found by testing the docs, not by a user hitting them. Teaching belongs in the documentation, which covers this ground better and is read; it does not belong in the runner, where it was 5% of the distributable and a subsystem to keep working
+
 ## [0.49.0](https://github.com/TypedDevs/bashunit/compare/0.48.0...0.49.0) - 2026-08-16
 
 ### Added

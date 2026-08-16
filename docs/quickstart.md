@@ -107,16 +107,6 @@ With no path, bashunit runs `tests/` (`BASHUNIT_DEFAULT_PATH`):
 ./lib/bashunit --changed            # only test files touched since origin/HEAD
 ```
 
-## Learning bashunit interactively
-
-If you prefer hands-on learning, bashunit includes an interactive tutorial:
-
-```bash
-./lib/bashunit learn
-```
-
-This will guide you through 10 progressive lessons covering all major features with practical exercises and immediate feedback.
-
 ## Next steps
 
 Dive deeper into the documentation:
