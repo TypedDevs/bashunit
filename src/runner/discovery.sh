@@ -239,7 +239,10 @@ function bashunit::runner::load_test_files() {
     bashunit::runner::restore_workdir
   done
 
-  if bashunit::parallel::is_enabled; then
+  # A listing dispatched no worker, so there is nothing to wait for and no
+  # result file to aggregate -- and aggregating an empty per-script dir prints
+  # "No tests found" into what must be a clean list of ids (#1007).
+  if bashunit::parallel::is_enabled && ! bashunit::env::is_list_enabled; then
     wait
     bashunit::runner::spinner &
     local spinner_pid=$!
