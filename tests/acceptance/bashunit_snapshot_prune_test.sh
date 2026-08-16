@@ -61,12 +61,48 @@ function test_prune_deletes_nothing_when_no_snapshot_is_unused() {
 }
 
 function test_prune_leaves_a_snapshot_of_a_file_outside_the_run_alone() {
+  # The owner has to be on disk for this to be the case the name describes: a
+  # file that exists and simply was not selected. This is the guarantee that
+  # keeps prune safe on a path subset (#1194).
+  echo "" >"$WORKDIR/other_test.sh"
   local foreign="$WORKDIR/snapshots/other_test_sh.test_something.snapshot"
   echo "not mine" >"$foreign"
 
   run_prune >/dev/null
 
   assert_file_exists "$foreign"
+}
+
+# The kind no run can own: the test file that named it was deleted or renamed,
+# so no run will ever discover it and the owner check skipped it forever (#1194).
+function test_prune_deletes_a_snapshot_whose_owner_file_is_gone() {
+  local gone="$WORKDIR/snapshots/gone_test_sh.test_something.snapshot"
+  echo "nobody's" >"$gone"
+
+  local output
+  output=$(run_prune)
+
+  assert_file_not_exists "$gone"
+  assert_file_exists "$ALPHA"
+  assert_file_exists "$BETA"
+  assert_contains "gone_test_sh" "$output"
+}
+
+# The failing-run gate has to cover the new class too, or a run that never
+# reached its assertions would delete what it could not have resolved.
+function test_prune_keeps_an_owner_missing_snapshot_when_the_run_fails() {
+  local gone="$WORKDIR/snapshots/gone_test_sh.test_something.snapshot"
+  echo "nobody's" >"$gone"
+  cat >>"$WORKDIR/snap.sh" <<'TEST'
+
+function test_that_fails_too() {
+  assert_same "expected" "actual"
+}
+TEST
+
+  run_prune >/dev/null
+
+  assert_file_exists "$gone"
 }
 
 # A failing run may never have reached the assertions that resolve those

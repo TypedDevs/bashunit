@@ -120,6 +120,12 @@ function bashunit::snapshot::collect_unused() {
   # so it can be attributed to the test file that owns it. Only the files this
   # run discovered are considered: running one file or one directory must not
   # report every snapshot belonging to the files it did not run.
+  #
+  # That leaves one class no run can ever own: a snapshot whose test file was
+  # deleted or renamed. No run discovers it, so the check below skipped it
+  # forever and neither flag could see the most common kind of dead snapshot
+  # (#1194). Disk decides that case, per snapshots dir, in the loop further
+  # down -- an owner that exists but was not selected is still left alone.
   local owners=""
   for path in "$@"; do
     [ -f "$path" ] || continue
@@ -140,9 +146,24 @@ function bashunit::snapshot::collect_unused() {
 
   local unused=""
   local total=0
-  local dir file normalized
+  local dir file normalized parent disk_owners candidate
   while IFS= read -r dir; do
     [ -z "$dir" ] && continue
+    # resolve_file writes "<dir of test file>/snapshots/...", so an owner that
+    # still exists is a regular file one level up. Collected once per directory,
+    # with no fork: glob, parameter expansion and `case`.
+    case "$dir" in
+    */snapshots) parent="${dir%/snapshots}" ;;
+    snapshots) parent="." ;;
+    *) parent="$dir" ;;
+    esac
+    disk_owners=""
+    for candidate in "$parent"/*; do
+      [ -f "$candidate" ] || continue
+      bashunit::helper::normalize_variable_name_to_slot "${candidate##*/}"
+      disk_owners="$disk_owners$_BASHUNIT_HELPER_VARNAME_OUT
+"
+    done
     for file in "$dir"/*.snapshot; do
       [ -f "$file" ] || continue
       normalized="$(bashunit::snapshot::normalize_path "$file")"
@@ -153,7 +174,13 @@ function bashunit::snapshot::collect_unused() {
       owner="${owner%%.*}"
       case "$owners" in
       *"$owner"$'\n'*) ;;
-      *) continue ;;
+      *)
+        # Not selected by this run. Keep it only while its owner is still on
+        # disk; with no such file there is no run that could ever claim it.
+        case "$disk_owners" in
+        *"$owner"$'\n'*) continue ;;
+        esac
+        ;;
       esac
       total=$((total + 1))
       unused="$unused  $normalized

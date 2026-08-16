@@ -40,6 +40,10 @@ function test_reports_nothing_when_every_snapshot_is_used() {
 }
 
 function test_a_snapshot_of_a_test_file_outside_the_run_is_not_reported() {
+  # The owner has to be on disk for this to be the case the name describes.
+  # Without it the snapshot is an orphan, not a file "outside the run", and the
+  # two want opposite answers (#1194).
+  echo "" >"$WORKDIR/other_test.sh"
   echo "not mine" >"$WORKDIR/snapshots/other_test_sh.test_something.snapshot"
 
   local output
@@ -48,6 +52,18 @@ function test_a_snapshot_of_a_test_file_outside_the_run_is_not_reported() {
 
   assert_not_contains "other_test_sh" "$output"
   assert_contains "snap_sh.test_snapshot_deleted.snapshot" "$output"
+}
+
+# The kind no run can own: the test file that named it was deleted or renamed,
+# so no run will ever discover it and the owner check skipped it forever (#1194).
+function test_reports_a_snapshot_whose_owner_file_is_gone() {
+  echo "nobody's" >"$WORKDIR/snapshots/gone_test_sh.test_something.snapshot"
+
+  local output
+  output=$(cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel --skip-env-file \
+    --snapshot-report-unused snap.sh 2>&1) || true
+
+  assert_contains "gone_test_sh.test_something.snapshot" "$output"
 }
 
 function test_the_report_does_not_delete_anything() {
