@@ -1,4 +1,1 @@
-[90mTests:     [0m 0 total
-[90mAssertions:[0m 0 total
-
-[41m[30m[1m No tests found [0m
+[31mError: no such path: 'tests/acceptance/fixtures/wrong_path'.[0m
