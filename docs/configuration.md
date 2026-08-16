@@ -268,6 +268,24 @@ By default, when an assertion fails within a test, subsequent assertions in the 
 The `--stop-on-failure` flag is separate – it stops the entire test runner after a failing **test**, while assertion-level stopping happens within each test.
 :::
 
+## Pass with no tests
+
+> `BASHUNIT_PASS_WITH_NO_TESTS=true|false`
+
+Exit `0` when the run selects no tests. `false` by default, because selecting
+nothing usually means a typo — the run still reports `No tests found` either
+way, so only the verdict changes.
+
+Turn it on where an empty run is deliberate: a CI matrix whose shards are not
+all populated, or a changed-files run that touched no tests. Prefer the
+`--pass-with-no-tests` flag on those invocations over setting this globally; a
+suite that silently stops running tests is what the non-zero default catches.
+
+It does not excuse a path that is not on disk — that is a wrong invocation and
+is still refused by name.
+
+Similar as using `--pass-with-no-tests` option on the [command line](/command-line#test-options).
+
 ## Test timeout
 
 > `BASHUNIT_TEST_TIMEOUT=<seconds>`

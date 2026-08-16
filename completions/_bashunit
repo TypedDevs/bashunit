@@ -91,6 +91,7 @@ _bashunit() {
     '--output[Output format]:format:(text tap json junit)' \
     '(-R --run-all)'{-R,--run-all}'[Run all assertions without stopping on first failure]' \
     '(-S --stop-on-failure)'{-S,--stop-on-failure}'[Stop on first failure]' \
+    '--pass-with-no-tests[Exit 0 when the run selects no tests]' \
     '--test-timeout[Fail a test running longer than N seconds]:seconds:' \
     '--retry[Rerun a failed test up to N extra times]:count:' \
     '--repeat[Run each selected test N times]:count:' \

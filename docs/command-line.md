@@ -76,6 +76,26 @@ A path that selects nothing never falls back to
 [`BASHUNIT_DEFAULT_PATH`](#environment-bootstrap): `bashunit empty_dir/` reports
 `No tests found` rather than quietly running the default suite.
 
+### Allowing an empty run
+
+Selecting nothing exits non-zero, because it usually means a typo. When it is
+deliberate — a CI matrix whose shards are not all populated, or a changed-files
+run that touched no tests — `--pass-with-no-tests` makes that run succeed:
+
+```bash
+bashunit --pass-with-no-tests --shard 4/4 tests/
+```
+
+The run still reports `No tests found`; only the verdict changes, so an empty
+shard by design and one by accident still look different to a reader. Pass it on
+the invocations that may legitimately be empty rather than setting
+`BASHUNIT_PASS_WITH_NO_TESTS` globally — a suite that silently stops running
+tests is what the non-zero default is there to catch.
+
+It does not excuse a path that is not on disk: that is a wrong invocation and is
+still refused by name. The flag is the same one jest, vitest, Playwright and
+Cypress spell `--pass-with-no-tests`.
+
 ### Test Options
 
 | Option                         | Description                                      |
@@ -106,6 +126,7 @@ A path that selects nothing never falls back to
 | `-s, --simple`                 | Simple output (dots)                             |
 | `--detailed`                   | Detailed output (default)                        |
 | `-S, --stop-on-failure`        | Stop on first failure                            |
+| `--pass-with-no-tests`         | Exit 0 when the run selects no tests             |
 | `--test-timeout <seconds>`     | Fail a test if it runs longer than N seconds     |
 | `--retry <n>`                  | Re-run a failed test up to N extra times         |
 | `--repeat <n>`                 | Run each selected test N times; it fails if any iteration fails |

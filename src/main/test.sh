@@ -213,6 +213,12 @@ function bashunit::main::cmd_test() {
       BASHUNIT_STOP_ON_FAILURE=true
       export -n BASHUNIT_STOP_ON_FAILURE
       ;;
+    --pass-with-no-tests)
+      # Named after jest's and vitest's --passWithNoTests so nobody has to learn
+      # a third spelling for the same idea (#1263).
+      BASHUNIT_PASS_WITH_NO_TESTS=true
+      export -n BASHUNIT_PASS_WITH_NO_TESTS
+      ;;
     -p | --parallel)
       BASHUNIT_PARALLEL_RUN=true
       export -n BASHUNIT_PARALLEL_RUN
