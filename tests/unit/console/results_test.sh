@@ -327,6 +327,24 @@ function test_render_execution_time() {
   assert_matches "Time taken: ([[:digit:]]+(\\.[[:digit:]]+)?(ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
+# A measurement that failed used to be laundered into a number: the empty
+# result met `${time:-0}` and printed as "Time taken: 0ms", which reads exactly
+# like a real instant run. #1271 is that -- a broken pipe in the calculation
+# left the footer saying 0ms for a 3.4s run, and nothing else said a word.
+function test_render_execution_time_when_it_cannot_be_measured() {
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    BASHUNIT_SHOW_EXECUTION_TIME=true
+    bashunit::mock bashunit::clock::total_runtime_in_milliseconds echo ""
+
+    bashunit::console_results::print_execution_time || true
+  )
+
+  assert_contains "unknown" "$render_result"
+  assert_not_contains "0ms" "$render_result"
+}
+
 function test_not_render_execution_time() {
   local render_result
   render_result=$(

@@ -254,12 +254,22 @@ function bashunit::console_results::print_execution_time() {
   time=$(bashunit::clock::total_runtime_in_milliseconds)
   # Strip decimal portion (integer truncation, Bash 3.0 compatible)
   time="${time%%.*}"
-  time="${time:-0}"
 
-  # Reuse the shared ms formatter (Xm Ys / X.XXs / Xms) instead of re-deriving it;
-  # this runs once per run, so the command-substitution fork is negligible.
-  local formatted
-  formatted=$(bashunit::console_results::format_duration "$time")
+  # No measurement is not a measurement of zero. Defaulting to 0 here rendered
+  # "Time taken: 0ms", which reads as a real instant run: #1271 had a broken
+  # pipe in the calculation report 0ms for a 3.4s suite while the run still
+  # exited 0, and the footer was the only thing that could have said otherwise.
+  # The clock can also be genuinely unavailable, and that deserves the same
+  # answer rather than a fabricated number.
+  local formatted="unknown"
+  case "$time" in
+  '' | *[!0-9-]*) ;;
+  *)
+    # Reuse the shared ms formatter (Xm Ys / X.XXs / Xms) instead of re-deriving
+    # it; this runs once per run, so the command-substitution fork is negligible.
+    formatted=$(bashunit::console_results::format_duration "$time")
+    ;;
+  esac
 
   printf "${_BASHUNIT_COLOR_BOLD}%s${_BASHUNIT_COLOR_DEFAULT}\n" \
     "Time taken: ${formatted}"
