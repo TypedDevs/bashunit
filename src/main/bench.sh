@@ -132,6 +132,12 @@ function bashunit::main::cmd_bench() {
   if [ "$raw_args_count" -gt 0 ]; then
     local arg file
     for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
+      # Same rule as `test`: a path that is not on disk is a wrong invocation,
+      # while a file holding no bench_ function is an empty selection and keeps
+      # "No benchmarks found". #1199 closed the gap where the two subcommands
+      # disagreed about a missing path; #1263 gave `test` a second answer, and
+      # this is what keeps `bench` alongside it.
+      bashunit::main::require_existing_path_or_exit "$arg"
       while IFS= read -r file; do
         args[args_count]="$file"
         args_count=$((args_count + 1))

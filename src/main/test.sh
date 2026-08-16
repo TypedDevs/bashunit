@@ -593,25 +593,9 @@ function bashunit::main::cmd_test() {
           inline_filter_file="$parsed_path"
         fi
 
-        # An empty result is a real answer; a path that is not there is a wrong
-        # invocation, and `bashunit tsets/` used to give the first answer to the
-        # second question -- sending the reader after test naming, filters and
-        # the discovery glob rather than the typo in front of them (#1263).
-        #
-        # A `*` is exempt: nullglob is off, so a pattern the shell could not
-        # expand arrives literally, and matching nothing is an empty selection.
-        # find_files_recursive decides glob-ness on `*` alone; use the same test
-        # here or the two disagree about what a path even is.
-        case "$parsed_path" in
-        *"*"*) ;;
-        *)
-          if [ ! -e "$parsed_path" ]; then
-            printf "%sError: no such path: '%s'.%s\n" \
-              "${_BASHUNIT_COLOR_FAILED}" "$parsed_path" "${_BASHUNIT_COLOR_DEFAULT}" >&2
-            exit 1
-          fi
-          ;;
-        esac
+        # Checked on the stripped path, so `tsets/a_test.sh::test_x` names the
+        # file rather than the whole argument (#1263). Shared with `bench`.
+        bashunit::main::require_existing_path_or_exit "$parsed_path"
 
         local file
         while IFS= read -r file; do
