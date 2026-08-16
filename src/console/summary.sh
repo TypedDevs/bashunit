@@ -73,15 +73,20 @@ function bashunit::console_results::print_filter_hint() {
 
 function bashunit::console_results::render_result() {
   if [ "$(bashunit::state::is_duplicated_test_functions_found)" = true ]; then
-    bashunit::console_results::print_execution_time
-    printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
-    printf "File with duplicate functions: %s\n" "$(bashunit::state::get_file_with_duplicated_function_names)"
+    # To stderr: this aborts the run instead of reporting one, so under
+    # `--output json|junit` it was landing on the stream that is supposed to
+    # carry the document -- in every mode, sequential and parallel alike.
     local _dup_detail
     _dup_detail="$(bashunit::state::get_duplicated_function_details)"
     if [ -z "$_dup_detail" ]; then
       _dup_detail="$(bashunit::state::get_duplicated_function_names)"
     fi
-    printf "Duplicate functions: %s\n" "$_dup_detail"
+    {
+      bashunit::console_results::print_execution_time
+      printf "%s%s%s\n" "${_BASHUNIT_COLOR_RETURN_ERROR}" "Duplicate test functions found" "${_BASHUNIT_COLOR_DEFAULT}"
+      printf "File with duplicate functions: %s\n" "$(bashunit::state::get_file_with_duplicated_function_names)"
+      printf "Duplicate functions: %s\n" "$_dup_detail"
+    } >&2
     return 1
   fi
 
