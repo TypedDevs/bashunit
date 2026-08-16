@@ -5,6 +5,12 @@
 # The argv the suite pre-scan produces, read by cmd_test below.
 _BASHUNIT_MAIN_SUITE_ARGV=()
 
+# Whether the caller named a path of their own. Zero test files then means "what
+# you asked for holds no tests", which is an answer; without it the run falls
+# back to BASHUNIT_DEFAULT_PATH, and asking for one directory and being given
+# another one's results is not (#1263).
+_BASHUNIT_MAIN_PATHS_GIVEN=false
+
 ##
 # Resolves `--suite <name>` (repeatable) and `--list-suites` before the main
 # parse loop and rewrites argv into _BASHUNIT_MAIN_SUITE_ARGV.
@@ -572,6 +578,7 @@ function bashunit::main::cmd_test() {
       args_count="$raw_args_count"
     else
       # Test mode: process file paths and extract inline filters
+      _BASHUNIT_MAIN_PATHS_GIVEN=true
       local arg
       for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
         local parsed_path parsed_filter
@@ -585,6 +592,26 @@ function bashunit::main::cmd_test() {
           inline_filter="$parsed_filter"
           inline_filter_file="$parsed_path"
         fi
+
+        # An empty result is a real answer; a path that is not there is a wrong
+        # invocation, and `bashunit tsets/` used to give the first answer to the
+        # second question -- sending the reader after test naming, filters and
+        # the discovery glob rather than the typo in front of them (#1263).
+        #
+        # A `*` is exempt: nullglob is off, so a pattern the shell could not
+        # expand arrives literally, and matching nothing is an empty selection.
+        # find_files_recursive decides glob-ness on `*` alone; use the same test
+        # here or the two disagree about what a path even is.
+        case "$parsed_path" in
+        *"*"*) ;;
+        *)
+          if [ ! -e "$parsed_path" ]; then
+            printf "%sError: no such path: '%s'.%s\n" \
+              "${_BASHUNIT_COLOR_FAILED}" "$parsed_path" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+            exit 1
+          fi
+          ;;
+        esac
 
         local file
         while IFS= read -r file; do

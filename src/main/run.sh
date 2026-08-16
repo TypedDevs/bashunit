@@ -11,16 +11,30 @@ function bashunit::main::exec_tests() {
   # Bash 3.0 compatible: collect files into array
   local test_files
   local test_files_count=0
+  # load_test_files falls back to BASHUNIT_DEFAULT_PATH when handed no files,
+  # which is right only when the caller named no path. When they named one that
+  # selected nothing, the fallback answered a question they did not ask -- with
+  # a green run over the default suite (#1263). Skip discovery entirely there
+  # and let the empty selection render as "No tests found".
   local _line
-  while IFS= read -r _line; do
-    [ -z "$_line" ] && continue
-    test_files[test_files_count]="$_line"
-    test_files_count=$((test_files_count + 1))
-  done < <(bashunit::helper::load_test_files "$filter" "$@")
+  if [ "$#" -gt 0 ] || [ "${_BASHUNIT_MAIN_PATHS_GIVEN:-false}" != true ]; then
+    while IFS= read -r _line; do
+      [ -z "$_line" ] && continue
+      test_files[test_files_count]="$_line"
+      test_files_count=$((test_files_count + 1))
+    done < <(bashunit::helper::load_test_files "$filter" "$@")
+  fi
 
   bashunit::internal_log "exec_tests" "filter:$filter" "files:${test_files[*]:-}"
 
-  if [ "$test_files_count" -eq 0 ]; then
+  # Only when the caller named no path at all: with nothing to go on, the help
+  # dump is the answer. A path they DID name that holds no test files is an
+  # empty selection instead, so it falls through to "No tests found" -- the same
+  # shape an empty shard has. Without that distinction zero files here meant
+  # "use BASHUNIT_DEFAULT_PATH", and `bashunit empty_dir/` ran the default
+  # suite and exited 0, reporting a pass for tests the caller never asked for
+  # and never saw named (#1263).
+  if [ "$test_files_count" -eq 0 ] && [ "${_BASHUNIT_MAIN_PATHS_GIVEN:-false}" != true ]; then
     printf "%sError: At least one file path is required.%s\n" "${_BASHUNIT_COLOR_FAILED}" "${_BASHUNIT_COLOR_DEFAULT}"
     bashunit::console_header::print_help
     exit 1

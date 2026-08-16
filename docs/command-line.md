@@ -54,6 +54,28 @@ bashunit test tests/ --parallel --simple
 ```
 :::
 
+A path you name is the one that runs. Two answers follow from that, and they are
+deliberately different:
+
+```
+$ bashunit tsets/
+Error: no such path: 'tsets/'.
+
+$ bashunit tests/without_any_test/
+ No tests found
+```
+
+An empty result is a real answer — a directory with no test files, a `--filter`
+or `--tag` matching nothing, an empty `--shard`, `--changed` with no changes —
+and all of those keep saying `No tests found` and exit non-zero. A path that is
+not on disk is a mistyped invocation instead, so it is named before anything
+runs. A pattern the shell left unexpanded (`tests/zz*_test.sh`) counts as an
+empty result, not a missing path.
+
+A path that selects nothing never falls back to
+[`BASHUNIT_DEFAULT_PATH`](#environment-bootstrap): `bashunit empty_dir/` reports
+`No tests found` rather than quietly running the default suite.
+
 ### Test Options
 
 | Option                         | Description                                      |
