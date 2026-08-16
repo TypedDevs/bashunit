@@ -95,21 +95,32 @@ function bashunit::runner::list_functions() {
 }
 
 ##
-# Closes the listing: the JSON document, or the count on stderr so that stdout
-# stays a clean list of ids for piping.
+# Emits the tags every scanned file carried, one per line and sorted, and
+# nothing else -- not even the count on stderr, which would be noise in
+# `--list-tags | while read`. The names are already deduplicated by the map
+# builder; `sort -u` keeps that true whatever accumulates them.
+##
+function bashunit::runner::list_render_tags() {
+  [ -z "$_BASHUNIT_SEEN_TAGS" ] && return 0
+
+  local tag
+  # Comma separated because a tag may contain spaces (`# @tag needs a db`), the
+  # same split every other consumer uses (src/helper/tags.sh:137).
+  local old_ifs="$IFS"
+  IFS=','
+  for tag in $_BASHUNIT_SEEN_TAGS; do
+    printf '%s\n' "$tag"
+  done | sort -u
+  IFS="$old_ifs"
+}
+
+##
+# Closes the listing: the tag names, the JSON document, or the count on stderr
+# so that stdout stays a clean list of ids for piping.
 ##
 function bashunit::runner::list_render_summary() {
-  # One tag per line, sorted and deduplicated, and nothing else -- not even the
-  # count on stderr, which would be noise in `--list-tags | while read`.
   if bashunit::env::is_list_tags_enabled; then
-    [ -z "$_BASHUNIT_SEEN_TAGS" ] && return 0
-    local _tag
-    local _old_ifs=$IFS
-    IFS=','
-    for _tag in $_BASHUNIT_SEEN_TAGS; do
-      printf '%s\n' "$_tag"
-    done | sort -u
-    IFS=$_old_ifs
+    bashunit::runner::list_render_tags
     return 0
   fi
 
