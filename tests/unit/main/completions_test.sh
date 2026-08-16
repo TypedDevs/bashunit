@@ -120,7 +120,7 @@ function test_bash_completion_lists_all_subcommands() {
   )
 
   local sub
-  for sub in test bench doc init learn upgrade assert watch; do
+  for sub in test bench doc init upgrade assert watch; do
     assert_contains "$sub" "$subcommands"
   done
 }
@@ -130,7 +130,7 @@ function test_zsh_completion_lists_all_subcommands() {
   content=$(cat "$ZSH_COMPLETION_FILE")
 
   local sub
-  for sub in test bench doc init learn upgrade assert watch; do
+  for sub in test bench doc init upgrade assert watch; do
     assert_contains "$sub" "$content"
   done
 }

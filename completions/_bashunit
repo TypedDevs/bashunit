@@ -55,7 +55,6 @@ _bashunit() {
       'bench:Run benchmarks'
       'doc:Display assertion documentation'
       'init:Initialize a new test directory'
-      'learn:Start interactive tutorial'
       'upgrade:Upgrade bashunit to latest version'
       'assert:Run standalone assertion'
       'watch:Watch files and rerun tests on change'

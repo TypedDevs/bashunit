@@ -90,7 +90,6 @@ source "$BASHUNIT_ROOT_DIR/src/assert/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/reports/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/runner/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/benchmark/index.sh"
-source "$BASHUNIT_ROOT_DIR/src/learn/index.sh"
 source "$BASHUNIT_ROOT_DIR/src/main/index.sh"
 
 # check_os.sh runs its own init when sourced, above; calling it again here cost
@@ -103,9 +102,14 @@ bashunit::clock::init
 _SUBCOMMAND=""
 
 case "${1:-}" in
-  test | bench | doc | init | learn | upgrade | assert | watch)
+  test | bench | doc | init | upgrade | assert | watch)
     _SUBCOMMAND="$1"
     shift
+    ;;
+  learn)
+    printf "%sError: 'learn' was removed. Learn bashunit at https://bashunit.com%s\n" \
+      "$_BASHUNIT_COLOR_FAILED" "$_BASHUNIT_COLOR_DEFAULT" >&2
+    exit 1
     ;;
   -v | --version)
     bashunit::console_header::print_version
@@ -135,7 +139,6 @@ case "$_SUBCOMMAND" in
   bench) bashunit::main::cmd_bench "$@" ;;
   doc) bashunit::main::cmd_doc "$@" ;;
   init) bashunit::main::cmd_init "$@" ;;
-  learn) bashunit::main::cmd_learn "$@" ;;
   upgrade) bashunit::main::cmd_upgrade "$@" ;;
   assert) bashunit::main::cmd_assert "$@" ;;
   watch) bashunit::main::cmd_watch "$@" ;;

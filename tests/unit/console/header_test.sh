@@ -20,7 +20,6 @@ function test_print_help_contains_commands() {
   assert_contains "assert" "$output"
   assert_contains "doc" "$output"
   assert_contains "init" "$output"
-  assert_contains "learn" "$output"
   assert_contains "watch" "$output"
   assert_contains "upgrade" "$output"
 }
@@ -67,13 +66,6 @@ function test_print_init_help_contains_usage() {
   assert_contains "bootstrap.sh" "$output"
 }
 
-function test_print_learn_help_contains_lessons() {
-  local output
-  output=$(bashunit::console_header::print_learn_help)
-
-  assert_contains "Usage: bashunit learn" "$output"
-  assert_contains "tutorial" "$output"
-}
 
 function test_print_upgrade_help_contains_usage() {
   local output

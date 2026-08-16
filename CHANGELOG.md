@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Removed
+- `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
+
 ## [0.49.0](https://github.com/TypedDevs/bashunit/compare/0.48.0...0.49.0) - 2026-08-16
 
 ### Added

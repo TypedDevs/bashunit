@@ -82,7 +82,6 @@ Commands:
   assert <fn> <args>  Run standalone assertion
   doc [filter]        Display assertion documentation
   init [dir]          Initialize a new test directory
-  learn               Start interactive tutorial
   watch [path]        Watch files and re-run tests on change
   upgrade             Upgrade bashunit to latest version
 
@@ -276,27 +275,6 @@ Examples:
 EOF
 }
 
-function bashunit::console_header::print_learn_help() {
-  cat <<EOF
-Usage: bashunit learn
-
-Start the interactive learning tutorial.
-
-The tutorial includes 10 progressive lessons:
-  1. Basics - Your First Test
-  2. Assertions - Testing Different Conditions
-  3. Setup & Teardown - Managing Test Lifecycle
-  4. Testing Functions - Unit Testing Patterns
-  5. Testing Scripts - Integration Testing
-  6. Mocking - Test Doubles and Mocks
-  7. Spies - Verifying Function Calls
-  8. Data Providers - Parameterized Tests
-  9. Exit Codes - Testing Success and Failure
-  10. Complete Challenge - Real World Scenario
-
-Your progress is saved automatically.
-EOF
-}
 
 function bashunit::console_header::print_upgrade_help() {
   cat <<EOF

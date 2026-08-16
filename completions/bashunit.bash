@@ -9,7 +9,7 @@
 # tests/unit/main/completions_test.sh (anti-drift).
 # Works on bash 3.0+ (plain compgen -W, no bash-completion helpers required).
 
-_BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init learn upgrade assert watch"
+_BASHUNIT_COMPLETIONS_SUBCOMMANDS="test bench doc init upgrade assert watch"
 
 # Flags accepted by the doc subcommand.
 _BASHUNIT_COMPLETIONS_DOC_OPTS="--custom -e --env --boot -h --help"

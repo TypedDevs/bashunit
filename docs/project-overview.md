@@ -38,7 +38,6 @@ point holding **only `source` lines** — the code lives in the sibling files be
 | `reports` | JUnit, TAP, JSON, GitHub Actions and HTML writers |
 | `runner` | the file loop, per-test execution, retry, result parsing |
 | `benchmark` | the bench implementation |
-| `learn` | the interactive tutorial |
 | `main` | flag parsing per subcommand and the run lifecycle |
 
 There is also a `dev` module holding debug helpers, which is deliberately excluded from the

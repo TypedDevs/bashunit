@@ -55,7 +55,6 @@ Run it:
 ./lib/bashunit tests/
 ```
 
-Prefer learning by doing? Run `./lib/bashunit learn` for an interactive tutorial.
 
 ## Assertions at a glance
 
