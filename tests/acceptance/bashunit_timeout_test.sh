@@ -48,7 +48,20 @@ function test_bashunit_does_not_time_out_a_fast_test() {
 # it did not, because a descriptor the runner had left open leaked into the
 # watchdog's `sleep`, pinning the caller for the whole timeout budget (#1137).
 function test_a_killed_run_releases_its_captured_output_at_once() {
-  local killed_fixture=./tests/acceptance/fixtures/test_bashunit_timeout_killed.sh
+  local workdir
+  workdir=$(bashunit::temp_dir killed_run)
+  local probe="$workdir/body-started"
+  # The body announces itself rather than the caller guessing a delay: the
+  # watchdog exists only while a test body does, and on a slow runner a fixed
+  # sleep killed the run before it had started one -- or printed anything.
+  cat >"$workdir/killed_test.sh" <<TEST
+function test_body_in_flight_when_the_run_is_killed() {
+  : >"$probe"
+  sleep 3
+  assert_same "never" "reached"
+}
+TEST
+
   local start=0
   local end=0
   local output=""
@@ -60,18 +73,22 @@ function test_a_killed_run_releases_its_captured_output_at_once() {
     # a leak observable: what the killed run must not leave behind is a process
     # holding this pipe, on FD 1 or on any descriptor it was handed.
     exec 3>&1 5>&1
-    ./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 20 "$killed_fixture" &
+    ./bashunit --no-parallel --env "$TEST_ENV_FILE" --test-timeout 15 "$workdir" &
     run_pid=$!
-    sleep 2
+    waited=0
+    while [ ! -f "$probe" ] && [ "$waited" -lt 300 ]; do
+      sleep 0.1
+      waited=$((waited + 1))
+    done
     kill -9 "$run_pid" 2>/dev/null
     wait "$run_pid" 2>/dev/null
   ) || true
   end=$(date +%s)
 
-  # The floor is the fixture's own sleep, which legitimately keeps the run's
+  # The floor is the body's own sleep, which legitimately keeps the run's
   # stdout: a still-running test body is indistinguishable from one about to
   # print. The ceiling only has to sit below the timeout budget, which is what a
   # leaked descriptor makes the caller wait out in full.
   assert_contains "Running" "$output"
-  assert_less_than 12 "$((end - start))"
+  assert_less_than 10 "$((end - start))"
 }

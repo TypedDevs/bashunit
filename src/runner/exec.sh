@@ -367,13 +367,20 @@ function bashunit::runner::run_with_timeout() {
     # pipe the close was meant to withhold (`ls -l /dev/fd` inside `cmd 5>&-`
     # lists fd 11).
     exec 3>&- 5>&-
-    sleep "$secs"
-    # An orphan must not fire. `$$` is the runner's pid even in here, so this
-    # asks "is the run I am policing still going?" -- and after a whole timeout
-    # budget the answer decides whether the pid below still means what it meant:
-    # the next two lines signal a process GROUP, which the kernel is free to
-    # have handed to something else entirely once the original owner died.
-    kill -0 "$$" 2>/dev/null || exit 0
+    # Wait in steps rather than one `sleep $secs`, giving up as soon as there is
+    # nothing left to police. A watchdog can outlive its parent -- the group kill
+    # below "intermittently misses", per the note there, and a killed run never
+    # reaches that kill at all -- and one that stays armed sleeps out the budget
+    # and then signals a process GROUP by a pid the kernel is free to have handed
+    # to something else by then. `$$` is the runner's pid even in here, so the
+    # two checks read as "is my run still going, and is the test still running?".
+    waited=0
+    while [ "$waited" -lt "$secs" ]; do
+      kill -0 "$$" 2>/dev/null || exit 0
+      kill -0 "$test_pid" 2>/dev/null || exit 0
+      sleep 1
+      waited=$((waited + 1))
+    done
     # Only a still-running test can have timed out. Without this guard a watchdog
     # that outlived a missed teardown (see below) would mark an already-finished
     # fast test as timed out.
