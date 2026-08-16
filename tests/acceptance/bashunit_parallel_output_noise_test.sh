@@ -27,6 +27,21 @@ function _run() { # $@ = flags
   (cd "$WORKDIR" && "$BASHUNIT_BIN" "$@" t_test.sh 2>&1) || true
 }
 
+# Same run, stdout only. What a machine --output format promises is that
+# *stdout* is the document; stderr is where diagnostics belong and a consumer
+# redirects stdout on its own (`bashunit --output json > run.json`).
+#
+# Merging the streams made these assertions depend on the shell as well as on
+# bashunit. Bash 3.x prints "wait_for: No record of process <pid>" when a
+# SIGCHLD lands while it is waiting on a child it has already reaped -- a
+# spurious message about a process that simply finished, from bash's internal
+# wait, not from any `wait` this project writes. Under load on a Bash 3.0
+# runner it arrived first and displaced the `{`, failing a test about bashunit
+# over something bashunit never printed (#1274).
+function _run_stdout() { # $@ = flags
+  (cd "$WORKDIR" && "$BASHUNIT_BIN" "$@" t_test.sh 2>/dev/null) || true
+}
+
 # A command substitution is a pipe, so this is the CI shape: the spinner never
 # drew and nothing should have been erased.
 function test_a_piped_parallel_run_carries_no_carriage_return() {
@@ -85,7 +100,7 @@ function test_stop_on_failure_keeps_json_output_parseable() {
   _stop_on_failure_project
 
   local output
-  output="$(_run --parallel --stop-on-failure --output json)"
+  output="$(_run_stdout --parallel --stop-on-failure --output json)"
 
   assert_not_contains "Stop on failure" "$output"
   assert_same "{" "${output%%$'\n'*}"
@@ -95,7 +110,7 @@ function test_stop_on_failure_keeps_the_xml_declaration_first() {
   _stop_on_failure_project
 
   local output
-  output="$(_run --parallel --stop-on-failure --output junit)"
+  output="$(_run_stdout --parallel --stop-on-failure --output junit)"
 
   assert_not_contains "Stop on failure" "$output"
   assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
