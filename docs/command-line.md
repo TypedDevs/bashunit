@@ -138,7 +138,7 @@ Cypress spell `--pass-with-no-tests`.
 | `--list`, `--dry-run`          | Print the tests that would run, then exit         |
 | `--list-format <fmt>`          | Rendering for `--list`: `text` (default) or `json` |
 | `--list-tags`                  | Print the tags of the selected files, one per line, then exit |
-| `--snapshot-update`            | Rewrite existing snapshots from the actual value |
+| `-u, --snapshot-update`        | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
 | `--snapshot-prune`             | Delete the snapshot files no test resolved (full runs only) |
@@ -876,7 +876,7 @@ steps:
 
 ### Snapshot update
 
-> `bashunit test --snapshot-update`
+> `bashunit test -u|--snapshot-update`
 
 Re-record snapshots: every snapshot assertion whose file already exists is
 overwritten with the value this run produced, and reported as a recorded
@@ -891,8 +891,11 @@ never fails.
 Scope it with `--filter` to re-record a single test:
 
 ```bash
-./bashunit --snapshot-update --filter "renders the header" tests/
+./bashunit -u --filter "renders the header" tests/
 ```
+
+`-u` is the same short form jest and vitest use for their own update flag, so
+the reflex carries over.
 
 Notes:
 

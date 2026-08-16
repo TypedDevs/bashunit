@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `-u` as the short form of `--snapshot-update`. Re-running with `-u` after a deliberate output change is the reflex jest and vitest already teach, and both spell it the same way (#1293)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 

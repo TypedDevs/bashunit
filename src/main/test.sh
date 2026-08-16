@@ -308,7 +308,7 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_LIST_TAGS
       export -n BASHUNIT_LIST_TESTS
       ;;
-    --snapshot-update)
+    -u | --snapshot-update)
       BASHUNIT_SNAPSHOT_UPDATE=true
       export -n BASHUNIT_SNAPSHOT_UPDATE
       ;;
