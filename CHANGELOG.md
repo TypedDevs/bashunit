@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Performance: cold start is about 9ms faster, roughly 15%. Building the colour palette cost one subshell fork per colour, sixteen of them — the largest single cost in a startup. Every invocation paid it, including `--version` and `--help`
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 

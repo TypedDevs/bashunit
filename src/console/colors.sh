@@ -6,7 +6,13 @@
 #   https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
 # Credit:
 #   https://superuser.com/a/1119396
-bashunit::sgr() {
+_BASHUNIT_SGR_OUT=""
+
+##
+# Writes the escape sequence for the given SGR codes into _BASHUNIT_SGR_OUT.
+# Arguments: $@ - SGR codes (default: 0)
+##
+function bashunit::sgr_to_slot() {
   local codes=${1:-0}
   shift
 
@@ -15,7 +21,12 @@ bashunit::sgr() {
     codes="$codes;$c"
   done
 
-  echo $'\e'"[${codes}m"
+  _BASHUNIT_SGR_OUT=$'\e'"[${codes}m"
+}
+
+bashunit::sgr() {
+  bashunit::sgr_to_slot "$@"
+  echo "$_BASHUNIT_SGR_OUT"
 }
 
 if bashunit::env::is_no_color_enabled; then
@@ -36,22 +47,44 @@ if bashunit::env::is_no_color_enabled; then
   _BASHUNIT_COLOR_RETURN_RISKY=""
   _BASHUNIT_COLOR_DEFAULT=""
 else
-  _BASHUNIT_COLOR_BOLD="$(bashunit::sgr 1)"
+  bashunit::sgr_to_slot 1
+  _BASHUNIT_COLOR_BOLD=$_BASHUNIT_SGR_OUT
   # Use SGR 90 (bright black / gray) instead of SGR 2 (faint), since
   # GitHub Actions' log renderer does not render the faint attribute.
-  _BASHUNIT_COLOR_FAINT="$(bashunit::sgr 90)"
-  _BASHUNIT_COLOR_BLACK="$(bashunit::sgr 30)"
-  _BASHUNIT_COLOR_FAILED="$(bashunit::sgr 31)"
-  _BASHUNIT_COLOR_PASSED="$(bashunit::sgr 32)"
-  _BASHUNIT_COLOR_SKIPPED="$(bashunit::sgr 33)"
-  _BASHUNIT_COLOR_INCOMPLETE="$(bashunit::sgr 36)"
-  _BASHUNIT_COLOR_SNAPSHOT="$(bashunit::sgr 34)"
-  _BASHUNIT_COLOR_RISKY="$(bashunit::sgr 35)"
-  _BASHUNIT_COLOR_RETURN_ERROR="$(bashunit::sgr 41)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_RETURN_SUCCESS="$(bashunit::sgr 42)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_RETURN_SKIPPED="$(bashunit::sgr 43)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_RETURN_INCOMPLETE="$(bashunit::sgr 46)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_RETURN_SNAPSHOT="$(bashunit::sgr 44)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_RETURN_RISKY="$(bashunit::sgr 45)$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
-  _BASHUNIT_COLOR_DEFAULT="$(bashunit::sgr 0)"
+  bashunit::sgr_to_slot 90
+  _BASHUNIT_COLOR_FAINT=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 30
+  _BASHUNIT_COLOR_BLACK=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 31
+  _BASHUNIT_COLOR_FAILED=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 32
+  _BASHUNIT_COLOR_PASSED=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 33
+  _BASHUNIT_COLOR_SKIPPED=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 36
+  _BASHUNIT_COLOR_INCOMPLETE=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 34
+  _BASHUNIT_COLOR_SNAPSHOT=$_BASHUNIT_SGR_OUT
+  bashunit::sgr_to_slot 35
+  _BASHUNIT_COLOR_RISKY=$_BASHUNIT_SGR_OUT
+
+  # The banner colours all end in black + bold, so they are the background code
+  # concatenated with two entries set just above.
+  _bashunit_banner_suffix="$_BASHUNIT_COLOR_BLACK$_BASHUNIT_COLOR_BOLD"
+  bashunit::sgr_to_slot 41
+  _BASHUNIT_COLOR_RETURN_ERROR="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  bashunit::sgr_to_slot 42
+  _BASHUNIT_COLOR_RETURN_SUCCESS="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  bashunit::sgr_to_slot 43
+  _BASHUNIT_COLOR_RETURN_SKIPPED="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  bashunit::sgr_to_slot 46
+  _BASHUNIT_COLOR_RETURN_INCOMPLETE="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  bashunit::sgr_to_slot 44
+  _BASHUNIT_COLOR_RETURN_SNAPSHOT="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  bashunit::sgr_to_slot 45
+  _BASHUNIT_COLOR_RETURN_RISKY="$_BASHUNIT_SGR_OUT$_bashunit_banner_suffix"
+  unset _bashunit_banner_suffix
+
+  bashunit::sgr_to_slot 0
+  _BASHUNIT_COLOR_DEFAULT=$_BASHUNIT_SGR_OUT
 fi
