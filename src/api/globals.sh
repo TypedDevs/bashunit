@@ -102,6 +102,13 @@ function bashunit::cleanup_testcase_temp_files() {
 function bashunit::cleanup_script_temp_files() {
   bashunit::internal_log "cleanup_script_temp_files"
   if [ -n "${BASHUNIT_CURRENT_SCRIPT_ID:-}" ]; then
+    # The testcase twin's reasoning, applied per file (#1269): the marker is
+    # written by temp_file/temp_dir, so its absence means this file's
+    # script-level hooks created nothing and the rm has nothing to remove. Most
+    # files never call either, and the fork was paid unconditionally.
+    if [ ! -e "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_SCRIPT_ID}_.mark" ]; then
+      return 0
+    fi
     rm -rf "$BASHUNIT_TEMP_DIR/${BASHUNIT_CURRENT_SCRIPT_ID}"_*
   fi
 }

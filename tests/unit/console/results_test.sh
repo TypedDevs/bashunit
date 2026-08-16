@@ -327,6 +327,24 @@ function test_render_execution_time() {
   assert_matches "Time taken: ([[:digit:]]+(\\.[[:digit:]]+)?(ms|s)|[[:digit:]]+m [[:digit:]]+s)" "$render_result"
 }
 
+# A measurement that failed used to be laundered into a number: the empty
+# result met `${time:-0}` and printed as "Time taken: 0ms", which reads exactly
+# like a real instant run. #1271 is that -- a broken pipe in the calculation
+# left the footer saying 0ms for a 3.4s run, and nothing else said a word.
+function test_render_execution_time_when_it_cannot_be_measured() {
+  local render_result
+  render_result=$(
+    # shellcheck disable=SC2034
+    BASHUNIT_SHOW_EXECUTION_TIME=true
+    bashunit::mock bashunit::clock::total_runtime_in_milliseconds echo ""
+
+    bashunit::console_results::print_execution_time || true
+  )
+
+  assert_contains "unknown" "$render_result"
+  assert_not_contains "0ms" "$render_result"
+}
+
 function test_not_render_execution_time() {
   local render_result
   render_result=$(
@@ -346,7 +364,12 @@ function test_render_execution_time_on_osx_without_perl() {
   mock_macos
   bashunit::mock bashunit::dependencies::has_perl mock_false
 
-  _BASHUNIT_START_TIME=1727771758.0664479733
+  # Nanoseconds, like the sibling below and like every clock::now_to_slot
+  # branch. It read 1727771758.0664479733 -- seconds with a fraction, a shape
+  # the clock stopped producing and the run can no longer be in; only `bc`
+  # tolerating it kept the assertion passing over a subtraction of two
+  # different units.
+  _BASHUNIT_START_TIME=1727771758066447973
 
   local render_result
   render_result=$(
