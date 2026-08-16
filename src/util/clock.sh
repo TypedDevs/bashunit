@@ -189,13 +189,36 @@ function bashunit::clock::shell_time() {
 }
 
 function bashunit::clock::total_runtime_in_milliseconds() {
-  local end_time
-  end_time=$(bashunit::clock::now)
-  if [ -n "$end_time" ]; then
-    bashunit::math::calculate "($end_time - $_BASHUNIT_START_TIME) / 1000000"
-  else
+  # Every now_to_slot branch yields an integer nanosecond count, so the whole
+  # sum is integer arithmetic the shell can do itself. It used to go through
+  # math::calculate, i.e. `echo | bc`, and staging that pipe is what failed in
+  # #1271 -- leaving the total empty, which the footer then printed as 0ms. A
+  # run's own clock should not depend on a fork it does not need: this is also
+  # one less fork and one less subshell per run.
+  #
+  # The digit guards are not decoration. An unexpected value (a `date` that
+  # printed a literal %N, an interpreter that wrote a warning) would otherwise
+  # reach `$(( ))`, and a bad arithmetic expression is fatal under `set -e`
+  # while the caller is only trying to print a footer.
+  bashunit::clock::now_to_slot || {
     echo ""
-  fi
+    return
+  }
+  local end_time=$_BASHUNIT_CLOCK_NOW_OUT
+  local start_time=${_BASHUNIT_START_TIME:-}
+  case "$end_time" in
+  '' | *[!0-9]*)
+    echo ""
+    return
+    ;;
+  esac
+  case "$start_time" in
+  '' | *[!0-9]*)
+    echo ""
+    return
+    ;;
+  esac
+  echo "$(((end_time - start_time) / 1000000))"
 }
 
 function bashunit::clock::init() {

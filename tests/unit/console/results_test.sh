@@ -364,7 +364,12 @@ function test_render_execution_time_on_osx_without_perl() {
   mock_macos
   bashunit::mock bashunit::dependencies::has_perl mock_false
 
-  _BASHUNIT_START_TIME=1727771758.0664479733
+  # Nanoseconds, like the sibling below and like every clock::now_to_slot
+  # branch. It read 1727771758.0664479733 -- seconds with a fraction, a shape
+  # the clock stopped producing and the run can no longer be in; only `bc`
+  # tolerating it kept the assertion passing over a subtraction of two
+  # different units.
+  _BASHUNIT_START_TIME=1727771758066447973
 
   local render_result
   render_result=$(
