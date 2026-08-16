@@ -150,6 +150,26 @@ function bashunit::reports::load_spooled() {
   bashunit::reports::is_enabled || return 0
   [ -f "${REPORTS_OUTPUT_PATH:-}" ] || return 0
 
+  # The spool is the complete record of a parallel run, so it replaces the
+  # arrays rather than appending to them.
+  #
+  # A worker's own arrays die with it, so for a worker's row appending would be
+  # right. But a file-level hook failure is recorded by the PARENT -- see
+  # runner/hooks.sh record_file_hook_failure -- and add_test fills the arrays
+  # for every caller while spooling only under --parallel. That row was
+  # therefore in both places, and replaying it appended a second copy: a failing
+  # set_up_before_script was reported as two failed tests where the console
+  # summary of the same run said one.
+  _BASHUNIT_REPORTS_TEST_FILES=()
+  _BASHUNIT_REPORTS_TEST_NAMES=()
+  _BASHUNIT_REPORTS_TEST_STATUSES=()
+  _BASHUNIT_REPORTS_TEST_DURATIONS=()
+  _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
+  _BASHUNIT_REPORTS_TEST_FAILURES=()
+  _BASHUNIT_REPORTS_TEST_LINES=()
+  _BASHUNIT_REPORTS_TEST_RETRIES=()
+  _BASHUNIT_REPORTS_TEST_OUTPUTS=()
+
   local file test_name status duration assertions failure_message line retries test_output n
   while IFS='|' read -r file test_name status duration assertions failure_message line retries test_output; do
     [ -n "$file" ] || continue

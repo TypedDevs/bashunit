@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- A `--parallel` run no longer counts a file-level hook failure twice in its reports. A failing `set_up_before_script` or `tear_down_after_script`, and a file that fails to source, were written into the JSON, JUnit, HTML and Markdown reports as two failed tests, listed twice, while the console summary of the same run said one — the console was right (#1301)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
