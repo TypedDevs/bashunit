@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Performance: a `--parallel` run writing a report is about 1.9x faster and costs 1.8x less CPU. Every result row base64-encoded all nine of its fields separately and decoded them the same way — fourteen `base64` forks per test — so `--log-junit`, the usual CI setup, cost several times more than running the tests. Only the four fields that can hold arbitrary text are encoded now (#1289)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
