@@ -1500,10 +1500,8 @@ bashunit bench --filter "parse"
 
 Dedicated watch subcommand that uses **OS file-event notifications** (no
 polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
-by `bashunit test` is also accepted here, **but put the path first**: apart from
-`-f/--filter`, an option's value is otherwise taken as the watch path, so
-`bashunit watch --tag slow` watches a directory named `slow`. Write
-`bashunit watch tests/ --tag slow`.
+by `bashunit test` is also accepted here, in any position: the path is whichever
+argument is not an option or an option's value.
 
 When neither `inotifywait` nor `fswatch` is installed, it no longer fails:
 it falls back to a **pure-shell polling loop** and prints a short notice.

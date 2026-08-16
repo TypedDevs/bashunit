@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `bashunit watch` no longer takes an option's value as the path it polls. Only `-f/--filter` was known to consume a value, so `bashunit watch --tag slow tests/` polled a directory named `slow` and passed the real path to `--tag`; when the value happened to name a real directory it polled the wrong one without saying so. Options may now appear in any position (#1291)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
