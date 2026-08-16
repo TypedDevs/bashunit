@@ -95,6 +95,7 @@ bashunit test tests/ --parallel --simple
 | `--changed [<ref>]`            | Run only the test files changed since `<ref>` (default: `origin/HEAD`, then `HEAD`) |
 | `--list`, `--dry-run`          | Print the tests that would run, then exit         |
 | `--list-format <fmt>`          | Rendering for `--list`: `text` (default) or `json` |
+| `--list-tags`                  | Print the tags of the selected files, one per line, then exit |
 | `--snapshot-update`            | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
@@ -267,6 +268,8 @@ Use [`--list`](#list) to check what an expression actually selects:
 ```bash
 bashunit --list --tag 'db&&!slow' tests/
 ```
+
+…and [`--list-tags`](#list-tags) to see which tag names exist in the first place.
 
 ### Sandbox
 
@@ -982,6 +985,35 @@ to is a property of the run.
 ```
 
 An unsupported format is rejected rather than silently falling back to `text`.
+
+#### List tags
+
+> `bashunit test --list-tags`
+
+Print the tags carried by the selected files, one per line, sorted and without
+duplicates, then exit without running anything.
+
+```bash
+./bashunit --list-tags tests/
+# api
+# db
+# slow
+```
+
+Tags exist only inside `# @tag` / `# @tags` comments, so a mistyped `--tag`
+selects nothing and leaves you guessing the right name. This is the list to
+check against — and, being nothing but the names on stdout (not even the
+`N tests` count `--list` writes to stderr), it pipes:
+
+```bash
+./bashunit --list-tags tests/ | while read -r tag; do
+  printf '%s: ' "$tag"; ./bashunit --list --tag "$tag" tests/ | wc -l
+done
+```
+
+It implies `--list`: the answer comes from scanning the selected files, and
+nothing may run to produce it. A selection carrying no tag prints nothing and
+exits **0**, like any other query.
 
 ### Rerun failed
 

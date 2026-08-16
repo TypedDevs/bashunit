@@ -297,6 +297,8 @@ _BASHUNIT_DEFAULT_EXCLUDE_FILTER=""
 _BASHUNIT_DEFAULT_LIST_TESTS="false"
 # Rendering for --list: text (one id per line) or json
 _BASHUNIT_DEFAULT_LIST_FORMAT="text"
+# Print the distinct tags carried by the selected files and exit
+_BASHUNIT_DEFAULT_LIST_TAGS="false"
 # Rewrite existing snapshots from the actual value instead of comparing
 _BASHUNIT_DEFAULT_SNAPSHOT_UPDATE="false"
 # Record a snapshot the first time it is asserted (false = a missing one fails)
@@ -387,6 +389,7 @@ export _BASHUNIT_GHA_ANNOTATIONS_CLAIMED=1
 : "${BASHUNIT_EXCLUDE_FILTER:=$_BASHUNIT_DEFAULT_EXCLUDE_FILTER}"
 : "${BASHUNIT_LIST_TESTS:=$_BASHUNIT_DEFAULT_LIST_TESTS}"
 : "${BASHUNIT_LIST_FORMAT:=$_BASHUNIT_DEFAULT_LIST_FORMAT}"
+: "${BASHUNIT_LIST_TAGS:=$_BASHUNIT_DEFAULT_LIST_TAGS}"
 # No bare SNAPSHOT_UPDATE alias either: rewriting files on disk is the last
 # setting that should be reachable by a generic name from the environment.
 : "${BASHUNIT_SNAPSHOT_UPDATE:=$_BASHUNIT_DEFAULT_SNAPSHOT_UPDATE}"
@@ -707,6 +710,10 @@ function bashunit::env::is_snapshot_update_enabled() {
 
 function bashunit::env::is_list_enabled() {
   [ "$BASHUNIT_LIST_TESTS" = "true" ]
+}
+
+function bashunit::env::is_list_tags_enabled() {
+  [ "$BASHUNIT_LIST_TAGS" = "true" ]
 }
 
 function bashunit::env::is_fail_on_risky_enabled() {

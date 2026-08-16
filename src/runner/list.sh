@@ -30,6 +30,15 @@ function bashunit::runner::list_functions() {
 
   bashunit::runner::order_functions_for_script "$script" "$fns"
 
+  # --list-tags wants only the names, and gets them from the same scan: the map
+  # builder accumulates every tag it sees into _BASHUNIT_SEEN_TAGS (#1265). No
+  # test ids are emitted, so the answer can be piped straight into another
+  # command.
+  if bashunit::env::is_list_tags_enabled; then
+    bashunit::helper::build_tags_map "$script"
+    return 0
+  fi
+
   local wants_json=false
   if [ "$BASHUNIT_LIST_FORMAT" = "json" ]; then
     wants_json=true
@@ -90,6 +99,20 @@ function bashunit::runner::list_functions() {
 # stays a clean list of ids for piping.
 ##
 function bashunit::runner::list_render_summary() {
+  # One tag per line, sorted and deduplicated, and nothing else -- not even the
+  # count on stderr, which would be noise in `--list-tags | while read`.
+  if bashunit::env::is_list_tags_enabled; then
+    [ -z "$_BASHUNIT_SEEN_TAGS" ] && return 0
+    local _tag
+    local _old_ifs=$IFS
+    IFS=','
+    for _tag in $_BASHUNIT_SEEN_TAGS; do
+      printf '%s\n' "$_tag"
+    done | sort -u
+    IFS=$_old_ifs
+    return 0
+  fi
+
   if [ "$BASHUNIT_LIST_FORMAT" = "json" ]; then
     printf '{"count":%s,"tests":[%s]}\n' \
       "$_BASHUNIT_LIST_COUNT" "$_BASHUNIT_LIST_JSON_ITEMS"
