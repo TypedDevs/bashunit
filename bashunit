@@ -35,7 +35,7 @@ function _check_bash_version() {
 _check_bash_version
 
 # shellcheck disable=SC2034
-declare -r BASHUNIT_VERSION="0.48.0"
+declare -r BASHUNIT_VERSION="0.49.0"
 
 # shellcheck disable=SC2155
 # `${x%/*}` rather than `$(dirname "$x")`: one fork on every invocation, and
