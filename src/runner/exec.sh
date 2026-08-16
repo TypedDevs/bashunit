@@ -347,13 +347,33 @@ function bashunit::runner::run_with_timeout() {
   # Both jobs run in their own process group (set -m) so each can be killed as a
   # whole tree. The body MUST run in an explicit ( ) subshell: a backgrounded { }
   # group does not run its EXIT trap on normal completion, which would drop the
-  # encoded assertion context. The watchdog's fds are detached from the caller so
-  # a lingering `sleep` can never hold a captured stdout pipe open.
+  # encoded assertion context.
   set -m
   (bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@") >"$out_file" 2>&1 &
   local test_pid=$!
   (
+    # The watchdog is the one process here that can outlive its parent: the
+    # group kill below intermittently misses it, and a SIGKILLed run never
+    # reaches that kill at all. Detaching 0/1/2 is not enough, because both
+    # descriptors bashunit keeps open are dups of a stdout it does not own --
+    # FD 3 for the test body, FD 5 for the EXIT trap -- and a nested run
+    # inherits the OUTER run's pair on top of its own. An orphaned `sleep` held
+    # those, so the caller reading the run's output waited out the whole timeout
+    # budget for an EOF that no visible writer was delaying (#1137).
+    #
+    # `exec` closes for good; a per-command `3>&- 5>&-` would not, because bash
+    # implements it by dup'ing each descriptor to a fd >= 10 to restore it
+    # after, and that copy is not close-on-exec, so the child inherits the very
+    # pipe the close was meant to withhold (`ls -l /dev/fd` inside `cmd 5>&-`
+    # lists fd 11).
+    exec 3>&- 5>&-
     sleep "$secs"
+    # An orphan must not fire. `$$` is the runner's pid even in here, so this
+    # asks "is the run I am policing still going?" -- and after a whole timeout
+    # budget the answer decides whether the pid below still means what it meant:
+    # the next two lines signal a process GROUP, which the kernel is free to
+    # have handed to something else entirely once the original owner died.
+    kill -0 "$$" 2>/dev/null || exit 0
     # Only a still-running test can have timed out. Without this guard a watchdog
     # that outlived a missed teardown (see below) would mark an already-finished
     # fast test as timed out.
@@ -409,6 +429,12 @@ function bashunit::runner::run_test() {
   # (FD = File Descriptor)
   # Duplicate the current std-output (FD 1) and assigns it to FD 3.
   # This means that FD 3 now points to wherever the std-output was pointing.
+  #
+  # Nothing in src/ reads it, but a test body can: `exec 2>&3 2>log` is how a
+  # test detaches its stderr from the runner's 2>&1 merge, and
+  # tests/unit/project/redirect_error_test.sh pins that. It is therefore part of
+  # what a test is handed, and every process the test forks inherits it -- see
+  # the watchdog in run_with_timeout, which must close it (#1137).
   exec 3>&1
 
   local test_execution_result
