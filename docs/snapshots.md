@@ -174,9 +174,21 @@ Nothing was deleted. Run with --snapshot-prune to remove them.
 
 It never deletes anything — a snapshot removed by mistake is re-recorded on the next run
 and never fails again, so an automatic cleanup could quietly turn a real assertion into a
-rubber stamp. Only snapshots belonging to the test files of the run are considered, and
-the flag is refused with `--filter`, `--tag`, `--exclude-tag`, `--shard` and
+rubber stamp. The flag is refused with `--filter`, `--tag`, `--exclude-tag`, `--shard` and
 `--rerun-failed`, whose partial runs would report live files as unused.
+
+Two kinds of snapshot are reported:
+
+- one whose test file **ran** and whose test no longer resolves it — a renamed or deleted
+  test function;
+- one whose test file is **gone from disk** entirely — a renamed or deleted test *file*,
+  the most common way a snapshot is orphaned. No run can discover such a file, so nothing
+  would ever report it otherwise.
+
+A snapshot whose test file exists but was not part of this run is left alone, so running
+`./bashunit --snapshot-report-unused one_test.sh` never reports its neighbours' snapshots.
+"Not selected" and "not on disk" are the distinction, and it is what keeps the flags safe
+on a subset of the suite.
 
 ### Deleting them
 
