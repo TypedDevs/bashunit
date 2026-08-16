@@ -44,6 +44,8 @@ function bashunit::helper::build_tags_map() {
   # produced). A blank or non-comment line breaks the association; other
   # comment lines keep the block open. Both `function test_x` and `test_x()`
   # definition styles are recognised.
+  # Here-string, not `< <(awk …)`: the same per-file descriptor leak documented
+  # in helper/provider.sh applies here whenever --tag is used (#1271).
   while IFS=$'\t' read -r fn tags; do
     [ -z "$fn" ] && continue
     _BASHUNIT_TAGS_MAP_FNS[count]="$fn"
@@ -64,7 +66,7 @@ function bashunit::helper::build_tags_map() {
     done
     IFS=$_old_ifs
     count=$((count + 1))
-  done < <(awk '
+  done <<<"$(awk '
     # An uninitialised awk variable used as a subscript is the empty string,
     # not 0, so the first function would land in order[""] and be unreachable
     # from the numeric loop in END.
@@ -120,7 +122,7 @@ function bashunit::helper::build_tags_map() {
         if (out != "") { printf "%s\t%s\n", order[i], out }
       }
     }
-  ' "$script" 2>/dev/null)
+  ' "$script" 2>/dev/null)"
 }
 
 

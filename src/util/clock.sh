@@ -218,7 +218,16 @@ function bashunit::clock::total_runtime_in_milliseconds() {
     return
     ;;
   esac
-  echo "$(((end_time - start_time) / 1000000))"
+  local elapsed=$(((end_time - start_time) / 1000000))
+  # A run cannot take less than no time. A clock read that failed and came back
+  # as 0 produced the whole epoch as a negative number -- seen as
+  # "Time taken: -1786882432081ms" when the fork the clock used could not be
+  # made. `unknown` is the honest answer for an impossible one.
+  if [ "$elapsed" -lt 0 ]; then
+    echo ""
+    return
+  fi
+  echo "$elapsed"
 }
 
 function bashunit::clock::init() {

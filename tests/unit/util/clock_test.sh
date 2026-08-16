@@ -129,11 +129,32 @@ function test_now_to_slot_date_seconds_branch() {
 }
 
 function test_runtime_in_milliseconds_when_not_empty_time() {
-  bashunit::mock perl <<<"1720705883457"
+  # Nanoseconds, and an end after the start. It used to mock perl with
+  # 1720705883457 -- milliseconds -- against the real run's nanosecond start,
+  # so the subtraction was hugely negative and the assertion only held because
+  # `bc` will happily return a negative number for an elapsed time (#1271).
+  _BASHUNIT_CLOCK_NOW_IMPL="perl"
+  _BASHUNIT_START_TIME=1720705883457000000
+  bashunit::mock perl <<<"1720705884457000000"
   bashunit::mock bashunit::dependencies::has_python mock_false
   bashunit::mock bashunit::dependencies::has_node mock_false
 
-  assert_not_empty "$(bashunit::clock::total_runtime_in_milliseconds)"
+  assert_same "1000" "$(bashunit::clock::total_runtime_in_milliseconds)"
+}
+
+# The shape the old fixture accidentally produced: a clock read that comes back
+# smaller than the start. It cannot happen to a real run, and printing it as a
+# negative duration ("Time taken: -1786882432081ms", seen when the clock's fork
+# failed under a descriptor limit) says less than admitting the measurement is
+# no good.
+function test_runtime_in_milliseconds_is_empty_when_the_clock_goes_backwards() {
+  _BASHUNIT_CLOCK_NOW_IMPL="perl"
+  _BASHUNIT_START_TIME=1720705884457000000
+  bashunit::mock perl <<<"1720705883457000000"
+  bashunit::mock bashunit::dependencies::has_python mock_false
+  bashunit::mock bashunit::dependencies::has_node mock_false
+
+  assert_empty "$(bashunit::clock::total_runtime_in_milliseconds)"
 }
 
 function test_now_prefers_shell_time_over_perl() {
