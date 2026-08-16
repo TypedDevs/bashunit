@@ -143,6 +143,7 @@ Options:
   --output <format>           Report on stdout: text (default), tap, json or junit
   -R, --run-all               Run all assertions (don't stop on first failure)
   -S, --stop-on-failure       Stop on first failure
+      --pass-with-no-tests    Exit 0 when the run selects no tests
   --test-timeout <seconds>    Fail a test if it runs longer than N seconds (0 = off)
   --retry <n>                 Re-run a failed test up to N extra times (0 = off)
   --repeat <n>                Run each selected test N times; it fails if any iteration fails

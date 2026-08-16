@@ -232,10 +232,20 @@ function bashunit::console_results::render_result() {
   fi
 
   if [ "$total_tests" -eq 0 ]; then
-    printf "\n%s%s%s\n" "$_BASHUNIT_COLOR_RETURN_ERROR" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
+    # --pass-with-no-tests changes the verdict, not the report: the run still
+    # says it found nothing, because a shard that is empty by design and one
+    # that is empty by accident look identical and the reader needs to see it.
+    local empty_colour="$_BASHUNIT_COLOR_RETURN_ERROR"
+    if bashunit::env::is_pass_with_no_tests_enabled; then
+      empty_colour="$_BASHUNIT_COLOR_RETURN_SKIPPED"
+    fi
+    printf "\n%s%s%s\n" "$empty_colour" " No tests found " "$_BASHUNIT_COLOR_DEFAULT"
     bashunit::console_results::print_filter_hint
     bashunit::console_results::print_tag_hint
     bashunit::console_results::print_execution_time
+    if bashunit::env::is_pass_with_no_tests_enabled; then
+      return 0
+    fi
     return 1
   fi
 
