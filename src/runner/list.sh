@@ -30,6 +30,15 @@ function bashunit::runner::list_functions() {
 
   bashunit::runner::order_functions_for_script "$script" "$fns"
 
+  # --list-tags wants only the names, and gets them from the same scan: the map
+  # builder accumulates every tag it sees into _BASHUNIT_SEEN_TAGS (#1265). No
+  # test ids are emitted, so the answer can be piped straight into another
+  # command.
+  if bashunit::env::is_list_tags_enabled; then
+    bashunit::helper::build_tags_map "$script"
+    return 0
+  fi
+
   local wants_json=false
   if [ "$BASHUNIT_LIST_FORMAT" = "json" ]; then
     wants_json=true
@@ -86,10 +95,35 @@ function bashunit::runner::list_functions() {
 }
 
 ##
-# Closes the listing: the JSON document, or the count on stderr so that stdout
-# stays a clean list of ids for piping.
+# Emits the tags every scanned file carried, one per line and sorted, and
+# nothing else -- not even the count on stderr, which would be noise in
+# `--list-tags | while read`. The names are already deduplicated by the map
+# builder; `sort -u` keeps that true whatever accumulates them.
+##
+function bashunit::runner::list_render_tags() {
+  [ -z "$_BASHUNIT_SEEN_TAGS" ] && return 0
+
+  local tag
+  # Comma separated because a tag may contain spaces (`# @tag needs a db`), the
+  # same split every other consumer uses (src/helper/tags.sh:137).
+  local old_ifs="$IFS"
+  IFS=','
+  for tag in $_BASHUNIT_SEEN_TAGS; do
+    printf '%s\n' "$tag"
+  done | sort -u
+  IFS="$old_ifs"
+}
+
+##
+# Closes the listing: the tag names, the JSON document, or the count on stderr
+# so that stdout stays a clean list of ids for piping.
 ##
 function bashunit::runner::list_render_summary() {
+  if bashunit::env::is_list_tags_enabled; then
+    bashunit::runner::list_render_tags
+    return 0
+  fi
+
   if [ "$BASHUNIT_LIST_FORMAT" = "json" ]; then
     printf '{"count":%s,"tests":[%s]}\n' \
       "$_BASHUNIT_LIST_COUNT" "$_BASHUNIT_LIST_JSON_ITEMS"

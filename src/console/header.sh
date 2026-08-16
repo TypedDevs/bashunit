@@ -154,6 +154,7 @@ Options:
   --changed [<ref>]           Run only the test files changed since <ref> (default: origin/HEAD, then HEAD)
   --list, --dry-run           Print the tests that would run, then exit without running them
   --list-format <fmt>         Rendering for --list: text (default) or json
+  --list-tags                 Print the tags of the selected files, one per line, then exit
   --snapshot-update           Rewrite existing snapshots from the actual value (combine with --filter)
   --no-snapshot-create        Fail on a missing snapshot instead of recording it (for CI)
   --snapshot-report-unused    List snapshot files no test resolved (full runs only, deletes nothing)

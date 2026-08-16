@@ -152,6 +152,18 @@ function test_list_writes_no_report_file() {
   assert_file_not_exists "$report"
 }
 
+# A listing dispatches no worker, so --parallel must not aggregate the empty
+# per-script dirs it left behind: that printed "No tests found" in the middle of
+# the ids, which a `--list | while read` consumer would take for a test id.
+function test_list_prints_the_same_ids_under_parallel() {
+  local sequential parallel
+  sequential="$(./bashunit --no-parallel --list "$ALPHA" 2>&1)"
+  parallel="$(./bashunit --parallel --list "$ALPHA" 2>&1)"
+
+  assert_same "$sequential" "$parallel"
+  assert_not_contains "No tests found" "$parallel"
+}
+
 function test_list_format_json_emits_valid_json_with_the_documented_fields() {
   if ! command -v jq >/dev/null 2>&1; then
     bashunit::skip "jq is required to validate the JSON shape" && return

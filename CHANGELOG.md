@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- `--list-tags` prints the tags of the selected files, one per line, sorted and deduplicated, and runs nothing. Tags live only in `# @tag` comments, so a mistyped `--tag` had no list to check against; the output is nothing but the names, so it pipes (#1265)
+
 ### Changed
 - A `--tag` matching nothing now names the tags the run saw, or says no test carries one — tags live only in `# @tag` comments and nothing lists them, so a typo had no way back (#1265)
 
@@ -9,6 +12,7 @@
 
 ### Fixed
 - A test that both fails an assertion and hits a shell error no longer reports the failure text with the diagnostic glued onto the end; the error message is the diagnostic alone (#1267)
+- `--list` under `--parallel` no longer prints `No tests found` in the middle of the ids: a listing dispatches no worker, so there is nothing to aggregate (#1007)
 
 ## [0.48.0](https://github.com/TypedDevs/bashunit/compare/0.47.0...0.48.0) - 2026-08-14
 

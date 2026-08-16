@@ -400,6 +400,16 @@ default.
 
 Similar as using `--list` / `--list-format` options on the [command line](/command-line#list).
 
+## List tags
+
+> `BASHUNIT_LIST_TAGS=true|false`
+
+Print the tags carried by the selected files, one per line, and exit without running
+anything. Disabled by default. It implies `BASHUNIT_LIST_TESTS`: the answer comes from
+scanning the selected files, and nothing may run to produce it.
+
+Similar as using `--list-tags` option on the [command line](/command-line#list-tags).
+
 ## Snapshot update
 
 > `BASHUNIT_SNAPSHOT_UPDATE=true|false`
