@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `--parallel` with an empty selection no longer prints `No tests found` onto stdout ahead of the document, which made `--output json` and `--output junit` unparseable; sequential runs of the same selection were valid. On the console the notice appeared twice instead of once. An empty selection is routine in CI — an unpopulated `--shard`, a `--changed` run that touched nothing — which is where `--output` is consumed (#1295)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
