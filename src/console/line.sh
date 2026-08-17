@@ -79,12 +79,20 @@ function bashunit::console_results::print_tap_line() {
   test_name=$(printf "%s" "$test_name" | \
     sed 's/[[:space:]]*[0-9][0-9]*m\{0,1\}[[:space:]]*[0-9.]*[ms]*[[:space:]]*$//')
 
+  # TAP 13 reads an unescaped `#` on a test line as the start of a directive, so
+  # a title holding one hands the consumer a directive bashunit never meant -- a
+  # failing test titled "... # SKIP ..." is read as not-a-failure and leaves CI
+  # silently. Only the description is escaped; the directives below are ours.
+  # `--report-tap` has done this since #1119 via the same helper.
+  local tap_name
+  tap_name=$(bashunit::reports::__tap_description "$test_name")
+
   case "$type" in
   successful)
-    printf "ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    printf "ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     ;;
   failure | failed | failed_snapshot | error)
-    printf "not ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+    printf "not ok %d - %s\n" "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     local detail_line
     printf "  ---\n"
     while IFS= read -r detail_line; do
@@ -104,27 +112,28 @@ function bashunit::console_results::print_tap_line() {
     skip_reason="${skip_reason#"${skip_reason%%[![:space:]]*}"}"
     if [ -n "$skip_reason" ]; then
       printf "ok %d - %s # SKIP %s\n" \
-        "$_BASHUNIT_TOTAL_TESTS_COUNT" "$skip_name" "$skip_reason"
+        "$_BASHUNIT_TOTAL_TESTS_COUNT" \
+        "$(bashunit::reports::__tap_description "$skip_name")" "$skip_reason"
     else
       printf "ok %d - %s # SKIP\n" \
-        "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+        "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     fi
     ;;
   incomplete)
     printf "ok %d - %s # TODO incomplete\n" \
-      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     ;;
   snapshot)
     printf "ok %d - %s # snapshot\n" \
-      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     ;;
   risky)
     printf "ok %d - %s # RISKY no assertions\n" \
-      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     ;;
   *)
     printf "not ok %d - %s\n" \
-      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$test_name"
+      "$_BASHUNIT_TOTAL_TESTS_COUNT" "$tap_name"
     ;;
   esac
 }
