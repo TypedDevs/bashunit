@@ -26,6 +26,8 @@
 - A comma or colon in a test title no longer breaks its GitHub Actions annotation. GitHub splits an annotation's properties on `,`, so a `set_test_title` holding one ended the title there and turned the rest into an invented property; a file path containing a comma did the same. Property values now encode `:` and `,` as the spec requires, on top of the `%`, `\r` and `\n` the message already encoded (#1307)
 ### Fixed
 - `--output tap` now escapes a `#` in a test description, as `--report-tap` already did. TAP reads an unescaped `#` as the start of a directive, so a failing test titled `... # SKIP ...` was handed to the consumer as a skip — a `not ok` carrying a SKIP directive is not a failure, and it left CI silently. The `# SKIP` and `# TODO` directives bashunit writes itself are unaffected (#1309)
+### Fixed
+- The Cobertura coverage report escapes XML metacharacters in a path. A file whose name held `&`, `<` or `>` went into `filename=`, `class name=`, `package name=` and `<source>` raw, so the document did not parse — and Cobertura is what GitLab, Azure and Jenkins render coverage from, which then silently show nothing. The HTML report gained this in #1254; this writer had no escaper at all (#1311)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
