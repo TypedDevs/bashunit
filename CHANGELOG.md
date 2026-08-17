@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- A failure message containing a ``` fence no longer breaks the `--report-md` summary. The message is fenced unescaped, which is right only while the fence is longer than any run of backticks inside it — a hook printing a bare fence closed the block early, so the text after it rendered as prose and the trailing fence opened an unterminated one, swallowing every later section of the page appended to `$GITHUB_STEP_SUMMARY` (#1305)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
