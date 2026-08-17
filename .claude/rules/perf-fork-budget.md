@@ -259,3 +259,13 @@ the `RANDOM` state, and `BASHPID` is 4.0+; an ordinal sidesteps that entirely.
 `wait_for_job_slot` already uses `wait -n` on Bash 4.3+ and an adaptive
 sleep-poll fallback — don't "fix" it. The spinner forks `sleep` ~1/s on
 non-tty; not worth chasing.
+
+**Reports are on the per-test path too.** Any `--log-*`/`--report-*` flag makes
+each worker spool a result row, and that row used to base64 each of its nine
+fields on its own — 14 `base64` forks per test counting the parent's decode,
+with a `tr` on each encode. `--log-junit` therefore cost more than the run it
+reported on (300 tests: 1.2s → 9.2s wall, 5.8s → 27.4s CPU). Now only the four
+fields that can hold arbitrary text are encoded and the row is joined with
+0x1F. The main workflow passes no report flag, so CI never showed this; the
+budget is guarded by `bashunit_run_forks_test.sh`. When adding a field to that
+row, ask whether it can hold arbitrary text before reaching for base64.
