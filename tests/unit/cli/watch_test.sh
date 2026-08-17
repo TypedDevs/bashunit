@@ -116,3 +116,35 @@ function test_cmd_watch_defaults_path_to_dot() {
   assert_contains "." "$output"
   assert_contains "--filter my_test" "$output"
 }
+
+# Only `-f/--filter` used to be known as taking a value, so every other
+# option's value fell through to the positional branch and became the path
+# being watched. `bashunit watch --tag slow tests/` polled a directory named
+# `slow`; when the value happened to name a real one it polled that silently.
+function test_cmd_watch_does_not_take_an_option_value_as_the_path() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "--tag" "slow" "tests/")
+
+  assert_same "tests/ --tag slow" "$output"
+}
+
+function test_cmd_watch_forwards_every_value_taking_option_with_its_value() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "--jobs" "4" "--output" "tap" "tests/")
+
+  assert_same "tests/ --jobs 4 --output tap" "$output"
+}
+
+# A flag that takes no value must still not swallow the path after it.
+function test_cmd_watch_keeps_a_valueless_flag_from_eating_the_path() {
+  bashunit::mock bashunit::watch::run echo
+
+  local output
+  output=$(bashunit::main::cmd_watch "--parallel" "tests/")
+
+  assert_same "tests/ --parallel" "$output"
+}
