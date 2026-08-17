@@ -359,10 +359,20 @@ function bashunit::runner::run_tear_down_after_script() {
     bashunit::console_results::print_hook_completed "tear_down_after_script" "$duration_ms"
   fi
 
-  # Add blank line after tear_down output
+  # Add blank line after tear_down output.
+  #
+  # Same guards as the early-return path above, json and junit included: this
+  # line is console decoration, and under `--output` it landed on stdout ahead
+  # of the document. XML wants its declaration at byte 0, so an ordinary
+  # tear_down_after_script -- the hook did not have to fail -- was enough to
+  # make the report malformed. JSON tolerates leading whitespace, which is why
+  # only the XML showed it. tap is still excluded on purpose: it streams line
+  # by line, so a blank line between files is valid there.
   if ! bashunit::env::is_simple_output_enabled &&
     ! bashunit::env::is_failures_only_enabled &&
     ! bashunit::env::is_no_progress_enabled &&
+    ! bashunit::env::is_json_output_enabled &&
+    ! bashunit::env::is_junit_output_enabled &&
     ! bashunit::parallel::is_enabled; then
     echo ""
   fi
