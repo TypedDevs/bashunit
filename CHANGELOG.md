@@ -18,6 +18,8 @@
 - Two diagnostics no longer print to stdout, where they made `--output json` and `--output junit` unparseable: the duplicate-test-function abort, in every mode, and the replay of a `--parallel` worker's stderr, which meant any test whose `set_up` failed corrupted the report. Both go to stderr now, so they still reach the reader while stdout carries only the document (#1299)
 ### Fixed
 - A `--parallel` run no longer counts a file-level hook failure twice in its reports. A failing `set_up_before_script` or `tear_down_after_script`, and a file that fails to source, were written into the JSON, JUnit, HTML and Markdown reports as two failed tests, listed twice, while the console summary of the same run said one — the console was right (#1301)
+### Fixed
+- `bashunit bench` now exits non-zero when a benchmark file fails to source or its `set_up_before_script` fails. It printed the error and exited 0, so the failure reached a human reading the log and never reached CI; a file with a syntax error silently lost every `bench_` function after it and still reported success. A benchmark that merely returns non-zero still exits 0 — a benchmark measures time and has no assertion concept (#1303)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)

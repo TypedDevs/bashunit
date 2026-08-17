@@ -60,3 +60,41 @@ function test_bench_fails_when_a_file_holds_no_bench_function() {
   assert_general_error "" "" "$ec"
   assert_contains "No benchmarks found" "$output"
 }
+
+# `bench` exits on "No benchmarks found" and on a baseline regression, and
+# consulted nothing else -- so a file that failed alongside one that ran left
+# the run green. The error is printed either way, which is what makes it a
+# silent green rather than a silent failure: a human reading the log sees it,
+# CI does not. `test` exits non-zero for both of these shapes.
+function test_bench_fails_when_a_files_set_up_before_script_fails() {
+  local dir
+  dir="$(bashunit::temp_dir bench_hook_fail)"
+  printf 'function bench_works() { :; }\n' >"$dir/a_bench.sh"
+  {
+    printf 'function %s() { return 1; }\n' "set_up_before_script"
+    printf 'function bench_never() { :; }\n'
+  } >"$dir/b_bench.sh"
+
+  local ec=0
+  local output
+  output=$(./bashunit bench "$dir" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+  assert_contains "Set up before script" "$output"
+}
+
+function test_bench_fails_when_a_file_cannot_be_sourced() {
+  local dir
+  dir="$(bashunit::temp_dir bench_source_fail)"
+  printf 'function bench_works() { :; }\n' >"$dir/a_bench.sh"
+  {
+    printf 'function bench_ok() { :; }\n'
+    printf 'function broken( {\n'
+  } >"$dir/b_bench.sh"
+
+  local ec=0
+  local output
+  output=$(./bashunit bench "$dir" 2>&1) || ec=$?
+
+  assert_general_error "" "" "$ec"
+}
