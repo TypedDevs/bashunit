@@ -245,9 +245,18 @@ function bashunit::runner::execute_test_body() {
   # execute_test_hook, the redirect leaks into the EXIT trap,
   # causing export_subshell_context output to be lost.
   exec 5>&1
-  # shellcheck disable=SC2064
+  # The path travels in a variable, never interpolated into the trap string. A
+  # trap body is re-evaluated by the shell when it fires, so a path holding
+  # `` `cmd` `` or `$(cmd)` used to RUN it -- the surrounding double quotes stop
+  # word splitting but not command substitution. A file's name is data, and the
+  # exposure was a CI job running `bashunit tests/` over a checked-out branch:
+  # whoever could add a file to the tree chose the command.
+  #
+  # Single quotes below, so nothing expands until the trap fires, and then only
+  # as an ordinary parameter expansion -- which does not re-scan its value.
+  _BASHUNIT_RUNNER_EXIT_FILE=$test_file
   # shellcheck disable=SC2154 # assigned inside the trap body, read by cleanup_on_exit (runner/hooks.sh)
-  trap "exit_code=\$?; bashunit::runner::cleanup_on_exit \"$test_file\" \"\$exit_code\"" EXIT
+  trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$_BASHUNIT_RUNNER_EXIT_FILE" "$exit_code"' EXIT
   bashunit::state::initialize_assertions_count
 
   if bashunit::env::is_login_shell_enabled; then
