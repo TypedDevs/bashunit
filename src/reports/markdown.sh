@@ -108,9 +108,27 @@ function bashunit::reports::__md_failures() {
       printf '`%s`\n\n' "$file"
     fi
     # Not escaped: a fence renders its contents literally, which is the point.
-    echo '```'
+    #
+    # That holds only while the fence is longer than any run of backticks in the
+    # message. A hook printing a bare ``` closed the block early, so the text
+    # after it rendered as prose and the trailing fence opened a new,
+    # unterminated one -- swallowing every later section of a report that is
+    # appended to $GITHUB_STEP_SUMMARY. CommonMark closes a fence only with one
+    # at least as long, so grow it past the longest run present.
+    #
+    # The loop is fork-free and terminates: the message is finite, so some
+    # length is not a substring of it. A message holding ```` contains ``` too,
+    # which is why testing for containment (not equality) gets the longest run.
+    local fence='```'
+    while :; do
+      case "$message" in
+      *"$fence"*) fence="$fence"'`' ;;
+      *) break ;;
+      esac
+    done
+    printf '%s\n' "$fence"
     printf '%s\n' "$message"
-    echo '```'
+    printf '%s\n' "$fence"
     echo ""
   done
 }
