@@ -20,6 +20,8 @@
 - A `--parallel` run no longer counts a file-level hook failure twice in its reports. A failing `set_up_before_script` or `tear_down_after_script`, and a file that fails to source, were written into the JSON, JUnit, HTML and Markdown reports as two failed tests, listed twice, while the console summary of the same run said one — the console was right (#1301)
 ### Fixed
 - `bashunit bench` now exits non-zero when a benchmark file fails to source or its `set_up_before_script` fails. It printed the error and exited 0, so the failure reached a human reading the log and never reached CI; a file with a syntax error silently lost every `bench_` function after it and still reported success. A benchmark that merely returns non-zero still exits 0 — a benchmark measures time and has no assertion concept (#1303)
+### Fixed
+- A failure message containing a ``` fence no longer breaks the `--report-md` summary. The message is fenced unescaped, which is right only while the fence is longer than any run of backticks inside it — a hook printing a bare fence closed the block early, so the text after it rendered as prose and the trailing fence opened an unterminated one, swallowing every later section of the page appended to `$GITHUB_STEP_SUMMARY` (#1305)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
