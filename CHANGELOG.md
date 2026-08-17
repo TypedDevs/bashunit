@@ -22,6 +22,8 @@
 - `bashunit bench` now exits non-zero when a benchmark file fails to source or its `set_up_before_script` fails. It printed the error and exited 0, so the failure reached a human reading the log and never reached CI; a file with a syntax error silently lost every `bench_` function after it and still reported success. A benchmark that merely returns non-zero still exits 0 — a benchmark measures time and has no assertion concept (#1303)
 ### Fixed
 - A failure message containing a ``` fence no longer breaks the `--report-md` summary. The message is fenced unescaped, which is right only while the fence is longer than any run of backticks inside it — a hook printing a bare fence closed the block early, so the text after it rendered as prose and the trailing fence opened an unterminated one, swallowing every later section of the page appended to `$GITHUB_STEP_SUMMARY` (#1305)
+### Fixed
+- A comma or colon in a test title no longer breaks its GitHub Actions annotation. GitHub splits an annotation's properties on `,`, so a `set_test_title` holding one ended the title there and turned the rest into an invented property; a file path containing a comma did the same. Property values now encode `:` and `,` as the spec requires, on top of the `%`, `\r` and `\n` the message already encoded (#1307)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
