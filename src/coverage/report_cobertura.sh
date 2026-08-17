@@ -5,6 +5,32 @@
 # consume: GitLab MR visualisation, Azure PublishCodeCoverageResults and the
 # Jenkins Coverage plugin.
 
+##
+# Escapes a path for an XML attribute or element body. `&` first, or the
+# entities written after it would have their own ampersands escaped again.
+#
+# `sed`, not `${text//&/&amp;}`: Bash 5.2 reads a bare `&` in the REPLACEMENT as
+# "the matched text", so that spelling yields `<lt;` there while producing
+# `&lt;` on 3.2, and escaping it for 5.2 emits a literal backslash on 3.2. There
+# is no spelling correct across the supported range, which is why report_html.sh
+# escapes through sed too (#1096, #1254).
+#
+# The `case` keeps it fork-free for the paths that need nothing, which is nearly
+# all of them -- this runs once per file and once per package. The result goes
+# into the slot below rather than being echoed, like __cobertura_rate: a
+# `$(...)` capture would fork once per file even for the paths the `case` clears.
+##
+_BASHUNIT_COBERTURA_ESCAPED_OUT=""
+function bashunit::coverage::__cobertura_escape() {
+  case "$1" in
+  *[\&\<\>\"]*)
+    _BASHUNIT_COBERTURA_ESCAPED_OUT=$(printf '%s' "$1" |
+      sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g; s/"/\&quot;/g')
+    ;;
+  *) _BASHUNIT_COBERTURA_ESCAPED_OUT="$1" ;;
+  esac
+}
+
 # Turns hit/total counts into a "0.87"-style rate, written into the slot
 # below. Derived from the same integer percentage the console report prints,
 # so the two can never disagree; the literal dot keeps it locale-immune.
@@ -137,7 +163,13 @@ condition-coverage=\"${cond_pct}% (${taken}/${arms})\"/>
     bashunit::coverage::__cobertura_rate "$file_br_taken" "$file_br"
     class_branch_rate=$_BASHUNIT_COBERTURA_RATE_OUT
 
-    pkg_classes[p]="${pkg_classes[p]}        <class name=\"$class_name\" filename=\"$rel\" \
+    local esc_class esc_rel
+    bashunit::coverage::__cobertura_escape "$class_name"
+    esc_class=$_BASHUNIT_COBERTURA_ESCAPED_OUT
+    bashunit::coverage::__cobertura_escape "$rel"
+    esc_rel=$_BASHUNIT_COBERTURA_ESCAPED_OUT
+
+    pkg_classes[p]="${pkg_classes[p]}        <class name=\"$esc_class\" filename=\"$esc_rel\" \
 line-rate=\"$class_line_rate\" branch-rate=\"$class_branch_rate\" complexity=\"0.0\">
           <methods/>
           <lines>
@@ -159,7 +191,8 @@ $lines_xml          </lines>
       "branches-covered=\"$total_br_taken\" branches-valid=\"$total_br\"" \
       "complexity=\"0.0\" version=\"${BASHUNIT_VERSION:-0}\" timestamp=\"$timestamp\">"
     echo "  <sources>"
-    echo "    <source>$PWD</source>"
+    bashunit::coverage::__cobertura_escape "$PWD"
+    echo "    <source>$_BASHUNIT_COBERTURA_ESCAPED_OUT</source>"
     echo "  </sources>"
     echo "  <packages>"
 
@@ -170,7 +203,8 @@ $lines_xml          </lines>
       pkg_line_rate=$_BASHUNIT_COBERTURA_RATE_OUT
       bashunit::coverage::__cobertura_rate "${pkg_br_taken[$s]}" "${pkg_br_total[$s]}"
       pkg_branch_rate=$_BASHUNIT_COBERTURA_RATE_OUT
-      echo "    <package name=\"${pkg_names[$s]}\" line-rate=\"$pkg_line_rate\"" \
+      bashunit::coverage::__cobertura_escape "${pkg_names[$s]}"
+      echo "    <package name=\"$_BASHUNIT_COBERTURA_ESCAPED_OUT\" line-rate=\"$pkg_line_rate\"" \
         "branch-rate=\"$pkg_branch_rate\" complexity=\"0.0\">"
       echo "      <classes>"
       printf '%s' "${pkg_classes[$s]}"

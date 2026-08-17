@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- The Cobertura coverage report escapes XML metacharacters in a path. A file whose name held `&`, `<` or `>` went into `filename=`, `class name=`, `package name=` and `<source>` raw, so the document did not parse — and Cobertura is what GitLab, Azure and Jenkins render coverage from, which then silently show nothing. The HTML report gained this in #1254; this writer had no escaper at all (#1311)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
