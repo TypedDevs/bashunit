@@ -132,6 +132,37 @@ function bashunit::main::require_existing_path_or_exit() {
 }
 
 
+##
+# Whether a `test` option consumes the argument after it as its value.
+#
+# `watch` is the caller: it has to tell an option's value apart from the path it
+# polls, and knowing only `-f/--filter` meant every other value landed in the
+# positional branch -- `watch --tag slow tests/` polled a directory named
+# `slow`, and silently polled the wrong one whenever the value named a real
+# directory.
+#
+# Kept in step with cmd_test's parser by tests/unit/main/option_values_test.sh,
+# which derives the list from that parser rather than repeating it.
+#
+# Arguments: $1 - the option as typed
+# Returns: 0 when it takes a value, 1 otherwise
+##
+function bashunit::main::option_takes_value() {
+  case "$1" in
+  -a | --assert | -e | --env | --boot | -f | --filter | --exclude-filter | \
+    --tag | --exclude-tag | --sandbox-allow | --output | --list-format | \
+    -j | --jobs | -r | --retry | --repeat | --test-timeout | --order-by | \
+    --seed | --shard | --suite | --coverage-min | --coverage-paths | \
+    --coverage-exclude | --coverage-diff | --log-junit | --log-gha | \
+    --gha-annotations | --report-html | --report-json | --report-junit | \
+    --report-md | --report-tap)
+    return 0
+    ;;
+  esac
+  return 1
+}
+
+
 function bashunit::main::require_writable_path_or_exit() {
   local path=$1
   local parent=${1%/*}
