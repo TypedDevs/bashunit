@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `bashunit bench` now exits non-zero when a benchmark file fails to source or its `set_up_before_script` fails. It printed the error and exited 0, so the failure reached a human reading the log and never reached CI; a file with a syntax error silently lost every `bench_` function after it and still reported success. A benchmark that merely returns non-zero still exits 0 — a benchmark measures time and has no assertion concept (#1303)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 

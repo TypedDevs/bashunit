@@ -367,6 +367,15 @@ function bashunit::main::exec_benchmarks() {
     fi
   fi
 
+  # A file that failed to source, or whose set_up_before_script failed, is
+  # recorded as a failure and printed -- but the exit code consulted only "no
+  # benchmarks found" and the baseline gate, so a failure alongside a file that
+  # did run left the run green. The error reached the human reading the log and
+  # never reached CI, which is the worst of the two.
+  if [ "$(bashunit::state::get_tests_failed)" -gt 0 ]; then
+    exit 1
+  fi
+
   bashunit::internal_log "Finished benchmarks"
 }
 
