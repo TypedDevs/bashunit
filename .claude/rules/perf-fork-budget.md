@@ -30,6 +30,17 @@ Caveats: binaries pinned at startup via `command -v` (`$GREP`, `$MKTEMP`,
 `$CAT`) bypass PATH shims — trace those instead; and shims are unreliable on
 Git Bash (skip such tests on Windows).
 
+**A shim census only sees forks that exec a binary.** `$(some_shell_function)`
+forks a subshell and execs nothing, so it is invisible to every shim and to the
+`^\++ +/path/to/binary` trace patterns above — yet it costs the same ~0.6ms.
+That blind spot hid sixteen of them in the colour palette (`$(bashunit::sgr N)`
+per colour, ~9ms, the largest single cost in a cold start) straight through the
+#801-#851 campaign that pinned everything else on this page. To count them,
+match the *function name* in the trace (`^\++ +bashunit::fn( |$)`), or profile
+by injecting `$EPOCHREALTIME` echoes at the `# src/<path>` markers the build
+emits — that attributes startup cost per source file and is how this one
+surfaced.
+
 **`bash -x` trace census (cheap but inflated).** `PS4='+ ' bash -x ./bashunit …`
 also counts trace lines **re-echoed inside captured test output**, so it can
 overcount 10-20x (one real `grep` appeared 24 times). Use it to *locate* fork
@@ -193,11 +204,20 @@ into the runner — plus the duplicate check), `perl` ×2 clock reads (start/end
 no `EPOCHREALTIME` before Bash 5), 1 `base64` capability probe, 1 `mkdir`,
 1 `tput`. Per-test cost is fork-free.
 
-**Cold start: 3 forks** — `uname` (OS detect), `tput` (snapshot width), `perl`
-(clock before Bash 5). It was 5 until #1124: `check_os::init` ran twice, once
-at source time and again from the entrypoint, and `BASHUNIT_ROOT_DIR` came from
-`$(dirname …)`. Sourcing `src/` is the rest of it and is irreducible without
-lazy-loading, rejected in #798.
+**Cold start: 3 binary forks** — `uname` (OS detect), `tput` (snapshot width),
+`perl` (clock before Bash 5). It was 5 until #1124: `check_os::init` ran twice,
+once at source time and again from the entrypoint, and `BASHUNIT_ROOT_DIR` came
+from `$(dirname …)`. Plus a handful of *subshell* forks no shim census sees
+(see the blind-spot note above); the sixteen in the palette are gone.
+
+Sourcing `src/` is the rest of it, and it is **not** all irreducible — that was
+assumed here until a per-source-file profile disproved it. Measured on macOS
+with the `# src/<path>` marker technique: 41.6ms of executed top-level code,
+against 10ms to parse the whole 600KB artifact and define all 915 functions.
+Parsing is cheap; what runs at source time is not. The current shape is
+`config/env.sh` ~12.6ms (config files, `tput`, `mkdir`), `state/payload.sh`
+~2.9ms (the `base64 --help` probe) and `system/check_os.sh` ~2.4ms (`uname`).
+Lazy-loading whole modules was still rejected in #798.
 
 Measuring a change this small needs ~200 invocations per sample: the two forks
 are ~4ms against a ~65ms startup, and single runs vary by ±10ms. The acceptance

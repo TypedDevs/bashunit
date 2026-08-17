@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Changed
+- Performance: cold start is about 9ms faster, roughly 15%. Building the colour palette cost one subshell fork per colour, sixteen of them — the largest single cost in a startup. Every invocation paid it, including `--version` and `--help`
+- `--seed <n>` now implies `--random-order`. The header prints `Randomized with seed: N` so a failing run can be replayed, but typing that seed back on its own selected nothing: the run came back in defined order and green, and the shuffle that caused the failure never happened. An order named explicitly still wins, so `--order-by defined --seed 42` runs in defined order. Same behaviour as RSpec's `--seed`
 - Performance: a `--parallel` run writing a report is about 1.9x faster and costs 1.8x less CPU. Every result row base64-encoded all nine of its fields separately and decoded them the same way — fourteen `base64` forks per test — so `--log-junit`, the usual CI setup, cost several times more than running the tests. Only the four fields that can hold arbitrary text are encoded now (#1289)
 
 ### Removed
