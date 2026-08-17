@@ -196,3 +196,49 @@ function test_output_junit_is_well_formed_with_a_tear_down_after_script() {
 
   assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
 }
+
+function test_output_json_is_valid_when_a_file_has_duplicate_test_functions() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local dir fn
+  dir="$(bashunit::temp_dir dup_json)"
+  fn="test_same_name"
+  {
+    printf 'function %s() { assert_true true; }\n' "$fn"
+    printf 'function %s() { assert_true true; }\n' "$fn"
+  } >"$dir/dup_test.sh"
+
+  local stdout
+  stdout=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$dir/dup_test.sh" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+}
+
+function test_output_json_is_valid_when_a_parallel_worker_writes_stderr() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local dir
+  dir="$(bashunit::temp_dir worker_stderr_json)"
+  {
+    printf 'function %s() { return 1; }\n' "set_up"
+    printf 'function %s() { assert_true true; }\n' "test_needs_set_up"
+  } >"$dir/hook_test.sh"
+
+  local stdout
+  stdout=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output json "$dir/hook_test.sh" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+}
+
+function test_the_duplicate_function_abort_is_reported_on_stderr() {
+  local dir fn
+  dir="$(bashunit::temp_dir dup_stderr)"
+  fn="test_same_name_again"
+  {
+    printf 'function %s() { assert_true true; }\n' "$fn"
+    printf 'function %s() { assert_true true; }\n' "$fn"
+  } >"$dir/dup2_test.sh"
+
+  local stderr
+  stderr=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$dir/dup2_test.sh" 2>&1 >/dev/null || true)
+
+  assert_contains "Duplicate test functions found" "$stderr"
+}

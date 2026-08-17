@@ -14,6 +14,8 @@
 - `--parallel` with an empty selection no longer prints `No tests found` onto stdout ahead of the document, which made `--output json` and `--output junit` unparseable; sequential runs of the same selection were valid. On the console the notice appeared twice instead of once. An empty selection is routine in CI — an unpopulated `--shard`, a `--changed` run that touched nothing — which is where `--output` is consumed (#1295)
 ### Fixed
 - A test file with a `tear_down_after_script` no longer makes `--output junit` malformed. The blank line printed after that hook went to stdout ahead of the document, so the XML declaration was not at byte 0 and the report did not parse; the hook did not have to fail, an ordinary one was enough. `--output json` carried the same stray byte but tolerates leading whitespace (#1297)
+### Fixed
+- Two diagnostics no longer print to stdout, where they made `--output json` and `--output junit` unparseable: the duplicate-test-function abort, in every mode, and the replay of a `--parallel` worker's stderr, which meant any test whose `set_up` failed corrupted the report. Both go to stderr now, so they still reach the reader while stdout carries only the document (#1299)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
