@@ -769,7 +769,9 @@ function release::generate_release_notes() {
     sed 's/^### Added$/## ✨ Improvements/' |
     sed 's/^### Changed$/## 🛠️ Changes/' |
     sed 's/^### Fixed$/## 🐛 Bug Fixes/' |
-    sed 's/^### Performance$/## ⚡ Performance/'
+    sed 's/^### Performance$/## ⚡ Performance/' |
+    sed 's/^### Security$/## 🔒 Security/' |
+    sed 's/^### Removed$/## 🗑️ Removed/'
 
   # Add contributors section
   local contributors
