@@ -62,3 +62,24 @@ function test_bashunit_report_junit_is_alias_of_log_junit() {
   assert_file_contains "$report" "<testsuite"
   rm "$report"
 }
+
+# __xml_escape is applied to the test name and the failure message, but the
+# path-derived attributes -- testsuite name=, testcase classname= and file= --
+# were interpolated raw. A path holding `"` closes the attribute early and the
+# document stops parsing; `&` and `<` do the same. Same shape as #1307 and
+# #1311: the escaper exists, it just was not reaching every site.
+function test_junit_escapes_a_quote_in_the_file_path() {
+  local dir
+  dir="$(bashunit::temp_dir junit_quote_path)"
+  printf 'function test_ok() { assert_true true; }\n' >"$dir/say \"hi\"_test.sh"
+
+  ./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" \
+    --report-junit "$dir/r.xml" "$dir/say \"hi\"_test.sh" >/dev/null 2>&1 || true
+
+  assert_file_exists "$dir/r.xml"
+  local content
+  content="$(cat "$dir/r.xml")"
+  # The raw quote must not survive inside an attribute value.
+  assert_not_contains 'name="tests/say "hi"' "$content"
+  assert_contains '&quot;hi&quot;' "$content"
+}

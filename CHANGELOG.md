@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- The JUnit report escapes the file path. `testsuite name=`, `testcase classname=` and `file=` were interpolated raw, so a test file whose name contained `"`, `&` or `<` closed the attribute early and the document stopped parsing — under both `--report-junit` and `--output junit`. The test name and the failure message were already escaped (#1313)
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
