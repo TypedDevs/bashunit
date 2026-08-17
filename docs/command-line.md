@@ -131,14 +131,14 @@ Cypress spell `--pass-with-no-tests`.
 | `--repeat <n>`                 | Run each selected test N times; it fails if any iteration fails |
 | `--random-order`               | Randomize test execution order                   |
 | `--order-by <mode>`            | Execution order: `defined` (default), `defects` or `random` |
-| `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
+| `--seed <n>`                   | Seed the shuffle (reproducible); implies `--random-order` |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
 | `--changed [<ref>]`            | Run only the test files changed since `<ref>` (default: `origin/HEAD`, then `HEAD`) |
 | `--list`, `--dry-run`          | Print the tests that would run, then exit         |
 | `--list-format <fmt>`          | Rendering for `--list`: `text` (default) or `json` |
 | `--list-tags`                  | Print the tags of the selected files, one per line, then exit |
-| `--snapshot-update`            | Rewrite existing snapshots from the actual value |
+| `-u, --snapshot-update`        | Rewrite existing snapshots from the actual value |
 | `--no-snapshot-create`         | Fail on a missing snapshot instead of recording it |
 | `--snapshot-report-unused`     | List snapshot files no test resolved (deletes nothing) |
 | `--snapshot-prune`             | Delete the snapshot files no test resolved (full runs only) |
@@ -830,8 +830,11 @@ dependencies). Disabled by default.
 
 When enabled and no `--seed` is given, a seed is generated and printed in the
 run header so a failing run can be replayed exactly with `--seed <n>`. The same
-seed always produces the same order, and it composes with `--parallel`. `--seed`
-on its own (without `--random-order`) has no effect.
+seed always produces the same order, and it composes with `--parallel`.
+
+`--seed <n>` on its own is enough: a seed names an order and nothing else, so
+giving one turns the random order on. Naming an order explicitly still wins, so
+`--order-by defined --seed 42` runs in defined order.
 
 ::: code-group
 ```bash [Example]
@@ -841,7 +844,7 @@ bashunit test tests/ --random-order
 Randomized with seed: 12345
 
 # replay the exact same order:
-bashunit test tests/ --random-order --seed 12345
+bashunit test tests/ --seed 12345
 ```
 :::
 
@@ -876,7 +879,7 @@ steps:
 
 ### Snapshot update
 
-> `bashunit test --snapshot-update`
+> `bashunit test -u|--snapshot-update`
 
 Re-record snapshots: every snapshot assertion whose file already exists is
 overwritten with the value this run produced, and reported as a recorded
@@ -891,8 +894,11 @@ never fails.
 Scope it with `--filter` to re-record a single test:
 
 ```bash
-./bashunit --snapshot-update --filter "renders the header" tests/
+./bashunit -u --filter "renders the header" tests/
 ```
+
+`-u` is the same short form jest and vitest use for their own update flag, so
+the reflex carries over.
 
 Notes:
 
@@ -1500,10 +1506,8 @@ bashunit bench --filter "parse"
 
 Dedicated watch subcommand that uses **OS file-event notifications** (no
 polling) to re-run tests as soon as a `.sh` file changes. Any option accepted
-by `bashunit test` is also accepted here, **but put the path first**: apart from
-`-f/--filter`, an option's value is otherwise taken as the watch path, so
-`bashunit watch --tag slow` watches a directory named `slow`. Write
-`bashunit watch tests/ --tag slow`.
+by `bashunit test` is also accepted here, in any position: the path is whichever
+argument is not an option or an option's value.
 
 When neither `inotifywait` nor `fswatch` is installed, it no longer fails:
 it falls back to a **pure-shell polling loop** and prints a short notice.

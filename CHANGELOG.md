@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Changed
+- Performance: cold start is about 9ms faster, roughly 15%. Building the colour palette cost one subshell fork per colour, sixteen of them — the largest single cost in a startup. Every invocation paid it, including `--version` and `--help`
+- `--seed <n>` now implies `--random-order`. The header prints `Randomized with seed: N` so a failing run can be replayed, but typing that seed back on its own selected nothing: the run came back in defined order and green, and the shuffle that caused the failure never happened. An order named explicitly still wins, so `--order-by defined --seed 42` runs in defined order. Same behaviour as RSpec's `--seed`
+- Performance: a `--parallel` run writing a report is about 1.9x faster and costs 1.8x less CPU. Every result row base64-encoded all nine of its fields separately and decoded them the same way — fourteen `base64` forks per test — so `--log-junit`, the usual CI setup, cost several times more than running the tests. Only the four fields that can hold arbitrary text are encoded now (#1289)
+### Fixed
+- `bashunit watch` no longer takes an option's value as the path it polls. Only `-f/--filter` was known to consume a value, so `bashunit watch --tag slow tests/` polled a directory named `slow` and passed the real path to `--tag`; when the value happened to name a real directory it polled the wrong one without saying so. Options may now appear in any position (#1291)
+### Added
+- `-u` as the short form of `--snapshot-update`. Re-running with `-u` after a deliberate output change is the reflex jest and vitest already teach, and both spell it the same way (#1293)
+### Fixed
+- `--parallel` with an empty selection no longer prints `No tests found` onto stdout ahead of the document, which made `--output json` and `--output junit` unparseable; sequential runs of the same selection were valid. On the console the notice appeared twice instead of once. An empty selection is routine in CI — an unpopulated `--shard`, a `--changed` run that touched nothing — which is where `--output` is consumed (#1295)
+### Fixed
+- A test file with a `tear_down_after_script` no longer makes `--output junit` malformed. The blank line printed after that hook went to stdout ahead of the document, so the XML declaration was not at byte 0 and the report did not parse; the hook did not have to fail, an ordinary one was enough. `--output json` carried the same stray byte but tolerates leading whitespace (#1297)
 ### Fixed
 - Two diagnostics no longer print to stdout, where they made `--output json` and `--output junit` unparseable: the duplicate-test-function abort, in every mode, and the replay of a `--parallel` worker's stderr, which meant any test whose `set_up` failed corrupted the report. Both go to stderr now, so they still reach the reader while stdout carries only the document (#1299)
 

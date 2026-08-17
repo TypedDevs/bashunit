@@ -139,14 +139,64 @@ function test_unknown_output_format_lists_the_supported_ones() {
   assert_contains "text, tap, json, junit" "$output"
 }
 
-# Two diagnostics used to go to stdout, where --output promises only the
-# document lives. The duplicate-function abort did it in every mode; the
-# worker-stderr replay did it under --parallel, so any test whose set_up failed
-# corrupted the report.
-#
-# The duplicated name is built through printf rather than written twice here:
-# the duplicate check scans a file textually, so two literal definitions would
-# count as duplicates of THIS file (see .claude/rules/testing.md).
+# An empty selection under --parallel used to print `No tests found` onto
+# stdout before the document, which is the one thing --output promises it will
+# not do. `--pass-with-no-tests` exists because an empty selection is a routine
+# CI state -- an unpopulated shard, a changed-files run that touched nothing --
+# so this is the case a pipeline is most likely to meet.
+function test_output_junit_is_well_formed_when_parallel_selects_no_tests() {
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_junit)"
+
+  local output
+  output=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output junit \
+    --pass-with-no-tests "$empty_dir" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
+
+function test_output_json_is_valid_when_parallel_selects_no_tests() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_json)"
+
+  local stdout
+  stdout=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output json \
+    --pass-with-no-tests "$empty_dir" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+  assert_same "0" "$(printf '%s' "$stdout" | jq '.summary.total')"
+}
+
+# The console rendering of the same run: one notice, as sequential gives.
+function test_an_empty_parallel_run_reports_no_tests_found_once() {
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_console)"
+
+  local output
+  output=$(./bashunit --parallel --env "$TEST_ENV_FILE" "$empty_dir" 2>&1 || true)
+
+  assert_same "1" "$(printf '%s\n' "$output" | grep -c 'No tests found')"
+}
+
+# The blank line printed after a file's tear_down_after_script is console
+# decoration, and it went to stdout ahead of the document. JSON tolerates
+# leading whitespace so only the XML showed it, but the stray byte was in both.
+# An ordinary lifecycle hook is enough -- the hook does not have to fail.
+function test_output_junit_is_well_formed_with_a_tear_down_after_script() {
+  local dir
+  dir="$(bashunit::temp_dir junit_tear_down)"
+  {
+    echo 'function test_ok() { assert_true true; }'
+    echo 'function tear_down_after_script() { :; }'
+  } >"$dir/td_test.sh"
+
+  local output
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$dir/td_test.sh" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
+
 function test_output_json_is_valid_when_a_file_has_duplicate_test_functions() {
   if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
   local dir fn
@@ -178,7 +228,6 @@ function test_output_json_is_valid_when_a_parallel_worker_writes_stderr() {
   assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
 }
 
-# The diagnostics must still reach the user, on stderr.
 function test_the_duplicate_function_abort_is_reported_on_stderr() {
   local dir fn
   dir="$(bashunit::temp_dir dup_stderr)"
