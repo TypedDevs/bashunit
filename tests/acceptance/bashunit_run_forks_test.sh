@@ -231,3 +231,54 @@ function test_parallel_result_publishing_does_not_fork_per_test() {
 
   assert_equals "" "$forked"
 }
+
+# Regression guard for the report spool. A worker used to base64 each of the
+# nine fields of a result row separately, and the parent decoded each one the
+# same way -- fourteen `base64` forks per test (and, on the encode side, a `tr`
+# each), so turning on `--log-junit` cost more than running the tests. Only the
+# two fields that can hold arbitrary text need encoding; the rest are a status,
+# some numbers and a path, which a unit separator carries as they are.
+#
+# Counted with a PATH shim rather than a trace: these forks happen inside the
+# `--parallel` workers, which `bash -x` on the parent cannot see.
+function test_reports_do_not_fork_base64_per_field() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/base64_calls"
+  local real_base64
+  real_base64="$(command -v base64)"
+
+  {
+    echo '#!/usr/bin/env bash'
+    # The load-time `base64 --help` capability probe is not a per-test cost.
+    echo "case \"\$*\" in --help) ;; *) echo x >> \"$count_file\" ;; esac"
+    echo "exec \"$real_base64\" \"\$@\""
+  } >"$dir/base64"
+  chmod +x "$dir/base64"
+
+  local fixture="$dir/report_forks_test.sh"
+  {
+    echo 'function test_a() { assert_true true; }'
+    echo 'function test_b() { assert_true true; }'
+    echo 'function test_c() { assert_true true; }'
+    echo 'function test_d() { assert_true true; }'
+  } >"$fixture"
+
+  PATH="$dir:$PATH" ./bashunit --parallel --log-junit "$dir/out.xml" "$fixture" \
+    >/dev/null 2>&1
+
+  local calls=0
+  if [ -f "$count_file" ]; then
+    calls="$(grep -c . "$count_file" || true)"
+  fi
+
+  # Four passing tests carry no failure message and no output, so both
+  # arbitrary fields are empty and short-circuit: the row costs one encode for
+  # the file and one for the test name, and the same two decodes. Sixteen is
+  # that, with room for the run's own bookkeeping; it was 56.
+  assert_less_or_equal_than 16 "$calls"
+}

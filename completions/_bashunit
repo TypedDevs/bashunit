@@ -104,7 +104,7 @@ _bashunit() {
     '(--list --dry-run)'{--list,--dry-run}'[Print the tests that would run, then exit]' \
     '--list-format[Rendering for --list]:format:(text json)' \
     '--list-tags[Print the tags of the selected files, one per line, then exit]' \
-    '--snapshot-update[Rewrite existing snapshots from the actual value]' \
+    '(-u --snapshot-update)'{-u,--snapshot-update}'[Rewrite existing snapshots from the actual value]' \
     '--no-snapshot-create[Fail instead of recording a missing snapshot]' \
     '--snapshot-prune[Delete snapshot files no test resolved]' \
     '--snapshot-report-unused[List snapshot files no test resolved]' \

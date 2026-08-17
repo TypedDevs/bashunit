@@ -114,16 +114,16 @@ function bashunit::main::cmd_watch() {
       bashunit::console_header::print_watch_help
       exit 0
       ;;
-    -f | --filter)
-      # Forward the filter flag and its value to the underlying test run
-      extra_args[${#extra_args[@]}]="$1"
-      shift || true
-      if [ $# -gt 0 ]; then
-        extra_args[${#extra_args[@]}]="$1"
-      fi
-      ;;
     -*)
+      # Forward the option, and its value too when it takes one: otherwise the
+      # value falls to the positional branch below and becomes the watched path.
       extra_args[${#extra_args[@]}]="$1"
+      if bashunit::main::option_takes_value "$1"; then
+        shift || true
+        if [ $# -gt 0 ]; then
+          extra_args[${#extra_args[@]}]="$1"
+        fi
+      fi
       ;;
     *)
       if [ -z "$path" ]; then
