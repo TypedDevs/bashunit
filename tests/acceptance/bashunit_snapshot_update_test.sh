@@ -82,3 +82,14 @@ function test_snapshot_update_still_records_a_missing_snapshot() {
 
   assert_same "alpha value" "$(cat "$SNAPSHOT_ALPHA")"
 }
+
+# `-u` is what jest (`-u, --updateSnapshot`) and vitest (`-u, --update`) call
+# it, and re-running with it is reflex for anyone arriving from either. The
+# long form stays; this is the spelling that does not have to be looked up.
+function test_u_is_the_short_form_of_snapshot_update() {
+  (cd "$WORKDIR" && "$BASHUNIT_BIN" --no-parallel --skip-env-file \
+    -u snap.sh) >/dev/null 2>&1 || true
+
+  assert_same "alpha value" "$(cat "$SNAPSHOT_ALPHA")"
+  assert_same "beta value" "$(cat "$SNAPSHOT_BETA")"
+}
