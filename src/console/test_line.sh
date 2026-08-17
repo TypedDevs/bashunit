@@ -283,7 +283,11 @@ function bashunit::console_results::print_worker_stderr() {
   local test_file="$1"
   local stderr_file="$2"
 
+  # To stderr, which is where this text came from: on stdout it landed ahead of
+  # the document `--output json|junit` promises that stream is, so a worker that
+  # wrote anything to stderr -- a failing `set_up`, for one -- made the report
+  # unparseable.
   printf "\n%sStderr from %s%s\n" \
-    "$_BASHUNIT_COLOR_SKIPPED" "$test_file" "$_BASHUNIT_COLOR_DEFAULT"
-  sed 's/^/|/' "$stderr_file"
+    "$_BASHUNIT_COLOR_SKIPPED" "$test_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
+  sed 's/^/|/' "$stderr_file" >&2
 }
