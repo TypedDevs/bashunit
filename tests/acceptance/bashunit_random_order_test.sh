@@ -55,3 +55,24 @@ function test_random_order_composes_with_parallel() {
 
   assert_contains "8 passed" "$output"
 }
+
+# The header prints `Randomized with seed: N` so a failing run can be replayed,
+# and replaying it means typing that seed back. On its own it used to select
+# nothing: the run came back in defined order, green, and the shuffle that
+# produced the failure never happened. A seed has no meaning other than an
+# order, so naming one asks for that order -- which is what RSpec's `--seed`
+# does too.
+function test_seed_alone_implies_random_order() {
+  assert_same "$(order_of --random-order --seed 42)" "$(order_of --seed 42)"
+}
+
+function test_seed_alone_reorders_tests() {
+  assert_not_equals "$(order_of)" "$(order_of --seed 42)"
+}
+
+# An order the caller named explicitly still wins, whichever side the seed is
+# typed on -- the implication only fills a gap it was left.
+function test_an_explicit_order_beats_the_seed_implication() {
+  assert_same "$(order_of)" "$(order_of --order-by defined --seed 42)"
+  assert_same "$(order_of)" "$(order_of --seed 42 --order-by defined)"
+}

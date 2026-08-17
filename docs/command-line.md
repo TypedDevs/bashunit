@@ -131,7 +131,7 @@ Cypress spell `--pass-with-no-tests`.
 | `--repeat <n>`                 | Run each selected test N times; it fails if any iteration fails |
 | `--random-order`               | Randomize test execution order                   |
 | `--order-by <mode>`            | Execution order: `defined` (default), `defects` or `random` |
-| `--seed <n>`                   | Seed for `--random-order` (reproducible shuffle) |
+| `--seed <n>`                   | Seed the shuffle (reproducible); implies `--random-order` |
 | `--shard <i>/<n>`              | Run shard i of n (split suite across runners)    |
 | `--rerun-failed`               | Replay only the tests that failed on the last run |
 | `--changed [<ref>]`            | Run only the test files changed since `<ref>` (default: `origin/HEAD`, then `HEAD`) |
@@ -830,8 +830,11 @@ dependencies). Disabled by default.
 
 When enabled and no `--seed` is given, a seed is generated and printed in the
 run header so a failing run can be replayed exactly with `--seed <n>`. The same
-seed always produces the same order, and it composes with `--parallel`. `--seed`
-on its own (without `--random-order`) has no effect.
+seed always produces the same order, and it composes with `--parallel`.
+
+`--seed <n>` on its own is enough: a seed names an order and nothing else, so
+giving one turns the random order on. Naming an order explicitly still wins, so
+`--order-by defined --seed 42` runs in defined order.
 
 ::: code-group
 ```bash [Example]
@@ -841,7 +844,7 @@ bashunit test tests/ --random-order
 Randomized with seed: 12345
 
 # replay the exact same order:
-bashunit test tests/ --random-order --seed 12345
+bashunit test tests/ --seed 12345
 ```
 :::
 
