@@ -16,6 +16,8 @@
 - A test file with a `tear_down_after_script` no longer makes `--output junit` malformed. The blank line printed after that hook went to stdout ahead of the document, so the XML declaration was not at byte 0 and the report did not parse; the hook did not have to fail, an ordinary one was enough. `--output json` carried the same stray byte but tolerates leading whitespace (#1297)
 ### Fixed
 - Two diagnostics no longer print to stdout, where they made `--output json` and `--output junit` unparseable: the duplicate-test-function abort, in every mode, and the replay of a `--parallel` worker's stderr, which meant any test whose `set_up` failed corrupted the report. Both go to stderr now, so they still reach the reader while stdout carries only the document (#1299)
+### Fixed
+- A `--parallel` run no longer counts a file-level hook failure twice in its reports. A failing `set_up_before_script` or `tear_down_after_script`, and a file that fails to source, were written into the JSON, JUnit, HTML and Markdown reports as two failed tests, listed twice, while the console summary of the same run said one — the console was right (#1301)
 
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
