@@ -138,3 +138,107 @@ function test_unknown_output_format_lists_the_supported_ones() {
   assert_general_error "" "" "$ec"
   assert_contains "text, tap, json, junit" "$output"
 }
+
+# An empty selection under --parallel used to print `No tests found` onto
+# stdout before the document, which is the one thing --output promises it will
+# not do. `--pass-with-no-tests` exists because an empty selection is a routine
+# CI state -- an unpopulated shard, a changed-files run that touched nothing --
+# so this is the case a pipeline is most likely to meet.
+function test_output_junit_is_well_formed_when_parallel_selects_no_tests() {
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_junit)"
+
+  local output
+  output=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output junit \
+    --pass-with-no-tests "$empty_dir" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
+
+function test_output_json_is_valid_when_parallel_selects_no_tests() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_json)"
+
+  local stdout
+  stdout=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output json \
+    --pass-with-no-tests "$empty_dir" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+  assert_same "0" "$(printf '%s' "$stdout" | jq '.summary.total')"
+}
+
+# The console rendering of the same run: one notice, as sequential gives.
+function test_an_empty_parallel_run_reports_no_tests_found_once() {
+  local empty_dir
+  empty_dir="$(bashunit::temp_dir empty_selection_console)"
+
+  local output
+  output=$(./bashunit --parallel --env "$TEST_ENV_FILE" "$empty_dir" 2>&1 || true)
+
+  assert_same "1" "$(printf '%s\n' "$output" | grep -c 'No tests found')"
+}
+
+# The blank line printed after a file's tear_down_after_script is console
+# decoration, and it went to stdout ahead of the document. JSON tolerates
+# leading whitespace so only the XML showed it, but the stray byte was in both.
+# An ordinary lifecycle hook is enough -- the hook does not have to fail.
+function test_output_junit_is_well_formed_with_a_tear_down_after_script() {
+  local dir
+  dir="$(bashunit::temp_dir junit_tear_down)"
+  {
+    echo 'function test_ok() { assert_true true; }'
+    echo 'function tear_down_after_script() { :; }'
+  } >"$dir/td_test.sh"
+
+  local output
+  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$dir/td_test.sh" 2>/dev/null || true)
+
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+}
+
+function test_output_json_is_valid_when_a_file_has_duplicate_test_functions() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local dir fn
+  dir="$(bashunit::temp_dir dup_json)"
+  fn="test_same_name"
+  {
+    printf 'function %s() { assert_true true; }\n' "$fn"
+    printf 'function %s() { assert_true true; }\n' "$fn"
+  } >"$dir/dup_test.sh"
+
+  local stdout
+  stdout=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$dir/dup_test.sh" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+}
+
+function test_output_json_is_valid_when_a_parallel_worker_writes_stderr() {
+  if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
+  local dir
+  dir="$(bashunit::temp_dir worker_stderr_json)"
+  {
+    printf 'function %s() { return 1; }\n' "set_up"
+    printf 'function %s() { assert_true true; }\n' "test_needs_set_up"
+  } >"$dir/hook_test.sh"
+
+  local stdout
+  stdout=$(./bashunit --parallel --env "$TEST_ENV_FILE" --output json "$dir/hook_test.sh" 2>/dev/null || true)
+
+  assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
+}
+
+function test_the_duplicate_function_abort_is_reported_on_stderr() {
+  local dir fn
+  dir="$(bashunit::temp_dir dup_stderr)"
+  fn="test_same_name_again"
+  {
+    printf 'function %s() { assert_true true; }\n' "$fn"
+    printf 'function %s() { assert_true true; }\n' "$fn"
+  } >"$dir/dup2_test.sh"
+
+  local stderr
+  stderr=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$dir/dup2_test.sh" 2>&1 >/dev/null || true)
+
+  assert_contains "Duplicate test functions found" "$stderr"
+}

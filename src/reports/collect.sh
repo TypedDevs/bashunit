@@ -2,6 +2,11 @@
 
 # Collected per-test results: the shared arrays every report writer reads, and the API the runner calls to fill them.
 
+# Field separator for the rows parallel workers spool. ASCII unit separator: it
+# cannot appear in base64 output and is not an IFS whitespace character, so a
+# run of them yields empty fields instead of collapsing.
+_BASHUNIT_REPORTS_FIELD_SEP=$'\037'
+
 # Strips ANSI CSI escape sequences (color codes, cursor moves, erase-line, ...)
 # from $1. Shared by every writer's own escape/encode function below as their
 # first step, so the definition of "what is an ANSI escape sequence" for
@@ -114,19 +119,27 @@ function bashunit::reports::add_test() {
   # never reaches this path for a real parallel test, so replaying the spool
   # cannot double-count.
   #
-  # Fields are base64-encoded because a failure message carries newlines and
-  # arbitrary text, either of which would break a delimited line.
+  # Only the four fields that can hold arbitrary text are base64-encoded: a
+  # failure message or a captured output carries newlines, and a path or a test
+  # name (which may end in a provider's arguments) can hold anything. The other
+  # five are a status word and four numbers, produced by this file's own
+  # callers, so the unit separator carries them as they are.
+  #
+  # Encoding all nine cost fourteen `base64` forks per test -- nine here and
+  # five more decoding, each with a `tr` on top -- which made `--log-junit`
+  # several times more expensive than the run it was reporting on. Base64
+  # output is [A-Za-z0-9+/=] and the raw fields are numeric, so no field can
+  # contain the separator and the row stays one line.
   if bashunit::parallel::is_enabled; then
-    printf '%s|%s|%s|%s|%s|%s|%s|%s|%s\n' \
-      "$(bashunit::helper::encode_base64 "$file")" \
-      "$(bashunit::helper::encode_base64 "$test_name")" \
-      "$(bashunit::helper::encode_base64 "$status")" \
-      "$(bashunit::helper::encode_base64 "$duration")" \
-      "$(bashunit::helper::encode_base64 "$assertions")" \
-      "$(bashunit::helper::encode_base64 "$failure_message")" \
-      "$(bashunit::helper::encode_base64 "$line")" \
-      "$(bashunit::helper::encode_base64 "$retries")" \
-      "$(bashunit::helper::encode_base64 "$test_output")" \
+    local us=$_BASHUNIT_REPORTS_FIELD_SEP
+    local row
+    row="$(bashunit::helper::encode_base64 "$file")$us"
+    row="$row$(bashunit::helper::encode_base64 "$test_name")$us"
+    row="$row$status$us$duration$us$assertions$us"
+    row="$row$(bashunit::helper::encode_base64 "$failure_message")$us"
+    row="$row$line$us$retries$us"
+    row="$row$(bashunit::helper::encode_base64 "$test_output")"
+    printf '%s\n' "$row" \
       >>"${REPORTS_OUTPUT_PATH:-/dev/null}" 2>/dev/null || true
   fi
 
@@ -150,18 +163,42 @@ function bashunit::reports::load_spooled() {
   bashunit::reports::is_enabled || return 0
   [ -f "${REPORTS_OUTPUT_PATH:-}" ] || return 0
 
+  # The spool is the complete record of a parallel run, so it replaces the
+  # arrays rather than appending to them.
+  #
+  # A worker's own arrays die with it, so for a worker's row appending would be
+  # right. But a file-level hook failure is recorded by the PARENT -- see
+  # runner/hooks.sh record_file_hook_failure -- and add_test fills the arrays
+  # for every caller while spooling only under --parallel. That row was
+  # therefore in both places, and replaying it appended a second copy: a failing
+  # set_up_before_script was reported as two failed tests where the console
+  # summary of the same run said one.
+  _BASHUNIT_REPORTS_TEST_FILES=()
+  _BASHUNIT_REPORTS_TEST_NAMES=()
+  _BASHUNIT_REPORTS_TEST_STATUSES=()
+  _BASHUNIT_REPORTS_TEST_DURATIONS=()
+  _BASHUNIT_REPORTS_TEST_ASSERTIONS=()
+  _BASHUNIT_REPORTS_TEST_FAILURES=()
+  _BASHUNIT_REPORTS_TEST_LINES=()
+  _BASHUNIT_REPORTS_TEST_RETRIES=()
+  _BASHUNIT_REPORTS_TEST_OUTPUTS=()
+
   local file test_name status duration assertions failure_message line retries test_output n
-  while IFS='|' read -r file test_name status duration assertions failure_message line retries test_output; do
+  # The separator is not an IFS whitespace character, so a run of them yields
+  # empty fields rather than collapsing -- which is what an absent failure
+  # message or output has to produce.
+  while IFS="$_BASHUNIT_REPORTS_FIELD_SEP" read -r \
+    file test_name status duration assertions failure_message line retries test_output; do
     [ -n "$file" ] || continue
     local n=${#_BASHUNIT_REPORTS_TEST_FILES[@]}
     _BASHUNIT_REPORTS_TEST_FILES[n]=$(bashunit::helper::decode_base64 "$file")
     _BASHUNIT_REPORTS_TEST_NAMES[n]=$(bashunit::helper::decode_base64 "$test_name")
-    _BASHUNIT_REPORTS_TEST_STATUSES[n]=$(bashunit::helper::decode_base64 "$status")
-    _BASHUNIT_REPORTS_TEST_DURATIONS[n]=$(bashunit::helper::decode_base64 "$duration")
-    _BASHUNIT_REPORTS_TEST_ASSERTIONS[n]=$(bashunit::helper::decode_base64 "$assertions")
+    _BASHUNIT_REPORTS_TEST_STATUSES[n]=$status
+    _BASHUNIT_REPORTS_TEST_DURATIONS[n]=$duration
+    _BASHUNIT_REPORTS_TEST_ASSERTIONS[n]=$assertions
     _BASHUNIT_REPORTS_TEST_FAILURES[n]=$(bashunit::helper::decode_base64 "$failure_message")
-    _BASHUNIT_REPORTS_TEST_LINES[n]=$(bashunit::helper::decode_base64 "$line")
-    _BASHUNIT_REPORTS_TEST_RETRIES[n]=$(bashunit::helper::decode_base64 "$retries")
+    _BASHUNIT_REPORTS_TEST_LINES[n]=$line
+    _BASHUNIT_REPORTS_TEST_RETRIES[n]=$retries
     _BASHUNIT_REPORTS_TEST_OUTPUTS[n]=$(bashunit::helper::decode_base64 "$test_output")
   done <"$REPORTS_OUTPUT_PATH"
 }

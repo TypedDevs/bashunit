@@ -118,3 +118,34 @@ function test_an_unknown_mode_is_a_usage_error() {
   assert_contains "sometimes" "$output"
   assert_contains "auto, always, never" "$output"
 }
+
+# GitHub splits an annotation's properties on `,` and its key from its value on
+# `=`, so a property VALUE carries a stricter rule than the message: `:` and `,`
+# must be percent-encoded too. A custom title containing a comma ended the title
+# there and turned the rest into an invented property.
+function test_a_comma_in_a_custom_title_does_not_split_the_properties() {
+  local dir
+  dir="$(bashunit::temp_dir gha_title_comma)"
+  {
+    printf 'function test_titled() {\n'
+    printf '  bashunit::set_test_title "Rejects a,b when x:y is set"\n'
+    printf '  assert_same "expected" "actual"\n'
+    printf '}\n'
+  } >"$dir/title_test.sh"
+
+  local output
+  output="$(_BASHUNIT_GHA_ANNOTATIONS_CLAIMED='' GITHUB_STEP_SUMMARY='' GITHUB_ACTIONS=true \
+    ./bashunit --no-parallel --no-color \
+    --env "$TEST_ENV_FILE" "$dir/title_test.sh")" || true
+
+  local annotation
+  annotation="$(printf '%s\n' "$output" | grep '^::error' | head -1)"
+  # Everything before the `::` that starts the message is the property list.
+  local props="${annotation%%::*}"
+  props="${annotation#::error }"
+  props="${props%%::*}"
+
+  assert_not_contains "a,b" "$props"
+  assert_contains "%2C" "$props"
+  assert_contains "%3A" "$props"
+}

@@ -119,3 +119,38 @@ function test_the_slowest_tests_appear_only_with_profile() {
   assert_not_contains "## Slowest tests" "$(cat "$REPORT_DIR/plain.md")"
   assert_contains "## Slowest tests" "$(cat "$REPORT_DIR/profiled.md")"
 }
+
+# The failure block is a fenced code block, and the message goes in unescaped
+# because a fence renders its contents literally -- but only while the fence is
+# longer than any run of backticks inside it. A hook that printed a bare ``` cut
+# the block short: the text after it rendered as prose and the trailing fence
+# opened a new, unterminated block, swallowing every later section. This report
+# is appended to $GITHUB_STEP_SUMMARY, so that is the job page.
+function test_a_backtick_fence_in_a_message_does_not_break_the_code_block() {
+  local dir
+  dir="$(bashunit::temp_dir md_fence)"
+  {
+    printf 'function %s() {\n' "set_up_before_script"
+    printf "  printf 'oops\\\\n\`\`\`\\\\nnot code\\\\n'\n"
+    printf '  return 1\n'
+    printf '}\n'
+    printf 'function test_never_runs() { assert_true true; }\n'
+  } >"$dir/fence_test.sh"
+
+  ./bashunit --no-parallel --no-color --env "$TEST_ENV_FILE" \
+    --report-md "$dir/summary.md" "$dir/fence_test.sh" >/dev/null 2>&1 || true
+
+  # The delimiter is the LONGEST backtick-only line: a shorter run inside the
+  # message is content, not a delimiter. Counting every backtick-only line would
+  # call the fixed document broken, since the message keeps its own ``` line.
+  # An odd number of delimiters means a block was left open.
+  local delimiters
+  delimiters="$(awk '
+    /^`+$/ { if (length($0) > max) { max = length($0); n = 0 }
+             if (length($0) == max) n++ }
+    END { print n + 0 }' "$dir/summary.md")"
+
+  assert_same "0" "$((delimiters % 2))"
+  # And it did have to grow past the run inside the message.
+  assert_not_empty "$(grep -c '^````$' "$dir/summary.md")"
+}

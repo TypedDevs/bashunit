@@ -361,7 +361,11 @@ shuffle so a run can be replayed; when unset, a seed is generated and printed in
 the run header. Composes with `--parallel`.
 
 Similar as using `--random-order` / `--seed` options on the
-[command line](/command-line#random-order).
+[command line](/command-line#random-order), with one difference: `--seed` on the
+command line turns the random order on by itself, `BASHUNIT_SEED` does not. A
+seed typed at the prompt is a replay of one run; a seed in a config file is
+read by every run, including the nested ones a suite spawns, so it stays inert
+until `BASHUNIT_RANDOM_ORDER` asks for it.
 
 ::: code-group
 ```bash [Reproducible shuffle]
