@@ -82,3 +82,25 @@ function test_coldstart_creates_scratch_dirs_with_one_mkdir() {
 
   assert_less_or_equal_than 1 "$mkdir_forks"
 }
+
+# Regression guard: the colour palette used to be built with one
+# `$(bashunit::sgr N)` per colour, which is a subshell fork each -- sixteen of
+# them, the single largest cost in a cold start. A PATH-shim census cannot see
+# these: the subshell execs no binary, which is why they outlived the fork
+# campaign that pinned everything else here. The palette entries are constants,
+# so they must come from the return slot instead.
+function test_coldstart_does_not_fork_a_subshell_per_color() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "process tracing is unreliable under Git Bash" && return
+  fi
+
+  local trace
+  trace="$(PS4='+ ' bash -x ./bashunit --version 2>&1 >/dev/null)"
+
+  # The capturing spelling is the only caller of the echoing `bashunit::sgr`;
+  # the slot writer is a different name, so it is not counted here.
+  local sgr_forks
+  sgr_forks="$(printf '%s\n' "$trace" | grep -cE '^\++ +bashunit::sgr( |$)' || true)"
+
+  assert_equals 0 "$sgr_forks"
+}
