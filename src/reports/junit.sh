@@ -104,9 +104,15 @@ function bashunit::reports::print_junit_xml() {
     escaped_name=$(bashunit::reports::__xml_escape "$name")
     bashunit::reports::__junit_classname "$file"
     classname=$_BASHUNIT_REPORTS_CLASSNAME_OUT
+    # The path-derived attributes need escaping too: a path holding `"` closes
+    # the attribute early and the document stops parsing, and `&`/`<` break it
+    # the same way. The name and the message above have always been escaped.
+    classname=$(bashunit::reports::__xml_escape "$classname")
+    local escaped_file
+    escaped_file=$(bashunit::reports::__xml_escape "$file")
 
     local case_xml="    <testcase classname=\"$classname\" name=\"$escaped_name\"
-        file=\"$file\" time=\"$test_time\">
+        file=\"$escaped_file\" time=\"$test_time\">
 "
 
     if [ "$status" = "failed" ]; then
@@ -182,7 +188,9 @@ retries\">$escaped_flaky</flakyFailure>
       local suite_time_s
       bashunit::reports::__ms_to_s "${suite_time[$s]}"
       suite_time_s=$_BASHUNIT_REPORTS_MS_TO_S_OUT
-      echo "  <testsuite name=\"${suite_files[$s]}\" tests=\"${suite_tests[$s]}\"" \
+      local escaped_suite
+      escaped_suite=$(bashunit::reports::__xml_escape "${suite_files[$s]}")
+      echo "  <testsuite name=\"$escaped_suite\" tests=\"${suite_tests[$s]}\"" \
         "failures=\"${suite_failures[$s]}\" skipped=\"${suite_skipped[$s]}\" errors=\"0\"" \
         "time=\"$suite_time_s\" timestamp=\"$timestamp\">"
       printf '%s' "${cases[$s]}"

@@ -100,3 +100,36 @@ function test_cobertura_uncreatable_path_fails_fast() {
 function test_cobertura_appears_in_the_help() {
   assert_contains "--coverage-report-cobertura" "$(./bashunit test --help)"
 }
+
+# The report is XML, and every attribute it writes carries a path: filename=,
+# class name=, package name= and the <source> body. A path holding `&`, `<` or
+# `>` went in raw, so the document did not parse -- and GitLab, Azure and
+# Jenkins are exactly the consumers that then show nothing. The HTML report was
+# given this treatment in #1254; this writer was missed.
+function test_cobertura_escapes_xml_metacharacters_in_a_path() {
+  local dir
+  dir="$(cd "$(bashunit::temp_dir cobertura_amp)" && pwd)"
+  (
+    cd "$dir" || exit 1
+    {
+      echo '#!/usr/bin/env bash'
+      echo 'function covered() { COVERED_OUT="covered"; }'
+    } >'a&b.sh'
+    {
+      echo "source \"$dir/a&b.sh\""
+      echo 'function test_covered() { covered; assert_not_empty "$COVERED_OUT"; }'
+    } >suite_test.sh
+  ) >/dev/null 2>&1
+
+  (
+    cd "$dir" || exit 1
+    BASHUNIT_COVERAGE_PATHS="$dir" BASHUNIT_COVERAGE_REPORT="" \
+      "$OLDPWD/bashunit" --no-parallel --coverage \
+      --coverage-report-cobertura "$dir/cob.xml" ./suite_test.sh
+  ) >/dev/null 2>&1 || true
+
+  assert_file_exists "$dir/cob.xml"
+  # The raw ampersand must be an entity, and the document must parse.
+  assert_not_contains 'a&b.sh"' "$(cat "$dir/cob.xml")"
+  assert_contains 'a&amp;b.sh' "$(cat "$dir/cob.xml")"
+}

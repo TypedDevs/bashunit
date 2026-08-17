@@ -13,11 +13,45 @@ function bashunit::runner::load_bench_files() {
     unset BASHUNIT_CURRENT_TEST_ID
     bashunit::helper::generate_id "${bench_file}"
     export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
+    # Sourcing status is checked, the same way the test loop checks it: a bench
+    # file with a syntax error used to lose every function after the error and
+    # leave the run green, reporting only whatever parsed.
+    local source_err_file source_err source_status
+    source_err_file="$_BASHUNIT_RUN_OUTPUT_DIR/bench_source_err"
+    : >"$source_err_file" 2>/dev/null || source_err_file=/dev/null
     # shellcheck source=/dev/null
-    source "$bench_file"
+    source "$bench_file" 2>"$source_err_file"
+    source_status=$?
     # Reset the loop's shell-mode invariant; a bench file may set -euo at top
     # level and sourcing runs that in this shell (see the test loop) (#836).
     set +euo pipefail
+
+    source_err=""
+    if [ -s "$source_err_file" ]; then
+      source_err="$(cat "$source_err_file")"
+    fi
+    # A non-zero status, or a syntax-error line on stderr: bash reports a syntax
+    # error and carries on, so the status alone does not catch it. `case`, not
+    # grep, to stay fork-free -- same test the test loop makes.
+    local source_failed=false
+    if [ "$source_status" -ne 0 ]; then
+      source_failed=true
+    else
+      case "$source_err" in
+      *"syntax error"* | *"unexpected EOF"*) source_failed=true ;;
+      esac
+    fi
+    if [ "$source_failed" = true ]; then
+      local message="$source_err"
+      if [ -z "$message" ]; then
+        message="Failed to source '$bench_file' (exit $source_status)"
+      fi
+      bashunit::runner::record_file_hook_failure "source" "$bench_file" "$message" 1 true
+      bashunit::runner::clean_set_up_and_tear_down_after_script
+      bashunit::cleanup_script_temp_files
+      bashunit::runner::restore_workdir
+      continue
+    fi
     # Update function cache after sourcing new bench file (compgen is a builtin)
     _BASHUNIT_CACHED_ALL_FUNCTIONS=$(compgen -A function)
     # Call hook directly (not with `if !`) to preserve errexit behavior inside the hook

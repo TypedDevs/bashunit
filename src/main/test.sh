@@ -11,6 +11,12 @@ _BASHUNIT_MAIN_SUITE_ARGV=()
 # another one's results is not (#1263).
 _BASHUNIT_MAIN_PATHS_GIVEN=false
 
+# Whether this invocation named a seed, and whether it named an order. A seed
+# selects nothing on its own, so one given without an order asks for the random
+# order it is the seed of; an order the caller named explicitly still wins.
+_BASHUNIT_MAIN_SEED_GIVEN=false
+_BASHUNIT_MAIN_ORDER_GIVEN=false
+
 ##
 # Resolves `--suite <name>` (repeatable) and `--list-suites` before the main
 # parse loop and rewrites argv into _BASHUNIT_MAIN_SUITE_ARGV.
@@ -259,15 +265,18 @@ function bashunit::main::cmd_test() {
     --random-order)
       BASHUNIT_RANDOM_ORDER=true
       export -n BASHUNIT_RANDOM_ORDER
+      _BASHUNIT_MAIN_ORDER_GIVEN=true
       ;;
     --order-by)
       BASHUNIT_ORDER_BY="$2"
       export -n BASHUNIT_ORDER_BY
+      _BASHUNIT_MAIN_ORDER_GIVEN=true
       shift
       ;;
     --seed)
       BASHUNIT_SEED="$2"
       export -n BASHUNIT_SEED
+      _BASHUNIT_MAIN_SEED_GIVEN=true
       shift
       ;;
     --shard)
@@ -308,7 +317,7 @@ function bashunit::main::cmd_test() {
       export -n BASHUNIT_LIST_TAGS
       export -n BASHUNIT_LIST_TESTS
       ;;
-    --snapshot-update)
+    -u | --snapshot-update)
       BASHUNIT_SNAPSHOT_UPDATE=true
       export -n BASHUNIT_SNAPSHOT_UPDATE
       ;;
@@ -564,6 +573,14 @@ function bashunit::main::cmd_test() {
     esac
     shift
   done
+
+  # Decided after the loop, not in the `--seed` branch: the order flag may be
+  # typed on either side of the seed, and only the finished argv says whether
+  # one was given at all.
+  if [ "$_BASHUNIT_MAIN_SEED_GIVEN" = true ] && [ "$_BASHUNIT_MAIN_ORDER_GIVEN" = false ]; then
+    BASHUNIT_RANDOM_ORDER=true
+    export -n BASHUNIT_RANDOM_ORDER
+  fi
 
   bashunit::main::validate_config_or_exit
 

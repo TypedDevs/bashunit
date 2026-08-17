@@ -432,7 +432,9 @@ function test_render_file_with_duplicated_functions_if_found_true() {
     set_state_value "bashunit::state::get_duplicated_function_names" "duplicate_function_name"
     set_state_value "bashunit::state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
 
-    bashunit::console_results::render_result || true
+    # 2>&1 >/dev/null: the abort is a diagnostic and goes to stderr, so that
+    # `--output json|junit` keeps stdout for the document alone.
+    bashunit::console_results::render_result 2>&1 >/dev/null || true
   )
 
   assert_contains "Duplicate test functions found" "$render_result"
@@ -471,7 +473,10 @@ function test_only_render_error_result_when_some_duplicated_fails() {
     set_state_value "bashunit::state::get_tests_skipped" "2"
     set_state_value "bashunit::state::get_tests_passed" "3"
 
-    bashunit::console_results::render_result || true
+    # Both streams: the abort itself now goes to stderr, while the assertions
+    # below are about what is NOT rendered -- which would pass vacuously if
+    # stdout were discarded.
+    bashunit::console_results::render_result 2>&1 || true
   )
 
   assert_contains "Duplicate test functions found" "$render_result"

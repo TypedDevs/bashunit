@@ -18,6 +18,24 @@ function bashunit::reports::__gha_encode() {
   printf '%s' "$text"
 }
 
+##
+# A property VALUE carries a stricter rule than the message: GitHub splits the
+# property list on `,` and a key from its value on `=`, and the spec also
+# reserves `:`. A `set_test_title` holding a comma therefore ended the title
+# there and turned the remainder into an invented property.
+#
+# Built on the message encoder, so `%` is already encoded first and the `%3A`
+# and `%2C` added here stay literal -- and it inherits the `[%]` workaround for
+# Bash 3.0 reading a bare `%` after `//` as anchor-to-end (#1121).
+##
+function bashunit::reports::__gha_encode_property() {
+  local text
+  text=$(bashunit::reports::__gha_encode "$1")
+  text="${text//:/%3A}"
+  text="${text//,/%2C}"
+  printf '%s' "$text"
+}
+
 # Echoes GitHub Actions workflow-command annotations to stdout.
 # Arguments: $1 - "failed-only" to emit just errors (default: all reportable).
 function bashunit::reports::print_gha_annotations() {
@@ -58,14 +76,17 @@ function bashunit::reports::print_gha_annotations() {
       continue
     fi
 
-    local location="file=${file}"
+    # `line` is an integer this file produced, so it needs no encoding; `file`
+    # and `name` are user-supplied and do.
+    local location="file=$(bashunit::reports::__gha_encode_property "$file")"
     if [ -n "$line" ]; then
       location="${location},line=${line}"
     fi
 
-    local encoded_message
+    local encoded_message encoded_name
     encoded_message=$(bashunit::reports::__gha_encode "$message")
-    echo "::${level} ${location},title=${name}::${encoded_message}"
+    encoded_name=$(bashunit::reports::__gha_encode_property "$name")
+    echo "::${level} ${location},title=${encoded_name}::${encoded_message}"
   done
 }
 
