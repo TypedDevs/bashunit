@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Security
+- A test file's path is no longer evaluated as shell. The per-test EXIT trap was built by interpolating the path into the trap string, and a trap body is re-evaluated when it fires, so a path containing a command substitution ran it — the surrounding double quotes stopped word splitting but not substitution. Any run over a tree whose filenames someone else controls, which is what CI does with a checked-out branch, executed that command. The same mangling also swallowed part of the path, so such a file's assertions never ran and it was reported `risky` instead of failing
+
 ### Removed
 - `bashunit learn`, the interactive tutorial. Nobody used it, and it was broken for most of the nine months it shipped without anyone reporting it. Learning bashunit belongs in the docs at https://bashunit.com, not in a subsystem inside the runner — which is also 6% of the distributable. Calling it now says it was removed and points there (#1256, #1258)
 
