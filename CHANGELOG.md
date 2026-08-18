@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.50.0](https://github.com/TypedDevs/bashunit/compare/0.49.0...0.50.0) - 2026-08-18
+
 ### Added
 - `-u` as the short form of `--snapshot-update`, the spelling jest and vitest both use (#1293)
 
