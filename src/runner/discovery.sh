@@ -228,11 +228,22 @@ function bashunit::runner::load_test_files() {
       worker_stderr_paths[worker_stderr_count]="$_worker_stderr"
       worker_stderr_owners[worker_stderr_count]="$test_file"
       worker_stderr_count=$((worker_stderr_count + 1))
-      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" 2>"$_worker_stderr" &
+      # The file's teardown belongs inside the worker. Run from this shell it
+      # released the fixture while the worker's tests were still reading it, so
+      # the same file passed sequentially and failed under --parallel (#1320).
+      # call_test_functions waits for its own per-test workers before it
+      # returns, which is what makes this ordering hold.
+      {
+        bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+        bashunit::runner::run_tear_down_after_script "$test_file"
+        # A hook failure recorded in here dies with the subshell (#1147), so
+        # publish it the way a test publishes its result.
+        bashunit::runner::publish_file_hook_failure "$?" "$test_file"
+      } 2>"$_worker_stderr" &
     else
       bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+      bashunit::runner::run_tear_down_after_script "$test_file"
     fi
-    bashunit::runner::run_tear_down_after_script "$test_file"
     bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
     bashunit::runner::clean_set_up_and_tear_down_after_script
     if ! bashunit::parallel::is_enabled; then

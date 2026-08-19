@@ -104,3 +104,39 @@ Assertions: 5 passed, 5 total"
 
   assert_same "3 passed 3 total 5 passed 5 total " "$(summary_counts "$capture")"
 }
+
+# A file-scoped teardown has to run after the file's tests, not alongside them.
+# Under --parallel the runner dispatched the worker and ran the hook on the very
+# next line, so a resource acquired in set_up_before_script vanished mid-test and
+# the file failed in parallel while passing sequentially (#1320).
+function test_parallel_runs_tear_down_after_script_after_the_files_tests() {
+  local dir fixture
+  dir="$(bashunit::temp_dir parallel_file_teardown)"
+  fixture="$dir/shared_fixture_test.sh"
+  {
+    printf 'function set_up_before_script() {\n'
+    printf '  : >"$SHARED_FIXTURE"\n'
+    printf '}\n'
+    printf 'function tear_down_after_script() {\n'
+    printf '  rm -f "$SHARED_FIXTURE"\n'
+    printf '}\n'
+    printf 'function test_reads_the_shared_fixture() {\n'
+    printf '  sleep 0.5\n'
+    printf '  assert_file_exists "$SHARED_FIXTURE"\n'
+    printf '}\n'
+  } >"$fixture"
+
+  local sequential_output parallel_output
+  sequential_output=$(SHARED_FIXTURE="$dir/sequential.fixture" NO_COLOR=1 \
+    ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$fixture" 2>&1) || true
+  parallel_output=$(SHARED_FIXTURE="$dir/parallel.fixture" NO_COLOR=1 \
+    ./bashunit --parallel --env "$TEST_ENV_FILE" "$fixture" 2>&1) || true
+
+  local sequential_counts parallel_counts
+  sequential_counts=$(summary_counts "$sequential_output")
+  parallel_counts=$(summary_counts "$parallel_output")
+
+  assert_same "$sequential_counts" "$parallel_counts"
+  # Guard against both sides failing the same way and matching vacuously.
+  assert_contains "1 passed 1 total" "$sequential_counts"
+}
