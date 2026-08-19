@@ -393,6 +393,11 @@ function bashunit::main::cleanup() {
 }
 
 function bashunit::main::handle_stop_on_failure_sync() {
+  # The exit that lands here came from inside the test loop, so the file's
+  # teardown has not run. First, so the hook line follows the last test line as
+  # it does in a normal run, and so a hook reading a bashunit::temp_file still
+  # finds it (#1321).
+  bashunit::runner::run_pending_file_teardown || true
   printf "\n%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   bashunit::console_results::print_failing_tests_and_reset
   bashunit::console_results::print_risky_tests_and_reset
