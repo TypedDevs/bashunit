@@ -5,6 +5,7 @@
 ### Fixed
 - `tear_down_after_script` runs when `set_up_before_script` fails, so it can release file-scoped resources acquired before the failure (#1318)
 - Under `--parallel`, `tear_down_after_script` runs after the file's own tests instead of alongside them, so a fixture it releases stays alive for the tests that read it. The same file no longer passed sequentially and failed in parallel (#1320)
+- `--stop-on-failure` runs `tear_down_after_script` for the file it halts in, so a sequential run releases what `set_up_before_script` acquired before the halt (#1321)
 
 ## [0.50.0](https://github.com/TypedDevs/bashunit/compare/0.49.0...0.50.0) - 2026-08-18
 

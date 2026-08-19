@@ -212,6 +212,10 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::restore_workdir
       continue
     fi
+    # From here this shell owes the file's teardown until the loop runs it below.
+    # --stop-on-failure exits from inside call_test_functions and never reaches
+    # that line, so the exit path settles the debt instead (#1321).
+    bashunit::runner::mark_file_teardown_pending "$test_file"
     local _cached_fns="$functions_for_script"
     # In the parent, before dispatch: under --parallel call_test_functions is a
     # background subshell, so a check run inside it sets state that dies with
@@ -244,6 +248,9 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
       bashunit::runner::run_tear_down_after_script "$test_file"
     fi
+    # Sequential ran the hook just above; under --parallel the worker owns it.
+    # Either way this shell owes it no longer.
+    _BASHUNIT_FILE_TEARDOWN_PENDING=""
     bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"
     bashunit::runner::clean_set_up_and_tear_down_after_script
     if ! bashunit::parallel::is_enabled; then
