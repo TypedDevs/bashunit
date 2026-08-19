@@ -257,6 +257,16 @@ function bashunit::runner::execute_test_body() {
   _BASHUNIT_RUNNER_EXIT_FILE=$test_file
   # shellcheck disable=SC2154 # assigned inside the trap body, read by cleanup_on_exit (runner/hooks.sh)
   trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$_BASHUNIT_RUNNER_EXIT_FILE" "$exit_code"' EXIT
+  # A timed-out test is killed by the watchdog's group SIGTERM (run_with_timeout).
+  # Bash runs no EXIT trap for a fatal signal it does not have a trap for, so
+  # tear_down was skipped and whatever set_up acquired for that test was leaked
+  # (#1324). Trapping TERM and exiting hands control to the EXIT trap above, which
+  # is where tear_down lives. 143 is the conventional 128+SIGTERM.
+  #
+  # Best effort on purpose: the watchdog SIGKILLs the group shortly after, so a
+  # tear_down slower than that grace is cut off. A hook that never returns must
+  # not outlive the timeout it is cleaning up after.
+  trap 'exit 143' TERM
   bashunit::state::initialize_assertions_count
 
   if bashunit::env::is_login_shell_enabled; then

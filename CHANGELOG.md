@@ -8,6 +8,7 @@
 - `--stop-on-failure` runs `tear_down_after_script` for the file it halts in, so a sequential run releases what `set_up_before_script` acquired before the halt (#1321)
 - `bashunit bench` runs `tear_down_after_script` before it aborts on a malformed annotation, so the file releases what `set_up_before_script` acquired (#1322)
 - Ctrl-C runs `tear_down_after_script` for the file it interrupts in a sequential run, so a file-scoped resource is released. A second Ctrl-C now ends the run even if that hook never returns (#1323)
+- A test killed by `--test-timeout` runs its `tear_down`, so a per-test resource is released. Best effort within the watchdog's grace before it sends SIGKILL, so a hook cannot outlive the timeout it cleans up after (#1324)
 
 ## [0.50.0](https://github.com/TypedDevs/bashunit/compare/0.49.0...0.50.0) - 2026-08-18
 
