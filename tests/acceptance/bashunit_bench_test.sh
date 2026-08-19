@@ -108,6 +108,34 @@ function test_bench_cleans_up_when_set_up_before_script_fails() {
   assert_file_not_exists "$marker"
 }
 
+# A malformed annotation aborts the run from inside call_bench_functions, which
+# used to skip the file's teardown along with everything else (#1322).
+function test_bench_cleans_up_when_an_annotation_is_malformed() {
+  local dir fixture marker
+  dir="$(bashunit::temp_dir bench_annotation_cleanup)"
+  fixture="$dir/bad_annotation_bench.sh"
+  marker="$dir/resource"
+  {
+    printf 'RESOURCE=""\n'
+    printf 'function set_up_before_script() {\n'
+    printf '  RESOURCE="$CLEANUP_MARKER"\n'
+    printf '  : >"$RESOURCE"\n'
+    printf '}\n'
+    printf 'function tear_down_after_script() {\n'
+    printf '  rm -f "$RESOURCE"\n'
+    printf '}\n'
+    printf '# @revs=abc\n'
+    printf 'function bench_bad_annotation() { :; }\n'
+  } >"$fixture"
+
+  local exit_code=0 output
+  output=$(CLEANUP_MARKER="$marker" ./bashunit bench "$fixture" 2>&1) || exit_code=$?
+
+  assert_general_error "" "" "$exit_code"
+  assert_contains "@revs in '# @revs=abc' is not a valid value" "$(printf "%s" "$output" | strip_ansi)"
+  assert_file_not_exists "$marker"
+}
+
 function test_bench_fails_when_a_file_cannot_be_sourced() {
   local dir
   dir="$(bashunit::temp_dir bench_source_fail)"
