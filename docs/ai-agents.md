@@ -141,8 +141,6 @@ actually make against this API:
   tell `cmd "a b"` from `cmd a b` — a quoting bug passes it. Use
   `assert_have_been_called_with_args <spy> <arg>...` (no `call_index`) to compare
   argument by argument whenever an argument may contain a space.
-- Do not delete a shared fixture in `tear_down_after_script`: under `--parallel` the
-  file's tests may still be running, and they will vanish from the totals silently.
 - Re-record snapshots with `--snapshot-update`, scoped by `--filter`; do not delete
   snapshot files. A missing snapshot is written silently and never fails, so a wrong
   `rm` turns a real assertion into a rubber stamp. Read `git diff` afterwards either way.

@@ -62,6 +62,48 @@ function bashunit::runner::parse_result_parallel() {
   echo "$execution_result" >"$unique_test_result_file"
 }
 
+##
+# Publishes a file-scoped hook failure from a --parallel worker, so the parent's
+# summary counts it.
+#
+# tear_down_after_script runs inside the file's worker (#1320) and
+# record_file_hook_failure's counter lives in that subshell, so without this the
+# hook failed, said so on the terminal, and left the run green. The aggregator
+# reads one `.result` per test out of the file's suite dir, so the hook publishes
+# its own. A fixed basename: the per-test ordinals are scoped inside
+# call_test_functions, and the aggregator globs `*.result`.
+#
+# Written only on failure. A zero-assertion, exit-0 payload is what the
+# aggregator reads as a risky test, which would add a phantom risky test to every
+# file that defines the hook.
+#
+# Arguments: $1 - the hook's exit status, $2 - the test file
+##
+function bashunit::runner::publish_file_hook_failure() {
+  local status=$1
+  local test_file=$2
+
+  [ "$status" -ne 0 ] || return 0
+  bashunit::parallel::is_enabled || return 0
+
+  bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+  local test_suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
+  [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
+
+  # Hand-built rather than exported: export_subshell_context would carry the
+  # assertion totals this file's own tests already published, and the aggregator
+  # would count every one of them twice. The hook contributes a failed test, no
+  # assertions.
+  local payload="\
+##ASSERTIONS_FAILED=0\
+##ASSERTIONS_PASSED=0\
+##ASSERTIONS_SKIPPED=0\
+##ASSERTIONS_INCOMPLETE=0\
+##ASSERTIONS_SNAPSHOT=0\
+##TEST_EXIT_CODE=$status##"
+  printf '%s\n' "$payload" >"$test_suite_dir/tear_down_after_script.result"
+}
+
 function bashunit::runner::parse_result_sync() {
   local fn_name=$1
   local execution_result=$2
