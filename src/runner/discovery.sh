@@ -199,6 +199,9 @@ function bashunit::runner::load_test_files() {
           bashunit::state::add_tests_failed
         done
       fi
+      # Setup may have acquired resources before it failed. Pair every setup
+      # invocation with teardown, as the per-test lifecycle already does.
+      bashunit::runner::run_tear_down_after_script "$test_file"
       # Same cleanup as the success path: without it the file's test functions
       # leak into the next iteration's counts and the main shell (#829, #836).
       bashunit::runner::clean_script_test_functions "$_script_fns_to_clean"

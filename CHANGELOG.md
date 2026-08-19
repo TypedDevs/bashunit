@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- `tear_down_after_script` runs when `set_up_before_script` fails, so it can release file-scoped resources acquired before the failure (#1318)
+
 ## [0.50.0](https://github.com/TypedDevs/bashunit/compare/0.49.0...0.50.0) - 2026-08-18
 
 ### Added

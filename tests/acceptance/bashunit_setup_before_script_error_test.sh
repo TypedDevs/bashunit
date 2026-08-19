@@ -84,6 +84,36 @@ function test_bashunit_when_set_up_before_script_fails_with_multiple_tests() {
   assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
 }
 
+function test_tear_down_after_script_runs_when_set_up_before_script_fails() {
+  local dir fixture
+  dir="$(bashunit::temp_dir setup_failure_cleanup)"
+  fixture="$dir/file_hooks_test.sh"
+  {
+    printf 'RESOURCE=""\n'
+    printf 'function set_up_before_script() {\n'
+    printf '  RESOURCE="$CLEANUP_MARKER"\n'
+    printf '  : >"$RESOURCE"\n'
+    printf '  return 1\n'
+    printf '}\n'
+    printf 'function tear_down_after_script() {\n'
+    printf '  rm -f "$RESOURCE"\n'
+    printf '}\n'
+    printf 'function test_never_runs() { assert_true true; }\n'
+  } >"$fixture"
+
+  local mode marker output exit_code
+  for mode in --no-parallel --parallel; do
+    marker="$dir/${mode#--}.resource"
+    exit_code=0
+    output=$(CLEANUP_MARKER="$marker" ./bashunit "$mode" --detailed \
+      --skip-env-file "$fixture" 2>&1) || exit_code=$?
+
+    assert_general_error "" "" "$exit_code"
+    assert_contains "Set up before script" "$output"
+    assert_file_not_exists "$marker"
+  done
+}
+
 function test_bashunit_when_set_up_before_script_with_intermediate_failing_command() {
   local test_file
   test_file=./tests/acceptance/fixtures/\

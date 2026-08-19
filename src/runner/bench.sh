@@ -73,6 +73,9 @@ function bashunit::runner::load_bench_files() {
           bashunit::state::add_tests_failed
         done
       fi
+      # Setup may have acquired resources before it failed. Pair every setup
+      # invocation with teardown, as the per-test lifecycle already does.
+      bashunit::runner::run_tear_down_after_script "$bench_file"
       bashunit::runner::clean_set_up_and_tear_down_after_script
       bashunit::cleanup_script_temp_files
       bashunit::runner::restore_workdir

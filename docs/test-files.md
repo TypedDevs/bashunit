@@ -151,7 +151,9 @@ Running tests/example_test.sh
 
 This visibility helps identify slow setup operations that may impact test run time.
 
-If `set_up_before_script` fails — any failing command, or the function returning a non-zero status (watch out for a trailing `cmd && var=value` guard: when `cmd` fails, the guard is the hook's return value) — bashunit reports the hook error, marks **every test in the file as failed** (they are included in the totals), and continues with the next test file. The rest of the suite always runs, and the failure is attributed to the hook rather than surfacing as mysterious individual test errors. If you want a missing optional dependency to skip tests instead of failing them, end the hook with an explicit success, e.g. `command -v jq >/dev/null 2>&1 && HAS_JQ=true; return 0` — then call `bashunit::skip` inside the tests.
+A failing command or non-zero function status makes `set_up_before_script` fail. bashunit reports the hook error, marks **every test in the file as failed** (they are included in the totals), and continues with the next test file. Watch out for a trailing `cmd && var=value` guard: when `cmd` fails, the guard is the hook's return value. The rest of the suite always runs, and the failure is attributed to the hook rather than surfacing as mysterious individual test errors. `tear_down_after_script` still runs, so it can release resources acquired before the setup failure. Because setup may be only partially complete, guard optional state in teardown, for example `[ -n "${RESOURCE:-}" ] && rm -f "$RESOURCE"`.
+
+If you want a missing optional dependency to skip tests instead of failing them, end the hook with an explicit success, for example `command -v jq >/dev/null 2>&1 && HAS_JQ=true; return 0`, then call `bashunit::skip` inside the tests.
 
 ::: code-group
 ```bash [Example]
@@ -163,7 +165,7 @@ function set_up_before_script() {
 
 ## `tear_down_after_script` function
 
-The `tear_down_after_script` auxiliary function is called, if it is present in the test file, only once when all the test functions in the test file have been executed.
+The `tear_down_after_script` auxiliary function is called, if it is present in the test file, once after the file finishes. It also runs when `set_up_before_script` fails, even though the test functions cannot run.
 This auxiliary function is similar to how `set_up_before_script` works but at the end of the tests.
 It provides a hook for any cleanup that should occur after all tests have run, such as deleting temporary files or releasing resources.
 
