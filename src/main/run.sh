@@ -380,10 +380,20 @@ function bashunit::main::exec_benchmarks() {
 }
 
 function bashunit::main::cleanup() {
+  # Back to the default disposition first: the teardown hook below is user code
+  # and may never return, and an interrupt handler that cannot itself be
+  # interrupted would leave no way out but SIGKILL. A second Ctrl-C now ends the
+  # process. Safe to reset because SIGINT was trappable on entry, or this handler
+  # would not be running.
+  trap - INT
   printf "%sCaught Ctrl-C, killing all child processes...%s\n" \
     "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   # Kill all child processes of this script
   pkill -P $$
+  # After the kill, so the per-test tear_down that the test subshell's EXIT trap
+  # runs comes first, as it does in a normal run. Before the temp-file sweep, so
+  # a hook reading a bashunit::temp_file still finds it (#1323).
+  bashunit::runner::run_pending_file_teardown || true
   bashunit::cleanup_script_temp_files
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::cleanup
