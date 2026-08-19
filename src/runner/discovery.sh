@@ -132,6 +132,7 @@ function bashunit::runner::load_test_files() {
       bashunit::runner::record_file_hook_failure \
         "source" "$test_file" "$message" 1 true
       bashunit::runner::clean_set_up_and_tear_down_after_script
+      bashunit::cleanup_script_temp_files
       bashunit::runner::restore_workdir
       continue
     fi
