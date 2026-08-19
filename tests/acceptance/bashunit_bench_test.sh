@@ -83,6 +83,31 @@ function test_bench_fails_when_a_files_set_up_before_script_fails() {
   assert_contains "Set up before script" "$output"
 }
 
+function test_bench_cleans_up_when_set_up_before_script_fails() {
+  local dir fixture marker
+  dir="$(bashunit::temp_dir bench_setup_failure_cleanup)"
+  fixture="$dir/cleanup_bench.sh"
+  marker="$dir/resource"
+  {
+    printf 'RESOURCE=""\n'
+    printf 'function set_up_before_script() {\n'
+    printf '  RESOURCE="$CLEANUP_MARKER"\n'
+    printf '  : >"$RESOURCE"\n'
+    printf '  return 1\n'
+    printf '}\n'
+    printf 'function tear_down_after_script() {\n'
+    printf '  rm -f "$RESOURCE"\n'
+    printf '}\n'
+    printf 'function bench_never_runs() { :; }\n'
+  } >"$fixture"
+
+  local exit_code=0
+  CLEANUP_MARKER="$marker" ./bashunit bench "$fixture" >/dev/null 2>&1 || exit_code=$?
+
+  assert_general_error "" "" "$exit_code"
+  assert_file_not_exists "$marker"
+}
+
 function test_bench_fails_when_a_file_cannot_be_sourced() {
   local dir
   dir="$(bashunit::temp_dir bench_source_fail)"
