@@ -92,3 +92,30 @@ TEST
   assert_contains "Running" "$output"
   assert_less_than 10 "$((end - start))"
 }
+
+# A timed-out test was killed without running tear_down, so whatever set_up had
+# acquired for it was leaked (#1324). The file-scoped hook already survived,
+# because the runner loop carries on to the next file.
+#
+# A 30s sleep against a 1s budget, so the test is still running when the budget
+# expires however loaded the runner is. #1093 is the other direction of the same
+# care: never assert on a fast test with a budget it could cross.
+function test_bashunit_runs_tear_down_for_a_timed_out_test() {
+  local dir fixture marker
+  dir="$(bashunit::temp_dir timeout_teardown)"
+  fixture="$dir/hanging_test.sh"
+  marker="$dir/marker"
+  {
+    printf 'function set_up() { : >"$TIMEOUT_MARKER.setup"; }\n'
+    printf 'function tear_down() { : >"$TIMEOUT_MARKER.teardown"; }\n'
+    printf 'function test_hangs() { sleep 30; assert_true true; }\n'
+  } >"$fixture"
+
+  local output
+  output="$(TIMEOUT_MARKER="$marker" ./bashunit --no-parallel --env "$TEST_ENV_FILE" \
+    --test-timeout 1 "$fixture")" || true
+
+  assert_contains "Test timed out after 1s" "$output"
+  assert_file_exists "$marker.setup"
+  assert_file_exists "$marker.teardown"
+}
