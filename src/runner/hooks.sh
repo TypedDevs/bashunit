@@ -375,9 +375,14 @@ function bashunit::runner::cleanup_worker_on_signal() {
   # No `pkill -P $$` sweep to go with the loop. `$$` stays the runner's pid inside
   # a subshell, so the sweep signalled the runner's children -- this worker among
   # them -- and killed the handler before it reached the hook below. On bash 5 it
-  # lost that race every time. `$BASHPID` would name the worker, and it is Bash
-  # 4+. The cost is that a file opting out of per-test parallelism runs its bodies
-  # unforked, with no group of their own, so their tear_down is missed here.
+  # lost that race every time. `$BASHPID` would name the worker, and it is Bash 4+.
+  #
+  # A file that opted out of per-test parallelism runs its bodies unforked, so it
+  # never reaches this handler while a test is running: the worker sits in a
+  # command substitution, and bash defers a trap until the running foreground
+  # command returns. Both hooks still run for such a file, when the body finishes
+  # rather than when the signal lands, so nothing is leaked and the interrupt just
+  # does not cut that test short.
   #
   # After the kills, so the per-test tear_down that each body's EXIT trap runs
   # comes first, as it does in a normal run.
