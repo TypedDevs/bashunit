@@ -167,3 +167,69 @@ function test_a_malformed_retry_runs_the_file_teardown_under_parallel() {
   assert_contains "@retry 'abc'" "$BAD_ANNOTATION_OUTPUT"
   assert_file_not_exists "$BAD_ANNOTATION_MARKER"
 }
+
+function run_bad_annotation_alongside_a_passing_file() { # $1 = annotation line
+  local dir
+  dir="$(bashunit::temp_dir annotation_abort)"
+  BAD_ANNOTATION_MARKER="$dir/resource"
+  {
+    printf 'function set_up_before_script() { : >"$CLEANUP_MARKER"; }\n'
+    printf 'function tear_down_after_script() { rm -f "$CLEANUP_MARKER"; }\n'
+    printf '%s\n' "$1"
+    printf 'function test_bad_annotation_beside_a_good_file() { assert_same "ok" "ok"; }\n'
+  } >"$dir/bad_annotation_test.sh"
+  printf 'function test_good_beside_a_bad_annotation() { assert_same "ok" "ok"; }\n' \
+    >"$dir/good_test.sh"
+
+  # JUnit alongside the console run: the count has to match in both, and the
+  # report channel is the half a console-only assertion cannot see. The report
+  # goes outside $dir, which is the directory being scanned, and --log-junit has
+  # to follow --env: the env file blanks BASHUNIT_LOG_JUNIT as it is parsed, so a
+  # flag ahead of it is read and then overwritten.
+  BAD_ANNOTATION_JUNIT="$(bashunit::temp_file)"
+  BAD_ANNOTATION_EC=0
+  BAD_ANNOTATION_OUTPUT=$(CLEANUP_MARKER="$BAD_ANNOTATION_MARKER" NO_COLOR=1 \
+    ./bashunit --parallel --env "$TEST_ENV_FILE" \
+    --log-junit "$BAD_ANNOTATION_JUNIT" "$dir" 2>&1) || BAD_ANNOTATION_EC=$?
+}
+
+# Sequentially the abort exits the run. Under --parallel the parent is several
+# files ahead, so the worker's abort has to travel to it: without that the run
+# reported "All tests passed" and exited 0 over a file that never ran (#1335).
+function test_a_malformed_timeout_fails_a_parallel_run_beside_a_passing_file() {
+  run_bad_annotation_alongside_a_passing_file '# @timeout abc'
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@timeout 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_not_contains "All tests passed" "$BAD_ANNOTATION_OUTPUT"
+  assert_file_not_exists "$BAD_ANNOTATION_MARKER"
+}
+
+function test_a_malformed_retry_fails_a_parallel_run_beside_a_passing_file() {
+  run_bad_annotation_alongside_a_passing_file '# @retry abc'
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@retry 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_not_contains "All tests passed" "$BAD_ANNOTATION_OUTPUT"
+}
+
+# #1301 fixed a file-level failure being counted twice: two failed tests in the
+# reports against one in the console summary. The abort travels the same channel,
+# so it has to stay counted once.
+function test_a_malformed_annotation_is_counted_once_under_parallel() {
+  run_bad_annotation_alongside_a_passing_file '# @timeout abc'
+
+  assert_contains "1 passed" "$BAD_ANNOTATION_OUTPUT"
+  assert_contains "1 failed" "$BAD_ANNOTATION_OUTPUT"
+  assert_contains "2 total" "$BAD_ANNOTATION_OUTPUT"
+
+  # The console summary and the reports read different channels, so agreeing here
+  # is the whole point: recording the abort in the parent instead of the worker
+  # would leave this at one failure and the console at two.
+  local junit
+  junit=$(cat "$BAD_ANNOTATION_JUNIT")
+
+  assert_contains 'tests="2" failures="1"' "$junit"
+  assert_contains 'name="Bad annotation beside a good file"' "$junit"
+  assert_contains "is not a non-negative integer" "$junit"
+}

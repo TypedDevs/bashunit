@@ -253,16 +253,20 @@ function bashunit::runner::load_test_files() {
         # as run_with_timeout's watchdog.
         set -m
         # An aborting annotation returns non-zero here, and this shell runs with
-        # errexit off, so the hook below still runs. The status is dropped: the
-        # worker has no channel to abort the parent with, which is a separate
-        # exit-code defect and not this teardown leak (#1329).
+        # errexit off, so the hook below still runs. The status needs no reading:
+        # the aborting frame already recorded the failure on both channels, since
+        # it is the only one holding the reason (#1335). Never guard this with
+        # `||` to read it -- a command on the left of `||` runs with errexit
+        # ignored, and bash carries that down into every function and subshell it
+        # calls, which stopped the `set -e` that aborts a failing set_up.
         bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
         # Settles the debt the parent recorded before dispatch, so a signal that
         # lands from here on cannot run the hook a second time.
         _BASHUNIT_FILE_TEARDOWN_PENDING=""
         bashunit::runner::run_tear_down_after_script "$test_file"
         # A hook failure recorded in here dies with the subshell (#1147), so
-        # publish it the way a test publishes its result.
+        # publish it the way a test publishes its result. Reads $? directly, so
+        # nothing may come between it and the call above.
         bashunit::runner::publish_file_hook_failure "$?" "$test_file"
       } 2>"$_worker_stderr" &
     else
