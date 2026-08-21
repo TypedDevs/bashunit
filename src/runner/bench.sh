@@ -82,10 +82,18 @@ function bashunit::runner::load_bench_files() {
       continue
     fi
     bashunit::runner::call_bench_functions "$bench_file" "$filter"
+    local bench_status=$?
     bashunit::runner::run_tear_down_after_script "$bench_file"
     bashunit::runner::clean_set_up_and_tear_down_after_script
     bashunit::cleanup_script_temp_files
     bashunit::runner::restore_workdir
+    # A malformed annotation still aborts the whole run, as it has to: a value
+    # the runner cannot honour would otherwise measure something other than what
+    # the annotation asked for (#884). It aborts from here rather than from
+    # inside call_bench_functions so the file's teardown runs first (#1322).
+    if [ "$bench_status" -ne 0 ]; then
+      exit "$bench_status"
+    fi
   done
 }
 
@@ -121,7 +129,7 @@ function bashunit::runner::call_bench_functions() {
     # Capture separately so a malformed annotation aborts the run: the exit
     # status of a $(...) inside `read <<<` is otherwise discarded (#884).
     local parsed_annotations
-    parsed_annotations=$(bashunit::benchmark::parse_annotations "$fn_name" "$script") || exit 1
+    parsed_annotations=$(bashunit::benchmark::parse_annotations "$fn_name" "$script") || return 1
     read -r revs its max_ms <<<"$parsed_annotations"
     bashunit::benchmark::run_function "$fn_name" "$revs" "$its" "$max_ms" "$script"
     unset -v fn_name

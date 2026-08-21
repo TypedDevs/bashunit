@@ -303,6 +303,42 @@ function bashunit::runner::clear_mocks() {
   done
 }
 
+# The file whose tear_down_after_script this shell still owes, empty when it owes
+# none. --stop-on-failure exits from inside the test loop, so the loop's own
+# teardown call is never reached and the hook has to run from the exit path
+# instead (#1321).
+_BASHUNIT_FILE_TEARDOWN_PENDING=""
+
+##
+# Records that $1's file teardown is still owed by this shell.
+#
+# Gated on the file declaring the hook, not on setup having run: with no hook
+# declared run_tear_down_after_script prints a blank line, which is console
+# decoration belonging to the normal path. Emitting it from the halt path would
+# change the output of every halted run that defines no teardown.
+# Arguments: $1 - the test file
+##
+function bashunit::runner::mark_file_teardown_pending() {
+  if declare -F tear_down_after_script >/dev/null 2>&1; then
+    _BASHUNIT_FILE_TEARDOWN_PENDING="$1"
+  fi
+}
+
+##
+# Runs the file teardown this shell still owes, if any, and clears the debt.
+#
+# For the paths that leave the test loop without reaching its own teardown call.
+# The debt is cleared before the hook runs, so a hook that re-enters this path
+# cannot run twice.
+##
+function bashunit::runner::run_pending_file_teardown() {
+  local test_file="$_BASHUNIT_FILE_TEARDOWN_PENDING"
+  [ -n "$test_file" ] || return 0
+
+  _BASHUNIT_FILE_TEARDOWN_PENDING=""
+  bashunit::runner::run_tear_down_after_script "$test_file"
+}
+
 function bashunit::runner::run_tear_down_after_script() {
   local test_file="$1"
   bashunit::internal_log "run_tear_down_after_script"
