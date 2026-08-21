@@ -245,19 +245,23 @@ function bashunit::runner::load_test_files() {
       # call_test_functions waits for its own per-test workers before it
       # returns, which is what makes this ordering hold.
       {
-        # Swallowed on purpose: an aborting annotation must not skip the hook
-        # below. Reporting the abort to the parent is a separate defect -- a
-        # malformed annotation next to a passing file exits 0 -- left alone here
-        # so this stays the teardown fix it says it is (#1329).
-        bashunit::runner::call_test_functions "$test_file" "$_cached_fns" || true
+        # An aborting annotation returns non-zero here, and this shell runs with
+        # errexit off, so the hook below still runs. The status is dropped: the
+        # worker has no channel to abort the parent with, which is a separate
+        # exit-code defect and not this teardown leak (#1329).
+        bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
         bashunit::runner::run_tear_down_after_script "$test_file"
         # A hook failure recorded in here dies with the subshell (#1147), so
         # publish it the way a test publishes its result.
         bashunit::runner::publish_file_hook_failure "$?" "$test_file"
       } 2>"$_worker_stderr" &
     else
-      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" ||
-        file_status=$?
+      # Read after, never `call_test_functions || file_status=$?`: a command on
+      # the left of `||` runs with errexit ignored, and bash carries that down
+      # into every function and subshell it calls. The `set -e` that aborts a
+      # failing set_up stopped firing, so a broken hook passed on bash 5.
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+      file_status=$?
       bashunit::runner::run_tear_down_after_script "$test_file"
     fi
     # Sequential ran the hook just above; under --parallel the worker owns it.
