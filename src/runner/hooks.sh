@@ -339,6 +339,52 @@ function bashunit::runner::run_pending_file_teardown() {
   bashunit::runner::run_tear_down_after_script "$test_file"
 }
 
+# The process groups of the tests this worker still has in flight, empty when it
+# has none. Written by call_test_functions as it dispatches, read by the handler
+# below, which is the only frame that can reach them.
+_BASHUNIT_WORKER_TEST_PIDS=""
+
+##
+# The per-file worker's SIGTERM handler.
+#
+# Since #1320 the worker owns the file's tear_down_after_script, and nothing above
+# it can run the hook: several files are in flight under --parallel and the hook is
+# unset and redefined as the loop advances, so by interrupt time the parent no
+# longer holds the right function body (#1331).
+#
+# TERM only, and not INT. A shell sets SIGINT to SIG_IGN in a job it backgrounds,
+# and a signal ignored on entry can be neither trapped nor reset, so a `trap ...
+# INT` in here would be dead code -- measured the same on bash 3.2 and 5.3. Ctrl-C
+# reaches this frame as the SIGTERM that main::cleanup pkills it with.
+##
+function bashunit::runner::cleanup_worker_on_signal() {
+  # Back to the default disposition first: the hook below is user code and may
+  # never return, and a handler that cannot itself be interrupted would leave no
+  # way out but SIGKILL, the same reasoning as main::cleanup.
+  trap - TERM
+  # Whole group per test, so the signal reaches the body subshell AND the command
+  # it is blocked on. Signalling the body alone is not enough: bash defers a trap
+  # until the running foreground command returns, so a body sitting in the test's
+  # own `sleep` never reaches the EXIT trap where tear_down lives. The body is a
+  # great-grandchild of the runner under --parallel, which is why a single
+  # `pkill -P` from anywhere above cannot do this.
+  local test_pid
+  for test_pid in $_BASHUNIT_WORKER_TEST_PIDS; do
+    kill -TERM -"$test_pid" 2>/dev/null
+  done
+  # No `pkill -P $$` sweep to go with the loop. `$$` stays the runner's pid inside
+  # a subshell, so the sweep signalled the runner's children -- this worker among
+  # them -- and killed the handler before it reached the hook below. On bash 5 it
+  # lost that race every time. `$BASHPID` would name the worker, and it is Bash
+  # 4+. The cost is that a file opting out of per-test parallelism runs its bodies
+  # unforked, with no group of their own, so their tear_down is missed here.
+  #
+  # After the kills, so the per-test tear_down that each body's EXIT trap runs
+  # comes first, as it does in a normal run.
+  bashunit::runner::run_pending_file_teardown || true
+  exit 143
+}
+
 function bashunit::runner::run_tear_down_after_script() {
   local test_file="$1"
   bashunit::internal_log "run_tear_down_after_script"

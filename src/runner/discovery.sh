@@ -245,11 +245,21 @@ function bashunit::runner::load_test_files() {
       # call_test_functions waits for its own per-test workers before it
       # returns, which is what makes this ordering hold.
       {
+        # Ctrl-C reaches this frame as the SIGTERM main::cleanup pkills it with,
+        # and this is the only frame holding this file's hook (#1331).
+        trap 'bashunit::runner::cleanup_worker_on_signal' TERM
+        # A group per test, so the handler above can signal a body subshell
+        # together with the command it is blocked on. Same reason and same idiom
+        # as run_with_timeout's watchdog.
+        set -m
         # An aborting annotation returns non-zero here, and this shell runs with
         # errexit off, so the hook below still runs. The status is dropped: the
         # worker has no channel to abort the parent with, which is a separate
         # exit-code defect and not this teardown leak (#1329).
         bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+        # Settles the debt the parent recorded before dispatch, so a signal that
+        # lands from here on cannot run the hook a second time.
+        _BASHUNIT_FILE_TEARDOWN_PENDING=""
         bashunit::runner::run_tear_down_after_script "$test_file"
         # A hook failure recorded in here dies with the subshell (#1147), so
         # publish it the way a test publishes its result.
