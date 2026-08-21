@@ -118,10 +118,19 @@ function bashunit::helper::annotations_validate() {
   done
 }
 
+# The rejection the validator last reported. The caller records it as a failed
+# test, and building the wording once here is what keeps that report entry and
+# the stderr line above from drifting apart (#1335).
+_BASHUNIT_ANNOT_REJECT_FN_OUT=""
+_BASHUNIT_ANNOT_REJECT_MSG_OUT=""
+
 ##
 # Arguments: $1 - script, $2 - function, $3 - marker, $4 - offending value
 ##
 function bashunit::helper::_annotations_reject() {
-  printf "%sError: @%s '%s' above %s in %s is not a non-negative integer.%s\n" \
-    "${_BASHUNIT_COLOR_FAILED}" "$3" "$4" "$2" "$1" "${_BASHUNIT_COLOR_DEFAULT}" >&2
+  _BASHUNIT_ANNOT_REJECT_FN_OUT=$2
+  _BASHUNIT_ANNOT_REJECT_MSG_OUT="@$3 '$4' above $2 in $1 is not a non-negative integer."
+  printf "%sError: %s%s\n" \
+    "${_BASHUNIT_COLOR_FAILED}" "$_BASHUNIT_ANNOT_REJECT_MSG_OUT" \
+    "${_BASHUNIT_COLOR_DEFAULT}" >&2
 }

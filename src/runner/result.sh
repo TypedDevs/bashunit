@@ -77,11 +77,15 @@ function bashunit::runner::parse_result_parallel() {
 # aggregator reads as a risky test, which would add a phantom risky test to every
 # file that defines the hook.
 #
-# Arguments: $1 - the hook's exit status, $2 - the test file
+# Arguments: $1 - the hook's exit status, $2 - the test file,
+#            $3 - result basename (optional, default: tear_down_after_script)
 ##
 function bashunit::runner::publish_file_hook_failure() {
   local status=$1
   local test_file=$2
+  # Named per source of failure, so a file that both aborts on an annotation and
+  # fails its teardown does not have one payload overwrite the other.
+  local slot=${3:-tear_down_after_script}
 
   [ "$status" -ne 0 ] || return 0
   bashunit::parallel::is_enabled || return 0
@@ -101,7 +105,33 @@ function bashunit::runner::publish_file_hook_failure() {
 ##ASSERTIONS_INCOMPLETE=0\
 ##ASSERTIONS_SNAPSHOT=0\
 ##TEST_EXIT_CODE=$status##"
-  printf '%s\n' "$payload" >"$test_suite_dir/tear_down_after_script.result"
+  printf '%s\n' "$payload" >"$test_suite_dir/$slot.result"
+}
+
+##
+# Records a file the annotation validator rejected as one failed test.
+#
+# Two channels, because the report writers and the console summary read
+# different ones: add_test_failed spools the named entry the parent replays,
+# publish_file_hook_failure writes the counter payload the parent aggregates.
+# Both belong in this frame -- under --parallel it is the worker, whose own
+# counter dies with it, and recording either in the parent instead would land on
+# top of the other and count the failure twice (#1301, #1335).
+#
+# No console line, unlike report_unusable_provider: the validator already printed
+# the reason to stderr, and the parent replays a worker's stderr for the file, so
+# printing here would report the same problem twice in two shapes.
+# Arguments: $1 - the test file
+##
+function bashunit::runner::report_annotation_abort() {
+  local test_file=$1
+
+  local normalized_fn
+  normalized_fn="$(bashunit::helper::normalize_test_function_name \
+    "$_BASHUNIT_ANNOT_REJECT_FN_OUT")"
+  bashunit::reports::add_test_failed \
+    "$test_file" "$normalized_fn" 0 0 "$_BASHUNIT_ANNOT_REJECT_MSG_OUT"
+  bashunit::runner::publish_file_hook_failure 1 "$test_file" "annotation_abort"
 }
 
 function bashunit::runner::parse_result_sync() {

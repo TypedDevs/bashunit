@@ -132,7 +132,12 @@ function bashunit::runner::call_test_functions() {
   # Before anything runs: a value the runner cannot honour would otherwise run
   # a different test than the annotation asked for. Reported up to the caller,
   # which owns the file's teardown, rather than exited from here (#1329).
-  bashunit::helper::annotations_validate "$script" || return 1
+  if ! bashunit::helper::annotations_validate "$script"; then
+    # Recorded here rather than by the caller, which only has the exit status:
+    # this frame still holds the offending function and the reason (#1335).
+    bashunit::runner::report_annotation_abort "$script"
+    return 1
+  fi
 
   local allow_test_parallel=true
   if [ "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL" = true ]; then
