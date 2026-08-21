@@ -85,12 +85,15 @@ function bashunit::helper::_annotations_is_count() {
 }
 
 ##
-# Aborts the run when a marker carries a value the runner cannot honour.
+# Returns non-zero when a marker carries a value the runner cannot honour.
 # Falling back to the default silently would run a different test than the one
 # the annotation asked for, the same reasoning as @revs=abc in #884.
+#
+# Reports rather than exits, so the caller can finish the file it is in before
+# aborting: exiting from here skipped tear_down_after_script (#1329).
 # Arguments: $1 - script the map was built from
 ##
-function bashunit::helper::annotations_validate_or_exit() {
+function bashunit::helper::annotations_validate() {
   local script=$1
   local i=0
   local total=${#_BASHUNIT_ANNOT_MAP_FNS[@]}
@@ -102,11 +105,13 @@ function bashunit::helper::annotations_validate_or_exit() {
     value="${_BASHUNIT_ANNOT_MAP_TIMEOUTS[i]}"
     if [ -n "$value" ] && ! bashunit::helper::_annotations_is_count "$value"; then
       bashunit::helper::_annotations_reject "$script" "$fn" "timeout" "$value"
+      return 1
     fi
 
     value="${_BASHUNIT_ANNOT_MAP_RETRIES[i]}"
     if [ -n "$value" ] && ! bashunit::helper::_annotations_is_count "$value"; then
       bashunit::helper::_annotations_reject "$script" "$fn" "retry" "$value"
+      return 1
     fi
 
     i=$((i + 1))
@@ -119,5 +124,4 @@ function bashunit::helper::annotations_validate_or_exit() {
 function bashunit::helper::_annotations_reject() {
   printf "%sError: @%s '%s' above %s in %s is not a non-negative integer.%s\n" \
     "${_BASHUNIT_COLOR_FAILED}" "$3" "$4" "$2" "$1" "${_BASHUNIT_COLOR_DEFAULT}" >&2
-  exit 1
 }

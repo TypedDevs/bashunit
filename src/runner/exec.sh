@@ -130,8 +130,9 @@ function bashunit::runner::call_test_functions() {
   # per-test @timeout/@retry/@skip annotations (#1020).
   bashunit::helper::build_provider_map "$script"
   # Before anything runs: a value the runner cannot honour would otherwise run
-  # a different test than the annotation asked for.
-  bashunit::helper::annotations_validate_or_exit "$script"
+  # a different test than the annotation asked for. Reported up to the caller,
+  # which owns the file's teardown, rather than exited from here (#1329).
+  bashunit::helper::annotations_validate "$script" || return 1
 
   local allow_test_parallel=true
   if [ "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL" = true ]; then
