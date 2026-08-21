@@ -226,6 +226,9 @@ function bashunit::runner::load_test_files() {
     # the subshell and the run reports "All tests passed" over a file where one
     # of two same-named tests never ran (#1147).
     bashunit::helper::check_duplicate_functions "$test_file" || true
+    # Non-zero only when a malformed annotation aborted the file before any test
+    # ran; the loop settles the file below and then honours the abort (#1329).
+    local file_status=0
     if bashunit::parallel::is_enabled; then
       bashunit::runner::wait_for_job_slot
       # Capture rather than discard: a worker's stderr cannot be written
@@ -242,14 +245,19 @@ function bashunit::runner::load_test_files() {
       # call_test_functions waits for its own per-test workers before it
       # returns, which is what makes this ordering hold.
       {
-        bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+        # Swallowed on purpose: an aborting annotation must not skip the hook
+        # below. Reporting the abort to the parent is a separate defect -- a
+        # malformed annotation next to a passing file exits 0 -- left alone here
+        # so this stays the teardown fix it says it is (#1329).
+        bashunit::runner::call_test_functions "$test_file" "$_cached_fns" || true
         bashunit::runner::run_tear_down_after_script "$test_file"
         # A hook failure recorded in here dies with the subshell (#1147), so
         # publish it the way a test publishes its result.
         bashunit::runner::publish_file_hook_failure "$?" "$test_file"
       } 2>"$_worker_stderr" &
     else
-      bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
+      bashunit::runner::call_test_functions "$test_file" "$_cached_fns" ||
+        file_status=$?
       bashunit::runner::run_tear_down_after_script "$test_file"
     fi
     # Sequential ran the hook just above; under --parallel the worker owns it.
@@ -262,6 +270,13 @@ function bashunit::runner::load_test_files() {
     fi
     bashunit::internal_log "Finished file" "$test_file"
     bashunit::runner::restore_workdir
+    # A malformed annotation still aborts the whole run, as it has to: a value
+    # the runner cannot honour would otherwise run a different test than the one
+    # asked for (#884). It aborts from here rather than from inside
+    # call_test_functions so the file's teardown runs first (#1329).
+    if [ "$file_status" -ne 0 ]; then
+      exit "$file_status"
+    fi
   done
 
   # A listing dispatched no worker, so there is nothing to wait for and no

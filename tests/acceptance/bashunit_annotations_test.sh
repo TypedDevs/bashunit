@@ -110,3 +110,60 @@ function test_annotations_combine_with_tags() {
 
   assert_contains "Test timed out after 1s" "$output"
 }
+
+function run_bad_annotation_fixture() { # $1 = annotation line, $2 = parallel flag
+  local dir fixture
+  dir="$(bashunit::temp_dir annotation_cleanup)"
+  fixture="$dir/bad_annotation_test.sh"
+  BAD_ANNOTATION_MARKER="$dir/resource"
+  {
+    printf 'RESOURCE=""\n'
+    printf 'function set_up_before_script() {\n'
+    printf '  RESOURCE="$CLEANUP_MARKER"\n'
+    printf '  : >"$RESOURCE"\n'
+    printf '}\n'
+    printf 'function tear_down_after_script() {\n'
+    printf '  rm -f "$RESOURCE"\n'
+    printf '}\n'
+    printf '%s\n' "$1"
+    printf 'function test_bad_annotation() { assert_same "ok" "ok"; }\n'
+  } >"$fixture"
+
+  BAD_ANNOTATION_EC=0
+  BAD_ANNOTATION_OUTPUT=$(CLEANUP_MARKER="$BAD_ANNOTATION_MARKER" NO_COLOR=1 \
+    ./bashunit "$2" --env "$TEST_ENV_FILE" "$fixture" 2>&1) || BAD_ANNOTATION_EC=$?
+}
+
+# A malformed annotation aborts from inside call_test_functions, which used to
+# take the file's tear_down_after_script down with it (#1329).
+function test_a_malformed_timeout_runs_the_file_teardown() {
+  run_bad_annotation_fixture '# @timeout abc' --no-parallel
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@timeout 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_file_not_exists "$BAD_ANNOTATION_MARKER"
+}
+
+function test_a_malformed_timeout_runs_the_file_teardown_under_parallel() {
+  run_bad_annotation_fixture '# @timeout abc' --parallel
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@timeout 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_file_not_exists "$BAD_ANNOTATION_MARKER"
+}
+
+function test_a_malformed_retry_runs_the_file_teardown() {
+  run_bad_annotation_fixture '# @retry abc' --no-parallel
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@retry 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_file_not_exists "$BAD_ANNOTATION_MARKER"
+}
+
+function test_a_malformed_retry_runs_the_file_teardown_under_parallel() {
+  run_bad_annotation_fixture '# @retry abc' --parallel
+
+  assert_general_error "" "" "$BAD_ANNOTATION_EC"
+  assert_contains "@retry 'abc'" "$BAD_ANNOTATION_OUTPUT"
+  assert_file_not_exists "$BAD_ANNOTATION_MARKER"
+}
