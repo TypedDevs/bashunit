@@ -11,6 +11,7 @@
 - A test killed by `--test-timeout` runs its `tear_down`, so a per-test resource is released. Best effort within the watchdog's grace before it sends SIGKILL, so a hook cannot outlive the timeout it cleans up after (#1324)
 - A test file that fails to source sweeps its script temp files, so a `bashunit::temp_file` it created at top level no longer survives the run. `bashunit bench` already did this (#1325)
 - A malformed `@timeout` or `@retry` runs `tear_down_after_script` before it aborts the run, so the file releases what `set_up_before_script` acquired. Sequential and `--parallel` both leaked it (#1329)
+- Ctrl-C releases what an interrupted `--parallel` run acquired: the file's `tear_down_after_script` and the `tear_down` of a test in flight. The worker that owns the file's hook now handles the signal and reaches its test bodies, which a kill from the parent could not (#1331)
 
 ## [0.50.0](https://github.com/TypedDevs/bashunit/compare/0.49.0...0.50.0) - 2026-08-18
 

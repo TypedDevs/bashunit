@@ -139,6 +139,11 @@ function bashunit::runner::call_test_functions() {
     allow_test_parallel=false
   fi
 
+  # Reset before the first dispatch below: the worker's signal handler group-kills
+  # every pid recorded here, and a pid left over from the previous file may belong
+  # to something else by now (#1331).
+  _BASHUNIT_WORKER_TEST_PIDS=""
+
   # Pre-create the file's result dir before spawning test workers: they all
   # publish into it, and checking `[ -d ]` inside a worker races its siblings
   # (every worker would still pay the mkdir fork).
@@ -160,6 +165,7 @@ function bashunit::runner::call_test_functions() {
         _test_ordinal=$((_test_ordinal + 1))
         _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test "$script" "$fn_name" &
+        _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else
         bashunit::runner::run_test "$script" "$fn_name"
       fi
@@ -206,6 +212,7 @@ function bashunit::runner::call_test_functions() {
         _test_ordinal=$((_test_ordinal + 1))
         _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
+        _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
       fi
