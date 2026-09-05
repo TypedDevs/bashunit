@@ -44,14 +44,7 @@ function escape(t) {
 }
 
 END {
-  # The DEBUG trap attributes a multi-line statement to its starting line, so
-  # the count carries forward across the backslash chain (#722).
-  carry = 0
-  for (ln = 1; ln <= total; ln++) {
-    h = (ln in hits) ? hits[ln] : 0
-    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
-    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
-  }
+  bu_propagate(sl, hits, total)
 
   for (ln = 1; ln <= total; ln++) {
     row_class = ""
@@ -113,12 +106,7 @@ FILENAME == hitsfile {
 }
 
 END {
-  carry = 0
-  for (ln = 1; ln <= total; ln++) {
-    h = (ln in hits) ? hits[ln] : 0
-    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
-    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
-  }
+  bu_propagate(sl, hits, total)
 
   bu_fn_reset()
   for (ln = 1; ln <= total; ln++) { bu_fn_line(sl[ln], ln) }

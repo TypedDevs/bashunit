@@ -106,6 +106,149 @@ function bu_ends_with_continuation(line,   lead, i, n) {
   }
   return (n % 2) == 1
 }
+
+# The multi-line statement scanner, as awk. Mirrors
+# bashunit::coverage::scan_reset / scan_line / scan_is_open, which is the
+# reference and carries the full explanation of the state machine (#1338).
+#
+# _bu_st[1.._bu_sp] is the context stack, innermost last: S single-quoted,
+# D double-quoted, A array literal, C command substitution, P other paren.
+# The quote character itself has to be built with sprintf: this program lives
+# in a shell single-quoted string and so cannot contain one.
+function bu_scan_reset() {
+  _bu_sp = 0
+  _bu_hd = ""
+  _bu_hdtab = 0
+  _bu_cont = 0
+  _bu_sq = sprintf("%c", 39)
+  split("", _bu_st)
+}
+
+# Records the delimiter of a heredoc from the text following `<<`. The quoting
+# of a delimiter only decides whether the body expands, so it is stripped.
+function bu_scan_heredoc(rest,   word) {
+  _bu_hdtab = 0
+  if (substr(rest, 1, 1) == "-") { _bu_hdtab = 1; rest = substr(rest, 2) }
+  sub(/^[ \t]+/, "", rest)
+  word = rest
+  sub(/[ \t;&|<>)].*$/, "", word)
+  gsub(/\\/, "", word)
+  gsub(/"/, "", word)
+  gsub(_bu_sq, "", word)
+  _bu_hd = word
+}
+
+function bu_scan_line(line,   i, n, c, prev, top, body) {
+  _bu_cont = 0
+
+  if (_bu_hd != "") {
+    body = line
+    if (_bu_hdtab) { sub(/^\t+/, "", body) }
+    if (body == _bu_hd) { _bu_hd = "" }
+    return
+  }
+
+  # Same early-out as the reference: with nothing open, a line holding none of
+  # these characters cannot change the state. index() is a C-speed pass where
+  # the walk below is an interpreted one.
+  if (_bu_sp == 0 && index(line, _bu_sq) == 0 && index(line, "\"") == 0 &&
+      index(line, "\\") == 0 && index(line, "(") == 0 && index(line, "<") == 0) {
+    return
+  }
+
+  if (bu_ends_with_continuation(line)) { _bu_cont = 1 }
+
+  n = length(line)
+  prev = ""
+  for (i = 1; i <= n; i++) {
+    c = substr(line, i, 1)
+    top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
+
+    if (top == "S") {
+      if (c == _bu_sq) { _bu_sp-- }
+      prev = c
+      continue
+    }
+
+    if (top == "D") {
+      if (c == "\"") { _bu_sp-- }
+      else if (c == "\\") { i++; prev = substr(line, i, 1); continue }
+      else if (c == "$" && substr(line, i + 1, 1) == "(") {
+        _bu_sp++; _bu_st[_bu_sp] = "C"; i++; prev = "("; continue
+      }
+      prev = c
+      continue
+    }
+
+    if (c == "\\") { i++; prev = substr(line, i, 1); continue }
+    if (c == _bu_sq) { _bu_sp++; _bu_st[_bu_sp] = "S"; prev = c; continue }
+    if (c == "\"") { _bu_sp++; _bu_st[_bu_sp] = "D"; prev = c; continue }
+    if (c == "#") {
+      if (prev == "" || prev == " " || prev == "\t" ||
+          prev == ";" || prev == "&" || prev == "|") { return }
+      prev = c
+      continue
+    }
+    if (c == "(") {
+      _bu_sp++
+      _bu_st[_bu_sp] = (prev == "$") ? "C" : ((prev == "=") ? "A" : "P")
+      prev = c
+      continue
+    }
+    if (c == ")") {
+      if (_bu_sp > 0) { _bu_sp-- }
+      prev = c
+      continue
+    }
+    if (c == "<" && substr(line, i + 1, 1) == "<") {
+      if (substr(line, i + 2, 1) == "<") { i += 2; prev = "<"; continue }
+      bu_scan_heredoc(substr(line, i + 2))
+      i++
+      prev = "<"
+      continue
+    }
+    prev = c
+  }
+}
+
+function bu_scan_open(   k) {
+  if (_bu_cont) { return 1 }
+  if (_bu_hd != "") { return 1 }
+  for (k = 1; k <= _bu_sp; k++) {
+    if (_bu_st[k] == "S" || _bu_st[k] == "D" || _bu_st[k] == "A") { return 1 }
+  }
+  return 0
+}
+
+# The open contexts, innermost last. Only the differential reads it: a real
+# shell file ends with nothing open, so a non-empty state at EOF is a lexer bug
+# and this says which context leaked.
+function bu_scan_stack(   k, s) {
+  s = ""
+  for (k = 1; k <= _bu_sp; k++) { s = s _bu_st[k] }
+  return s
+}
+
+# Gives every line of a multi-line statement the highest count recorded
+# anywhere in it. The DEBUG trap reports the statement on one line of the span
+# and which one depends on the Bash version, so the propagation runs in both
+# directions (#722, #1338). Mirrors the loop in get_all_line_hits.
+function bu_propagate(sl, hits, total,   ln, start, max, fill, h) {
+  bu_scan_reset()
+  start = 1
+  max = 0
+  for (ln = 1; ln <= total; ln++) {
+    h = (ln in hits) ? hits[ln] + 0 : 0
+    if (h > max) { max = h }
+    bu_scan_line(sl[ln])
+    if (bu_scan_open()) { continue }
+    if (max > 0 && start < ln) {
+      for (fill = start; fill <= ln; fill++) { hits[fill] = max }
+    }
+    start = ln + 1
+    max = 0
+  }
+}
 '
 
 # The DA/LF/LH block of one file's LCOV record, in one pass.
@@ -131,12 +274,7 @@ FILENAME == hitsfile {
 }
 
 END {
-  carry = 0
-  for (ln = 1; ln <= total; ln++) {
-    h = (ln in hits) ? hits[ln] + 0 : 0
-    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
-    if (h > 0 && bu_ends_with_continuation(src[ln])) { carry = h } else { carry = 0 }
-  }
+  bu_propagate(src, hits, total)
 
   executable = 0
   hit = 0
@@ -187,14 +325,7 @@ _BASHUNIT_COVERAGE_AWK_STATS='
   }
   close(src)
 
-  # The DEBUG trap attributes a multi-line statement to its starting line, so
-  # the count carries forward across the backslash chain (#722).
-  carry = 0
-  for (ln = 1; ln <= total; ln++) {
-    h = (ln in hits) ? hits[ln] : 0
-    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
-    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
-  }
+  bu_propagate(sl, hits, total)
 
   executable = 0
   hit = 0
@@ -254,14 +385,7 @@ BEGIN { print "TN:" }
   }
   close(src)
 
-  # The DEBUG trap attributes a multi-line statement to its starting line, so
-  # the count carries forward across the backslash chain (#722).
-  carry = 0
-  for (ln = 1; ln <= total; ln++) {
-    h = (ln in hits) ? hits[ln] : 0
-    if (carry > 0 && h < carry) { h = carry; hits[ln] = h }
-    if (h > 0 && bu_ends_with_continuation(sl[ln])) { carry = h } else { carry = 0 }
-  }
+  bu_propagate(sl, hits, total)
 
   bu_fn_reset()
   bu_br_reset()

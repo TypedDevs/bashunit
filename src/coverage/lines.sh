@@ -217,6 +217,224 @@ function bashunit::coverage::_ends_with_continuation() {
   [ $((${#trailing} % 2)) -eq 1 ]
 }
 
+# The multi-line statement scanner (#1338).
+#
+# A backslash chain is not the only way one statement covers several physical
+# lines, and the DEBUG trap reports the whole statement on ONE of them -- which
+# one depends on the Bash version. For `local commands=(` .. `)`, Bash 3.2
+# reports the closing `)` (a line the classifier calls non-executable, so the
+# hit was discarded entirely) and Bash 5.x reports the opening line. Either way
+# the rest of the statement read as uncovered.
+#
+# So the reader needs to know which lines belong to one statement. This is a
+# small shell lexer: it consumes a line at a time and carries its state forward,
+# the way the classifier consumes a line at a time without one.
+#
+# The state is a stack of open contexts, innermost last, one character each:
+#
+#   S  a single-quoted string      D  a double-quoted string
+#   A  an array literal `name=(`   C  a command substitution `$(`
+#   P  any other parenthesis
+#
+# plus a pending heredoc delimiter. A line is *open* -- the statement continues
+# onto the next line -- when the stack holds an S, D or A, when a heredoc is
+# pending, or when it ends with a backslash continuation.
+#
+# C and P deliberately do NOT open a span. The lines inside a multi-line `$( )`
+# are real commands that get their own DEBUG hits, so crediting them from the
+# line that opened the substitution would report lines that never ran. They are
+# still tracked, because their parentheses have to balance for the ones that do.
+_BASHUNIT_COVERAGE_SCAN_STACK=""
+_BASHUNIT_COVERAGE_SCAN_HEREDOC=""
+_BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=0
+_BASHUNIT_COVERAGE_SCAN_CONTINUES=0
+
+##
+# Clears the scanner state. Call once before the first line of a file.
+##
+function bashunit::coverage::scan_reset() {
+  _BASHUNIT_COVERAGE_SCAN_STACK=""
+  _BASHUNIT_COVERAGE_SCAN_HEREDOC=""
+  _BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=0
+  _BASHUNIT_COVERAGE_SCAN_CONTINUES=0
+}
+
+# Records the delimiter of a heredoc from the text that follows `<<`. The
+# quoting of a delimiter only decides whether the body expands, so it is
+# stripped: `<<'EOF'`, `<<"EOF"`, `<<\EOF` and `<<EOF` all end at `EOF`.
+# Arguments: $1 - the rest of the line after `<<`
+function bashunit::coverage::_scan_heredoc_start() {
+  local rest="$1"
+
+  _BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=0
+  case "$rest" in
+  '-'*)
+    _BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=1
+    rest="${rest#-}"
+    ;;
+  esac
+  rest="${rest#"${rest%%[![:space:]]*}"}"
+
+  local word="${rest%%[[:space:];&|<>)]*}"
+  word="${word//\\/}"
+  word="${word//\'/}"
+  word="${word//\"/}"
+  _BASHUNIT_COVERAGE_SCAN_HEREDOC="$word"
+}
+
+##
+# Advances the scanner over one source line.
+#
+# Only the characters that can change the state are visited: the line is cut to
+# the next one of them with a single parameter expansion, so the loop runs once
+# per quote, paren, backslash, `#` or `<` rather than once per character.
+# Arguments: $1 - the source line
+##
+function bashunit::coverage::scan_line() {
+  local line="$1"
+
+  _BASHUNIT_COVERAGE_SCAN_CONTINUES=0
+
+  # A heredoc body is data, not shell text: nothing in it changes the state, and
+  # its terminator is the last line of the span.
+  if [ -n "$_BASHUNIT_COVERAGE_SCAN_HEREDOC" ]; then
+    local body="$line"
+    if [ "$_BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB" -eq 1 ]; then
+      body="${body#"${body%%[!	]*}"}"
+    fi
+    if [ "$body" = "$_BASHUNIT_COVERAGE_SCAN_HEREDOC" ]; then
+      _BASHUNIT_COVERAGE_SCAN_HEREDOC=""
+    fi
+    return 0
+  fi
+
+  # With nothing open, a line holding no quote, backslash, `(` or `<` cannot
+  # change the state: a `)` pops an empty stack and a `#` only ends a walk that
+  # would have done nothing. One glob test skips the walk for most lines.
+  if [ -z "$_BASHUNIT_COVERAGE_SCAN_STACK" ]; then
+    case "$line" in
+    *[\'\"\\\(\<]*) : ;;
+    *) return 0 ;;
+    esac
+  fi
+
+  if bashunit::coverage::_ends_with_continuation "$line"; then
+    _BASHUNIT_COVERAGE_SCAN_CONTINUES=1
+  fi
+
+  local rest="$line" prev="" head tail char top
+  while [ -n "$rest" ]; do
+    top="${_BASHUNIT_COVERAGE_SCAN_STACK#"${_BASHUNIT_COVERAGE_SCAN_STACK%?}"}"
+    case "$top" in
+    'S') head="${rest%%[\']*}" ;;
+    'D') head="${rest%%[\"\\$]*}" ;;
+    *) head="${rest%%[\'\"\\#()<]*}" ;;
+    esac
+    [ "$head" = "$rest" ] && break
+
+    # `prev` is what sits immediately left of the character we stopped on: it is
+    # the last character of the skipped text, or -- when nothing was skipped --
+    # the character the previous iteration stopped on.
+    [ -n "$head" ] && prev="${head#"${head%?}"}"
+    tail="${rest#"$head"}"
+    char="${tail%"${tail#?}"}"
+    rest="${tail#?}"
+
+    if [ "$top" = 'S' ]; then
+      _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}"
+      prev="$char"
+      continue
+    fi
+
+    if [ "$top" = 'D' ]; then
+      case "$char" in
+      '"') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}" ;;
+      [\\])
+        prev="${rest%"${rest#?}"}"
+        rest="${rest#?}"
+        continue
+        ;;
+      '$')
+        # `"$(cmd 'a"b')"`: a command substitution reopens an unquoted context,
+        # so the quotes inside it are not the outer string's.
+        case "$rest" in
+        '('*)
+          _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}C"
+          rest="${rest#?}"
+          prev='('
+          continue
+          ;;
+        esac
+        ;;
+      esac
+      prev="$char"
+      continue
+    fi
+
+    case "$char" in
+    [\\])
+      prev="${rest%"${rest#?}"}"
+      rest="${rest#?}"
+      continue
+      ;;
+    "'") _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}S" ;;
+    '"') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}D" ;;
+    '#')
+      # `#` only opens a comment at the start of a word, so `${x#y}` and
+      # `${#arr[@]}` are not comments.
+      case "$prev" in
+      '' | ' ' | '	' | ';' | '&' | '|') return 0 ;;
+      esac
+      ;;
+    '(')
+      # An array literal is the one parenthesis whose contents are words of a
+      # single statement, and it is the one that opens right after a `=`.
+      case "$prev" in
+      '$') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}C" ;;
+      '=') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}A" ;;
+      *) _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}P" ;;
+      esac
+      ;;
+    ')')
+      # A case arm's `)` closes nothing, and popping an empty stack is a no-op.
+      _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}"
+      ;;
+    '<')
+      case "$rest" in
+      '<<'*)
+        # A here-string has no body.
+        rest="${rest#??}"
+        prev='<'
+        continue
+        ;;
+      '<'*)
+        rest="${rest#?}"
+        bashunit::coverage::_scan_heredoc_start "$rest"
+        prev='<'
+        continue
+        ;;
+      esac
+      ;;
+    esac
+    prev="$char"
+  done
+
+  return 0
+}
+
+##
+# Whether the statement on the last scanned line continues onto the next one.
+# Returns: 0 when the line is open, 1 when the statement ended with it
+##
+function bashunit::coverage::scan_is_open() {
+  [ "$_BASHUNIT_COVERAGE_SCAN_CONTINUES" -eq 1 ] && return 0
+  [ -n "$_BASHUNIT_COVERAGE_SCAN_HEREDOC" ] && return 0
+  case "$_BASHUNIT_COVERAGE_SCAN_STACK" in
+  *[SDA]*) return 0 ;;
+  esac
+  return 1
+}
+
 # Get all line hits for a file in one pass (performance optimization)
 # Output format: one "lineno:count" per line
 
@@ -398,19 +616,27 @@ function bashunit::coverage::get_all_line_hits() {
   local total=$_i
   [ "$maxln" -gt "$total" ] && total=$maxln
 
-  # Propagate each start line's count forward across its continuation chain.
-  local carry=0 idx h
+  # Group the lines into statement spans and give every line of a span the
+  # highest count recorded anywhere in it. Span-max rather than a forward carry
+  # because the trap may have attributed the statement to the LAST line of the
+  # span -- which is what Bash 3.2 does with an array literal (#1338). For a
+  # backslash chain, where only the first line can carry a hit, it produces
+  # exactly what the forward carry did (#722).
+  local idx start=1 max=0 fill h
+  bashunit::coverage::scan_reset
   for ((idx = 1; idx <= total; idx++)); do
     h=${counts[idx]:-0}
-    if [ "$carry" -gt 0 ] && [ "$h" -lt "$carry" ]; then
-      h=$carry
-      counts[idx]=$h
+    [ "$h" -gt "$max" ] && max=$h
+    bashunit::coverage::scan_line "${src[idx - 1]:-}"
+    bashunit::coverage::scan_is_open && continue
+
+    if [ "$max" -gt 0 ] && [ "$start" -lt "$idx" ]; then
+      for ((fill = start; fill <= idx; fill++)); do
+        counts[fill]=$max
+      done
     fi
-    if [ "$h" -gt 0 ] && bashunit::coverage::_ends_with_continuation "${src[idx - 1]:-}"; then
-      carry=$h
-    else
-      carry=0
-    fi
+    start=$((idx + 1))
+    max=0
   done
 
   local ln

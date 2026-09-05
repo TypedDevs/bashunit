@@ -1,21 +1,32 @@
 #!/usr/bin/env bash
 
-# The awk classifier and the Bash one must agree on every line of every shell
-# file in the repo. A disagreement moves coverage numbers silently, which is
-# exactly what #1005 warned about when it reproduced the old regex quirk for
-# quirk -- so this compares them line by line rather than trusting either.
+# The awk rules and the Bash ones must agree on every line of every shell file
+# in the repo. A disagreement moves coverage numbers silently, which is exactly
+# what #1005 warned about when it reproduced the old regex quirk for quirk --
+# so this compares them line by line rather than trusting either.
+#
+# Two rule sets share the walk, because both are per-line and both have a Bash
+# reference with an awk mirror: whether a line is executable (#1005) and whether
+# the statement on it continues onto the next one (#722, #1338). The scanner
+# also carries state between lines, so the file's end state is compared too --
+# and asserted clean, since real shell files balance their quotes.
 
 function set_up_before_script() {
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+  LF="
+"
 }
 
-# Classifies every line of $1 with awk, printing "<lineno> <0|1>".
+# Reports every line of $1 with awk as "<lineno> <executable> <open>", then a
+# final "end <stack> <heredoc>" holding the scanner state the file left behind.
 # $2 overrides the rule source, which is how the mutation below is injected.
 function awk_classification() { # $1 = file, $2 = optional rule source
   local rules="${2:-$(bashunit::coverage::awk_rules)}"
   local out status=0
   out=$(env LC_ALL=C "$AWK" "$rules"'
-    { printf "%s %s\n", FNR, bu_is_executable($0) }
+    BEGIN { bu_scan_reset() }
+    { bu_scan_line($0); printf "%s %s %s\n", FNR, bu_is_executable($0), bu_scan_open() }
+    END { printf "end %s %s\n", bu_scan_stack(), _bu_hd }
   ' "$1") || status=$?
 
   # An awk that failed prints nothing, and empty output is indistinguishable
@@ -35,17 +46,21 @@ function awk_classification() { # $1 = file, $2 = optional rule source
   fi
 }
 
-# Classifies every line of $1 with the Bash reference, same format.
+# Reports every line of $1 with the Bash reference, same format.
 function bash_classification() { # $1 = file
-  local lineno=0 line
+  local lineno=0 line executable open
+  bashunit::coverage::scan_reset
   while IFS= read -r line || [ -n "$line" ]; do
     lineno=$((lineno + 1))
-    if bashunit::coverage::is_executable_line "$line" "$lineno"; then
-      printf '%s 1\n' "$lineno"
-    else
-      printf '%s 0\n' "$lineno"
-    fi
+    executable=0
+    bashunit::coverage::is_executable_line "$line" "$lineno" && executable=1
+    bashunit::coverage::scan_line "$line"
+    open=0
+    bashunit::coverage::scan_is_open && open=1
+    printf '%s %s %s\n' "$lineno" "$executable" "$open"
   done <"$1"
+  printf 'end %s %s\n' \
+    "$_BASHUNIT_COVERAGE_SCAN_STACK" "$_BASHUNIT_COVERAGE_SCAN_HEREDOC"
 }
 
 # Renders the difference between two strings, for the report of a file that
@@ -62,7 +77,7 @@ function diff_of() { # $1 = bash side, $2 = awk side
 }
 
 
-function test_both_classifiers_agree_on_every_shell_file_in_the_repo() {
+function test_both_rule_sets_agree_on_every_shell_file_in_the_repo() {
   # 460 files, each an awk fork plus a Bash loop over its lines: 4.8s here,
   # but minutes under Git Bash, where the shard hung until CI cancelled it.
   # GNU awk (Ubuntu) and BusyBox awk (Alpine) both run this, which is what the
@@ -70,6 +85,10 @@ function test_both_classifiers_agree_on_every_shell_file_in_the_repo() {
   bashunit::skip_on windows "460 awk forks per run takes minutes under Git Bash"
 
   local disagreements=""
+  # A shell file that parses has every quote, parenthesis and heredoc closed by
+  # the time it ends, so a leftover context is the scanner mis-reading real code
+  # -- the check that the state machine is right, not merely mirrored (#1338).
+  local unclean=""
   local file tmp_a tmp_b
   tmp_a=$(bashunit::temp_file cls_a)
   tmp_b=$(bashunit::temp_file cls_b)
@@ -93,9 +112,16 @@ function test_both_classifiers_agree_on_every_shell_file_in_the_repo() {
 $file
 $diff_out"
     fi
+
+    local end_state="${bash_out##*"$LF"}"
+    if [ "$end_state" != "end  " ]; then
+      unclean="$unclean
+$file left $end_state"
+    fi
   done
 
   assert_empty "$disagreements"
+  assert_empty "$unclean"
 }
 
 # The differential is only worth anything if it can fail. The mutation removes
@@ -121,7 +147,7 @@ function test_the_differential_catches_a_broken_awk_rule() {
   assert_not_equals "$reference" "$mutated"
 }
 
-function test_the_classifiers_agree_on_the_quirk_cases() {
+function test_the_rule_sets_agree_on_the_quirk_cases() {
   local fixture
   fixture="$(bashunit::temp_file)"
   {
@@ -137,9 +163,42 @@ function test_the_classifiers_agree_on_the_quirk_cases() {
     printf '%s\n' 'function bashunit::x() {'
     printf '%s\n' 'name() {'
     printf '%s\n' '((i++))'
+    # The scanner's own quirks: an array literal spans, a substitution does not,
+    # and a quote is only a quote where the shell reads one (#1338).
+    printf '%s\n' 'arr=('
+    printf '%s\n' '  "one"'
+    printf '%s\n' ')'
+    printf '%s\n' "s='multi"
+    printf '%s\n' "line'"
+    printf '%s\n' "echo hi  # don't"
+    printf '%s\n' 'y="$(f '"'"'a"b'"'"')"'
+    printf '%s\n' 'cat <<-EOF'
+    printf '\t%s\n' 'body'
+    printf '\t%s\n' 'EOF'
+    printf '%s\n' 'read -r v <<<"here"'
   } >"$fixture"
 
   assert_same "$(bash_classification "$fixture")" "$(awk_classification "$fixture")"
+}
+
+# The scanner half of the differential needs its own mutation guard: a rule
+# removed from the awk copy has to surface as a disagreement, not as an awk
+# that refuses to run.
+function test_the_differential_catches_a_broken_awk_scanner_rule() {
+  local fixture
+  fixture="$(bashunit::temp_file)"
+  printf '%s\n' 'arr=(' '  "one"' ')' >"$fixture"
+
+  local mutated_rules
+  mutated_rules=$(bashunit::coverage::awk_rules |
+    sed 's|(prev == "=") ? "A" : "P"|"P"|')
+
+  local mutated reference
+  mutated=$(awk_classification "$fixture" "$mutated_rules")
+  reference=$(bash_classification "$fixture")
+
+  assert_not_empty "$mutated"
+  assert_not_equals "$reference" "$mutated"
 }
 
 # The differential compares two outputs, so anything that empties one of them
