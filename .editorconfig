@@ -45,3 +45,10 @@ max_line_length = unset
 
 [src/coverage/html_file.sh]
 max_line_length = unset
+
+# Snapshots are byte-exact recordings of terminal output, ANSI escapes and all.
+# editorconfig-checker 4.0.0 reads the ESC byte in four of them as Latin-1 and
+# fails a charset it cannot detect on a file that is pure ASCII. Nothing here is
+# hand-written, so there is no encoding to pin.
+[tests/acceptance/snapshots/**]
+charset = unset
