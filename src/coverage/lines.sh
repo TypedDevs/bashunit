@@ -322,9 +322,12 @@ function bashunit::coverage::scan_line() {
     _BASHUNIT_COVERAGE_SCAN_CONTINUES=1
   fi
 
+  # A local copy, written back once: the global's name is longer than most of
+  # the statements that touch it.
+  local stack="$_BASHUNIT_COVERAGE_SCAN_STACK"
   local rest="$line" prev="" head tail char top
   while [ -n "$rest" ]; do
-    top="${_BASHUNIT_COVERAGE_SCAN_STACK#"${_BASHUNIT_COVERAGE_SCAN_STACK%?}"}"
+    top="${stack#"${stack%?}"}"
     case "$top" in
     'S') head="${rest%%[\']*}" ;;
     'D') head="${rest%%[\"\\$]*}" ;;
@@ -340,26 +343,32 @@ function bashunit::coverage::scan_line() {
     char="${tail%"${tail#?}"}"
     rest="${tail#?}"
 
+    # Nothing but the closing quote is reported inside `'..'`.
     if [ "$top" = 'S' ]; then
-      _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}"
+      stack="${stack%?}"
       prev="$char"
       continue
     fi
 
+    # A backslash escapes the next character in both remaining contexts. Inside
+    # `'..'` it is literal, and the branch above has already taken that case.
+    case "$char" in
+    [\\])
+      prev="${rest%"${rest#?}"}"
+      rest="${rest#?}"
+      continue
+      ;;
+    esac
+
     if [ "$top" = 'D' ]; then
       case "$char" in
-      '"') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}" ;;
-      [\\])
-        prev="${rest%"${rest#?}"}"
-        rest="${rest#?}"
-        continue
-        ;;
+      '"') stack="${stack%?}" ;;
       '$')
         # `"$(cmd 'a"b')"`: a command substitution reopens an unquoted context,
         # so the quotes inside it are not the outer string's.
         case "$rest" in
         '('*)
-          _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}C"
+          stack="${stack}C"
           rest="${rest#?}"
           prev='('
           continue
@@ -372,32 +381,27 @@ function bashunit::coverage::scan_line() {
     fi
 
     case "$char" in
-    [\\])
-      prev="${rest%"${rest#?}"}"
-      rest="${rest#?}"
-      continue
-      ;;
-    "'") _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}S" ;;
-    '"') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}D" ;;
+    "'") stack="${stack}S" ;;
+    '"') stack="${stack}D" ;;
     '#')
       # `#` only opens a comment at the start of a word, so `${x#y}` and
-      # `${#arr[@]}` are not comments.
+      # `${#arr[@]}` are not comments. The rest of the line is not shell text.
       case "$prev" in
-      '' | ' ' | '	' | ';' | '&' | '|') return 0 ;;
+      '' | ' ' | '	' | ';' | '&' | '|') break ;;
       esac
       ;;
     '(')
       # An array literal is the one parenthesis whose contents are words of a
       # single statement, and it is the one that opens right after a `=`.
       case "$prev" in
-      '$') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}C" ;;
-      '=') _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}A" ;;
-      *) _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK}P" ;;
+      '$') stack="${stack}C" ;;
+      '=') stack="${stack}A" ;;
+      *) stack="${stack}P" ;;
       esac
       ;;
     ')')
       # A case arm's `)` closes nothing, and popping an empty stack is a no-op.
-      _BASHUNIT_COVERAGE_SCAN_STACK="${_BASHUNIT_COVERAGE_SCAN_STACK%?}"
+      stack="${stack%?}"
       ;;
     '<')
       case "$rest" in
@@ -418,6 +422,8 @@ function bashunit::coverage::scan_line() {
     esac
     prev="$char"
   done
+
+  _BASHUNIT_COVERAGE_SCAN_STACK="$stack"
 
   return 0
 }

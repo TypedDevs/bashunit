@@ -164,15 +164,19 @@ function bu_scan_line(line,   i, n, c, prev, top, body) {
     c = substr(line, i, 1)
     top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
 
+    # Nothing but the closing quote is reported inside a single-quoted string.
     if (top == "S") {
       if (c == _bu_sq) { _bu_sp-- }
       prev = c
       continue
     }
 
+    # A backslash escapes the next character in both remaining contexts; inside
+    # a single-quoted string it is literal, and the branch above took that case.
+    if (c == "\\") { i++; prev = substr(line, i, 1); continue }
+
     if (top == "D") {
       if (c == "\"") { _bu_sp-- }
-      else if (c == "\\") { i++; prev = substr(line, i, 1); continue }
       else if (c == "$" && substr(line, i + 1, 1) == "(") {
         _bu_sp++; _bu_st[_bu_sp] = "C"; i++; prev = "("; continue
       }
@@ -180,7 +184,6 @@ function bu_scan_line(line,   i, n, c, prev, top, body) {
       continue
     }
 
-    if (c == "\\") { i++; prev = substr(line, i, 1); continue }
     if (c == _bu_sq) { _bu_sp++; _bu_st[_bu_sp] = "S"; prev = c; continue }
     if (c == "\"") { _bu_sp++; _bu_st[_bu_sp] = "D"; prev = c; continue }
     if (c == "#") {
