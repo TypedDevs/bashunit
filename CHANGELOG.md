@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Coverage counts every line of a multi-line statement as covered once the statement has run, not only the line Bash reported it on. An array literal written one element per line used to cost one uncovered line per element — and on Bash 3.2, where the assignment is reported on its closing `)`, the hit was discarded outright and the whole array read as uncovered. Multi-line strings and heredoc bodies had the same gap; a multi-line `$( )` is left alone, since its interior lines are commands that are tracked in their own right (#1338)
+- Coverage propagates execution counts across multiline array literals, quoted strings, heredocs and backslash continuations, including when Bash 3.x records an array assignment on its closing `)`. Commands inside command and process substitutions remain individually tracked, even within quotes or arrays (#1338)
 
 ## [0.50.1](https://github.com/TypedDevs/bashunit/compare/0.50.0...0.50.1) - 2026-08-22
 

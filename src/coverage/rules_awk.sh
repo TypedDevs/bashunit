@@ -112,7 +112,9 @@ function bu_ends_with_continuation(line,   lead, i, n) {
 # reference and carries the full explanation of the state machine (#1338).
 #
 # _bu_st[1.._bu_sp] is the context stack, innermost last: S single-quoted,
-# D double-quoted, A array literal, C command substitution, P other paren.
+# D double-quoted, A array literal, C command/process substitution,
+# R arithmetic paren, P other paren, H case command header,
+# K case expecting a pattern, B case arm body.
 # The quote character itself has to be built with sprintf: this program lives
 # in a shell single-quoted string and so cannot contain one.
 function bu_scan_reset() {
@@ -120,8 +122,11 @@ function bu_scan_reset() {
   _bu_hd = ""
   _bu_hdtab = 0
   _bu_cont = 0
+  _bu_command_start = 1
   _bu_sq = sprintf("%c", 39)
+  _bu_special = "[" _bu_sq "\"\\\\#()<;&|]"
   split("", _bu_st)
+  split("", _bu_cont_depth)
 }
 
 # Records the delimiter of a heredoc from the text following `<<`. The quoting
@@ -138,71 +143,211 @@ function bu_scan_heredoc(rest,   word) {
   _bu_hd = word
 }
 
-function bu_scan_line(line,   i, n, c, prev, top, body) {
+function bu_scan_pop_case() {
+  if (_bu_sp > 0 && (_bu_st[_bu_sp] == "K" || _bu_st[_bu_sp] == "B")) {
+    delete _bu_st[_bu_sp--]
+  }
+}
+
+# Consumes ordinary unquoted words only while the shell expects a command.
+# Separators are handled by bu_scan_line, so compact and nested case commands
+# reach this function in source order without treating quoted text as syntax.
+function bu_scan_words(text,   token, top) {
+  while (_bu_command_start && text != "") {
+    sub(/^[ \t]+/, "", text)
+    if (text == "") { return }
+    token = text
+    sub(/[ \t].*$/, "", token)
+    text = substr(text, length(token) + 1)
+    top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
+    if (top == "H" && token == "in") {
+      _bu_st[_bu_sp] = "K"; _bu_command_start = 1
+    } else if (top == "H") {
+      # Subject words continue until the unquoted `in` keyword.
+      _bu_command_start = 1
+    } else if ((top == "K" || top == "B") && token == "esac") {
+      bu_scan_pop_case(); _bu_command_start = 0
+    } else if (top == "K") {
+      # `case` here is a pattern word, not a nested command.
+      _bu_command_start = 0
+    } else if (token == "case") {
+      _bu_st[++_bu_sp] = "H"; _bu_command_start = 1
+    } else if (token == "if" || token == "while" || token == "until" ||
+        token == "then" || token == "do" || token == "else" ||
+        token == "elif" || token == "{" || token == "!") {
+      _bu_command_start = 1
+    } else { _bu_command_start = 0 }
+  }
+}
+
+function bu_scan_update_continuation(   k, depth) {
+  depth = 0
+  for (k = 1; k <= _bu_sp; k++) { if (_bu_st[k] == "C") { depth++ } }
+  for (k in _bu_cont_depth) {
+    if ((k + 0) >= depth) { delete _bu_cont_depth[k] }
+  }
+  if (_bu_cont) { _bu_cont_depth[depth] = 1 }
+  else { _bu_command_start = 1 }
+}
+
+function bu_scan_has_continuation(   depth) {
+  for (depth in _bu_cont_depth) { return 1 }
+  return 0
+}
+
+function bu_scan_line(line,   i, n, c, prev, top, body, rest, offset, lead, keyword, head) {
   _bu_cont = 0
 
   if (_bu_hd != "") {
     body = line
     if (_bu_hdtab) { sub(/^\t+/, "", body) }
     if (body == _bu_hd) { _bu_hd = "" }
+    bu_scan_update_continuation()
     return
   }
 
   # Same early-out as the reference: with nothing open, a line holding none of
-  # these characters cannot change the state. index() is a C-speed pass where
-  # the walk below is an interpreted one.
-  if (_bu_sp == 0 && index(line, _bu_sq) == 0 && index(line, "\"") == 0 &&
-      index(line, "\\") == 0 && index(line, "(") == 0 && index(line, "<") == 0) {
+  # these characters cannot change state unless it starts with a reserved word
+  # that introduces a command.
+  lead = line
+  sub(/^[ \t]+/, "", lead)
+  keyword = lead
+  sub(/[ \t;&|)].*$/, "", keyword)
+  if (_bu_sp == 0 && !bu_scan_has_continuation() && _bu_command_start &&
+      keyword != "case" && keyword != "if" && keyword != "while" &&
+      keyword != "until" && keyword != "then" && keyword != "do" &&
+      keyword != "else" && keyword != "elif" && keyword != "{" &&
+      keyword != "!" && index(line, _bu_sq) == 0 && index(line, "\"") == 0 &&
+      index(line, "\\") == 0 && index(line, "(") == 0 && index(line, "<") == 0 &&
+      index(line, ";") == 0 && index(line, "&") == 0 && index(line, "|") == 0) {
     return
   }
-
-  if (bu_ends_with_continuation(line)) { _bu_cont = 1 }
 
   n = length(line)
   prev = ""
   for (i = 1; i <= n; i++) {
+    top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
+    # Skip ordinary text in one native scan, as the Bash reference does.
+    rest = substr(line, i)
+    if (top == "S") { offset = index(rest, _bu_sq) }
+    else if (top == "D") { offset = match(rest, /["\\$]/) }
+    else { offset = match(rest, _bu_special) }
+    head = offset ? substr(rest, 1, offset - 1) : rest
+    if (_bu_command_start && top != "S" && top != "D" && top != "A" &&
+        top != "R") {
+      bu_scan_words(head)
+    }
+    if (!offset) { break }
+    if (offset > 1) { prev = substr(rest, offset - 1, 1) }
+    i += offset - 1
     c = substr(line, i, 1)
     top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
 
     # Nothing but the closing quote is reported inside a single-quoted string.
     if (top == "S") {
-      if (c == _bu_sq) { _bu_sp-- }
+      if (c == _bu_sq) {
+        _bu_sp--
+        if (_bu_sp > 0 && _bu_st[_bu_sp] == "H") { _bu_command_start = 1 }
+      }
       prev = c
       continue
     }
 
     # A backslash escapes the next character in both remaining contexts; inside
     # a single-quoted string it is literal, and the branch above took that case.
-    if (c == "\\") { i++; prev = substr(line, i, 1); continue }
+    if (c == "\\") {
+      if (i == n) { _bu_cont = 1 }
+      else { _bu_command_start = 0 }
+      i++; prev = substr(line, i, 1); continue
+    }
 
     if (top == "D") {
-      if (c == "\"") { _bu_sp-- }
+      if (c == "\"") {
+        _bu_sp--
+        if (_bu_sp > 0 && _bu_st[_bu_sp] == "H") { _bu_command_start = 1 }
+      }
       else if (c == "$" && substr(line, i + 1, 1) == "(") {
-        _bu_sp++; _bu_st[_bu_sp] = "C"; i++; prev = "("; continue
+        if (substr(line, i + 2, 1) == "(") {
+          _bu_st[++_bu_sp] = "R"; _bu_st[++_bu_sp] = "R"
+          _bu_command_start = 0
+          i += 2; prev = "("; continue
+        }
+        _bu_sp++; _bu_st[_bu_sp] = "C"; _bu_command_start = 1
+        i++; prev = "("; continue
       }
       prev = c
       continue
     }
 
-    if (c == _bu_sq) { _bu_sp++; _bu_st[_bu_sp] = "S"; prev = c; continue }
-    if (c == "\"") { _bu_sp++; _bu_st[_bu_sp] = "D"; prev = c; continue }
+    if (c == _bu_sq) {
+      _bu_sp++; _bu_st[_bu_sp] = "S"
+      if (top != "A" && top != "H") { _bu_command_start = 0 }
+      prev = c; continue
+    }
+    if (c == "\"") {
+      _bu_sp++; _bu_st[_bu_sp] = "D"
+      if (top != "A" && top != "H") { _bu_command_start = 0 }
+      prev = c; continue
+    }
     if (c == "#") {
       if (prev == "" || prev == " " || prev == "\t" ||
-          prev == ";" || prev == "&" || prev == "|") { return }
+          prev == ";" || prev == "&" || prev == "|") {
+        bu_scan_update_continuation()
+        return
+      }
       prev = c
       continue
     }
     if (c == "(") {
+      if (top == "K" && _bu_command_start) {
+        _bu_command_start = 0
+        prev = c
+        continue
+      }
+      if (substr(line, i + 1, 1) == "(") {
+        _bu_st[++_bu_sp] = "R"; _bu_st[++_bu_sp] = "R"
+        i++; prev = "("; continue
+      }
       _bu_sp++
-      _bu_st[_bu_sp] = (prev == "$") ? "C" : ((prev == "=") ? "A" : "P")
+      if (prev == "$") { _bu_st[_bu_sp] = "C"; _bu_command_start = 1 }
+      else if (top == "R") { _bu_st[_bu_sp] = "R" }
+      else if (prev == "<" || prev == ">") {
+        _bu_st[_bu_sp] = "C"; _bu_command_start = 1
+      }
+      else { _bu_st[_bu_sp] = (prev == "=") ? "A" : "P" }
       prev = c
       continue
     }
     if (c == ")") {
-      if (_bu_sp > 0) { _bu_sp-- }
+      if (top == "K") { _bu_st[_bu_sp] = "B"; _bu_command_start = 1 }
+      else {
+        if (_bu_sp > 0) { _bu_sp-- }
+        _bu_command_start = (_bu_sp > 0 && _bu_st[_bu_sp] == "H")
+      }
       prev = c
       continue
     }
+    if (c == ";") {
+      if (top == "B" && (substr(line, i + 1, 1) == ";" ||
+          substr(line, i + 1, 1) == "&")) {
+        _bu_st[_bu_sp] = "K"
+      }
+      _bu_command_start = 1
+      prev = c
+      continue
+    }
+    if (c == "&") {
+      _bu_command_start = 1
+      prev = c
+      continue
+    }
+    if (c == "|") {
+      # Pattern alternatives remain pattern words, even when named `esac`.
+      _bu_command_start = (top == "K") ? 0 : 1
+      prev = c
+      continue
+    }
+    if (c == "<" && top == "R") { prev = c; continue }
     if (c == "<" && substr(line, i + 1, 1) == "<") {
       if (substr(line, i + 2, 1) == "<") { i += 2; prev = "<"; continue }
       bu_scan_heredoc(substr(line, i + 2))
@@ -212,12 +357,14 @@ function bu_scan_line(line,   i, n, c, prev, top, body) {
     }
     prev = c
   }
+  bu_scan_update_continuation()
 }
 
 function bu_scan_open(   k) {
   if (_bu_cont) { return 1 }
   if (_bu_hd != "") { return 1 }
-  for (k = 1; k <= _bu_sp; k++) {
+  for (k = _bu_sp; k > 0; k--) {
+    if (_bu_st[k] == "C") { return 0 }
     if (_bu_st[k] == "S" || _bu_st[k] == "D" || _bu_st[k] == "A") { return 1 }
   }
   return 0
@@ -232,24 +379,81 @@ function bu_scan_stack(   k, s) {
   return s
 }
 
+# Describes the literal spans held by the scanner stack before or after a line.
+# Command substitutions increase the command depth. Literal contexts remain
+# attached to the depth at which they opened while child commands are scanned.
+function bu_scan_span_state(after,   k, depth, c) {
+  depth = 0
+  if (after) { split("", _bu_after_span) }
+  else { split("", _bu_before_span) }
+  for (k = 1; k <= _bu_sp; k++) {
+    c = _bu_st[k]
+    if (c == "C") { depth++ }
+    else if (c == "S" || c == "D" || c == "A") {
+      if (after) { _bu_after_span[depth] = 1 }
+      else { _bu_before_span[depth] = 1 }
+    }
+  }
+  for (k in _bu_cont_depth) {
+    if (after) { _bu_after_span[k] = 1 }
+    else { _bu_before_span[k] = 1 }
+  }
+  if (after) { _bu_after_depth = depth }
+  else { _bu_before_depth = depth }
+}
+
 # Gives every line of a multi-line statement the highest count recorded
 # anywhere in it. The DEBUG trap reports the statement on one line of the span
 # and which one depends on the Bash version, so the propagation runs in both
 # directions (#722, #1338). Mirrors the loop in get_all_line_hits.
-function bu_propagate(sl, hits, total,   ln, start, max, fill, h) {
+function bu_propagate(sl, hits, total,   ln, start, max, fill, h, open, d, was, now, member, n, parts, current) {
   bu_scan_reset()
+  split("", span_lines)
+  split("", span_max)
   start = 1
   max = 0
   for (ln = 1; ln <= total; ln++) {
     h = (ln in hits) ? hits[ln] + 0 : 0
     if (h > max) { max = h }
+
+    bu_scan_span_state(0)
     bu_scan_line(sl[ln])
-    if (bu_scan_open()) { continue }
-    if (max > 0 && start < ln) {
-      for (fill = start; fill <= ln; fill++) { hits[fill] = max }
+    bu_scan_span_state(1)
+
+    open = bu_scan_open()
+    if (!open) {
+      if (max > 0 && start < ln) {
+        for (fill = start; fill <= ln; fill++) { hits[fill] = max }
+      }
+      start = ln + 1
+      max = 0
     }
-    start = ln + 1
-    max = 0
+
+    split("", seen)
+    for (d in _bu_before_span) { seen[d] = 1 }
+    for (d in _bu_after_span) { seen[d] = 1 }
+    for (d in seen) {
+      was = (d in _bu_before_span)
+      now = (d in _bu_after_span)
+      member = (was && _bu_before_depth == d) ||
+        (now && _bu_after_depth == d) || (was != now)
+      if (member) {
+        span_lines[d] = span_lines[d] " " ln
+        if (h > span_max[d]) { span_max[d] = h }
+      }
+      if (was && !now) {
+        if (span_max[d] > 0) {
+          n = split(span_lines[d], parts, " ")
+          for (fill = 1; fill <= n; fill++) {
+            if (parts[fill] == "") { continue }
+            current = (parts[fill] in hits) ? hits[parts[fill]] + 0 : 0
+            if (span_max[d] > current) { hits[parts[fill]] = span_max[d] }
+          }
+        }
+        delete span_lines[d]
+        delete span_max[d]
+      }
+    }
   }
 }
 '

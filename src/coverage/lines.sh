@@ -233,14 +233,16 @@ function bashunit::coverage::_ends_with_continuation() {
 # The state is a stack of open contexts, innermost last, one character each:
 #
 #   S  a single-quoted string      D  a double-quoted string
-#   A  an array literal `name=(`   C  a command substitution `$(`
-#   P  any other parenthesis
+#   A  an array literal `name=(`   C  a command/process substitution
+#   R  an arithmetic parenthesis  P  any other parenthesis
+#   H  a case command header       K  a case expecting a pattern
+#   B  a case arm body
 #
 # plus a pending heredoc delimiter. A line is *open* -- the statement continues
 # onto the next line -- when the stack holds an S, D or A, when a heredoc is
 # pending, or when it ends with a backslash continuation.
 #
-# C and P deliberately do NOT open a span. The lines inside a multi-line `$( )`
+# C, R and P deliberately do NOT open a span. The lines inside a multi-line `$( )`
 # are real commands that get their own DEBUG hits, so crediting them from the
 # line that opened the substitution would report lines that never ran. They are
 # still tracked, because their parentheses have to balance for the ones that do.
@@ -248,6 +250,8 @@ _BASHUNIT_COVERAGE_SCAN_STACK=""
 _BASHUNIT_COVERAGE_SCAN_HEREDOC=""
 _BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=0
 _BASHUNIT_COVERAGE_SCAN_CONTINUES=0
+_BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS=""
+_BASHUNIT_COVERAGE_SCAN_COMMAND_START=1
 
 ##
 # Clears the scanner state. Call once before the first line of a file.
@@ -257,6 +261,8 @@ function bashunit::coverage::scan_reset() {
   _BASHUNIT_COVERAGE_SCAN_HEREDOC=""
   _BASHUNIT_COVERAGE_SCAN_HEREDOC_TAB=0
   _BASHUNIT_COVERAGE_SCAN_CONTINUES=0
+  _BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS=""
+  _BASHUNIT_COVERAGE_SCAN_COMMAND_START=1
 }
 
 # Records the delimiter of a heredoc from the text that follows `<<`. The
@@ -282,6 +288,28 @@ function bashunit::coverage::_scan_heredoc_start() {
   _BASHUNIT_COVERAGE_SCAN_HEREDOC="$word"
 }
 
+# Keeps a backslash-continuation span at the command-substitution depth where
+# it started. Deeper child commands suspend it; returning to its depth closes
+# it unless that boundary line continues again.
+function bashunit::coverage::_scan_update_continuation_span() { # $1 = stack, $2 = command-start flag
+  local stack="$1" command_start="$2"
+  local commands depth kept="" item
+  commands="${stack//[^C]/}"
+  depth=${#commands}
+  for item in $_BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS; do
+    if [ "$item" -lt "$depth" ]; then
+      kept="${kept:+$kept }$item"
+    fi
+  done
+  if [ "$_BASHUNIT_COVERAGE_SCAN_CONTINUES" -eq 1 ]; then
+    kept="${kept:+$kept }$depth"
+    _BASHUNIT_COVERAGE_SCAN_COMMAND_START=$command_start
+  else
+    _BASHUNIT_COVERAGE_SCAN_COMMAND_START=1
+  fi
+  _BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS="$kept"
+}
+
 ##
 # Advances the scanner over one source line.
 #
@@ -305,47 +333,105 @@ function bashunit::coverage::scan_line() {
     if [ "$body" = "$_BASHUNIT_COVERAGE_SCAN_HEREDOC" ]; then
       _BASHUNIT_COVERAGE_SCAN_HEREDOC=""
     fi
+    bashunit::coverage::_scan_update_continuation_span \
+      "$_BASHUNIT_COVERAGE_SCAN_STACK" 1
     return 0
   fi
 
-  # With nothing open, a line holding no quote, backslash, `(` or `<` cannot
-  # change the state: a `)` pops an empty stack and a `#` only ends a walk that
-  # would have done nothing. One glob test skips the walk for most lines.
-  if [ -z "$_BASHUNIT_COVERAGE_SCAN_STACK" ]; then
-    case "$line" in
-    *[\'\"\\\(\<]*) : ;;
-    *) return 0 ;;
-    esac
-  fi
+  local stack="$_BASHUNIT_COVERAGE_SCAN_STACK"
+  local lead="${line#"${line%%[![:space:]]*}"}"
+  local keyword="${lead%%[[:space:];&|)]*}"
+  local command_start=$_BASHUNIT_COVERAGE_SCAN_COMMAND_START
 
-  if bashunit::coverage::_ends_with_continuation "$line"; then
-    _BASHUNIT_COVERAGE_SCAN_CONTINUES=1
+  # With nothing open, a line holding no quote, backslash, `(` or `<` cannot
+  # change the state unless it starts with a reserved word that introduces a
+  # command. One glob test skips the walk for most lines, while a continued
+  # command must still consume its word.
+  if [ -z "$stack" ] && [ -z "$_BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS" ] &&
+    [ "$command_start" -eq 1 ]; then
+    case "$keyword" in
+    case | if | while | until | then | do | else | elif | '{' | '!') : ;;
+    *)
+      case "$line" in
+      *[\'\"\\\(\<\;\&\|]*) : ;;
+      *)
+        _BASHUNIT_COVERAGE_SCAN_STACK="$stack"
+        _BASHUNIT_COVERAGE_SCAN_COMMAND_START=1
+        return 0
+        ;;
+      esac
+      ;;
+    esac
   fi
 
   # A local copy, written back once: the global's name is longer than most of
   # the statements that touch it.
-  local stack="$_BASHUNIT_COVERAGE_SCAN_STACK"
-  local rest="$line" prev="" head tail char top
+  local rest="$line" prev="" head tail char top words token
   while [ -n "$rest" ]; do
     top="${stack#"${stack%?}"}"
     case "$top" in
     'S') head="${rest%%[\']*}" ;;
     'D') head="${rest%%[\"\\$]*}" ;;
-    *) head="${rest%%[\'\"\\#()<]*}" ;;
+    *) head="${rest%%[\'\"\\#()<;&|]*}" ;;
     esac
-    [ "$head" = "$rest" ] && break
 
     # `prev` is what sits immediately left of the character we stopped on: it is
     # the last character of the skipped text, or -- when nothing was skipped --
     # the character the previous iteration stopped on.
     [ -n "$head" ] && prev="${head#"${head%?}"}"
+
+    # Reserved words only have meaning at a shell command boundary. Consume
+    # just enough ordinary text to find case/in/esac in source order; quoted
+    # words and comments never reach this branch. Keeping case phases on the
+    # syntax stack prevents an arm delimiter from closing a C below it.
+    if [ "$command_start" -eq 1 ] && [ "$top" != 'S' ] &&
+      [ "$top" != 'D' ] && [ "$top" != 'A' ] && [ "$top" != 'R' ]; then
+      words="$head"
+      while [ "$command_start" -eq 1 ] && [ -n "$words" ]; do
+        words="${words#"${words%%[![:space:]]*}"}"
+        [ -z "$words" ] && break
+        token="${words%%[[:space:]]*}"
+        words="${words#"$token"}"
+        top="${stack#"${stack%?}"}"
+        case "$top:$token" in
+        'H:in')
+          stack="${stack%?}K"
+          command_start=1
+          ;;
+        'H:'*)
+          # Subject words continue until the unquoted `in` keyword.
+          command_start=1
+          ;;
+        'K:esac' | 'B:esac')
+          stack="${stack%?}"
+          command_start=0
+          ;;
+        'K:'*)
+          # At this point `case` is a pattern word, not a nested command.
+          command_start=0
+          ;;
+        *':case')
+          stack="${stack}H"
+          command_start=1
+          ;;
+        *':if' | *':while' | *':until' | *':then' | *':do' | *':else' | *':elif' | *':{' | *':!')
+          command_start=1
+          ;;
+        *) command_start=0 ;;
+        esac
+      done
+    fi
+
+    [ "$head" = "$rest" ] && break
     tail="${rest#"$head"}"
     char="${tail%"${tail#?}"}"
     rest="${tail#?}"
+    top="${stack#"${stack%?}"}"
 
     # Nothing but the closing quote is reported inside `'..'`.
     if [ "$top" = 'S' ]; then
       stack="${stack%?}"
+      [ "${stack#"${stack%?}"}" = 'H' ] && command_start=1
       prev="$char"
       continue
     fi
@@ -354,6 +440,8 @@ function bashunit::coverage::scan_line() {
     # `'..'` it is literal, and the branch above has already taken that case.
     case "$char" in
     [\\])
+      [ -z "$rest" ] && _BASHUNIT_COVERAGE_SCAN_CONTINUES=1
+      [ -n "$rest" ] && command_start=0
       prev="${rest%"${rest#?}"}"
       rest="${rest#?}"
       continue
@@ -362,13 +450,24 @@ function bashunit::coverage::scan_line() {
 
     if [ "$top" = 'D' ]; then
       case "$char" in
-      '"') stack="${stack%?}" ;;
+      '"')
+        stack="${stack%?}"
+        [ "${stack#"${stack%?}"}" = 'H' ] && command_start=1
+        ;;
       '$')
         # `"$(cmd 'a"b')"`: a command substitution reopens an unquoted context,
         # so the quotes inside it are not the outer string's.
         case "$rest" in
+        '(('*)
+          stack="${stack}RR"
+          command_start=0
+          rest="${rest#??}"
+          prev='('
+          continue
+          ;;
         '('*)
           stack="${stack}C"
+          command_start=1
           rest="${rest#?}"
           prev='('
           continue
@@ -381,8 +480,14 @@ function bashunit::coverage::scan_line() {
     fi
 
     case "$char" in
-    "'") stack="${stack}S" ;;
-    '"') stack="${stack}D" ;;
+    "'")
+      stack="${stack}S"
+      case "$top" in A | H) : ;; *) command_start=0 ;; esac
+      ;;
+    '"')
+      stack="${stack}D"
+      case "$top" in A | H) : ;; *) command_start=0 ;; esac
+      ;;
     '#')
       # `#` only opens a comment at the start of a word, so `${x#y}` and
       # `${#arr[@]}` are not comments. The rest of the line is not shell text.
@@ -391,19 +496,65 @@ function bashunit::coverage::scan_line() {
       esac
       ;;
     '(')
+      # An optional `(` before a case pattern is not a grouping context.
+      if [ "$top" = 'K' ] && [ "$command_start" -eq 1 ]; then
+        command_start=0
+        prev="$char"
+        continue
+      fi
+      case "$rest" in
+      '('*)
+        stack="${stack}RR"
+        rest="${rest#?}"
+        prev='('
+        continue
+        ;;
+      esac
       # An array literal is the one parenthesis whose contents are words of a
       # single statement, and it is the one that opens right after a `=`.
-      case "$prev" in
-      '$') stack="${stack}C" ;;
-      '=') stack="${stack}A" ;;
+      case "$prev:$top" in
+      '$:'*) stack="${stack}C"; command_start=1 ;;
+      *:R) stack="${stack}R" ;;
+      '<:'* | '>:'*) stack="${stack}C"; command_start=1 ;;
+      '=:'*) stack="${stack}A" ;;
       *) stack="${stack}P" ;;
       esac
       ;;
     ')')
-      # A case arm's `)` closes nothing, and popping an empty stack is a no-op.
-      stack="${stack%?}"
+      # A case arm delimiter starts its command body. Popping an empty stack is
+      # a no-op.
+      if [ "$top" = 'K' ]; then
+        stack="${stack%?}B"
+        command_start=1
+      else
+        stack="${stack%?}"
+        if [ "${stack#"${stack%?}"}" = 'H' ]; then
+          command_start=1
+        else
+          command_start=0
+        fi
+      fi
+      ;;
+    ';')
+      # `;;`, `;&` and `;;&` finish an arm and make the next word a pattern.
+      if [ "$top" = 'B' ]; then
+        case "$rest" in
+        ';'* | '&'*) stack="${stack%?}K" ;;
+        esac
+      fi
+      command_start=1
+      ;;
+    '&') command_start=1 ;;
+    '|')
+      # Pattern alternatives remain pattern words, even when named `esac`.
+      if [ "$top" = 'K' ]; then command_start=0; else command_start=1; fi
       ;;
     '<')
+      # In arithmetic, `<<` is a bit shift, not a heredoc redirection.
+      if [ "$top" = 'R' ]; then
+        prev="$char"
+        continue
+      fi
       case "$rest" in
       '<<'*)
         # A here-string has no body.
@@ -423,6 +574,7 @@ function bashunit::coverage::scan_line() {
     prev="$char"
   done
 
+  bashunit::coverage::_scan_update_continuation_span "$stack" "$command_start"
   _BASHUNIT_COVERAGE_SCAN_STACK="$stack"
 
   return 0
@@ -435,10 +587,44 @@ function bashunit::coverage::scan_line() {
 function bashunit::coverage::scan_is_open() {
   [ "$_BASHUNIT_COVERAGE_SCAN_CONTINUES" -eq 1 ] && return 0
   [ -n "$_BASHUNIT_COVERAGE_SCAN_HEREDOC" ] && return 0
-  case "$_BASHUNIT_COVERAGE_SCAN_STACK" in
+  # A substitution starts a new command context even inside a quote or array.
+  # Only literals opened INSIDE the innermost substitution may propagate hits.
+  case "${_BASHUNIT_COVERAGE_SCAN_STACK##*C}" in
   *[SDA]*) return 0 ;;
   esac
   return 1
+}
+
+# Describes the literal spans held by a scanner stack. A command substitution
+# starts a new command depth; S, D and A contexts belong to the depth at which
+# they opened. A parent literal can therefore stay alive while child commands
+# at a deeper depth remain outside its line membership.
+_BASHUNIT_COVERAGE_SCAN_COMMAND_DEPTH=0
+_BASHUNIT_COVERAGE_SCAN_SPAN_DEPTHS=""
+
+function bashunit::coverage::_scan_span_state() { # $1 = stack, $2 = continuation depths
+  local stack="$1" continuations="$2" char depth=0 spans="" item
+  while [ -n "$stack" ]; do
+    char="${stack%"${stack#?}"}"
+    stack="${stack#?}"
+    case "$char" in
+    C) depth=$((depth + 1)) ;;
+    S | D | A)
+      case " $spans " in
+      *" $depth "*) : ;;
+      *) spans="${spans:+$spans }$depth" ;;
+      esac
+      ;;
+    esac
+  done
+  for item in $continuations; do
+    case " $spans " in
+    *" $item "*) : ;;
+    *) spans="${spans:+$spans }$item" ;;
+    esac
+  done
+  _BASHUNIT_COVERAGE_SCAN_COMMAND_DEPTH=$depth
+  _BASHUNIT_COVERAGE_SCAN_SPAN_DEPTHS="$spans"
 }
 
 # Get all line hits for a file in one pass (performance optimization)
@@ -628,21 +814,76 @@ function bashunit::coverage::get_all_line_hits() {
   # span -- which is what Bash 3.2 does with an array literal (#1338). For a
   # backslash chain, where only the first line can carry a hit, it produces
   # exactly what the forward carry did (#722).
-  local idx start=1 max=0 fill h
+  local idx start=1 max=0 fill h is_open
+  local before_stack before_continuations before_depth before_spans after_depth after_spans
+  local depth seen was_active is_active member current
+  local -a span_lines=()
+  local -a span_max=()
   bashunit::coverage::scan_reset
   for ((idx = 1; idx <= total; idx++)); do
     h=${counts[idx]:-0}
     [ "$h" -gt "$max" ] && max=$h
-    bashunit::coverage::scan_line "${src[idx - 1]:-}"
-    bashunit::coverage::scan_is_open && continue
 
-    if [ "$max" -gt 0 ] && [ "$start" -lt "$idx" ]; then
-      for ((fill = start; fill <= idx; fill++)); do
-        counts[fill]=$max
-      done
+    before_stack="$_BASHUNIT_COVERAGE_SCAN_STACK"
+    before_continuations=$_BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS
+    bashunit::coverage::_scan_span_state "$before_stack" "$before_continuations"
+    before_depth=$_BASHUNIT_COVERAGE_SCAN_COMMAND_DEPTH
+    before_spans=$_BASHUNIT_COVERAGE_SCAN_SPAN_DEPTHS
+
+    bashunit::coverage::scan_line "${src[idx - 1]:-}"
+    bashunit::coverage::_scan_span_state \
+      "$_BASHUNIT_COVERAGE_SCAN_STACK" "$_BASHUNIT_COVERAGE_SCAN_CONTINUATION_DEPTHS"
+    after_depth=$_BASHUNIT_COVERAGE_SCAN_COMMAND_DEPTH
+    after_spans=$_BASHUNIT_COVERAGE_SCAN_SPAN_DEPTHS
+
+    is_open=0
+    bashunit::coverage::scan_is_open && is_open=1
+    if [ "$is_open" -eq 0 ]; then
+      if [ "$max" -gt 0 ] && [ "$start" -lt "$idx" ]; then
+        for ((fill = start; fill <= idx; fill++)); do
+          counts[fill]=$max
+        done
+      fi
+      start=$((idx + 1))
+      max=0
     fi
-    start=$((idx + 1))
-    max=0
+
+    # A literal around a substitution is one statement with discontiguous line
+    # membership. Its opening and closing boundary lines belong to the parent;
+    # lines wholly inside the child command do not. Keep the member list until
+    # the literal at that command depth closes, then apply its highest hit.
+    seen=""
+    for depth in $before_spans $after_spans; do
+      case " $seen " in *" $depth "*) continue ;; esac
+      seen="${seen:+$seen }$depth"
+
+      was_active=0
+      is_active=0
+      case " $before_spans " in *" $depth "*) was_active=1 ;; esac
+      case " $after_spans " in *" $depth "*) is_active=1 ;; esac
+
+      member=0
+      if { [ "$was_active" -eq 1 ] && [ "$before_depth" -eq "$depth" ]; } ||
+        { [ "$is_active" -eq 1 ] && [ "$after_depth" -eq "$depth" ]; } ||
+        [ "$was_active" -ne "$is_active" ]; then
+        member=1
+      fi
+      if [ "$member" -eq 1 ]; then
+        span_lines[depth]="${span_lines[depth]:-} $idx"
+        [ "$h" -gt "${span_max[depth]:-0}" ] && span_max[depth]=$h
+      fi
+
+      if [ "$was_active" -eq 1 ] && [ "$is_active" -eq 0 ]; then
+        if [ "${span_max[depth]:-0}" -gt 0 ]; then
+          for fill in ${span_lines[depth]:-}; do
+            current=${counts[fill]:-0}
+            [ "${span_max[depth]}" -gt "$current" ] && counts[fill]=${span_max[depth]}
+          done
+        fi
+        span_lines[depth]=""
+        span_max[depth]=0
+      fi
+    done
   done
 
   local ln

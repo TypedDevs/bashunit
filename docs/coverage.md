@@ -447,7 +447,8 @@ commands=(          # covered
 Every line still counts toward the denominator, so a multi-line statement that
 never runs reports as several uncovered lines, exactly as it did before.
 
-A multi-line command substitution is deliberately **not** treated this way:
+Commands inside a multi-line command or process substitution are tracked
+individually, including substitutions inside a quoted string or array:
 
 ```bash
 result=$(
@@ -456,10 +457,10 @@ result=$(
 )
 ```
 
-`compute_a` and `compute_b` are commands in their own right and are tracked
-individually, so crediting them from the line that opened the substitution
-would report lines that never ran. (Before Bash 4 the tracer does not reach a
-subshell at all — see [Subshell Behavior](#subshell-behavior).)
+Crediting `compute_a` and `compute_b` from the line that opened the substitution
+would report lines that never ran. Multiline literals inside the substitution
+still receive coverage from their own execution. (Before Bash 4 the tracer does
+not reach a subshell at all; see [Subshell Behavior](#subshell-behavior).)
 
 ## Branch Coverage
 
