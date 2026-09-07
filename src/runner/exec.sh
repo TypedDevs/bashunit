@@ -421,7 +421,18 @@ function bashunit::runner::run_with_timeout() {
     kill -0 "$test_pid" 2>/dev/null || exit 0
     : >"$marker_file"
     kill -TERM -"$test_pid" 2>/dev/null
-    sleep 0.3
+    # Poll for the body to go instead of sleeping a flat window. The TERM has to
+    # kill whatever the body blocked on, wake bash, reach the EXIT trap and run
+    # tear_down; a flat 0.3s was a scheduling hiccup, not a grace, and on a
+    # loaded machine the body had not reached tear_down when the SIGKILL landed.
+    # Bounded at 2s so a hook that hangs cannot outlive the run, and the common
+    # case leaves as soon as the body is reaped -- sooner than the old sleep.
+    grace_ticks=0
+    while [ "$grace_ticks" -lt 20 ]; do
+      kill -0 "$test_pid" 2>/dev/null || break
+      sleep 0.1
+      grace_ticks=$((grace_ticks + 1))
+    done
     kill -KILL -"$test_pid" 2>/dev/null
   ) </dev/null >/dev/null 2>&1 &
   local watchdog_pid=$!

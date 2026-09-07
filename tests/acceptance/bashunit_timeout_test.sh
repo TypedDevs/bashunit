@@ -119,3 +119,26 @@ function test_bashunit_runs_tear_down_for_a_timed_out_test() {
   assert_file_exists "$marker.setup"
   assert_file_exists "$marker.teardown"
 }
+
+# The watchdog gave the body a flat 0.3s between its SIGTERM and its SIGKILL,
+# which is a scheduling hiccup, not a grace: on a loaded machine the body had
+# not even reached tear_down yet, and the #1324 test above failed about one
+# parallel full-suite run in three. A tear_down slower than that flat window is
+# the deterministic form of the same miss.
+function test_bashunit_waits_for_a_slow_tear_down_of_a_timed_out_test() {
+  local dir fixture marker
+  dir="$(bashunit::temp_dir timeout_slow_teardown)"
+  fixture="$dir/hanging_test.sh"
+  marker="$dir/marker"
+  {
+    printf 'function tear_down() { sleep 1; : >"$TIMEOUT_MARKER.teardown"; }\n'
+    printf 'function test_hangs() { sleep 30; assert_true true; }\n'
+  } >"$fixture"
+
+  local output
+  output="$(TIMEOUT_MARKER="$marker" ./bashunit --no-parallel --env "$TEST_ENV_FILE" \
+    --test-timeout 1 "$fixture")" || true
+
+  assert_contains "Test timed out after 1s" "$output"
+  assert_file_exists "$marker.teardown"
+}
