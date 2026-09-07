@@ -176,6 +176,38 @@ function test_the_rule_sets_agree_on_the_quirk_cases() {
     printf '\t%s\n' 'body'
     printf '\t%s\n' 'EOF'
     printf '%s\n' 'read -r v <<<"here"'
+    printf '%s\n' 'x="$(' '  values=(' '    "one"' '    "two"' '  )' '  if false; then' '    : skipped' '  fi' ')"'
+    printf '%s\n' 'x=(' '  <(' '    : command' '  )' ')'
+    printf '%s\n' 'result="$(' '  case "$value" in' '    x)' '      if false; then' \
+      '        echo skipped_case_child' '      fi' '      ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  case x in' '    x) case y in' '      y) : ;;' \
+      '    esac ;;' '    z)' '      if false; then' '        echo skipped_nested_case' \
+      '      fi' '      ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  case case in' '    case)' '      : arm' \
+      '      ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  case x in' '    (x) case y in' '      y) : ;;' \
+      '    esac ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  case z in (x) case y in' '    y) : ;;' \
+      '  esac ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  case z in' '    foo|esac)' '      : arm' \
+      '      ;;' '  esac' ')"'
+    printf '%s\n' 'result="$(' '  if case x in' '    x) false ;;' '  esac' \
+      '  then :; fi' '  while case x in' '    x) false ;;' '  esac' \
+      '  do :; done' '  until case x in' '    x) false ;;' '  esac' \
+      '  do :; done' ')"'
+    # shellcheck disable=SC1003  # literal trailing backslash in child command
+    printf '%s\n' 'result="$(' '  printf ran \' ')"' 'result="$(' \
+      '  if false; then' '    echo skipped_after_child_continuation' '  fi' ')"'
+    # shellcheck disable=SC1003  # literal trailing backslash before heredoc
+    printf '%s\n' 'return 0 <<EOF \' 'payload' 'EOF' 'echo after_heredoc'
+    printf '%s\n' 'value=$((' '  case' '  + 1' '))' 'items=(' '  one' ')'
+    printf '%s\n' 'case x in x) printf "%s" "esac" ;; esac'
+    printf '%s\n' 'case x in x) :;;esac'
+    printf '%s\n' 'case x in x) : ;; esac # comment ('
+    printf '%s\n' 'x=$((1 << 2))' 'x="$((1 << 2))"' '((x = (1 << 2)))'
+    printf '%s\n' 'x=$((1 <<(2 << 1)))' 'echo done'
+    # shellcheck disable=SC1003  # literal backslash at the end of a comment
+    printf '%s\n' 'echo ran # comment \' 'echo next'
   } >"$fixture"
 
   assert_same "$(bash_classification "$fixture")" "$(awk_classification "$fixture")"
