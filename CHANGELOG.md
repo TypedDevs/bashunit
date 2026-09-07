@@ -3,10 +3,10 @@
 ## Unreleased
 
 ### Fixed
-- Coverage propagates execution counts across multiline array literals, quoted strings, heredocs and backslash continuations, including when Bash 3.x records an array assignment on its closing `)`. Parent statement hits no longer mark commands inside command or process substitutions as covered, including within quotes or arrays (#1338)
-- `--exclude-filter` treats a comma in one flag value as part of the test function name. Repeat the flag to exclude several names; the comma-separated `BASHUNIT_EXCLUDE_FILTER` cannot express a literal comma within one configured filter (#1340)
-- A `--parallel` run no longer replays bash's own job-control diagnostic as the stderr of a file that wrote nothing. Each test runs in its own process group, and bash's parent-side `setpgid` loses a harmless race against a child that already exec'd, which macOS answers with EPERM. The child sets the group itself before it execs, so the group was always right and only the message was wrong (#1344)
-- A timed-out test finishes its `tear_down` instead of racing a flat 0.3s window. The watchdog's SIGTERM has to kill whatever the body blocked on, wake bash, reach its EXIT trap and run the hook, which a loaded machine did not manage before the SIGKILL landed: the hook was skipped in about one parallel full-suite run in three. The grace now polls for the body to exit, bounded at 2s, so the common case ends sooner than the old sleep and a slow hook still completes (#1344)
+- Coverage counts every line of a multiline statement: array literals, quoted strings, heredocs and backslash continuations, including the array assignment Bash 3.x records on its closing `)`. A parent statement's hits no longer mark commands inside command or process substitutions as covered, even within quotes or arrays (#1338)
+- `--exclude-filter` keeps a comma as part of the test function name. Repeat the flag to exclude several names. `BASHUNIT_EXCLUDE_FILTER` stays comma-separated, so one of its filters cannot hold a literal comma (#1340)
+- A `--parallel` run no longer replays bash's `child setpgid` warning as the stderr of a file that wrote nothing. Job control puts each test in its own process group, and bash's parent-side `setpgid` loses a harmless race with a child that already exec'd. The child sets the group first, so only the message was ever wrong (#1344)
+- A timed-out test finishes its `tear_down`. The watchdog allowed a flat 0.3s between SIGTERM and SIGKILL, which a loaded machine missed in about one parallel full-suite run in three. It now polls for the body to exit, capped at 2s (#1344)
 
 ## [0.50.1](https://github.com/TypedDevs/bashunit/compare/0.50.0...0.50.1) - 2026-08-22
 
