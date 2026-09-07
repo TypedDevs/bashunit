@@ -389,9 +389,11 @@ Similar as using `--order-by` option on the [command line](/command-line#order-b
 
 ## Exclude filter
 
-> `BASHUNIT_EXCLUDE_FILTER=name`
+> `BASHUNIT_EXCLUDE_FILTER=name[,name...]`
 
-Skip tests whose name matches. Empty by default. It wins over a `--filter` match.
+Skip tests whose name matches any comma-separated value. Empty by default. It
+wins over a `--filter` match. Unlike the repeatable command-line option, this
+setting cannot express a literal comma within one configured filter.
 
 Similar as using `--exclude-filter` option on the [command line](/command-line#exclude-filter).
 

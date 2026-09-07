@@ -224,6 +224,13 @@ Matching is identical to `--filter`, the flag is repeatable (a test is skipped
 if it matches **any** value), and exclusion wins when a name matches both — the
 same precedence `--exclude-tag` has over `--tag`.
 
+Each flag value is one filter, so a comma in a function name remains literal.
+Repeat the flag to exclude several names:
+
+```bash
+bashunit test tests/ --exclude-filter 'test_a,{b}' --exclude-filter test_c
+```
+
 Excluded tests are **not** reported as skipped: they are never selected, so they
 do not appear in the header count either.
 

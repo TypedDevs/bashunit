@@ -102,6 +102,8 @@ function bashunit::main::cmd_test() {
   local filter=""
   local tag_filter=""
   local exclude_tag_filter=""
+  local -a _BASHUNIT_CLI_EXCLUDE_FILTERS=()
+  local _bashunit_cli_exclude_filter_count=0
   local IFS=$' \t\n'
   local -a raw_args=()
   local raw_args_count=0
@@ -147,11 +149,11 @@ function bashunit::main::cmd_test() {
       shift
       ;;
     --exclude-filter)
-      if [ -z "$BASHUNIT_EXCLUDE_FILTER" ]; then
-        BASHUNIT_EXCLUDE_FILTER="$2"
-      else
-        BASHUNIT_EXCLUDE_FILTER="$BASHUNIT_EXCLUDE_FILTER,$2"
-      fi
+      # One flag is one filter. Keep CLI values in an array so a comma in a
+      # function name stays literal; BASHUNIT_EXCLUDE_FILTER keeps its existing
+      # comma-separated configuration format (#1340).
+      _BASHUNIT_CLI_EXCLUDE_FILTERS[_bashunit_cli_exclude_filter_count]="$2"
+      _bashunit_cli_exclude_filter_count=$((_bashunit_cli_exclude_filter_count + 1))
       # export -n like every other flag (#839): find_total_tests reads this
       # from a plain subshell, which inherits it without exporting, and a real
       # export would leak into nested ./bashunit runs.

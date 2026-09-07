@@ -86,9 +86,10 @@ EOF
 ##
 # Whether a function name matches any --exclude-filter value.
 #
-# The value is read from BASHUNIT_EXCLUDE_FILTER rather than passed in, so the
-# header count (which reaches get_functions_to_run from a subshell) and the
-# runner cannot end up applying different selections.
+# Configured values come from comma-separated BASHUNIT_EXCLUDE_FILTER. Repeated
+# CLI values live in a dynamically scoped array so each argument stays literal.
+# Both are inherited by the header-count subshell, keeping it aligned with the
+# runner without threading another argument through every call site.
 #
 # Locals are `__bu_`-prefixed (bash-style.md, PR #672). The only caller is
 # get_functions_to_run, and this runs inside its `for fn in ...` loop, so plain
@@ -101,13 +102,21 @@ function bashunit::helper::name_matches_exclude_filter() {
   local __bu_prefix=$1
   local __bu_fn=$2
 
-  if [ -z "${BASHUNIT_EXCLUDE_FILTER:-}" ]; then
+  if [ -z "${BASHUNIT_EXCLUDE_FILTER:-}" ] &&
+    [ -z "${_BASHUNIT_CLI_EXCLUDE_FILTERS[*]:-}" ]; then
     return 1
   fi
 
   local IFS=','
   local __bu_excl
-  for __bu_excl in $BASHUNIT_EXCLUDE_FILTER; do
+  for __bu_excl in ${BASHUNIT_EXCLUDE_FILTER:-}; do
+    __bu_excl=${__bu_excl/test_/}
+    if [ -n "$__bu_excl" ]; then
+      case "$__bu_fn" in ${__bu_prefix}_*${__bu_excl}*) return 0 ;; esac
+    fi
+  done
+
+  for __bu_excl in ${_BASHUNIT_CLI_EXCLUDE_FILTERS[@]+"${_BASHUNIT_CLI_EXCLUDE_FILTERS[@]}"}; do
     __bu_excl=${__bu_excl/test_/}
     if [ -n "$__bu_excl" ]; then
       case "$__bu_fn" in ${__bu_prefix}_*${__bu_excl}*) return 0 ;; esac
@@ -409,4 +418,3 @@ _BASHUNIT_TAGS_MAP_SCRIPT=""
 _BASHUNIT_TAGS_MAP_FNS=()
 _BASHUNIT_TAGS_MAP_TAGS=()
 _BASHUNIT_TAGS_OUT=""
-

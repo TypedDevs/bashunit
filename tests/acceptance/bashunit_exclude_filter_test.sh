@@ -29,6 +29,21 @@ function test_repeated_exclude_filters_are_or_ed() {
   assert_same "$FIXTURE::test_user_list" "$output"
 }
 
+function test_a_comma_in_one_exclude_filter_stays_literal() {
+  local fixture
+  fixture="$(bashunit::temp_file comma_filter).sh"
+  cat >"$fixture" <<'TEST'
+function test_a() { assert_same 1 1; }
+function test_a,{b}() { assert_same 1 1; }
+TEST
+
+  local output
+  output=$(./bashunit --list --filter test_a \
+    --exclude-filter 'test_a,{b}' "$fixture" 2>/dev/null)
+
+  assert_same "$fixture::test_a" "$output"
+}
+
 function test_exclude_filter_wins_when_a_name_matches_both() {
   local output
   output=$(./bashunit --list --filter admin --exclude-filter admin "$FIXTURE" 2>/dev/null)
