@@ -885,3 +885,27 @@ function test_tap_line_unknown_type_is_not_ok() {
 
   assert_same "not ok 9 - Something odd" "$out"
 }
+
+function test_worker_stderr_drops_bash_job_control_noise() {
+  local stderr_file out
+  stderr_file=$(bashunit::temp_file worker_stderr)
+  printf '%s\n' \
+    './src/runner/exec.sh: child setpgid (68809 to 68809): Operation not permitted' \
+    'diagnostic written by the file under test' >"$stderr_file"
+
+  out=$(bashunit::console_results::print_worker_stderr "some_test.sh" "$stderr_file" 2>&1)
+
+  assert_contains "diagnostic written by the file under test" "$out"
+  assert_not_contains "child setpgid" "$out"
+}
+
+function test_worker_stderr_block_is_omitted_when_only_job_control_noise() {
+  local stderr_file out
+  stderr_file=$(bashunit::temp_file worker_stderr)
+  printf '%s\n' \
+    './src/runner/exec.sh: child setpgid (1 to 1): Operation not permitted' >"$stderr_file"
+
+  out=$(bashunit::console_results::print_worker_stderr "some_test.sh" "$stderr_file" 2>&1)
+
+  assert_empty "$out"
+}

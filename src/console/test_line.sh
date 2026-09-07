@@ -283,11 +283,21 @@ function bashunit::console_results::print_worker_stderr() {
   local test_file="$1"
   local stderr_file="$2"
 
+  # Not the file's output: the worker turns on job control so each test is its
+  # own process group, and bash's parent-side setpgid loses a harmless race
+  # against a child that already exec'd. The child set the group itself before
+  # exec, so the group is right and only the diagnostic is wrong -- but bash
+  # reports every errno except ESRCH, and macOS answers EPERM.
+  local noise='child setpgid ('
+
+  # Nothing but noise means no block at all, so a clean run stays quiet.
+  grep -qv "$noise" "$stderr_file" || return 0
+
   # To stderr, which is where this text came from: on stdout it landed ahead of
   # the document `--output json|junit` promises that stream is, so a worker that
   # wrote anything to stderr -- a failing `set_up`, for one -- made the report
   # unparseable.
   printf "\n%sStderr from %s%s\n" \
     "$_BASHUNIT_COLOR_SKIPPED" "$test_file" "$_BASHUNIT_COLOR_DEFAULT" >&2
-  sed 's/^/|/' "$stderr_file" >&2
+  grep -v "$noise" "$stderr_file" | sed 's/^/|/' >&2
 }
