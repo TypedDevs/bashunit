@@ -363,9 +363,9 @@ function test_optional_case_pattern_keeps_nested_case_commands_isolated() {
   assert_empty "$(awk_stack_for_file "$src")"
 }
 
-function test_compact_optional_case_pattern_keeps_nested_commands_isolated() {
+function test_case_subject_named_in_keeps_compact_nested_commands_isolated() {
   local src="$WORK/compact_optional_nested_case.sh"
-  printf '%s\n' 'result="$(' '  case z in (x) case y in' '    y) : ;;' \
+  printf '%s\n' 'result="$(' '  case in in (x) case y in' '    y) : ;;' \
     '  esac ;;' '  z)' '    if false; then' '      echo skipped' '    fi' \
     '    ;;' '  esac' ')"' >"$src"
 

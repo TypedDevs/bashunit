@@ -235,8 +235,8 @@ function bashunit::coverage::_ends_with_continuation() {
 #   S  a single-quoted string      D  a double-quoted string
 #   A  an array literal `name=(`   C  a command/process substitution
 #   R  an arithmetic parenthesis  P  any other parenthesis
-#   H  a case command header       K  a case expecting a pattern
-#   B  a case arm body
+#   Q  a case awaiting its subject H  a case header after its subject
+#   K  a case expecting a pattern B  a case arm body
 #
 # plus a pending heredoc delimiter. A line is *open* -- the statement continues
 # onto the next line -- when the stack holds an S, D or A, when a heredoc is
@@ -394,6 +394,11 @@ function bashunit::coverage::scan_line() {
         words="${words#"$token"}"
         top="${stack#"${stack%?}"}"
         case "$top:$token" in
+        'Q:'*)
+          # A case subject may itself be the word `in`.
+          stack="${stack%?}H"
+          command_start=1
+          ;;
         'H:in')
           stack="${stack%?}K"
           command_start=1
@@ -411,7 +416,7 @@ function bashunit::coverage::scan_line() {
           command_start=0
           ;;
         *':case')
-          stack="${stack}H"
+          stack="${stack}Q"
           command_start=1
           ;;
         *':if' | *':while' | *':until' | *':then' | *':do' | *':else' | *':elif' | *':{' | *':!')
@@ -431,7 +436,10 @@ function bashunit::coverage::scan_line() {
     # Nothing but the closing quote is reported inside `'..'`.
     if [ "$top" = 'S' ]; then
       stack="${stack%?}"
-      [ "${stack#"${stack%?}"}" = 'H' ] && command_start=1
+      case "${stack#"${stack%?}"}" in
+      'Q') stack="${stack%?}H"; command_start=1 ;;
+      'H') command_start=1 ;;
+      esac
       prev="$char"
       continue
     fi
@@ -452,7 +460,10 @@ function bashunit::coverage::scan_line() {
       case "$char" in
       '"')
         stack="${stack%?}"
-        [ "${stack#"${stack%?}"}" = 'H' ] && command_start=1
+        case "${stack#"${stack%?}"}" in
+        'Q') stack="${stack%?}H"; command_start=1 ;;
+        'H') command_start=1 ;;
+        esac
         ;;
       '$')
         # `"$(cmd 'a"b')"`: a command substitution reopens an unquoted context,
@@ -482,11 +493,11 @@ function bashunit::coverage::scan_line() {
     case "$char" in
     "'")
       stack="${stack}S"
-      case "$top" in A | H) : ;; *) command_start=0 ;; esac
+      case "$top" in A | Q | H) : ;; *) command_start=0 ;; esac
       ;;
     '"')
       stack="${stack}D"
-      case "$top" in A | H) : ;; *) command_start=0 ;; esac
+      case "$top" in A | Q | H) : ;; *) command_start=0 ;; esac
       ;;
     '#')
       # `#` only opens a comment at the start of a word, so `${x#y}` and
@@ -528,11 +539,11 @@ function bashunit::coverage::scan_line() {
         command_start=1
       else
         stack="${stack%?}"
-        if [ "${stack#"${stack%?}"}" = 'H' ]; then
-          command_start=1
-        else
-          command_start=0
-        fi
+        case "${stack#"${stack%?}"}" in
+        'Q') stack="${stack%?}H"; command_start=1 ;;
+        'H') command_start=1 ;;
+        *) command_start=0 ;;
+        esac
       fi
       ;;
     ';')

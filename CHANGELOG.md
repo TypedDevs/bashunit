@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Coverage propagates execution counts across multiline array literals, quoted strings, heredocs and backslash continuations, including when Bash 3.x records an array assignment on its closing `)`. Commands inside command and process substitutions remain individually tracked, even within quotes or arrays (#1338)
+- Coverage propagates execution counts across multiline array literals, quoted strings, heredocs and backslash continuations, including when Bash 3.x records an array assignment on its closing `)`. Parent statement hits no longer mark commands inside command or process substitutions as covered, including within quotes or arrays (#1338)
 
 ## [0.50.1](https://github.com/TypedDevs/bashunit/compare/0.50.0...0.50.1) - 2026-08-22
 
