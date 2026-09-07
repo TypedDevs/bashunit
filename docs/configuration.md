@@ -393,7 +393,7 @@ Similar as using `--order-by` option on the [command line](/command-line#order-b
 
 Skip tests whose name matches any comma-separated value. Empty by default. It
 wins over a `--filter` match. Unlike the repeatable command-line option, this
-setting cannot target a function name that contains a comma.
+setting cannot express a literal comma within one configured filter.
 
 Similar as using `--exclude-filter` option on the [command line](/command-line#exclude-filter).
 

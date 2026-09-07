@@ -4,7 +4,7 @@
 
 ### Fixed
 - Coverage propagates execution counts across multiline array literals, quoted strings, heredocs and backslash continuations, including when Bash 3.x records an array assignment on its closing `)`. Parent statement hits no longer mark commands inside command or process substitutions as covered, including within quotes or arrays (#1338)
-- `--exclude-filter` treats a comma in one flag value as part of the test function name. Repeat the flag to exclude several names; `BASHUNIT_EXCLUDE_FILTER` remains comma-separated (#1340)
+- `--exclude-filter` treats a comma in one flag value as part of the test function name. Repeat the flag to exclude several names; the comma-separated `BASHUNIT_EXCLUDE_FILTER` cannot express a literal comma within one configured filter (#1340)
 
 ## [0.50.1](https://github.com/TypedDevs/bashunit/compare/0.50.0...0.50.1) - 2026-08-22
 
