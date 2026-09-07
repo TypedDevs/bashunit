@@ -113,8 +113,9 @@ function bu_ends_with_continuation(line,   lead, i, n) {
 #
 # _bu_st[1.._bu_sp] is the context stack, innermost last: S single-quoted,
 # D double-quoted, A array literal, C command/process substitution,
-# R arithmetic paren, P other paren, H case command header,
-# K case expecting a pattern, B case arm body.
+# R arithmetic paren, P other paren, Q case awaiting its subject,
+# H case header after its subject, K case expecting a pattern,
+# B case arm body.
 # The quote character itself has to be built with sprintf: this program lives
 # in a shell single-quoted string and so cannot contain one.
 function bu_scan_reset() {
@@ -160,7 +161,10 @@ function bu_scan_words(text,   token, top) {
     sub(/[ \t].*$/, "", token)
     text = substr(text, length(token) + 1)
     top = (_bu_sp > 0) ? _bu_st[_bu_sp] : ""
-    if (top == "H" && token == "in") {
+    if (top == "Q") {
+      # A case subject may itself be the word `in`.
+      _bu_st[_bu_sp] = "H"; _bu_command_start = 1
+    } else if (top == "H" && token == "in") {
       _bu_st[_bu_sp] = "K"; _bu_command_start = 1
     } else if (top == "H") {
       # Subject words continue until the unquoted `in` keyword.
@@ -171,7 +175,7 @@ function bu_scan_words(text,   token, top) {
       # `case` here is a pattern word, not a nested command.
       _bu_command_start = 0
     } else if (token == "case") {
-      _bu_st[++_bu_sp] = "H"; _bu_command_start = 1
+      _bu_st[++_bu_sp] = "Q"; _bu_command_start = 1
     } else if (token == "if" || token == "while" || token == "until" ||
         token == "then" || token == "do" || token == "else" ||
         token == "elif" || token == "{" || token == "!") {
@@ -247,6 +251,7 @@ function bu_scan_line(line,   i, n, c, prev, top, body, rest, offset, lead, keyw
     if (top == "S") {
       if (c == _bu_sq) {
         _bu_sp--
+        if (_bu_sp > 0 && _bu_st[_bu_sp] == "Q") { _bu_st[_bu_sp] = "H" }
         if (_bu_sp > 0 && _bu_st[_bu_sp] == "H") { _bu_command_start = 1 }
       }
       prev = c
@@ -264,6 +269,7 @@ function bu_scan_line(line,   i, n, c, prev, top, body, rest, offset, lead, keyw
     if (top == "D") {
       if (c == "\"") {
         _bu_sp--
+        if (_bu_sp > 0 && _bu_st[_bu_sp] == "Q") { _bu_st[_bu_sp] = "H" }
         if (_bu_sp > 0 && _bu_st[_bu_sp] == "H") { _bu_command_start = 1 }
       }
       else if (c == "$" && substr(line, i + 1, 1) == "(") {
@@ -281,12 +287,12 @@ function bu_scan_line(line,   i, n, c, prev, top, body, rest, offset, lead, keyw
 
     if (c == _bu_sq) {
       _bu_sp++; _bu_st[_bu_sp] = "S"
-      if (top != "A" && top != "H") { _bu_command_start = 0 }
+      if (top != "A" && top != "Q" && top != "H") { _bu_command_start = 0 }
       prev = c; continue
     }
     if (c == "\"") {
       _bu_sp++; _bu_st[_bu_sp] = "D"
-      if (top != "A" && top != "H") { _bu_command_start = 0 }
+      if (top != "A" && top != "Q" && top != "H") { _bu_command_start = 0 }
       prev = c; continue
     }
     if (c == "#") {
@@ -322,6 +328,7 @@ function bu_scan_line(line,   i, n, c, prev, top, body, rest, offset, lead, keyw
       if (top == "K") { _bu_st[_bu_sp] = "B"; _bu_command_start = 1 }
       else {
         if (_bu_sp > 0) { _bu_sp-- }
+        if (_bu_sp > 0 && _bu_st[_bu_sp] == "Q") { _bu_st[_bu_sp] = "H" }
         _bu_command_start = (_bu_sp > 0 && _bu_st[_bu_sp] == "H")
       }
       prev = c

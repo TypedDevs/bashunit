@@ -429,8 +429,9 @@ These lines are not counted toward coverage:
 ### Statements That Span Several Lines
 
 Bash reports one executed statement to the tracer on a single line, even when
-the statement is written over several. bashunit spreads that hit across every
-line the statement occupies, so a statement that ran is covered on all of them:
+the statement is written over several. bashunit propagates that hit across the
+statement's physical span, so every executable line in a statement that ran is
+covered:
 
 - backslash continuations (`printf '%s' \` … )
 - array literals (`commands=(` … `)`)
@@ -444,11 +445,12 @@ commands=(          # covered
 )                   # not executable
 ```
 
-Every line still counts toward the denominator, so a multi-line statement that
-never runs reports as several uncovered lines, exactly as it did before.
+Executable lines remain in the denominator, so an unexecuted multiline
+statement can contribute several uncovered lines.
 
-Commands inside a multi-line command or process substitution are tracked
-individually, including substitutions inside a quoted string or array:
+Parent statement hits do not cover commands inside a multi-line command or
+process substitution, even when the substitution appears inside a quoted string
+or array:
 
 ```bash
 result=$(

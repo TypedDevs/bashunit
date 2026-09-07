@@ -187,7 +187,7 @@ function test_the_rule_sets_agree_on_the_quirk_cases() {
       '      ;;' '  esac' ')"'
     printf '%s\n' 'result="$(' '  case x in' '    (x) case y in' '      y) : ;;' \
       '    esac ;;' '  esac' ')"'
-    printf '%s\n' 'result="$(' '  case z in (x) case y in' '    y) : ;;' \
+    printf '%s\n' 'result="$(' '  case in in (x) case y in' '    y) : ;;' \
       '  esac ;;' '  esac' ')"'
     printf '%s\n' 'result="$(' '  case z in' '    foo|esac)' '      : arm' \
       '      ;;' '  esac' ')"'
