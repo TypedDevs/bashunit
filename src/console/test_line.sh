@@ -33,7 +33,8 @@ function bashunit::console_results::print_successful_test() {
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
     bashunit::console_results::format_duration_to_slot "$duration"
-    full_line="$(bashunit::str::rpad "$line" "$_BASHUNIT_CONSOLE_DURATION_OUT")"
+    bashunit::str::rpad_to_slot "$line" "$_BASHUNIT_CONSOLE_DURATION_OUT"
+    full_line=$_BASHUNIT_STR_RPAD_OUT
   fi
 
   bashunit::console_results::print_line "successful" "$full_line"
@@ -236,9 +237,9 @@ function bashunit::console_results::print_risky_test() {
 
   local full_line=$line
   if bashunit::env::is_show_execution_time_enabled; then
-    local time_display
-    time_display=$(bashunit::console_results::format_duration "$duration")
-    full_line="$(bashunit::str::rpad "$line" "$time_display")"
+    bashunit::console_results::format_duration_to_slot "$duration"
+    bashunit::str::rpad_to_slot "$line" "$_BASHUNIT_CONSOLE_DURATION_OUT"
+    full_line=$_BASHUNIT_STR_RPAD_OUT
   fi
 
   bashunit::console_results::print_line "risky" "$full_line"
