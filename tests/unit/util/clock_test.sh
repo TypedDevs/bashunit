@@ -220,3 +220,41 @@ function test_clock_is_expensive_false_for_native_impls() {
   done
   assert_same " shell:no date:no date-seconds:no" "$result"
 }
+
+# Resolving the clock implementation writes _BASHUNIT_CLOCK_NOW_IMPL, and the
+# whole point is that it survives into the caller. `init` used to resolve it
+# inside `$( )`, so the assignment died with that subshell and the main shell
+# was left empty. Under --parallel every worker then re-probed, and on a shell
+# without EPOCHREALTIME the probe forks `perl`: 502 execs for a 500-test file
+# against 2 (#1353).
+function test_clock_init_resolves_the_impl_in_the_calling_shell() {
+  local saved_impl=${_BASHUNIT_CLOCK_NOW_IMPL:-}
+  local saved_start=${_BASHUNIT_START_TIME:-}
+  _BASHUNIT_CLOCK_NOW_IMPL=""
+
+  bashunit::clock::init
+
+  local resolved=$_BASHUNIT_CLOCK_NOW_IMPL
+
+  _BASHUNIT_CLOCK_NOW_IMPL=$saved_impl
+  _BASHUNIT_START_TIME=$saved_start
+
+  assert_not_empty "$resolved"
+}
+
+# is_expensive answers a property of the resolved impl, and is asked once per
+# test through BASHUNIT_SHOW_EXECUTION_TIME=auto. With the impl already
+# resolved it must be a variable read, not another probe.
+function test_is_expensive_does_not_reprobe_a_resolved_impl() {
+  local saved_impl=${_BASHUNIT_CLOCK_NOW_IMPL:-}
+  bashunit::clock::now_to_slot
+
+  local before=$_BASHUNIT_CLOCK_NOW_IMPL
+  bashunit::clock::is_expensive || true
+  local after=$_BASHUNIT_CLOCK_NOW_IMPL
+
+  _BASHUNIT_CLOCK_NOW_IMPL=$saved_impl
+
+  assert_not_empty "$before"
+  assert_same "$before" "$after"
+}
