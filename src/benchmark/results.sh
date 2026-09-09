@@ -76,18 +76,17 @@ function bashunit::benchmark::print_results() {
 
     if bashunit::math::is_le "$avg" "$max_ms"; then
       local raw="≤ ${max_ms}"
-      local padded
-      padded=$(printf "%14s" "$raw")
-      printf '%-40s %6s %6s %10s %12s\n' "$name" "$revs" "$its" "$avg" "$padded"
+      bashunit::str::lpad_to_slot 14 "$raw"
+      printf '%-40s %6s %6s %10s %12s\n' \
+        "$name" "$revs" "$its" "$avg" "$_BASHUNIT_STR_LPAD_OUT"
       continue
     fi
 
     local raw="> ${max_ms}"
-    local padded
-    padded=$(printf "%12s" "$raw")
+    bashunit::str::lpad_to_slot 12 "$raw"
     printf '%-40s %6s %6s %10s %s%s%s\n' \
       "$name" "$revs" "$its" "$avg" \
-      "$_BASHUNIT_COLOR_FAILED" "$padded" "${_BASHUNIT_COLOR_DEFAULT}"
+      "$_BASHUNIT_COLOR_FAILED" "$_BASHUNIT_STR_LPAD_OUT" "${_BASHUNIT_COLOR_DEFAULT}"
   done
 
   bashunit::console_results::print_execution_time

@@ -16,6 +16,33 @@ function bashunit::random_str() {
   echo "$str"
 }
 
+_BASHUNIT_STR_LPAD_OUT=""
+
+##
+# Right-aligns $2 in a field of $1 characters, into _BASHUNIT_STR_LPAD_OUT.
+#
+# The first version-gated helper in the tree, and the shape every later one
+# follows: a column-0 `if/else` on a flag from src/system/bash.sh, two bodies,
+# one picked at load time. See adrs/adr-013-bash-version-gated-fast-paths.md.
+#
+# `printf -v` is Bash 3.1, and writing into a variable is the whole difference:
+# the 3.0 body has to capture, which forks. Both bodies hand the same format
+# and the same value to the same `printf`, so the padded result is identical
+# by construction -- the only thing the gate changes is the fork. A gate that
+# changed what came out would be a bug, not an optimisation.
+#
+# Arguments: $1 - the field width, $2 - the value to pad
+##
+if [ "$_BASHUNIT_BASH_GE_31" = 1 ]; then
+  function bashunit::str::lpad_to_slot() {
+    printf -v _BASHUNIT_STR_LPAD_OUT "%${1}s" "$2"
+  }
+else
+  function bashunit::str::lpad_to_slot() {
+    _BASHUNIT_STR_LPAD_OUT=$(printf "%${1}s" "$2")
+  }
+fi
+
 # Strip ANSI escape codes and control characters, writing the result into the
 # global slot _BASHUNIT_STR_STRIPPED_OUT (no fork on the plain-text fast path).
 # Callers on hot paths (assert_equals/assert_not_equals) use this to avoid the

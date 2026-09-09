@@ -209,3 +209,66 @@ function test_rpad_to_slot_matches_rpad_when_truncating() {
 function test_rpad_to_slot_matches_rpad_when_width_is_smaller_than_right_word() {
   _rpad_slot_matches_capture "input" "right-text" 3
 }
+
+# --- the version-gated lpad helper ----------------------------------------
+#
+# The first gated helper in the tree (#1352). A gate may change speed and must
+# never change what comes out, so these check both halves: that the running
+# shell got the body its tier says it should, and that the body agrees with the
+# `printf` it replaced over every shape the callers use.
+
+function test_the_bash_31_flag_matches_the_running_shell() {
+  local expected=0
+  if [ "${BASH_VERSINFO[0]:-0}" -gt 3 ]; then
+    expected=1
+  elif [ "${BASH_VERSINFO[0]:-0}" -eq 3 ] && [ "${BASH_VERSINFO[1]:-0}" -ge 1 ]; then
+    expected=1
+  fi
+
+  assert_same "$expected" "$_BASHUNIT_BASH_GE_31"
+}
+
+# A gate that silently always falls back would pass every equivalence test
+# while delivering none of the speed, so the selected body is asserted too.
+# Introspected with `type`, not `declare -f`: real Bash 3.0 refuses a `::` name
+# there.
+function test_lpad_selects_the_body_its_tier_calls_for() {
+  local body
+  body="$(type bashunit::str::lpad_to_slot 2>/dev/null)"
+
+  if [ "$_BASHUNIT_BASH_GE_31" = 1 ]; then
+    assert_contains "printf -v" "$body"
+  else
+    assert_not_contains "printf -v" "$body"
+  fi
+}
+
+function test_lpad_matches_the_printf_it_replaced() {
+  local shape width value expected
+  local mismatches=""
+
+  for shape in "14:≤ 5" "12:> 5" "6:12.5" "3:abcdef" "1:x" "8:" "4:  "; do
+    width=${shape%%:*}
+    value=${shape#*:}
+    expected="$(printf "%${width}s" "$value")"
+    bashunit::str::lpad_to_slot "$width" "$value"
+    if [ "$expected" != "$_BASHUNIT_STR_LPAD_OUT" ]; then
+      mismatches="$mismatches [$width|$value]"
+    fi
+  done
+
+  assert_empty "$mismatches"
+}
+
+function test_lpad_right_aligns_within_the_field() {
+  bashunit::str::lpad_to_slot 5 "ab"
+
+  assert_same "   ab" "$_BASHUNIT_STR_LPAD_OUT"
+}
+
+# A value longer than the field is printed whole, the way printf does it.
+function test_lpad_does_not_truncate_a_value_wider_than_the_field() {
+  bashunit::str::lpad_to_slot 2 "abcdef"
+
+  assert_same "abcdef" "$_BASHUNIT_STR_LPAD_OUT"
+}
