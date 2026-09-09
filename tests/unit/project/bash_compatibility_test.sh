@@ -11,10 +11,25 @@
 # example preferring `[ ]` over `[[ ]]`) are not compatibility rules and are not
 # enforced by these tests -- `[[ ]]` works on every bash we support.
 
-# Returns offending "file:line: text" for a pattern, skipping comment lines so a
-# rule quoted in documentation or in a comment is not an error.
+# Returns offending "file:line: text" for a pattern under a directory, skipping
+# comment lines so a rule quoted in documentation or in a comment is not an
+# error.
+function bashunit::compat::offenders_in() {
+  grep -rnE "$2" "$1" 2>/dev/null | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true
+}
+
 function bashunit::compat::offenders() {
-  grep -rnE "$1" src/ 2>/dev/null | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true
+  bashunit::compat::offenders_in "src/" "$1"
+}
+
+# The statement boundary both append rules anchor at: `cmd; x+=y`,
+# `if c; then x+=y; fi` and `for i; do x+=y; done` are all appends, and a
+# `^`-only anchor walked straight past every one of them.
+function bashunit::compat::append_prefix_pattern() {
+  local pattern='(^|[;&|]|\bthen\b|\bdo\b|\belse\b)[[:space:]]*'
+  pattern="$pattern"'(local[[:space:]]+|declare[[:space:]]+[^[:space:]]+[[:space:]]+|export[[:space:]]+)?'
+  pattern="$pattern"'[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?\+='
+  echo "$pattern"
 }
 
 # Bash 3.0 does not expand a compound array assignment attached to `local`:
@@ -55,18 +70,50 @@ function test_src_has_no_printf_assignment() {
   assert_empty "$(bashunit::compat::offenders 'printf[[:space:]]+(-[a-zA-Z]*v)')"
 }
 
-# `+=` append assignment is Bash 3.1+. Use `var="$var$more"` for strings and
-# `arr[${#arr[@]}]=x` to append to an array. Arithmetic `(( x += 1 ))` is fine on
-# 3.0, so only assignment-position `+=` is matched here.
-function test_src_has_no_append_assignment() {
-  # Anchored at a statement boundary, not just start-of-line: `cmd; x+=y`,
-  # `if c; then x+=y; fi` and `for i; do x+=y; done` are all Bash 3.1+ append
-  # assignments, and a `^`-only anchor walked straight past every one of them.
-  local pattern='(^|[;&|]|\bthen\b|\bdo\b|\belse\b)[[:space:]]*'
-  pattern="$pattern"'(local[[:space:]]+|declare[[:space:]]+[^[:space:]]+[[:space:]]+|export[[:space:]]+)?'
-  pattern="$pattern"'[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?\+='
+# String `x+=y` is Bash 3.1+. Use `var="$var$more"`. Arithmetic `(( x += 1 ))`
+# is fine on 3.0, so only assignment-position `+=` is matched here.
+#
+# Measured on a real 3.00.22: this form parses on 3.0 and is simply inert in a
+# branch that shell never takes, which is why it is a separate, weaker rule
+# from the array form below (#1349).
+function test_src_has_no_string_append_assignment() {
+  local pattern
+  pattern="$(bashunit::compat::append_prefix_pattern)"'([^(]|$)'
 
   assert_empty "$(bashunit::compat::offenders "$pattern")"
+}
+
+# Array `arr+=(x)` is a Bash 3.0 **parse** error, not a runtime one: it kills
+# the whole file on 3.0 even inside `if false; then … fi` or an uncalled
+# function, and parses fine on 3.2 -- so a green macOS run says nothing about
+# it (#1349). No version guard can make it safe; use `arr[${#arr[@]}]=x`.
+function test_src_has_no_array_append_assignment() {
+  local pattern
+  pattern="$(bashunit::compat::append_prefix_pattern)"'\('
+
+  assert_empty "$(bashunit::compat::offenders "$pattern")"
+}
+
+# The two rules must not answer for each other, or the split means nothing: a
+# rule that matched both would keep calling a parse error a runtime concern.
+function test_the_append_rules_each_match_only_their_own_construct() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  printf 'function f() {\n  x+=y\n}\n' >"$dir/string_append.sh"
+  printf 'function f() {\n  arr+=(x)\n}\n' >"$dir/array_append.sh"
+
+  local string_pattern array_pattern
+  string_pattern="$(bashunit::compat::append_prefix_pattern)"'([^(]|$)'
+  array_pattern="$(bashunit::compat::append_prefix_pattern)"'\('
+
+  local string_hits array_hits
+  string_hits="$(bashunit::compat::offenders_in "$dir" "$string_pattern")"
+  array_hits="$(bashunit::compat::offenders_in "$dir" "$array_pattern")"
+
+  assert_contains "string_append.sh" "$string_hits"
+  assert_not_contains "array_append.sh" "$string_hits"
+  assert_contains "array_append.sh" "$array_hits"
+  assert_not_contains "string_append.sh" "$array_hits"
 }
 
 # `[[ =~ ]]` exists on Bash 3.0, but 3.2 changed whether a quoted right-hand side

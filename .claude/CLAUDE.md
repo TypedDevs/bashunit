@@ -15,7 +15,8 @@
 
 Works on macOS default bash (3.2) and older. **Prohibited features:**
 - `printf -v` (Bash 3.1+)
-- `+=` append assignment (Bash 3.1+)
+- `x+=y` string append assignment (Bash 3.1+)
+- `arr+=(x)` array append (a Bash 3.0 **parse** error — it kills the file even in dead code)
 - `declare -A` (associative arrays - Bash 4.0+)
 - `[[ ]]` (use `[ ]` instead — house style, not a version limit)
 - `[[ =~ ]]` (exists on 3.0, but 3.2 changed quoted-pattern semantics)
