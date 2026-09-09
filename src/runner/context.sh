@@ -62,12 +62,48 @@ function bashunit::runner::export_test_identity() {
   local fn_name=$2
   bashunit::helper::generate_id "$fn_name"
   export BASHUNIT_CURRENT_TEST_ID="$_BASHUNIT_HELPER_ID_OUT"
-  bashunit::runner::resolve_test_location "$test_file" "$fn_name"
+  # Carry the inputs; do not resolve. Reading the definition line costs a
+  # subshell, and only a failure message and a report row ever ask for it
+  # (#1346). Cleared per test so a previous test's line cannot answer for this
+  # one.
+  #
+  # The inputs are deliberately NOT exported. Every consumer runs in a fork of
+  # this shell, which inherits them anyway, while an exec'd process gets a name
+  # its own shell never defined. That is how a standalone `bashunit -a` used to
+  # report the location of whichever test had launched it.
+  _BASHUNIT_TEST_LOCATION=""
+  _BASHUNIT_TEST_LOCATION_FILE=$test_file
+  _BASHUNIT_TEST_LOCATION_FN=$fn_name
   export _BASHUNIT_TEST_LOCATION
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FILE="$test_file"
     export _BASHUNIT_COVERAGE_CURRENT_TEST_FN="$fn_name"
   fi
+}
+
+##
+# Resolves the running test's location, once, if anything asks for it.
+#
+# The lookup below forks a subshell, which measured 1.08ms per call on macOS
+# arm64 (bash 3.2.57) -- about 2.7s across this suite when every test paid it
+# up front. A passing test never reads the result, and reports are opt-in, so
+# the cost now falls only where the line is actually rendered (#1346).
+#
+# A caller inside `$( )` loses the assignment with its subshell, which only
+# means the next one resolves again: correct either way, and the failure path
+# is not hot.
+##
+function bashunit::runner::ensure_test_location() {
+  if [ -n "${_BASHUNIT_TEST_LOCATION:-}" ]; then
+    return 0
+  fi
+
+  if [ -z "${_BASHUNIT_TEST_LOCATION_FN:-}" ]; then
+    return 0
+  fi
+
+  bashunit::runner::resolve_test_location \
+    "${_BASHUNIT_TEST_LOCATION_FILE:-}" "$_BASHUNIT_TEST_LOCATION_FN"
 }
 
 ##

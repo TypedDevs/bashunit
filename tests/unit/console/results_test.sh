@@ -798,9 +798,14 @@ function test_test_location_suffix_when_set() {
   export _BASHUNIT_TEST_LOCATION="$original"
 }
 
+# The suffix resolves the location on demand now (#1346), so "unknown" means
+# the inputs are gone too -- clearing only the cached value would just make it
+# resolve the test that is running.
 function test_test_location_suffix_empty_when_unset() {
   local original=${_BASHUNIT_TEST_LOCATION:-}
+  local original_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
   unset _BASHUNIT_TEST_LOCATION
+  unset _BASHUNIT_TEST_LOCATION_FN
 
   local output
   output="$(bashunit::console_results::test_location_suffix)"
@@ -808,6 +813,7 @@ function test_test_location_suffix_empty_when_unset() {
   assert_empty "$output"
 
   export _BASHUNIT_TEST_LOCATION="$original"
+  export _BASHUNIT_TEST_LOCATION_FN="$original_fn"
 }
 
 # --- print_tap_line -----------------------------------------------------------

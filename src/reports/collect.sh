@@ -100,7 +100,10 @@ function bashunit::reports::add_test() {
 
   # Capture the line number from the current test location ("file:line"),
   # but only when it belongs to this test's file, so a stale location from a
-  # prior test never mislabels this entry.
+  # prior test never mislabels this entry. Resolved here rather than per test:
+  # reports are opt-in and this function has already returned when they are off
+  # (#1346).
+  bashunit::runner::ensure_test_location
   local line=""
   case "${_BASHUNIT_TEST_LOCATION:-}" in
     "$file":*) line="${_BASHUNIT_TEST_LOCATION##*:}" ;;

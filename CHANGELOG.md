@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Changed
+- Performance: a sequential run is about 0.7ms faster per test — a 500-test file went from 2.75s to 2.40s on macOS arm64, bash 3.2. Every test forked a subshell to read its own definition line, for a `<file>:<line>` that only a failure message and a report row ever use. It is resolved on demand now (#1346)
+- A standalone `bashunit assert <fn> …` no longer reports a source location belonging to another process. Launched from inside a test, it inherited that test's exported location and printed it as its own (#1346)
 - Performance: a test in a file that defines `set_up` or `tear_down` is about 2.6x faster, which brings it level with a hookless test (14.1ms to 5.4ms per test on macOS arm64, bash 3.2). Each hook minted its output file with `mktemp` and removed it with `rm`, and the ownership marker that left behind made the runner `rm -rf` the test's temp files at exit — five forks per test, even for a test that created no temp file of its own (#1345)
 
 ### Fixed

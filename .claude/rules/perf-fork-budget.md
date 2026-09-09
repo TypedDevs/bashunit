@@ -191,7 +191,11 @@ them:
   that does used to cost five more forks per test (#1345), which is why that
   never showed up here. A census fixture only measures the path it exercises.
 - **Not the capture subshell.** A bare `$( )` costs ~0.46 ms here, about 6% of
-  the 7.8 ms. The rest is bash work in the per-test machinery.
+  the 7.8 ms. The rest is bash work in the per-test machinery. That 0.46 ms
+  predates arm64 and must not be reused for estimates: the same measurement on
+  macOS arm64 (bash 3.2.57) is 1.1-1.4 ms, and a subshell that also runs
+  `shopt`/`declare` in it, 1.08 ms (#1346). A subshell per test is worth
+  removing on that hardware even when this note says it is not the bottleneck.
 - **Not quadratic.** Per-test cost is 7.17 ms at 100 tests and 8.06 ms at 1000
   -- +12% over a 10x range, so the #830 fn-accumulation fix still holds. A
   regression there would show as per-test cost climbing with suite size.
