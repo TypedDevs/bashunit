@@ -502,6 +502,90 @@ function test_find_total_tests_with_filter() {
   assert_same "3" "$(helpers_test::find_total_in_subshell "with_provider" "$file1" "$file2")"
 }
 
+# Counting used to source every file a second time, just to run `compgen -A
+# function` in a subshell -- 671ms over this repo's 240 files, before a single
+# test ran, and it re-ran every data provider on the way (#1347). A file whose
+# functions the provider scan can already see is counted from that scan.
+# The duplicate guard used to be a substring match, so a name that another
+# already-selected name starts with read as a duplicate and the whole file
+# selected nothing. Only definition order exposes it: `compgen` is sorted, so a
+# prefix always came first there (#1347).
+function test_get_functions_to_run_does_not_call_a_prefix_a_duplicate() {
+  local actual
+  actual="$(bashunit::helper::get_functions_to_run "test" "" \
+    "test_alpha_extended test_alpha")"
+
+  assert_same "test_alpha_extended test_alpha" "$actual"
+}
+
+function test_get_functions_to_run_still_rejects_a_real_duplicate() {
+  local status=0
+  bashunit::helper::get_functions_to_run "test" "" \
+    "test_alpha test_alpha" >/dev/null || status=$?
+
+  assert_same "1" "$status"
+}
+
+function test_find_total_tests_does_not_source_a_static_file() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local marker="$dir/was_sourced"
+  local fixture="$dir/static_count_fixture.sh"
+  {
+    echo "echo x >>\"$marker\""
+    echo 'function test_a() { :; }'
+    echo 'function test_b() { :; }'
+  } >"$fixture"
+
+  local total
+  total="$(helpers_test::find_total_in_subshell "" "$fixture")"
+
+  assert_same "2" "$total"
+  assert_file_not_exists "$marker"
+}
+
+# A provider's row count is only knowable by running it, so those files keep
+# the sourcing path.
+function test_find_total_tests_sources_a_file_with_a_provider() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local marker="$dir/was_sourced"
+  local fixture="$dir/provider_count_fixture.sh"
+  {
+    echo "echo x >>\"$marker\""
+    echo 'function provider_rows() { echo 1; echo 2; echo 3; }'
+    echo '# @data_provider provider_rows'
+    echo 'function test_rows() { :; }'
+  } >"$fixture"
+
+  local total
+  total="$(helpers_test::find_total_in_subshell "" "$fixture")"
+
+  assert_same "3" "$total"
+  assert_file_exists "$marker"
+}
+
+# A static scan cannot see a function `eval`, a nested `source` or a
+# conditional definition creates, and a header that disagrees with the run is
+# worse than a slow one. Those files fall back to sourcing.
+function test_find_total_tests_sources_a_file_that_defines_functions_dynamically() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local marker="$dir/was_sourced"
+  local fixture="$dir/dynamic_count_fixture.sh"
+  {
+    echo "echo x >>\"$marker\""
+    echo 'eval "function test_evaled() { :; }"'
+    echo 'function test_plain() { :; }'
+  } >"$fixture"
+
+  local total
+  total="$(helpers_test::find_total_in_subshell "" "$fixture")"
+
+  assert_same "2" "$total"
+  assert_file_exists "$marker"
+}
+
 function test_parse_file_path_filter_plain_path() {
   local result
   result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh") || true
