@@ -53,6 +53,19 @@ function test_successful_assert_contains_ignore_case() {
   assert_empty "$(assert_contains_ignore_case "Linux" "GNU/LINUX")"
 }
 
+# ASCII case folding is the whole of what this assertion promises, and it has
+# two implementations -- nocasematch from Bash 3.1, two `tr` pipelines below
+# that. This runs on both: the Bash 3.0 job takes the `tr` branch, every other
+# job the fast one. Non-ASCII is deliberately not asserted, because BSD `tr`
+# folds it, GNU and busybox `tr` do not, and nocasematch itself only folds it
+# in a UTF-8 locale (#1351).
+function test_assert_contains_ignore_case_folds_ascii_on_either_implementation() {
+  assert_empty "$(assert_contains_ignore_case "linux" "GNU/LINUX")"
+  assert_empty "$(assert_contains_ignore_case "LINUX" "gnu/linux")"
+  assert_empty "$(assert_contains_ignore_case "LiNuX" "GnU/lInUx")"
+  assert_empty "$(assert_contains_ignore_case "0-9_." "0-9_.")"
+}
+
 function test_unsuccessful_assert_contains_ignore_case() {
   local expected
   expected="$(bashunit::console_results::print_failed_test \

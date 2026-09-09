@@ -462,10 +462,22 @@ function assert_contains_ignore_case() {
 
   # nocasematch (Bash 3.1+) folds case inside the `case` itself, which costs no
   # fork at all; the two `tr` pipelines below cost two. Measured on Bash 3.2:
-  # 0.087ms per call versus 12.8ms. Both fold non-ASCII identically in a UTF-8
-  # locale -- `ñü` matches `ÑÜ` either way -- which rules out the tempting
-  # pure-bash A-Z loop, since that is ASCII-only and would silently stop
-  # matching accented text that matches today.
+  # 0.087ms per call versus 12.8ms.
+  #
+  # Only ASCII folding is promised, because only ASCII folding is portable.
+  # Measured on `ÑÜ`:
+  #
+  #   BSD tr (macOS)        folds      -> ñü
+  #   GNU tr (Debian)       does not   -> ÑÜ
+  #   busybox tr            does not   -> ÑÜ
+  #   nocasematch, UTF-8    folds      -> matches
+  #   nocasematch, LC_ALL=C does not   -> no match
+  #
+  # So the two branches disagree on non-ASCII wherever `tr` is not BSD, and the
+  # fast path alone disagrees with itself across locales. The Bash 3.0 job runs
+  # on Debian, so that is CI, not a hypothetical. This comment used to claim the
+  # two agreed on non-ASCII in a UTF-8 locale, and used that to rule out a
+  # pure-bash A-Z fold for the fallback; the claim was wrong (#1351).
   #
   # Prior state is saved and restored rather than blindly unset: nocasematch is
   # a global shell option and a user's test file may already have set it. `shopt
@@ -492,7 +504,8 @@ function assert_contains_ignore_case() {
     return
   fi
 
-  # Bash 3.0 only: nocasematch does not exist, so fold with tr.
+  # Bash 3.0 only: nocasematch does not exist, so fold with tr. ASCII-only in
+  # practice on GNU and busybox tr; see the note above.
   local expected_lower
   local actual_lower
   expected_lower=$(printf '%s' "$expected" | tr '[:upper:]' '[:lower:]')
