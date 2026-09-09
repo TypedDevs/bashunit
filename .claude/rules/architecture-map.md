@@ -124,8 +124,11 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 ## Cross-cutting invariants
 
 - **Bash 3.0 floor** (`.claude/rules/bash-style.md`): no `[[`, `declare -A`,
-  `${var,,}`, `BASHPID`, negative indices. Subshells share `$$` and `RANDOM`
-  state — you cannot make a per-worker unique token without a fork (`mktemp`).
+  `${var,,}`, `BASHPID`, negative indices. Subshells share `$$` — you cannot
+  make a per-worker unique token without a fork (`mktemp`) or an ordinal
+  assigned before the fork. `RANDOM` is no help either: whether a subshell
+  reseeds it depends on the platform and the nesting depth (measured in
+  perf-fork-budget.md), so it is unreliable in both directions (#1354).
 - **Return-slot pattern** (`_BASHUNIT_<PKG>_<FN>_OUT` globals) instead of `$()`
   captures on hot paths — bash-style.md documents it; `local` is dynamically
   scoped, so helpers must not write caller-named variables.

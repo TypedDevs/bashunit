@@ -328,7 +328,17 @@ function bashunit::runner::functions_for_script() {
   local all_fn_names="$2"
 
   # Resolve "<name> <line> <file>" for the given names, enabling extdebug only
-  # inside the capture subshell so the caller's setting is untouched.
+  # inside the capture subshell so the caller's setting is untouched. Turning
+  # it back off is not symmetric, and the asymmetry moved inside the supported
+  # range (#808, #1354):
+  #
+  #   3.00.22, 3.2.57, 4.0, 4.1, 4.2, 4.3   `shopt -u extdebug` leaves
+  #                                          errtrace/functrace as they were
+  #   4.4, 5.2.37, 5.3.15                    it clears both, even if they were
+  #                                          on beforehand
+  #
+  # So from 4.4 on, disabling extdebug here would silently clear `set -E` and
+  # `set -T`, which is what --strict error tracing runs on.
   local declarations
   # shellcheck disable=SC2086
   declarations=$(

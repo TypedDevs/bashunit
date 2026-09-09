@@ -271,8 +271,22 @@ ordinal the single-threaded dispatcher assigns just before each `&` (the fork
 inherits it), so it costs **no** `mktemp` + `mv` per test (#851; was 10
 `mktemp` + 10 `mv`). This replaced the old sanitized-test-name scheme, whose
 deterministic names could collide (different provider args sanitize identically)
-because Bash 3 workers can't mint a unique token — subshells inherit `$$` and
-the `RANDOM` state, and `BASHPID` is 4.0+; an ordinal sidesteps that entirely.
+because Bash 3 workers can't mint a unique token — subshells inherit `$$`, and
+`BASHPID` is 4.0+; an ordinal sidesteps that entirely.
+
+This file used to add "and the `RANDOM` state" to that list. Measured, `RANDOM`
+is neither reliably shared nor reliably reseeded (#1354):
+
+| Context | three consecutive `$( )` reads |
+|---|---|
+| Plain shell — 3.00.22, 3.2.57, 4.4, 5.2, 5.3 | differ |
+| `--parallel` worker — Linux 3.0, 5.2 | differ |
+| `--parallel` worker — macOS 3.2.57 | **identical** |
+
+So it depends on the platform *and* on how deeply nested the subshell is. Do
+not build on it in either direction, and do not reuse "`RANDOM` is shared" as a
+premise — it is right about the conclusion for the wrong reason. `$$` is the
+part that genuinely is inherited.
 `wait_for_job_slot` already uses `wait -n` on Bash 4.3+ and an adaptive
 sleep-poll fallback — don't "fix" it. The spinner forks `sleep` ~1/s on
 non-tty; not worth chasing.
