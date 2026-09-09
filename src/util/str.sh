@@ -89,7 +89,21 @@ function bashunit::str::strip_ansi() {
   echo "$_BASHUNIT_STR_STRIPPED_OUT"
 }
 
-function bashunit::str::rpad() {
+# A run of spaces, doubled on demand. Padding is a slice of it, because the
+# only fork-free `printf` into a variable is `printf -v`, which is Bash 3.1
+# and this project floors at 3.0.
+_BASHUNIT_STR_SPACES="        "
+_BASHUNIT_STR_RPAD_OUT=""
+
+##
+# Return-slot variant of rpad: writes the padded line into
+# _BASHUNIT_STR_RPAD_OUT, without the trailing newline `$( )` used to strip.
+#
+# This runs once per passing test wherever per-test timing is on, and the
+# function was already fork-free inside -- the capture subshell around it was
+# the entire cost (#1348).
+##
+function bashunit::str::rpad_to_slot() {
   local left_text="$1"
   local right_word="$2"
   local width_padding="${3:-$TERMINAL_WIDTH}"
@@ -156,7 +170,18 @@ function bashunit::str::rpad() {
     remaining_space=0
   fi
 
-  printf "%s%${remaining_space}s %s\n" "$result_left_text" "" "$right_word"
+  while [ ${#_BASHUNIT_STR_SPACES} -lt "$remaining_space" ]; do
+    _BASHUNIT_STR_SPACES="$_BASHUNIT_STR_SPACES$_BASHUNIT_STR_SPACES"
+  done
+
+  _BASHUNIT_STR_RPAD_OUT="${result_left_text}${_BASHUNIT_STR_SPACES:0:$remaining_space} $right_word"
+}
+
+# Pads and echoes the result. Thin wrapper over the return-slot variant, the
+# same shape strip_ansi has over strip_ansi_to_slot.
+function bashunit::str::rpad() {
+  bashunit::str::rpad_to_slot "$@"
+  echo "$_BASHUNIT_STR_RPAD_OUT"
 }
 
 ##

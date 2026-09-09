@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Performance: a file defining `set_up_before_script` or `tear_down_after_script` costs about 5.6ms less on Bash 3.2, and a test rendered with `--show-execution-time` about 0.74ms less. Four clock reads per file and the per-test padding still went through a capture subshell, next to return-slot variants that were already there (#1348)
 - Performance: startup is faster on suites of plain test files. Printing "Running N tests" sourced every file a second time and re-ran every data provider before the run began. A file whose functions the provider scan can already see is counted from that scan instead: over this repo's 241 files the counting pass went from 1.72s to 1.51s, and 124 of them no longer source or run a provider twice. Files with a data provider, a heredoc, a multi-line string, an `eval`, a nested `source` or a conditional definition keep the old path, so the count can never disagree with the run (#1347)
 - Performance: a sequential run is about 0.7ms faster per test — a 500-test file went from 2.75s to 2.40s on macOS arm64, bash 3.2. Every test forked a subshell to read its own definition line, for a `<file>:<line>` that only a failure message and a report row ever use. It is resolved on demand now (#1346)
 - A standalone `bashunit assert <fn> …` no longer reports a source location belonging to another process. Launched from inside a test, it inherited that test's exported location and printed it as its own (#1346)

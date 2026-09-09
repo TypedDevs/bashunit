@@ -165,3 +165,47 @@ function test_strip_ansi_to_slot_long_input_matches_short_path() {
 
   assert_same "$short_expected" "$_BASHUNIT_STR_STRIPPED_OUT"
 }
+
+# rpad runs once per passing test on Bash 5, where per-test timing is on, and
+# the `$( )` around it was the whole cost -- the function itself is already
+# fork-free (#1348). The slot variant has to produce exactly what the capture
+# produced, trailing newline stripped, on every shape rpad handles.
+function _rpad_slot_matches_capture() { # $1..$3 = rpad arguments
+  local captured
+  captured="$(bashunit::str::rpad "$@")"
+  bashunit::str::rpad_to_slot "$@"
+  assert_same "$captured" "$_BASHUNIT_STR_RPAD_OUT"
+}
+
+function test_rpad_to_slot_matches_rpad_for_plain_text() {
+  _rpad_slot_matches_capture "input" "right-text" 40
+}
+
+function test_rpad_to_slot_matches_rpad_for_empty_left_text() {
+  _rpad_slot_matches_capture "" "right-text" 40
+}
+
+function test_rpad_to_slot_matches_rpad_for_ansi_coloured_text() {
+  _rpad_slot_matches_capture "$(printf '\033[32mgreen\033[0m text')" "12ms" 40
+}
+
+# strip_ansi_to_slot changes strategy above 1024 characters, and rpad measures
+# the visible width through it.
+function test_rpad_to_slot_matches_rpad_for_a_long_string() {
+  local long=""
+  local i=0
+  while [ $i -lt 130 ]; do
+    long="${long}0123456789"
+    i=$((i + 1))
+  done
+
+  _rpad_slot_matches_capture "$long" "12ms" 60
+}
+
+function test_rpad_to_slot_matches_rpad_when_truncating() {
+  _rpad_slot_matches_capture "a-fairly-long-test-name-that-will-not-fit" "12ms" 20
+}
+
+function test_rpad_to_slot_matches_rpad_when_width_is_smaller_than_right_word() {
+  _rpad_slot_matches_capture "input" "right-text" 3
+}

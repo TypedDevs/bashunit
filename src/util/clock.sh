@@ -231,5 +231,6 @@ function bashunit::clock::total_runtime_in_milliseconds() {
 }
 
 function bashunit::clock::init() {
-  _BASHUNIT_START_TIME=$(bashunit::clock::now)
+  bashunit::clock::now_to_slot
+  _BASHUNIT_START_TIME=$_BASHUNIT_CLOCK_NOW_OUT
 }

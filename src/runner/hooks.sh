@@ -203,7 +203,8 @@ function bashunit::runner::run_set_up_before_script() {
   fi
 
   local start_time
-  start_time=$(bashunit::clock::now)
+  bashunit::clock::now_to_slot
+  start_time=$_BASHUNIT_CLOCK_NOW_OUT
 
   # Enable coverage trap to attribute lines executed during set_up_before_script
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
@@ -220,7 +221,8 @@ function bashunit::runner::run_set_up_before_script() {
   fi
 
   local end_time
-  end_time=$(bashunit::clock::now)
+  bashunit::clock::now_to_slot
+  end_time=$_BASHUNIT_CLOCK_NOW_OUT
   local duration_ns=$((end_time - start_time))
   local duration_ms=$((duration_ns / 1000000))
 
@@ -454,7 +456,8 @@ function bashunit::runner::run_tear_down_after_script() {
   fi
 
   local start_time
-  start_time=$(bashunit::clock::now)
+  bashunit::clock::now_to_slot
+  start_time=$_BASHUNIT_CLOCK_NOW_OUT
 
   # Enable coverage trap to attribute lines executed during tear_down_after_script
   if [ "${_BASHUNIT_COVERAGE_ON:-0}" = 1 ]; then
@@ -471,7 +474,8 @@ function bashunit::runner::run_tear_down_after_script() {
   fi
 
   local end_time
-  end_time=$(bashunit::clock::now)
+  bashunit::clock::now_to_slot
+  end_time=$_BASHUNIT_CLOCK_NOW_OUT
   local duration_ns=$((end_time - start_time))
   local duration_ms=$((duration_ns / 1000000))
 

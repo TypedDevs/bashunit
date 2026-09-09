@@ -321,9 +321,9 @@ function bashunit::console_results::print_hook_completed() {
   line=$(printf "%s● %s%s" \
     "$_BASHUNIT_COLOR_PASSED" "$hook_name" "$_BASHUNIT_COLOR_DEFAULT")
 
-  local time_display
-  time_display=$(bashunit::console_results::format_duration "$duration_ms")
+  bashunit::console_results::format_duration_to_slot "$duration_ms"
+  bashunit::str::rpad_to_slot "$line" "$_BASHUNIT_CONSOLE_DURATION_OUT"
 
-  printf "%s\n" "$(bashunit::str::rpad "$line" "$time_display")"
+  printf "%s\n" "$_BASHUNIT_STR_RPAD_OUT"
 }
 
