@@ -49,6 +49,8 @@ function bashunit::helper::build_provider_map() {
   _BASHUNIT_PROVIDER_MAP_FNS=()
   _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
   _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
+  _BASHUNIT_PROVIDER_MAP_TEST_FNS=""
+  _BASHUNIT_PROVIDER_MAP_DYNAMIC=false
 
   bashunit::helper::annotations_reset
 
@@ -78,6 +80,14 @@ function bashunit::helper::build_provider_map() {
     [ -z "$fn" ] && continue
     if [ "$fn" = "@@no_parallel@@" ]; then
       [ "$provider" = "1" ] && _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=true
+      continue
+    fi
+    if [ "$fn" = "@@testfns@@" ]; then
+      _BASHUNIT_PROVIDER_MAP_TEST_FNS="$provider"
+      continue
+    fi
+    if [ "$fn" = "@@dynamic@@" ]; then
+      _BASHUNIT_PROVIDER_MAP_DYNAMIC=true
       continue
     fi
     if [ "$fn" = "@@annot@@" ]; then
@@ -132,6 +142,49 @@ function bashunit::helper::build_provider_map() {
         sub(/[[:space:]]*\(\).*/, "", fn)
       }
 
+      # A definition at column 0 is one this scan can be sure the file defines
+      # unconditionally, which is what lets the header count without sourcing.
+      # Anything that could define a function this scan cannot see -- eval,
+      # a nested source, an indented (so conditional or nested) definition --
+      # marks the file dynamic and sends the count back to sourcing.
+      if (match($0, /^(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)) {
+        # Accumulated, not emitted per definition: the read loop below runs
+        # once per row, and a row per function cost about as much as counting
+        # statically saved.
+        top_level_fns = top_level_fns " " fn
+      } else if (is_fn) {
+        dynamic = 1
+      }
+      # A heredoc marks the file dynamic too, for the opposite reason: an
+      # acceptance test writes its fixtures with one, and a `function test_x()`
+      # in that body is text, not a definition -- counted statically it would
+      # inflate the header. So does a line whose quotes do not balance, which
+      # is how the rest of them write a fixture: a multi-line string whose
+      # continuation lines start at column 0 and look exactly like definitions.
+      # Escapes and balanced spans come out first, so an apostrophe inside a
+      # double-quoted string is not mistaken for one -- that alone was flagging
+      # a fifth of the suite.
+      #
+      # Both are flagged rather than parsed. This pass also builds the provider
+      # map, so a line-skipping bug here would mis-wire real tests; and a rule
+      # that guesses wrong about where a string ends can hide a real function,
+      # which is the one error a count must never make. Over-flagging only
+      # costs the file its fast path.
+      if (index($0, "<<") > 0) {
+        dynamic = 1
+      }
+      _t = $0
+      gsub(/\\./, "", _t)
+      gsub(/"[^"]*"/, "", _t)
+      gsub(/\047[^\047]*\047/, "", _t)
+      if (index(_t, "\047") > 0 || index(_t, "\"") > 0) {
+        dynamic = 1
+      }
+      if (match($0, /(^|[^[:alnum:]_])eval([^[:alnum:]_]|$)/) ||
+          match($0, /^[[:space:]]*(\.|source)[[:space:]]/)) {
+        dynamic = 1
+      }
+
       if (pending != "" && NR - pending_line <= 2) {
         if (is_fn) {
           printf "%s\t%s\n", fn, pending
@@ -158,7 +211,11 @@ function bashunit::helper::build_provider_map() {
       a_skip = ""
       a_reason = ""
     }
-    END { printf "@@no_parallel@@\t%d\n", no_parallel }
+    END {
+      printf "@@no_parallel@@\t%d\n", no_parallel
+      if (dynamic) { printf "@@dynamic@@\t1\n" }
+      else { printf "@@testfns@@\t%s\n", top_level_fns }
+    }
   ' "$script" 2>/dev/null)"
 }
 

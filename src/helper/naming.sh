@@ -206,4 +206,10 @@ _BASHUNIT_PROVIDER_FN_OUT=""
 # Set true when the scanned file carries the "# bashunit: no-parallel-tests"
 # opt-out; detected in the same awk pass to avoid a per-file grep fork (#774).
 _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
+# Every function the scanned file defines at column 0, space-separated, and
+# whether the file could also define one out of the scan's sight. The header
+# counts a file's tests from these instead of sourcing it a second time and
+# re-running its providers (#1347).
+_BASHUNIT_PROVIDER_MAP_TEST_FNS=""
+_BASHUNIT_PROVIDER_MAP_DYNAMIC=false
 
