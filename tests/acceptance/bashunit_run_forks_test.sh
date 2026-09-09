@@ -282,3 +282,56 @@ function test_reports_do_not_fork_base64_per_field() {
   # that, with room for the run's own bookkeeping; it was 56.
   assert_less_or_equal_than 16 "$calls"
 }
+
+# Regression guard for the per-test hook path. A test in a file that defines
+# `set_up` or `tear_down` used to cost five process forks: each hook minted its
+# output file with `mktemp` and removed it with `rm -f`, and the temp-owner
+# marker `mktemp` left behind made the EXIT trap `rm -rf` the test's temp files
+# even when the test itself created none. That is 3.3x the cost of a hookless
+# test (28.3ms vs 8.5ms). The hook output file is named arithmetically inside
+# the run directory now, and the `>` redirect truncates it, so a hooked test
+# forks neither binary — only the run's own single `rm` of its scratch dir
+# remains.
+function test_test_hooks_do_not_fork_mktemp_or_rm_per_test() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/count"
+  local bin
+  for bin in mktemp rm; do
+    local real_bin
+    real_bin="$(command -v "$bin")"
+    {
+      echo '#!/usr/bin/env bash'
+      echo "echo $bin >> \"$count_file\""
+      echo "exec \"$real_bin\" \"\$@\""
+    } >"$dir/$bin"
+    chmod +x "$dir/$bin"
+  done
+
+  local fixture="$dir/hook_forks_test.sh"
+  {
+    echo 'function set_up() { :; }'
+    echo 'function tear_down() { :; }'
+    echo 'function test_a() { assert_true true; }'
+    echo 'function test_b() { assert_true true; }'
+    echo 'function test_c() { assert_true true; }'
+    echo 'function test_d() { assert_true true; }'
+  } >"$fixture"
+
+  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1
+
+  local mktemp_forks=0
+  local rm_forks=0
+  if [ -f "$count_file" ]; then
+    mktemp_forks="$(grep -c '^mktemp$' "$count_file" || true)"
+    rm_forks="$(grep -c '^rm$' "$count_file" || true)"
+  fi
+
+  assert_equals 0 "$mktemp_forks"
+  # The run's own scratch-dir cleanup, and nothing per test.
+  assert_less_or_equal_than 1 "$rm_forks"
+}

@@ -936,6 +936,39 @@ function bashunit::env::create_scratch_dirs() {
 
 bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" || exit 1
 
+##
+# Restores the run scratch directory when it vanishes mid-run.
+#
+# A missing directory makes a capture redirect fail, and bash reports that as
+# the *command* failing: exit 1 with nothing written to the capture file. That
+# read as a test file which would not source (#1137), and as a hook that failed
+# (#1345). Callers fall back to /dev/null when this returns 1 -- losing one
+# capture is worth far less than failing something for a reason that is not its
+# own.
+#
+# Says so when it happens, once per run: #1137 is open precisely because a
+# scratch directory goes missing on CI and nobody can say what removed it.
+# Surviving it silently would keep it that way.
+#
+# The common case is a `[ -d ]` builtin, so callers on the per-test path pay no
+# fork (.claude/rules/perf-fork-budget.md).
+# Returns: 0 when the directory is there, 1 when it could not be restored
+##
+function bashunit::env::ensure_run_output_dir() {
+  if [ -d "$_BASHUNIT_RUN_OUTPUT_DIR" ]; then
+    return 0
+  fi
+
+  if [ "${_BASHUNIT_RUN_DIR_VANISHED:-false}" = false ]; then
+    _BASHUNIT_RUN_DIR_VANISHED=true
+    printf 'bashunit: the run scratch directory disappeared mid-run: %s\n' \
+      "$_BASHUNIT_RUN_OUTPUT_DIR" >&2
+    printf 'bashunit: recreating it; please report this with the run log (#1137).\n' >&2
+  fi
+
+  mkdir -p "$_BASHUNIT_RUN_OUTPUT_DIR" 2>/dev/null
+}
+
 # Removes this run's scratch directory (guarded like parallel::cleanup so a
 # broken variable can never turn the rm loose elsewhere). Called at the end of
 # a run and on SIGINT; without it every invocation leaks one directory.

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Performance: a test in a file that defines `set_up` or `tear_down` is about 2.6x faster, which brings it level with a hookless test (14.1ms to 5.4ms per test on macOS arm64, bash 3.2). Each hook minted its output file with `mktemp` and removed it with `rm`, and the ownership marker that left behind made the runner `rm -rf` the test's temp files at exit — five forks per test, even for a test that created no temp file of its own (#1345)
+
 ### Fixed
 - Coverage counts every line of a multiline statement: array literals, quoted strings, heredocs, backslash continuations. An array written one element per line cost one uncovered line per element. Bash 3.x records the assignment on its closing `)`, so there the whole array read as uncovered. A parent statement's hits no longer mark commands inside command or process substitutions as covered, even within quotes or arrays (#1338)
 - `--exclude-filter` keeps a comma as part of the test function name. The value was split at the comma, so `--exclude-filter 'test_a,{b}'` also excluded `test_a`. Repeat the flag to exclude several names. `BASHUNIT_EXCLUDE_FILTER` stays comma-separated, so one of its filters cannot hold a literal comma (#1340)
