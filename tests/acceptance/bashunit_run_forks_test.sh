@@ -335,3 +335,65 @@ function test_test_hooks_do_not_fork_mktemp_or_rm_per_test() {
   # The run's own scratch-dir cleanup, and nothing per test.
   assert_less_or_equal_than 1 "$rm_forks"
 }
+
+# Regression guard for the parallel clock probe. Resolving the clock
+# implementation used to happen inside a `$( )`, so the resolved value died
+# with that subshell and every --parallel worker re-probed. On a shell without
+# EPOCHREALTIME the probe forks `perl`, so the count scaled one-for-one with
+# the tests: 502 execs for a 500-test file against 2 (#1353). It fired even
+# with per-test timing off, because deciding that timing is off is what asks
+# whether the clock is expensive, which resolves the impl.
+#
+# Asserted as a differential rather than a budget: on a platform whose clock is
+# `EPOCHREALTIME` or `date` this forks no `perl` at all, and comparing two sizes
+# still fails loudly if the count ever starts tracking the test count.
+function test_parallel_clock_probes_do_not_scale_with_the_test_count() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/perl_calls"
+  local real_perl
+  real_perl="$(command -v perl)"
+  if [ -z "$real_perl" ]; then
+    bashunit::skip "no perl on this machine to shim" && return
+  fi
+
+  {
+    echo '#!/usr/bin/env bash'
+    echo "echo x >>\"$count_file\""
+    echo "exec \"$real_perl\" \"\$@\""
+  } >"$dir/perl"
+  chmod +x "$dir/perl"
+
+  local few="$dir/few_test.sh"
+  local many="$dir/many_test.sh"
+  local i=0
+  : >"$few"
+  while [ $i -lt 5 ]; do
+    echo "function test_f$i() { assert_true true; }" >>"$few"
+    i=$((i + 1))
+  done
+  i=0
+  : >"$many"
+  while [ $i -lt 40 ]; do
+    echo "function test_m$i() { assert_true true; }" >>"$many"
+    i=$((i + 1))
+  done
+
+  : >"$count_file"
+  PATH="$dir:$PATH" ./bashunit --parallel "$few" >/dev/null 2>&1
+  local few_calls
+  few_calls="$(grep -c . "$count_file" || true)"
+
+  : >"$count_file"
+  PATH="$dir:$PATH" ./bashunit --parallel "$many" >/dev/null 2>&1
+  local many_calls
+  many_calls="$(grep -c . "$count_file" || true)"
+
+  # Eight times the tests must not cost more probes. Equality, not a budget:
+  # the run resolves the clock once whatever the size.
+  assert_same "$few_calls" "$many_calls"
+}

@@ -258,7 +258,15 @@ Verify such a rewrite by running both implementations over the same input
 that cannot fail proves nothing.
 
 **Parallel 10-test file run (CI's mode):** ~11 forks — 3 `mkdir`, 4 `rm`,
-3 `awk` (#813; was 61). The per-test result file is named by a per-suite
+3 `awk` (#813; was 61). That count was taken with a sequential census fixture
+and so missed the one cost that only exists in this mode: every worker used to
+re-probe the clock, because the probe resolved the implementation inside a
+`$( )` and the resolved value died with that subshell. On a shell without
+`EPOCHREALTIME` the probe forks `perl`, so it scaled one-for-one with the tests
+— 502 execs for a 500-test file against 2 — and it fired even with per-test
+timing off, since deciding that timing is off is what asks whether the clock is
+expensive (#1353). **Measure the parallel budget with a parallel fixture**: a
+per-worker cost is invisible to a sequential census by construction. The per-test result file is named by a per-suite
 ordinal the single-threaded dispatcher assigns just before each `&` (the fork
 inherits it), so it costs **no** `mktemp` + `mv` per test (#851; was 10
 `mktemp` + 10 `mv`). This replaced the old sanitized-test-name scheme, whose
