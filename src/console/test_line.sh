@@ -46,6 +46,7 @@ function bashunit::console_results::print_successful_test() {
 # is unknown. Used to append source context to failure output.
 ##
 function bashunit::console_results::test_location_suffix() {
+  bashunit::runner::ensure_test_location
   local location=${_BASHUNIT_TEST_LOCATION:-}
   if [ -z "$location" ]; then
     return 0

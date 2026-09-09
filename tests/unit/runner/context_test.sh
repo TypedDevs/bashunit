@@ -69,3 +69,83 @@ function test_restore_workdir_aborts_loudly_when_the_directory_is_gone() {
   assert_contains "cannot restore the working directory" "$output"
   assert_contains "$gone" "$output"
 }
+
+# --- test location ------------------------------------------------------------
+
+# Resolving "<file>:<line>" reads the definition line with
+# `$(shopt -s extdebug; declare -F …)`, a subshell that costs 1.08ms on macOS
+# arm64 — ~2.7s over this suite. Only a failure message and a report row ever
+# read it, so the identity carries the inputs and nothing resolves up front
+# (#1346).
+function test_export_test_identity_leaves_the_location_unresolved() {
+  local orig_id=${BASHUNIT_CURRENT_TEST_ID:-}
+  local orig_location=${_BASHUNIT_TEST_LOCATION:-}
+  local orig_file=${_BASHUNIT_TEST_LOCATION_FILE:-}
+  local orig_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+
+  bashunit::runner::export_test_identity "some_test.sh" "test_not_defined_here"
+
+  assert_empty "$_BASHUNIT_TEST_LOCATION"
+  assert_same "some_test.sh" "$_BASHUNIT_TEST_LOCATION_FILE"
+  assert_same "test_not_defined_here" "$_BASHUNIT_TEST_LOCATION_FN"
+
+  export BASHUNIT_CURRENT_TEST_ID="$orig_id"
+  export _BASHUNIT_TEST_LOCATION="$orig_location"
+  export _BASHUNIT_TEST_LOCATION_FILE="$orig_file"
+  export _BASHUNIT_TEST_LOCATION_FN="$orig_fn"
+}
+
+function test_ensure_test_location_resolves_on_demand() {
+  local orig_location=${_BASHUNIT_TEST_LOCATION:-}
+  local orig_file=${_BASHUNIT_TEST_LOCATION_FILE:-}
+  local orig_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+  _BASHUNIT_TEST_LOCATION=""
+  _BASHUNIT_TEST_LOCATION_FILE="mine.sh"
+  _BASHUNIT_TEST_LOCATION_FN="test_ensure_test_location_resolves_on_demand"
+
+  bashunit::runner::ensure_test_location
+
+  assert_matches "^mine\.sh:[0-9]+$" "$_BASHUNIT_TEST_LOCATION"
+
+  export _BASHUNIT_TEST_LOCATION="$orig_location"
+  export _BASHUNIT_TEST_LOCATION_FILE="$orig_file"
+  export _BASHUNIT_TEST_LOCATION_FN="$orig_fn"
+}
+
+# Resolved once per test: the failure path renders the suffix up to three
+# times, and each would otherwise pay the subshell again.
+function test_ensure_test_location_keeps_an_already_resolved_location() {
+  local orig_location=${_BASHUNIT_TEST_LOCATION:-}
+  local orig_file=${_BASHUNIT_TEST_LOCATION_FILE:-}
+  local orig_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+  _BASHUNIT_TEST_LOCATION="already/resolved.sh:7"
+  _BASHUNIT_TEST_LOCATION_FILE="mine.sh"
+  _BASHUNIT_TEST_LOCATION_FN="test_ensure_test_location_keeps_an_already_resolved_location"
+
+  bashunit::runner::ensure_test_location
+
+  assert_same "already/resolved.sh:7" "$_BASHUNIT_TEST_LOCATION"
+
+  export _BASHUNIT_TEST_LOCATION="$orig_location"
+  export _BASHUNIT_TEST_LOCATION_FILE="$orig_file"
+  export _BASHUNIT_TEST_LOCATION_FN="$orig_fn"
+}
+
+# Nothing to resolve from, so nothing is claimed: an empty location renders no
+# "at …" suffix at all.
+function test_ensure_test_location_stays_empty_without_a_function_name() {
+  local orig_location=${_BASHUNIT_TEST_LOCATION:-}
+  local orig_file=${_BASHUNIT_TEST_LOCATION_FILE:-}
+  local orig_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+  _BASHUNIT_TEST_LOCATION=""
+  _BASHUNIT_TEST_LOCATION_FILE=""
+  _BASHUNIT_TEST_LOCATION_FN=""
+
+  bashunit::runner::ensure_test_location
+
+  assert_empty "$_BASHUNIT_TEST_LOCATION"
+
+  export _BASHUNIT_TEST_LOCATION="$orig_location"
+  export _BASHUNIT_TEST_LOCATION_FILE="$orig_file"
+  export _BASHUNIT_TEST_LOCATION_FN="$orig_fn"
+}
