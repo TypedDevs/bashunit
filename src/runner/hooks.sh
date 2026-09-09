@@ -80,6 +80,39 @@ function bashunit::runner::record_file_hook_failure() {
   return "$status"
 }
 
+_BASHUNIT_RUNNER_HOOK_FILE=""
+
+##
+# Names the file a hook's output is captured in, in _BASHUNIT_RUNNER_HOOK_FILE.
+#
+# A fixed path in the run dir, not a `temp_file`: minting one forked `mktemp`,
+# removing it forked `rm -f`, and the temp-owner marker `mktemp` leaves behind
+# made the EXIT trap `rm -rf` the test's temp files as well, even when the test
+# created none. Five forks per test in any file defining `set_up` or
+# `tear_down`, which cost 3.3x a hookless test (28.3ms vs 8.5ms) (#1345). The
+# `>` redirect truncates, so the name may be reused and nothing has to remove
+# it; the run-dir cleanup takes it with the rest at the end.
+#
+# The key has to survive concurrency, and a Bash 3 subshell inherits both `$$`
+# and the `RANDOM` state from its parent. So it is built the way result.sh
+# names `.result` files (#851): the folded file path, which keeps two files
+# sharing a basename apart (#959), plus the per-suite ordinal the dispatcher
+# assigns before forking, which keeps a file's parallel test workers apart.
+# The hook name closes the last gap, between a file hook and a test hook that
+# share an ordinal.
+#
+# Arguments: $1 - the hook name
+##
+function bashunit::runner::hook_output_path() {
+  if ! bashunit::env::ensure_run_output_dir; then
+    _BASHUNIT_RUNNER_HOOK_FILE=/dev/null
+    return 0
+  fi
+
+  local slot="${_BASHUNIT_RUNNER_FILE_SLOT}_${_BASHUNIT_RUNNER_RESULT_ORDINAL:-0}_$1"
+  _BASHUNIT_RUNNER_HOOK_FILE="${_BASHUNIT_RUN_OUTPUT_DIR}/hook_${slot}"
+}
+
 function bashunit::runner::execute_file_hook() {
   local hook_name="$1"
   local test_file="$2"
@@ -90,7 +123,9 @@ function bashunit::runner::execute_file_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  hook_output_file=$(bashunit::temp_file "${hook_name}_output")
+  bashunit::runner::file_path_to_slot "$test_file"
+  bashunit::runner::hook_output_path "$hook_name"
+  hook_output_file=$_BASHUNIT_RUNNER_HOOK_FILE
 
   # Enable errtrace to catch any failing command in the hook.
   # Using -E (errtrace) without -e (errexit) prevents the main process from
@@ -138,7 +173,6 @@ function bashunit::runner::execute_file_hook() {
     while IFS= read -r line; do
       [ -z "$hook_output" ] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
     done <"$hook_output_file"
-    rm -f "$hook_output_file"
   fi
 
   if [ $status -ne 0 ]; then
@@ -154,8 +188,8 @@ function bashunit::runner::execute_file_hook() {
 }
 
 function bashunit::runner::run_set_up() {
-  local _test_file="${1-}"
   bashunit::internal_log "run_set_up"
+  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'set_up'
 }
 
@@ -199,8 +233,8 @@ function bashunit::runner::run_set_up_before_script() {
 }
 
 function bashunit::runner::run_tear_down() {
-  local _test_file="${1-}"
   bashunit::internal_log "run_tear_down"
+  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'tear_down'
 }
 
@@ -212,7 +246,8 @@ function bashunit::runner::execute_test_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  hook_output_file=$(bashunit::temp_file "${hook_name}_output")
+  bashunit::runner::hook_output_path "$hook_name"
+  hook_output_file=$_BASHUNIT_RUNNER_HOOK_FILE
 
   # Enable errtrace to catch any failing command in the hook.
   # Using -E (errtrace) without -e (errexit) prevents the subshell from
@@ -255,7 +290,6 @@ function bashunit::runner::execute_test_hook() {
     while IFS= read -r line; do
       [ -z "$hook_output" ] && hook_output="$line" || hook_output="$hook_output"$'\n'"$line"
     done <"$hook_output_file"
-    rm -f "$hook_output_file"
   fi
 
   if [ $status -ne 0 ]; then

@@ -34,10 +34,27 @@ _BASHUNIT_RUNNER_SUITE_DIR_OUT=""
 # Arguments: $1 - the test file path
 ##
 function bashunit::runner::parallel_suite_dir_to_slot() {
+  bashunit::runner::file_path_to_slot "$1"
+  _BASHUNIT_RUNNER_SUITE_DIR_OUT="${TEMP_DIR_PARALLEL_TEST_SUITE}/${_BASHUNIT_RUNNER_FILE_SLOT}"
+}
+
+_BASHUNIT_RUNNER_FILE_SLOT=""
+
+##
+# Folds a test file path into one filename-safe key in
+# _BASHUNIT_RUNNER_FILE_SLOT.
+#
+# Anything naming a per-file scratch path shares this, so that the reasoning
+# above about keying on the whole path holds everywhere at once.
+#
+# Pure parameter expansion: callers sit on the per-test path, which must stay
+# fork-free (.claude/rules/perf-fork-budget.md).
+# Arguments: $1 - the test file path
+##
+function bashunit::runner::file_path_to_slot() {
   local key="${1#./}"
   key="${key%.sh}"
-  key="${key//\//_}"
-  _BASHUNIT_RUNNER_SUITE_DIR_OUT="${TEMP_DIR_PARALLEL_TEST_SUITE}/${key}"
+  _BASHUNIT_RUNNER_FILE_SLOT="${key//\//_}"
 }
 
 function bashunit::runner::parse_result_parallel() {
