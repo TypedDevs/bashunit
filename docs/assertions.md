@@ -200,6 +200,8 @@ function test_failure() {
 
 Reports an error if `needle` is not a substring of `haystack`.
 Differences in casing are ignored when needle is searched for in haystack.
+Case folding is guaranteed for ASCII only: whether `ñ` matches `Ñ` depends on
+the shell version, the locale and which `tr` the system ships.
 
 ::: code-group
 ```bash [Example]
