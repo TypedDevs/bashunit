@@ -129,8 +129,64 @@ function test_src_has_no_associative_arrays() {
 }
 
 # ${var,,} / ${var^^} case conversion is Bash 4.0+. Use tr instead.
+#
+# The name class covers positional and `$@`/`$*` too: a rule built only around
+# `[A-Za-z_][A-Za-z0-9_]*` saw `${var,,}` and walked past `${1,,}` and `${@,,}`,
+# which are the same Bash 4.0 construct and fail the same way -- at runtime, so
+# an uncaught one ships and breaks only when its line executes (#1350).
+function bashunit::compat::case_conversion_pattern() {
+  echo '\$\{([A-Za-z_][A-Za-z0-9_]*|[0-9]+|[@*])(\[[^]]*\])?(,,|\^\^|,|\^)\}'
+}
+
 function test_src_has_no_parameter_expansion_case_conversion() {
-  assert_empty "$(bashunit::compat::offenders '\$\{[A-Za-z_][A-Za-z0-9_]*(\[[^]]*\])?(,,|\^\^|,|\^)\}')"
+  assert_empty "$(bashunit::compat::offenders "$(bashunit::compat::case_conversion_pattern)")"
+}
+
+# Every spelling of the construct, so the rule cannot silently narrow back to
+# the one that happens to be written most often.
+function test_the_case_conversion_rule_sees_every_parameter_spelling() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  {
+    echo 'lower=${var,,}'
+    echo 'upper=${var^^}'
+    echo 'positional=${1,,}'
+    echo 'all_args=${@,,}'
+    echo 'star_args=${*,,}'
+    echo 'element=${arr[0],,}'
+    echo 'first_char=${var^}'
+  } >"$dir/case_conversion.sh"
+
+  local hits
+  hits="$(bashunit::compat::offenders_in "$dir" \
+    "$(bashunit::compat::case_conversion_pattern)")"
+
+  local line
+  local missed=""
+  while IFS= read -r line; do
+    [ -z "$line" ] && continue
+    case "$hits" in
+    *"$line"*) ;;
+    *) missed="$missed $line" ;;
+    esac
+  done <<<"$(printf '%s\n' 'lower=' 'upper=' 'positional=' 'all_args=' 'star_args=' 'element=' 'first_char=')"
+
+  assert_empty "$missed"
+}
+
+# And nothing that is not the construct: `${var:-,}` and `${#var}` are ordinary
+# expansions on every supported bash.
+function test_the_case_conversion_rule_ignores_other_expansions() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  {
+    echo 'default=${var:-,}'
+    echo 'length=${#var}'
+    echo 'joined=${arr[*]}'
+  } >"$dir/not_case_conversion.sh"
+
+  assert_empty "$(bashunit::compat::offenders_in "$dir" \
+    "$(bashunit::compat::case_conversion_pattern)")"
 }
 
 # ${array[-1]} is Bash 4.3+. Use ${array[${#array[@]}-1]} instead.
