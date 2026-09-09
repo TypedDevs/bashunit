@@ -118,8 +118,17 @@ function bashunit::runner::resolve_test_location() {
   local fn_name=$2
 
   # Enable extdebug only inside the command-substitution subshell so it never
-  # leaks into the parent shell — globally toggling extdebug interferes with
-  # `set -e`/DEBUG-trap behavior under --strict.
+  # leaks into the parent shell. Turning it back off is not symmetric, and the
+  # asymmetry moved inside the supported range (#808, #1354):
+  #
+  #   3.00.22, 3.2.57, 4.0, 4.1, 4.2, 4.3   `shopt -u extdebug` leaves
+  #                                          errtrace/functrace as they were
+  #   4.4, 5.2.37, 5.3.15                    it clears both, even if they were
+  #                                          on beforehand
+  #
+  # So from 4.4 on, disabling extdebug in this shell silently clears `set -E`
+  # and `set -T` -- which is exactly what --strict error tracing runs on. A
+  # rewrite that drops this subshell has to save and restore both.
   local def line=""
   def="$(shopt -s extdebug; declare -F "$fn_name" 2>/dev/null)" || true
 

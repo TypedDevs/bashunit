@@ -496,3 +496,61 @@ EOF
 
   assert_empty "$failures"
 }
+
+
+# --- shell facts the code is built on -------------------------------------
+#
+# Both of these were stated wrongly in the rules files and relied on while
+# planning performance work (#1354). A claim about the shell is worth a test
+# precisely because nothing else notices when it stops being true.
+
+# The rules said a Bash 3 subshell inherits the `RANDOM` state, and gave that
+# as the reason a --parallel worker cannot mint a unique token. Measured, the
+# truth is messier than either that or its correction:
+#
+#   plain shell, every supported version   three `$( )` reads differ
+#   --parallel worker, Linux 3.0 and 5.2   three `$( )` reads differ
+#   --parallel worker, macOS 3.2.57        three `$( )` reads are IDENTICAL
+#
+# So RANDOM is neither reliably shared nor reliably reseeded: it depends on the
+# platform and on how deeply nested the subshell is. Nothing may depend on it
+# either way, which is why there is no assertion about it here -- pinning either
+# direction would just make one platform red. The ordinal scheme (#851) stands,
+# now for a stronger reason than the one originally written down (#1354).
+#
+# What IS stable is the half the design actually rests on: a subshell inherits
+# `$$`, so a token built from it repeats across workers.
+function test_a_subshell_inherits_the_parent_pid() {
+  assert_same "$$" "$(printf '%s' "$$")"
+}
+
+# `shopt -s extdebug` turns on errtrace and functrace everywhere. Turning it
+# back off does not behave the same across the supported range: up to 4.3 it
+# leaves them as they were, from 4.4 it clears both. That is the concrete shape
+# of the hazard #808 works around, and anything that stops doing this inside a
+# subshell has to save and restore them.
+function test_unsetting_extdebug_clears_error_tracing_from_bash_44() {
+  local state
+  state=$(
+    set -E
+    set -T
+    shopt -s extdebug
+    shopt -u extdebug
+    e=off
+    t=off
+    # Parameter expansion, not `case`: a `)` in a case pattern inside `$( )`
+    # is a parse error on Bash 3.2, which closes the substitution early.
+    if [ "${-#*E}" != "$-" ]; then e=on; fi
+    if [ "${-#*T}" != "$-" ]; then t=on; fi
+    echo "$e/$t"
+  )
+
+  local expected="on/on"
+  if [ "${BASH_VERSINFO[0]:-0}" -gt 4 ]; then
+    expected="off/off"
+  elif [ "${BASH_VERSINFO[0]:-0}" -eq 4 ] && [ "${BASH_VERSINFO[1]:-0}" -ge 4 ]; then
+    expected="off/off"
+  fi
+
+  assert_same "$expected" "$state"
+}
