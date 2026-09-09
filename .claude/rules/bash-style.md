@@ -20,7 +20,8 @@ enforced mechanically by `tests/unit/bash_compatibility_test.sh`, which greps
 | Feature | Bash ver | Alternative |
 |---------|----------|-------------|
 | `printf -v` | 3.1+ | Return-slot pattern (below) |
-| `+=` (append assign) | 3.1+ | `var="$var$more"`, `arr[${#arr[@]}]=x` |
+| `x+=y` (string append) | 3.1+ | `var="$var$more"` |
+| `arr+=(x)` (array append) | 3.1+, and a 3.0 **parse** error | `arr[${#arr[@]}]=x` |
 | `declare -A` (associative arrays) | 4.0+ | Parallel indexed arrays |
 | `${var,,}` / `${var^^}` (case) | 4.0+ | `tr '[:upper:]' '[:lower:]'` |
 | `${array[-1]}` (negative index) | 4.3+ | `${array[${#array[@]}-1]}` |
