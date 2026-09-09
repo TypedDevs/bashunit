@@ -415,3 +415,23 @@ function test_built_binary_defines_each_bashunit_function_exactly_once() {
 
   assert_empty "$duplicated"
 }
+
+# The guard above anchors at column 0, so it cannot see either body of a
+# version-gated helper -- both sit indented inside the gate's `if/else`, and a
+# gated name is defined twice on purpose (#1352). Cap every name at two
+# definitions whatever the indentation: embedding a file twice takes a gated
+# function from two to four, and an ungated one from one to two, which the
+# column-0 guard already rejects.
+function test_built_binary_defines_no_bashunit_function_more_than_twice() {
+  local build_dir=$SHARED_BUILD_DIR
+
+  assert_file_exists "$build_dir/bashunit"
+
+  local over_defined
+  over_defined=$(grep -oE '^[[:space:]]*function bashunit::[a-zA-Z_:]+\(\)' \
+    "$build_dir/bashunit" |
+    sed 's/^[[:space:]]*//' | LC_ALL=C sort | uniq -c |
+    awk '$1 > 2 { print $2, $3 }')
+
+  assert_empty "$over_defined"
+}

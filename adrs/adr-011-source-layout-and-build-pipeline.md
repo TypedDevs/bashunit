@@ -49,8 +49,8 @@ Sixteen, in load order. The order is the dependency layering: leaves first.
 | # | Module | Files | Lines | Owns |
 |---|---|---|---|---|
 | 1 | `dev/` | 1 | 18 | debug helpers; **excluded from the build** |
-| 2 | `system/` | 4 | 189 | capability probing: OS, `command -v`, small I/O |
-| 3 | `util/` | 4 | 474 | computation: strings, arithmetic, time |
+| 2 | `system/` | 5 | 236 | capability probing: OS, `command -v`, small I/O, Bash version tiers |
+| 3 | `util/` | 4 | 735 | computation: strings, arithmetic, time |
 | 4 | `api/` | 5 | 205 | the surface a user's test file calls (except assertions) |
 | 5 | `config/` | 5 | 1163 | `BASHUNIT_*` defaults, scratch dirs, parallel mode, rerun cache, named suites |
 | 6 | `coverage/` | 16 | 3277 | line/branch tracking, diff coverage and the five report formats |
