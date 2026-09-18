@@ -79,6 +79,30 @@ function test_bashunit_old_assert_option_warns_that_it_is_deprecated() {
   assert_contains "bashunit assert" "$warnings"
 }
 
+# The warning names the invocation the user typed, not the canonical spelling
+# of the deprecated form: naming a command they never ran reads like an
+# unrelated warning (#1366).
+function test_bashunit_old_assert_option_warns_with_the_short_form_typed() {
+  local warnings
+  warnings=$(./bashunit -a equals "foo" "foo" 2>&1 >/dev/null)
+
+  assert_contains "\`bashunit -a\`" "$warnings"
+}
+
+function test_bashunit_old_assert_option_warns_with_the_long_form_typed() {
+  local warnings
+  warnings=$(./bashunit --assert equals "foo" "foo" 2>&1 >/dev/null)
+
+  assert_contains "\`bashunit --assert\`" "$warnings"
+}
+
+function test_bashunit_old_assert_option_warns_with_the_explicit_test_command() {
+  local warnings
+  warnings=$(./bashunit test --assert equals "foo" "foo" 2>&1 >/dev/null)
+
+  assert_contains "\`bashunit test --assert\`" "$warnings"
+}
+
 function test_bashunit_new_assert_subcommand_does_not_warn() {
   local warnings
   warnings=$(./bashunit assert equals "foo" "foo" 2>&1 >/dev/null)

@@ -110,6 +110,7 @@ function bashunit::main::cmd_test() {
   local -a args=()
   local args_count=0
   local assert_fn=""
+  local deprecated_assert_form=""
   local _bashunit_coverage_opt_set=false
 
   # Named suites are resolved into plain flags and paths before anything is
@@ -140,7 +141,16 @@ function bashunit::main::cmd_test() {
       # accepts test-level flags (`--env`, `--no-parallel`). `bashunit assert`
       # forwards everything to the assertion instead. Removing this form needs
       # that gap closed first.
-      bashunit::env::warn_deprecated "\`bashunit test --assert\`" "\`bashunit assert\`"
+      #
+      # Quote back the invocation that was typed: `bashunit -a` reaches here
+      # through the inferred `test` subcommand, and naming a command the user
+      # never ran reads like a warning about something else (#1366).
+      deprecated_assert_form="bashunit $1"
+      if [ "${_SUBCOMMAND_IS_EXPLICIT:-false}" = "true" ]; then
+        deprecated_assert_form="bashunit test $1"
+      fi
+      bashunit::env::warn_deprecated \
+        "\`$deprecated_assert_form\`" "\`bashunit assert\`"
       assert_fn="$2"
       shift
       ;;
