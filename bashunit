@@ -100,10 +100,14 @@ bashunit::clock::init
 
 # Subcommand detection
 _SUBCOMMAND=""
+# Whether the subcommand was typed or inferred. A deprecation warning quotes the
+# invocation back to the user, so it has to know which one they actually ran.
+_SUBCOMMAND_IS_EXPLICIT=false
 
 case "${1:-}" in
   test | bench | doc | init | upgrade | assert | watch)
     _SUBCOMMAND="$1"
+    _SUBCOMMAND_IS_EXPLICIT=true
     shift
     ;;
   learn)
