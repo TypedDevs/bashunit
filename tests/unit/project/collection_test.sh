@@ -28,14 +28,24 @@ function collection_from_disk() {
   (cd "$ROOT_DIR" && find tests -name '*[tT]est.sh' -not -path '*/fixtures/*' | LC_ALL=C sort)
 }
 
+# `bashunit::skip_if` reads the test's name a fixed number of frames up, so the
+# guard below cannot move into a shared helper. Without make,
+# `collection_from_make` returns nothing and these tests would read that silence
+# as collection drift: the contract is untestable on such a box, not broken.
+NO_MAKE="! command -v make >/dev/null 2>&1"
+
 # Every real test file must reach `make test`, however deeply it is nested.
 function test_make_test_collects_every_test_file_on_disk() {
+  bashunit::skip_if "$NO_MAKE" "make is not installed"
+
   assert_same "$(collection_from_disk)" "$(collection_from_make)"
 }
 
 # Fixtures are inputs to other tests, not tests. Four of them end in _test.sh, so
 # a recursive glob without the fixtures/ exclusion collects and runs them.
 function test_make_test_collects_no_fixture() {
+  bashunit::skip_if "$NO_MAKE" "make is not installed"
+
   assert_not_contains "fixtures/" "$(collection_from_make)"
 }
 
