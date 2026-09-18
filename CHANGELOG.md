@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
+
 ### Changed
 - Performance: a `--parallel` run on a shell without `EPOCHREALTIME` no longer forks `perl` once per test. The clock probe resolved inside a command substitution, so the resolved value died with it and every worker re-probed: 502 `perl` execs for a 500-test file, now 2. It happened even with per-test timing off, since deciding that timing is off is what asks whether the clock is expensive. Fixed by #1358; this adds the guards that keep it fixed (#1353)
 - A helper can ship a faster body for a newer Bash and keep the Bash 3.0 one as a fallback, chosen once at load time. The floor does not move: 3.0 keeps working and keeps being tested. The compatibility rules now record each construct's minimum version instead of only banning it, and allow one inside a matching version gate, never for a construct that is a parse error on the floor. See `adrs/adr-013-bash-version-gated-fast-paths.md` (#1352)
