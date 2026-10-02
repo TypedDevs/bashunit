@@ -122,6 +122,7 @@ function bashunit::runner::call_test_functions() {
   local provider_data_count=0
   local -a parsed_data=()
   local parsed_data_count=0
+  local provider_arg_file=""
   # Monotonic within this file; names each parallel worker's .result file.
   local _test_ordinal=0
 
@@ -202,16 +203,26 @@ function bashunit::runner::call_test_functions() {
     fi
 
     # Execute the test function for each line of data
+    if [ -z "$provider_arg_file" ]; then
+      bashunit::env::ensure_run_output_dir || return 1
+      local provider_arg_dir="$_BASHUNIT_RUN_OUTPUT_DIR"
+      case "$provider_arg_dir" in
+      /*) ;;
+      *) provider_arg_dir="$BASHUNIT_WORKING_DIR/$provider_arg_dir" ;;
+      esac
+      provider_arg_file="$("$MKTEMP" "$provider_arg_dir/provider-args.XXXXXXX")" || return 1
+    fi
     local data
     for data in "${provider_data[@]+"${provider_data[@]}"}"; do
       parsed_data=()
       parsed_data_count=0
       local line
-      while IFS= read -r line; do
-        [ -z "$line" ] && continue
-        parsed_data[parsed_data_count]="$(bashunit::helper::decode_base64 "${line}")"
+      # The parser's eval must stay in a subshell so expansions cannot change runner state.
+      (bashunit::runner::parse_data_provider_args "$data" nul) >"$provider_arg_file"
+      while IFS= read -r -d '' line; do
+        parsed_data[parsed_data_count]="$line"
         parsed_data_count=$((parsed_data_count + 1))
-      done <<<"$(bashunit::runner::parse_data_provider_args "$data")"
+      done <"$provider_arg_file"
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
         _test_ordinal=$((_test_ordinal + 1))

@@ -11,6 +11,7 @@ function bashunit::runner::parse_data_provider_args() {
   local i=0
   local arg=""
   local encoded_arg
+  local output_format="${2:-base64}"
   local -a args=()
   local args_count=0
 
@@ -46,8 +47,12 @@ function bashunit::runner::parse_data_provider_args() {
       fi
       # Print args and return early
       for arg in "${args[@]+"${args[@]}"}"; do
-        encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
-        printf '%s\n' "$encoded_arg"
+        if [ "$output_format" = nul ]; then
+          printf '%s\0' "$arg"
+        else
+          encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
+          printf '%s\n' "$encoded_arg"
+        fi
       done
       return
     fi
@@ -117,10 +122,14 @@ function bashunit::runner::parse_data_provider_args() {
       break
     fi
   done
-  # Print one arg per line to stdout, base64-encoded to preserve newlines in the data
+  # Keep the original base64 stdout format for callers without a requested transport.
   local arg
   for arg in ${args+"${args[@]}"}; do
-    encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
-    printf '%s\n' "$encoded_arg"
+    if [ "$output_format" = nul ]; then
+      printf '%s\0' "$arg"
+    else
+      encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
+      printf '%s\n' "$encoded_arg"
+    fi
   done
 }

@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Data-provider rows transfer arguments without a base64 encode and decode process for each value (#1370)
+
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
 
 ### Changed
