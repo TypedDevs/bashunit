@@ -291,6 +291,120 @@ function test_run_removes_its_run_output_dir() {
   assert_equals 0 "$leftover"
 }
 
+function test_provider_temp_owners_survive_other_rows_cleanup() {
+  local dir
+  dir="$(unset BASHUNIT_CURRENT_TEST_ID; bashunit::temp_dir)"
+  local fixture="$dir/first_test.sh"
+  cat >"$fixture" <<'FIXTURE'
+OWNER_COORD_DIR="$OWNER_PROBE_ROOT/${BASH_SOURCE[0]##*/}"
+
+function set_up_before_script() {
+  mkdir "$OWNER_COORD_DIR"
+  OWNER_SCRIPT_FILE=$(bashunit::temp_file)
+  OWNER_SCRIPT_DIR=$(bashunit::temp_dir)
+  printf '%s\n' "$OWNER_SCRIPT_FILE" "$OWNER_SCRIPT_DIR" >"$OWNER_COORD_DIR/script_paths"
+}
+
+function _wait_for_owner_path() {
+  local path=$1 state=$2 deadline=$((SECONDS + 10))
+  while [ "$SECONDS" -lt "$deadline" ]; do
+    case "$state" in
+    present) [ -f "$path" ] && return 0 ;;
+    absent) [ ! -e "$path" ] && return 0 ;;
+    esac
+    sleep 0.01
+  done
+  assert_same "$state: $path" "timed out waiting for cleanup coordination"
+  return 1
+}
+
+function owner_probe_rows() { printf '%s\n' same same; }
+
+# @data_provider owner_probe_rows
+function test_overlapping_temp_owner_rows() {
+  assert_same same "$1"
+  local row=$_BASHUNIT_RUNNER_RESULT_ORDINAL temp_dir temp_file
+  temp_dir=$(bashunit::temp_dir)
+  temp_file=$(bashunit::temp_file)
+  printf 'still alive\n' >"$temp_file"
+  printf '%s\n' "$BASHUNIT_CURRENT_TEST_ID" "$temp_dir" "$temp_file" >"$OWNER_COORD_DIR/row_$row"
+  : >"$OWNER_COORD_DIR/ready_$row"
+  if [ "$row" -eq 1 ]; then
+    if [ "$OWNER_PROBE_PARALLEL" = true ]; then
+      _wait_for_owner_path "$OWNER_COORD_DIR/ready_2" present || return
+    fi
+    return
+  fi
+
+  _wait_for_owner_path "$OWNER_COORD_DIR/ready_1" present || return
+  local quick_owner quick_dir quick_file
+  {
+    IFS= read -r quick_owner
+    IFS= read -r quick_dir
+    IFS= read -r quick_file
+  } <"$OWNER_COORD_DIR/row_1"
+  _wait_for_owner_path "$quick_dir" absent || return
+  _wait_for_owner_path "$quick_file" absent || return
+  assert_file_not_exists "$quick_file"
+  assert_directory_exists "$temp_dir"
+  assert_file_contains "$temp_file" 'still alive'
+  assert_not_equals "$quick_owner" "$BASHUNIT_CURRENT_TEST_ID"
+  : >"$OWNER_COORD_DIR/late_row_checked"
+}
+
+function tear_down_after_script() {
+  assert_file_exists "$OWNER_SCRIPT_FILE"
+  assert_directory_exists "$OWNER_SCRIPT_DIR"
+  : >"$OWNER_COORD_DIR/script_teardown_checked"
+}
+FIXTURE
+  cp "$fixture" "$dir/second_test.sh"
+
+  local mode parallel strict root output status file path owner first_owner
+  local -a flags
+  for mode in parallel parallel_strict sequential sequential_strict; do
+    root="$dir/$mode"
+    mkdir "$root"
+    parallel=false
+    strict=false
+    flags=(--no-parallel)
+    case "$mode" in
+    parallel*) parallel=true; flags=(--parallel --jobs 2) ;;
+    esac
+    case "$mode" in
+    *_strict) strict=true ;;
+    esac
+    status=0
+    output=$(TMPDIR="$root" OWNER_PROBE_ROOT="$root" OWNER_PROBE_PARALLEL="$parallel" \
+      BASHUNIT_STRICT_MODE="$strict" ./bashunit --skip-env-file --simple "${flags[@]}" \
+      "$fixture" "$dir/second_test.sh" 2>&1) || status=$?
+
+    assert_contains '4 passed' "$output"
+    assert_same 0 "$status"
+    first_owner=""
+    for file in first_test.sh second_test.sh; do
+      assert_file_exists "$root/$file/late_row_checked"
+      assert_file_exists "$root/$file/script_teardown_checked"
+      IFS= read -r owner <"$root/$file/row_1"
+      if [ -n "$first_owner" ]; then
+        assert_not_equals "$first_owner" "$owner"
+      fi
+      first_owner=$owner
+      while IFS= read -r path; do
+        assert_file_not_exists "$path"
+      done <"$root/$file/script_paths"
+      for owner in 1 2; do
+        {
+          IFS= read -r path
+          while IFS= read -r path; do
+            assert_file_not_exists "$path"
+          done
+        } <"$root/$file/row_$owner"
+      done
+    done
+  done
+}
+
 # Regression guard for the parallel per-test result path. Publishing each
 # test's result file used to fork `basename` (suite dir name), `mkdir -p`
 # (suite dir, per test), an `echo | tr | sed` pipeline (arg sanitizing, even
