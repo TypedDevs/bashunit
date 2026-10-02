@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- JSON reports escape ordinary file paths, test names and empty messages without starting `sed` or `tr`, and write those fields without per-field capture subshells. Control characters retain the existing escaping behavior (#1369)
+
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
 
 ### Changed
