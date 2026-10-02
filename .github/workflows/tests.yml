@@ -146,7 +146,7 @@ jobs:
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   macos-acceptance:
-    name: "macOS - acceptance (${{ matrix.name }})"
+    name: "macOS - acceptance"
     if: github.event_name == 'push'
     runs-on: macos-latest
     timeout-minutes: 10
@@ -169,7 +169,7 @@ jobs:
       - name: Setup Config
         run: cp .env.example .env
 
-      - name: Run Tests
+      - name: "Run acceptance shard ${{ matrix.name }}"
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   windows:
@@ -207,7 +207,7 @@ jobs:
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
   windows-acceptance:
-    name: "windows-acceptance (${{ matrix.name }})"
+    name: "Windows - acceptance"
     if: github.event_name == 'push'
     timeout-minutes: 10
     runs-on: windows-latest
@@ -231,7 +231,7 @@ jobs:
         shell: bash
         run: cp .env.example .env
 
-      - name: Run tests
+      - name: "Run acceptance shard ${{ matrix.name }}"
         shell: bash
         run: ./bashunit --parallel --jobs 4 ${{ matrix.test_path }}
 
