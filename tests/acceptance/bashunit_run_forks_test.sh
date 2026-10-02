@@ -204,10 +204,72 @@ function test_running_a_test_file_stays_within_the_awk_fork_budget() {
   assert_less_or_equal_than 2 "$awk_forks"
 }
 
-# Regression guard: a run must remove its run-output scratch directory on exit.
-# The directory (introduced in #801 under $TMPDIR/bashunit/run/) had no cleanup,
-# leaking one empty directory per bashunit invocation. Point the nested run at a
-# private TMPDIR so the check is deterministic and parallel-safe.
+# Each mode needs its own temp owner when the acceptance suite runs in parallel.
+function _assert_multifile_metadata_scan_budget() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local mode=$1 expected=$2 dir real_awk count_file file
+  dir="$(bashunit::temp_dir)"
+  count_file="$dir/awk_count"
+  : >"$count_file"
+  real_awk="$(command -v awk)"
+  {
+    printf '%s\n' '#!/usr/bin/env bash'
+    printf 'printf "awk\\n" >>"%s"\n' "$count_file"
+    printf 'exec "%s" "$@"\n' "$real_awk"
+  } >"$dir/awk"
+  chmod +x "$dir/awk"
+
+  local -a fixtures=() flags=(--no-parallel --simple)
+  for file in 1 2 3; do
+    fixtures[${#fixtures[@]}]="$dir/metadata_${file}_test.sh"
+    printf 'function test_metadata_case_%s() { assert_same same same; }\n' "$file" \
+      >"$dir/metadata_${file}_test.sh"
+  done
+
+  local header=true
+  case "$mode" in
+  no_header) header=false ;;
+  list) flags=(--no-parallel --list) ;;
+  json) flags=(--no-parallel --output json) ;;
+  parallel_simple) flags=(--parallel --simple) ;;
+  parallel_header) flags=(--parallel) ;;
+  esac
+
+  local status=0
+  PATH="$dir:$PATH" BASHUNIT_SHOW_HEADER="$header" ./bashunit --skip-env-file \
+    "${flags[@]}" "${fixtures[@]}" >"$dir/output" 2>&1 || status=$?
+
+  assert_same 0 "$status"
+  assert_same "$expected" "$(wc -l <"$count_file" | tr -d ' ')"
+}
+
+function test_multifile_metadata_scans_with_a_header() {
+  _assert_multifile_metadata_scan_budget header 6
+}
+
+function test_multifile_metadata_scans_without_a_header() {
+  _assert_multifile_metadata_scan_budget no_header 6
+}
+
+function test_multifile_metadata_listing_skips_scans() {
+  _assert_multifile_metadata_scan_budget list 0
+}
+
+function test_multifile_metadata_machine_output_scans() {
+  _assert_multifile_metadata_scan_budget json 6
+}
+
+function test_multifile_metadata_parallel_simple_scans() {
+  _assert_multifile_metadata_scan_budget parallel_simple 6
+}
+
+function test_multifile_metadata_parallel_header_scans() {
+  _assert_multifile_metadata_scan_budget parallel_header 8
+}
+
 function test_run_removes_its_run_output_dir() {
   local dir
   dir="$(bashunit::temp_dir)"
