@@ -9,6 +9,7 @@
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- Cancellation regression checks distinguish exited bodies awaiting reaping from running cleanup (#1385)
 - Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)
 - Linux test jobs install the standalone build optimizer required by beta installer acceptance tests (#1383)
 - A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
