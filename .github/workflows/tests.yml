@@ -41,6 +41,18 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+
+      - name: Install standalone build optimizer
+        shell: bash
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.13.1
+
       - name: Setup Config
         run: cp .env.example .env
 
@@ -78,6 +90,18 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y locales "${{ matrix.language_pack }}"
           sudo locale-gen "${{ matrix.lang }}"
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+
+      - name: Install standalone build optimizer
+        shell: bash
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          go install mvdan.cc/sh/v3/cmd/shfmt@v3.13.1
 
       - name: Setup Config
         run: cp .env.example .env
@@ -231,12 +255,27 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.25'
+          cache: false
+
+      - name: Install standalone build optimizer
+        shell: bash
+        run: |
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+          CGO_ENABLED=0 go install mvdan.cc/sh/v3/cmd/shfmt@v3.13.1
+
       - name: Setup Config
         run: cp .env.example .env
 
       - name: Run Tests
         run: |
-          docker run --rm -v "$(pwd)":/project alpine:latest /bin/sh -c " \
+          docker run --rm \
+            -v "$(pwd)":/project \
+            -v "$(go env GOPATH)/bin/shfmt":/usr/local/bin/shfmt:ro \
+            alpine:latest /bin/sh -c " \
             apk update && \
             apk add --no-cache bash make git jq && \
             adduser -D builder && \

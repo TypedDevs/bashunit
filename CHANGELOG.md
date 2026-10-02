@@ -10,6 +10,7 @@
 
 ### Fixed
 - Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)
+- Linux test jobs install the standalone build optimizer required by beta installer acceptance tests (#1383)
 - A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
 - Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)
 
