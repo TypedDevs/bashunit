@@ -96,6 +96,193 @@ function test_add_test_skips_tracking_without_report_output() {
   assert_same "$before" "$after"
 }
 
+function test_parallel_spool_roundtrips_concurrent_arbitrary_fields() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local REPORTS_OUTPUT_PATH="$dir/records"
+  local BASHUNIT_REPORT_JSON="$dir/out.json"
+  local _BASHUNIT_PARALLEL_ENABLED=true
+  local _BASHUNIT_REPORTS_FILE_ORDINAL=1
+  local _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
+  local _BASHUNIT_REPORTS_RECORD_SCOPE=control
+  local file="a/'b\c"$'\t\n\037'"ü.sh"
+  local name="test 'quoted'\\"$'\t\n\037'"名"
+  local message="failure 'quoted'\\"$'\t\n\037'"é"$'\n\n'
+  local output="output 'quoted'\\"$'\t\n\037'"雪"$'\n\n'
+  local i j n matches
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    (
+      _BASHUNIT_REPORTS_RECORD_SCOPE=worker
+      _BASHUNIT_REPORTS_WORKER_RECORD_ORDINAL=0
+      _BASHUNIT_RUNNER_RESULT_ORDINAL=$i
+      _BASHUNIT_TEST_LOCATION="$file $i:27"
+      for j in 1 2 3 4; do
+        bashunit::reports::set_current_test_output "$output$i/$j"$'\n\n'
+        bashunit::reports::add_test_failed "$file $i" "$name $i/$j" "$i" "$j" "$message$i/$j"$'\n\n'
+      done
+    ) &
+  done
+  wait
+  _BASHUNIT_RUNNER_RESULT_ORDINAL=13
+  bashunit::reports::add_test_passed "" "" 0 0
+
+  bashunit::reports::load_spooled
+
+  assert_same 49 "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
+    for j in 1 2 3 4; do
+      matches=0
+      for n in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
+        [ "${_BASHUNIT_REPORTS_TEST_NAMES[n]}" = "$name $i/$j" ] || continue
+        matches=$((matches + 1))
+        assert_same "$file $i" "${_BASHUNIT_REPORTS_TEST_FILES[n]}"
+        assert_same failed "${_BASHUNIT_REPORTS_TEST_STATUSES[n]}"
+        assert_same "$i" "${_BASHUNIT_REPORTS_TEST_DURATIONS[n]}"
+        assert_same "$j" "${_BASHUNIT_REPORTS_TEST_ASSERTIONS[n]}"
+        assert_same 27 "${_BASHUNIT_REPORTS_TEST_LINES[n]}"
+        assert_same 0 "${_BASHUNIT_REPORTS_TEST_RETRIES[n]}"
+        assert_same "$message$i/$j"$'\n\n' "${_BASHUNIT_REPORTS_TEST_FAILURES[n]}"
+        assert_same "$output$i/$j"$'\n\n' "${_BASHUNIT_REPORTS_TEST_OUTPUTS[n]}"
+      done
+      assert_same 1 "$matches"
+    done
+  done
+  assert_same "" "${_BASHUNIT_REPORTS_TEST_FILES[48]}"
+  assert_same "" "${_BASHUNIT_REPORTS_TEST_NAMES[48]}"
+  assert_same "" "${_BASHUNIT_REPORTS_TEST_FAILURES[48]}"
+  assert_same "" "${_BASHUNIT_REPORTS_TEST_OUTPUTS[48]}"
+
+  bashunit::reports::load_spooled
+  assert_same 49 "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+}
+
+function test_parallel_spool_keeps_control_rows_and_large_output() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local REPORTS_OUTPUT_PATH="$dir/records"
+  local BASHUNIT_REPORT_JSON="$dir/out.json"
+  local _BASHUNIT_PARALLEL_ENABLED=true
+  local _BASHUNIT_REPORTS_FILE_ORDINAL=1
+  local _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
+  local _BASHUNIT_REPORTS_RECORD_SCOPE=control
+  local _BASHUNIT_RUNNER_RESULT_ORDINAL=0
+  local large=""
+  local block="0123456789abcdef"
+  local i
+  for ((i = 0; i < 15; i++)); do
+    block="$block$block"
+  done
+  large="$block"$'\n\n'
+
+  bashunit::reports::add_test_failed "a/same.sh" "set_up_before_script" 0 0 "hook failure"
+  _BASHUNIT_RUNNER_RESULT_ORDINAL=1
+  bashunit::reports::add_test_failed "a/same.sh" "provider row" 0 0 "provider failure"
+  _BASHUNIT_REPORTS_FILE_ORDINAL=2
+  _BASHUNIT_RUNNER_RESULT_ORDINAL=0
+  _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
+  bashunit::reports::set_current_test_output "$large"
+  bashunit::reports::add_test_passed "b/same.sh" "large output" 0 0
+
+  bashunit::reports::load_spooled
+
+  assert_same 3 "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+  assert_same "set_up_before_script" "${_BASHUNIT_REPORTS_TEST_NAMES[0]}"
+  assert_same "provider row" "${_BASHUNIT_REPORTS_TEST_NAMES[1]}"
+  assert_same "b/same.sh" "${_BASHUNIT_REPORTS_TEST_FILES[2]}"
+  assert_same "$large" "${_BASHUNIT_REPORTS_TEST_OUTPUTS[2]}"
+}
+
+function test_parallel_spool_replays_publication_order_with_a_delayed_worker() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "named pipes are unavailable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local REPORTS_OUTPUT_PATH="$dir/records"
+  local BASHUNIT_REPORT_JSON="$dir/out.json"
+  local _BASHUNIT_PARALLEL_ENABLED=true
+  local _BASHUNIT_REPORTS_FILE_ORDINAL=1
+  local _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
+  local _BASHUNIT_REPORTS_RECORD_SCOPE=control
+  mkfifo "$dir/release"
+  (
+    _BASHUNIT_REPORTS_RECORD_SCOPE=worker
+    _BASHUNIT_RUNNER_RESULT_ORDINAL=1
+    IFS= read -r release <"$dir/release"
+    bashunit::reports::add_test_passed "a/same.sh" "delayed" 0 1
+  ) &
+  local delayed_pid=$!
+  (
+    _BASHUNIT_REPORTS_RECORD_SCOPE=worker
+    _BASHUNIT_RUNNER_RESULT_ORDINAL=2
+    bashunit::reports::add_test_passed "a/same.sh" "first published" 0 1
+  ) &
+  wait "$!"
+  _BASHUNIT_REPORTS_FILE_ORDINAL=2
+  _BASHUNIT_RUNNER_RESULT_ORDINAL=0
+  bashunit::reports::add_test_failed "b/same.sh" "parent failure" 0 0 "hook failure"
+  printf 'release\n' >"$dir/release"
+  wait "$delayed_pid"
+
+  bashunit::reports::load_spooled
+
+  assert_same 3 "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+  assert_same "first published" "${_BASHUNIT_REPORTS_TEST_NAMES[0]}"
+  assert_same "parent failure" "${_BASHUNIT_REPORTS_TEST_NAMES[1]}"
+  assert_same delayed "${_BASHUNIT_REPORTS_TEST_NAMES[2]}"
+}
+
+function test_parallel_spool_preserves_open_file_descriptors() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local REPORTS_OUTPUT_PATH="$dir/records"
+  local BASHUNIT_REPORT_JSON="$dir/out.json"
+  local _BASHUNIT_PARALLEL_ENABLED=true
+  local _BASHUNIT_REPORTS_RECORD_SCOPE=control
+  local remaining=""
+  printf 'caller input\n' >"$dir/input"
+  bashunit::reports::add_test_passed "file.sh" "test" 0 1
+
+  {
+    bashunit::reports::load_spooled
+    IFS= read -r remaining 2>/dev/null <&9 || true
+  } 9<"$dir/input"
+
+  assert_same "caller input" "$remaining"
+}
+
+function test_parallel_spool_skips_incomplete_records_and_sidecars() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local REPORTS_OUTPUT_PATH="$dir/records"
+  local BASHUNIT_REPORT_JSON="$dir/out.json"
+  local _BASHUNIT_PARALLEL_ENABLED=true
+  local _BASHUNIT_REPORTS_RECORD_SCOPE=control
+  local _BASHUNIT_RUNNER_RESULT_ORDINAL=4
+  local truncated_token=0000000100000001000000001
+  local missing_token=0000000100000002000000001
+  local incomplete_token=0000000100000003000000001
+  local truncated="$REPORTS_OUTPUT_PATH.$truncated_token.record"
+  local missing="$REPORTS_OUTPUT_PATH.$missing_token.record"
+  local incomplete="$REPORTS_OUTPUT_PATH.$incomplete_token.record"
+  printf '%s\0' "file.sh" "truncated" >"$truncated"
+  printf '%s\0' "file.sh" "missing" failed 0 0 "" 0 1 0 >"$missing"
+  printf '%s\0' "file.sh" "incomplete" passed 0 1 "" 0 0 1 >"$incomplete"
+  printf '%s' "unfinished output" >"$incomplete.output"
+  printf '%s' "orphaned field_" >"$REPORTS_OUTPUT_PATH.orphan.record.failure"
+  printf '%s\n' "$truncated_token" "$missing_token" "$incomplete_token" >"$REPORTS_OUTPUT_PATH"
+  bashunit::reports::add_test_passed "file.sh" "complete" 0 1
+
+  bashunit::reports::load_spooled 2>"$dir/warnings"
+
+  assert_same 1 "${#_BASHUNIT_REPORTS_TEST_NAMES[@]}"
+  assert_same complete "${_BASHUNIT_REPORTS_TEST_NAMES[0]}"
+  assert_file_contains "$dir/warnings" "incomplete report record $truncated"
+  assert_file_contains "$dir/warnings" "missing report field $missing.failure"
+  assert_file_contains "$dir/warnings" "incomplete report field $incomplete.output"
+}
+
 # === Wrapper function tests ===
 
 function test_add_test_snapshot_sets_snapshot_status() {

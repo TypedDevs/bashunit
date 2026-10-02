@@ -277,15 +277,7 @@ function test_parallel_result_publishing_does_not_fork_per_test() {
   assert_equals "" "$forked"
 }
 
-# Regression guard for the report spool. A worker used to base64 each of the
-# nine fields of a result row separately, and the parent decoded each one the
-# same way -- fourteen `base64` forks per test (and, on the encode side, a `tr`
-# each), so turning on `--log-junit` cost more than running the tests. Only the
-# two fields that can hold arbitrary text need encoding; the rest are a status,
-# some numbers and a path, which a unit separator carries as they are.
-#
-# Counted with a PATH shim rather than a trace: these forks happen inside the
-# `--parallel` workers, which `bash -x` on the parent cannot see.
+# A PATH shim sees codec processes inside workers that the parent trace misses.
 function test_reports_do_not_fork_base64_per_field() {
   if bashunit::check_os::is_windows; then
     bashunit::skip "process tracing is unreliable under Git Bash" && return
@@ -321,11 +313,58 @@ function test_reports_do_not_fork_base64_per_field() {
     calls="$(grep -c . "$count_file" || true)"
   fi
 
-  # Four passing tests carry no failure message and no output, so both
-  # arbitrary fields are empty and short-circuit: the row costs one encode for
-  # the file and one for the test name, and the same two decodes. Sixteen is
-  # that, with room for the run's own bookkeeping; it was 56.
-  assert_less_or_equal_than 16 "$calls"
+  assert_equals 0 "$calls"
+}
+
+function test_parallel_reports_keep_lifecycle_rows_and_remove_scratch_records() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  mkdir "$dir/a" "$dir/b"
+  printf '%s\n' 'function data_spool_values() { printf "%s\n" "a:b" "a/b"; }
+# @data_provider data_spool_values
+function test_spool_provider_rows() { assert_true true; }
+# @skip intentional
+function test_spool_skip() { assert_same never ran; }
+# @retry 1
+function test_spool_retry() {
+  if [ -f "$REPORT_RETRY_MARKER" ]; then
+    assert_true true
+  else
+    : >"$REPORT_RETRY_MARKER"
+    assert_same first second
+  fi
+}
+# @data_provider undefined_spool_provider
+function test_spool_missing_provider() { assert_same never ran; }
+function tear_down_after_script() { printf "worker teardown failure\n"; return 1; }' >"$dir/a/same_test.sh"
+  printf '%s\n' 'function set_up_before_script() { printf "parent setup failure\n"; return 1; }
+function test_spool_blocked_by_setup() { assert_same never ran; }
+function tear_down_after_script() { printf "parent teardown failure\n"; return 1; }' >"$dir/b/same_test.sh"
+
+  local exit_code=0
+  TMPDIR="$dir" REPORT_RETRY_MARKER="$dir/retried" ./bashunit --skip-env-file --parallel --simple \
+    --report-junit "$dir/out.xml" --report-json "$dir/out.json" --report-tap "$dir/out.tap" \
+    --report-html "$dir/out.html" --report-md "$dir/out.md" --log-gha "$dir/out.gha" \
+    "$dir/a/same_test.sh" "$dir/b/same_test.sh" >"$dir/console" 2>&1 || exit_code=$?
+
+  assert_same 1 "$exit_code"
+  assert_file_contains "$dir/out.json" '"total": 8, "passed": 3, "failed": 4, "skipped": 1'
+  assert_file_contains "$dir/out.json" '"flaky": 1'
+  assert_same 8 "$("$GREP" -c '"name":' "$dir/out.json")"
+  assert_same 8 "$("$GREP" -c '<testcase ' "$dir/out.xml")"
+  assert_file_contains "$dir/out.xml" 'tests="8" failures="4" skipped="1"'
+  assert_file_contains "$dir/out.tap" '1..8'
+  assert_file_contains "$dir/out.html" 'parent setup failure'
+  assert_file_contains "$dir/out.md" '| Failed | 4 |'
+  assert_same 4 "$("$GREP" -c '^::error ' "$dir/out.gha")"
+  assert_same 1 "$("$GREP" -c '^::warning ' "$dir/out.gha")"
+
+  local leftover=0
+  local entry
+  for entry in "$dir/bashunit/run"/*/*; do
+    [ -e "$entry" ] && leftover=$((leftover + 1))
+  done
+  assert_same 0 "$leftover"
 }
 
 function test_provider_arguments_do_not_fork_base64_per_value() {

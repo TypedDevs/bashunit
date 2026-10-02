@@ -96,6 +96,11 @@ function bashunit::runner::report_provider_error() {
   fi
 }
 
+function bashunit::runner::run_test_parallel() {
+  _BASHUNIT_REPORTS_RECORD_SCOPE=worker
+  bashunit::runner::run_test "$@"
+}
+
 ##
 # Runs the given test functions of a script (sequentially, or one background
 # worker per test under --parallel).
@@ -177,7 +182,7 @@ function bashunit::runner::call_test_functions() {
         bashunit::runner::wait_for_job_slot
         _test_ordinal=$((_test_ordinal + 1))
         _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
-        bashunit::runner::run_test "$script" "$fn_name" &
+        bashunit::runner::run_test_parallel "$script" "$fn_name" &
         _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else
         bashunit::runner::run_test "$script" "$fn_name"
@@ -255,7 +260,7 @@ function bashunit::runner::call_test_functions() {
         bashunit::runner::wait_for_job_slot
         _test_ordinal=$((_test_ordinal + 1))
         _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
-        bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
+        bashunit::runner::run_test_parallel "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
         _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else
         bashunit::runner::run_test "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"}
