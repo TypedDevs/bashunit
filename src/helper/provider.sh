@@ -2,6 +2,21 @@
 
 # @data_provider resolution and the per-script provider map.
 
+_BASHUNIT_PROVIDER_HEADER_CACHE_SEEDING=false
+_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS=()
+_BASHUNIT_PROVIDER_HEADER_CACHE_CONTENTS=()
+_BASHUNIT_PROVIDER_HEADER_CACHE_ROWS=()
+_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT=0
+_BASHUNIT_PROVIDER_SHORT_CONTENT_OUT=""
+
+# EOF completes the snapshot; a NUL or the size limit makes it unusable.
+function bashunit::helper::_read_short_provider_script() {
+  _BASHUNIT_PROVIDER_SHORT_CONTENT_OUT=""
+  [ -r "$1" ] || return 1
+  IFS= read -r -n 513 -d '' _BASHUNIT_PROVIDER_SHORT_CONTENT_OUT 2>/dev/null <"$1" && return 1
+  return 0
+}
+
 #
 # Resolves a script path, applying the issue #529 working-dir fallback.
 # Writes the resolved path into _BASHUNIT_PROVIDER_RESOLVED_OUT (empty if unreadable).
@@ -22,8 +37,7 @@ function bashunit::helper::_resolve_provider_script() {
 
 
 #
-# Scans a script once and caches its test-function -> provider-function pairs.
-# Memoized by resolved path, so repeated calls for the same file do not rescan.
+# Scans provider pairs, annotations and test discovery metadata for the current script.
 # Arguments: $1 - path to the test script
 #
 function bashunit::helper::build_provider_map() {
@@ -45,6 +59,38 @@ function bashunit::helper::build_provider_map() {
     return
   fi
 
+  local scan_rows="" cache_index="" index cache_size=${#_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}
+  if [ "$_BASHUNIT_PROVIDER_HEADER_CACHE_SEEDING" != true ] && [ "$cache_size" -gt 0 ]; then
+    index=$_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT
+    if [ "${_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[index]:-}" != "$script" ]; then
+      index=""
+      local candidate
+      for candidate in "${!_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}"; do
+        if [ "${_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[candidate]}" = "$script" ]; then
+          index=$candidate
+          break
+        fi
+      done
+    fi
+    if [ -n "$index" ]; then
+      if bashunit::helper::_read_short_provider_script "$script" &&
+        [ "$_BASHUNIT_PROVIDER_SHORT_CONTENT_OUT" = "${_BASHUNIT_PROVIDER_HEADER_CACHE_CONTENTS[index]}" ]; then
+        scan_rows="${_BASHUNIT_PROVIDER_HEADER_CACHE_ROWS[index]}"
+        cache_index=$index
+      fi
+      _BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[index]=""
+      while [ "$_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT" -lt "$cache_size" ] &&
+        [ -z "${_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT]:-}" ]; do
+        _BASHUNIT_PROVIDER_HEADER_CACHE_NEXT=$((_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT + 1))
+      done
+      if [ "$_BASHUNIT_PROVIDER_HEADER_CACHE_NEXT" -eq "$cache_size" ]; then
+        _BASHUNIT_PROVIDER_HEADER_CACHE_PATHS=()
+        _BASHUNIT_PROVIDER_HEADER_CACHE_CONTENTS=()
+        _BASHUNIT_PROVIDER_HEADER_CACHE_ROWS=()
+      fi
+    fi
+  fi
+
   _BASHUNIT_PROVIDER_MAP_SCRIPT="$script"
   _BASHUNIT_PROVIDER_MAP_FNS=()
   _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
@@ -56,51 +102,14 @@ function bashunit::helper::build_provider_map() {
 
   local count=0
   local fn provider annot_timeout annot_retry annot_skip annot_reason
-  # Single awk pass emits "<fn>\t<provider>" for every function whose
-  # definition is at most two lines below a `# @data_provider` (or
-  # `# data_provider`) annotation, mirroring the previous grep -B2 + sed.
-  # A reserved sentinel fn name carries the no-parallel-tests flag out of the
-  # single awk pass; real fn names are identifiers so they never collide.
-  #
-  # The per-test `# @timeout` / `# @retry` / `# @skip` markers ride on this same
-  # pass, as "@@annot@@" rows: this scan already visits every file exactly once
-  # in the main shell, and the fork budget leaves no room for a second awk per
-  # file (#773). Unlike the provider marker, those follow the `# @tag` rule --
-  # the contiguous comment block directly above the definition.
-  #
-  # Fed by a here-string rather than `< <(awk …)`. Bash 3.x only reaps the
-  # descriptors process substitution allocates when it returns to the top level
-  # or after forking an external command, and this scan runs once per file from
-  # inside a function that the run never leaves -- so each file leaked one, and
-  # the per-file `rm` fork that used to follow was the only thing collecting
-  # them. Removing that fork for #1271 turned the leak loose: with 120 files
-  # under a 120-descriptor limit the run stopped after two assertions and
-  # reported "risky" rather than failing. A here-string allocates nothing.
-  while IFS=$'\t' read -r fn provider annot_timeout annot_retry annot_skip annot_reason; do
-    [ -z "$fn" ] && continue
-    if [ "$fn" = "@@no_parallel@@" ]; then
-      [ "$provider" = "1" ] && _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=true
-      continue
+  if [ -z "$cache_index" ]; then
+    local before_content="" can_cache=false
+    if [ "$_BASHUNIT_PROVIDER_HEADER_CACHE_SEEDING" = true ] &&
+      bashunit::helper::_read_short_provider_script "$script"; then
+      before_content=$_BASHUNIT_PROVIDER_SHORT_CONTENT_OUT
+      can_cache=true
     fi
-    if [ "$fn" = "@@testfns@@" ]; then
-      _BASHUNIT_PROVIDER_MAP_TEST_FNS="$provider"
-      continue
-    fi
-    if [ "$fn" = "@@dynamic@@" ]; then
-      _BASHUNIT_PROVIDER_MAP_DYNAMIC=true
-      continue
-    fi
-    if [ "$fn" = "@@annot@@" ]; then
-      [ "$annot_timeout" = "@@none@@" ] && annot_timeout=""
-      [ "$annot_retry" = "@@none@@" ] && annot_retry=""
-      bashunit::helper::annotations_record \
-        "$provider" "$annot_timeout" "$annot_retry" "$annot_skip" "$annot_reason"
-      continue
-    fi
-    _BASHUNIT_PROVIDER_MAP_FNS[count]="$fn"
-    _BASHUNIT_PROVIDER_MAP_PROVIDERS[count]="$provider"
-    count=$((count + 1))
-  done <<<"$(awk '
+    local awk_program='
     /^# bashunit: no-parallel-tests/ { no_parallel = 1; next }
     /^[[:space:]]*#[[:space:]]*@?data_provider[[:space:]]+/ {
       p = $0
@@ -216,7 +225,47 @@ function bashunit::helper::build_provider_map() {
       if (dynamic) { printf "@@dynamic@@\t1\n" }
       else { printf "@@testfns@@\t%s\n", top_level_fns }
     }
-  ' "$script" 2>/dev/null)"
+  '
+    if [ "$can_cache" = true ]; then
+      # The scanner must see the same bytes the cache later validates.
+      scan_rows=$(awk "$awk_program" 2>/dev/null <<<"$before_content") || can_cache=false
+    else
+      scan_rows=$(awk "$awk_program" "$script" 2>/dev/null)
+    fi
+    if [ "$can_cache" = true ]; then
+      index=${#_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}
+      _BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[index]="$script"
+      _BASHUNIT_PROVIDER_HEADER_CACHE_CONTENTS[index]="$before_content"
+      _BASHUNIT_PROVIDER_HEADER_CACHE_ROWS[index]="$scan_rows"
+    fi
+  fi
+
+  # A here-string avoids the descriptor leak from process substitution on Bash 3.
+  while IFS=$'\t' read -r fn provider annot_timeout annot_retry annot_skip annot_reason; do
+    [ -z "$fn" ] && continue
+    if [ "$fn" = "@@no_parallel@@" ]; then
+      [ "$provider" = "1" ] && _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=true
+      continue
+    fi
+    if [ "$fn" = "@@testfns@@" ]; then
+      _BASHUNIT_PROVIDER_MAP_TEST_FNS="$provider"
+      continue
+    fi
+    if [ "$fn" = "@@dynamic@@" ]; then
+      _BASHUNIT_PROVIDER_MAP_DYNAMIC=true
+      continue
+    fi
+    if [ "$fn" = "@@annot@@" ]; then
+      [ "$annot_timeout" = "@@none@@" ] && annot_timeout=""
+      [ "$annot_retry" = "@@none@@" ] && annot_retry=""
+      bashunit::helper::annotations_record \
+        "$provider" "$annot_timeout" "$annot_retry" "$annot_skip" "$annot_reason"
+      continue
+    fi
+    _BASHUNIT_PROVIDER_MAP_FNS[count]="$fn"
+    _BASHUNIT_PROVIDER_MAP_PROVIDERS[count]="$provider"
+    count=$((count + 1))
+  done <<<"$scan_rows"
 }
 
 
@@ -251,4 +300,3 @@ function bashunit::helper::get_provider_data() {
     bashunit::helper::execute_function_if_exists "$_BASHUNIT_PROVIDER_FN_OUT"
   fi
 }
-

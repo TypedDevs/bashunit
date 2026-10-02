@@ -279,15 +279,23 @@ function bashunit::helper::find_total_tests() {
   local total_count=0
   local file
 
+  if [ "$#" -gt 1 ]; then
+    _BASHUNIT_PROVIDER_HEADER_CACHE_PATHS=()
+    _BASHUNIT_PROVIDER_HEADER_CACHE_CONTENTS=()
+    _BASHUNIT_PROVIDER_HEADER_CACHE_ROWS=()
+    _BASHUNIT_PROVIDER_HEADER_CACHE_NEXT=0
+    # Parallel file workers inherit separate cache cursors.
+    if [ "${_BASHUNIT_PARALLEL_ENABLED:-false}" != true ]; then
+      _BASHUNIT_PROVIDER_HEADER_CACHE_SEEDING=true
+    fi
+  fi
+
   for file in "$@"; do
     if [ ! -f "$file" ]; then
       continue
     fi
 
-    # Build the provider map in THIS shell before the counting subshell: the
-    # subshell inherits it (its own build call becomes a cache hit), and when
-    # the caller runs in the main shell the runner's later build for the same
-    # file is a cache hit too — one awk scan per file instead of two.
+    # Build in this shell so the isolated counting path inherits the metadata.
     bashunit::helper::build_provider_map "$file"
 
     if bashunit::helper::_can_count_statically; then
@@ -297,6 +305,11 @@ function bashunit::helper::find_total_tests() {
     fi
     total_count=$((total_count + _BASHUNIT_HELPER_FILE_COUNT_OUT))
   done
+
+  _BASHUNIT_PROVIDER_HEADER_CACHE_SEEDING=false
+  if [ "${#_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}" -gt 0 ]; then
+    _BASHUNIT_PROVIDER_MAP_SCRIPT=""
+  fi
 
   _BASHUNIT_HELPER_TOTAL_TESTS_OUT=$total_count
   echo "$total_count"

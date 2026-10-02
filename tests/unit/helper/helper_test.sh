@@ -493,6 +493,252 @@ function test_find_total_tests_multiple_files() {
   assert_same "5" "$(helpers_test::find_total_in_subshell "" "$file1" "$file2")"
 }
 
+function test_provider_scan_reuses_unchanged_multifile_header_metadata() {
+  local dir first second marker
+  local _BASHUNIT_PARALLEL_ENABLED=false
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  marker="$dir/awk_calls"
+  {
+    printf '%s\n' '# bashunit: no-parallel-tests'
+    printf '%s\n' 'function provide_rows() { echo one; }'
+    printf '%s\n' '# @timeout 5' '# @retry 2' '# @skip pause' '# @data_provider provide_rows'
+    printf '%s\n' 'function test_first() { :; }'
+  } >"$first"
+  printf '%s\n' 'eval "function test_second() { :; }"' >"$second"
+
+  function awk() {
+    printf 'awk\n' >>"$marker"
+    command awk "$@"
+  }
+  bashunit::helper::find_total_tests "" "$first" "$second" >/dev/null
+  bashunit::helper::build_provider_map "$first"
+  bashunit::helper::provider_for_function test_first
+  assert_same 'provide_rows' "$_BASHUNIT_PROVIDER_FN_OUT"
+  assert_same 'true' "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL"
+  assert_same 'false' "$_BASHUNIT_PROVIDER_MAP_DYNAMIC"
+  assert_contains 'test_first' "$_BASHUNIT_PROVIDER_MAP_TEST_FNS"
+  bashunit::helper::annotations_for_function test_first
+  assert_same '5' "$_BASHUNIT_ANNOT_TIMEOUT_OUT"
+  assert_same '2' "$_BASHUNIT_ANNOT_RETRY_OUT"
+  assert_same 'true' "$_BASHUNIT_ANNOT_SKIP_OUT"
+  assert_same 'pause' "$_BASHUNIT_ANNOT_REASON_OUT"
+
+  bashunit::helper::build_provider_map "$second"
+  assert_same 'true' "$_BASHUNIT_PROVIDER_MAP_DYNAMIC"
+  assert_same 'false' "$_BASHUNIT_PROVIDER_MAP_NO_PARALLEL"
+
+  assert_same '2' "$(wc -l <"$marker" | tr -d ' ')"
+  unset -f awk
+}
+
+function test_provider_scan_detects_later_same_size_same_mtime_rewrite() {
+  local dir first second stamp original_size
+  local _BASHUNIT_PARALLEL_ENABLED=false
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  stamp="$dir/original_stamp"
+  printf '%s\n' '# @retry 1' 'function test_before() { :; }' >"$second"
+  original_size="$(wc -c <"$second")"
+  touch -r "$second" "$stamp"
+  {
+    printf '%s\n' 'function test_rewrite() {'
+    printf '%s\n' '  printf "%s\n" "# @retry 2" "function test_after_() { :; }" >"$LATER_FILE"'
+    printf '%s\n' '  touch -r "$STAMP_FILE" "$LATER_FILE"'
+    printf '%s\n' '}'
+  } >"$first"
+
+  bashunit::helper::find_total_tests "" "$first" "$second" >/dev/null
+  bashunit::helper::build_provider_map "$first"
+  # shellcheck source=/dev/null
+  source "$first"
+  LATER_FILE="$second" STAMP_FILE="$stamp" test_rewrite
+  assert_same "$original_size" "$(wc -c <"$second")"
+  bashunit::helper::build_provider_map "$second"
+  bashunit::helper::annotations_for_function test_after_
+  assert_same '2' "$_BASHUNIT_ANNOT_RETRY_OUT"
+  assert_contains 'test_after_' "$_BASHUNIT_PROVIDER_MAP_TEST_FNS"
+  assert_not_contains 'test_before' "$_BASHUNIT_PROVIDER_MAP_TEST_FNS"
+}
+
+function test_provider_scan_uses_the_snapshot_that_it_caches() {
+  local dir first second marker
+  local _BASHUNIT_PARALLEL_ENABLED=false
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  marker="$dir/race_started"
+  printf '%s\n' 'function test_first() { :; }' >"$first"
+  printf '%s\n' '# @retry 1' 'function test_second() { :; }' >"$second"
+
+  local RACE_FILE="$second" RACE_MARKER="$marker"
+  function awk() {
+    local metadata=false
+    case "$1" in *'@@no_parallel@@'*) metadata=true ;; esac
+    if [ "$metadata" = true ] && [ "$_BASHUNIT_PROVIDER_MAP_SCRIPT" = "$RACE_FILE" ] &&
+      [ ! -e "$RACE_MARKER" ]; then
+      printf '%s\n' "$#" >"$RACE_MARKER"
+      if [ "$#" -eq 2 ]; then
+        printf '%s\n' '# @retry 2' 'function test_second() { :; }' | command awk "$1"
+        return
+      fi
+    fi
+    command awk "$@"
+  }
+
+  bashunit::helper::find_total_tests "" "$first" "$second" >/dev/null
+  assert_file_exists "$marker"
+  assert_same '1' "$(cat "$marker")"
+  assert_same '2' "${#_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}"
+  assert_contains '# @retry 1' "$(cat "$second")"
+  bashunit::helper::annotations_for_function test_second
+  assert_same 'retry=1' "retry=$_BASHUNIT_ANNOT_RETRY_OUT"
+  bashunit::helper::build_provider_map "$first"
+  bashunit::helper::build_provider_map "$second"
+  bashunit::helper::annotations_for_function test_second
+  assert_same 'restored=1' "restored=$_BASHUNIT_ANNOT_RETRY_OUT"
+  unset -f awk
+}
+
+function test_header_cache_sees_later_file_rewritten_by_earlier_test() {
+  local dir first second stamp report
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  stamp="$dir/original_stamp"
+  report="$dir/report.json"
+  printf '%s\n' '# @skip old' 'function test_later() { assert_true true; }' >"$second"
+  touch -r "$second" "$stamp"
+  {
+    printf '%s\n' 'function test_rewrite() {'
+    printf '%s\n' '  printf "%s\n" "# @skip new" "function test_later() { assert_true true; }" >"$LATER_FILE"'
+    printf '%s\n' '  touch -r "$STAMP_FILE" "$LATER_FILE"'
+    printf '%s\n' '  assert_true true'
+    printf '%s\n' '}'
+  } >"$first"
+
+  local output status=0
+  output=$(LATER_FILE="$second" STAMP_FILE="$stamp" NO_COLOR=1 ./bashunit \
+    --no-parallel --report-json "$report" "$first" "$second" 2>&1) || status=$?
+
+  assert_same '0' "$status"
+  assert_contains '2 total' "$output"
+  assert_contains 'Skipped: Later    new' "$output"
+  assert_not_contains 'Skipped: Later    old' "$output"
+  assert_contains '"skipped": 1' "$(cat "$report")"
+}
+
+function test_header_cache_validates_last_file_after_filtered_first_file_rewrites_it() {
+  local dir first second stamp
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  stamp="$dir/original_stamp"
+  printf '%s\n' '# @skip old' 'function test_selected() { assert_true true; }' >"$second"
+  touch -r "$second" "$stamp"
+  {
+    printf '%s\n' 'printf "%s\n" "# @skip new" "function test_selected() { assert_true true; }" >"$LATER_FILE"'
+    printf '%s\n' 'touch -r "$STAMP_FILE" "$LATER_FILE"'
+    printf '%s\n' 'function test_other() { assert_true true; }'
+  } >"$first"
+
+  local output status=0
+  output=$(LATER_FILE="$second" STAMP_FILE="$stamp" NO_COLOR=1 ./bashunit \
+    --no-parallel --filter selected "$first" "$second" 2>&1) || status=$?
+
+  assert_same '0' "$status"
+  assert_contains '1 total' "$output"
+  assert_contains 'Skipped: Selected    new' "$output"
+  assert_not_contains 'Skipped: Selected    old' "$output"
+}
+
+function test_provider_scan_checks_reordered_cache_entries_for_changes() {
+  local dir first second third marker
+  local _BASHUNIT_PARALLEL_ENABLED=false
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  third="$dir/third_test.sh"
+  marker="$dir/awk_calls"
+  printf '%s\n' 'function test_first() { :; }' >"$first"
+  printf '%s\n' '# @retry 1' 'function test_second() { :; }' >"$second"
+  printf '%s\n' 'function test_third() { :; }' >"$third"
+
+  function awk() {
+    printf 'awk\n' >>"$marker"
+    command awk "$@"
+  }
+  bashunit::helper::find_total_tests "" "$first" "$second" "$third" >/dev/null
+  bashunit::helper::build_provider_map "$third"
+  bashunit::helper::build_provider_map "$first"
+  printf '%s\n' '# @retry 2' 'function test_second() { :; }' >"$second"
+  bashunit::helper::build_provider_map "$second"
+  bashunit::helper::annotations_for_function test_second
+
+  assert_same '2' "$_BASHUNIT_ANNOT_RETRY_OUT"
+  assert_same '4' "$(wc -l <"$marker" | tr -d ' ')"
+  unset -f awk
+}
+
+function test_provider_scan_large_file_keeps_the_existing_rescan() {
+  local dir first second marker
+  local _BASHUNIT_PARALLEL_ENABLED=false
+  dir="$(bashunit::temp_dir)"
+  first="$dir/large_test.sh"
+  second="$dir/small_test.sh"
+  marker="$dir/awk_calls"
+  {
+    printf '#%*s\n' 5000 ''
+    printf '%s\n' 'function test_large() { :; }'
+  } >"$first"
+  printf '%s\n' 'function test_small() { :; }' >"$second"
+
+  function awk() {
+    printf 'awk\n' >>"$marker"
+    command awk "$@"
+  }
+  bashunit::helper::find_total_tests "" "$first" "$second" >/dev/null
+  bashunit::helper::build_provider_map "$first"
+
+  assert_same '3' "$(wc -l <"$marker" | tr -d ' ')"
+  assert_contains 'test_large' "$_BASHUNIT_PROVIDER_MAP_TEST_FNS"
+  unset -f awk
+}
+
+function test_provider_scan_parallel_header_count_does_not_seed_metadata_cache_or_read_snapshots() {
+  local dir first second reads scans entries
+  dir="$(bashunit::temp_dir)"
+  first="$dir/first_test.sh"
+  second="$dir/second_test.sh"
+  reads="$dir/snapshot_reads"
+  scans="$dir/awk_calls"
+  entries="$dir/cache_entries"
+  printf '%s\n' 'function test_first() { :; }' >"$first"
+  printf '%s\n' 'function test_second() { :; }' >"$second"
+
+  (
+    local _BASHUNIT_PARALLEL_ENABLED=true
+    function bashunit::helper::_read_short_provider_script() {
+      printf 'read\n' >>"$reads"
+      return 1
+    }
+    function awk() {
+      printf 'awk\n' >>"$scans"
+      command awk "$@"
+    }
+    bashunit::helper::find_total_tests "" "$first" "$second" >/dev/null
+    printf '%s\n' "${#_BASHUNIT_PROVIDER_HEADER_CACHE_PATHS[@]}" >"$entries"
+    bashunit::helper::build_provider_map "$first"
+    bashunit::helper::build_provider_map "$second"
+  )
+
+  assert_same '0' "$(cat "$entries")"
+  assert_file_not_exists "$reads"
+  assert_same '4' "$(wc -l <"$scans" | tr -d ' ')"
+}
+
 function test_find_total_tests_with_filter() {
   local file1
   local file2
