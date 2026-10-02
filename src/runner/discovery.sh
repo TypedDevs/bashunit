@@ -65,6 +65,9 @@ function bashunit::runner::load_test_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
+    _BASHUNIT_REPORTS_FILE_ORDINAL=$((_BASHUNIT_REPORTS_FILE_ORDINAL + 1))
+    _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
+    _BASHUNIT_RUNNER_RESULT_ORDINAL=0
     bashunit::internal_log "Loading file" "$test_file"
     # Files are sourced sequentially in this loop (parallel workers fork after),
     # so a fixed path in the run dir is safe: `2>` truncates it per file and the

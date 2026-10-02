@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Parallel reports collect worker results without per-row base64 processes, preserving values and completion order (#1371)
 - Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
