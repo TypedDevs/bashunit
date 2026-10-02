@@ -328,6 +328,45 @@ function test_reports_do_not_fork_base64_per_field() {
   assert_less_or_equal_than 16 "$calls"
 }
 
+function test_provider_arguments_do_not_fork_base64_per_value() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "PATH shims are unreliable under Git Bash" && return
+  fi
+
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local count_file="$dir/base64_calls"
+  local real_base64
+  real_base64="$(command -v base64)"
+  {
+    echo '#!/usr/bin/env bash'
+    echo "case \"\$*\" in --help) ;; *) echo x >> \"$count_file\" ;; esac"
+    echo "exec \"$real_base64\" \"\$@\""
+  } >"$dir/base64"
+  chmod +x "$dir/base64"
+
+  local fixture="$dir/provider_forks_test.sh"
+  {
+    echo 'function provide_rows() {'
+    echo '  bashunit::data_set a b'
+    echo '  bashunit::data_set c d'
+    echo '  bashunit::data_set e f'
+    echo '}'
+    echo '# @data_provider provide_rows'
+    echo 'function test_row() { assert_not_empty "$1"; assert_not_empty "$2"; }'
+  } >"$fixture"
+
+  local code=0
+  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1 || code=$?
+  assert_same 0 "$code"
+
+  local calls=0
+  if [ -f "$count_file" ]; then
+    calls="$(grep -c . "$count_file" || true)"
+  fi
+  assert_equals 0 "$calls"
+}
+
 # Regression guard for the per-test hook path. A test in a file that defines
 # `set_up` or `tear_down` used to cost five process forks: each hook minted its
 # output file with `mktemp` and removed it with `rm -f`, and the temp-owner

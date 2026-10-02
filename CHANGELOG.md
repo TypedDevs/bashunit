@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed

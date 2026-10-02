@@ -153,10 +153,6 @@ function provide_two_args_with_spaces() {
   bashunit::data_set "first test" "second test"
 }
 
-# A value ending in an odd run of backslashes escaped the `)` of the parser's
-# `eval "args=($input)"` fast path, making it a syntax error -- which kills the
-# command substitution the runner calls the parser inside, so the argument
-# reached the test unset rather than as `C:` (#1134).
 function provide_trailing_backslash() {
   # shellcheck disable=SC1003  # a lone trailing backslash is the case under test
   echo 'C:\'
@@ -166,4 +162,29 @@ function provide_trailing_backslash() {
 # @data_provider provide_trailing_backslash
 function test_a_value_ending_in_a_backslash_still_arrives() {
   assert_not_empty "${1-}"
+}
+
+function provide_lossless_values() {
+  bashunit::data_set "" $'unit\037separator' $'line\none\n' $'trailing \t ' "C:\\path\\" '*;|&'
+}
+
+# @data_provider provide_lossless_values
+function test_provider_values_arrive_without_record_delimiter_collisions() {
+  assert_same 6 "$#"
+  assert_same "" "$1"
+  assert_same $'unit\037separator' "$2"
+  assert_same $'line\none\n' "$3"
+  assert_same $'trailing \t ' "$4"
+  assert_same "C:\\path\\" "$5"
+  assert_same '*;|&' "$6"
+}
+
+function provide_eval_assignment() {
+  printf '%s\n' '${PROVIDER_EVAL_SIDE_EFFECT:=changed}'
+}
+
+# @data_provider provide_eval_assignment
+function test_provider_eval_does_not_assign_in_runner() {
+  assert_same changed "$1"
+  assert_same unset "${PROVIDER_EVAL_SIDE_EFFECT-unset}"
 }
