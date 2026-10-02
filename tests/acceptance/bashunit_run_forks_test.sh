@@ -1,6 +1,51 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+function test_parallel_runs_do_not_start_a_spinner_without_visible_progress() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  local fixture="$dir/inactive_spinner_test.sh"
+  printf 'function test_without_spinner() { assert_same 1 1; }\n' >"$fixture"
+
+  local bootstrap="$dir/bootstrap.sh"
+  cat >"$bootstrap" <<'BOOTSTRAP'
+function bashunit::runner::spinner() {
+  printf 'started\n' >"$BASHUNIT_SPINNER_MARKER"
+}
+# Bash 3.0 cannot target names containing :: with declare -f.
+definition=$(declare -f | awk '
+  /^bashunit::state::aggregate_parallel_results \(\)/ { copy = 1 }
+  copy { print }
+  copy && /^}$/ { copy = 0 }
+')
+definition=${definition/bashunit::state::aggregate_parallel_results/bashunit_probe_aggregate}
+eval "$definition"
+function bashunit::state::aggregate_parallel_results() {
+  wait
+  bashunit_probe_aggregate "$@"
+}
+BOOTSTRAP
+
+  local mode output marker
+  local flags
+  for mode in normal no_progress json; do
+    flags=()
+    case "$mode" in
+    no_progress) flags=(--no-progress) ;;
+    json) flags=(--output json) ;;
+    esac
+    marker="$dir/$mode"
+    output=$(BASHUNIT_BOOTSTRAP="$bootstrap" BASHUNIT_SPINNER_MARKER="$marker" \
+      ./bashunit --parallel --simple --skip-env-file ${flags+"${flags[@]}"} "$fixture" 2>&1)
+    assert_successful_code "$?"
+    assert_file_not_exists "$marker"
+    case "$mode" in
+    json) assert_contains '"passed": 1' "$output" ;;
+    *) assert_contains '1 passed' "$output" ;;
+    esac
+  done
+}
+
 # Regression guard for the per-file run path. Running a test file used to fork
 # `grep` twice: once in the runner to scan sourcing stderr for "syntax error"/
 # "unexpected EOF", and once in discovery to decide whether to also match the
@@ -311,7 +356,9 @@ function test_provider_arguments_do_not_fork_base64_per_value() {
     echo 'function test_row() { assert_not_empty "$1"; assert_not_empty "$2"; }'
   } >"$fixture"
 
-  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1
+  local code=0
+  PATH="$dir:$PATH" ./bashunit --no-parallel "$fixture" >/dev/null 2>&1 || code=$?
+  assert_same 0 "$code"
 
   local calls=0
   if [ -f "$count_file" ]; then

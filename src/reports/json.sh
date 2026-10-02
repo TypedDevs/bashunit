@@ -2,18 +2,24 @@
 
 # Machine-readable JSON report writer.
 
-# Escapes a string for embedding in a JSON string literal (pure Bash, no jq).
-# Strips ANSI/control chars that cannot appear inline, keeps \t\r\n as escapes.
-function bashunit::reports::__json_escape() {
+_BASHUNIT_REPORTS_JSON_ESCAPE_OUT=""
+function bashunit::reports::__json_escape_to_slot() {
   local text="$1"
-  text=$(bashunit::reports::__strip_ansi "$text" | tr -d '\000-\010\013\014\016-\037')
+  case "$text" in
+  *[[:cntrl:]]*) text=$(bashunit::reports::__strip_ansi "$text" | tr -d '\000-\010\013\014\016-\037') ;;
+  esac
   # Backslash first so escapes added below are not doubled.
   text="${text//\\/\\\\}"
   text="${text//\"/\\\"}"
   text="${text//$'\t'/\\t}"
   text="${text//$'\r'/\\r}"
   text="${text//$'\n'/\\n}"
-  printf '%s' "$text"
+  _BASHUNIT_REPORTS_JSON_ESCAPE_OUT="$text"
+}
+
+function bashunit::reports::__json_escape() {
+  bashunit::reports::__json_escape_to_slot "$1"
+  printf '%s' "$_BASHUNIT_REPORTS_JSON_ESCAPE_OUT"
 }
 
 ##
@@ -60,11 +66,14 @@ function bashunit::reports::print_report_json() {
     local seq=0
     for i in "${!_BASHUNIT_REPORTS_TEST_NAMES[@]}"; do
       local file name status duration message sep
-      file=$(bashunit::reports::__json_escape "${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}")
-      name=$(bashunit::reports::__json_escape "${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}")
+      bashunit::reports::__json_escape_to_slot "${_BASHUNIT_REPORTS_TEST_FILES[$i]:-}"
+      file="$_BASHUNIT_REPORTS_JSON_ESCAPE_OUT"
+      bashunit::reports::__json_escape_to_slot "${_BASHUNIT_REPORTS_TEST_NAMES[$i]:-}"
+      name="$_BASHUNIT_REPORTS_JSON_ESCAPE_OUT"
       status="${_BASHUNIT_REPORTS_TEST_STATUSES[$i]:-}"
       duration="${_BASHUNIT_REPORTS_TEST_DURATIONS[$i]:-0}"
-      message=$(bashunit::reports::__json_escape "${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}")
+      bashunit::reports::__json_escape_to_slot "${_BASHUNIT_REPORTS_TEST_FAILURES[$i]:-}"
+      message="$_BASHUNIT_REPORTS_JSON_ESCAPE_OUT"
       sep=","
       [ "$seq" -eq "$((total - 1))" ] && sep=""
       printf '    { "file": "%s", "name": "%s", "status": "%s", "duration_ms": %d,' \

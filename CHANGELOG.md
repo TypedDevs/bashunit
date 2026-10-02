@@ -3,7 +3,11 @@
 ## Unreleased
 
 ### Changed
-- Data-provider rows transfer arguments without a base64 encode and decode process for each value (#1370)
+- Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
+- JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
+
+### Fixed
+- Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)
 
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
 
