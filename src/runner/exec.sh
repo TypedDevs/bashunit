@@ -278,6 +278,7 @@ function bashunit::runner::call_test_functions() {
 # Result slots for the timeout-aware execution path (see run_with_timeout).
 _BASHUNIT_RUNNER_EXEC_OUT=""
 _BASHUNIT_RUNNER_TIMED_OUT="false"
+_BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE=""
 # The timeout in force for the test being run: the run-wide setting unless a
 # `# @timeout` annotation overrides it.
 _BASHUNIT_RUNNER_TIMEOUT_SECS=0
@@ -421,6 +422,7 @@ function bashunit::runner::run_with_timeout() {
   out_file="$("$MKTEMP" "$tmp_dir/bashunit_timeout_out.XXXXXXX")"
   marker_file="$("$MKTEMP" "$tmp_dir/bashunit_timeout_marker.XXXXXXX")"
   rm -f "$marker_file"
+  local _BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE="$marker_file"
 
   # Both jobs run in their own process group (set -m) so each can be killed as a
   # whole tree. The body MUST run in an explicit ( ) subshell: a backgrounded { }
@@ -463,6 +465,8 @@ function bashunit::runner::run_with_timeout() {
     # that outlived a missed teardown (see below) would mark an already-finished
     # fast test as timed out.
     kill -0 "$test_pid" 2>/dev/null || exit 0
+    # Cancellation must leave the watchdog alive once cleanup needs its KILL bound.
+    trap '' TERM
     : >"$marker_file"
     kill -TERM -"$test_pid" 2>/dev/null
     # Poll for the body to go instead of sleeping a flat window. The TERM has to

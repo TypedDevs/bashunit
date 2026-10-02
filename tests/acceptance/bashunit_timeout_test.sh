@@ -142,3 +142,186 @@ function test_bashunit_waits_for_a_slow_tear_down_of_a_timed_out_test() {
   assert_contains "Test timed out after 1s" "$output"
   assert_file_exists "$marker.teardown"
 }
+
+function _assert_timeout_teardown_survives_late_term() {
+  local dir fixture events marker
+  dir="$(bashunit::temp_dir timeout_late_term)"
+  fixture="$dir/hanging_test.sh"
+  events="$dir/events"
+  marker="$dir/marker"
+  cat >"$fixture" <<'TEST'
+function kill() {
+  if [ "$1" = -TERM ]; then
+    case "${2:-}" in
+    -*)
+      if [ ! -f "$TIMEOUT_EVENTS.delivered" ]; then
+        local child_pid
+        IFS= read -r child_pid <"$TIMEOUT_EVENTS.child"
+        builtin kill -TERM "$child_pid"
+        local ticks=0
+        while [ ! -f "$TIMEOUT_EVENTS.started" ] && [ "$ticks" -lt 100 ]; do
+          sleep 0.01
+          ticks=$((ticks + 1))
+        done
+        : >"$TIMEOUT_EVENTS.delivered"
+      fi
+      ;;
+    esac
+  fi
+  builtin kill "$@"
+}
+function tear_down() {
+  printf 'started\n' >>"$TIMEOUT_EVENTS"
+  : >"$TIMEOUT_EVENTS.started"
+  sleep 1
+  : >"$TIMEOUT_MARKER.teardown"
+  printf 'completed\n' >>"$TIMEOUT_EVENTS"
+}
+function test_late_term_body_hangs() {
+  sleep 30 &
+  local child_pid=$!
+  printf '%s\n' "$child_pid" >"$TIMEOUT_EVENTS.child"
+  wait "$child_pid"
+}
+TEST
+
+  local output exit_code=0
+  output="$(TIMEOUT_EVENTS="$events" TIMEOUT_MARKER="$marker" ./bashunit "$@" \
+    --env "$TEST_ENV_FILE" --test-timeout 1 "$fixture")" || exit_code=$?
+
+  assert_same 1 "$exit_code"
+  assert_contains "Test timed out after 1s" "$output"
+  assert_file_exists "$events.delivered"
+  assert_same "started
+completed" "$(cat "$events")"
+  assert_file_exists "$marker.teardown"
+}
+
+function test_sequential_timeout_keeps_a_late_term_from_interrupting_teardown() {
+  _assert_timeout_teardown_survives_late_term --no-parallel
+}
+
+function test_parallel_timeout_keeps_a_late_term_from_interrupting_teardown() {
+  _assert_timeout_teardown_survives_late_term --parallel
+}
+
+function test_strict_sequential_timeout_preserves_teardown_after_a_late_term() {
+  _assert_timeout_teardown_survives_late_term --no-parallel --strict
+}
+
+function test_strict_parallel_timeout_preserves_teardown_after_a_late_term() {
+  _assert_timeout_teardown_survives_late_term --parallel --strict
+}
+
+function test_timeout_still_stops_a_hanging_teardown_after_the_grace() {
+  local dir fixture marker
+  dir="$(bashunit::temp_dir timeout_hanging_teardown)"
+  fixture="$dir/hanging_test.sh"
+  marker="$dir/marker"
+  cat >"$fixture" <<'TEST'
+function kill() {
+  if [ "$1" = -KILL ]; then
+    : >"$TIMEOUT_MARKER.killed"
+  fi
+  builtin kill "$@"
+}
+function tear_down() {
+  : >"$TIMEOUT_MARKER.started"
+  sleep 10
+  : >"$TIMEOUT_MARKER.completed"
+}
+function test_hanging_teardown_body_hangs() { sleep 30; }
+TEST
+
+  local output exit_code=0
+  output="$(TIMEOUT_MARKER="$marker" ./bashunit --no-parallel \
+    --env "$TEST_ENV_FILE" --test-timeout 1 "$fixture")" || exit_code=$?
+
+  assert_same 1 "$exit_code"
+  assert_contains "Test timed out after 1s" "$output"
+  assert_file_exists "$marker.started"
+  assert_file_exists "$marker.killed"
+  assert_file_not_exists "$marker.completed"
+}
+
+function _assert_cancellation_stops_timeout_teardown() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "Unix process-group signals"
+    return
+  fi
+
+  local timeout="$1"
+  local hangs="$2"
+  local dir fixture marker
+  dir="$(bashunit::temp_dir timeout_cancel_teardown)"
+  fixture="$dir/hanging_test.sh"
+  marker="$dir/marker"
+  # Parallel tests can inherit ignored SIGINT, so invoke its cleanup handler through USR1.
+  cat >"$fixture" <<'TEST'
+trap 'bashunit::main::cleanup' USR1
+function pkill() {
+  local body_pid
+  IFS= read -r body_pid <"$TIMEOUT_MARKER.body"
+  builtin kill -TERM -"$body_pid" 2>/dev/null || true
+  command pkill "$@"
+}
+function tear_down() {
+  sh -c 'printf "%s\n" "$PPID"' >"$TIMEOUT_MARKER.body"
+  : >"$TIMEOUT_MARKER.started"
+  sleep 30
+  : >"$TIMEOUT_MARKER.completed"
+}
+function test_cancellation_body() {
+  if [ "$TIMEOUT_BODY_HANGS" = true ]; then
+    sleep 30
+  else
+    assert_true true
+  fi
+}
+TEST
+
+  local output start
+  start=$(date +%s)
+  output=$(
+    set -m
+    TIMEOUT_MARKER="$marker" TIMEOUT_BODY_HANGS="$hangs" ./bashunit --no-parallel \
+      --env "$TEST_ENV_FILE" --test-timeout "$timeout" "$fixture" &
+    run_pid=$!
+    set +m
+    ticks=0
+    while [ ! -f "$marker.started" ] && [ "$ticks" -lt 100 ]; do
+      sleep 0.05
+      ticks=$((ticks + 1))
+    done
+    kill -USR1 "$run_pid" 2>/dev/null || true
+    wait "$run_pid" 2>/dev/null || true
+    if [ -f "$marker.body" ]; then
+      IFS= read -r body_pid <"$marker.body"
+      ticks=0
+      while kill -0 "$body_pid" 2>/dev/null && [ "$ticks" -lt 60 ]; do
+        sleep 0.05
+        ticks=$((ticks + 1))
+      done
+      if kill -0 "$body_pid" 2>/dev/null; then
+        : >"$marker.forced"
+        kill -KILL -"$body_pid" 2>/dev/null || true
+      fi
+    fi
+  ) || true
+
+  assert_file_exists "$marker.started"
+  assert_contains "Caught Ctrl-C, killing all child processes" "$output"
+  assert_file_not_exists "$marker.forced"
+  if [ "$hangs" = true ]; then
+    assert_file_not_exists "$marker.completed"
+  fi
+  assert_less_than 20 "$(($(date +%s) - start))"
+}
+
+function test_cancellation_before_timeout_does_not_leave_cleanup_running() {
+  _assert_cancellation_stops_timeout_teardown 60 false
+}
+
+function test_cancellation_keeps_the_timeout_cleanup_grace_bounded() {
+  _assert_cancellation_stops_timeout_teardown 1 true
+}
