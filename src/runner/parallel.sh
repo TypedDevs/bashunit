@@ -65,17 +65,7 @@ function bashunit::runner::wait_for_job_slot() {
 }
 
 function bashunit::runner::spinner() {
-  # Only show spinner when output is to a terminal
-  if [ ! -t 1 ]; then
-    # Not a terminal, just wait silently
-    while true; do sleep 1; done
-    return
-  fi
-
-  # Don't show spinner in no-progress mode, nor when stdout carries a machine
-  # format the frames would corrupt.
-  if bashunit::env::is_no_progress_enabled || bashunit::env::is_machine_output_enabled; then
-    while true; do sleep 1; done
+  if [ ! -t 1 ] || bashunit::env::is_no_progress_enabled || bashunit::env::is_machine_output_enabled; then
     return
   fi
 
