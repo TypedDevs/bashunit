@@ -9,6 +9,7 @@
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
 - Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)
 
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18

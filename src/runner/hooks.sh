@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 function bashunit::runner::cleanup_on_exit() {
+  if [ -f "${_BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE:-}" ]; then
+    # A late group TERM must not abort cleanup; the watchdog still bounds it with KILL.
+    trap '' TERM
+  fi
+
   local test_file="$1"
   local exit_code="$2"
 
