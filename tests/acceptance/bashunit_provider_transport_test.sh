@@ -135,3 +135,113 @@ function test_row_after_scratch_loss() {
   assert_empty "$(<"$dir/public_files")"
   assert_not_contains "No such file or directory" "$output"
 }
+
+function provide_synchronous_modes() {
+  bashunit::data_set --no-parallel false
+  bashunit::data_set --parallel false
+  bashunit::data_set --no-parallel true
+  bashunit::data_set --parallel true
+}
+
+# @data_provider provide_synchronous_modes
+function test_synchronous_provider_failures_survive_a_later_passing_row() {
+  local mode="$1" strict="$2"
+  local dir="$PROVIDER_TRANSPORT_FIXTURES/ordinal_${mode#--}_$strict"
+  mkdir -p "$dir"
+  printf '%s\n' '# bashunit: no-parallel-tests' >"$dir/ordinal_test.sh"
+  cat >>"$dir/ordinal_test.sh" <<'TEST'
+function provide_ordinal_rows() { bashunit::data_set bad; bashunit::data_set good; }
+# @data_provider provide_ordinal_rows
+function test_ordinal_row() { assert_same good "$1"; }
+TEST
+
+  local -a options=("$mode")
+  if [ "$strict" = true ]; then
+    options[1]=--strict
+  fi
+  local output code=0
+  output="$(./bashunit "${options[@]}" --skip-env-file --no-color \
+    --report-json "$dir/report.json" "$dir/ordinal_test.sh" 2>&1)" || code=$?
+
+  assert_same 1 "$code"
+  assert_contains "1 passed" "$output"
+  assert_contains "1 failed" "$output"
+  assert_contains "2 total" "$output"
+  assert_file_contains "$dir/report.json" '"total": 2, "passed": 1, "failed": 1'
+}
+
+# @data_provider provide_synchronous_modes
+function test_synchronous_provider_dispatch_preserves_retries_repeats_reports_and_cleanup() {
+  local mode="$1" strict="$2"
+  local dir="$PROVIDER_TRANSPORT_FIXTURES/lifecycle_${mode#--}_$strict"
+  mkdir -p "$dir/tmp"
+  printf '%s\n' '# bashunit: no-parallel-tests' >"$dir/lifecycle_test.sh"
+  cat >>"$dir/lifecycle_test.sh" <<'TEST'
+function set_up_before_script() {
+  SYNC_SCRIPT_TEMP=$(bashunit::temp_file script)
+  printf '%s\n' "$SYNC_SCRIPT_TEMP" >>"$SYNC_TEMP_PATHS"
+}
+function set_up() {
+  if [ -f "$SYNC_ACTIVE" ]; then
+    printf 'overlap\n' >>"$SYNC_EVENTS"
+  fi
+  : >"$SYNC_ACTIVE"
+  printf 'setup\n' >>"$SYNC_HOOKS"
+}
+function tear_down() {
+  rm -f "$SYNC_ACTIVE"
+  printf 'teardown\n' >>"$SYNC_HOOKS"
+}
+function tear_down_after_script() {
+  assert_file_exists "$SYNC_SCRIPT_TEMP"
+  printf 'script teardown\n' >>"$SYNC_EVENTS"
+}
+function test_before_rows() { assert_true true; printf 'before\n' >>"$SYNC_EVENTS"; }
+function provide_sync_rows() { bashunit::data_set bad; bashunit::data_set good; }
+# @data_provider provide_sync_rows
+function test_sync_row() {
+  local temp
+  temp=$(bashunit::temp_file row)
+  printf '%s\n' "$temp" >>"$SYNC_TEMP_PATHS"
+  printf '%s\n' "$1" >>"$SYNC_EVENTS"
+  assert_same good "$1"
+}
+function test_after_rows() { assert_true true; printf 'after\n' >>"$SYNC_EVENTS"; }
+TEST
+
+  local -a options=("$mode")
+  if [ "$strict" = true ]; then
+    options[1]=--strict
+  fi
+  local output code=0
+  output="$(TMPDIR="$dir/tmp/" SYNC_EVENTS="$dir/events" SYNC_HOOKS="$dir/hooks" \
+    SYNC_ACTIVE="$dir/active" SYNC_TEMP_PATHS="$dir/paths" \
+    ./bashunit "${options[@]}" --skip-env-file --no-color --repeat 3 --retry 1 \
+    --report-json "$dir/report.json" --report-junit "$dir/report.xml" --report-tap "$dir/report.tap" \
+    "$dir/lifecycle_test.sh" 2>&1)" || code=$?
+
+  assert_same 1 "$code"
+  assert_contains "3 passed" "$output"
+  assert_contains "1 failed" "$output"
+  assert_contains "4 total" "$output"
+  assert_file_contains "$dir/report.json" '"total": 4, "passed": 3, "failed": 1'
+  assert_same 4 "$("$GREP" -c '<testcase ' "$dir/report.xml")"
+  assert_file_contains "$dir/report.xml" 'tests="4" failures="1"'
+  assert_file_contains "$dir/report.tap" '1..4'
+  assert_same $'before\nbefore\nbefore\nbad\nbad\ngood\ngood\ngood\nafter\nafter\nafter\nscript teardown' \
+    "$(<"$dir/events")"
+  assert_same 11 "$("$GREP" -c '^setup$' "$dir/hooks")"
+  assert_same 11 "$("$GREP" -c '^teardown$' "$dir/hooks")"
+  assert_file_not_exists "$dir/active"
+  local path
+  while IFS= read -r path; do
+    assert_file_not_exists "$path"
+  done <"$dir/paths"
+  local leftover=0 entry
+  for entry in "$dir/tmp/bashunit/run"/*/* "$dir/tmp/bashunit/parallel"/*/*; do
+    if [ -e "$entry" ]; then
+      leftover=$((leftover + 1))
+    fi
+  done
+  assert_same 0 "$leftover"
+}

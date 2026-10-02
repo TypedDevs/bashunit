@@ -135,7 +135,7 @@ function bashunit::runner::call_test_functions() {
   local -a parsed_data=()
   local parsed_data_count=0
   local provider_arg_file=""
-  # Monotonic within this file; names each parallel worker's .result file.
+  # Monotonic within this file, including tests executed synchronously.
   local _test_ordinal=0
 
   # Scan the file once; per-test provider lookups below are pure-bash (#763).
@@ -178,10 +178,10 @@ function bashunit::runner::call_test_functions() {
     # No data provider found: run once without forking to capture provider output.
     bashunit::helper::provider_for_function "$fn_name"
     if [ -z "$_BASHUNIT_PROVIDER_FN_OUT" ]; then
+      _test_ordinal=$((_test_ordinal + 1))
+      _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
-        _test_ordinal=$((_test_ordinal + 1))
-        _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test_parallel "$script" "$fn_name" &
         _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else
@@ -256,10 +256,10 @@ function bashunit::runner::call_test_functions() {
           "$script" "$fn_name" "data provider '$_BASHUNIT_PROVIDER_FN_OUT' $transport_error"
         break
       fi
+      _test_ordinal=$((_test_ordinal + 1))
+      _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
       if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
         bashunit::runner::wait_for_job_slot
-        _test_ordinal=$((_test_ordinal + 1))
-        _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::run_test_parallel "$script" "$fn_name" ${parsed_data+"${parsed_data[@]}"} &
         _BASHUNIT_WORKER_TEST_PIDS="$_BASHUNIT_WORKER_TEST_PIDS $!"
       else

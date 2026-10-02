@@ -9,6 +9,9 @@
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- Skipped macOS and Windows acceptance CI jobs have readable names, with shard labels in their test steps
+- Cancellation regression checks distinguish exited bodies awaiting reaping from running cleanup (#1385)
+- Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)
 - Linux test jobs install the standalone build optimizer required by beta installer acceptance tests (#1383)
 - A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
 - Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)

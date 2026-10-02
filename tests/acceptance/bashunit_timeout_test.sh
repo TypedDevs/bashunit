@@ -244,6 +244,24 @@ TEST
   assert_file_not_exists "$marker.completed"
 }
 
+function _timeout_body_is_running() {
+  local body_pid="$1"
+  kill -0 "$body_pid" 2>/dev/null || return 1
+  local state
+  if [ -r "/proc/$body_pid/stat" ]; then
+    IFS= read -r state 2>/dev/null <"/proc/$body_pid/stat" || return 1
+    state=${state##*) }
+    state=${state%% *}
+  else
+    state=$(ps -p "$body_pid" -o stat= 2>/dev/null) || return 1
+  fi
+  # A cancelled runner can leave an exited body awaiting reaping by its new parent.
+  case "$state" in
+  *Z* | "") return 1 ;;
+  esac
+  return 0
+}
+
 function _assert_cancellation_stops_timeout_teardown() {
   if bashunit::check_os::is_windows; then
     bashunit::skip "Unix process-group signals"
@@ -298,17 +316,25 @@ TEST
     if [ -f "$marker.body" ]; then
       IFS= read -r body_pid <"$marker.body"
       ticks=0
-      while kill -0 "$body_pid" 2>/dev/null && [ "$ticks" -lt 60 ]; do
+      while _timeout_body_is_running "$body_pid" && [ "$ticks" -lt 60 ]; do
         sleep 0.05
         ticks=$((ticks + 1))
       done
-      if kill -0 "$body_pid" 2>/dev/null; then
+      if _timeout_body_is_running "$body_pid"; then
+        if [ -r "/proc/$body_pid/stat" ]; then
+          cat "/proc/$body_pid/stat" 2>/dev/null || true
+        else
+          ps -p "$body_pid" -o pid=,ppid=,pgid=,stat= 2>/dev/null || true
+        fi
         : >"$marker.forced"
         kill -KILL -"$body_pid" 2>/dev/null || true
       fi
     fi
   ) || true
 
+  if [ ! -f "$marker.started" ] || [ -f "$marker.forced" ]; then
+    printf '%s\n' "$output"
+  fi
   assert_file_exists "$marker.started"
   assert_contains "Caught Ctrl-C, killing all child processes" "$output"
   assert_file_not_exists "$marker.forced"
