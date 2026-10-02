@@ -9,6 +9,7 @@
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- Concurrent provider rows have separate temporary-file owners, including rows with identical arguments (#1379)
 - Skipped macOS and Windows acceptance CI jobs have readable names, with shard labels in their test steps
 - Cancellation regression checks distinguish exited bodies awaiting reaping from running cleanup (#1385)
 - Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)

@@ -61,7 +61,9 @@ function bashunit::runner::export_test_identity() {
   local test_file=$1
   local fn_name=$2
   bashunit::helper::generate_id "$fn_name"
-  export BASHUNIT_CURRENT_TEST_ID="$_BASHUNIT_HELPER_ID_OUT"
+  local file_ordinal=${_BASHUNIT_REPORTS_FILE_ORDINAL:-0}
+  local test_ordinal=${_BASHUNIT_RUNNER_RESULT_ORDINAL:-0}
+  export BASHUNIT_CURRENT_TEST_ID="${_BASHUNIT_HELPER_ID_OUT}_${file_ordinal}_${test_ordinal}"
   # Carry the inputs; do not resolve. Reading the definition line costs a
   # subshell, and only a failure message and a report row ever ask for it
   # (#1346). Cleared per test so a previous test's line cannot answer for this
