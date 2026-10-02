@@ -9,6 +9,7 @@
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- Linux test jobs install the standalone build optimizer required by beta installer acceptance tests (#1383)
 - A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
 - Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)
 
