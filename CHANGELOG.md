@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Captured parallel output no longer waits for an inactive spinner's sleep child to close its pipes (#1368)
+
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
 
 ### Changed

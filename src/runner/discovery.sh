@@ -287,22 +287,17 @@ function bashunit::runner::load_test_files() {
   # "No tests found" into what must be a clean list of ids (#1007).
   if bashunit::parallel::is_enabled && ! bashunit::env::is_list_enabled; then
     wait
-    bashunit::runner::spinner &
-    local spinner_pid=$!
-    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
-    # Kill the spinner once the aggregation finishes
-    disown "$spinner_pid" 2>/dev/null || true
-    kill "$spinner_pid" 2>/dev/null || true
-    # Clear the spinner output, but only where it was drawn. The spinner draws
-    # nothing when stdout is not a terminal, under --no-progress, or under a
-    # machine --output format; erasing regardless emitted a literal "\r  \r"
-    # into every piped run, which is every CI log -- and under a machine format
-    # those bytes landed in front of the report, where an XML declaration must
-    # start the document. The conditions have to match the ones the spinner
-    # itself checks, or the two drift apart again.
+    local spinner_pid=""
     if [ -t 1 ] &&
       ! bashunit::env::is_no_progress_enabled &&
       ! bashunit::env::is_machine_output_enabled; then
+      bashunit::runner::spinner &
+      spinner_pid=$!
+    fi
+    bashunit::state::aggregate_parallel_results "$TEMP_DIR_PARALLEL_TEST_SUITE"
+    if [ -n "$spinner_pid" ]; then
+      disown "$spinner_pid" 2>/dev/null || true
+      kill "$spinner_pid" 2>/dev/null || true
       printf "\r  \r"
     fi
 
