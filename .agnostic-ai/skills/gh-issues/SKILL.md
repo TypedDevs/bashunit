@@ -160,7 +160,7 @@ With `--dry-run`, only execute Phase 1 and print the queue. No assignment, no br
 
 ## Notes
 
-- **Bash 3.0+ compatibility is mandatory.** No `declare -A`, `[[ ]]`, `${var,,}`, negative array indexing, or `&>>` in `src/`. See `.agnostic-ai/context/bash-style.md`.
+- **Bash 3.0+ compatibility is mandatory.** No `declare -A`, `[[ ]]`, `${var,,}`, negative array indexing, or `&>>` in `src/`. See `.agnostic-ai/rules/bash-style.md`.
 - **Quality gate is `make sa` + `make lint`, not bare `shfmt`.** `shfmt -w .` without project flags rewrites the whole tree (collapses line-continuations, flips binary-op style, tabs the `indent_size = unset` files). Match the surrounding 2-space style by hand and rely on `make lint` (EditorConfig) to verify. There is no `shfmt` make target.
 - **Know your baseline.** `tests/unit/coverage_subshell_test.sh` fails on some macOS setups regardless of the change, confirm a failure is new (`git stash` + re-run) before treating it as a regression.
 - Treat GitHub CI as the full quality gate; locally run focused tests during implementation, the full sequential + parallel suite once before commit.

@@ -9,6 +9,8 @@ allowed-tools: shell, read, Grep, Glob
 
 # Commit with Conventional Commits
 
+Read [the formatting constraints](references/formatting.md) before formatting or checking shell changes. Repository paths are relative to the repository root.
+
 Stage and commit current changes using the conventional commits format.
 
 > **IMPORTANT:** This skill MUST be used for ALL commits, even when the user says "commit" without `commit`. Never commit without following these steps.

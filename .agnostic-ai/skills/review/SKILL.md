@@ -34,7 +34,7 @@ Run the following commands before proceeding:
   gh pr diff <number>
   ```
 
-3. **Review the diff** against this project's standards (see `.agnostic-ai/AGNOSTIC_AI.md` and `.agnostic-ai/context/`):
+3. **Review the diff** against this project's standards (see `.agnostic-ai/AGNOSTIC_AI.md` and `.agnostic-ai/rules/`):
   - Bash 3.0+ compatibility (no `declare -A`, `[[ ]]`, `${var,,}`, negative indexing, `&>>`)
   - Tests exist and follow TDD; both success and failure paths covered
   - Naming, namespacing (`bashunit::*` / `_private`), and dynamic-scope safety

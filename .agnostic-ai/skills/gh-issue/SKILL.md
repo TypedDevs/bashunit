@@ -68,7 +68,7 @@ Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
 
 ### Phase 3: Implement
 
-10. **Follow strict TDD workflow** (see `.agnostic-ai/context/tdd-workflow.md`):
+10. **Follow strict TDD workflow** (see `.agnostic-ai/rules/tdd-workflow.md`):
 
     For each test:
     - **RED** - Write failing test, verify it fails for the RIGHT reason

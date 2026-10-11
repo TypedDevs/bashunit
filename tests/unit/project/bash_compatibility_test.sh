@@ -11,11 +11,24 @@
 # example preferring `[ ]` over `[[ ]]`) are not compatibility rules and are not
 # enforced by these tests -- `[[ ]]` works on every bash we support.
 
-# Returns offending "file:line: text" for a pattern under a directory, skipping
-# comment lines so a rule quoted in documentation or in a comment is not an
-# error.
+# Return offending shell source lines, excluding comments and documentation.
 function bashunit::compat::offenders_in() {
-  grep -rnE "$2" "$1" 2>/dev/null | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true
+  find "$1" -name '*.sh' -type f -print0 |
+    xargs -0 grep -nHE "$2" 2>/dev/null | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' || true
+}
+
+function test_compatibility_scan_ignores_documentation_and_checks_nested_shell_files() {
+  local dir
+  dir="$(bashunit::temp_dir)"
+  mkdir -p "$dir/nested sources"
+  printf '%s\n' 'declare -A documented' >"$dir/AGENTS.md"
+  printf '%s\n' 'declare -A unsupported' >"$dir/nested sources/runtime.sh"
+
+  local hits
+  hits="$(bashunit::compat::offenders_in "$dir" 'declare -A')"
+
+  assert_not_contains "AGENTS.md" "$hits"
+  assert_contains "nested sources/runtime.sh:1:declare -A unsupported" "$hits"
 }
 
 function bashunit::compat::offenders() {
@@ -133,7 +146,7 @@ function test_src_has_no_bare_hash_or_percent_substitution_pattern() {
 }
 
 # `printf -v` is Bash 3.1+. Use the return-slot pattern documented in
-# .claude/rules/bash-style.md instead (which also avoids its dynamic-scope trap).
+# .agnostic-ai/rules/bash-style.md instead (which also avoids its dynamic-scope trap).
 function test_src_has_no_printf_assignment() {
   assert_empty "$(bashunit::compat::ungated_offenders 'printf[[:space:]]+(-[a-zA-Z]*v)' 31)"
 }
@@ -282,7 +295,7 @@ function test_src_has_no_mapfile_or_readarray() {
 }
 
 # declare -n / local -n (namerefs) are Bash 4.3+. Use the return-slot pattern
-# documented in .claude/rules/bash-style.md instead.
+# documented in .agnostic-ai/rules/bash-style.md instead.
 function test_src_has_no_namerefs() {
   assert_empty "$(bashunit::compat::ungated_offenders \
     '(declare|local|typeset)[[:space:]]+(-[a-zA-Z]*n)[[:space:]]' 43)"
@@ -461,7 +474,8 @@ function test_a_gate_does_not_carry_over_into_the_next_file() {
 # on every shell -- green, silently slower, and impossible to see in review.
 function test_every_gate_in_src_names_a_declared_flag() {
   local used declared missing
-  used="$(grep -rhoE '_BASHUNIT_BASH_GE_[0-9]+' src/ | LC_ALL=C sort -u)"
+  used="$(find src -name '*.sh' -type f -print0 |
+    xargs -0 grep -hoE '_BASHUNIT_BASH_GE_[0-9]+' | LC_ALL=C sort -u)"
   declared="$(grep -hoE '^_BASHUNIT_BASH_GE_[0-9]+' src/system/bash.sh | LC_ALL=C sort -u)"
 
   missing=""

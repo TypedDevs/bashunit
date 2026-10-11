@@ -18,4 +18,7 @@
 /AGENTS.md
 /CLAUDE.md
 /agnostic-ai.local.yaml
+/src/AGENTS.md
+/tests/AGENTS.md
+/tests/acceptance/AGENTS.md
 # <<< agnostic-ai (managed) <<<
