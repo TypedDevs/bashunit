@@ -39,7 +39,7 @@ Workers share the checkout: assign separate files, preserve others' edits, and r
 
 ## Specs and delivery
 
-Edit `.agnostic-ai/` or `agnostic-ai.yaml`, never generated instructions, agents, skills, hooks, or settings. Run `agnostic-ai validate`, `agnostic-ai lint --strict`, `agnostic-ai sync`, and `agnostic-ai sync --check`.
+Edit `.agnostic-ai/` or `agnostic-ai.yaml`, never generated instructions, agents, skills, hooks, or settings. Install the pinned contributor dependencies with `npm ci` (use `npm ci --force` for a Windows source checkout because the published npm package restricts its OS). Run `npm run agents:sync` and `npm run agents:check`, which use the project-local CLI.
 
 Keep unrelated changes out of the PR. Update CHANGELOG for user-visible changes. Use the `pr` skill for pull requests. Use Conventional Commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`, with an optional domain scope such as `assert`, `runner`, `cli`, or `docs`.
 

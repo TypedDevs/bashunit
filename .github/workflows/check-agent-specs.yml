@@ -5,6 +5,9 @@ on:
     paths:
       - '.agnostic-ai/**'
       - 'agnostic-ai.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
       - '.gitignore'
       - '.worktreeinclude'
       - '.github/workflows/check-agent-specs.yml'
@@ -13,6 +16,9 @@ on:
     paths:
       - '.agnostic-ai/**'
       - 'agnostic-ai.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
       - '.gitignore'
       - '.worktreeinclude'
       - '.github/workflows/check-agent-specs.yml'
@@ -25,20 +31,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install pinned agnostic-ai
-        env:
-          AGNOSTIC_AI_VERSION: v0.82.0
-          AGNOSTIC_AI_INSTALL_DIR: ${{ runner.temp }}/agnostic-ai-bin
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install contributor dependencies
         run: |
-          curl -fsSL https://raw.githubusercontent.com/Chemaclass/agnostic-ai/v0.82.0/scripts/install.sh -o "$RUNNER_TEMP/agnostic-ai-install.sh"
-          bash "$RUNNER_TEMP/agnostic-ai-install.sh"
-          echo "$AGNOSTIC_AI_INSTALL_DIR" >> "$GITHUB_PATH"
+          npm ci --ignore-scripts
+          echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
       - name: Validate and generate both targets
         run: |
-          agnostic-ai validate
-          agnostic-ai lint --strict
-          agnostic-ai sync
-          agnostic-ai sync --check
+          npm run agents:sync
+          npm run agents:check
           git diff --exit-code
       - name: Verify shared ShellCheck hook
         run: |

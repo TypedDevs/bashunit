@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- Contributor instructions use shared agnostic-ai specs for Claude Code and Codex, with task-specific context and model tiers
+- Contributor instructions use shared agnostic-ai specs for Claude Code and Codex, with a pinned npm development dependency, task-specific context, and model tiers
 - Sequential multi-file runs reuse provider and annotation metadata from header counting for unchanged files up to 512 characters (#1372)
 - Parallel reports collect worker results without per-row base64 processes, preserving values and completion order (#1371)
 - Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
