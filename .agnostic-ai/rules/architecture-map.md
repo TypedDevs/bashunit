@@ -2,44 +2,18 @@
 scope: src
 ---
 
-# Architecture Map: modules and the life of a run
+# Architecture map
 
-Orientation for working in `src/`, which file owns what, and the exact call
-flow of a test run. Line numbers drift; function names are the stable anchors.
+Repository paths are relative to the root. Module paths below are under `src/` unless stated otherwise. Use function names as anchors; verify the current caller before changing a path.
 
-## The life of `./bashunit tests/`
+## Run lifecycle
 
-```
-bashunit (entry)          sources all src/*.sh; version gate; early flag scan
-└─ bashunit::main::cmd_test                 (main.sh: flag parsing, env exports)
-   └─ bashunit::runner::load_test_files     (runner/discovery.sh: the per-file loop)
-      ├─ console_header::print_header       "Running N tests", captures
-      │    └─ helper::find_total_tests      $() SUBSHELL: sources each file in a
-      │                                     nested subshell just to count tests
-      ├─ source "$test_file"                in the MAIN shell (workers inherit)
-      ├─ helper::check_duplicate_functions  one awk pass per file
-      ├─ runner::functions_for_script       pure bash: filter + sort by def line
-      ├─ helper::build_provider_map         one awk pass per file (cached by path,
-      │                                     but the count subshell's build dies
-      │                                     with it → runs twice per file)
-      └─ runner::call_test_functions        per-fn loop
-         └─ runner::run_test  [--parallel: spawned as a & worker per test]
-            ├─ clock::now_to_slot           duration start (if needed)
-            ├─ runner::execute_test_body    $() subshell: the actual test fn
-            │    └─ state::export_subshell_context   printf payload "##K=V##…"
-            ├─ runner::parse_result         sync: parse counts from payload
-            │                               parallel: + write .result via mktemp
-            └─ console_results::print_successful_test / _failed_ / …
-                └─ str::rpad + strip_ansi   align per-test time (pure bash)
-   └─ [--parallel] wait; state::aggregate_parallel_results over *.result files
-   └─ console_results::render_result        totals; deferred failure/skip blocks
-   └─ rerun::persist; env::cleanup_run_output_dir; exit code
-```
-
-Key inversion to remember: **tests run inside `$()` subshells; state comes back
-as an encoded single-line payload** (`##ASSERTIONS_FAILED=…##TEST_OUTPUT=<b64>##`),
-parsed by `runner::parse_result`/`state.sh`. Counters only exist in the main
-shell (or, in parallel, in per-test `.result` files aggregated at the end).
+1. `bashunit` checks the Bash version, scans early flags, sources modules, and routes to `bashunit::main::cmd_test`.
+2. `runner/discovery.sh` discovers and loads files, checks duplicates, builds metadata and filters selected functions. Header counting in `helper/discovery.sh` uses static metadata where safe and sources dynamic files only when needed. Sequential multi-file counting caches snapshots and metadata for unchanged files up to 512 bytes; `helper/provider.sh` validates the path and contents before reuse.
+3. The header calls `find_total_tests` directly and reads its return slot. Do not wrap it in `$()`, which discards shell-state cache changes.
+4. `runner/exec.sh` dispatches tests and providers, captures the test body in a subshell, and manages retries, timeouts and hooks. `runner/payload.sh` and `state/payload.sh` transport results; mutations inside a test do not update parent counters directly.
+5. `runner/result.sh` handles synchronous results or writes parallel `.result` files. Under `--parallel`, file dispatch also runs in a background subshell; results and explicit files carry state back. `state/parallel.sh` aggregates worker results in the parent.
+6. Console and report modules render results. Rerun persistence, temporary-output cleanup and exit status complete the run.
 
 ## Module ownership
 
@@ -107,54 +81,23 @@ shell (or, in parallel, in per-test `.result` files aggregated at the end).
 | `coverage/lines.sh` | executable-line classification (fork-free; the report phase's hot path) and hit-data reading |
 | `coverage/stats.sh` | percentages, the precomputed per-file stats cache, threshold gate |
 | `coverage/functions.sh` | function definitions and their line spans |
-| `coverage/branches.sh` | branch extraction + hit computation; **one file on purpose**, the `_branch_*` helpers mutate `extract_branches`'s locals via dynamic scoping |
+| `coverage/branches.sh` | branch extraction + hit computation; one file, the `_branch_*` helpers mutate `extract_branches`'s locals via dynamic scoping |
 | `coverage/report_text.sh` / `report_lcov.sh` / `report_html.sh` | the three renderers |
 | `coverage/html_index.sh` / `html_file.sh` | HTML page emitters; the only two files exempt from `max_line_length` |
-
 | `reports.sh` | JUnit/HTML/TAP/JSON writers |
 | `system/index.sh` | aggregator only, sources the `src/system/` module below |
 | `system/check_os.sh` / `system/dependencies.sh` | one-fork OS detect; `command -v` probes (builtins, not forks) |
 | `system/io.sh` | small I/O helpers |
 | `cli/index.sh` | aggregator only, sources the `src/cli/` module below |
-| `cli/{upgrade,watch,doc,init}.sh` | the non-`test` subcommand implementations; `main.sh` is their only caller |
+| `cli/{upgrade,watch,doc,init}.sh` | the non-`test` subcommand implementations; main subcommand routing calls them |
 | `benchmark/index.sh` | the remaining non-`test` subcommand; shared with `runner/bench.sh` |
 
 ## Cross-cutting invariants
 
-- **Bash 3.0 floor** (`.agnostic-ai/rules/bash-style.md`): no `[[`, `declare -A`,
-  `${var,,}`, `BASHPID`, negative indices. Subshells share `$$`, you cannot
-  make a per-worker unique token without a fork (`mktemp`) or an ordinal
-  assigned before the fork. `RANDOM` is no help either: whether a subshell
-  reseeds it depends on the platform and the nesting depth (measured in
-  perf-fork-budget.md), so it is unreliable in both directions (#1354).
-- **Return-slot pattern** (`_BASHUNIT_<PKG>_<FN>_OUT` globals) instead of `$()`
-  captures on hot paths, bash-style.md documents it; `local` is dynamically
-  scoped, so helpers must not write caller-named variables.
-- **Fork budget** (`.agnostic-ai/rules/perf-fork-budget.md`): per-test paths are
-  fork-free (sequential) or mktemp-only (parallel); budgets are enforced by
-  `tests/acceptance/bashunit_*forks*_test.sh` on three platforms, a "harmless"
-  `echo | sed` in a per-test path will fail CI.
-- **`call_test_functions` is a background subshell under `--parallel`**
-  (`discovery.sh` backgrounds it per file). Anything it sets in shell state,
-  counters, flags, error records, dies with the worker. Only two things cross
-  back: per-test `.result` payloads, and files written to disk. This produced
-  two silent-green bugs in one day: a data-provider error printed while the run
-  exited 0 (#1145), and duplicate-test-function detection being entirely off in
-  the mode CI uses (#1147). Before adding a check anywhere under that call, ask
-  which side of the fork it belongs on, a whole-file check almost always
-  belongs in the parent loop, before dispatch.
-  **Verify both modes.** Sequential and `--parallel` disagreeing is the
-  signature of this bug, and it is invisible to a sequential-only test.
-- **Binaries pinned at startup** (`$GREP`, `$MKTEMP`, `$CAT` in env.sh) so test
-  doubles/PATH games can't hijack the framework's own plumbing.
-- **Snapshots assume 80-col non-tty width** (`tput cols` fallback); anything
-  that changes rendering widths breaks `tests/acceptance/snapshots/`.
-- **The build flattens the source graph in DFS order** (`build.sh`
-  `build::process_file`): a file's body is emitted, *then* its `source` lines are
-  recursed into. That equals dev-mode order only if a module aggregator
-  (`src/<module>/index.sh`, ADR-010) contains **nothing but `source`
-  lines and comments**, any other top-level statement would run before its
-  dependencies in the built artifact but after them in dev mode. Files are
-  deduped by repo-relative path, so `src/` may hold module dirs and two files may
-  share a basename. Every src file's **first line must be the shebang**:
-  `tail -n +2` strips it when embedding.
+- Follow `.agnostic-ai/rules/bash-style.md` for Bash 3.0 parsing and return slots. `local` is dynamically scoped; helper locals can shadow caller-named outputs.
+- Follow `.agnostic-ai/rules/perf-fork-budget.md` for process costs. Preserve the acceptance budgets rather than assuming every path has the same allowance.
+- Background file dispatch cannot return counters or flags through shell state. Put whole-file validation before dispatch or return failures through explicit results. Always test sequential and parallel modes when changing this boundary.
+- Use dispatcher ordinals for worker identity. Subshells share `$$`; `RANDOM` reseeding varies by platform and nesting and cannot guarantee uniqueness.
+- Framework binaries are pinned at startup (`$GREP`, `$MKTEMP`, `$CAT` in `config/env.sh`) so test doubles and PATH changes cannot hijack internal plumbing.
+- Snapshots use an 80-column non-TTY fallback. Rendering width changes affect `tests/acceptance/snapshots/`.
+- `build.sh` emits a file's body before recursively flattening its source lines and deduplicates by repository-relative path. Module `index.sh` files must contain only source lines and comments; other statements can run in a different order in the built artifact. Every source file starts with a shebang, which the build strips. See ADR-010.

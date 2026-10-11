@@ -6,116 +6,15 @@ argument-hint: "<issue-number>"
 allowed-tools: shell, read, edit, write, Grep, Glob, Agent, WebFetch
 ---
 
-# GitHub Issue Workflow
+# Work a GitHub issue
 
-Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
+Repository paths are relative to the repository root. Accept an issue number with or without `#`.
 
-## Arguments
-- User-supplied argument: Issue number (e.g., `42` or `#42`)
+1. Fetch `gh issue view <number> --json title,body,labels,assignees,milestone,state` and read every comment with `gh issue view <number> --comments`. Inspect referenced requirements and current code before repeating prior findings. State one acceptance scenario and non-goals; do not invent decisions or mark external prerequisites complete.
+2. Assign yourself if unassigned with `gh issue edit <number> --add-assignee @me`. Apply an existing relevant label when missing: `bug`, `enhancement`, or `documentation`. Preserve another assignee's work.
+3. Inspect the checkout before switching branches. Fetch main and start from current `origin/main` without discarding local changes. Use `fix/`, `feat/`, or `docs/` according to the issue labels, defaulting to `feat/`; name the branch `<prefix><number>-<lowercase-title-slug>` with a slug up to 50 characters. Reuse an existing issue branch when continuing its work.
+4. Study related code and tests. Keep a short plan covering acceptance criteria, test strategy, owned files, and the smallest first step. Use a task file for nontrivial work and read `.agnostic-ai/rules/tdd-workflow.md`.
+5. For each runtime change, prove a focused failing test, implement minimal GREEN, then refactor with focused tests green. Delegate only independent scopes; workers run assigned targeted checks. Update CHANGELOG for user-facing changes and docs for changed behavior.
+6. Once the whole change set is complete, the main session runs the canonical quality gate in `.agnostic-ai/AGNOSTIC_AI.md` once. Use the `commit` skill with `Closes #<number>` in the commit body, then the `pr` skill with the issue number. Push only within user authorization.
 
-## Instructions
-
-### Phase 1: Setup
-
-1. **Parse the issue number** from the user-supplied argument (strip `#` if present)
-
-2. **Fetch issue details**:
-    ```bash
-    gh issue view <number> --json title,body,labels,assignees,milestone,state
-    ```
-
-3. **Assign yourself if unassigned**:
-    ```bash
-    gh issue edit <number> --add-assignee @me
-    ```
-
-4. **Add appropriate labels** if the issue doesn't have them:
-    - `bug` - Something isn't working
-    - `enhancement` - New feature or request
-    - `documentation` - Improvements or additions to documentation
-
-5. **Create a branch** from `main`:
-
-    Determine prefix from labels:
-    - `bug` → `fix/`
-    - `enhancement` → `feat/`
-    - `documentation` → `docs/`
-    - Default → `feat/`
-
-    Branch name: `<prefix><issue-number>-<slug>` (slug: lowercase title, spaces → `-`, max 50 chars)
-
-    ```bash
-    git checkout main && git pull
-    git checkout -b <branch-name>
-    ```
-
-### Phase 2: Plan
-
-6. **Analyze the issue**: requirements, labels, referenced issues, affected areas
-
-7. **Explore the codebase** for context:
-    - Find related code in `src/`
-    - Find related tests in `tests/`
-    - Study existing patterns
-
-8. **Create implementation plan**:
-    - Acceptance Criteria
-    - Test Strategy (which tests to write first)
-    - Files to Change
-    - Implementation Order (smallest first step)
-
-9. **Keep a short implementation plan** in the main session if implementation is non-trivial
-
-### Phase 3: Implement
-
-10. **Follow strict TDD workflow** (see `.agnostic-ai/rules/tdd-workflow.md`):
-
-    For each test:
-    - **RED** - Write failing test, verify it fails for the RIGHT reason
-    - **GREEN** - Minimal code to pass
-    - **REFACTOR** - Improve while keeping tests green
-
-11. **Run the full test suite once after the change set is complete**:
-    ```bash
-    ./bashunit tests/
-    ./bashunit --parallel tests/
-    ```
-
-12. **Quality checks** before committing:
-    ```bash
-    make sa && make lint
-    ```
-
-### Phase 4: Ship
-
-13. **Final verification**:
-    ```bash
-    ./bashunit tests/ && ./bashunit --parallel tests/ && make sa && make lint
-    ```
-
-14. **Commit** using conventional commits with `Closes #<issue-number>`
-
-15. **Create PR** using the `pr` skill:
-    ```
-    /pr #<issue-number>
-    ```
-
-## Output Format
-
-After fetching, present:
-
-```
-## Issue #<number>: <title>
-
-**Labels:** <labels>
-**State:** <state>
-**Branch:** <branch-name>
-
-### Description
-<body content>
-
-### Next Steps
-1. Explore codebase for context
-2. Create implementation plan
-3. Begin TDD cycle
-```
+Report the issue, acceptance scenario, branch, delivered behavior, validation, and any unresolved prerequisite. Do not paste the full issue or a generic plan back to the user.

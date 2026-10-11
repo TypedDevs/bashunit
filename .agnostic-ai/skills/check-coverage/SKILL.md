@@ -4,53 +4,11 @@ description: Analyze test coverage and identify untested code paths
 allowed-tools: read, shell, Grep, Glob
 ---
 
-# Check Coverage
+# Check coverage
 
-Analyze test coverage and identify gaps.
+Repository paths are relative to the repository root. Measure the requested scope with `./bashunit --coverage <test-path>`. For broad coverage, follow `.github/workflows/coverage.yml`: exclude `tests/unit/coverage/` meta-tests and fixtures, then measure the selected unit tests with `--coverage-paths src`. Running coverage meta-tests under coverage double-instruments the engine and corrupts their assertions. Keep analysis separate from any later implementation gate.
 
-## Workflow
-
-### 1. Run Coverage (if available)
-
-```bash
-BASHUNIT_COVERAGE=true ./bashunit tests/
-```
-
-### 2. Map Functions to Tests
-
-For each file in `src/`:
-
-```bash
-# List all public functions
-grep "^function bashunit::" src/module.sh
-
-# Find tests referencing each function
-grep -r "function_name" tests/
-```
-
-### 3. Categorize Coverage
-
-- **Well tested**, multiple tests, edge cases covered
-- **Partially tested**, basic test exists, missing edge cases
-- **Not tested**, no tests found
-
-### 4. Identify Critical Gaps
-
-**Priority 1:** Public API functions (`export -f`) with no tests
-**Priority 2:** Error handling paths (`return 1`, `exit 1`) not tested
-**Priority 3:** Complex conditionals without branch coverage
-
-### 5. Generate Report
-
-Output a markdown report with:
-- Summary (total functions, tested count, estimated %)
-- Coverage by module
-- Critical gaps with file:line references
-- Recommended tests to add (specific test function names)
-
-## Coverage Goals
-
-- 90%+ for public functions
-- All user-facing CLI commands tested
-- All error paths tested
-- Internal helpers: optional (if trivial)
+1. Map functions under `src/` to direct tests and observed coverage. Search definitions with `rg '^function ' src/` and usages of each relevant name under `tests/`. Public assertions may lack the `bashunit::` prefix; inspect the public assertion and API surfaces and their loaded module entrypoints. A text match alone does not prove a test executes a function.
+2. Classify each relevant function as well tested, partially tested, or untested using success, edge, and failure-path evidence. State instrumentation limits, including shell-version differences, before treating an uncovered line as a missing test.
+3. Prioritize public APIs without tests, error paths, then complex conditionals. Aim for 90%+ public API coverage and tests for user-facing commands and error paths; trivial internal helpers are lower priority.
+4. Report measured totals and coverage by module, gaps with file and line evidence, and specific proposed test cases. Separate measured percentages from estimates. Do not change production code or tests unless the request includes implementation.

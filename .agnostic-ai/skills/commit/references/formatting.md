@@ -5,11 +5,11 @@ no `shfmt` target, and **`shfmt -w .` must not be run**, it fights `.editorconfi
 two ways:
 
 - `.editorconfig` sets `indent_size = unset` for `tests/acceptance/**.sh` and
-  `src/console_header.sh`; shfmt reads `unset` as "use my default", which is tabs,
+  `src/console/header.sh`; shfmt reads `unset` as "use my default", which is tabs,
   while `[*]` sets `indent_style = space`. Any new file under `tests/acceptance/`
   therefore shows up shfmt-dirty, that is expected, not a defect.
 - shfmt collapses `\`-continued strings onto one line, which would push
-  `src/state.sh`'s record writer past `max_line_length = 120`.
+  the payload record writers past `max_line_length = 120`.
 
 To check you introduced no new drift, compare the dirty-file *list* against main
 rather than requiring it to be empty:

@@ -2,133 +2,45 @@
 scope: tests
 ---
 
-# Testing Guidelines
+# Testing
 
-## Organization
+Read sibling tests before writing a new fixture. Repository paths are relative to the repository root.
 
-| Directory | Purpose | Pattern |
-|-----------|---------|---------|
-| `tests/unit/` | Isolated function tests | Mocks/spies for deps |
-| `tests/functional/` | Multi-component integration | Real interactions |
-| `tests/acceptance/` | CLI/end-to-end workflows | Full user scenarios |
+| Layer | Directory | Scope |
+|-------|-----------|-------|
+| Unit | `tests/unit/` | Isolated helpers, mocked dependencies |
+| Functional | `tests/functional/` | Real component interactions |
+| Acceptance | `tests/acceptance/` | CLI and end-to-end behavior |
 
-**Naming:** Files end with `_test.sh`. Functions: `test_should_<behavior>_when_<condition>`
+Files end in `_test.sh`; name tests for the behavior and trigger. Use targeted RED/GREEN checks during implementation, then the root quality gate once the complete change set is ready. Test success, failure and cleanup paths that the change affects; verify parallel behavior when state or workers change.
 
-## Assertions
+## Assertions and doubles
 
-```bash
-assert_equals "expected" "$actual"
-assert_not_equals "not_this" "$actual"
-assert_contains "substring" "$haystack"
-assert_not_contains "substring" "$haystack"
-assert_matches "regex" "$string"
-assert_not_matches "regex" "$string"
-assert_empty "$var"
-assert_not_empty "$var"
-assert_successful_code "$?"
-assert_general_error "$?"
-assert_file_exists "$path"
-assert_file_not_exists "$path"
-assert_directory_exists "$path"
-assert_array_contains "value" "${array[@]}"
-assert_array_not_contains "value" "${array[@]}"
-```
-
-There is no `assert_fails`. To assert that an assertion *fails*, capture its output and
-compare it with the renderer:
+Assertions are bare functions (`assert_equals`, `assert_same`, `assert_contains`, `assert_not_contains`, `assert_successful_code`, `assert_general_error`, `assert_file_exists`, `assert_file_not_exists`). Helpers and doubles use `bashunit::*`. Inspect the matching assertion before guessing its signature. There is no `assert_fails`.
 
 ```bash
-assert_same "$(bashunit::console_results::print_failed_test "My test" "a" "but got " "b")" \
-  "$(assert_same "a" "b")"
-```
-
-## Test Doubles
-
-Helpers are namespaced (`bashunit::*`); assertions are bare. The unprefixed helper name
-is a `command not found`, not an alias.
-
-```bash
-# Spies - track calls without changing behavior
 bashunit::spy function_name
 assert_have_been_called function_name
-assert_have_been_called_times 2 function_name          # count first, then spy
-assert_have_been_called_with function_name "arg"       # spy first, then expected
-assert_have_been_called_with function_name "arg" 1     # ...of call #1
+assert_have_been_called_times 2 function_name
+assert_have_been_called_with function_name "arg"
+assert_have_been_called_with function_name "arg" 1
 assert_have_been_called_nth_with 1 function_name "arg"
-assert_have_been_called_with_args function_name "a b"  # boundary-exact, no call index
-
-# Mocks - replace behavior
+assert_have_been_called_with_args function_name "a b"
 bashunit::mock date echo "2024-05-01"
-bashunit::mock uname <<< "Linux"    # heredoc form ignores the call's arguments
+bashunit::mock uname <<< "Linux"
 ```
 
-Note `_times` takes the count first while `_with` takes the spy first, a swapped pair
-fails the assertion rather than erroring, so it reads like a real defect.
+`_times` takes the count first; `_with` takes the spy first and an optional call index last. `_with_args` compares argument boundaries. To test a failing assertion, compare its captured output with the corresponding renderer, as sibling tests do.
 
-## Data Providers
+Providers emit one argument row per line and are selected with `# @data_provider <function>`. Keep parser quoting, empty arguments and row isolation intact. Hooks are `set_up_before_script`, `set_up`, `tear_down`, and `tear_down_after_script`; the script hooks run once per file, the others per test.
 
-```bash
-function data_provider_inputs() {
-  echo "5 3 8"
-  echo "0 0 0"
-}
+Use `assert_match_snapshot` or `assert_match_named_snapshot`; update snapshots deliberately with `./bashunit --snapshot-update --filter <function-name> tests/`.
 
-# @data_provider data_provider_inputs
-function test_should_add() {
-  assert_equals "$3" "$(add "$1" "$2")"
-}
-```
+## Isolation
 
-## Lifecycle Hooks
+- Use `$(bashunit::temp_file)` or `$(bashunit::temp_dir)` for framework-cleaned fixtures. No shared fixed temporary paths or global state between tests.
+- Mock network calls and nondeterministic external dependencies. Tests must work under `./bashunit --parallel tests/`.
+- Embedded test-function definitions are scanned textually by the duplicate check, even inside strings. Give every embedded definition a unique name across its containing file; quote-state heuristics cannot safely hide them.
+- Strict CI uses `set -euo pipefail`: initialize arrays, guard optional elements, use `if` for conditional side effects, and isolate `extdebug` in a subshell. Simple output contains markers, so test rendering helpers rather than assuming full `print_line` output.
 
-- `set_up_before_script()`, once before all tests in file
-- `set_up()`, before each test
-- `tear_down()`, after each test
-- `tear_down_after_script()`, once after all tests in file
-
-## Snapshot Testing
-
-```bash
-assert_match_snapshot "$output"
-assert_match_named_snapshot "stderr" "$stderr" # multiple snapshots in one test
-# Re-record deliberately: ./bashunit --snapshot-update --filter "test name" tests/
-```
-
-## Writing a test that generates test files
-
-The duplicate-test-function check scans a file **textually**, so a fixture body
-embedded in a string counts as a definition of the *enclosing* file:
-
-```bash
-function test_one() {
-  run_fixture 'function test_x() { assert_same 1 1; }'   # ← counted
-}
-function test_two() {
-  run_fixture 'function test_x() { assert_same 2 2; }'   # ← counted: duplicate
-}
-```
-
-That fails the whole run before any test executes, and the message names a
-function this file never defines. Give every embedded fixture function a name
-unique across the file. The report includes the line of each definition
-(`test_x (lines 30, 40)`), which is what identifies the strings.
-
-It cannot be fixed by tracking quote state, an apostrophe in any comment
-(`# doesn't work`) would flip it and mask real duplicates.
-
-## Test Isolation
-
-- Use `$(bashunit::temp_file)` / `$(bashunit::temp_dir)` (auto-cleaned) for file
-  operations, these are functions, not variables
-- No shared global state between tests
-- No network calls, mock external commands
-- No time dependencies, mock `date` if needed
-- Tests must be safe for `./bashunit --parallel tests/`
-
-## Reference Tests
-
-- **Assertions:** `tests/unit/assert_test.sh`
-- **Doubles:** `tests/functional/doubles_test.sh`
-- **Providers:** `tests/functional/provider_test.sh`
-- **Hooks:** `tests/unit/setup_teardown_test.sh`
-- **CLI/snapshots:** `tests/acceptance/bashunit_test.sh`
+Start with `tests/unit/assert/`, `tests/functional/doubles_test.sh`, `tests/functional/provider_test.sh`, `tests/unit/runner/hooks_test.sh`, and `tests/acceptance/bashunit_test.sh`. Use `rg` to locate the matching function tests before adding a pattern.

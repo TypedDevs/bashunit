@@ -4,56 +4,12 @@ description: Add new assertion function with comprehensive tests following TDD
 allowed-tools: read, edit, write, shell, Grep, Glob
 ---
 
-# Add Assertion Skill
+# Add an assertion
 
-Add a new assertion function to bashunit following strict TDD methodology.
+Repository paths are relative to the repository root. Establish the assertion name, arguments, success and failure behavior, and messages from the request and sibling assertions; ask only for missing decisions. Record acceptance criteria and test inventory in `.tasks/YYYY-MM-DD-add-assertion-name.md` for nontrivial work.
 
-## Prerequisites
-
-1. **Task file must exist**, create `.tasks/YYYY-MM-DD-add-assertion-name.md`
-2. **Study patterns**, read `tests/unit/assert_test.sh` and `src/assertions.sh`
-
-## Workflow
-
-### 1. Plan
-
-Ask user: assertion name, parameters, success/failure behavior, error messages.
-
-Document acceptance criteria and test inventory in task file.
-
-### 2. Study Existing Patterns
-
-Read `src/assertions.sh` and `tests/unit/assert_test.sh` to understand:
-- Parameter validation, assertion logic, error message format
-- Return codes (0 = success, 1 = failure)
-- How tests verify both success and failure cases
-
-### 3. TDD Cycles
-
-For each test in inventory, follow RED -> GREEN -> REFACTOR:
-
-1. **Basic success case**, assertion passes with valid input
-2. **Failure case**, assertion fails correctly: capture its output and compare it with
-   `bashunit::console_results::print_failed_test` (there is no `assert_fails`)
-3. **Edge cases**, empty input, special characters, nested structures, malformed data
-
-### 4. Integration
-
-- Source new file in `src/bashunit.sh` if created
-- `export -f` the assertion function
-- Run full test suite: `./bashunit tests/`
-- Quality checks: `make sa && make lint`
-
-### 5. Documentation
-
-- Add function header with Arguments/Returns/Example
-- Update CHANGELOG.md
-- Update user-facing docs if applicable
-
-## Final Checklist
-
-- [ ] All tests passing (success, failure, edge cases)
-- [ ] Function documented and exported
-- [ ] Quality gate passes
-- [ ] CHANGELOG updated
-- [ ] Task file completed
+1. Study the matching implementation under `src/assert/` and tests under `tests/unit/assert/`, including parameter validation, return codes, and message checks. `src/assert/index.sh` lists assertion modules.
+2. Use focused RED, minimal GREEN, then REFACTOR for basic success, expected failure, and relevant edge cases (empty values, special characters, malformed input). Use `assert_assertion_passes`, `assert_assertion_fails`, or `assert_assertion_fails_with` from `src/assert/assertions.sh` where appropriate. Match existing output comparisons when needed; there is no `assert_fails`.
+3. If adding a module, source it from `src/assert/index.sh`. Expose the public function through the existing module-loading pattern. Preserve Bash 3.0 parse compatibility and the existing public contract.
+4. Document the public assertion's arguments, returns, and example in user-facing docs, update CHANGELOG, and complete the task file when used. Add code comments only for a constraint the code cannot express.
+5. The main session runs the canonical quality gate once after the entire change set; delegates run only assigned focused checks. Verify success, failure, edge cases, module loading, and documentation before handing off.
