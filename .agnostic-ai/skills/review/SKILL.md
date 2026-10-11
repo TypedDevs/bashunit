@@ -6,39 +6,15 @@ argument-hint: "[#N]"
 allowed-tools: shell, read, Grep, Glob
 ---
 
-# Review a Pull Request
+# Review a pull request
 
-Review a GitHub PR. When no number is given, review the PR for the current branch.
+Resolve the supplied PR number or the current branch's PR with `gh pr view`. If neither identifies one, list open PRs and request a selection. For an uncommitted diff, use `code-reviewer` instead.
 
-> For reviewing your uncommitted working diff instead, assign that diff to the `code-reviewer` agent.
+Read `gh pr view <number> --json number,title,body,state,headRefName,baseRefName,url` and `gh pr diff <number>`. Follow the applicable source rules in `.agnostic-ai/AGNOSTIC_AI.md`.
 
-## Current Branch Context
+- Verify changed behavior, failure paths, Bash compatibility, dynamic scope, subshell state, parallel isolation and cleanup. Prefer `[ ]` for ordinary tests; `[[ ]]` works on Bash 3.0 and is not a compatibility defect.
+- Check tests exercise the failure and the requested outcome. Respect process budgets and public behavior; require changelog and documentation where needed.
+- For specs, check canonical sources, generated references, model resolution and preserved target behavior.
+- Review read-only. Do not run the full gate, edit files, or post comments without authorization.
 
-Run the following commands before proceeding:
-- Branch: `git branch --show-current`
-- PR for this branch: `gh pr view --json number,title,state,url --jq '"#\(.number) \(.title) [\(.state)] \(.url)"' 2>/dev/null || echo "none"`
-
-## Arguments
-- User-supplied argument: PR number to review (optional, e.g., `#42` or `42`).
-
-## Instructions
-
-1. **Resolve which PR to review:**
-  - If the user-supplied argument contains a number, review that PR.
-  - Otherwise, use the current branch's PR shown in the context above.
-  - If neither yields a PR (no argument and the branch has no open PR), run `gh pr list` and ask the user which one to review. Do NOT guess.
-
-2. **Load the PR:**
-  ```bash
-  gh pr view <number> --json number,title,body,state,headRefName,baseRefName,url
-  gh pr diff <number>
-  ```
-
-3. **Review the diff** against this project's standards (see `.agnostic-ai/AGNOSTIC_AI.md` and `.agnostic-ai/rules/`):
-  - Bash 3.0+ compatibility (no `declare -A`, `[[ ]]`, `${var,,}`, negative indexing, `&>>`)
-  - Tests exist and follow TDD; both success and failure paths covered
-  - Naming, namespacing (`bashunit::*` / `_private`), and dynamic-scope safety
-  - ShellCheck cleanliness and 2-space indentation (`make lint`, not `shfmt`)
-  - CHANGELOG.md updated for user-facing changes
-
-4. **Report findings** grouped by severity (blocker / suggestion / nit), each as `path:line, problem. fix.`. No praise, no scope creep. State plainly if the PR looks good.
+Report only verified defects, most severe first: `path:line, severity, failing input, smallest fix`. Do not add style nits or speculate. If none remain, say so and name the scope checked.

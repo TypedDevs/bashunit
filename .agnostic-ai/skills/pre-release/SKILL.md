@@ -4,87 +4,17 @@ description: Run comprehensive pre-release validation checklist
 allowed-tools: read, shell, Grep, Glob
 ---
 
-# Pre-Release Validation
+# Pre-release validation
 
-Run all checks before releasing a new bashunit version.
+Assess readiness without publishing. Repository paths are relative to the repository root. Use {{$SKILL:release}} for publishing; `release.sh` owns version changes, tags and uploads.
 
-## Checklist
+1. Start on clean, current `main`. Read `CHANGELOG.md` and `git log <latest-release>..HEAD`; check coverage of public changes and migration guidance for breaking changes.
+2. Check current versions in `bashunit`, `package.json`, `docs/package.json`, and both lockfiles (top-level and `packages[""].version`). The latest dated changelog section must agree; `Unreleased` describes the next version.
+3. Run the quality gate in `.agnostic-ai/AGNOSTIC_AI.md` once. Reuse passing results for unchanged content. Use targeted checks to investigate failures; repeat suites only for new changes or a specific flakiness concern.
+4. Verify CI for the exact current main commit, not a previous run: tests, Bash 3.0 compatibility, build, docs, static analysis and formatting must pass. Check the full OS matrix for changes to paths, permissions or runtime behavior. Use `gh run list --branch main` and inspect each relevant run.
+5. Inspect the changed paths for unsafe input handling, secrets and undocumented public behavior. Use `.agnostic-ai/rules/bash-style.md` and `tests/unit/project/bash_compatibility_test.sh` for compatibility; `[[ ]]` is a style choice, not a Bash 3.0 failure.
+6. Check affected README examples and documentation links. If Docker is available and Linux behavior needs local verification, use `make docker/alpine` and `make docker/ubuntu`; otherwise report the platform coverage supplied by CI.
+7. Smoke-test `./bashunit --help`, `./bashunit --version`, and a single assertion in a unique temporary test file. Clean up that file.
+8. Preview the chosen version with `./release.sh <version> --dry-run`. For changes to the release process, also inspect `--sandbox` output and its release commit without publishing.
 
-### 1. Version Consistency
-
-Verify version matches across: `package.json`, `CHANGELOG.md`, `src/bashunit.sh`
-
-### 2. Full Test Suite
-
-```bash
-./bashunit tests/unit/
-./bashunit tests/functional/
-./bashunit tests/acceptance/
-./bashunit tests/
-./bashunit --parallel tests/
-```
-
-All must pass. Run 3-5 times to catch flaky tests.
-
-### 3. Static Analysis & Formatting
-
-```bash
-make sa           # ShellCheck, zero warnings
-make lint         # EditorConfig, clean
-# NB: no shfmt gate, it conflicts with .editorconfig here; make lint is the authority
-```
-
-### 4. Documentation
-
-- `CHANGELOG.md`, version section complete with all changes
-- `README.md`, examples current, no broken links
-- No remaining TODOs/FIXMEs in docs
-
-### 5. Bash 3.0+ Compatibility
-
-```bash
-grep -rn '\[\[' src/            # Should not use [[
-grep -rn 'declare -A' src/      # No associative arrays
-grep -rn '\${.*,,}' src/        # No case conversion
-```
-
-### 6. Cross-Platform (if Docker available)
-
-```bash
-make docker/alpine
-make docker/ubuntu
-```
-
-### 7. Security Scan
-
-No hardcoded secrets, no unsafe eval, input validation present.
-
-### 8. Breaking Changes
-
-Review `git log` since last release. Breaking changes must be documented with migration guide.
-
-### 9. Git & CI Status
-
-- Working directory clean
-- All CI checks passing: `gh run list --limit 5`
-
-### 10. Smoke Test
-
-```bash
-./bashunit --help
-./bashunit --version
-echo 'function test_smoke() { assert_equals "1" "1"; }' > /tmp/smoke_test.sh
-./bashunit /tmp/smoke_test.sh
-rm /tmp/smoke_test.sh
-```
-
-## Output
-
-Report each check as pass/fail/warning. Only proceed to release when ALL checks pass.
-
-## After Validation
-
-```bash
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
+Report passed checks, failures and specific unverified items. Pending CI is pending, not passed. Stop publishing on failed checks. Do not create tags manually or run the release script in publishing mode from this skill.

@@ -8,75 +8,14 @@ allowed-tools: shell, read, Grep, Glob
 
 # Release
 
-Thin reminder around `./release.sh`. The release script owns the whole
-end-to-end flow (version bumps, build, checksum, CHANGELOG, commit, signed
-tags, push, GitHub release, `latest` branch). Don't reimplement those steps
-here, fix `release.sh` if something is missing.
+Use `./release.sh` from the repository root. It owns manifest and lockfile versions, build, checksum, changelog, commit, signed tags, GitHub release and `latest`. Fix the script when a step is missing; do not duplicate its flow.
 
-## Current State
+1. Run {{$SKILL:pre-release}} and reuse completed checks for unchanged content. Start on clean, current `main` and require CI success for that commit.
+2. Use the user-selected version. Otherwise recommend a version from the changes and repository history; the script defaults to a minor bump. Performance and maintenance work can justify a minor release before 1.0. Confirm only if the version or publishing authorization is missing; an earlier selection and authorization remain valid.
+3. Preview `./release.sh <version> --dry-run`. Finish validation and show the concrete preview before requesting any missing publishing approval.
+4. Once authorized and green, run `./release.sh <version> --force`.
+5. Verify `gh release view <version>` contains the binary and checksum; check the matching `npm-publish.yml` run, published npm version, installer checksum, and `origin/latest` release commit. Report the release URL and any unfinished verification.
 
-Run the following commands before proceeding:
+The dry run prints the previous dated changelog section because it does not rewrite files. The real run converts `Unreleased` first. Tags are annotated and respect `tag.gpgsign`; `v0` points to the release commit. npm publishes through `.github/workflows/npm-publish.yml` on the GitHub release event.
 
-- Current version: `grep -o 'BASHUNIT_VERSION="[^"]*"' bashunit | cut -d'"' -f2`
-- Branch: `git branch --show-current`
-- Working tree: `git status --short`
-- Unreleased changes: `awk '/^## Unreleased$/,/^## \[/' CHANGELOG.md | head -30`
-
-## Steps
-
-### 1. Pre-flight
-
-```bash
-./bashunit tests/                 # all green
-make sa && make lint              # static analysis + editorconfig
-gh run list --limit 3 --branch main
-```
-
-Stop and report if anything fails. Don't release on a red main.
-
-### 2. Pick the version
-
-the user-supplied argument overrides; otherwise the script auto-increments the minor.
-Bump by the Unreleased section: a `### Added`/feat → minor, only `### Fixed` →
-patch. Confirm the version with the user before publishing.
-
-### 3. Preview, then publish
-
-```bash
-./release.sh <version> --dry-run   # preview; changes nothing
-./release.sh <version> --force     # publish (non-interactive)
-```
-
-Notes:
-- `--dry-run` release notes look "off" (they show the previous version's
-  section) because the CHANGELOG isn't actually rewritten in a dry run. The
-  real run converts `## Unreleased` → `## [<version>]` first, so the published
-  notes are correct. Not a bug.
-- Tagging is gpgsign-safe: `release::create_tags` makes annotated, `-m`
-  tags (signed when `tag.gpgsign=true`) and pins `v0` to the release commit
-  (`^{}`). No manual tagging needed.
-- npm publishes automatically via `.github/workflows/npm-publish.yml` on the
-  GitHub `release: published` event.
-
-### 4. Verify the published artifacts
-
-```bash
-gh release view <version>                       # assets: bin/bashunit + bin/checksum
-gh run list --workflow npm-publish.yml --limit 1
-git log --oneline -1 origin/latest             # latest branch advanced (docs deploy)
-```
-
-Confirm the npm version and the install.sh checksum match, then report the
-release URL.
-
-## Recovery
-
-`./release.sh --rollback` restores files from the most recent backup if a run
-fails mid-way.
-
-## Example Usage
-
-```
-/release
-/release 0.40.0
-```
+If execution fails, inspect the completed steps before retrying. `./release.sh --rollback` restores files from its saved backup; it does not undo already-pushed tags, commits or published artifacts.

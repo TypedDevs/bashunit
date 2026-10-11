@@ -16,11 +16,11 @@ All paths are relative to the repository root, including from generated skill an
 
 Bash 3.0 is the compatibility floor, including parse-time behavior. Use existing patterns. Study the relevant tests before adding assertions, doubles, providers, hooks, or CLI behavior. Do not invent commands or features.
 
-Use TDD for runtime changes: RED for the right reason, minimal GREEN, then REFACTOR with tests green. Complete the acceptance criteria. Use a task file for nontrivial work; the `tdd-cycle` skill carries the full workflow. Preserve public APIs unless the requested change includes documentation and CHANGELOG updates. Record architectural decisions in an ADR.
+Use the TDD rule for runtime changes and its `tdd-cycle` skill for nontrivial plans. Preserve public APIs unless the task includes documentation and CHANGELOG updates; record architectural decisions in an ADR.
 
 ## Quality gate
 
-Run once after the complete change set, before committing:
+The main session runs this gate once after the complete change set, before committing. Targeted checks support RED/GREEN or diagnosis; reuse passing checks while content is unchanged:
 
 ```bash
 ./bashunit tests/
@@ -41,6 +41,6 @@ Workers share the checkout: assign separate files, preserve others' edits, and r
 
 Edit `.agnostic-ai/` or `agnostic-ai.yaml`, never generated instructions, agents, skills, hooks, or settings. Install the pinned contributor dependencies with `npm ci` (use `npm ci --force` for a Windows source checkout because the published npm package restricts its OS). Run `npm run agents:sync` and `npm run agents:check`, which use the project-local CLI.
 
-Keep unrelated changes out of the PR. Update CHANGELOG for user-visible changes. Use the `pr` skill for pull requests. Use Conventional Commits: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, or `chore`, with an optional domain scope such as `assert`, `runner`, `cli`, or `docs`.
+Keep unrelated changes out of the delivery. Use a PR unless the user requests a direct commit to main. Update CHANGELOG for user-visible changes. Use the `pr` skill for pull requests. Use Conventional Commits: `feat`, `fix`, `perf`, `docs`, `style`, `refactor`, `test`, or `chore`, with an optional domain scope such as `assert`, `runner`, `cli`, or `docs`.
 
 Never commit secrets, skip Git hooks, amend published commits, or use destructive Git commands. Pushing requires user authorization; force-pushing main requires an explicit request. All local gates must pass before committing.

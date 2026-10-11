@@ -8,7 +8,7 @@
 - Parallel reports avoid per-row base64 processes while preserving values and completion order (#1371)
 - Data providers avoid per-argument base64 processes while preserving quoting, empty values and parser isolation (#1370)
 - JSON reports avoid per-field processes for ordinary filenames, test names and empty messages while preserving escaping (#1369)
-- Contributor instructions share task-specific context and model tiers for Claude Code and Codex through a pinned agnostic-ai npm development dependency (#1387)
+- Contributor instructions share task-specific context and model tiers for Claude Code and Codex through a pinned agnostic-ai npm development dependency; shorter workflows align review and release checks with the current code (#1387)
 
 ### Fixed
 

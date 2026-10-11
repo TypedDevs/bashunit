@@ -6,103 +6,16 @@ argument-hint: "[#issue]"
 allowed-tools: shell, read, Grep, Glob
 ---
 
-# Create Pull Request
+# Create a pull request
 
-Push branch and create a PR with a concise, issue-linked description.
+Use this skill for PR creation. Repository paths are relative to the repository root.
 
-> **IMPORTANT:** This skill MUST be used for ALL pull request creation, even when the user says "create pr" without `pr`. Never create a PR without following these steps.
+1. Inspect the current branch, `git status --short`, `git log main..HEAD --oneline`, and `git diff main..HEAD --stat`. Keep the user's edits and scope.
+2. Verify `CHANGELOG.md` describes public behavior changes under `Unreleased`, with issue references where applicable. Contributor-only changes can update the existing contributor entry; do not add a self-referential changelog note for a changelog edit.
+3. Complete the quality gate and commit workflow in `.agnostic-ai/AGNOSTIC_AI.md` and {{$SKILL:commit}}. Reuse passing checks for unchanged content. Do not rely on an optional Git hook being installed. Obtain the required diff review before pushing.
+4. Push with `git push -u origin HEAD` when authorized. If it fails, diagnose and fix the cause; never bypass hooks or branch protection.
+5. Read `.github/PULL_REQUEST_TEMPLATE.md` and follow its current headings and checklist. Use a conventional title under 70 characters. Link an actual issue with `Related #N`, never invent one. Explain the problem and resulting behavior in 1-2 background sentences and 2-4 change bullets, including concise validation. Avoid file inventories and conversational history.
+6. Write the exact PR body to a temporary file; create with `gh pr create --title <title> --assignee @me --label <label> --body-file <file>`. Select one label: `bug`, `enhancement`, `documentation`, `refactor`, `ui`, or `investigation`, according to the change. Report the URL.
+7. If an issue has a configured project in `.agnostic-ai/local/github-project.json`, use its actual IDs to move the issue to In Review. Do not assume project access or invent a missing configuration; report an unavailable update separately.
 
-## Current Branch Context
-
-Run the following commands before proceeding:
-- Branch: `git branch --show-current`
-- Commits: `git log main..HEAD --oneline 2>/dev/null`
-- Changed files: `git diff main..HEAD --stat 2>/dev/null`
-
-## Arguments
-- User-supplied argument: Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
-
-## Instructions
-
-1. **Review the branch context above**, the commits and changed files come from the commands above.
-
-2. **MANDATORY: Update CHANGELOG.md**, Read `CHANGELOG.md` and check the `## Unreleased` section. If the changes from this branch are NOT already listed there, you MUST update it before proceeding. **Do NOT skip this step. Do NOT proceed to push without verifying.**
-  - Add entries under the appropriate subsection (`### Added`, `### Changed`, `### Fixed`, etc.)
-  - Reference issue numbers where applicable (e.g., `(Issue #123)`)
-  - Commit the update:
-    ```bash
-    git add CHANGELOG.md && git commit -m "docs: update changelog"
-    ```
-
-3. **Push branch**:
-  ```bash
-  git push -u origin HEAD
-  ```
-  - The `pre-commit` hook runs tests, shellcheck, and linting automatically on commit. Ensure all checks passed before pushing.
-  - If push fails, read the output, fix the issue, commit the fix, and retry. Do NOT use `--no-verify` to bypass.
-
-4. **Generate PR title**:
-  - If the user-supplied argument contains an issue number, fetch the issue title:
-    ```bash
-    gh issue view <number> --json title -q '.title'
-    ```
-  - PR title format: `<type>(<scope>): <short description>` (conventional commit style, under 70 chars)
-  - Derive the type from the branch prefix (`feat/` → feat, `fix/` → fix, `docs/` → docs)
-
-5. **Create PR** using the template from `.github/PULL_REQUEST_TEMPLATE.md`:
-  ```bash
-  gh pr create --title "<title>" --assignee @me --label "<label>" --body "$(cat <<'EOF'
-  ## 🤔 Background
-
-  Related #<issue-number>
-
-  <1-2 sentences: motivation and context for the changes>
-
-  ## 💡 Changes
-
-  - <bullet 1: what changed and why>
-  - <bullet 2>
-  - <bullet 3> (optional)
-  - <bullet 4> (optional)
-  EOF
-  )"
-  ```
-
-  **MANDATORY:** Always follow the PR template structure (`## 🤔 Background` + `## 💡 Changes`). Never use a different format.
-
-  **Assignee:** Always assign to `@me` (the PR creator).
-
-  **Labels:** Add the single most relevant label based on the branch prefix and change context:
-  - `bug`, branch starts with `fix/` and addresses a defect
-  - `enhancement`, branch starts with `feat/` or adds new functionality
-  - `documentation`, branch starts with `docs/` or only changes docs
-  - `refactor`, code restructuring with no behavior change
-  - `ui`, visual/frontend-only changes
-  - `investigation`, spikes, research, or exploratory work
-
-  **Body guidelines:**
-  - **Background**: Link the issue with `Related #<number>`, then 1-2 sentences of context. **NEVER use `Closes` or `Fixes`.**
-  - **Changes**: 2-4 short bullet points. Focus on *what* and *why*, not implementation details.
-  - **No file lists, no class names, no code snippets** in the body.
-  - Keep the entire body under 15 lines.
-
-6. **Move issue to "In Review"** in GitHub Project (if issue number provided):
-  ```bash
-  # Read project config from .agnostic-ai/local/github-project.json
-  ITEM_ID=$(gh project item-list PROJECT_NUMBER --owner OWNER --format json \
-    | jq -r '.items[] | select(.content.number == ISSUE_NUMBER) | .id')
-
-  gh project item-edit \
-    --id "$ITEM_ID" \
-    --project-id "PROJECT_ID" \
-    --field-id "STATUS_FIELD_ID" \
-    --single-select-option-id "IN_REVIEW_OPTION_ID"
-  ```
-
-  **Note:** Requires `project` scope. Run `gh auth refresh -s project` if needed.
-
-7. **Report the PR URL** to the user.
-
-## Example Usage
-
-Use the `pr` skill alone, or pass an issue number such as `42` or `15`.
+Respect existing publishing authorization. Creating a PR does not authorize merging it.

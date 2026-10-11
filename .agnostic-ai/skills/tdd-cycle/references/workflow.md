@@ -1,73 +1,44 @@
-# TDD Workflow
+# TDD task file
 
-**Test-Driven Development is mandatory** for all bashunit development.
+Use the `tdd-cycle` skill for runtime RED/GREEN/REFACTOR steps. This reference supplies the planning record; repository paths are relative to the root. Do not create runtime tests for prose-only edits.
 
-## The Cycle
-
-```
-RED    -> Write a failing test (must fail for the RIGHT reason)
-GREEN  -> Write minimal code to make it pass (nothing extra)
-REFACTOR -> Improve code while keeping all tests green
-REPEAT -> Until acceptance criteria are met
-```
-
-## Task File (Recommended for non-trivial changes)
-
-For features, refactors, or multi-test work, create `.tasks/YYYY-MM-DD-slug.md`.
-Skip for small bug fixes or single-test changes.
+For features, refactors or multi-test work, create `.tasks/YYYY-MM-DD-slug.md`; skip it for a small fix or a single test. Keep the record current as work progresses.
 
 ```markdown
-# [Feature/Fix Name]
+# Feature or fix
 
-**Date:** YYYY-MM-DD  **Status:** In Progress
+Date: YYYY-MM-DD
+Status: In Progress
 
-## Acceptance Criteria
-- [ ] Criterion 1
+## Acceptance scenario
 
-## Test Inventory
+Given the concrete trigger, the user observes the expected result.
+
+## Non-goals
+
+Work outside this outcome.
+
+## Acceptance criteria
+
+- [ ] Criterion
+
+## Test inventory
+
 - [ ] `test_should_handle_valid_input`
 - [ ] `test_should_fail_with_invalid_input`
 
-## Current Red Bar
-Test: (none yet)
+## Current red bar
+
+Test: none yet
+Failure: none yet
 
 ## Logbook
+
 ### YYYY-MM-DD HH:MM
-- Created task, analyzed existing code
+
+- Scope, evidence, decision, or test result.
 ```
 
-## RED Phase
+Choose the smallest next test, prove its failure is behavioral, implement minimal GREEN, and refactor with affected tests passing. Use existing patterns under `tests/unit/assert/` or the matching module tests; no speculative behavior. Delegates run only assigned targeted checks.
 
-1. Pick the **smallest next test** from inventory
-2. Study patterns from existing tests (unit -> `assert_test.sh`, doubles -> `doubles_test.sh`)
-3. Write test following Arrange-Act-Assert
-4. Run: `./bashunit path/to/test.sh`, **must fail**
-5. Verify failure reason: function missing or wrong output (**not** syntax error)
-
-## GREEN Phase
-
-1. Write **minimal** code to pass, no extra features, no premature optimization
-2. Run: `./bashunit path/to/test.sh`, **must pass**
-
-## REFACTOR Phase
-
-1. Improve readability, naming, extract duplication, **no behavior changes**
-2. Run tests after each change
-3. After the change set is complete, run quality checks once: `make sa && make lint` (never `shfmt -w`, it breaks `make lint`)
-
-## Quality Gate (Before Commit)
-
-```bash
-./bashunit tests/               # All tests
-./bashunit --parallel tests/    # Parallel (isolation check)
-make sa && make lint            # Static analysis + linting (lint is the format gate)
-```
-
-## Definition of Done
-
-- All tests green for the **right reason**
-- All acceptance criteria met
-- Quality gate passes
-- Bash 3.0+ compatible
-- CHANGELOG updated (if user-facing)
-- ADR created (if architectural decision)
+Done means the acceptance scenario works, its criteria are complete, runtime parsing works on Bash 3.0, and public changes have docs and a CHANGELOG entry. Record architectural decisions in an ADR. The main session runs the quality gate in `.agnostic-ai/AGNOSTIC_AI.md` once after the complete change set and before committing.
