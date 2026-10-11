@@ -1,0 +1,2 @@
+[agents]
+max_concurrent_threads_per_session = 2

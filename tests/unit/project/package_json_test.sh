@@ -81,18 +81,20 @@ function test_package_json_excludes_docs_dependencies() {
   assert_not_contains '"vue"' "$pkg"
 }
 
-function test_package_json_declares_no_dependencies_block() {
+function test_package_json_declares_no_runtime_dependencies() {
   local pkg
   pkg=$(cat "$PKG_FILE")
   assert_not_matches '"dependencies"[[:space:]]*:' "$pkg"
-  assert_not_matches '"devDependencies"[[:space:]]*:' "$pkg"
+  assert_not_matches '"optionalDependencies"[[:space:]]*:' "$pkg"
   assert_not_matches '"peerDependencies"[[:space:]]*:' "$pkg"
 }
 
-function test_package_json_declares_no_scripts_block() {
+function test_package_json_declares_no_install_lifecycle_scripts() {
   local pkg
   pkg=$(cat "$PKG_FILE")
-  assert_not_matches '"scripts"[[:space:]]*:' "$pkg"
+  local lifecycle
+  lifecycle='"(preinstall|install|postinstall|prepublish|prepare|preprepare|postprepare)"[[:space:]]*:'
+  assert_not_matches "$lifecycle" "$pkg"
 }
 
 function test_docs_package_json_marked_private() {

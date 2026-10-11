@@ -1,0 +1,71 @@
+name: Agent Specs
+
+on:
+  pull_request:
+    paths:
+      - '.agnostic-ai/**'
+      - 'agnostic-ai.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.gitignore'
+      - '.worktreeinclude'
+      - '.github/workflows/check-agent-specs.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.agnostic-ai/**'
+      - 'agnostic-ai.yaml'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.nvmrc'
+      - '.gitignore'
+      - '.worktreeinclude'
+      - '.github/workflows/check-agent-specs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install contributor dependencies
+        run: |
+          npm ci --ignore-scripts
+          echo "$GITHUB_WORKSPACE/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Validate and generate both targets
+        run: |
+          npm run agents:sync
+          npm run agents:check
+          git diff --exit-code
+      - name: Verify shared ShellCheck hook
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          with tempfile.TemporaryDirectory() as directory:
+              path = Path(directory) / "edited shell.sh"
+              path.write_text("#!/usr/bin/env bash\necho $1\n")
+              result = subprocess.run(
+                  [
+                      "agnostic-ai", "hook", "run", "shellcheck-after-edit",
+                      "--edit", str(path), "--format", "json",
+                  ],
+                  check=True, capture_output=True, text=True,
+              )
+              targets = json.loads(result.stdout)["targets"]
+              assert {target["target"] for target in targets} == {"claude", "codex"}
+              for target in targets:
+                  assert target["counted"] and not target["warnings"], target
+                  assert any("SC2086" in command["stdout"] for command in target["commands"]), target
+          PY

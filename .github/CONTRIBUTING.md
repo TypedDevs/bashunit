@@ -34,6 +34,7 @@ Contributions are licensed under the [MIT License](https://github.com/TypedDevs/
 - Bash 3.0+
 - Git
 - Make
+- Node.js (use the version in `.nvmrc`) and npm for contributor tooling
 - [ShellCheck](https://github.com/koalaman/shellcheck#installing)
 - [editorconfig-checker](https://github.com/editorconfig-checker/editorconfig-checker#installation)
 - [shfmt](https://github.com/mvdan/sh) and [jq](https://jqlang.org/) when building the standalone binary
@@ -46,12 +47,29 @@ git clone https://github.com/YOUR_USERNAME/bashunit.git
 cd bashunit
 git remote add upstream https://github.com/TypedDevs/bashunit.git
 
+# Install pinned contributor dependencies and generate agent configuration
+npm ci
+npm run agents:sync
+npm run agents:check
+
 # Install pre-commit hooks
 make pre_commit/install
 
 # Verify setup
 make test && make sa && make lint
 ```
+
+For a Windows source checkout in Git Bash, replace `npm ci` with `npm ci --force`: the root manifest restricts the published npm package to macOS and Linux.
+
+### Coding Agent Setup
+
+The root `package.json` pins [agnostic-ai](https://agnostic-ai.org/) 0.82.0 as a development dependency. `npm ci` installs it from the committed lockfile. The setup commands above generate Claude Code and Codex configuration using that local version; a global installation is not required.
+
+Edit `.agnostic-ai/` or `agnostic-ai.yaml`, then run `npm run agents:sync` and `npm run agents:check`. Generated files are ignored. Run sync after cloning and after pulling changes to the specs. Keep personal overrides in `.agnostic-ai/local/` or `agnostic-ai.local.yaml`, which are also ignored.
+
+Standing conventions live in `.agnostic-ai/rules/`. Directory scopes produce path-scoped Claude rules and nested Codex `AGENTS.md` files. Start a session in the relevant directory to load its native instructions; sessions started at the root must read the applicable source rules listed in the root task table. Longer procedures and reference material live in skills and their bundled files, including the fork census skill. A portable after-edit hook extracts edited paths from either tool and runs ShellCheck on shell files. Skills use explicit commands and request arguments in a shared body. The hook uses the project's installed agnostic-ai dependency and requires Node.js and ShellCheck on the client's PATH. Review and trust the generated hook through `/hooks` in Codex before relying on automatic checks. Claude's skill tool restrictions and invocation metadata have no equivalent in Codex; both tools still require the full quality gate before committing.
+
+The default model tier is `balanced`: Sonnet for Claude and `gpt-6.1-sol` at medium effort for Codex. `code-locator` locates code on Haiku or `gpt-6-luna` at low effort, `code-implementer` implements bounded changes on the balanced tier, and `code-reviewer` reviews on Opus or `gpt-6.1-sol` at high effort. These are task assignments, not speed or quality benchmarks. Codex permits at most two concurrent delegates. The coordinator runs the full gate once after all edits. Lookup and review agents prohibit writes in their prompts and request only read and shell capabilities. Each client applies its own capability support and session sandbox; these prompts do not impose a separate filesystem restriction. Override model tiers locally when a model is unavailable in your account; do not commit personal model or permission choices.
 
 ### Documentation Setup (Optional)
 

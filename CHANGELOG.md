@@ -3,12 +3,14 @@
 ## Unreleased
 
 ### Changed
+- Contributor instructions use shared agnostic-ai specs for Claude Code and Codex, with a pinned npm development dependency, task-specific context, and model tiers
 - Sequential multi-file runs reuse provider and annotation metadata from header counting for unchanged files up to 512 characters (#1372)
 - Parallel reports collect worker results without per-row base64 processes, preserving values and completion order (#1371)
 - Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
 - JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
 
 ### Fixed
+- Bash compatibility checks scan shell source files without treating generated contributor instructions as executable code
 - Concurrent provider rows have separate temporary-file owners, including rows with identical arguments (#1379)
 - Skipped macOS and Windows acceptance CI jobs have readable names, with shard labels in their test steps
 - Cancellation regression checks distinguish exited bodies awaiting reaping from running cleanup (#1385)

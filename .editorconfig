@@ -29,7 +29,7 @@ indent_style = tab
 [{tests/acceptance/**.sh,src/console/header.sh,docs/command-line.md}]
 indent_size = unset
 
-[.claude/**.md]
+[{.claude/**.md,.agnostic-ai/**.md}]
 indent_size = unset
 
 # Vendored verbatim (Cobertura's coverage-04.dtd); not ours to reformat.

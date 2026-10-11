@@ -35,5 +35,12 @@
     "bashunit",
     "tdd",
     "assertions"
-  ]
+  ],
+  "devDependencies": {
+    "agnostic-ai": "0.82.0"
+  },
+  "scripts": {
+    "agents:sync": "agnostic-ai sync",
+    "agents:check": "agnostic-ai validate && agnostic-ai lint --strict && agnostic-ai sync --check"
+  }
 }

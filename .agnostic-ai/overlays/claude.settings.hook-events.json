@@ -1,0 +1,6 @@
+{
+  "after": "includeCoAuthoredBy",
+  "events": [
+    "PostToolUse"
+  ]
+}
