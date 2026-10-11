@@ -3,21 +3,23 @@
 ## Unreleased
 
 ### Changed
-- Contributor instructions use shared agnostic-ai specs for Claude Code and Codex, with a pinned npm development dependency, task-specific context, and model tiers
-- Sequential multi-file runs reuse provider and annotation metadata from header counting for unchanged files up to 512 characters (#1372)
-- Parallel reports collect worker results without per-row base64 processes, preserving values and completion order (#1371)
-- Data providers pass arguments without per-argument base64 processes, preserving quoting, empty values and parser isolation (#1370)
-- JSON reports write ordinary filenames, test names and empty messages without per-field processes, preserving existing escaping (#1369)
+
+- Sequential multi-file runs reuse provider and annotation metadata for unchanged test files up to 512 bytes (#1372)
+- Parallel reports avoid per-row base64 processes while preserving values and completion order (#1371)
+- Data providers avoid per-argument base64 processes while preserving quoting, empty values and parser isolation (#1370)
+- JSON reports avoid per-field processes for ordinary filenames, test names and empty messages while preserving escaping (#1369)
+- Contributor instructions share task-specific context and model tiers for Claude Code and Codex through a pinned agnostic-ai npm development dependency (#1387)
 
 ### Fixed
-- Bash compatibility checks scan shell source files without treating generated contributor instructions as executable code
-- Concurrent provider rows have separate temporary-file owners, including rows with identical arguments (#1379)
-- Skipped macOS and Windows acceptance CI jobs have readable names, with shard labels in their test steps
-- Cancellation regression checks distinguish exited bodies awaiting reaping from running cleanup (#1385)
+
+- Concurrent provider rows own separate temporary files, even with identical arguments (#1379)
 - Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)
-- Linux test jobs install the standalone build optimizer required by beta installer acceptance tests (#1383)
-- A late timeout signal no longer interrupts `tear_down`; hanging cleanup remains bounded by the watchdog (#1376)
+- Late timeout signals no longer interrupt `tear_down`; the watchdog still bounds hanging cleanup (#1376)
 - Piped parallel output no longer waits for an inactive spinner's sleep process (#1368)
+- Cancellation regression checks distinguish exited test bodies awaiting reaping from running cleanup (#1385)
+- Bash compatibility checks scan only shell source files, excluding generated contributor instructions (#1387)
+- Skipped macOS and Windows acceptance CI jobs have readable names, with shard labels in test steps
+- Linux CI installs the standalone build optimizer required by beta installer acceptance tests (#1383)
 
 ## [0.51.0](https://github.com/TypedDevs/bashunit/compare/0.50.1...0.51.0) - 2026-09-18
 
