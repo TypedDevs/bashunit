@@ -1,0 +1,42 @@
+name: Agent Specs
+
+on:
+  pull_request:
+    paths:
+      - '.agnostic-ai/**'
+      - 'agnostic-ai.yaml'
+      - '.gitignore'
+      - '.worktreeinclude'
+      - '.github/workflows/check-agent-specs.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.agnostic-ai/**'
+      - 'agnostic-ai.yaml'
+      - '.gitignore'
+      - '.worktreeinclude'
+      - '.github/workflows/check-agent-specs.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned agnostic-ai
+        env:
+          AGNOSTIC_AI_VERSION: v0.82.0
+          AGNOSTIC_AI_INSTALL_DIR: ${{ runner.temp }}/agnostic-ai-bin
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/Chemaclass/agnostic-ai/v0.82.0/scripts/install.sh -o "$RUNNER_TEMP/agnostic-ai-install.sh"
+          bash "$RUNNER_TEMP/agnostic-ai-install.sh"
+          echo "$AGNOSTIC_AI_INSTALL_DIR" >> "$GITHUB_PATH"
+      - name: Validate and generate both targets
+        run: |
+          agnostic-ai validate
+          agnostic-ai lint --strict
+          agnostic-ai sync
+          agnostic-ai sync --check
+          git diff --exit-code

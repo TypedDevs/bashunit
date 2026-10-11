@@ -53,6 +53,25 @@ make pre_commit/install
 make test && make sa && make lint
 ```
 
+### Coding Agent Setup (Optional)
+
+The project uses [agnostic-ai](https://agnostic-ai.org/) 0.82.0 for Claude Code and Codex. Install the pinned version, then generate the ignored native configuration from the repository root:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Chemaclass/agnostic-ai/v0.82.0/scripts/install.sh -o /tmp/bashunit-agnostic-ai-install.sh
+AGNOSTIC_AI_VERSION=v0.82.0 bash /tmp/bashunit-agnostic-ai-install.sh
+agnostic-ai sync
+agnostic-ai sync --check
+```
+
+On Windows, use the [Windows installer](https://agnostic-ai.org/docs/installation/) with version `v0.82.0`. If the CLI is already installed, `agnostic-ai upgrade --version v0.82.0` installs the pinned release for a standalone binary; package-manager users pin through their package manager.
+
+Edit `.agnostic-ai/` or `agnostic-ai.yaml`, then run `agnostic-ai validate`, `agnostic-ai lint --strict`, `agnostic-ai sync`, and `agnostic-ai sync --check`. Generated files are ignored. Run sync after cloning and after pulling changes to the specs. Keep personal overrides in `.agnostic-ai/local/` or `agnostic-ai.local.yaml`, which are also ignored.
+
+The root instructions list the detailed rules to read for each task. Claude keeps its automatic path selectors and existing ShellCheck hook. Codex reads the same rule sources on demand to keep its initial context small. Skills keep Claude's automatic command snippets and provide explicit command instructions for Codex. Claude's skill tool restrictions and invocation metadata have no equivalent in Codex; both tools still require the full quality gate before committing.
+
+The default model tier is `balanced`: Sonnet for Claude and `gpt-6.1-sol` at medium effort for Codex. `legolas` locates code on Haiku or `gpt-6-luna` at low effort, `aragorn` implements bounded changes on the balanced tier, and `gandalf` reviews on Opus or `gpt-6.1-sol` at high effort. These are task assignments, not speed or quality benchmarks. Codex permits at most two concurrent delegates. The coordinator runs the full gate once after all edits. Read-only agent prompts prohibit writes; Codex agents inherit the session sandbox, so these prompts do not impose a separate filesystem restriction. Override model tiers locally when a model is unavailable in your account; do not commit personal model or permission choices.
+
 ### Documentation Setup (Optional)
 
 Docs live in their own workspace under `docs/` with an isolated `package.json`.

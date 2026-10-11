@@ -1,0 +1,140 @@
+---
+name: pr
+description: Push branch and create a GitHub PR with concise, issue-linked description
+user-invocable: true
+argument-hint: "[#issue]"
+allowed-tools: shell, read, Grep, Glob
+---
+
+# Create Pull Request
+
+Push branch and create a PR with a concise, issue-linked description.
+
+> **IMPORTANT:** This skill MUST be used for ALL pull request creation, even when the user says "create pr" without `/pr`. Never create a PR without following these steps.
+
+## Current Branch Context
+::target claude
+- Branch: !`git branch --show-current`
+::end
+
+::target codex
+- Run Branch: `git branch --show-current`
+::end
+::target claude
+- Commits: !`git log main..HEAD --oneline 2>/dev/null`
+::end
+
+::target codex
+- Run Commits: `git log main..HEAD --oneline 2>/dev/null`
+::end
+::target claude
+- Changed files: !`git diff main..HEAD --stat 2>/dev/null`
+::end
+
+::target codex
+- Run Changed files: `git diff main..HEAD --stat 2>/dev/null`
+::end
+
+## Arguments
+::target claude
+- `$ARGUMENTS` - Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
+::end
+
+::target codex
+- the argument in the user request - Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
+::end
+
+## Instructions
+
+1. **Review the branch context above**, the commits and changed files are already loaded.
+
+2. **MANDATORY: Update CHANGELOG.md**, Read `CHANGELOG.md` and check the `## Unreleased` section. If the changes from this branch are NOT already listed there, you MUST update it before proceeding. **Do NOT skip this step. Do NOT proceed to push without verifying.**
+  - Add entries under the appropriate subsection (`### Added`, `### Changed`, `### Fixed`, etc.)
+  - Reference issue numbers where applicable (e.g., `(Issue #123)`)
+  - Commit the update:
+    ```bash
+    git add CHANGELOG.md && git commit -m "docs: update changelog"
+    ```
+
+3. **Push branch**:
+  ```bash
+  git push -u origin HEAD
+  ```
+  - The `pre-commit` hook runs tests, shellcheck, and linting automatically on commit. Ensure all checks passed before pushing.
+  - If push fails, read the output, fix the issue, commit the fix, and retry. Do NOT use `--no-verify` to bypass.
+
+4. **Generate PR title**:
+::target claude
+  - If `$ARGUMENTS` contains an issue number, fetch the issue title:
+::end
+
+::target codex
+  - If the argument in the user request contains an issue number, fetch the issue title:
+::end
+    ```bash
+    gh issue view <number> --json title -q '.title'
+    ```
+  - PR title format: `<type>(<scope>): <short description>` (conventional commit style, under 70 chars)
+  - Derive the type from the branch prefix (`feat/` → feat, `fix/` → fix, `docs/` → docs)
+
+5. **Create PR** using the template from `.github/PULL_REQUEST_TEMPLATE.md`:
+  ```bash
+  gh pr create --title "<title>" --assignee @me --label "<label>" --body "$(cat <<'EOF'
+  ## 🤔 Background
+
+  Related #<issue-number>
+
+  <1-2 sentences: motivation and context for the changes>
+
+  ## 💡 Changes
+
+  - <bullet 1: what changed and why>
+  - <bullet 2>
+  - <bullet 3> (optional)
+  - <bullet 4> (optional)
+  EOF
+  )"
+  ```
+
+  **MANDATORY:** Always follow the PR template structure (`## 🤔 Background` + `## 💡 Changes`). Never use a different format.
+
+  **Assignee:** Always assign to `@me` (the PR creator).
+
+  **Labels:** Add the single most relevant label based on the branch prefix and change context:
+  - `bug`, branch starts with `fix/` and addresses a defect
+  - `enhancement`, branch starts with `feat/` or adds new functionality
+  - `documentation`, branch starts with `docs/` or only changes docs
+  - `refactor`, code restructuring with no behavior change
+  - `ui`, visual/frontend-only changes
+  - `investigation`, spikes, research, or exploratory work
+
+  **Body guidelines:**
+  - **Background**: Link the issue with `Related #<number>`, then 1-2 sentences of context. **NEVER use `Closes` or `Fixes`.**
+  - **Changes**: 2-4 short bullet points. Focus on *what* and *why*, not implementation details.
+  - **No file lists, no class names, no code snippets** in the body.
+  - Keep the entire body under 15 lines.
+
+6. **Move issue to "In Review"** in GitHub Project (if issue number provided):
+  ```bash
+  # Read project config from .claude/github-project.json
+  ITEM_ID=$(gh project item-list PROJECT_NUMBER --owner OWNER --format json \
+    | jq -r '.items[] | select(.content.number == ISSUE_NUMBER) | .id')
+
+  gh project item-edit \
+    --id "$ITEM_ID" \
+    --project-id "PROJECT_ID" \
+    --field-id "STATUS_FIELD_ID" \
+    --single-select-option-id "IN_REVIEW_OPTION_ID"
+  ```
+
+  **Note:** Requires `project` scope. Run `gh auth refresh -s project` if needed.
+
+7. **Report the PR URL** to the user.
+
+## Example Usage
+
+```
+/pr
+/pr #42
+/pr 15
+```
