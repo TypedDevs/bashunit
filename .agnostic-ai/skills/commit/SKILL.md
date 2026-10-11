@@ -11,53 +11,19 @@ allowed-tools: shell, read, Grep, Glob
 
 Stage and commit current changes using the conventional commits format.
 
-> **IMPORTANT:** This skill MUST be used for ALL commits, even when the user says "commit" without `/commit`. Never commit without following these steps.
+> **IMPORTANT:** This skill MUST be used for ALL commits, even when the user says "commit" without `commit`. Never commit without following these steps.
 
 ## Current State
-::target claude
-- Branch: !`git branch --show-current`
-::end
 
-::target codex
-- Run Branch: `git branch --show-current`
-::end
-::target claude
-- Status: !`git status --short`
-::end
-
-::target codex
-- Run Status: `git status --short`
-::end
-::target claude
-- Staged diff: !`git diff --cached --stat 2>/dev/null`
-::end
-
-::target codex
-- Run Staged diff: `git diff --cached --stat 2>/dev/null`
-::end
-::target claude
-- Unstaged diff: !`git diff --stat 2>/dev/null`
-::end
-
-::target codex
-- Run Unstaged diff: `git diff --stat 2>/dev/null`
-::end
-::target claude
-- Recent commits: !`git log --oneline -5 2>/dev/null`
-::end
-
-::target codex
-- Run Recent commits: `git log --oneline -5 2>/dev/null`
-::end
+Run the following commands before proceeding:
+- Branch: `git branch --show-current`
+- Status: `git status --short`
+- Staged diff: `git diff --cached --stat 2>/dev/null`
+- Unstaged diff: `git diff --stat 2>/dev/null`
+- Recent commits: `git log --oneline -5 2>/dev/null`
 
 ## Arguments
-::target claude
-- `$ARGUMENTS` - Optional hint for the commit message (e.g., `fix the snapshot comparison`)
-::end
-
-::target codex
-- the argument in the user request - Optional hint for the commit message (e.g., `fix the snapshot comparison`)
-::end
+- User-supplied argument: Optional hint for the commit message (e.g., `fix the snapshot comparison`)
 
 ## Instructions
 

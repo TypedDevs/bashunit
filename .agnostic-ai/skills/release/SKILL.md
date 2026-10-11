@@ -15,34 +15,12 @@ here, fix `release.sh` if something is missing.
 
 ## Current State
 
-::target claude
-- Current version: !`grep -o 'BASHUNIT_VERSION="[^"]*"' bashunit | cut -d'"' -f2`
-::end
+Run the following commands before proceeding:
 
-::target codex
-- Run Current version: `grep -o 'BASHUNIT_VERSION="[^"]*"' bashunit | cut -d'"' -f2`
-::end
-::target claude
-- Branch: !`git branch --show-current`
-::end
-
-::target codex
-- Run Branch: `git branch --show-current`
-::end
-::target claude
-- Working tree: !`git status --short`
-::end
-
-::target codex
-- Run Working tree: `git status --short`
-::end
-::target claude
-- Unreleased changes: !`awk '/^## Unreleased$/,/^## \[/' CHANGELOG.md | head -30`
-::end
-
-::target codex
-- Run Unreleased changes: `awk '/^## Unreleased$/,/^## \[/' CHANGELOG.md | head -30`
-::end
+- Current version: `grep -o 'BASHUNIT_VERSION="[^"]*"' bashunit | cut -d'"' -f2`
+- Branch: `git branch --show-current`
+- Working tree: `git status --short`
+- Unreleased changes: `awk '/^## Unreleased$/,/^## \[/' CHANGELOG.md | head -30`
 
 ## Steps
 
@@ -58,13 +36,7 @@ Stop and report if anything fails. Don't release on a red main.
 
 ### 2. Pick the version
 
-::target claude
-`$ARGUMENTS` overrides; otherwise the script auto-increments the minor.
-::end
-
-::target codex
-the argument in the user request overrides; otherwise the script auto-increments the minor.
-::end
+the user-supplied argument overrides; otherwise the script auto-increments the minor.
 Bump by the Unreleased section: a `### Added`/feat → minor, only `### Fixed` →
 patch. Confirm the version with the user before publishing.
 

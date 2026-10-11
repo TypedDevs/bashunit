@@ -43,6 +43,7 @@ dev.log
 /.agnostic-ai/packs/
 /.claude/agent-memory-local/
 /.claude/agents/
+/.claude/hooks/
 /.claude/rules/
 /.claude/scheduled_tasks.lock
 /.claude/settings.json
@@ -51,6 +52,8 @@ dev.log
 /.claude/worktrees/
 /.codex/agents/
 /.codex/config.toml
+/.codex/hooks.json
+/.codex/hooks/
 /AGENTS.md
 /CLAUDE.md
 /agnostic-ai.local.yaml

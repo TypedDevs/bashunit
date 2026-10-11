@@ -11,25 +11,13 @@ allowed-tools: shell, read, edit, write, Grep, Glob, Agent, WebFetch
 Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
 
 ## Arguments
-::target claude
-- `$ARGUMENTS` - Issue number (e.g., `42` or `#42`)
-::end
-
-::target codex
-- the argument in the user request - Issue number (e.g., `42` or `#42`)
-::end
+- User-supplied argument: Issue number (e.g., `42` or `#42`)
 
 ## Instructions
 
 ### Phase 1: Setup
 
-::target claude
-1. **Parse the issue number** from `$ARGUMENTS` (strip `#` if present)
-::end
-
-::target codex
-1. **Parse the issue number** from the argument in the user request (strip `#` if present)
-::end
+1. **Parse the issue number** from the user-supplied argument (strip `#` if present)
 
 2. **Fetch issue details**:
     ```bash
@@ -76,17 +64,11 @@ Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
     - Files to Change
     - Implementation Order (smallest first step)
 
-::target claude
-9. **Use EnterPlanMode** if implementation is non-trivial
-::end
-
-::target codex
 9. **Keep a short implementation plan** in the main session if implementation is non-trivial
-::end
 
 ### Phase 3: Implement
 
-10. **Follow strict TDD workflow** (see `.agnostic-ai/rules/tdd-workflow.md`):
+10. **Follow strict TDD workflow** (see `.agnostic-ai/context/tdd-workflow.md`):
 
     For each test:
     - **RED** - Write failing test, verify it fails for the RIGHT reason
@@ -113,7 +95,7 @@ Fetch a GitHub issue, create branch, implement following TDD, and open a PR.
 
 14. **Commit** using conventional commits with `Closes #<issue-number>`
 
-15. **Create PR** using the `/pr` skill:
+15. **Create PR** using the `pr` skill:
     ```
     /pr #<issue-number>
     ```

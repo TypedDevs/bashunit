@@ -24,7 +24,7 @@ Works on macOS default bash (3.2) and older. **Prohibited features:**
 - `${array[-1]}` (negative indexing - Bash 4.3+)
 - `&>>` redirect (Bash 4.0+)
 
-See `.agnostic-ai/rules/bash-style.md` for complete compatibility guide (auto-loaded when editing `src/` or `tests/`).
+See `.agnostic-ai/context/bash-style.md` for the complete compatibility guide.
 
 ### Quality Standards
 
@@ -72,19 +72,19 @@ Study existing tests before writing new ones:
 
 ## Task Context
 
-All paths below are relative to the repository root, including from a generated skill or agent directory. Read only the rules relevant to the task before editing. Claude also loads them automatically through their path selectors.
+All paths below are relative to the repository root, including from a generated skill or agent directory. Read only the guides relevant to the task before editing. Rules select the matching tasks and point to these guides. Follow the table even when the client cannot load path-scoped rules automatically.
 
 | Task | Read |
 |------|------|
-| Changes to `src/` or `bashunit` | `.agnostic-ai/rules/architecture-map.md` |
-| Shell changes under `src/` or `tests/` | `.agnostic-ai/rules/bash-style.md` |
-| Changes to `src/` or fork census acceptance tests | `.agnostic-ai/rules/perf-fork-budget.md` |
-| Shell development or task plans | `.agnostic-ai/rules/tdd-workflow.md` |
-| Test changes | `.agnostic-ai/rules/testing.md` |
+| Changes to `src/` or `bashunit` | `.agnostic-ai/context/architecture-map.md` |
+| Shell changes under `src/` or `tests/` | `.agnostic-ai/context/bash-style.md` |
+| Changes to `src/` or fork census acceptance tests | `.agnostic-ai/context/perf-fork-budget.md` |
+| Shell development or task plans | `.agnostic-ai/context/tdd-workflow.md` |
+| Test changes | `.agnostic-ai/context/testing.md` |
 
 ## Delegation
 
-Keep one acceptance scenario and a short plan in the main session. Handle small edits directly. Delegate independent lookups to `legolas`, a bounded implementation to `aragorn`, and defect review to `gandalf` before pushing. Give each agent a specific question or file scope, a base revision, and a validation budget. Reuse its findings instead of repeating its searches.
+Keep one acceptance scenario and a short plan in the main session. Handle small edits directly. Delegate independent lookups to `code-locator`, a bounded implementation to `code-implementer`, and defect review to `code-reviewer` before pushing. Give each agent a specific question or file scope, a base revision, and a validation budget. Reuse its findings instead of repeating its searches.
 
 Keep at most two delegates active. Workers share the checkout: assign separate files and never revert another worker's edits. Run the full quality gate once in the main session after the change set is complete. Delegates run only a targeted check when needed to prove a finding. Return concise evidence with file and line references; put longer reports under the ignored `.agnostic-ai/local/` directory.
 
@@ -101,7 +101,7 @@ Edit `.agnostic-ai/` and `agnostic-ai.yaml`, then run `agnostic-ai validate`, `a
 - Change public API without docs/CHANGELOG
 - Commit without tests passing
 - Batch unrelated changes in one PR
-- Create a PR without using the `/pr` skill
+- Create a PR without using the `pr` skill
 
 ### Always:
 - Write tests before implementation

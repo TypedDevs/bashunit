@@ -6,12 +6,15 @@
 /.agnostic-ai/packs/
 /.claude/agent-memory-local/
 /.claude/agents/
+/.claude/hooks/
 /.claude/rules/
 /.claude/settings.json
 /.claude/settings.local.json
 /.claude/skills/
 /.codex/agents/
 /.codex/config.toml
+/.codex/hooks.json
+/.codex/hooks/
 /AGENTS.md
 /CLAUDE.md
 /agnostic-ai.local.yaml

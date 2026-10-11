@@ -1,6 +1,0 @@
-target: claude
-command: file="$CLAUDE_FILE_PATH"; if [ -n "$file" ] && echo "$file" | grep -q '\.sh$'; then shellcheck -x "$file" 2>&1 | head -20; fi
-description: Runs `file="$CLAUDE_FILE_PATH"; if [ -n "$file" ] && echo "$file" ...` on PostToolUse for Edit|Write.
-event: PostToolUse
-matcher: Edit|Write
-name: posttooluse-edit-write-if

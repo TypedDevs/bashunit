@@ -10,43 +10,21 @@ allowed-tools: shell, read, Grep, Glob
 
 Push branch and create a PR with a concise, issue-linked description.
 
-> **IMPORTANT:** This skill MUST be used for ALL pull request creation, even when the user says "create pr" without `/pr`. Never create a PR without following these steps.
+> **IMPORTANT:** This skill MUST be used for ALL pull request creation, even when the user says "create pr" without `pr`. Never create a PR without following these steps.
 
 ## Current Branch Context
-::target claude
-- Branch: !`git branch --show-current`
-::end
 
-::target codex
-- Run Branch: `git branch --show-current`
-::end
-::target claude
-- Commits: !`git log main..HEAD --oneline 2>/dev/null`
-::end
-
-::target codex
-- Run Commits: `git log main..HEAD --oneline 2>/dev/null`
-::end
-::target claude
-- Changed files: !`git diff main..HEAD --stat 2>/dev/null`
-::end
-
-::target codex
-- Run Changed files: `git diff main..HEAD --stat 2>/dev/null`
-::end
+Run the following commands before proceeding:
+- Branch: `git branch --show-current`
+- Commits: `git log main..HEAD --oneline 2>/dev/null`
+- Changed files: `git diff main..HEAD --stat 2>/dev/null`
 
 ## Arguments
-::target claude
-- `$ARGUMENTS` - Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
-::end
-
-::target codex
-- the argument in the user request - Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
-::end
+- User-supplied argument: Issue reference (optional, e.g., `#42` or `42`). If provided, the PR will be linked to this issue.
 
 ## Instructions
 
-1. **Review the branch context above**, the commits and changed files are already loaded.
+1. **Review the branch context above**, the commits and changed files come from the commands above.
 
 2. **MANDATORY: Update CHANGELOG.md**, Read `CHANGELOG.md` and check the `## Unreleased` section. If the changes from this branch are NOT already listed there, you MUST update it before proceeding. **Do NOT skip this step. Do NOT proceed to push without verifying.**
   - Add entries under the appropriate subsection (`### Added`, `### Changed`, `### Fixed`, etc.)
@@ -64,13 +42,7 @@ Push branch and create a PR with a concise, issue-linked description.
   - If push fails, read the output, fix the issue, commit the fix, and retry. Do NOT use `--no-verify` to bypass.
 
 4. **Generate PR title**:
-::target claude
-  - If `$ARGUMENTS` contains an issue number, fetch the issue title:
-::end
-
-::target codex
-  - If the argument in the user request contains an issue number, fetch the issue title:
-::end
+  - If the user-supplied argument contains an issue number, fetch the issue title:
     ```bash
     gh issue view <number> --json title -q '.title'
     ```
@@ -116,7 +88,7 @@ Push branch and create a PR with a concise, issue-linked description.
 
 6. **Move issue to "In Review"** in GitHub Project (if issue number provided):
   ```bash
-  # Read project config from .claude/github-project.json
+  # Read project config from .agnostic-ai/local/github-project.json
   ITEM_ID=$(gh project item-list PROJECT_NUMBER --owner OWNER --format json \
     | jq -r '.items[] | select(.content.number == ISSUE_NUMBER) | .id')
 
@@ -133,8 +105,4 @@ Push branch and create a PR with a concise, issue-linked description.
 
 ## Example Usage
 
-```
-/pr
-/pr #42
-/pr 15
-```
+Use the `pr` skill alone, or pass an issue number such as `42` or `15`.

@@ -10,43 +10,21 @@ allowed-tools: shell, read, Grep, Glob
 
 Review a GitHub PR. When no number is given, review the PR for the current branch.
 
-> For reviewing your uncommitted working diff instead, use `/code-review`.
+> For reviewing your uncommitted working diff instead, assign that diff to the `code-reviewer` agent.
 
 ## Current Branch Context
-::target claude
-- Branch: !`git branch --show-current`
-::end
 
-::target codex
-- Run Branch: `git branch --show-current`
-::end
-::target claude
-- PR for this branch: !`gh pr view --json number,title,state,url --jq '"#\(.number) \(.title) [\(.state)] \(.url)"' 2>/dev/null || echo "none"`
-::end
-
-::target codex
-- Run PR for this branch: `gh pr view --json number,title,state,url --jq '"#\(.number) \(.title) [\(.state)] \(.url)"' 2>/dev/null || echo "none"`
-::end
+Run the following commands before proceeding:
+- Branch: `git branch --show-current`
+- PR for this branch: `gh pr view --json number,title,state,url --jq '"#\(.number) \(.title) [\(.state)] \(.url)"' 2>/dev/null || echo "none"`
 
 ## Arguments
-::target claude
-- `$ARGUMENTS` - PR number to review (optional, e.g., `#42` or `42`).
-::end
-
-::target codex
-- the argument in the user request - PR number to review (optional, e.g., `#42` or `42`).
-::end
+- User-supplied argument: PR number to review (optional, e.g., `#42` or `42`).
 
 ## Instructions
 
 1. **Resolve which PR to review:**
-::target claude
-  - If `$ARGUMENTS` contains a number, review that PR.
-::end
-
-::target codex
-  - If the argument in the user request contains a number, review that PR.
-::end
+  - If the user-supplied argument contains a number, review that PR.
   - Otherwise, use the current branch's PR shown in the context above.
   - If neither yields a PR (no argument and the branch has no open PR), run `gh pr list` and ask the user which one to review. Do NOT guess.
 
@@ -56,7 +34,7 @@ Review a GitHub PR. When no number is given, review the PR for the current branc
   gh pr diff <number>
   ```
 
-3. **Review the diff** against this project's standards (see `.agnostic-ai/AGNOSTIC_AI.md` and `.agnostic-ai/rules/`):
+3. **Review the diff** against this project's standards (see `.agnostic-ai/AGNOSTIC_AI.md` and `.agnostic-ai/context/`):
   - Bash 3.0+ compatibility (no `declare -A`, `[[ ]]`, `${var,,}`, negative indexing, `&>>`)
   - Tests exist and follow TDD; both success and failure paths covered
   - Naming, namespacing (`bashunit::*` / `_private`), and dynamic-scope safety
