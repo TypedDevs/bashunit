@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
+
 ### Changed
 
 - Sequential multi-file runs reuse provider and annotation metadata for unchanged test files up to 512 bytes (#1372)
