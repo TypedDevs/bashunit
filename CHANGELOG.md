@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
+
 ## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
 
 ### Changed
