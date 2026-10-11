@@ -13,7 +13,10 @@ declare -r EXIT_EXECUTION_ERROR=2
 # Constants
 GITHUB_REPO_PATH="TypedDevs/bashunit"
 GITHUB_REPO_URL="https://github.com/${GITHUB_REPO_PATH}"
-RELEASE_FILES=("bashunit" "install.sh" "action.yml" "package.json" "docs/package.json" "CHANGELOG.md")
+RELEASE_FILES=(
+  "bashunit" "install.sh" "action.yml" "package.json" "package-lock.json"
+  "docs/package.json" "docs/package-lock.json" "CHANGELOG.md"
+)
 
 # Helper function for regex matching (Bash 3.0+ compatible)
 function regex_match() {
@@ -690,6 +693,27 @@ function release::update_action_version() {
     "action.yml default version"
 }
 
+function release::update_package_lock_version() {
+  local file=$1
+  local new_version=$2
+
+  if [ ! -f "$file" ]; then
+    return
+  fi
+  if [ "$DRY_RUN" = true ]; then
+    release::log_dry_run "Would update version in $file"
+    return
+  fi
+
+  # npm lockfiles use two-space indentation; dependency versions must stay pinned.
+  sed -i.bak \
+    -e "s/^  \"version\": \"[^\"]*\"/  \"version\": \"$new_version\"/" \
+    -e "/^    \"\": {/,/^    }/s/^      \"version\": \"[^\"]*\"/      \"version\": \"$new_version\"/" \
+    "$file"
+  rm -f "$file.bak"
+  release::log_success "Updated version in $file"
+}
+
 function release::update_package_json_version() {
   local new_version=$1
   release::update_file_pattern \
@@ -697,6 +721,8 @@ function release::update_package_json_version() {
     "\"version\": \"[^\"]*\"" \
     "\"version\": \"$new_version\"" \
     "version"
+  release::update_package_lock_version "package-lock.json" "$new_version"
+  release::update_package_lock_version "docs/package-lock.json" "$new_version"
   if [ -f "docs/package.json" ]; then
     release::update_file_pattern \
       "docs/package.json" \

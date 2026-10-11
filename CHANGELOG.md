@@ -12,6 +12,7 @@
 
 ### Fixed
 
+- Releases update and commit project versions in both npm lockfiles and restore them on rollback
 - Concurrent provider rows own separate temporary files, even with identical arguments (#1379)
 - Synchronous provider rows retain separate results in parallel runs, so later passing rows cannot hide failures (#1377)
 - Late timeout signals no longer interrupt `tear_down`; the watchdog still bounds hanging cleanup (#1376)

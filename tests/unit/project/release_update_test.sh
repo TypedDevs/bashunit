@@ -179,8 +179,69 @@ function test_update_package_json_version_skips_docs_when_missing() {
   )
 
   assert_file_not_exists "$temp_dir/docs/package.json"
+  assert_file_not_exists "$temp_dir/package-lock.json"
+  assert_file_not_exists "$temp_dir/docs/package-lock.json"
 
   rm -rf "$temp_dir"
+}
+
+function test_update_package_json_version_updates_lock_roots_without_changing_dependencies() {
+  local temp_dir
+  temp_dir=$(bashunit::temp_dir)
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+  mkdir "$temp_dir/docs"
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/docs/package.json"
+  cat >"$temp_dir/package-lock.json" <<'EOF'
+{
+  "name": "bashunit",
+  "version": "0.30.0",
+  "lockfileVersion": 3,
+  "packages": {
+    "": {
+      "version": "0.30.0"
+    },
+    "node_modules/example": {
+      "version": "0.30.0"
+    }
+  }
+}
+EOF
+  cp "$temp_dir/package-lock.json" "$temp_dir/docs/package-lock.json"
+
+  DRY_RUN=false
+  (
+    cd "$temp_dir" || return
+    release::update_package_json_version "0.31.0" 2>/dev/null
+  )
+
+  local file
+  for file in package-lock.json docs/package-lock.json; do
+    assert_same 2 "$(grep -c '"version": "0.31.0"' "$temp_dir/$file")"
+    assert_same 1 "$(grep -c '"version": "0.30.0"' "$temp_dir/$file")"
+    assert_contains '"lockfileVersion": 3' "$(cat "$temp_dir/$file")"
+    assert_file_not_exists "$temp_dir/$file.bak"
+  done
+}
+
+function test_update_package_json_version_dry_run_preserves_lockfiles() {
+  local temp_dir
+  temp_dir=$(bashunit::temp_dir)
+  cp "$FIXTURES_DIR/mock_package.json" "$temp_dir/package.json"
+  mkdir "$temp_dir/docs"
+  cp "$RELEASE_SCRIPT_DIR/package-lock.json" "$temp_dir/package-lock.json"
+  cp "$RELEASE_SCRIPT_DIR/docs/package-lock.json" "$temp_dir/docs/package-lock.json"
+
+  local output
+  output=$(
+    cd "$temp_dir" || return
+    DRY_RUN=true
+    release::update_package_json_version "0.31.0" 2>&1
+  )
+
+  assert_contains "Would update version in package-lock.json" "$output"
+  assert_contains "Would update version in docs/package-lock.json" "$output"
+  assert_same "$(cat "$RELEASE_SCRIPT_DIR/package-lock.json")" "$(cat "$temp_dir/package-lock.json")"
+  assert_same "$(cat "$RELEASE_SCRIPT_DIR/docs/package-lock.json")" "$(cat "$temp_dir/docs/package-lock.json")"
 }
 
 function test_update_changelog_adds_new_unreleased_section() {

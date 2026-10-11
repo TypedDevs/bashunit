@@ -176,6 +176,26 @@ function test_rollback_restore_files_restores_nested_paths() {
   rm -rf "$temp_dir"
 }
 
+function test_release_rollback_restores_both_lockfiles() {
+  local temp_dir
+  temp_dir=$(bashunit::temp_dir)
+  mkdir "$temp_dir/docs"
+  cp "$RELEASE_SCRIPT_DIR/package-lock.json" "$temp_dir/package-lock.json"
+  cp "$RELEASE_SCRIPT_DIR/docs/package-lock.json" "$temp_dir/docs/package-lock.json"
+
+  (
+    cd "$temp_dir" || return
+    release::backup::init
+    release::backup::save_all
+    echo 'changed root' >package-lock.json
+    echo 'changed docs' >docs/package-lock.json
+    release::rollback::restore_files 2>/dev/null
+  )
+
+  assert_same "$(cat "$RELEASE_SCRIPT_DIR/package-lock.json")" "$(cat "$temp_dir/package-lock.json")"
+  assert_same "$(cat "$RELEASE_SCRIPT_DIR/docs/package-lock.json")" "$(cat "$temp_dir/docs/package-lock.json")"
+}
+
 function test_rollback_auto_reports_success_when_files_are_restored() {
   local temp_dir
   temp_dir=$(mktemp -d)
