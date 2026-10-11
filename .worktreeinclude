@@ -1,3 +1,6 @@
+# Generated edit hooks require the pinned contributor dependency in each worktree.
+/node_modules/
+
 # >>> agnostic-ai (managed) >>>
 # Generated paths. Edit specs, not this block. Run `agnostic-ai sync` to refresh.
 # Copied into each Claude Code worktree: the gitignored paths sync writes, and the local layer it reads.
