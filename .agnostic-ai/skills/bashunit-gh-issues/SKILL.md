@@ -1,15 +1,15 @@
 ---
-name: gh-issues
-description: Walk over all open GitHub issues that are unassigned or assigned to the current user, and process each one via the /gh-issue skill, sequentially.
-user-invocable: true
-argument-hint: "[--limit N] [--label foo] [--dry-run]"
+name: bashunit-gh-issues
+description: Work open GitHub issues that are unassigned or mine, one at a time, with bashunit-gh-issue.
 disable-model-invocation: true
 allowed-tools: read, shell, Skill
+x-claude:
+  argument-hint: "[--limit N] [--label foo] [--dry-run]"
 ---
 
 # Process an issue queue
 
-Process open issues that are unassigned or assigned only to the authenticated user, oldest first, using `gh-issue` sequentially. Accept `--limit N`, `--label foo`, and `--dry-run` (discovery only).
+Process open issues that are unassigned or assigned only to the authenticated user, oldest first, using `bashunit-gh-issue` sequentially. Accept `--limit N`, `--label foo`, and `--dry-run` (discovery only).
 
 ## Discover
 
@@ -24,7 +24,7 @@ Exclude pull requests, issues assigned to anyone else, and tracker issues whose 
 ## Process
 
 1. Check `git status --porcelain`. Preserve dirty work and stop or use an isolated worktree; never auto-stash or reset it. Fetch main and update a clean main with `git pull --ff-only`. A divergent branch needs a deliberate resolution.
-2. Choose the validation mode in step 3 before invoking `gh-issue`. Re-read each issue's state and assignees before starting; skip closed or newly assigned issues. Invoke `gh-issue`, which owns implementation, the canonical quality gate, commit, and PR. The coordinator runs that gate once per complete issue; delegates run only focused checks.
+2. Choose the validation mode in step 3 before invoking `bashunit-gh-issue`. Re-read each issue's state and assignees before starting; skip closed or newly assigned issues. Invoke `bashunit-gh-issue`, which owns implementation, the canonical quality gate, commit, and PR. The coordinator runs that gate once per complete issue; delegates run only focused checks.
 3. If strict-mode coverage is required by CI, use `./bashunit --parallel --simple --strict tests/` in place of the ordinary parallel gate before committing. Inspect the current CI command first. Simple mode emits marker output; assert on helpers when testing full messages. Under strict mode, use `if` instead of failing `[ condition ] && assignment`, initialize arrays with `=()`, read potentially empty elements as `${arr[i]:-}`, and keep `extdebug` inside a capture subshell.
 4. Wait for `gh pr checks --watch`. Investigate red checks, including Bash 3.0 compatibility. Re-run an identified infrastructure failure with `gh run rerun <id> --failed`; do not classify every registry failure as transient. If a local failure appears unrelated, compare the relevant test on unchanged main in an isolated checkout before claiming it predates the change.
 5. Merge only when the user's authorization covers it and checks and branch protection allow it. Do not bypass protection. After an authorized merge, verify issue closure; close a completed issue if needed and update its parent's checklist. Escape Markdown brackets as literals when editing checkbox text and preserve the rest of the body.

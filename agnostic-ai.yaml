@@ -1,6 +1,6 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/Chemaclass/agnostic-ai/v0.82.0/docs/schemas/config.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Chemaclass/agnostic-ai/v0.87.0/docs/schemas/config.schema.json
 version: 1
-requires: "0.82.0"
+requires: "0.87.0"
 builtins: []
 
 targets:

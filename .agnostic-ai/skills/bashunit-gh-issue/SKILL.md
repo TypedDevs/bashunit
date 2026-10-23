@@ -1,9 +1,9 @@
 ---
-name: gh-issue
+name: bashunit-gh-issue
 description: Fetch GitHub issue, create branch, plan and implement with TDD, then open PR
-user-invocable: true
-argument-hint: "<issue-number>"
 allowed-tools: shell, read, edit, write, Grep, Glob, Agent, WebFetch
+x-claude:
+  argument-hint: "<issue-number>"
 ---
 
 # Work a GitHub issue

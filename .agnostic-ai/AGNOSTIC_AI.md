@@ -4,14 +4,13 @@ bashunit is a Bash 3.0+ testing framework with assertions, spies, mocks, data pr
 
 ## Required guidance
 
-All paths are relative to the repository root, including from generated skill and agent directories. Read the applicable source rules before editing. Directory scopes generate native instructions for that directory. Sessions started at the root must also read the relevant sources below; some clients do not load nested instructions during later edits.
+All paths are relative to the repository root, including from generated skill and agent directories. Before editing, read the rules for the task below; some clients do not load nested instructions after the session starts.
 
 | Task | Read |
 |------|------|
 | Changes to `src/` or `bashunit` | `.agnostic-ai/rules/architecture-map.md` |
 | Shell changes under `src/` or `tests/`, including entrypoint changes | `.agnostic-ai/rules/bash-style.md` |
 | Changes to `src/`, `bashunit`, or fork census acceptance tests | `.agnostic-ai/rules/perf-fork-budget.md` |
-| Runtime development or task plans | `.agnostic-ai/rules/tdd-workflow.md` |
 | Test changes | `.agnostic-ai/rules/testing.md` |
 
 Bash 3.0 is the compatibility floor, including parse-time behavior. Use existing patterns. Study the relevant tests before adding assertions, doubles, providers, hooks, or CLI behavior. Do not invent commands or features.
