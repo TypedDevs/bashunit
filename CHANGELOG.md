@@ -4,6 +4,8 @@
 
 ### Added
 
+- The homepage shows a Bash function, its test, the run command, and passing output
+
 - Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
 
 ### Fixed
