@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- Primary documentation buttons use readable dark text in both themes, including hover and active states
+
 - Quickstart commands match the install.sh, npm project, and npm global installation paths
 
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
