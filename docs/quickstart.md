@@ -16,14 +16,12 @@ Pick whichever fits your project. See [installation](/installation) for the comp
 curl -s https://bashunit.com/install.sh | bash
 ```
 
-```bash [npm]
-# Per-project (pinned in package.json), run via npx
+```bash [npm project]
 npm install --save-dev bashunit
-npx bashunit tests/
+```
 
-# Global install, run directly on PATH
+```bash [npm global]
 npm install -g bashunit
-bashunit tests/
 ```
 
 :::
@@ -34,9 +32,19 @@ The `install.sh` route creates `lib/bashunit`; the npm route exposes `bashunit` 
 
 Create a test suite with the `init` subcommand:
 
-```bash
+::: code-group
+```bash [install.sh]
 ./lib/bashunit init tests
 ```
+
+```bash [npm project]
+npx bashunit init tests
+```
+
+```bash [npm global]
+bashunit init tests
+```
+:::
 
 It creates, in the current directory:
 
@@ -66,9 +74,19 @@ Alternatively, create your tests manually:
     :::
 
 3.  Run the test:
-    ```bash
-    ./lib/bashunit tests
+    ::: code-group
+    ```bash [install.sh]
+    ./lib/bashunit tests/
     ```
+
+    ```bash [npm project]
+    npx bashunit tests/
+    ```
+
+    ```bash [npm global]
+    bashunit tests/
+    ```
+    :::
 
 4.  The output should look like this:
     ```-vue
@@ -88,7 +106,7 @@ Alternatively, create your tests manually:
 
 ## Running your suite
 
-With no path, bashunit runs `tests/` (`BASHUNIT_DEFAULT_PATH`):
+With no path, bashunit runs `tests/` (`BASHUNIT_DEFAULT_PATH`). The examples below use the `install.sh` path; for an npm project, replace `./lib/bashunit` with `npx bashunit`, or with `bashunit` for a global install:
 
 ```bash
 ./lib/bashunit                      # run tests/

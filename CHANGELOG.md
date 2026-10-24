@@ -8,6 +8,8 @@
 
 ### Fixed
 
+- Quickstart commands match the install.sh, npm project, and npm global installation paths
+
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
 
 ### Changed
