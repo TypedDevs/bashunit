@@ -4,9 +4,7 @@ description: "Complete reference of bashunit assertions for testing bash scripts
 
 # Assertions
 
-When creating tests, you'll need to verify your commands and functions.
-We provide assertions for these checks.
-Below is their documentation.
+Use assertions to check command output, return values, files, and other results in your tests.
 
 Assertions are called **unprefixed** — `assert_same`, not `bashunit::assert_same`. Every
 other helper does take the `bashunit::` prefix; see [Globals](/globals).
@@ -64,8 +62,7 @@ with `unknown command`. Quote the whole thing only with an `eval` prefix —
 `assert_true "eval test -d /tmp"` — or, better, drop the quotes and use the form
 above.
 
-A purpose-built assertion is usually clearer still — `assert_directory_exists`
-rather than a hand-rolled `test -d`.
+Prefer a specific assertion such as `assert_directory_exists` when one exists for the check.
 
 Reports an error **unless** the argument results in a truthy value: `true` or `0`, or a
 command or function that exits `0`.

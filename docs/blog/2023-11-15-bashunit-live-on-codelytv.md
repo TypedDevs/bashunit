@@ -1,9 +1,7 @@
 ---
 date: '2023-11-15'
 title: 'bashunit Live on CodelyTV'
-description: 'Bashunit was live on CodelyTV, on which Rafa had a chat with three of the main contributors of the library
-in a live broadcast. They demonstrated the full potential of bashunit, showing how TDD can be used to test bash scripts
-and create snapshot tests for legacy code.'
+description: 'Rafa joined three bashunit contributors on CodelyTV to demonstrate test-driven development for Bash scripts and snapshot tests for legacy code.'
 coverUrl: '/covers/2023-11-15-bashunit-live-on-codelytv.jpg'
 coverAlt: 'Promotional Poster for the Live Broadcast featuring "$ testing bash" written at the top. Below,
 from left to right, are Antonio, Manu, and Chema (contributors of bashunit), the bashunit logo,
@@ -28,20 +26,14 @@ aside: false
   allowfullscreen
 />
 
-This was part of a dynamic live session where many topics were briefly touched on,
-with plans to delve into these in future blog posts.
+The session covered several topics briefly. Future posts will explain the two live coding demos in more detail.
 
-> Writer's Note: If you're not a Spanish speaker and can't enjoy the video, don't worry
-> (PS: You can still activate the subtitles).
-> Our next articles will focus specifically on the two live coding demos conducted during the broadcast,
-> adding many more details and clearer explanations. But let's keep this as our little secret.
+The video is in Spanish, with subtitles available.
 
-Would you be interested in a CodelyTV course about testing in bash using bashunit?
-They've opened a survey to gauge interest, so don't hesitate to
-[sign up](https://docs.google.com/forms/d/e/1FAIpQLSfWZK_7QMPZMd5KwbbfKvm6IInd48sgyCNQ5W1cSfyhPS_ahA/viewform)!
+CodelyTV opened a [survey](https://docs.google.com/forms/d/e/1FAIpQLSfWZK_7QMPZMd5KwbbfKvm6IInd48sgyCNQ5W1cSfyhPS_ahA/viewform) to gauge interest in a course about testing Bash scripts with bashunit.
 
-Many thanks to CodelyTV for hosting us on this stream. Here are some links of interest to resources mentioned during
-the live broadcast:
+Thanks to CodelyTV for hosting the stream. Resources mentioned during the broadcast:
+
 * [Survey for the Bash Testing Course with bashunit](https://docs.google.com/forms/d/e/1FAIpQLSfWZK_7QMPZMd5KwbbfKvm6IInd48sgyCNQ5W1cSfyhPS_ahA/viewform)
 * [PR: Add bashunit to Pull Request size labeler](https://github.com/CodelyTV/pr-size-labeler/pull/64)
 * [Bash for Everyday Use: Scripting & Productivity](https://pro.codely.com/library/bash-para-el-dia-a-dia-scripting-productividad-56241/148078/about/)

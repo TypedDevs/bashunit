@@ -1,31 +1,20 @@
 ---
-description: "Learn how bashunit discovers and names test files, plus tips for organizing and structuring your bash test suite for clarity and scale."
+description: "How bashunit discovers test files and functions, sets test titles, and runs setup and cleanup hooks."
 ---
 
 # Test files
 
-**bashunit** discovers, names, and runs test files through a set of conventions and helpers.
-In this section, you'll find information about these features along with some helpful tips.
+bashunit discovers tests by file and function names. Lifecycle hooks handle setup and cleanup.
 
 ## Test file names
 
-**bashunit** is flexible about how you name your test files.
+Pass a directory to run all files ending in `test.sh` or `test.bash` within it, including subdirectories.
 
-You can use a directory name, and bashunit will look for all files (ending with `test.sh` or `test.bash`) recursively inside that directory, and execute them.
-
-If you're using wildcards for scanning your tests, keep in mind that the initial search can slow down if you don't filter the test files in the wildcard.
-
-To optimize this, we recommend adding a `test` prefix or suffix to your test file names, and include this identifier in your wildcard pattern too (e.g., `**/*test.sh` or `**/*test.bash`).
-This naming convention not only speeds up the scanning process but also helps you keep your test files organized.
-
-This is useful regardless of whether your test files are located near your production code or share directories with your [mocks](/test-doubles), stubs, or fixtures.
+When using wildcards, include the test-file suffix in the pattern (for example, `**/*test.sh` or `**/*test.bash`) to limit the initial search. This also separates tests from production code, [mocks](/test-doubles), stubs, and fixtures in shared directories.
 
 ## Test function names
 
-**bashunit** will search for and execute all test functions it finds within each test file.
-To distinguish test functions from auxiliary functions, the name must start with `test_` —
-lowercase, and the underscore is part of the prefix. Everything after it is yours.
-Below are some example test function names that would work seamlessly:
+Within each test file, bashunit runs functions whose names start with the literal lowercase prefix `test_`, including the underscore. For example:
 
 ::: code-group
 ```bash [Example]
@@ -36,9 +25,7 @@ test_render_all_tests_passed_when_not_failed_tests() { ... }
 :::
 
 ::: tip
-You're free to use any of Bash's syntax options to define these functions: `function name()`,
-`name()`, or `function name` without parentheses. The syntax is never what decides whether a
-function runs — only the name is.
+All three Bash function forms are supported: `function name()`, `name()`, and `function name` without parentheses. Discovery uses the function name.
 :::
 
 ::: warning
@@ -110,9 +97,7 @@ the annotation asked for.
 
 ## `set_up` function
 
-The `set_up` auxiliary function is called, if it is present in the test file, before each test function in the test file is executed.
-This provides a hook to prepare the environment or set initial variables specific to each test case.
-For example, you might want to create temporary directories or files that your test will manipulate.
+If defined, `set_up` runs before each test in the file. Use it to set variables or create files and directories the test needs.
 
 ::: code-group
 ```bash [Example]
@@ -124,9 +109,7 @@ function set_up() {
 
 ## `tear_down` function
 
-The `tear_down` auxiliary function is called, if it is present in the test file, immediately after each test function in the test file is executed.
-This auxiliary function offers you a place to clean up any resources allocated or changes made during the `set_up` or test function itself.
-This helps to ensure that each test starts with a fresh state.
+If defined, `tear_down` runs immediately after each test in the file. Use it to clean up resources or changes made by `set_up` or the test.
 
 ::: code-group
 ```bash [Example]
@@ -138,8 +121,7 @@ function tear_down() {
 
 ## `set_up_before_script` function
 
-The `set_up_before_script` auxiliary function is called, if it is present in the test file, only once before all tests functions in the test file begin.
-This is useful for global setup that applies to all test functions in the script, such as loading shared resources.
+If defined, `set_up_before_script` runs once before the file's tests. Use it to load shared resources.
 
 During test execution, bashunit displays the hook execution with its duration, right-aligned to match test output:
 
@@ -148,8 +130,6 @@ Running tests/example_test.sh
 ● set_up_before_script                                               2.03s
 ✓ Passed: test_example                                                 12ms
 ```
-
-This visibility helps identify slow setup operations that may impact test run time.
 
 A failing command or non-zero function status makes `set_up_before_script` fail. bashunit reports the hook error, marks **every test in the file as failed** (they are included in the totals), and continues with the next test file. Watch out for a trailing `cmd && var=value` guard: when `cmd` fails, the guard is the hook's return value. The rest of the suite always runs, and the failure is attributed to the hook rather than surfacing as mysterious individual test errors. `tear_down_after_script` still runs, so it can release resources acquired before the setup failure. Because setup may be only partially complete, guard optional state in teardown, for example `[ -n "${RESOURCE:-}" ] && rm -f "$RESOURCE"`.
 
@@ -165,9 +145,7 @@ function set_up_before_script() {
 
 ## `tear_down_after_script` function
 
-The `tear_down_after_script` auxiliary function is called, if it is present in the test file, once after the file finishes. It also runs when `set_up_before_script` fails, even though the test functions cannot run.
-This auxiliary function is similar to how `set_up_before_script` works but at the end of the tests.
-It provides a hook for any cleanup that should occur after all tests have run, such as deleting temporary files or releasing resources.
+If defined, `tear_down_after_script` runs once after the file finishes, including when `set_up_before_script` fails and prevents the tests from running. Use it to delete temporary files or release shared resources.
 
 Like `set_up_before_script`, the execution is displayed with its duration:
 
@@ -204,9 +182,6 @@ Running tests/example_test.sh
 Tests:      1 failed, 1 total
 Some tests failed
 ```
-
-This guarantees a broken test file always fails the suite, so it never
-passes by absence.
 
 ## Related
 

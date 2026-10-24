@@ -6,15 +6,12 @@ description: "Create test doubles in bashunit: use mocks to override functions a
 
 Test doubles let you override an existing function to write tests isolated from external behaviour: use mocks to replace a function's output, and spies to assert that a function was called, with which arguments, and how many times.
 
-Temporary files created by spies are isolated per test run, so they work reliably when executing tests in parallel.
-
-Spies record their calls in temporary files scoped to each test run.
-This avoids clashes between processes and allows spies to work reliably when tests execute in parallel using `BASHUNIT_PARALLEL_RUN`.
+Spies record calls in temporary files scoped to each test run, preventing clashes when tests run in parallel with `BASHUNIT_PARALLEL_RUN`.
 
 ## bashunit::mock
 > `bashunit::mock "function" "body"`
 
-Allows you to override the behavior of a callable.
+Replace a callable's behavior.
 
 ::: code-group
 ```bash [Example]
@@ -28,8 +25,7 @@ function test_example() {
 
 > `bashunit::mock "function" <<< "output"`
 
-Allows you to override the output of a callable. When the mocked output fits on
-a single line you can use a here-string:
+Replace a callable's output with a here-string for a single line:
 
 ```bash
 bashunit::mock uname <<< "Linux"
@@ -63,7 +59,7 @@ EOF
 ```
 
 :::
-A lone all-digits argument is an exit code, not an implementation — the same convention `bashunit::spy` uses. The mock then produces no output and returns that code, which is all an error-path test usually needs:
+A single all-digits argument sets the exit code, as with `bashunit::spy`. The mock produces no output:
 
 ::: code-group
 ```bash [Example]

@@ -1,21 +1,15 @@
 ---
-description: "Mark bash tests as skipped or incomplete in bashunit to handle cases beyond simple pass or fail and keep your test suite expressive and clear."
+description: "Mark Bash tests as skipped or incomplete, add reasons, and skip tests based on commands, conditions, or operating systems."
 ---
 
 # Skipping and incomplete tests
 
-There may be various scenarios where the "passed" and "failed" outcomes for a test are not sufficient.
-To address these situations, the following functions are available for your use.
+Use `bashunit::skip` for tests that cannot run in the current environment and `bashunit::todo` for tests awaiting implementation.
 
 ## bashunit::skip
 > `bashunit::skip "[reason]"`
 
-Not all tests can be run in every environment; when such situations arise, you can mark a test as skipped.
-
-It reports that the test has been skipped, including the `[reason]` if one was specified.
-
-Skipping tests will not cause **bashunit** to exit with an error code;
-however, it will indicate that some tests were skipped in the final output.
+Marks a test as skipped and reports the optional reason. Skipped tests appear in the summary and do not cause a non-zero exit status.
 
 ::: code-group
 ```bash [Example]
@@ -117,13 +111,7 @@ than passing, which is the only hint you get.
 ## bashunit::todo
 > `bashunit::todo "[pending]"`
 
-You may come up with a test that you'd like to implement later.
-Instead of leaving the test implementation empty —which would mark the test as complete— you can flag it as incomplete.
-
-Reports that the test is incomplete as it is under development, including any `[pending]` to do details if specified.
-
-Incomplete tests will not cause **bashunit** to exit with an error code;
-however, it will indicate that some tests were incomplete in the final output.
+Marks a test as incomplete and reports the optional `[pending]` details. Incomplete tests appear in the summary and do not cause a non-zero exit status.
 
 ::: code-group
 ```bash [Example]

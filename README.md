@@ -23,12 +23,12 @@
 <h1 align="center">A simple testing framework for bash scripts</h1>
 
 <p align="center">
-    Test your bash scripts in the fastest and simplest way.
+    Write and run tests for your Bash scripts.
 </p>
 
 ## Why bashunit
 
-A lightweight, fast testing framework for **Bash 3.0+**, focused on developer experience.
+A testing framework for **Bash 3.0+**.
 It ships 93 assertions plus spies, mocks, data providers, snapshots and more.
 
 ## Quick start
@@ -58,8 +58,7 @@ Run it:
 
 ## Assertions at a glance
 
-One representative example per family — the full catalogue and every signature is at
-[bashunit.com/assertions](https://bashunit.com/assertions), or run `bashunit doc` locally:
+The table shows one example from each assertion family. See [all assertions and signatures](https://bashunit.com/assertions), or run `bashunit doc` locally:
 
 | Family | Example |
 |---|---|
@@ -77,15 +76,11 @@ One representative example per family — the full catalogue and every signature
 
 ## Documentation
 
-Full documentation, covering installation options, every feature and examples, lives at [bashunit.com](https://bashunit.com).
+Installation instructions, feature references, and examples are at [bashunit.com](https://bashunit.com).
 
-Shell tab-completion for bash and zsh is available under [`completions/`](completions/) — see the [installation docs](https://bashunit.com/installation#shell-completion).
+Shell tab-completion for bash and zsh is available under [`completions/`](completions/). See the [installation docs](https://bashunit.com/installation#shell-completion).
 
-Using an AI coding agent? [bashunit.com/ai-agents](https://bashunit.com/ai-agents) covers machine-readable
-results and the API traps that make generated bash tests pass for the wrong reason. The docs are also
-published as plain text at [`llms.txt`](https://bashunit.com/llms.txt) and
-[`llms-full.txt`](https://bashunit.com/llms-full.txt), with a drop-in skill at
-[`bashunit-skill.md`](https://bashunit.com/bashunit-skill.md).
+The [AI agent guide](https://bashunit.com/ai-agents) covers machine-readable results and API mistakes that let generated tests pass without checking the intended behavior. Plain-text docs are available at [`llms.txt`](https://bashunit.com/llms.txt) and [`llms-full.txt`](https://bashunit.com/llms-full.txt), with an agent skill at [`bashunit-skill.md`](https://bashunit.com/bashunit-skill.md).
 
 ## Contribute
 

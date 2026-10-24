@@ -1,32 +1,30 @@
 ---
-description: "Overview of the bashunit project layout, source code, documentation and contributor workflow for the modern bash testing framework."
+description: "Overview of the bashunit project layout, source code, documentation and contributor workflow."
 ---
 
 # Project overview
 
-**bashunit** is a lightweight testing framework for Bash. It focuses on helping developers verify their shell scripts with minimal setup. The library bundles hundreds of assertions and helpers, including spies, mocks and data providers.
-
-This repository hosts the bashunit source code, its documentation and many automated tests. New contributors can use this overview to understand the basic layout and workflow when working on the project.
+This repository contains the bashunit source code, documentation, and automated tests. This page describes the layout, source modules, and contributor workflow.
 
 ## Repository layout
 
-- `src` – library functions used by `bashunit`, organised as modules (below).
-- `bin` – the executable entry points.
-- `adrs` – internal architecture decisions records.
-- `example` – example scripts and tests demonstrating usage.
-- `tests` – automated tests for bashunit itself.
-- `docs` – documentation built with [VitePress](https://vitepress.dev/).
+- `src`: library functions used by `bashunit`, organised as modules (below).
+- `bin`: the executable entry points.
+- `adrs`: internal architecture decisions records.
+- `example`: example scripts and tests demonstrating usage.
+- `tests`: automated tests for bashunit itself.
+- `docs`: documentation built with [VitePress](https://vitepress.dev/).
 
 ## Source modules
 
 `src/` contains module directories and no loose files. Each module has an `index.sh` entry
-point holding **only `source` lines** — the code lives in the sibling files beside it.
+point containing **only `source` lines**. The code lives in sibling files.
 
 | Module | What it owns |
 |---|---|
 | `system` | capability probing: OS detection, `command -v`, small I/O helpers |
 | `util` | computation: strings, arithmetic, time |
-| `api` | the surface your test file calls — `temp_file`, `skip`/`todo`, custom-assert helpers |
+| `api` | functions your test file calls: `temp_file`, `skip`/`todo`, custom-assert helpers |
 | `config` | `BASHUNIT_*` defaults, scratch dirs, parallel mode, the rerun cache |
 | `coverage` | line and branch tracking, and the coverage reports |
 | `state` | counters, per-test context, the result payload |
@@ -40,15 +38,12 @@ point holding **only `source` lines** — the code lives in the sibling files be
 | `benchmark` | the bench implementation |
 | `main` | flag parsing per subcommand and the run lifecycle |
 
-There is also a `dev` module holding debug helpers, which is deliberately excluded from the
-built binary.
+The `dev` module contains debug helpers and is excluded from the built binary.
 
 The released `bashunit` is a **single file**: `build.sh` walks the `source` statements from the
 entrypoint, inlines every module in dependency order, and strips the `source` lines.
 
-For the full picture — load order, the build pipeline, the tests that enforce all of it, and
-how to add a file, a module or a subcommand — see
-[ADR-011](https://github.com/TypedDevs/bashunit/blob/main/adrs/adr-011-source-layout-and-build-pipeline.md).
+See [ADR-011](https://github.com/TypedDevs/bashunit/blob/main/adrs/adr-011-source-layout-and-build-pipeline.md) for load order, the build pipeline, layout tests, and instructions for adding files, modules, or subcommands.
 
 ## Running tests
 
@@ -68,11 +63,11 @@ The project uses bashunit to test itself. To execute the full suite, run:
 Benchmarks are a subcommand, not a flag on the test run: `bashunit bench [path]`.
 
 
-> See more command line options: [here](/command-line)
+See the [command line reference](/command-line) for more options.
 
 ## Contributing
 
-Pull requests are welcome! Please read the [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) before sending patches. All contributions are covered by the MIT license.
+Read the [contribution guide](https://github.com/TypedDevs/bashunit/blob/main/.github/CONTRIBUTING.md) before sending patches. All contributions are covered by the MIT license.
 
 For documentation changes you can preview locally with:
 
@@ -86,7 +81,7 @@ Before submitting your pull request ensure that `npm run build` (run from `docs/
 
 ## Further reading
 
-For a step‑by‑step introduction check the [quickstart](/quickstart). Detailed usage of individual features is explained throughout the docs site.
+Start with the [quickstart](/quickstart) to write and run your first test.
 
 ## Related
 

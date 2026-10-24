@@ -1,15 +1,10 @@
 ---
-description: Use bashunit with AI coding agents — machine-readable results, tight feedback loops, a ready-made skill, and the mistakes agents make writing bash tests.
+description: "Use bashunit with AI coding agents: structured results, focused test runs, a reusable skill, and common test-writing mistakes."
 ---
 
 # Agentic coding
 
-Coding agents write bash, and bash is the language they get wrong most often: quoting,
-exit codes and portability all fail quietly. A test suite is the only thing that turns
-"the agent says it works" into evidence.
-
-bashunit is well suited to that loop — it starts in tens of milliseconds, needs no
-runtime, and emits machine-readable results an agent can parse instead of eyeballing.
+Use bashunit to check agent-written Bash scripts for quoting, exit-code, and portability errors. It runs on Bash and emits machine-readable test results that an agent can parse.
 
 ## Point your agent at the docs
 
@@ -20,7 +15,7 @@ Two files are published for machine consumption:
 | [`bashunit.com/llms.txt`](https://bashunit.com/llms.txt) | Short index of every docs page, following the [llms.txt](https://llmstxt.org) convention |
 | [`bashunit.com/llms-full.txt`](https://bashunit.com/llms-full.txt) | The entire documentation as one plain-text file |
 
-Give an agent the second one and it stops inventing assertion names:
+Give the agent the full reference so it can look up assertion names:
 
 ```bash
 curl -s https://bashunit.com/llms-full.txt -o .agent/bashunit-docs.txt
@@ -78,8 +73,7 @@ recording into a failure, so a snapshot that was never committed cannot pass sil
 
 ## Keep the loop tight
 
-An agent that re-runs the whole suite after every edit wastes most of its turn. These
-flags exist to avoid that:
+Use focused runs while fixing tests, then run the full suite:
 
 ```bash
 bashunit --filter parses_the_header tests/     # one test — matches the FUNCTION name
@@ -92,14 +86,11 @@ bashunit --test-timeout 10 tests/              # stop an agent-written infinite 
 `--rerun-failed` reads `.bashunit/last-failed`, so the red-green cycle is: run once,
 then loop on `--rerun-failed` until it is empty. Add `.bashunit/` to your `.gitignore`.
 
-For a long agent session, `--test-timeout` matters more than it looks. A generated test
-with a `while` loop that never terminates will otherwise hang the run until the agent's
-own timeout fires, and the transcript will show nothing useful.
+Use `--test-timeout` to stop a test with a non-terminating loop before it reaches the agent's own timeout.
 
 ## Drop-in rules for your repo
 
-Put this in your `AGENTS.md`, `CLAUDE.md`, or equivalent. It covers the mistakes agents
-actually make against this API:
+Add these API rules to your `AGENTS.md`, `CLAUDE.md`, or equivalent:
 
 ```markdown
 ## Testing with bashunit
@@ -167,7 +158,7 @@ project's conventions.
 
 ## Verifying what an agent wrote
 
-Agents write tests that pass for the wrong reason. Three cheap checks:
+Check for tests that pass without verifying the intended behavior:
 
 ```bash
 bashunit --fail-on-risky tests/   # a test with no assertions is a failure, not a pass
@@ -179,8 +170,7 @@ bashunit --strict tests/          # set -euo pipefail; catches unset vars and si
 test and asserts nothing looks green in every report, and it is one of the most common
 things a generating model produces.
 
-Pair `--random-order` with `--seed <n>` to reproduce a specific shuffle once it finds
-something.
+Pair `--random-order` with `--seed <n>` to reproduce the order of a failing run.
 
 ## Coverage as a review signal
 

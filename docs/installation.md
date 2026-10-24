@@ -23,7 +23,7 @@ Everything else is optional, but some features need it:
 
 ## install.sh
 
-There is a tool that will generate an executable with the whole library in a single file:
+Run the installer to download the single-file executable:
 
 ::: code-group
 ```bash [Linux/Mac]
@@ -32,7 +32,7 @@ curl -s https://bashunit.com/install.sh | bash
 
 :::
 
-This will create a file inside a lib folder, such as `lib/bashunit`.
+This creates `lib/bashunit`.
 
 ::: tip Automatic checksum verification
 `install.sh` verifies the download against the release `checksum` asset and aborts on a
@@ -72,16 +72,16 @@ curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
 
 :::
 
-- `[dir]`: the destiny directory to save the executable bashunit; `lib` by default
+- `[dir]`: the directory for the bashunit executable; `lib` by default
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default.
 
 ::: tip
 You can use `beta` as `[version]` to get the next non-stable preview release.
-We try to keep it stable, but there is no promise that we won't change functions or their signatures without prior notice.
+Preview functions and signatures may change without notice.
 :::
 
 ::: tip
-Committing (or not) this file to your project it's up to you. In the end, it is a dev dependency.
+You can commit `lib/bashunit` to your project or install it as a development dependency when needed.
 :::
 
 ## npm
@@ -279,9 +279,7 @@ curl -fsSLo checksum \
 ## GitHub Actions
 
 The official `TypedDevs/bashunit` action installs the binary in one step.
-Pin it to the floating major tag `@v0` to track the latest release within a major,
-or to a commit SHA for an immutable, supply-chain-safe install
-(keeps static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) happy):
+Use `@v0` to track releases within the major version, or pin a commit SHA so the action code cannot change under the same reference. Static analyzers such as [zizmor](https://github.com/woodruffw/zizmor) check for commit pins:
 
 ::: code-group
 ```yaml-vue [via action]
@@ -360,8 +358,7 @@ pinning a release published before checksum assets existed.
 
 ### Keep the SHA pin fresh automatically
 
-A commit-SHA pin is the most secure, but bumping it by hand is tedious. Let a bot do it
-and keep the `# {{ pkg.version }}` comment as the human-readable tracker.
+Use Renovate or Dependabot to update the commit SHA automatically. Keep the `# {{ pkg.version }}` comment to show the corresponding release.
 
 ::: code-group
 ```json [Renovate - renovate.json]
@@ -391,8 +388,7 @@ updates:
 Renovate updates the pinned SHA and refreshes the trailing `# tag` comment in the same PR.
 Dependabot bumps `github-actions` pins on the schedule you set.
 
-Either way you get bashunit updates as routine pull requests — no manual re-pinning or
-`curl | bash` bumps to remember. Review the PR, let CI run, merge.
+Both tools open pull requests for updates so you can review and test them before merging.
 
 ::: tip
 See the action's own end-to-end test for a real example, covering `version`, `directory`,
@@ -440,8 +436,7 @@ autoload -Uz compinit && compinit
 ```
 :::
 
-The scripts are kept honest by an anti-drift test in CI: adding a flag to
-bashunit without updating the completions fails the build.
+A CI test fails if a CLI flag is missing from the completion scripts.
 
 ## Related
 

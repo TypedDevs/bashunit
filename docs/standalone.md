@@ -27,9 +27,7 @@ Execute assertions directly from the command line using the `assert` command:
 | `1` | Assertion failed, or the invocation was malformed |
 | `127` | Non-existing function |
 
-A malformed invocation is reported rather than passed over — an assertion called with no
-arguments at all exits `1` with an error, so a typo in a deploy script cannot look like a
-success:
+An assertion called with no arguments exits `1` with an error:
 
 ```bash
 bashunit assert equals

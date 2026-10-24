@@ -4,11 +4,7 @@ description: "Snapshot testing in bashunit: capture and compare command or scrip
 
 # Snapshots
 
-Snapshot testing is valuable for verifying the output of commands or scripts over time.
-By capturing and comparing the "snapshot" of the output at different stages,
-you can easily spot unintended changes or regressions.
-This way, it helps maintain the expected behavior while modifications are being made,
-making the verification process more efficient and reliable.
+Snapshot tests save command or script output to a file and compare later runs against it. A difference reports a failure for you to review.
 
 ## assert_match_snapshot
 > `assert_match_snapshot "actual" ["snapshot_file"]`
@@ -57,15 +53,13 @@ Some tests failed
 :::
 
 ::: warning
-You need to run the tests for this example twice to see them work.
-The first time you run them, the snapshots will be generated and the second time they will be asserted.
+Run this example twice: the first run creates the snapshots; the second compares the output against them.
 :::
 
 ## assert_match_snapshot_ignore_colors
 > `assert_match_snapshot_ignore_colors "actual" ["snapshot_file"]`
 
-Like `assert_match_snapshot` but ANSI escape codes in `actual` are ignored. This allows
-verifying the output text while disregarding its style.
+Like `assert_match_snapshot`, but ignores ANSI escape codes in `actual` to compare text without its styling.
 
 ::: code-group
 ```bash [Example]

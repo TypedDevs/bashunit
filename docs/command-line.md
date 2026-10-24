@@ -53,8 +53,7 @@ bashunit test tests/ --parallel --simple
 ```
 :::
 
-A path you name is the one that runs. Two answers follow from that, and they are
-deliberately different:
+A missing path reports an error naming the path. An existing directory with no tests reports `No tests found`:
 
 ```
 $ bashunit tsets/
@@ -64,12 +63,7 @@ $ bashunit tests/without_any_test/
  No tests found
 ```
 
-An empty result is a real answer — a directory with no test files, a `--filter`
-or `--tag` matching nothing, an empty `--shard`, `--changed` with no changes —
-and all of those keep saying `No tests found` and exit non-zero. A path that is
-not on disk is a mistyped invocation instead, so it is named before anything
-runs. A pattern the shell left unexpanded (`tests/zz*_test.sh`) counts as an
-empty result, not a missing path.
+An empty selection reports `No tests found` and exits non-zero. This includes a directory with no test files, a `--filter` or `--tag` matching nothing, an empty `--shard`, and `--changed` with no changes. A pattern the shell left unexpanded (`tests/zz*_test.sh`) also counts as an empty selection. A missing literal path is reported before any tests run.
 
 A path that selects nothing never falls back to
 [`BASHUNIT_DEFAULT_PATH`](#environment-bootstrap): `bashunit empty_dir/` reports
@@ -77,23 +71,15 @@ A path that selects nothing never falls back to
 
 ### Allowing an empty run
 
-Selecting nothing exits non-zero, because it usually means a typo. When it is
-deliberate — a CI matrix whose shards are not all populated, or a changed-files
-run that touched no tests — `--pass-with-no-tests` makes that run succeed:
+Use `--pass-with-no-tests` when an empty run is expected, such as a CI matrix with empty shards or a changed-files run with no changed tests:
 
 ```bash
 bashunit --pass-with-no-tests --shard 4/4 tests/
 ```
 
-The run still reports `No tests found`; only the verdict changes, so an empty
-shard by design and one by accident still look different to a reader. Pass it on
-the invocations that may legitimately be empty rather than setting
-`BASHUNIT_PASS_WITH_NO_TESTS` globally — a suite that silently stops running
-tests is what the non-zero default is there to catch.
+The run still reports `No tests found`, but exits successfully. Set the flag only on runs that may be empty. Setting `BASHUNIT_PASS_WITH_NO_TESTS` globally can hide a suite that unexpectedly stops running tests.
 
-It does not excuse a path that is not on disk: that is a wrong invocation and is
-still refused by name. The flag is the same one jest, vitest, Playwright and
-Cypress spell `--pass-with-no-tests`.
+A missing literal path still fails with an error naming the path.
 
 ### Test Options
 
@@ -1390,7 +1376,7 @@ bashunit test tests/ --login
 
 > `bashunit test --coverage`
 
-Enable code coverage tracking for your tests. See the [Coverage](/coverage) documentation for comprehensive details.
+Enable code coverage tracking for your tests. See [Coverage](/coverage) for setup and report options.
 
 ::: code-group
 ```bash [Basic usage]
