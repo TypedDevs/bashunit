@@ -22,6 +22,9 @@ _BASHUNIT_ANNOT_REASON_OUT=""
 # Empties the map. Called whenever the provider pass starts a new file.
 ##
 function bashunit::helper::annotations_reset() {
+  bashunit::helper::metadata_index_reset ANNOT \
+    "${_BASHUNIT_ANNOT_MAP_FNS[@]+"${_BASHUNIT_ANNOT_MAP_FNS[@]}"}"
+  _BASHUNIT_ANNOT_MAP_INDEXED=false
   _BASHUNIT_ANNOT_MAP_FNS=()
   _BASHUNIT_ANNOT_MAP_TIMEOUTS=()
   _BASHUNIT_ANNOT_MAP_RETRIES=()
@@ -36,6 +39,7 @@ function bashunit::helper::annotations_reset() {
 ##
 function bashunit::helper::annotations_record() {
   local count=${#_BASHUNIT_ANNOT_MAP_FNS[@]}
+  _BASHUNIT_ANNOT_MAP_INDEXED=false
   _BASHUNIT_ANNOT_MAP_FNS[count]="$1"
   _BASHUNIT_ANNOT_MAP_TIMEOUTS[count]="${2-}"
   _BASHUNIT_ANNOT_MAP_RETRIES[count]="${3-}"
@@ -50,27 +54,31 @@ function bashunit::helper::annotations_record() {
 # Arguments: $1 - test-function name
 ##
 function bashunit::helper::annotations_for_function() {
-  local function_name=$1
-  local i=0
+  local function_name=$1 index=0
   local total=${#_BASHUNIT_ANNOT_MAP_FNS[@]}
-
   _BASHUNIT_ANNOT_TIMEOUT_OUT=""
   _BASHUNIT_ANNOT_RETRY_OUT=""
   _BASHUNIT_ANNOT_SKIP_OUT="false"
   _BASHUNIT_ANNOT_REASON_OUT=""
+  [ "$total" -gt 0 ] || return 0
 
-  while [ "$i" -lt "$total" ]; do
-    if [ "${_BASHUNIT_ANNOT_MAP_FNS[i]}" = "$function_name" ]; then
-      _BASHUNIT_ANNOT_TIMEOUT_OUT="${_BASHUNIT_ANNOT_MAP_TIMEOUTS[i]}"
-      _BASHUNIT_ANNOT_RETRY_OUT="${_BASHUNIT_ANNOT_MAP_RETRIES[i]}"
-      if [ "${_BASHUNIT_ANNOT_MAP_SKIPS[i]}" = "1" ]; then
-        _BASHUNIT_ANNOT_SKIP_OUT="true"
-      fi
-      _BASHUNIT_ANNOT_REASON_OUT="${_BASHUNIT_ANNOT_MAP_REASONS[i]}"
-      return
-    fi
-    i=$((i + 1))
-  done
+  if [ "$_BASHUNIT_ANNOT_MAP_INDEXED" = true ]; then
+    bashunit::helper::metadata_index_lookup ANNOT "$function_name"
+    index=$_BASHUNIT_METADATA_INDEX_OUT
+    [ -n "$index" ] || return 0
+  else
+    while [ "$index" -lt "$total" ]; do
+      [ "${_BASHUNIT_ANNOT_MAP_FNS[index]}" != "$function_name" ] || break
+      index=$((index + 1))
+    done
+    [ "$index" -lt "$total" ] || return 0
+  fi
+  _BASHUNIT_ANNOT_TIMEOUT_OUT="${_BASHUNIT_ANNOT_MAP_TIMEOUTS[index]}"
+  _BASHUNIT_ANNOT_RETRY_OUT="${_BASHUNIT_ANNOT_MAP_RETRIES[index]}"
+  if [ "${_BASHUNIT_ANNOT_MAP_SKIPS[index]}" = "1" ]; then
+    _BASHUNIT_ANNOT_SKIP_OUT="true"
+  fi
+  _BASHUNIT_ANNOT_REASON_OUT="${_BASHUNIT_ANNOT_MAP_REASONS[index]}"
 }
 
 ##

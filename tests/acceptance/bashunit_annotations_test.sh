@@ -233,3 +233,47 @@ function test_a_malformed_annotation_is_counted_once_under_parallel() {
   assert_contains 'name="Bad annotation beside a good file"' "$junit"
   assert_contains "is not a non-negative integer" "$junit"
 }
+
+function test_metadata_stays_with_its_test_across_files_filters_and_random_order_sequential() {
+  run_indexed_metadata_fixture --no-parallel
+}
+
+function test_metadata_stays_with_its_test_across_files_filters_and_random_order_parallel() {
+  run_indexed_metadata_fixture --parallel
+}
+
+function run_indexed_metadata_fixture() {
+  local mode=$1 dir output status=0 i
+  dir="$(bashunit::temp_dir)"
+  printf '%s\n' \
+    'function indexed_rows() { printf "%s\n" alpha beta; }' \
+    '# @timeout 0' '# @retry 1' '# @data_provider indexed_rows' \
+    'function test_indexed_rows() {' \
+    '  local marker="$METADATA_MARKERS/$1"' \
+    '  printf "%s\n" attempt >>"$marker"' \
+    '  assert_same 2 "$(wc -l <"$marker" | tr -d " ")"' \
+    '}' \
+    '# @skip metadata skip' \
+    'function test_indexed_skip() { printf "%s\n" "skip ran" >"$METADATA_MARKERS/unexpected"; }' \
+    >"$dir/first_test.sh"
+  for ((i = 0; i < 65; i++)); do
+    printf '# @timeout 0\n# @data_provider indexed_rows\nfunction metadata_padding_%s() { :; }\n' "$i"
+  done >>"$dir/first_test.sh"
+  printf '%s\n' \
+    'function test_indexed_plain() { assert_same plain plain; }' \
+    '# @skip must not carry into a selected test' \
+    'function test_indexed_excluded() { assert_same excluded selected; }' \
+    >"$dir/second_test.sh"
+
+  output=$(METADATA_MARKERS="$dir" ./bashunit "$mode" --env "$TEST_ENV_FILE" \
+    --random-order --seed 42 --filter indexed --exclude-filter indexed_excluded \
+    "$dir/first_test.sh" "$dir/second_test.sh" 2>&1) || status=$?
+
+  [ "$status" -eq 0 ] || printf '%s\n' "$output"
+  assert_same 0 "$status"
+  assert_contains '3 passed' "$output"
+  assert_contains '1 skipped' "$output"
+  assert_same '2' "$(wc -l <"$dir/alpha" | tr -d ' ')"
+  assert_same '2' "$(wc -l <"$dir/beta" | tr -d ' ')"
+  assert_file_not_exists "$dir/unexpected"
+}
