@@ -48,6 +48,9 @@ function bashunit::helper::build_provider_map() {
     # Unreadable path: reset to an empty map keyed to this argument so a
     # follow-up lookup returns empty without rescanning.
     _BASHUNIT_PROVIDER_MAP_SCRIPT="$1"
+    bashunit::helper::metadata_index_reset PROVIDER \
+      "${_BASHUNIT_PROVIDER_MAP_FNS[@]+"${_BASHUNIT_PROVIDER_MAP_FNS[@]}"}"
+    _BASHUNIT_PROVIDER_MAP_INDEXED=false
     _BASHUNIT_PROVIDER_MAP_FNS=()
     _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
     _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
@@ -92,6 +95,9 @@ function bashunit::helper::build_provider_map() {
   fi
 
   _BASHUNIT_PROVIDER_MAP_SCRIPT="$script"
+  bashunit::helper::metadata_index_reset PROVIDER \
+    "${_BASHUNIT_PROVIDER_MAP_FNS[@]+"${_BASHUNIT_PROVIDER_MAP_FNS[@]}"}"
+  _BASHUNIT_PROVIDER_MAP_INDEXED=false
   _BASHUNIT_PROVIDER_MAP_FNS=()
   _BASHUNIT_PROVIDER_MAP_PROVIDERS=()
   _BASHUNIT_PROVIDER_MAP_NO_PARALLEL=false
@@ -266,6 +272,15 @@ function bashunit::helper::build_provider_map() {
     _BASHUNIT_PROVIDER_MAP_PROVIDERS[count]="$provider"
     count=$((count + 1))
   done <<<"$scan_rows"
+
+  if bashunit::helper::metadata_index_build PROVIDER \
+    "${_BASHUNIT_PROVIDER_MAP_FNS[@]+"${_BASHUNIT_PROVIDER_MAP_FNS[@]}"}"; then
+    _BASHUNIT_PROVIDER_MAP_INDEXED=true
+  fi
+  if bashunit::helper::metadata_index_build ANNOT \
+    "${_BASHUNIT_ANNOT_MAP_FNS[@]+"${_BASHUNIT_ANNOT_MAP_FNS[@]}"}"; then
+    _BASHUNIT_ANNOT_MAP_INDEXED=true
+  fi
 }
 
 
@@ -275,17 +290,22 @@ function bashunit::helper::build_provider_map() {
 # Arguments: $1 - test-function name
 #
 function bashunit::helper::provider_for_function() {
-  local function_name=$1
-  local i=0
+  local function_name=$1 index=0
   local total=${#_BASHUNIT_PROVIDER_MAP_FNS[@]}
-  while [ "$i" -lt "$total" ]; do
-    if [ "${_BASHUNIT_PROVIDER_MAP_FNS[i]}" = "$function_name" ]; then
-      _BASHUNIT_PROVIDER_FN_OUT="${_BASHUNIT_PROVIDER_MAP_PROVIDERS[i]}"
-      return
-    fi
-    i=$((i + 1))
-  done
   _BASHUNIT_PROVIDER_FN_OUT=""
+  [ "$total" -gt 0 ] || return 0
+  if [ "$_BASHUNIT_PROVIDER_MAP_INDEXED" = true ]; then
+    bashunit::helper::metadata_index_lookup PROVIDER "$function_name"
+    index=$_BASHUNIT_METADATA_INDEX_OUT
+    [ -n "$index" ] || return 0
+  else
+    while [ "$index" -lt "$total" ]; do
+      [ "${_BASHUNIT_PROVIDER_MAP_FNS[index]}" != "$function_name" ] || break
+      index=$((index + 1))
+    done
+    [ "$index" -lt "$total" ] || return 0
+  fi
+  _BASHUNIT_PROVIDER_FN_OUT="${_BASHUNIT_PROVIDER_MAP_PROVIDERS[index]}"
 }
 
 
