@@ -104,6 +104,8 @@ Alternatively, create your tests manually:
     A per-test duration column appears when the platform has a cheap clock source;
     `BASHUNIT_SHOW_EXECUTION_TIME` controls it.
 
+Next, test one of your own [functions](/common-patterns#testing-individual-functions) or [complete scripts](/common-patterns#testing-complete-scripts).
+
 ## Running your suite
 
 With no path, bashunit runs `tests/` (`BASHUNIT_DEFAULT_PATH`). The examples below use the `install.sh` path; for an npm project, replace `./lib/bashunit` with `npx bashunit`, or with `bashunit` for a global install:

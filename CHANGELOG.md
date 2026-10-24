@@ -18,6 +18,8 @@
 
 ### Changed
 
+- Common testing patterns appear under Writing Tests, with function and script recipes linked from the Quickstart
+
 - Documentation uses shorter, clearer wording across guides, reference pages and release posts
 - Large provider and annotation maps use an index instead of scanning earlier entries, speeding up test files on Bash 3.0 and newer (#1392)
 
