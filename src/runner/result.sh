@@ -54,6 +54,10 @@ _BASHUNIT_RUNNER_FILE_SLOT=""
 function bashunit::runner::file_path_to_slot() {
   local key="${1#./}"
   key="${key%.sh}"
+  # A leading dot (a hidden relative directory, or a hidden file) would make the
+  # per-file scratch directory hidden, and the aggregation's `*` would never see
+  # its `.result` files (#1393).
+  while [ "${key#.}" != "$key" ]; do key="${key#\.}"; done
   _BASHUNIT_RUNNER_FILE_SLOT="${key//\//_}"
 }
 

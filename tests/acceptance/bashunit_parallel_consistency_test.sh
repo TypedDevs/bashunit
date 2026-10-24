@@ -84,6 +84,32 @@ function test_parallel_does_not_lose_same_named_files_in_different_dirs() {
   assert_contains "2 total" "$sequential_counts"
 }
 
+# A hidden relative directory folds into a slot whose name starts with a dot,
+# and the aggregation's `*` never matched hidden entries: the workers' `.result`
+# files existed but the run printed `No tests found` and zero totals (#1393).
+function test_parallel_counts_tests_under_a_hidden_relative_dir() {
+  local passing=".hidden-tests-1393/hidden_pass_test.sh"
+  local failing=".hidden-tests-1393/hidden_fail_test.sh"
+  mkdir -p .hidden-tests-1393
+  printf 'function test_hidden_pass() { assert_same 1 1; }\n' >"$passing"
+  printf 'function test_hidden_fail() { assert_same 1 2; }\n' >"$failing"
+
+  local sequential_output
+  sequential_output=$(NO_COLOR=1 ./bashunit --no-parallel --env "$TEST_ENV_FILE" "$passing" "$failing" 2>&1) || true
+  local parallel_output
+  parallel_output=$(NO_COLOR=1 ./bashunit --parallel --env "$TEST_ENV_FILE" "$passing" "$failing" 2>&1) || true
+
+  rm -rf .hidden-tests-1393
+
+  local sequential_counts parallel_counts
+  sequential_counts=$(summary_counts "$sequential_output")
+  parallel_counts=$(summary_counts "$parallel_output")
+
+  assert_same "$sequential_counts" "$parallel_counts"
+  # Guard against both sides collapsing to nothing and matching vacuously.
+  assert_contains "2 total" "$sequential_counts"
+}
+
 # The shape #1048 reported: a zero-test summary in front of the real one. The
 # source of that stray summary was never reproduced -- 40+ local attempts,
 # including under concurrent load, never produced one -- so this pins the
