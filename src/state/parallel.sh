@@ -26,13 +26,10 @@ function bashunit::state::aggregate_parallel_results() {
   local total_snapshot=0
 
   local script_dir=""
-  for script_dir in "$temp_dir_parallel_test_suite"/*; do
-    # nullglob is enabled below, for the inner glob, and so does not cover this
-    # one: when no worker ran, this loop iterates once over the pattern itself.
-    # That phantom directory has no `.result` files, so the branch below printed
-    # `No tests found` onto stdout on top of the notice the summary renders --
-    # twice on the console, and ahead of the document under `--output`, which
-    # made the JSON and the XML of an empty run unparseable.
+  # Include hidden keys without matching . or .., regardless of dotglob state.
+  for script_dir in "$temp_dir_parallel_test_suite"/[!.]* \
+    "$temp_dir_parallel_test_suite"/.[!.]* "$temp_dir_parallel_test_suite"/..?*; do
+    # Skip unmatched patterns so an empty run keeps machine-readable output valid.
     [ -d "$script_dir" ] || continue
     shopt -s nullglob
     # Bash 3.0 compatible: separate declaration and assignment for arrays
