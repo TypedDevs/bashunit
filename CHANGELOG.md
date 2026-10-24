@@ -6,6 +6,10 @@
 
 - Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
 
+### Fixed
+
+- Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
+
 ### Changed
 
 - Large provider and annotation maps use an index instead of scanning earlier entries, speeding up test files on Bash 3.0 and newer (#1392)
