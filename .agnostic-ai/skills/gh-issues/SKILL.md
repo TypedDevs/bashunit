@@ -1,7 +1,6 @@
 ---
 name: gh-issues
-description: Walk over all open GitHub issues that are unassigned or assigned to the current user, and process each one via the /gh-issue skill, sequentially.
-user-invocable: true
+description: Work open GitHub issues that are unassigned or mine, one at a time, with gh-issue.
 argument-hint: "[--limit N] [--label foo] [--dry-run]"
 disable-model-invocation: true
 allowed-tools: read, shell, Skill

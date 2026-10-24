@@ -1,7 +1,6 @@
 ---
 name: release
 description: Run pre-release validation and execute the release process
-user-invocable: true
 argument-hint: "[version]"
 allowed-tools: shell, read, Grep, Glob
 ---

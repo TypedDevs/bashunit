@@ -37,7 +37,7 @@
     "assertions"
   ],
   "devDependencies": {
-    "agnostic-ai": "0.82.0"
+    "agnostic-ai": "0.87.0"
   },
   "scripts": {
     "agents:sync": "agnostic-ai sync",

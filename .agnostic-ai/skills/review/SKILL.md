@@ -1,7 +1,6 @@
 ---
 name: review
 description: Review a GitHub pull request; defaults to the current branch's PR when no number is given
-user-invocable: true
 argument-hint: "[#N]"
 allowed-tools: shell, read, Grep, Glob
 ---

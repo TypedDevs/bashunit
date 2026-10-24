@@ -1,7 +1,6 @@
 ---
 name: commit
 description: Stage and commit changes using conventional commits format
-user-invocable: true
 argument-hint: "[message hint]"
 disable-model-invocation: true
 allowed-tools: shell, read, Grep, Glob
