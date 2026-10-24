@@ -1,9 +1,8 @@
 ---
 name: review
 description: Review a GitHub pull request; defaults to the current branch's PR when no number is given
+argument-hint: "[#N]"
 allowed-tools: shell, read, Grep, Glob
-x-claude:
-  argument-hint: "[#N]"
 ---
 
 # Review a pull request
