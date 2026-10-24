@@ -102,16 +102,36 @@ Continue with the [Quickstart](/quickstart) for other install methods and runnin
 </style>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import VanillaTilt from 'vanilla-tilt';
+import { onMounted, onUnmounted } from 'vue';
+import VanillaTilt, { type HTMLVanillaTiltElement } from 'vanilla-tilt';
+
+let cleanupTilt = () => {};
 
 onMounted(() => {
-  const heroImage = document.querySelector('.VPHero .VPImage');
+  const heroImage = document.querySelector<HTMLVanillaTiltElement>('.VPHero .VPImage');
+  if (!heroImage) return;
 
-  VanillaTilt.init(heroImage, {
-    'full-page-listening': true,
-    reverse: true,
-    gyroscope: false
-  });
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const updateTilt = () => {
+    if (reducedMotion.matches) {
+      heroImage.vanillaTilt?.destroy();
+      return;
+    }
+
+    VanillaTilt.init(heroImage, {
+      'full-page-listening': true,
+      reverse: true,
+      gyroscope: false
+    });
+  };
+
+  updateTilt();
+  reducedMotion.addEventListener('change', updateTilt);
+  cleanupTilt = () => {
+    reducedMotion.removeEventListener('change', updateTilt);
+    heroImage.vanillaTilt?.destroy();
+  };
 });
+
+onUnmounted(() => cleanupTilt());
 </script>

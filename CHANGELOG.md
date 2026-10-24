@@ -10,6 +10,8 @@
 
 ### Fixed
 
+- The homepage logo honors reduced motion, updates when the preference changes, and cleans up on navigation
+
 - Primary documentation buttons use readable dark text in both themes, including hover and active states
 
 - Quickstart commands match the install.sh, npm project, and npm global installation paths
