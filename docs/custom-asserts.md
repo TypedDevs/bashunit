@@ -4,14 +4,14 @@ description: "Write custom assertions in bashunit to extend the testing framewor
 
 # Custom asserts
 
-Custom assertions let you extend **bashunit** with your own reusable checks, ideal for domain-specific assertions that don't need to live in the core library.
+Write custom assertions for reusable checks specific to your project.
 
 :::tip
 Check the internal functional tests: `tests/functional/custom_asserts_test.sh` ([link](https://github.com/TypedDevs/bashunit/blob/main/tests/functional/custom_asserts_test.sh))
 :::
 
 ::: info Assertion behavior
-When using the bashunit facade, assertions automatically respect the guard behavior: if a previous assertion in the same test already failed, subsequent assertions are skipped. This matches popular testing libraries default behavior.
+When called through the bashunit facade, assertions are skipped if an earlier assertion in the same test failed.
 
 This is the default. `-R`/`--run-all` (`BASHUNIT_STOP_ON_ASSERTION_FAILURE=false`) disables
 the guard, so every assertion inside your custom assertion runs and counts even after an
@@ -19,7 +19,7 @@ earlier failure.
 :::
 
 ::: info Test name detection
-Custom assertions automatically display the correct **test function name** in failure messages, not the custom assertion name. This makes it easy to identify which test failed, even when using deeply nested custom assertions.
+Failure messages display the **test function name**, including when custom assertions call other custom assertions.
 :::
 
 ## API Reference
@@ -248,9 +248,7 @@ function assert_positive_number() {
 
 ## Testing your custom assertions
 
-A custom assertion is code, so it deserves tests of its own — including for the
-case it is meant to reject. Three [assertions](/assertions) assert about
-assertions:
+Test that your custom assertion accepts valid input and rejects invalid input. These three [assertions](/assertions) check its result and failure message:
 
 ```bash
 function test_positive_number_accepts_one() {

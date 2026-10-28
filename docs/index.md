@@ -6,7 +6,7 @@ description: "bashunit is a fast, simple bash testing framework: assertions, moc
 hero:
   name: bashunit
   text: A simple testing library for bash scripts
-  tagline: Test your bash scripts in the fastest and simplest way, discover the most modern bash testing library.
+  tagline: Write and run tests for your Bash scripts on Bash 3.0 and newer.
   image:
     src: /logo.svg
     alt: bashunit
@@ -25,7 +25,7 @@ features:
   - icon:
       src: /flexible.svg
     title: Flexible
-    details: 84 assertions plus mocks, spies, data providers and snapshots, for comparing, matching and validating anything your scripts produce.
+    details: Assertions, mocks, spies, data providers and snapshots to check your scripts' output and behavior.
   - icon:
       src: /accessible.svg
     title: Fast and CI-ready
@@ -33,11 +33,11 @@ features:
   - icon:
       src: /updated.svg
     title: Community
-    details: A vibrant GitHub community for support, collaboration, and continuous library enhancement. Join forces with like-minded developers.
+    details: Ask questions, report bugs, suggest features and contribute on GitHub.
   - icon:
       src: /multiplatform.svg
     title: Multiplatform
-    details: Seamlessly operates on Linux, macOS, and Windows (via WSL), facilitating a consistent testing environment across major platforms.
+    details: Run the same tests on Linux, macOS and Windows via WSL.
 ---
 
 <script setup lang="ts">

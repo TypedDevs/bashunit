@@ -1,10 +1,10 @@
 ---
-description: "Measure code coverage for your bash scripts with bashunit to reveal untested code paths and ensure your test suite exercises critical logic."
+description: "Measure code coverage for your bash scripts with bashunit to find lines and branches your tests do not execute."
 ---
 
 # Code Coverage
 
-Code coverage measures how much of your source code is executed when running tests. It helps identify untested code paths and ensures your test suite exercises the important parts of your application.
+Code coverage measures how much of your source code runs during tests. Use it to find untested lines and branches.
 
 ## Quick Start
 
@@ -121,7 +121,7 @@ When `BASHUNIT_COVERAGE_PATHS` is not set, bashunit automatically discovers sour
 This convention follows the common pattern of naming test files after their source files with a `_test.sh` or `Test.sh` suffix.
 
 ::: tip Zero Configuration
-For most projects following standard naming conventions, you can simply run `bashunit tests/ --coverage` without any path configuration.
+For most projects following standard naming conventions, run `bashunit tests/ --coverage` without any path configuration.
 :::
 
 ### Environment Variables
@@ -391,7 +391,7 @@ end_of_record
 
 ## Parallel Execution
 
-Coverage works seamlessly with parallel test execution (`-p` flag):
+Coverage supports parallel test execution (`-p` flag):
 
 ::: code-group
 ```bash [Command]
@@ -616,9 +616,7 @@ from the measured run: executing them under `--coverage` double-instruments
 
 > `bashunit test --coverage --coverage-diff <base-ref>`
 
-Answers the question a pull request actually asks — *are the lines I touched
-covered?* — instead of reporting a whole-file percentage that moves for reasons
-unrelated to the change under review.
+Measure coverage of the lines added or modified by a change.
 
 ```bash
 bashunit test tests/ --coverage --coverage-diff main
@@ -634,10 +632,7 @@ Total: 7/9 (77%)
 
 Only lines **added or modified** since the ref are counted, from three sources
 merged together: commits since the merge base, staged and unstaged edits, and
-untracked files (counted in full). A pure deletion contributes nothing — there
-is no line left to hold an opinion about — and changed lines that are not
-executable (comments, `fi`, blank) are ignored, so a comment-only commit is not
-penalised.
+untracked files (counted in full). Pure deletions and non-executable lines (comments, `fi`, blank lines) are excluded.
 
 The base ref is **required**. It is not defaulted, because an optional value
 would make `--coverage-diff tests/` swallow the path as a ref.
@@ -650,18 +645,14 @@ poorly covered file.
 bashunit test tests/ --coverage --coverage-diff origin/main --coverage-min 90
 ```
 
-A change with no executable lines scores **100%**, not 0% — otherwise a
-docs-only commit would fail the gate.
+A change with no executable lines scores **100%**, so a docs-only commit passes the threshold.
 
 `--coverage-diff` restricts the **console report only**. LCOV and HTML stay
 whole-file, because their consumers (`genhtml`, Codecov) do their own diffing
 and expect complete records.
 
 ::: warning Shallow clones
-This needs `git` and a ref that resolves locally. CI checkouts are often shallow
-and have no base ref, which would otherwise report "no changed lines" and pass a
-threshold while measuring nothing — so an unresolvable ref is a hard error
-instead. Fetch it first:
+This needs `git` and a ref that resolves locally. An unresolvable ref fails with an error. For shallow CI checkouts, fetch the base ref first:
 
 ```yaml
 - uses: actions/checkout@v4

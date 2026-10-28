@@ -4,7 +4,7 @@ description: "Real-world bash testing patterns with bashunit: practical examples
 
 # Common Patterns
 
-This guide shows real-world testing patterns to help you write effective tests for your bash scripts. Each pattern includes practical examples and explains when to use it.
+Examples for testing Bash functions, scripts, files, input, output and error conditions.
 
 ## Table of Contents
 
@@ -865,15 +865,15 @@ function test_addition() {
 5. **Test both success and failure**: Don't just test the happy path
 6. **Use mocks wisely**: Mock external dependencies but don't over-mock
 7. **One assertion per test**: When possible, focus each test on a single behavior
-8. **Use lifecycle hooks**: Leverage `set_up` and `tear_down` for common setup
+8. **Use lifecycle hooks**: Put shared setup in `set_up` and cleanup in `tear_down`
 9. **Organize logically**: Group related tests in the same file or directory
 10. **Document complex tests**: Add comments explaining why you're testing something unusual
 
 ## Next Steps
 
-- Explore [Test Doubles](/test-doubles) for advanced mocking and spying
-- Learn about [Data Providers](/data-providers) for parameterized testing
-- Check out [Snapshots](/snapshots) for testing complex output
-- Read about [Custom Asserts](/custom-asserts) for domain-specific testing
+- [Test Doubles](/test-doubles): replace dependencies with mocks and spies
+- [Data Providers](/data-providers): run tests with multiple input sets
+- [Snapshots](/snapshots): save and compare output
+- [Custom Asserts](/custom-asserts): write checks specific to your project
 - Browse the [Assertions](/assertions) reference for every available check
 - Use [Standalone](/standalone) assertions outside of test files

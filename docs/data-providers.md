@@ -4,17 +4,14 @@ description: "Use bashunit data providers to run one test with multiple input se
 
 # Data providers
 
-**bashunit** offers a way to parameterize your test functions with data providers.
-Ideal when you want to execute the same test function multiple times, each with a different set of arguments.
+Data providers run the same test function with different sets of arguments.
 
 ## Defining a data provider
 
-You can add a special comment `@data_provider` before a test function to specify an auxiliary function. This function controls how many times the test will run and what arguments it will receive.
-
-A data provider function is specified as follows:
+Add a `@data_provider` comment before a test function to name its provider. The provider supplies the argument sets and determines how many times the test runs:
 
 > **Note**: The previous `# data_provider` syntax is still supported but
-> deprecated. Prefer using the `@` prefix going forward.
+> deprecated. Use the `@` prefix.
 
 ::: code-group
 ```bash [Example]
@@ -31,9 +28,9 @@ annotation, and the test runs once with no arguments instead of reporting an err
 
 ## Implementing a data provider
 
-A data provider function contains one or more `bashunit::data_set` lines. Each `bashunit::data_set` results in a separate run of the test function with the individual `bashunit::data_set` arguments being passed to it as positional arguments (`$1`, `$2`, ...).
+Call `bashunit::data_set` for each set of inputs. Each call runs the test once, passing those inputs as positional arguments (`$1`, `$2`, ...).
 
-Each run is treated as a separate test, so it can pass or fail independently. Plus, [set_up](/test-files#set-up-function) and [tear_down](/test-files#tear-down-function) are called before and after each run. This reduces code repetition and helps create related tests more efficiently.
+Each run passes or fails independently, with [set_up](/test-files#set-up-function) before it and [tear_down](/test-files#tear-down-function) after it.
 
 Under `--parallel` every row is dispatched as its own concurrent job, so rows sharing a
 file, a temp path or an environment variable will race. Serialise them with the
@@ -68,7 +65,7 @@ in the header but `1 total` at the bottom means a provider produced no rows), or
 selection with `./bashunit --list <file>`.
 :::
 
-A data provider function is implemented as follows:
+For example:
 
 ::: code-group
 ```bash [Example]
@@ -84,7 +81,7 @@ function provider_function() {
 
 > **Note**: The previous variant of using `echo` to define data within a data
 > provider is still supported but deprecated, as it does not support empty values or
-> values containing spaces. Prefer using the `bashunit::data_set` function going forward.
+> values containing spaces. Use `bashunit::data_set` instead.
 
 ## Interpolating arguments in test names
 

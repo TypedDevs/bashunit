@@ -1,16 +1,14 @@
 ---
-description: "Reference of bashunit global helper functions in the bashunit:: namespace that improve developer experience when writing and running bash tests."
+description: "Reference of bashunit global helpers for logging, temporary files, test metadata and custom assertions."
 ---
 
 # Globals
 
-These global helper functions exist primarily to improve your developer experience.
-
-All helper functions use the `bashunit::` namespace prefix to prevent naming collisions with your own code.
+Global helpers use the `bashunit::` namespace prefix to prevent naming collisions with your code.
 
 ## bashunit::log
 
-Write into the `BASHUNIT_DEV_LOG` a log message. The log line records the source file and line number for easier debugging.
+Write a message to `BASHUNIT_DEV_LOG`, including the source file and line number.
 
 > See: [Dev log](/configuration#dev-log)
 
@@ -22,7 +20,7 @@ bashunit::log "warning" "hello" "world"
 bashunit::log "critical" "hello" "world"
 bashunit::log "error" "hello" "world"
 ```
-Internal messages from bashunit include the `[INTERNAL]` prefix so you can easily spot them. You can enable them with `BASHUNIT_INTERNAL_LOG=true|false`.
+Internal messages use the `[INTERNAL]` prefix. Control them with `BASHUNIT_INTERNAL_LOG=true|false`.
 
 ## bashunit::current_dir
 

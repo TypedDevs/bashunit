@@ -6,7 +6,6 @@ description: "Configure bashunit with environment variables and config files to 
 
 Environment variables and config files control **bashunit** behavior across your project.
 
-It serves to configure the behavior of bashunit in your project.
 `.env` and `.bashunitrc` are project files, always read from the working directory.
 
 `-e, --env` (alias `--boot`) loads an **additional** bootstrap file whose assignments
@@ -41,14 +40,13 @@ the ambient environment, and it loses only to flags written **after** it on the 
 line: `bashunit --simple --env custom.env` uses the file's value, `bashunit --env custom.env --simple`
 uses the flag. Unlike `.env`, an empty entry in that file is **not** treated as "not
 configured here": `BASHUNIT_SHOW_HEADER=` assigns the empty string, which is not the
-built-in default — for a boolean setting it simply is not `true`. Delete the entry to fall
+built-in default. For a boolean setting, an empty string is not `true`. Delete the entry to fall
 back to the default; blanking it disables the setting.
 
 An entry left **empty** in `.env` means "not configured here" and does not
 override the environment, so `BASHUNIT_OUTPUT_FORMAT=tap ./bashunit` keeps
 working even when `.env` lists that name. Give the entry a value and it takes
-effect for the whole project, overriding the ambient environment — that is what a
-committed project config is for.
+effect for the whole project, overriding the ambient environment.
 
 `.bashunitrc` only fills values that are not already set, so anything above it
 always wins. `--skip-env-file` skips both `.env` and `.bashunitrc`.

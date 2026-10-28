@@ -84,6 +84,65 @@ function test_parallel_does_not_lose_same_named_files_in_different_dirs() {
   assert_contains "2 total" "$sequential_counts"
 }
 
+function test_parallel_counts_tests_under_a_hidden_relative_dir() {
+  local dir runner="$PWD/bashunit" env_file="$PWD/$TEST_ENV_FILE"
+  dir="$(bashunit::temp_dir hidden_parallel)"
+  local passing=".hidden-tests/hidden_pass_test.sh"
+  local failing=".hidden-tests/hidden_fail_test.sh"
+  mkdir -p "$dir/.hidden-tests"
+  printf 'function test_hidden_pass() { assert_same 1 1; }\n' >"$dir/$passing"
+  printf 'function test_hidden_fail() { assert_same 1 2; }\n' >"$dir/$failing"
+
+  local sequential_output
+  sequential_output=$(cd "$dir" && NO_COLOR=1 "$runner" --no-parallel --env "$env_file" \
+    "$passing" "$failing" 2>&1) || true
+  local parallel_output
+  parallel_output=$(cd "$dir" && NO_COLOR=1 "$runner" --parallel --env "$env_file" "$passing" "$failing" 2>&1) || true
+
+  local sequential_counts parallel_counts
+  sequential_counts=$(summary_counts "$sequential_output")
+  parallel_counts=$(summary_counts "$parallel_output")
+
+  assert_same "$sequential_counts" "$parallel_counts"
+  # Guard against both sides collapsing to nothing and matching vacuously.
+  assert_contains "2 total" "$sequential_counts"
+}
+
+function test_parallel_keeps_hidden_and_visible_paths_distinct() {
+  local dir runner="$PWD/bashunit" env_file="$PWD/$TEST_ENV_FILE"
+  dir="$(bashunit::temp_dir hidden_visible_parallel)"
+  mkdir -p "$dir/tests" "$dir/.tests"
+  printf 'function test_visible_path_fails() { assert_same 1 2; }\n' >"$dir/tests/example_test.sh"
+  printf 'function test_hidden_path_passes() { assert_same 1 1; }\n' >"$dir/.tests/example_test.sh"
+
+  local sequential_output parallel_output sequential_status=0 parallel_status=0
+  sequential_output=$(cd "$dir" && NO_COLOR=1 "$runner" --no-parallel --env "$env_file" \
+    tests/example_test.sh .tests/example_test.sh 2>&1) || sequential_status=$?
+  # One job makes the hidden file overwrite the visible file deterministically if their keys collide.
+  parallel_output=$(cd "$dir" && NO_COLOR=1 "$runner" --parallel --jobs 1 --env "$env_file" \
+    tests/example_test.sh .tests/example_test.sh 2>&1) || parallel_status=$?
+
+  assert_same "1" "$sequential_status"
+  assert_same "$sequential_status" "$parallel_status"
+  assert_same "$(summary_counts "$sequential_output")" "$(summary_counts "$parallel_output")"
+  assert_contains "2 total" "$(summary_counts "$parallel_output")"
+}
+
+function test_parallel_preserves_result_keys_at_the_filename_limit() {
+  local dir runner="$PWD/bashunit" env_file="$PWD/$TEST_ENV_FILE" filename
+  dir="$(bashunit::temp_dir parallel_long_path)"
+  filename="$(printf '%0247d_test.sh' 0)"
+  mkdir -p "$dir/ab"
+  printf 'function test_long_path_passes() { assert_same 1 1; }\n' >"$dir/ab/$filename"
+
+  local output status=0
+  output=$(cd "$dir" && NO_COLOR=1 "$runner" --parallel --jobs 1 --env "$env_file" \
+    "ab/$filename" 2>&1) || status=$?
+
+  assert_same "0" "$status"
+  assert_contains "1 passed 1 total" "$(summary_counts "$output")"
+}
+
 # The shape #1048 reported: a zero-test summary in front of the real one. The
 # source of that stray summary was never reproduced -- 40+ local attempts,
 # including under concurrent load, never produced one -- so this pins the

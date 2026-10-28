@@ -4,7 +4,7 @@ description: "Measure bash script execution time with bashunit benchmarks to fin
 
 # Benchmarks
 
-Benchmarks measure the execution time of your scripts with dedicated functions, helping you identify performance bottlenecks and ensure your code meets performance requirements.
+Benchmarks measure script execution time. Use them to find slow code and enforce time limits.
 
 ## Quick Start
 
@@ -73,8 +73,7 @@ If no file is provided, bashunit uses [`BASHUNIT_DEFAULT_PATH`](/configuration) 
 
 A run that finds nothing to measure **exits non-zero**, the same way
 `bashunit test` does. A typo in the path or in the prefix would otherwise leave
-a green CI job that benchmarked nothing, which is easy to miss when the whole
-output is numbers. `bench` gives the same two answers `test` does:
+a passing CI job that benchmarked nothing. `bench` distinguishes missing paths from empty selections:
 
 ```
 $ bashunit bench bnech/
@@ -229,11 +228,9 @@ Performance regression in 1 benchmark(s)
   compares against nothing would report every run green, which is worse than
   no gate at all.
 
-The comparison uses the **median**, not the average: one descheduled iteration
-on a shared runner moves the mean far more than the middle value, and a gate
-that cries wolf gets disabled.
+The comparison uses the **median** to reduce the effect of an unusually slow iteration on a shared runner.
 
-The baseline file is simply the [`--report-json`](#machine-readable-reports)
+The baseline file is the [`--report-json`](#machine-readable-reports)
 document of an earlier run, so a CI job can publish today's run as an artifact
 and the next one can compare against it.
 

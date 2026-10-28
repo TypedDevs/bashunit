@@ -6,26 +6,23 @@ description: "Browse bashunit examples demonstrating assertions, test doubles, d
 
 ## Demo example
 
-**bashunit** includes a sample script and its associated test file in the examples folder of its repository.
-In there, you'll find various tests showcasing the file and different **bashunit** functionalities.
-
-[Take a look](https://github.com/TypedDevs/bashunit/tree/main/example).
+The [example directory](https://github.com/TypedDevs/bashunit/tree/main/example) contains a sample script and tests showing bashunit features.
 
 ## Real examples
 
-If you're interested in real-world examples, below is a list of actual projects that use **bashunit** to test their Bash scripts.
+These projects use **bashunit** to test their Bash scripts:
 
 ::: info
-If your project utilizes **bashunit**, you can add it to this list by submitting a pull request to us.
+To add your project, submit a pull request.
 :::
 
 ### [TypedDevs/bashunit](https://github.com/TypedDevs/bashunit/tree/main/tests)
 
-**bashunit** uses itself to test the proper operation of each one of its features.
+**bashunit** uses itself to test its features.
 
 ### [phpstan/phpstan-src](https://github.com/phpstan/phpstan-src/blob/2.0.x/.github/workflows/e2e-tests.yml)
 
-PHPStan is a widely used static analysis tool for PHP. It uses **bashunit** [standalone assertions](/standalone) to check for errors in their CI e2e tests.
+PHPStan checks PHP code for errors without running it. It uses **bashunit** [standalone assertions](/standalone) in its end-to-end tests in CI.
 
 ### [Chemaclass/create-pr](https://github.com/Chemaclass/create-pr)
 
@@ -37,7 +34,7 @@ A specification for adding human and machine-readable meaning to commit messages
 
 ### [antonio-gg-dev/fizzbuzz-bashunit](https://github.com/antonio-gg-dev/fizzbuzz-bashunit)
 
-Popular introductory FizzBuzz kata solved in Bash with **bashunit** as the testing framework.
+A FizzBuzz exercise solved in Bash and tested with **bashunit**.
 
 ### [kndndrj/shload](https://github.com/kndndrj/shload)
 
@@ -45,11 +42,11 @@ Loading bar for your shell scripts.
 
 ### [phpctl](https://github.com/opencodeco/phpctl)
 
-It is a Docker (containers) based development environment for PHP.
+A PHP development environment using Docker containers.
 
 ### [SherpaCLI/sherpa](https://sherpa-cli.netlify.app/tools/unit-tests)
 
-Sh:erpa is a tool for simplifying script creation. It integrates **bashunit** to ensure reliable, tested Bash scripts for its users.
+Sh:erpa helps users create shell scripts and integrates **bashunit** to test them.
 
 ### [sqlh](https://gitlab.com/prodigal.knight/sqlite-history.sh)
 
