@@ -2,15 +2,20 @@
 
 ## Unreleased
 
+### Added
+
+- Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
+
 ### Fixed
 
 - `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)
 - Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
 
-### Added
+### Changed
 
-- Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
+- Documentation uses shorter, clearer wording across guides, reference pages and release posts
+- Large provider and annotation maps use an index instead of scanning earlier entries, speeding up test files on Bash 3.0 and newer (#1392)
 
 ## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
 
