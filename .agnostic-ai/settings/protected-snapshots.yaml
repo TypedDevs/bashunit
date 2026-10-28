@@ -1,0 +1,7 @@
+name: protected-snapshots
+description: Acceptance snapshots change only on purpose.
+protected:
+  paths:
+    - tests/acceptance/snapshots/**
+  decision: ask
+  reason: Snapshots record rendered output. Update them with ./bashunit --snapshot-update only when the output change is intended.

@@ -1,12 +1,12 @@
 ---
 name: fork-census
-description: Measure process costs and fork budgets when changing startup, per-file, per-test, parallel workers, reporting, or coverage paths; use for fork census and performance comparisons.
+description: Measure fork budgets and process costs when changing startup, per-test, parallel, report, or coverage paths.
 allowed-tools: read, shell
 ---
 
 # Fork census
 
-Read [the fork-budget reference](references/fork-budget.md) before changing process costs. Its historical timings are evidence of earlier measurements, not current baselines. All repository paths below are relative to the repository root.
+Read [the fork-budget reference](references/fork-budget.md) before changing process costs, and [the module map](references/module-map.md) to find which `src/` module owns a path. Its historical timings are evidence of earlier measurements, not current baselines. All repository paths below are relative to the repository root.
 
 1. Identify the actual path: cold start, sequential run, parallel worker, lifecycle hook, report, or coverage. Read the matching existing fixture in `tests/acceptance/bashunit_coldstart_forks_test.sh`, `tests/acceptance/bashunit_run_forks_test.sh`, or `tests/acceptance/bashunit_coverage_forks_test.sh`. Include the options and hooks the change exercises.
 2. For a timing claim, measure current main before editing and record its commit, Bash version, OS, fixture, options, and sampling method. Land any new benchmark harness before the PR that measures a delta. Alternate baseline and candidate rounds in the same location and repeat anomalous readings.

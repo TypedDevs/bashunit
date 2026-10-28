@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review a GitHub pull request; defaults to the current branch's PR when no number is given
+description: Review a GitHub pull request, by default the current branch's
 argument-hint: "[#N]"
 allowed-tools: shell, read, Grep, Glob
 ---
