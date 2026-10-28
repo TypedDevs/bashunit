@@ -5,6 +5,8 @@
 ### Fixed
 
 - `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)
+- Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
+- Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
 
 ### Added
 
