@@ -214,9 +214,30 @@ function bashunit::runner::get_failure_source_context() {
   local line_text line_num=0 assert_lines="" stripped trimmed
   while IFS= read -r line_text || [ -n "$line_text" ]; do
     line_num=$((line_num + 1))
-    # Skip everything up to and including the function definition line.
-    if [ "$line_num" -le "$fn_line" ]; then
+    # Skip everything before the function definition line.
+    if [ "$line_num" -lt "$fn_line" ]; then
       continue
+    fi
+    # A one-line test closes on its own definition line, so the body lives
+    # there: take its assertion and stop before reaching the next function.
+    if [ "$line_num" -eq "$fn_line" ]; then
+      stripped="${line_text%"${line_text##*[![:space:]]}"}"
+      case "$stripped" in
+      *"}")
+        case "$line_text" in
+        *assert_* | *assert\ *)
+          trimmed="${line_text#*\{}"
+          trimmed="${trimmed%\}*}"
+          trimmed="${trimmed#"${trimmed%%[![:space:]]*}"}"
+          assert_lines="\n    ${_BASHUNIT_COLOR_FAINT}${line_num}:${_BASHUNIT_COLOR_DEFAULT} ${trimmed}"
+          ;;
+        esac
+        break
+        ;;
+      *)
+        continue
+        ;;
+      esac
     fi
     # Stop at the closing brace of the function (a line that is only `}`).
     stripped="${line_text#"${line_text%%[![:space:]]*}"}"

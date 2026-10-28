@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
+
 ### Added
 
 - Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
