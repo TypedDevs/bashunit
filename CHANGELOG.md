@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
 
 ### Changed
