@@ -1603,9 +1603,9 @@ Creates:
 - `tests/bootstrap.sh` - Setup file for test configuration
 - `tests/example_test.sh` - Sample test file to get started
 - `.github/workflows/tests.yml` - CI workflow using the official action
-- `.env` with `BASHUNIT_BOOTSTRAP=tests/bootstrap.sh`
+- `.env` with `BASHUNIT_BOOTSTRAP="tests/bootstrap.sh"`, plus `BASHUNIT_DEFAULT_PATH="<dir>"` for a custom directory so a bare `bashunit` runs it
 
-An existing `BASHUNIT_BOOTSTRAP=` line in `.env` is commented out first, so the new value
+An existing `BASHUNIT_BOOTSTRAP=` or `BASHUNIT_DEFAULT_PATH=` line in `.env` is commented out first, so the new value
 takes effect.
 
 ## upgrade
