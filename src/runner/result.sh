@@ -18,55 +18,18 @@ function bashunit::runner::parse_result() {
 
 _BASHUNIT_RUNNER_SUITE_DIR_OUT=""
 
-##
-# Writes the parallel result directory for a test file into
-# _BASHUNIT_RUNNER_SUITE_DIR_OUT.
-#
-# Keyed on the whole path with separators folded, never on the basename: two
-# files sharing a basename in different directories used to land in one
-# directory, where their per-suite ordinals collided and the second file's
-# results overwrote the first's -- silently, with the run still green (#959).
-# That is the same defect #923 fixed in build.sh. Mirroring a source tree in
-# tests/ makes duplicate basenames ordinary, so this is a normal layout.
-#
-# Pure parameter expansion: this runs once per test in every parallel worker and
-# the path must stay fork-free (.claude/rules/perf-fork-budget.md).
-# Arguments: $1 - the test file path
-##
+# The parent assigns a file ordinal before forking, keeping scratch names short and unique.
 function bashunit::runner::parallel_suite_dir_to_slot() {
-  bashunit::runner::file_path_to_slot "$1"
   _BASHUNIT_RUNNER_SUITE_DIR_OUT="${TEMP_DIR_PARALLEL_TEST_SUITE}/${_BASHUNIT_RUNNER_FILE_SLOT}"
 }
 
-_BASHUNIT_RUNNER_FILE_SLOT=""
-
-##
-# Folds a test file path into one filename-safe key in
-# _BASHUNIT_RUNNER_FILE_SLOT.
-#
-# Anything naming a per-file scratch path shares this, so that the reasoning
-# above about keying on the whole path holds everywhere at once.
-#
-# Pure parameter expansion: callers sit on the per-test path, which must stay
-# fork-free (.claude/rules/perf-fork-budget.md).
-# Arguments: $1 - the test file path
-##
-function bashunit::runner::file_path_to_slot() {
-  local key="${1#./}"
-  key="${key%.sh}"
-  _BASHUNIT_RUNNER_FILE_SLOT="${key//\//_}"
-}
+_BASHUNIT_RUNNER_FILE_SLOT=0
 
 function bashunit::runner::parse_result_parallel() {
   local fn_name=$1
   shift
   local execution_result=$1
-  # This runs once per test in every parallel worker, so avoid per-test forks:
-  # derive the suite dir name with parameter expansion (no basename), only
-  # mkdir when the dir is missing (first test of the file wins the race,
-  # `-p` makes the losers no-ops), and name the result file by the per-suite
-  # ordinal the dispatcher assigned — unique without forking mktemp or mv.
-  bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+  bashunit::runner::parallel_suite_dir_to_slot
   local test_suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
   [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
 
@@ -107,7 +70,7 @@ function bashunit::runner::publish_file_hook_failure() {
   [ "$status" -ne 0 ] || return 0
   bashunit::parallel::is_enabled || return 0
 
-  bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+  bashunit::runner::parallel_suite_dir_to_slot
   local test_suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
   [ -d "$test_suite_dir" ] || mkdir -p "$test_suite_dir"
 

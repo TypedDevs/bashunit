@@ -175,7 +175,7 @@ assert_have_been_called_times 2 curl
 ## bashunit::unmock
 > `bashunit::unmock "function"`
 
-Removes a double: it drops the function override — restoring the real command — and deletes the state files a spy recorded its calls in. It is a no-op for a name that was never mocked or spied.
+Removes a double, restoring the command or shell function it replaced and deleting the spy's state files. It is a no-op for a name that was never mocked or spied.
 
 ::: code-group
 ```bash [Example]
@@ -324,6 +324,8 @@ function test_failure() {
 > `assert_have_been_called_with spy expected [call_index]`
 
 Reports an error if `spy` is not called with `expected`. When `call_index` is provided, the assertion checks the arguments of that specific call (starting at 1). Without `call_index` it checks the last invocation. Arguments are joined with spaces before comparison.
+
+A never-called spy fails; `call_index` starts at 1 and must refer to a recorded call.
 
 Only one call is compared, and the failure says which one (`compared 'the last of 2 calls'`). To match any recorded call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
 

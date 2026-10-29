@@ -155,3 +155,57 @@ function test_coverage_report_does_not_swallow_the_next_flag_as_its_value() {
   assert_not_contains "No such file or directory" "$output"
   assert_file_exists "$dir/coverage/lcov.info"
 }
+
+function test_bashunit_debug_without_a_file_runs_the_test_path() {
+  local dir before output ec=0
+  dir="$(bashunit::temp_dir)"
+  printf 'function test_debug_existing_file() { assert_same 1 1; }\n' >"$dir/sample_test.sh"
+  before="$(cksum <"$dir/sample_test.sh")"
+  output="$dir/output.log"
+
+  BASHUNIT_DEFAULT_PATH="$dir" ./bashunit --skip-env-file --no-color \
+    --debug "$dir/sample_test.sh" >"$output" 2>&1 || ec=$?
+
+  assert_same "$before" "$(cksum <"$dir/sample_test.sh")"
+  assert_successful_code "" "" "$ec"
+  assert_file_contains "$output" "1 passed"
+}
+
+function test_bashunit_debug_without_a_file_runs_the_test_directory() {
+  local dir output ec=0
+  dir="$(bashunit::temp_dir)"
+  printf 'function test_debug_existing_directory() { assert_same 1 1; }\n' >"$dir/sample_test.sh"
+  output="$dir/output.log"
+
+  BASHUNIT_DEFAULT_PATH="$dir" ./bashunit --skip-env-file --no-color --debug "$dir" >"$output" 2>&1 || ec=$?
+
+  assert_successful_code "" "" "$ec"
+  assert_file_contains "$output" "1 passed"
+  assert_file_not_contains "$output" "Is a directory"
+}
+
+function test_bashunit_debug_writes_to_a_new_trace_file() {
+  local dir ec=0
+  dir="$(bashunit::temp_dir)"
+  printf 'function test_debug_new_trace_file() { assert_same 1 1; }\n' >"$dir/sample_test.sh"
+
+  ./bashunit --skip-env-file --no-color --debug "$dir/trace.log" "$dir/sample_test.sh" >/dev/null 2>&1 || ec=$?
+
+  assert_successful_code "" "" "$ec"
+  assert_file_exists "$dir/trace.log"
+  assert_file_contains "$dir/trace.log" "1 passed"
+  assert_file_contains "$dir/trace.log" "+ "
+}
+
+function test_bashunit_debug_as_the_last_argument_keeps_tracing_to_the_terminal() {
+  local dir output ec=0
+  dir="$(bashunit::temp_dir)"
+  printf 'function test_debug_last_argument() { assert_same 1 1; }\n' >"$dir/sample_test.sh"
+  output="$dir/output.log"
+
+  ./bashunit --skip-env-file --no-color "$dir/sample_test.sh" --debug >"$output" 2>&1 || ec=$?
+
+  assert_successful_code "" "" "$ec"
+  assert_file_contains "$output" "1 passed"
+  assert_file_contains "$output" "+ "
+}
