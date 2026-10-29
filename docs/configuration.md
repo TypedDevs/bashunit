@@ -25,6 +25,10 @@ BASHUNIT_PARALLEL_RUN=true
 BASHUNIT_PROFILE=true
 ```
 
+Keys under `[suite:<name>]` are suite options, not environment settings. Any other
+section header, such as `[global]`, ends the suite section; following `KEY=value`
+entries apply globally.
+
 It is meant for committing sensible project defaults. Precedence, from highest
 to lowest:
 

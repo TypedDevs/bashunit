@@ -88,27 +88,7 @@ function bashunit::runner::record_file_hook_failure() {
 
 _BASHUNIT_RUNNER_HOOK_FILE=""
 
-##
-# Names the file a hook's output is captured in, in _BASHUNIT_RUNNER_HOOK_FILE.
-#
-# A fixed path in the run dir, not a `temp_file`: minting one forked `mktemp`,
-# removing it forked `rm -f`, and the temp-owner marker `mktemp` leaves behind
-# made the EXIT trap `rm -rf` the test's temp files as well, even when the test
-# created none. Five forks per test in any file defining `set_up` or
-# `tear_down`, which cost 3.3x a hookless test (28.3ms vs 8.5ms) (#1345). The
-# `>` redirect truncates, so the name may be reused and nothing has to remove
-# it; the run-dir cleanup takes it with the rest at the end.
-#
-# The key has to survive concurrency, and a Bash 3 subshell inherits both `$$`
-# and the `RANDOM` state from its parent. So it is built the way result.sh
-# names `.result` files (#851): the folded file path, which keeps two files
-# sharing a basename apart (#959), plus the per-suite ordinal the dispatcher
-# assigns before forking, which keeps a file's parallel test workers apart.
-# The hook name closes the last gap, between a file hook and a test hook that
-# share an ordinal.
-#
-# Arguments: $1 - the hook name
-##
+# Reuse run-directory paths to avoid temporary-file processes for each hook.
 function bashunit::runner::hook_output_path() {
   if ! bashunit::env::ensure_run_output_dir; then
     _BASHUNIT_RUNNER_HOOK_FILE=/dev/null
@@ -129,7 +109,6 @@ function bashunit::runner::execute_file_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  bashunit::runner::file_path_to_slot "$test_file"
   bashunit::runner::hook_output_path "$hook_name"
   hook_output_file=$_BASHUNIT_RUNNER_HOOK_FILE
 
@@ -195,7 +174,6 @@ function bashunit::runner::execute_file_hook() {
 
 function bashunit::runner::run_set_up() {
   bashunit::internal_log "run_set_up"
-  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'set_up'
 }
 
@@ -242,7 +220,6 @@ function bashunit::runner::run_set_up_before_script() {
 
 function bashunit::runner::run_tear_down() {
   bashunit::internal_log "run_tear_down"
-  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'tear_down'
 }
 
@@ -345,11 +322,9 @@ function bashunit::runner::clear_mocks() {
   done
 }
 
-# The file whose tear_down_after_script this shell still owes, empty when it owes
-# none. --stop-on-failure exits from inside the test loop, so the loop's own
-# teardown call is never reached and the hook has to run from the exit path
-# instead (#1321).
+# File teardown stays pending until its dispatcher finishes or is interrupted.
 _BASHUNIT_FILE_TEARDOWN_PENDING=""
+_BASHUNIT_STOP_REQUESTED=false
 
 ##
 # Records that $1's file teardown is still owed by this shell.

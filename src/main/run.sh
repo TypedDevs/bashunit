@@ -3,6 +3,7 @@
 # The run lifecycle: dispatch to the runner, aggregate, report, clean up.
 
 function bashunit::main::exec_tests() {
+  _BASHUNIT_STOP_REQUESTED=false
   local filter=$1
   local tag_filter="${2:-}"
   local exclude_tag_filter="${3:-}"
@@ -81,7 +82,6 @@ function bashunit::main::exec_tests() {
   trap 'bashunit::main::cleanup INT' SIGINT
   trap 'bashunit::main::cleanup TERM' SIGTERM
   trap 'bashunit::main::cleanup HUP' SIGHUP
-  trap '[ $? -eq $EXIT_CODE_STOP_ON_FAILURE ] && bashunit::main::handle_stop_on_failure_sync' EXIT
 
   # Resolve parallel mode once now that --parallel/--no-parallel are parsed, so
   # the per-test is_enabled reads a global instead of re-checking env + OS.
@@ -163,8 +163,12 @@ function bashunit::main::exec_tests() {
   # displaced the XML declaration. Snapshots strip carriage returns, which is
   # why the leading `\r` never showed up in one -- it is dropped here because
   # the spinner is already erased by the aggregation, where it was drawn.
-  if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure &&
-    ! bashunit::env::is_machine_output_enabled; then
+  if ! bashunit::env::is_machine_output_enabled &&
+    { [ "$_BASHUNIT_STOP_REQUESTED" = true ] ||
+      { bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; }; }; then
+    if [ "$_BASHUNIT_STOP_REQUESTED" = true ]; then
+      printf '\n'
+    fi
     printf "%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
   fi
 
@@ -272,7 +276,15 @@ function bashunit::main::exec_tests() {
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
-      bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
+      if bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"; then
+        if ! bashunit::env::is_machine_output_enabled && ! bashunit::coverage::is_diff_enabled; then
+          echo ""
+          echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
+        fi
+      else
+        printf "Error: Coverage report could not be written: '%s'.\n" "$BASHUNIT_COVERAGE_REPORT" >&2
+        exit_code=1
+      fi
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT_COBERTURA" ]; then
@@ -280,7 +292,10 @@ function bashunit::main::exec_tests() {
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]; then
-      bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
+      if ! bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"; then
+        printf "Error: Coverage HTML report could not be written: '%s'.\n" "$BASHUNIT_COVERAGE_REPORT_HTML" >&2
+        exit_code=1
+      fi
     fi
 
     # Check minimum threshold
@@ -300,6 +315,7 @@ function bashunit::main::exec_tests() {
 
   # The rerun cache is read from the run dir above, so clean up only after it.
   bashunit::env::cleanup_run_output_dir
+  trap - EXIT
 
   bashunit::internal_log "Finished tests" "exit_code:$exit_code"
   exit $exit_code
@@ -409,27 +425,3 @@ function bashunit::main::cleanup() {
   bashunit::env::cleanup_run_output_dir
   exit 1
 }
-
-function bashunit::main::handle_stop_on_failure_sync() {
-  # The exit that lands here came from inside the test loop, so the file's
-  # teardown has not run. First, so the hook line follows the last test line as
-  # it does in a normal run, and so a hook reading a bashunit::temp_file still
-  # finds it (#1321).
-  bashunit::runner::run_pending_file_teardown || true
-  printf "\n%sStop on failure enabled...%s\n" "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
-  bashunit::console_results::print_failing_tests_and_reset
-  bashunit::console_results::print_risky_tests_and_reset
-  bashunit::console_results::print_incomplete_tests_and_reset
-  bashunit::console_results::print_skipped_tests_and_reset
-  bashunit::console_results::render_result
-  if bashunit::env::is_profile_enabled; then
-    bashunit::console_results::print_profile_and_reset
-  fi
-  bashunit::cleanup_script_temp_files
-  if bashunit::parallel::is_enabled; then
-    bashunit::parallel::cleanup
-  fi
-  bashunit::env::cleanup_run_output_dir
-  exit 1
-}
-
