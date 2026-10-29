@@ -1,6 +1,6 @@
 ---
 name: code-implementer
-description: Implement a bounded change in assigned files with Bash 3.0 compatibility and targeted validation.
+description: Implement scoped Bash 3.0 changes with focused checks.
 model: balanced
 can: [read, shell, edit, write]
 ---
