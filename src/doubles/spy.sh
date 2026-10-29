@@ -221,6 +221,7 @@ function bashunit::spy() {
     body_suffix="$exit_code_or_impl \"\$@\""
   fi
 
+  bashunit::doubles::save_original "$command"
   eval "function $command() {
     bashunit::doubles::record_call '$params_file' '$times_file' \"\$@\"
     $body_suffix

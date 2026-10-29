@@ -175,7 +175,7 @@ assert_have_been_called_times 2 curl
 ## bashunit::unmock
 > `bashunit::unmock "function"`
 
-Removes a double: it drops the function override — restoring the real command — and deletes the state files a spy recorded its calls in. It is a no-op for a name that was never mocked or spied.
+Removes a double, restoring the command or shell function it replaced and deleting the spy's state files. It is a no-op for a name that was never mocked or spied.
 
 ::: code-group
 ```bash [Example]
