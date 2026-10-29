@@ -147,6 +147,8 @@ A missing literal path still fails with an error naming the path.
 | `-h, --help`                   | Show the test help                               |
 | `--coverage*`                  | Nine coverage flags, see [Coverage](#coverage)   |
 
+`--stop-on-failure` still writes requested reports and `.bashunit/last-failed` for the tests that ran.
+
 ### Standalone Assert
 
 > `bashunit test -a|--assert function "arg1" "arg2"`

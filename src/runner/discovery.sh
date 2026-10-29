@@ -57,6 +57,9 @@ function bashunit::runner::load_test_files() {
 
   local test_file
   for test_file in "${files[@]+"${files[@]}"}"; do
+    if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
+      break
+    fi
     if [ ! -f "$test_file" ]; then
       continue
     fi
@@ -264,7 +267,11 @@ function bashunit::runner::load_test_files() {
       # failing set_up stopped firing, so a broken hook passed on bash 5.
       bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
       file_status=$?
-      bashunit::runner::run_tear_down_after_script "$test_file"
+      if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
+        bashunit::runner::run_pending_file_teardown
+      else
+        bashunit::runner::run_tear_down_after_script "$test_file"
+      fi
     fi
     # Sequential ran the hook just above; under --parallel the worker owns it.
     # Either way this shell owes it no longer.

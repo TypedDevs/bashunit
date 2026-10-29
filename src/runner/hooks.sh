@@ -344,11 +344,9 @@ function bashunit::runner::clear_mocks() {
   done
 }
 
-# The file whose tear_down_after_script this shell still owes, empty when it owes
-# none. --stop-on-failure exits from inside the test loop, so the loop's own
-# teardown call is never reached and the hook has to run from the exit path
-# instead (#1321).
+# File teardown stays pending until its dispatcher finishes or is interrupted.
 _BASHUNIT_FILE_TEARDOWN_PENDING=""
+_BASHUNIT_STOP_REQUESTED=false
 
 ##
 # Records that $1's file teardown is still owed by this shell.

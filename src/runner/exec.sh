@@ -171,7 +171,8 @@ function bashunit::runner::call_test_functions() {
   fi
 
   for fn_name in "${functions_to_run[@]+"${functions_to_run[@]}"}"; do
-    if bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; then
+    if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ] ||
+      { bashunit::parallel::is_enabled && bashunit::parallel::must_stop_on_failure; }; then
       break
     fi
 
@@ -216,6 +217,9 @@ function bashunit::runner::call_test_functions() {
 
     local data
     for data in "${provider_data[@]+"${provider_data[@]}"}"; do
+      if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
+        break
+      fi
       parsed_data=()
       parsed_data_count=0
       local transport_error=""
