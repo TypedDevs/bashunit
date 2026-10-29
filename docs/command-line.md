@@ -147,6 +147,18 @@ A missing literal path still fails with an error naming the path.
 | `-h, --help`                   | Show the test help                               |
 | `--coverage*`                  | Nine coverage flags, see [Coverage](#coverage)   |
 
+### Debug tracing
+
+`--debug` enables shell tracing. The next argument is used as a trace file only when it names a path that does not exist and does not start with `-`. Existing files and directories remain test paths and are not overwritten.
+
+```bash
+./bashunit --debug tests/example_test.sh
+./bashunit --debug tests/
+./bashunit --debug trace.log tests/
+```
+
+Use a new filename to write a trace file. With no filename, tracing goes to the terminal.
+
 ### Standalone Assert
 
 > `bashunit test -a|--assert function "arg1" "arg2"`
