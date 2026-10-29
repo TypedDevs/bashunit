@@ -363,3 +363,27 @@ function test_regex_metacharacters_around_a_placeholder_are_literal() {
   assert_empty "$(assert_match_snapshot 'cost $5.00 (x) Z' "$snapshot")"
   assert_not_empty "$(assert_match_snapshot 'cost 999 (x) Z' "$snapshot")"
 }
+
+function provide_snapshot_option_values() {
+  bashunit::data_set -n
+  bashunit::data_set -e
+  bashunit::data_set -E
+  bashunit::data_set -neE
+}
+
+# @data_provider provide_snapshot_option_values
+function test_snapshot_records_option_values_and_matches_again() {
+  local path="$(bashunit::temp_dir)/flag.snapshot"
+  assert_match_snapshot "$1" "$path"
+  assert_same "$1" "$(<"$path")"
+  assert_empty "$(assert_match_snapshot "$1" "$path")"
+}
+
+# @data_provider provide_snapshot_option_values
+function test_snapshot_update_writes_option_values() {
+  local path="$(bashunit::temp_dir)/flag.snapshot"
+  printf 'previous\n' >"$path"
+  BASHUNIT_SNAPSHOT_UPDATE=true bashunit::snapshot::update "$path" "$1"
+  assert_same "$1" "$(<"$path")"
+  assert_empty "$(assert_match_snapshot "$1" "$path")"
+}

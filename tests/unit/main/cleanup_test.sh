@@ -23,6 +23,8 @@ function _run_cleanup() {
   local owed=${2:-}
   (
     function pkill() { printf 'pkill\n' >>"$order"; return 0; }
+    function bashunit::runner::stop_active_test() { :; }
+    function bashunit::env::ensure_run_output_dir() { return 1; }
     function bashunit::cleanup_script_temp_files() { printf 'temp-files\n' >>"$order"; }
     function bashunit::parallel::cleanup() { :; }
     function bashunit::env::cleanup_run_output_dir() { :; }

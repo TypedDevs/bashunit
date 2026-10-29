@@ -98,6 +98,50 @@ function test_successful_assert_matches() {
   assert_empty "$(assert_matches ".*Linu*" "GNU/Linux")"
 }
 
+function test_successful_assert_matches_with_leading_dash_pattern() {
+  assert_empty "$(assert_matches "-[0-9]+" "-5" 2>&1)"
+  assert_empty "$(assert_matches "-5 -6" $'-5\n-6' 2>&1)"
+}
+
+function test_unsuccessful_assert_matches_with_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert matches with leading dash pattern" "bar" "to match" "-x")" \
+    "$(assert_matches "-x" "bar" 2>&1)"
+}
+
+function test_unsuccessful_assert_not_matches_with_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert not matches with leading dash pattern" "-5" "to not match" "-5")" \
+    "$(assert_not_matches "-5" "-5" 2>&1)"
+}
+
+function test_regex_assertions_fail_when_the_pattern_is_invalid() {
+  local assertion output relation
+  for assertion in assert_matches assert_not_matches; do
+    relation="to match"
+    if [ "$assertion" = assert_not_matches ]; then
+      relation="to not match"
+    fi
+    output="$("$assertion" '[' text 2>&1)"
+    assert_same \
+      "$(bashunit::console_results::print_failed_test \
+        "Regex assertions fail when the pattern is invalid" "text" "$relation" '[')" "$output"
+  done
+}
+
+function test_successful_assert_not_matches_with_leading_dash_pattern() {
+  assert_empty "$(assert_not_matches "-x" "bar" 2>&1)"
+}
+
+function test_unsuccessful_assert_not_matches_with_cross_line_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert not matches with cross line leading dash pattern" $'-5\n-6' "to not match" "-5 -6")" \
+    "$(assert_not_matches "-5 -6" $'-5\n-6' 2>&1)"
+}
+
 function test_unsuccessful_assert_matches() {
   assert_same \
     "$(bashunit::console_results::print_failed_test "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")" \
@@ -309,4 +353,20 @@ function test_assert_contains_ignore_case_folds_non_ascii() {
 
   assert_contains_ignore_case "ñü" "Test ÑÜ string"
   assert_contains_ignore_case "ÑÜ" "test ñü string"
+}
+
+function test_not_starts_with_joins_lines_and_keeps_the_test_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    'Not starts with joins lines and keeps the test label' $'abc\nzzz' 'to not start with' a)" \
+    "$(assert_string_not_starts_with a abc zzz)"
+}
+
+function test_not_starts_with_compares_a_prefix_across_argument_boundaries() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    'Not starts with compares a prefix across argument boundaries' \
+    $'line1\nline2' 'to not start with' $'line1\nline2')" \
+    "$(assert_string_not_starts_with $'line1\nline2' line1 line2)"
+  assert_empty "$(assert_string_not_starts_with x line1 line2)"
 }

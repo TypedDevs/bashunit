@@ -69,9 +69,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: TypedDevs/bashunit@v0
+SH
+    case "$tests_dir" in
+    *[[:space:]]*)
+      local workflow_path
+      workflow_path=$(printf '%q' "$tests_dir")
+      local expression_start='${{' literal_expression_start='\044{{'
+      # Actions expands expressions before Bash parses its quotes.
+      workflow_path=${workflow_path//"$expression_start"/$literal_expression_start}
+      cat >>"$workflow_file" <<SH
+      - name: Run tests
+        run: |
+          lib/bashunit $workflow_path
+SH
+      ;;
+    *)
+      cat >>"$workflow_file" <<SH
         with:
           args: $tests_dir
 SH
+      ;;
+    esac
     echo "> Created $workflow_file"
   fi
 

@@ -440,6 +440,20 @@ function test_to_run_with_filter_matching_string_in_function_name() {
     "$(bashunit::helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
 }
 
+function test_filters_strip_only_a_leading_test_prefix() {
+  local functions filter
+  functions=(test_latest_version test_other)
+  for filter in latest_version test_latest_version version; do
+    assert_same test_latest_version "$(bashunit::helper::get_functions_to_run test "$filter" "${functions[*]}")"
+  done
+
+  BASHUNIT_EXCLUDE_FILTER=latest_version
+  assert_same test_other "$(bashunit::helper::get_functions_to_run test '' "${functions[*]}")"
+  BASHUNIT_EXCLUDE_FILTER=''
+  _BASHUNIT_CLI_EXCLUDE_FILTERS=(latest_version)
+  assert_same test_other "$(bashunit::helper::get_functions_to_run test '' "${functions[*]}")"
+}
+
 function test_interpolate_fn_name() {
   local result
   result="$(bashunit::helper::interpolate_function_name "test_name_::1::_foo" "bar")"
@@ -1051,4 +1065,18 @@ function test_no_exclude_filter_keeps_previous_behaviour() {
 
   assert_same "prefix_alpha prefix_beta" \
     "$(_with_exclude_filter "" "prefix" "" "${functions[*]}")"
+}
+
+function test_duplicate_keyword_only_definitions_are_reported() {
+  local file fn=test_duplicate_without_parens
+  file="$(bashunit::temp_file)"
+  printf 'function %s { :; }\nfunction %s\n{ :; }\n' "$fn" "$fn" >"$file"
+  assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
+}
+
+function test_duplicate_definitions_with_comments_and_subshell_bodies_are_reported() {
+  local file fn=test_duplicate_body_forms
+  file="$(bashunit::temp_file)"
+  printf 'function %s () # a note\n{ :; }\n%s() ( : )\n' "$fn" "$fn" >"$file"
+  assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }

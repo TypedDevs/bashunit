@@ -38,6 +38,8 @@ all five date assertions.
 
 Reports an error if `expected` and `actual` are not equals.
 
+A missing file fails the assertion and the message names its path.
+
 - assert_files_not_equals is the inverse of this assertion and takes the same arguments.
 
 
@@ -55,6 +57,8 @@ Reports an error if the two variables `expected` and `actual` are equal ignoring
 > `assert_files_not_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` have the same contents.
+
+A missing file fails the assertion and the message names its path.
 
 - assert_files_equals is the inverse of this assertion and takes the same arguments.
 
