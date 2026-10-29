@@ -131,6 +131,17 @@ function test_regex_assertions_fail_when_the_pattern_is_invalid() {
   done
 }
 
+function test_invalid_regex_count_fails_without_pipe_diagnostics() {
+  local input=0123456789abcdef index
+  for ((index = 0; index < 14; index++)); do
+    input="$input$input"
+  done
+  local diagnostics status=0
+  diagnostics="$(bashunit::assert::_grep_count_to_slot '[' "$input" 2>&1)" || status=$?
+  assert_same 1 "$status"
+  assert_empty "$diagnostics"
+}
+
 function test_successful_assert_not_matches_with_leading_dash_pattern() {
   assert_empty "$(assert_not_matches "-x" "bar" 2>&1)"
 }
