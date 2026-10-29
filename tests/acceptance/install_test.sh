@@ -175,6 +175,81 @@ function test_install_fails_loudly_on_unknown_version() {
   assert_file_not_exists "./tmp_install/bashunit"
 }
 
+function provide_install_replacement_results() {
+  bashunit::data_set failure
+  bashunit::data_set empty
+  bashunit::data_set mismatch
+  bashunit::data_set success
+}
+
+# @data_provider provide_install_replacement_results
+function test_install_replaces_the_previous_binary_only_after_a_valid_download() {
+  local result="$1"
+  mkdir -p shims destination
+  printf 'previous binary\n' >destination/bashunit
+  cat >shims/curl <<'SH'
+#!/usr/bin/env bash
+target=bashunit
+checksum=false
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -o) target=$2; shift ;;
+    */checksum) checksum=true ;;
+  esac
+  shift
+done
+if [ "$checksum" = true ]; then
+  printf 'invalid-checksum\n'
+  exit 0
+fi
+case "$INSTALL_TEST_DOWNLOAD_RESULT" in
+  failure) printf 'partial download\n' >"$target"; exit 22 ;;
+  empty) : >"$target" ;;
+  *) printf 'new binary\n' >"$target" ;;
+esac
+SH
+  chmod +x shims/curl
+  local status=0 output verify=false
+  if [ "$result" = mismatch ]; then
+    verify=true
+  fi
+  output=$(
+    umask 022
+    PATH="$SANDBOX/shims:$PATH" INSTALL_TEST_DOWNLOAD_RESULT="$result" \
+      BASHUNIT_VERIFY_CHECKSUM="$verify" ./install.sh destination 0.52.0 2>&1
+  ) || status=$?
+
+  if [ "$result" = success ]; then
+    assert_successful_code "" "" "$status"
+    assert_same 'new binary' "$(cat destination/bashunit)"
+    assert_is_file_executable destination/bashunit
+    assert_not_empty "$(find destination/bashunit -perm 0744 -print)"
+  else
+    assert_general_error "" "" "$status"
+    assert_same 'previous binary' "$(cat destination/bashunit)"
+    if [ "$result" = mismatch ]; then
+      assert_contains 'checksum mismatch' "$output"
+    else
+      assert_contains 'failed to download' "$output"
+    fi
+  fi
+  local leftover
+  leftover=$(find destination -name 'bashunit.download.*' -print)
+  assert_empty "$leftover"
+}
+
+function test_install_rejects_a_directory_at_the_binary_path() {
+  mkdir -p destination/bashunit shims
+  printf '#!/bin/sh\nexit 22\n' >shims/curl
+  chmod +x shims/curl
+  local status=0 output
+  output=$(PATH="$SANDBOX/shims:$PATH" ./install.sh destination 0.52.0 2>&1) || status=$?
+
+  assert_general_error "" "" "$status"
+  assert_contains 'not a file' "$output"
+  assert_empty "$(find destination/bashunit -type f -print)"
+}
+
 function test_install_verifies_checksum_when_enabled() {
   if [[ "$ACTIVE_INTERNET" -eq 1 ]]; then
     bashunit::skip "no internet connection" && return
