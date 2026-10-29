@@ -869,6 +869,8 @@ CAT="$(command -v cat)"
 GREP="$(command -v grep)"
 MKTEMP="$(command -v mktemp)"
 AWK="$(command -v awk)"
+_BASHUNIT_PS="$(type -P ps 2>/dev/null || true)"
+_BASHUNIT_SLEEP="$(type -P sleep 2>/dev/null || true)"
 # Deferred-output scratch files. Each used to be its own `mktemp` fork; at ~258
 # nested cold starts in the acceptance suite that is ~1.5k forks and dominates
 # cold-start cost (#798). Derive them from one run-unique directory instead:
