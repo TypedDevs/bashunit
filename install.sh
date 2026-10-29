@@ -189,8 +189,6 @@ BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
 LATEST_BASHUNIT_VERSION="0.52.0"
 TAG="$LATEST_BASHUNIT_VERSION"
 
-cd "$(dirname "$0")"
-
 # Validate the destination before touching the network. curl writes the binary
 # into this directory with its stderr silenced, so the download check further
 # down owned every failure: an unwritable target reported "failed to download",
@@ -224,4 +222,4 @@ else
   install
 fi
 
-echo "> bashunit has been installed in the '$DIR' folder"
+echo "> bashunit has been installed in the '$(pwd)' folder"
