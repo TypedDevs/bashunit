@@ -72,6 +72,8 @@ Reports an error if `actual` is not empty.
 
 Reports an error if `value` does not match the regular expression `pattern`.
 
+The pattern may start with `-`.
+
 `pattern` is an ERE evaluated by `grep -E`. If it does not match as written, the value is
 retried with every newline replaced by a space, so a single-line pattern can match across
 lines: `assert_matches 'one two'` matches the two-line value `one\ntwo`.
