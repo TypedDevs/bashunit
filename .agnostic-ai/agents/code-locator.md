@@ -1,6 +1,6 @@
 ---
 name: code-locator
-description: Locate definitions, callers, and references before planning a nontrivial change.
+description: Find definitions, callers, and references.
 model: fast
 can: [read, shell]
 ---
