@@ -206,15 +206,20 @@ function test_echo_provider_keeps_hash_and_parentheses_words() {
 }
 
 function provide_quoted_hash_and_parentheses() {
-  bashunit::data_set hash $'first\r#fff'
-  bashunit::data_set parentheses $'first\r(round)'
+  bashunit::data_set hash $'first\v#fff'
+  bashunit::data_set parentheses $'first\v(round)'
 }
 
 # @data_provider provide_quoted_hash_and_parentheses
 function test_ansi_quoted_provider_values_keep_control_characters_next_to_metacharacters() {
   assert_same 2 "$#"
   case "$1" in
-  hash) assert_same $'first\r#fff' "$2" ;;
-  parentheses) assert_same $'first\r(round)' "$2" ;;
+  hash) assert_same $'first\v#fff' "$2" ;;
+  parentheses) assert_same $'first\v(round)' "$2" ;;
   esac
+}
+
+function test_ansi_quoted_parser_values_keep_carriage_returns_next_to_metacharacters() {
+  assert_same "Zmlyc3QNI2ZmZg==" "$(bashunit::runner::parse_data_provider_args "\$'first\\r#fff' ''")"
+  assert_same "Zmlyc3QNKHJvdW5kKQ==" "$(bashunit::runner::parse_data_provider_args "\$'first\\r(round)' ''")"
 }
