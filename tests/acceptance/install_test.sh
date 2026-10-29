@@ -27,22 +27,60 @@ function tear_down_after_script() {
   set -e
 }
 
-# `install.sh` resolves its destination relative to its own location (it runs
-# `cd "$(dirname "$0")"`), so running the repository's copy wrote `lib/`,
-# `tmp_install/`, `tmp_deps/` and `tmp_lib/` into the repository itself. Three
-# consequences, all real: a killed run left debris in the working tree, only
-# `lib/` is gitignored so the rest showed up as untracked files, and two suites
-# running at once raced the same `lib/bashunit` -- one installing 0.19.0 while
-# the other installed latest, which fails as a version mismatch that looks like
-# a regression and passes on re-run.
-#
-# Give each test its own copy of the script and run it there. Every relative
-# path in the tests then resolves inside that directory, so the assertions stay
-# as they were, and `bashunit::temp_dir` cleans up.
+# Each install runs in an isolated caller directory to avoid shared outputs.
 function set_up() {
   SANDBOX="$(bashunit::temp_dir)"
   cp "$INSTALL_ROOT_DIR/install.sh" "$SANDBOX/install.sh"
   cd "$SANDBOX" || return 1
+  SANDBOX="$(pwd)"
+}
+
+function provide_caller_directory_install_modes() {
+  bashunit::data_set saved
+  bashunit::data_set piped
+  bashunit::data_set absolute
+}
+
+# @data_provider provide_caller_directory_install_modes
+function test_install_uses_the_callers_directory() {
+  local mode="$1" project="$SANDBOX/project" elsewhere="$SANDBOX/script" shims="$SANDBOX/shims"
+  mkdir -p "$project" "$elsewhere" "$shims"
+  cp ./install.sh "$elsewhere/install.sh"
+  cat >"$shims/curl" <<'SH'
+#!/usr/bin/env bash
+target=bashunit
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -o) target=$2; shift ;;
+  esac
+  shift
+done
+printf '#!/usr/bin/env bash\necho offline\n' >"$target"
+SH
+  chmod +x "$shims/curl"
+
+  local destination=lib expected="$project/lib"
+  if [ "$mode" = absolute ]; then
+    destination="$project/absolute"
+    expected="$destination"
+  fi
+  local status=0 output
+  output=$(
+    cd "$project" || exit 1
+    if [ "$mode" = piped ]; then
+      cat "$elsewhere/install.sh" | PATH="$shims:$PATH" BASHUNIT_VERIFY_CHECKSUM=false \
+        bash -s -- "$destination" 0.52.0
+    else
+      PATH="$shims:$PATH" BASHUNIT_VERIFY_CHECKSUM=false \
+        bash "$elsewhere/install.sh" "$destination" 0.52.0
+    fi
+  ) || status=$?
+
+  assert_successful_code "" "" "$status"
+  assert_file_exists "$expected/bashunit"
+  assert_same offline "$("$expected/bashunit")"
+  assert_contains "installed in the '$expected' folder" "$output"
+  assert_directory_not_exists "$elsewhere/lib"
 }
 
 function test_install_downloads_the_latest_version() {
@@ -62,7 +100,7 @@ function test_install_downloads_the_latest_version() {
     bashunit::skip "transient download failure" && return
   fi
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
-  assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'lib' folder")" "$output"
+  assert_string_ends_with "$(printf "\n> bashunit has been installed in the '%s' folder" "$SANDBOX/lib")" "$output"
   assert_file_exists "$installed_bashunit"
 
   # Guard: skip version check if binary is non-functional after download (network flake)
@@ -91,7 +129,7 @@ function test_install_downloads_in_given_folder() {
     bashunit::skip "transient download failure" && return
   fi
   assert_string_starts_with "$(printf "> Downloading the latest version: '")" "$output"
-  assert_string_ends_with "$(printf "\n> bashunit has been installed in the 'tmp_deps' folder")" "$output"
+  assert_string_ends_with "$(printf "\n> bashunit has been installed in the '%s' folder" "$SANDBOX/tmp_deps")" "$output"
   assert_file_exists "$installed_bashunit"
 
   # Guard: skip version check if binary is non-functional after download (network flake)
@@ -120,7 +158,7 @@ function test_install_downloads_in_nested_folder() {
     bashunit::skip "transient download failure" && return
   fi
   assert_string_ends_with \
-    "$(printf "\n> bashunit has been installed in the 'tmp_install/nested' folder")" \
+    "$(printf "\n> bashunit has been installed in the '%s' folder" "$SANDBOX/tmp_install/nested")" \
     "$output"
   assert_file_exists "$installed_bashunit"
 }
@@ -163,6 +201,81 @@ function test_install_rejects_a_mistyped_version_before_downloading() {
   assert_contains "unknown version '$invalid'" "$output"
   assert_directory_not_exists "$SANDBOX/$invalid"
   assert_file_not_exists "$SANDBOX/download.called"
+}
+
+function provide_install_replacement_results() {
+  bashunit::data_set failure
+  bashunit::data_set empty
+  bashunit::data_set mismatch
+  bashunit::data_set success
+}
+
+# @data_provider provide_install_replacement_results
+function test_install_replaces_the_previous_binary_only_after_a_valid_download() {
+  local result="$1"
+  mkdir -p shims destination
+  printf 'previous binary\n' >destination/bashunit
+  cat >shims/curl <<'SH'
+#!/usr/bin/env bash
+target=bashunit
+checksum=false
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    -o) target=$2; shift ;;
+    */checksum) checksum=true ;;
+  esac
+  shift
+done
+if [ "$checksum" = true ]; then
+  printf 'invalid-checksum\n'
+  exit 0
+fi
+case "$INSTALL_TEST_DOWNLOAD_RESULT" in
+  failure) printf 'partial download\n' >"$target"; exit 22 ;;
+  empty) : >"$target" ;;
+  *) printf 'new binary\n' >"$target" ;;
+esac
+SH
+  chmod +x shims/curl
+  local status=0 output verify=false
+  if [ "$result" = mismatch ]; then
+    verify=true
+  fi
+  output=$(
+    umask 022
+    PATH="$SANDBOX/shims:$PATH" INSTALL_TEST_DOWNLOAD_RESULT="$result" \
+      BASHUNIT_VERIFY_CHECKSUM="$verify" ./install.sh destination 0.52.0 2>&1
+  ) || status=$?
+
+  if [ "$result" = success ]; then
+    assert_successful_code "" "" "$status"
+    assert_same 'new binary' "$(cat destination/bashunit)"
+    assert_is_file_executable destination/bashunit
+    assert_not_empty "$(find destination/bashunit -perm 0744 -print)"
+  else
+    assert_general_error "" "" "$status"
+    assert_same 'previous binary' "$(cat destination/bashunit)"
+    if [ "$result" = mismatch ]; then
+      assert_contains 'checksum mismatch' "$output"
+    else
+      assert_contains 'failed to download' "$output"
+    fi
+  fi
+  local leftover
+  leftover=$(find destination -name 'bashunit.download.*' -print)
+  assert_empty "$leftover"
+}
+
+function test_install_rejects_a_directory_at_the_binary_path() {
+  mkdir -p destination/bashunit shims
+  printf '#!/bin/sh\nexit 22\n' >shims/curl
+  chmod +x shims/curl
+  local status=0 output
+  output=$(PATH="$SANDBOX/shims:$PATH" ./install.sh destination 0.52.0 2>&1) || status=$?
+
+  assert_general_error "" "" "$status"
+  assert_contains 'not a file' "$output"
+  assert_empty "$(find destination/bashunit -type f -print)"
 }
 
 function test_install_verifies_checksum_when_enabled() {
@@ -237,7 +350,7 @@ function test_install_downloads_the_given_version() {
   fi
   local expected
   expected="> Downloading a concrete version: '0.9.0'
-> bashunit has been installed in the 'tmp_lib' folder"
+> bashunit has been installed in the '$SANDBOX/tmp_lib' folder"
 
   assert_same "$expected" "$output"
 
@@ -266,7 +379,7 @@ function test_install_downloads_the_given_version_without_dir() {
     "$(
       printf "%s\n" \
         "> Downloading a concrete version: '0.19.0'" \
-        "> bashunit has been installed in the 'lib' folder"
+        "> bashunit has been installed in the '$SANDBOX/lib' folder"
     )" \
     "$output"
 
@@ -305,7 +418,7 @@ function test_install_downloads_the_non_stable_beta_version() {
   fi
   local expected
   expected="> Downloading non-stable version: 'beta'
-> bashunit has been installed in the 'tmp_deps' folder"
+> bashunit has been installed in the '$SANDBOX/tmp_deps' folder"
 
   assert_contains "$expected" "$output"
 

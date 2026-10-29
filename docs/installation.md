@@ -72,7 +72,7 @@ curl -s https://bashunit.com/install.sh | bash -s [dir] [version]
 
 :::
 
-- `[dir]`: the directory for the bashunit executable; `lib` by default
+- `[dir]`: the directory for the bashunit executable, relative to the current directory; `lib` by default
 - `[version]`: the [release](https://github.com/TypedDevs/bashunit/releases) to download, for instance `{{ pkg.version }}`; `latest` by default. Use all three version numbers without a leading `v`.
 
 ::: tip

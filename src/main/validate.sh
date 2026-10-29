@@ -187,19 +187,12 @@ function bashunit::main::require_writable_path_or_exit() {
   exit 1
 }
 
-##
-# Like require_writable_path_or_exit, but for writers that mkdir -p their
-# target directory: missing ancestors are acceptable as long as the first
-# existing one is a writable directory, so `coverage/cobertura.xml` passes
-# with no coverage/ dir while `/unwritable/x.xml` still fails fast.
-#
-# The first existing ancestor must be a directory, not merely writable: a
-# regular file in the path prefix makes `mkdir -p` impossible for every user,
-# root included, and root passes a bare -w test on it.
-# Arguments: $1 - path, $2 - setting name for the error message
-##
+# Writers may create missing ancestors, but cannot create a directory through a regular file.
 function bashunit::main::require_creatable_path_or_exit() {
   local path=$1
+  if [ "${3:-file}" = file ] && [ -f "$path" ] && [ -w "$path" ]; then
+    return 0
+  fi
   local ancestor=$1
   while [ -n "$ancestor" ] && [ ! -e "$ancestor" ]; do
     case "$ancestor" in
@@ -209,7 +202,7 @@ function bashunit::main::require_creatable_path_or_exit() {
   done
   [ -z "$ancestor" ] && ancestor="/"
 
-  if [ -d "$path" ]; then
+  if [ -d "$path" ] && [ "${3:-file}" != directory ]; then
     bashunit::main::report_path_is_a_directory "$path" "${2:-}"
   fi
 
@@ -322,6 +315,17 @@ function bashunit::main::validate_config_or_exit() {
   if [ -n "${BASHUNIT_COVERAGE_REPORT_COBERTURA:-}" ]; then
     bashunit::main::require_creatable_path_or_exit \
       "$BASHUNIT_COVERAGE_REPORT_COBERTURA" "BASHUNIT_COVERAGE_REPORT_COBERTURA"
+  fi
+
+  if bashunit::env::is_coverage_enabled || [ "${_bashunit_coverage_opt_set:-false}" = true ]; then
+    if [ -n "${BASHUNIT_COVERAGE_REPORT:-}" ]; then
+      bashunit::main::require_creatable_path_or_exit \
+        "$BASHUNIT_COVERAGE_REPORT" "BASHUNIT_COVERAGE_REPORT (--coverage-report)"
+    fi
+    if [ -n "${BASHUNIT_COVERAGE_REPORT_HTML:-}" ]; then
+      bashunit::main::require_creatable_path_or_exit \
+        "$BASHUNIT_COVERAGE_REPORT_HTML" "BASHUNIT_COVERAGE_REPORT_HTML (--coverage-report-html)" directory
+    fi
   fi
 
   # An unrecognised name used to fall back to the default renderer without a
