@@ -1581,7 +1581,7 @@ Reports an error if the two variables are not equal...
 
 > `bashunit init [directory]`
 
-Initialize a new test directory with sample files.
+Initialize a new test directory with sample files. A directory containing whitespace gets a separate, quoted workflow command so CI can run it without a committed `.env` file.
 
 ::: code-group
 ```bash [Examples]
