@@ -301,3 +301,26 @@ TEST
   assert_same 0 "$code"
   assert_same x "$(<"$dir/calls")"
 }
+
+# @data_provider provide_transport_modes
+function test_a_malformed_provider_row_honors_stop_on_failure() {
+  local mode="$1" dir
+  dir="$(bashunit::temp_dir)"
+  cat >"$dir/stop_parse_test.sh" <<'TEST'
+function provide_stop_parse_rows() { echo 'broken "quote'; echo 'after 2'; }
+function tear_down_after_script() { printf done >"$STOP_PARSE_TEARDOWN"; }
+# @data_provider provide_stop_parse_rows
+function test_stop_parse_words() { printf ran >"$STOP_PARSE_BODY"; assert_same 2 "$#"; }
+TEST
+  local output code=0
+  output=$(STOP_PARSE_BODY="$dir/body" STOP_PARSE_TEARDOWN="$dir/teardown" \
+    ./bashunit "$mode" --stop-on-failure --skip-env-file --no-color \
+    --report-json "$dir/report.json" "$dir/stop_parse_test.sh" 2>&1) || code=$?
+  assert_same 1 "$code"
+  assert_contains "data provider 'provide_stop_parse_rows' row 1 could not be parsed" "$output"
+  assert_contains '1 failed' "$output"
+  assert_contains '1 total' "$output"
+  assert_file_not_exists "$dir/body"
+  assert_file_contains "$dir/teardown" "done"
+  assert_file_contains "$dir/report.json" '"total": 1, "passed": 0, "failed": 1'
+}
