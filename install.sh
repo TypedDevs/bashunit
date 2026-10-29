@@ -22,18 +22,13 @@ function compute_sha256() {
   fi
 }
 
-# Verify the downloaded 'bashunit' file against the release 'checksum' asset.
-# Arguments: $1 - the bashunit download URL. Exits 1 (and removes the binary)
-# on any failure so a tampered or unverifiable download never looks successful.
-# Handle an inability to verify (missing sha256 tool or checksum asset).
-# Strict (fails) when the user explicitly opted in; a soft warning otherwise,
-# so installing older releases published before checksum assets existed keeps
-# working while a tampered binary (checksum mismatch) is always rejected.
+# Older releases may lack checksums; explicit verification must still fail.
 function cannot_verify() {
   local reason=$1
+  local download_file=$2
   if [ "${VERIFY_CHECKSUM_EXPLICIT:-false}" = "true" ]; then
     echo "Error: $reason" >&2
-    rm -f bashunit
+    rm -f "$download_file"
     exit 1
   fi
   echo "> Skipping checksum verification: $reason" >&2
@@ -41,12 +36,13 @@ function cannot_verify() {
 
 function verify_checksum() {
   local url=$1
+  local download_file=$2
   local checksum_url="${url%/bashunit}/checksum"
 
   local actual
-  actual=$(compute_sha256 bashunit)
+  actual=$(compute_sha256 "$download_file")
   if [ -z "$actual" ]; then
-    cannot_verify "no sha256 tool (shasum/sha256sum) available to verify checksum"
+    cannot_verify "no sha256 tool (shasum/sha256sum) available to verify checksum" "$download_file"
     return
   fi
 
@@ -60,7 +56,7 @@ function verify_checksum() {
   fi
 
   if [ -z "$expected" ]; then
-    cannot_verify "could not download checksum from $checksum_url"
+    cannot_verify "could not download checksum from $checksum_url" "$download_file"
     return
   fi
 
@@ -68,7 +64,7 @@ function verify_checksum() {
     echo "Error: checksum mismatch for bashunit '$TAG'" >&2
     echo "  expected: $expected" >&2
     echo "  actual:   $actual" >&2
-    rm -f bashunit
+    rm -f "$download_file"
     exit 1
   fi
 
@@ -120,28 +116,34 @@ function install() {
     echo "> Downloading the latest version: '$TAG'"
   fi
 
-  # `|| true`: a failed download must reach the explicit file check below with
-  # its clear error message, not die silently on set -e.
   local url="$BASHUNIT_GIT_REPO/releases/download/$TAG/bashunit"
+  local download_file download_status=0
+  download_file=$(mktemp './bashunit.download.XXXXXX')
   if command -v curl >/dev/null 2>&1; then
-    curl -fL --retry 3 --retry-delay 2 -O -J "$url" 2>/dev/null || true
+    curl -fL --retry 3 --retry-delay 2 -o "$download_file" "$url" 2>/dev/null || download_status=$?
   elif command -v wget >/dev/null 2>&1; then
-    wget --tries=3 "$url" 2>/dev/null || wget "$url" 2>/dev/null || true
+    wget --tries=3 -O "$download_file" "$url" 2>/dev/null ||
+      wget -O "$download_file" "$url" 2>/dev/null || download_status=$?
   else
     echo "Cannot download bashunit: curl or wget not found." >&2
+    rm -f "$download_file"
     exit 1
   fi
 
-  if [ ! -f "bashunit" ]; then
+  if [ "$download_status" -ne 0 ] || [ ! -s "$download_file" ]; then
+    rm -f "$download_file"
     echo "Error: failed to download bashunit '$TAG' from $url" >&2
     exit 1
   fi
 
   if [ "$VERIFY_CHECKSUM" = "true" ]; then
-    verify_checksum "$url"
+    verify_checksum "$url" "$download_file"
   fi
 
-  chmod u+x "bashunit"
+  if ! chmod +rw,u+x "$download_file" || ! mv -f "$download_file" bashunit; then
+    rm -f "$download_file"
+    exit 1
+  fi
 }
 
 #########################
@@ -215,7 +217,11 @@ if [ ! -w "$DIR" ]; then
   exit 1
 fi
 
-rm -f "$DIR"/bashunit
+if [ -d "$DIR/bashunit" ]; then
+  echo "Error: '$DIR/bashunit' exists and is not a file." >&2
+  exit 1
+fi
+
 cd "$DIR"
 
 if [[ $VERSION == 'beta' ]]; then

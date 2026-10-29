@@ -1,0 +1,7 @@
+name: protect-generated
+description: Block direct edits to generated agent configuration.
+# Codex 0.90's portable edit matcher omits its native apply_patch tool.
+event: PreToolUse
+matcher: "Edit|MultiEdit|Write|NotebookEdit|apply_patch"
+command: 'bash "$(git rev-parse --show-toplevel)/.agnostic-ai/scripts/protect-generated.sh"'
+commandWindows: "bash ((git rev-parse --show-toplevel) + '/.agnostic-ai/scripts/protect-generated.sh') codex; exit $LASTEXITCODE"
