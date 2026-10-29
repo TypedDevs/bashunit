@@ -188,3 +188,33 @@ function test_provider_eval_does_not_assign_in_runner() {
   assert_same changed "$1"
   assert_same unset "${PROVIDER_EVAL_SIDE_EFFECT-unset}"
 }
+
+function provide_echo_hash_and_parentheses() {
+  echo 'color #fff'
+  echo 'shape (round)'
+  echo 'size 10'
+}
+
+# @data_provider provide_echo_hash_and_parentheses
+function test_echo_provider_keeps_hash_and_parentheses_words() {
+  assert_same 2 "$#"
+  case "$1" in
+  color) assert_same '#fff' "$2" ;;
+  shape) assert_same '(round)' "$2" ;;
+  size) assert_same 10 "$2" ;;
+  esac
+}
+
+function provide_quoted_hash_and_parentheses() {
+  bashunit::data_set hash $'first\r#fff'
+  bashunit::data_set parentheses $'first\r(round)'
+}
+
+# @data_provider provide_quoted_hash_and_parentheses
+function test_ansi_quoted_provider_values_keep_control_characters_next_to_metacharacters() {
+  assert_same 2 "$#"
+  case "$1" in
+  hash) assert_same $'first\r#fff' "$2" ;;
+  parentheses) assert_same $'first\r(round)' "$2" ;;
+  esac
+}
