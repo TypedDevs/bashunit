@@ -2,24 +2,29 @@
 
 # shellcheck disable=SC2034
 
-##
-# Loads a project config file of `KEY=value` lines (comments with `#` and blank
-# lines are ignored). Each key is only applied when not already set in the
-# environment, so real env vars and CLI flags keep precedence over the file.
-# Surrounding single/double quotes and an optional `export ` prefix are stripped.
-# Arguments: $1 path to the config file
-##
 function bashunit::env::load_config_file() {
   local file=$1
   [ -f "$file" ] || return 0
 
-  local line key val
+  local line key val __bu_in_suite=false
   while IFS= read -r line || [ -n "$line" ]; do
     # Trim leading whitespace
     line=${line#"${line%%[![:space:]]*}"}
     case "$line" in
     '' | '#'*) continue ;;
     esac
+    case "$line" in
+    '['*)
+      line=${line%"${line##*[![:space:]]}"}
+      case "$line" in
+      '[suite:'*']') __bu_in_suite=true; continue ;;
+      '['*']') __bu_in_suite=false; continue ;;
+      esac
+      ;;
+    esac
+    if [ "$__bu_in_suite" = true ]; then
+      continue
+    fi
     case "$line" in export\ *) line=${line#export } ;; esac
     case "$line" in
     *=*) ;;
@@ -869,6 +874,8 @@ CAT="$(command -v cat)"
 GREP="$(command -v grep)"
 MKTEMP="$(command -v mktemp)"
 AWK="$(command -v awk)"
+_BASHUNIT_PS="$(type -P ps 2>/dev/null || true)"
+_BASHUNIT_SLEEP="$(type -P sleep 2>/dev/null || true)"
 # Deferred-output scratch files. Each used to be its own `mktemp` fork; at ~258
 # nested cold starts in the acceptance suite that is ~1.5k forks and dominates
 # cold-start cost (#798). Derive them from one run-unique directory instead:

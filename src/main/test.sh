@@ -217,7 +217,7 @@ function bashunit::main::cmd_test() {
       ;;
     --debug)
       local output_file="${2:-}"
-      if [ -n "$output_file" ] && [ "${output_file:0:1}" != "-" ]; then
+      if [ -n "$output_file" ] && [ "${output_file:0:1}" != "-" ] && [ ! -e "$output_file" ]; then
         exec >"$output_file" 2>&1
         shift
       fi
