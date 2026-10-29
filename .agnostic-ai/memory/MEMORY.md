@@ -1,0 +1,3 @@
+- [bash-runtime](bash-runtime.md): Subshell identity and extdebug differ across supported Bash builds.
+- [hidden-parallel-results](hidden-parallel-results.md): Relative hidden test paths must contribute results and keep their own identity.
+- [parallel-cancellation](parallel-cancellation.md): An unreaped child can make kill -0 look like running cleanup.

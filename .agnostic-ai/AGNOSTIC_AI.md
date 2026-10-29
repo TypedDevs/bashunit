@@ -1,16 +1,16 @@
 # bashunit
 
-bashunit is a Bash 3.0+ testing framework with assertions, spies, mocks, data providers, and snapshots. Documentation: https://bashunit.com.
+Bash 3.0+ testing framework. Docs: https://bashunit.com.
 
-## Required guidance
+## Guidance
 
-Paths are relative to the repository root, also from generated skill and agent directories. Codex loads a directory's `AGENTS.md` only when started inside it; before editing under `src/` or `tests/`, read that directory's `AGENTS.md`.
+Paths are repository-relative. Read `src/AGENTS.md` or `tests/AGENTS.md` before edits there; Codex root sessions do not auto-load child instructions.
 
-Bash 3.0 is the compatibility floor, including parse-time behavior. Follow existing patterns; study the matching tests before adding behavior. Do not invent commands or features. Preserve public APIs unless the task includes docs and CHANGELOG updates; record architectural decisions in an ADR.
+Preserve Bash 3.0 parsing and public APIs; follow sibling tests/code. Update docs/CHANGELOG for behavior changes; ADRs for architecture.
 
-## Quality gate
+## Validation
 
-The main session runs this gate once after the complete change set, before committing. Reuse passing checks while content is unchanged:
+Main selects checks by changed behavior/risk and reuses unchanged passes. Small fixes: affected tests, ShellCheck, `make lint`; strict mode for options, errors, hooks, or workers. Cross-cutting runtime changes/releases need:
 
 ```bash
 make test
@@ -19,14 +19,12 @@ make sa
 make lint
 ```
 
-`make test/strict` runs what CI's strict job runs. `make lint` is the formatting authority.
+Strict mode matches CI; `make lint` controls formatting.
 
-## Delegation
+## Delivery
 
-Handle small edits directly. Delegate lookups to `code-locator`, bounded edits to `code-implementer`, and review to `code-reviewer` before pushing, each with a scope, a base revision, and a validation budget. Keep at most two delegates active, on separate files; they run only assigned targeted checks. Save long reports under ignored `.agnostic-ai/local/`.
+Delegate lookups/edits/reviews to `code-locator`/`code-implementer`/`code-reviewer`; review before pushing. Max two delegates with independent worktrees, scope, base revision, and focused checks. Reports: ignored `.agnostic-ai/local/`.
 
-## Specs and delivery
+Edit `.agnostic-ai/` and `agnostic-ai.yaml`, never generated files. Install the pinned CLI: `npm ci` (`--force` on Windows); run `npm run agents:sync` and `npm run agents:check`.
 
-Edit `.agnostic-ai/` or `agnostic-ai.yaml`, never generated files. Install the pinned CLI with `npm ci` (`npm ci --force` on a Windows source checkout), then run `npm run agents:sync` and `npm run agents:check`.
-
-Keep unrelated changes out. Use a PR unless the user asks for a direct commit to main. Update CHANGELOG for user-visible changes. Use the `commit` and `pr` skills. Never commit secrets, skip Git hooks, amend published commits, or run destructive Git commands. Pushing needs user authorization; force-pushing main needs an explicit request.
+Use `commit`/`pr` skills. Keep changes scoped; use PRs unless asked for main. Push only when authorized. No secrets, hook bypasses, rewriting published history, or destructive Git.

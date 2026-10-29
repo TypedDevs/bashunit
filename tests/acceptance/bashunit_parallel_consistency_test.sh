@@ -84,6 +84,41 @@ function test_parallel_does_not_lose_same_named_files_in_different_dirs() {
   assert_contains "2 total" "$sequential_counts"
 }
 
+function provide_colliding_parallel_paths() {
+  bashunit::data_set a/b_test.sh a_b_test.sh
+  bashunit::data_set a_/b_test.sh a/_b_test.sh
+}
+
+# @data_provider provide_colliding_parallel_paths
+function test_parallel_keeps_slashes_and_underscores_distinct() {
+  local first="$1" second="$2" dir mode output status
+  dir="$(bashunit::temp_dir parallel_slots)"
+  first="$dir/$first"
+  second="$dir/$second"
+  mkdir -p "${first%/*}" "${second%/*}"
+  printf 'function %s() { assert_same 1 2; }\n' test_slot_failure >"$first"
+  printf 'function %s() { assert_same 1 1; }\n' test_slot_success >"$second"
+
+  for mode in --no-parallel --parallel; do
+    status=0
+    output=$(NO_COLOR=1 ./bashunit --jobs 1 "$mode" --env "$TEST_ENV_FILE" \
+      "$first" "$second" 2>&1) || status=$?
+
+    assert_same 1 "$status"
+    assert_contains '1 passed, 1 failed, 2 total' "$output"
+  done
+}
+
+function test_parallel_keeps_hook_capture_paths_distinct() {
+  _BASHUNIT_RUNNER_FILE_SLOT=1
+  bashunit::runner::hook_output_path set_up
+  local first=$_BASHUNIT_RUNNER_HOOK_FILE
+  _BASHUNIT_RUNNER_FILE_SLOT=2
+  bashunit::runner::hook_output_path set_up
+
+  assert_not_equals "$first" "$_BASHUNIT_RUNNER_HOOK_FILE"
+}
+
 function test_parallel_counts_tests_under_a_hidden_relative_dir() {
   local dir runner="$PWD/bashunit" env_file="$PWD/$TEST_ENV_FILE"
   dir="$(bashunit::temp_dir hidden_parallel)"

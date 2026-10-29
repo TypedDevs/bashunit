@@ -43,7 +43,7 @@ _BASHUNIT_COVERAGE_AWK_HTML_ESCAPE='
 function bashunit::coverage::emit_block() {
   local _line
   while IFS= read -r _line || [ -n "$_line" ]; do
-    printf '%s\n' "$_line"
+    printf '%s\n' "$_line" || return 1
   done
 }
 
@@ -62,8 +62,7 @@ function bashunit::coverage::report_html() {
     return 0
   fi
 
-  # Create output directory structure
-  mkdir -p "$output_dir/files"
+  mkdir -p "$output_dir/files" || return 1
 
   # Collect file data for index
   local IFS=$' \t\n'
@@ -96,7 +95,7 @@ function bashunit::coverage::report_html() {
     file_data_count=$((file_data_count + 1))
 
     # Generate individual file HTML
-    bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html"
+    bashunit::coverage::generate_file_html "$file" "$output_dir/files/${safe_filename}.html" || return 1
   done < <(bashunit::coverage::get_tracked_files)
 
   # Calculate total percentage
@@ -112,7 +111,7 @@ function bashunit::coverage::report_html() {
   # Generate index.html
   bashunit::coverage::generate_index_html \
     "$output_dir/index.html" "$total_hit" "$total_executable" "$total_pct" \
-    "$tests_total" "$tests_passed" "$tests_failed" ${file_data[@]+"${file_data[@]}"}
+    "$tests_total" "$tests_passed" "$tests_failed" ${file_data[@]+"${file_data[@]}"} || return 1
 
   echo "Coverage HTML report written to: $output_dir/index.html"
 }

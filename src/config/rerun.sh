@@ -1,19 +1,6 @@
 #!/usr/bin/env bash
 
-##
-# --rerun-failed support.
-#
-# Recording (every run, regardless of the flag): each failing test appends its
-# raw "<test_file>:<function_name>" identity to the shared collection temp file
-# RERUN_FAILED_OUTPUT_PATH (created in env.sh). File appends work across the
-# parallel test subshells, so both modes share one collector. At the end of a
-# run the collector is persisted to the cache file (deduped); a fully green run
-# truncates it.
-#
-# Replay (only with --rerun-failed): the cache is loaded, discovery is
-# restricted to the recorded files, and each file's functions are filtered to
-# the recorded names. --filter/--tag still apply on top (intersection).
-##
+# Shared collectors carry failure and execution identities out of parallel workers.
 
 # Entries loaded for replay: newline-delimited "<file>:<fn>". Empty when none.
 _BASHUNIT_RERUN_ENTRIES=""
@@ -41,25 +28,57 @@ function bashunit::rerun::record() {
   printf '%s:%s\n' "$test_file" "$fn_name" >>"$RERUN_FAILED_OUTPUT_PATH" 2>/dev/null || true
 }
 
-##
-# Persists the collected failures to the cache (deduped, first-seen order).
-# A run with no collected failures truncates an existing cache. Write errors
-# (e.g. a read-only working directory) are ignored silently.
-##
+function bashunit::rerun::record_ran() {
+  local test_file=$1
+  local fn_name=$2
+  [ -n "${RERUN_RAN_OUTPUT_PATH:-}" ] || return 0
+  builtin printf '%s:%s\n' "$test_file" "$fn_name" 2>/dev/null >>"$RERUN_RAN_OUTPUT_PATH" || true
+}
+
 function bashunit::rerun::persist() {
-  local cache
+  local cache previous=""
   cache="$(bashunit::rerun::cache_file)"
   local collected="${RERUN_FAILED_OUTPUT_PATH:-}"
+  local ran="${RERUN_RAN_OUTPUT_PATH:-}"
 
-  if [ -n "$collected" ] && [ -s "$collected" ]; then
-    local dir="${cache%/*}"
-    if [ "$dir" != "$cache" ]; then
-      mkdir -p "$dir" 2>/dev/null || return 0
-    fi
-    awk '!seen[$0]++' "$collected" >"$cache" 2>/dev/null || true
-  elif [ -f "$cache" ]; then
-    : >"$cache" 2>/dev/null || true
+  if [ -f "$cache" ]; then
+    previous=$(<"$cache")
   fi
+  if [ -z "$previous" ] && [ ! -s "$collected" ]; then
+    return 0
+  fi
+  if [ "${_BASHUNIT_RERUN_FULL_RUN:-false}" = true ] &&
+    [ "${1:-1}" -eq 0 ] && [ -s "$ran" ] && [ ! -s "$collected" ]; then
+    : 2>/dev/null >"$cache" || true
+    return 0
+  fi
+  if [ ! -f "$ran" ]; then
+    ran=/dev/null
+  fi
+  if [ ! -f "$collected" ]; then
+    collected=/dev/null
+  fi
+  local dir="${cache%/*}"
+  if [ "$dir" != "$cache" ]; then
+    mkdir -p "$dir" 2>/dev/null || return 0
+  fi
+
+  _BASHUNIT_RERUN_WORKING_DIR="${BASHUNIT_WORKING_DIR:-$PWD}" awk '
+    BEGIN {
+      working_dir = ENVIRON["_BASHUNIT_RERUN_WORKING_DIR"]
+      sub(/\/$/, "", working_dir)
+    }
+    function entry_key(entry) {
+      while (substr(entry, 1, 2) == "./") entry = substr(entry, 3)
+      if (substr(entry, 1, 1) != "/") entry = working_dir "/" entry
+      return entry
+    }
+    FILENAME == ARGV[1] { ran[entry_key($0)] = 1; next }
+    FILENAME == ARGV[2] && (entry_key($0) in ran) { next }
+    NF && !seen[$0]++ { print }
+  ' "$ran" - "$collected" 2>/dev/null >"$cache" <<EOF || true
+$previous
+EOF
 }
 
 ##

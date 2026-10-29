@@ -147,6 +147,20 @@ A missing literal path still fails with an error naming the path.
 | `-h, --help`                   | Show the test help                               |
 | `--coverage*`                  | Nine coverage flags, see [Coverage](#coverage)   |
 
+`--stop-on-failure` still writes requested reports and `.bashunit/last-failed` for the tests that ran.
+
+### Debug tracing
+
+`--debug` enables shell tracing. The next argument is used as a trace file only when it names a path that does not exist and does not start with `-`. Existing files and directories remain test paths and are not overwritten.
+
+```bash
+./bashunit --debug tests/example_test.sh
+./bashunit --debug tests/
+./bashunit --debug trace.log tests/
+```
+
+Use a new filename to write a trace file. With no filename, tracing goes to the terminal.
+
 ### Standalone Assert
 
 > `bashunit test -a|--assert function "arg1" "arg2"`
@@ -1060,14 +1074,17 @@ exits **0**, like any other query.
 
 > `bashunit test --rerun-failed`
 
-Replay only the tests that failed on the **previous** run — the fastest
-edit-run loop after a red suite.
+Replay the recorded failing tests after a red suite.
 
 Every run records its failing tests as `<test_file>:<function_name>` lines in
 `.bashunit/last-failed` under the working directory (one write at the end of a
-run, so a plain `fail`, then `--rerun-failed` works without planning ahead). A
-fully green run clears the cache. With `--rerun-failed`, discovery is restricted
-to the recorded files and each file is filtered to the recorded functions; if
+run, so a plain `fail`, then `--rerun-failed` works without planning ahead).
+A run replaces entries for the tests it executed and keeps the rest. A
+successful full run using the default test directory or project root clears
+the cache, including renamed or deleted tests. A green subset preserves
+unexecuted failures.
+With `--rerun-failed`, discovery is restricted to the recorded files and each
+file is filtered to the recorded functions; if
 the cache is missing or empty, bashunit prints a short notice and runs the full
 suite.
 

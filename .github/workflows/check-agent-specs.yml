@@ -45,6 +45,28 @@ jobs:
           npm run agents:sync
           npm run agents:check
           git diff --exit-code
+      - name: Verify native hook dispatch
+        run: |
+          python3 - <<'PYDISPATCH'
+          import json
+          import re
+          from pathlib import Path
+
+          configurations = (
+              ("claude", ".claude/settings.json", ("Edit", "MultiEdit", "Write", "NotebookEdit")),
+              ("codex", ".codex/hooks.json", ("apply_patch",)),
+          )
+          for target, filename, tools in configurations:
+              hooks = json.loads(Path(filename).read_text())["hooks"]
+              for event, script in (("PreToolUse", "protect-generated.sh"),
+                                    ("PostToolUse", "shellcheck-after-edit.sh")):
+                  for tool in tools:
+                      assert any(
+                          re.fullmatch(entry.get("matcher", ".*"), tool)
+                          and any(script in handler.get("command", "") for handler in entry["hooks"])
+                          for entry in hooks.get(event, [])
+                      ), (target, event, tool, script)
+          PYDISPATCH
       - name: Verify shared ShellCheck hook
         run: |
           python3 - <<'PY'
@@ -69,3 +91,44 @@ jobs:
                   assert target["counted"] and not target["warnings"], target
                   assert any("SC2086" in command["stdout"] for command in target["commands"]), target
           PY
+      - name: Verify generated-output guard
+        run: |
+          python3 - <<'PYGUARD'
+          import json
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          def verify(arguments, expected, targets={"claude", "codex"}):
+              result = subprocess.run(
+                  ["agnostic-ai", "hook", "run", "protect-generated", *arguments,
+                    "--expect", expected, "--format", "json"],
+                  check=True, capture_output=True, text=True,
+              )
+              actual = json.loads(result.stdout)["targets"]
+              assert {target["target"] for target in actual} == targets, actual
+              for target in actual:
+                  assert target["counted"] and not target["warnings"], target
+                  assert target["decision"] == expected, target
+
+          for path in ("AGENTS.md", "src/AGENTS.md", "CLAUDE.md",
+                        ".claude/rules/runtime.md", ".codex/config.toml", ".CODEX/config.toml"):
+              verify(["--edit", path], "block")
+          for path in (".agnostic-ai/AGNOSTIC_AI.md", "src/assert/core.sh"):
+              verify(["--edit", path], "allow")
+          verify(["--bash", "npm run agents:sync"], "allow")
+
+          patches = (
+              "*** Delete File: AGENTS.md\n",
+              "*** Update File: notes.md\n*** Move to: AGENTS.md\n@@\n-old\n+new\n",
+              "*** Update File: AGENTS.md\n*** Move to: notes.md\n@@\n-old\n+new\n",
+          )
+          with tempfile.TemporaryDirectory() as directory:
+              payload = Path(directory) / "event.json"
+              for patch in patches:
+                  payload.write_text(json.dumps({
+                      "cwd": str(Path.cwd()), "tool_name": "apply_patch",
+                      "tool_input": {"command": "*** Begin Patch\n" + patch + "*** End Patch\n"},
+                  }))
+                  verify(["--target", "codex", "--payload", str(payload)], "block", {"codex"})
+          PYGUARD

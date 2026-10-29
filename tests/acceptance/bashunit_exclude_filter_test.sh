@@ -6,6 +6,41 @@ set -euo pipefail
 
 FIXTURE=./tests/acceptance/fixtures/exclude_filter_fixture.sh
 
+function embedded_prefix_filter_fixture() {
+  local fixture
+  fixture="$(bashunit::temp_file embedded_filter).sh"
+  printf 'function %s() { assert_true true; }\n' test_latest_version test_other >"$fixture"
+  printf '%s' "$fixture"
+}
+
+function provide_embedded_prefix_filter_values() {
+  bashunit::data_set latest_version
+  bashunit::data_set test_latest_version
+  bashunit::data_set version
+}
+
+# @data_provider provide_embedded_prefix_filter_values
+function test_include_and_inline_filters_preserve_an_embedded_test_prefix() {
+  local fixture output
+  fixture="$(embedded_prefix_filter_fixture)"
+  output=$(./bashunit --skip-env-file --list --filter "$1" "$fixture")
+  assert_same "$fixture::test_latest_version" "$output"
+
+  output=$(./bashunit --skip-env-file --list "$fixture::$1")
+  assert_same "$fixture::test_latest_version" "$output"
+}
+
+# @data_provider provide_embedded_prefix_filter_values
+function test_exclusion_filters_preserve_an_embedded_test_prefix() {
+  local fixture output
+  fixture="$(embedded_prefix_filter_fixture)"
+  output=$(./bashunit --skip-env-file --list --exclude-filter "$1" "$fixture")
+  assert_same "$fixture::test_other" "$output"
+
+  output=$(BASHUNIT_EXCLUDE_FILTER="$1,missing" ./bashunit --skip-env-file --list "$fixture")
+  assert_same "$fixture::test_other" "$output"
+}
+
 function test_exclude_filter_skips_matching_tests() {
   local output
   output=$(./bashunit --list --exclude-filter admin "$FIXTURE" 2>/dev/null)
