@@ -9,6 +9,11 @@
 ### Fixed
 
 - `--debug` leaves an existing test file or directory as the test path instead of taking it as the trace file (#1405)
+- Call argument assertions fail when the spy was never called or the requested call index does not exist (#1400)
+- `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
+- `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
+- TAP reports keep test titles containing line breaks on a single result line (#1413)
+
 - `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)
 - Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
