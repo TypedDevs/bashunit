@@ -59,10 +59,9 @@ function assert_have_been_called_with() {
     return
   fi
 
-  # One pass yields both the compared line and the total, which the failure
-  # message needs — and costs no fork, unlike the tail/sed it replaces.
   bashunit::spy::read_call_to_slots "${!file_var-}" "$index"
-  local raw=${_BASHUNIT_SPY_CALL_OUT%%$'\x1e'*}
+  bashunit::spy::decode_raw_to_slot "${_BASHUNIT_SPY_CALL_OUT%%$'\x1e'*}"
+  local raw=$_BASHUNIT_SPY_RAW_OUT
   local total=$_BASHUNIT_SPY_CALL_TOTAL_OUT
 
   if [ "$expected" != "$raw" ]; then
@@ -142,7 +141,8 @@ function assert_have_been_called_with_any() {
   if [ -f "${!file_var}" ]; then
     while IFS= read -r line; do
       total=$((total + 1))
-      if [ "${line%%$'\x1e'*}" = "$expected" ]; then
+      bashunit::spy::decode_raw_to_slot "${line%%$'\x1e'*}"
+      if [ "$_BASHUNIT_SPY_RAW_OUT" = "$expected" ]; then
         found=true
         break
       fi
@@ -250,6 +250,8 @@ function assert_have_been_called_nth_with() {
 
   local raw
   IFS=$'\x1e' read -r raw _ <<<"$line" || true
+  bashunit::spy::decode_raw_to_slot "$raw"
+  raw=$_BASHUNIT_SPY_RAW_OUT
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
