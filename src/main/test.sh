@@ -99,6 +99,7 @@ EOF
 }
 
 function bashunit::main::cmd_test() {
+  local _BASHUNIT_RERUN_FULL_RUN=false
   local filter=""
   local tag_filter=""
   local exclude_tag_filter=""
@@ -216,7 +217,7 @@ function bashunit::main::cmd_test() {
       ;;
     --debug)
       local output_file="${2:-}"
-      if [ -n "$output_file" ] && [ "${output_file:0:1}" != "-" ]; then
+      if [ -n "$output_file" ] && [ "${output_file:0:1}" != "-" ] && [ ! -e "$output_file" ]; then
         exec >"$output_file" 2>&1
         shift
       fi
@@ -666,6 +667,14 @@ function bashunit::main::cmd_test() {
     fi
   fi
 
+  local _rerun_explicit_scope=""
+  if [ "$raw_args_count" -eq 1 ]; then
+    case "${raw_args[0]}" in
+    /*) _rerun_explicit_scope="${raw_args[0]}" ;;
+    *) _rerun_explicit_scope="$PWD/${raw_args[0]}" ;;
+    esac
+  fi
+
   # A run that executes a subset resolves a subset of the snapshots, so every
   # snapshot the subset skipped would be reported as unused. Refusing beats
   # printing a list that invites deleting live files.
@@ -732,6 +741,23 @@ function bashunit::main::cmd_test() {
     # shellcheck disable=SC1090,SC2086
     source "$BASHUNIT_BOOTSTRAP" ${BASHUNIT_BOOTSTRAP_ARGS:-}
     _BASHUNIT_LOADING_BOOTSTRAP=""
+  fi
+
+  local _rerun_scope=""
+  if [ "$raw_args_count" -eq 0 ]; then
+    _rerun_scope="${BASHUNIT_DEFAULT_PATH:-}"
+  elif [ "$raw_args_count" -eq 1 ]; then
+    _rerun_scope="$_rerun_explicit_scope"
+  fi
+  if [ -z "$assert_fn" ] && [ -z "$filter" ] && [ -z "$tag_filter" ] &&
+    [ -z "$exclude_tag_filter" ] && [ -z "${BASHUNIT_EXCLUDE_FILTER:-}" ] &&
+    [ "$_bashunit_cli_exclude_filter_count" -eq 0 ] &&
+    ! bashunit::env::is_shard_enabled && ! bashunit::env::is_changed_enabled &&
+    ! bashunit::rerun::is_enabled && [ -d "$_rerun_scope" ]; then
+    if [ "$_rerun_scope" -ef "${BASHUNIT_DEFAULT_PATH:-}" ] ||
+      [ "$_rerun_scope" -ef "${BASHUNIT_WORKING_DIR:-$PWD}" ]; then
+      _BASHUNIT_RERUN_FULL_RUN=true
+    fi
   fi
 
   if [ "${BASHUNIT_NO_OUTPUT:-false}" = true ]; then

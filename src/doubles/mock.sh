@@ -6,33 +6,66 @@ declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
 
 function bashunit::unmock() {
   local command=$1
-
-  if [ "${#_BASHUNIT_MOCKED_FUNCTIONS[@]}" -eq 0 ]; then
-    return
-  fi
-
-  local i
+  local i registered=false
   for i in "${!_BASHUNIT_MOCKED_FUNCTIONS[@]}"; do
     if [ "${_BASHUNIT_MOCKED_FUNCTIONS[$i]:-}" = "$command" ]; then
       unset "_BASHUNIT_MOCKED_FUNCTIONS[$i]"
-      unset -f "$command"
-      # Under --sandbox the command was a blocking shim before it was mocked;
-      # dropping the mock must not hand the test the real thing.
-      bashunit::sandbox::restore_shim "$command"
-      local variable
-      variable="$(bashunit::helper::normalize_variable_name "$command")"
-      local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
-      local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
-      local sequence_file_var="_BASHUNIT_MOCK_${variable}_SEQUENCE_FILE"
-      [ -f "${!sequence_file_var-}" ] && rm -f "${!sequence_file_var}"
-      unset "$sequence_file_var"
-      [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
-      [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
-      unset "$times_file_var"
-      unset "$params_file_var"
-      break
+      registered=true
     fi
   done
+  if [ "$registered" = false ]; then
+    return 0
+  fi
+
+  local variable
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
+  local original_var="_BASHUNIT_DOUBLE_${variable}_ORIGINAL"
+  local exported_var="_BASHUNIT_DOUBLE_${variable}_EXPORTED"
+  local saved_var="_BASHUNIT_DOUBLE_${variable}_SAVED"
+  unset -f "$command"
+  if [ -n "${!original_var-}" ]; then
+    eval "${!original_var}"
+    if [ "${!exported_var-}" = true ]; then
+      export -f "${command?}"
+    fi
+  fi
+  unset "$original_var" "$exported_var" "$saved_var"
+  # Sandbox commands must return to their blocking shim after the override ends.
+  bashunit::sandbox::restore_shim "$command"
+
+  local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
+  local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
+  local sequence_file_var="_BASHUNIT_MOCK_${variable}_SEQUENCE_FILE"
+  [ -f "${!sequence_file_var-}" ] && rm -f "${!sequence_file_var}"
+  unset "$sequence_file_var"
+  [ -f "${!times_file_var-}" ] && rm -f "${!times_file_var}"
+  [ -f "${!params_file_var-}" ] && rm -f "${!params_file_var}"
+  unset "$times_file_var" "$params_file_var"
+}
+
+function bashunit::doubles::save_original() {
+  local command=$1 variable
+  bashunit::helper::normalize_variable_name_to_slot "$command"
+  variable=$_BASHUNIT_HELPER_VARNAME_OUT
+  local original_var="_BASHUNIT_DOUBLE_${variable}_ORIGINAL"
+  local exported_var="_BASHUNIT_DOUBLE_${variable}_EXPORTED"
+  local saved_var="_BASHUNIT_DOUBLE_${variable}_SAVED"
+  if [ "${!saved_var-}" = true ]; then
+    return 0
+  fi
+  local original="" original_exported=false declaration
+  if declare -F -- "$command" >/dev/null 2>&1; then
+    original="$(declare -f -- "$command")"
+    while IFS= read -r declaration; do
+      if [ "${declaration##* }" = "$command" ]; then
+        case "${declaration% *}" in *x*) original_exported=true ;; esac
+        break
+      fi
+    done < <(declare -F)
+  fi
+  # Remember absence too, so repeated doubles keep the first original.
+  export "$original_var=$original" "$exported_var=$original_exported" "$saved_var=true"
 }
 
 
@@ -93,6 +126,7 @@ function bashunit::mock() {
     return 1
   fi
 
+  bashunit::doubles::save_original "$command"
   if [ $# -eq 1 ] && bashunit::doubles::is_exit_code "$1"; then
     eval "function $command() { return $1; }"
   elif [ $# -gt 0 ]; then
@@ -174,6 +208,7 @@ function bashunit::mock_sequence() {
     fi
   done
 
+  bashunit::doubles::save_original "$command"
   eval "function $command() {
     $record
     local _step=1

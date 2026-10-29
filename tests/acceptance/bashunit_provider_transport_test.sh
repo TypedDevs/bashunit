@@ -245,3 +245,59 @@ TEST
   done
   assert_same 0 "$leftover"
 }
+
+# @data_provider provide_transport_modes
+function test_echo_hash_rows_keep_the_header_and_summary_counts() {
+  local mode="$1" dir
+  dir="$(bashunit::temp_dir)"
+  cat >"$dir/hash_test.sh" <<'TEST'
+function provide_hash_rows() { echo 'color #fff'; echo 'price 5'; echo 'size 10'; }
+# @data_provider provide_hash_rows
+function test_hash_words() { assert_same 2 "$#"; }
+TEST
+  local output code=0
+  output=$(./bashunit "$mode" --skip-env-file --no-color "$dir/hash_test.sh" 2>&1) || code=$?
+  assert_same 0 "$code"
+  assert_contains 'Tests: 3' "$output"
+  assert_contains '3 passed' "$output"
+  assert_contains '3 total' "$output"
+}
+
+# @data_provider provide_transport_modes
+function test_a_malformed_provider_row_does_not_drop_later_rows() {
+  local mode="$1" dir
+  dir="$(bashunit::temp_dir)"
+  cat >"$dir/malformed_test.sh" <<'TEST'
+function provide_malformed_rows() { echo 'before 1'; echo 'broken "quote'; echo 'after 2'; }
+# @data_provider provide_malformed_rows
+function test_malformed_words() { assert_same 2 "$#"; }
+TEST
+  local output code=0
+  output=$(./bashunit "$mode" --skip-env-file --no-color \
+    --report-json "$dir/report.json" "$dir/malformed_test.sh" 2>&1) || code=$?
+  assert_same 1 "$code"
+  assert_contains "data provider 'provide_malformed_rows' row 2 could not be parsed: broken \"quote" "$output"
+  assert_not_contains 'arguments could not be written' "$output"
+  assert_contains 'Tests: 3' "$output"
+  assert_contains '2 passed' "$output"
+  assert_contains '1 failed' "$output"
+  assert_contains '3 total' "$output"
+  assert_file_contains "$dir/report.json" '"total": 3, "passed": 2, "failed": 1'
+}
+
+# @data_provider provide_transport_modes
+function test_echo_provider_expansion_runs_only_once_per_row() {
+  local mode="$1" dir
+  dir="$(bashunit::temp_dir)"
+  cat >"$dir/expansion_test.sh" <<'TEST'
+function expand_provider_word() { printf x >>"$PROVIDER_EXPANSION_CALLS"; printf expanded; }
+function provide_expansion_rows() { echo 'value `expand_provider_word`'; }
+# @data_provider provide_expansion_rows
+function test_expansion_words() { assert_same 2 "$#"; assert_same expanded "$2"; }
+TEST
+  local output code=0
+  output=$(PROVIDER_EXPANSION_CALLS="$dir/calls" ./bashunit "$mode" --skip-env-file --no-color \
+    "$dir/expansion_test.sh" 2>&1) || code=$?
+  assert_same 0 "$code"
+  assert_same x "$(<"$dir/calls")"
+}
