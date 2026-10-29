@@ -265,6 +265,10 @@ function bashunit::runner::call_test_functions() {
         bashunit::runner::report_provider_error \
           "$script" "$fn_name" "data provider '$_BASHUNIT_PROVIDER_FN_OUT' $transport_error"
         if [ "$parse_error" = true ]; then
+          bashunit::runner::halt_if_stop_on_failure
+          if bashunit::env::is_stop_on_failure_enabled; then
+            break
+          fi
           continue
         fi
         break
