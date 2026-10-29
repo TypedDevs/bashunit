@@ -86,7 +86,7 @@ function bashunit::runner::report_provider_error() {
   # the run printed the error and still exited 0. TEST_EXIT_CODE marks the test
   # failed without inventing a failed assertion -- none ran.
   if bashunit::parallel::is_enabled; then
-    bashunit::runner::parallel_suite_dir_to_slot "$test_file"
+    bashunit::runner::parallel_suite_dir_to_slot
     local suite_dir=$_BASHUNIT_RUNNER_SUITE_DIR_OUT
     [ -d "$suite_dir" ] || mkdir -p "$suite_dir"
     local payload="##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0"
@@ -166,7 +166,7 @@ function bashunit::runner::call_test_functions() {
   # publish into it, and checking `[ -d ]` inside a worker races its siblings
   # (every worker would still pay the mkdir fork).
   if bashunit::parallel::is_enabled && [ "$allow_test_parallel" = true ]; then
-    bashunit::runner::parallel_suite_dir_to_slot "$script"
+    bashunit::runner::parallel_suite_dir_to_slot
     mkdir -p "$_BASHUNIT_RUNNER_SUITE_DIR_OUT" 2>/dev/null || true
   fi
 

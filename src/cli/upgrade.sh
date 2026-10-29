@@ -6,6 +6,10 @@ function bashunit::upgrade::upgrade() {
     install_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   fi
   local target="$install_dir/bashunit"
+  if [ -d "$target" ]; then
+    echo "Failed to upgrade: $target is not a file" >&2
+    return 1
+  fi
 
   local latest_tag
   latest_tag="$(bashunit::helper::get_latest_tag)"
@@ -23,10 +27,25 @@ function bashunit::upgrade::upgrade() {
   echo "> Upgrading bashunit to latest version"
 
   local url="https://github.com/TypedDevs/bashunit/releases/download/$latest_tag/bashunit"
+  local download_file
+  if ! download_file=$("$MKTEMP" "$target.download.XXXXXX"); then
+    echo "Failed to create a download file next to $target" >&2
+    return 1
+  fi
+  if [ -f "$target" ]; then
+    if ! cp -p "$target" "$download_file" || ! : >"$download_file"; then
+      echo "Failed to prepare a download file next to $target" >&2
+      rm -f "$download_file"
+      return 1
+    fi
+  elif ! chmod +rw "$download_file"; then
+    rm -f "$download_file"
+    return 1
+  fi
   local err_file
   err_file="$(mktemp 2>/dev/null || echo "/tmp/bashunit_upgrade_err.$$")"
   local download_status=0
-  bashunit::io::download_to "$url" "$target" 2>"$err_file" || download_status=$?
+  bashunit::io::download_to "$url" "$download_file" 2>"$err_file" || download_status=$?
 
   if [ "$download_status" -ne 0 ]; then
     echo "Failed to download bashunit $latest_tag from $url" >&2
@@ -34,19 +53,25 @@ function bashunit::upgrade::upgrade() {
       echo "Reason:" >&2
       sed 's/^/  /' "$err_file" >&2
     fi
-    rm -f "$err_file" "$target"
+    rm -f "$err_file" "$download_file"
     return 1
   fi
   rm -f "$err_file"
 
-  if [ ! -s "$target" ]; then
+  if [ ! -s "$download_file" ]; then
     echo "Failed to download bashunit $latest_tag from $url (empty file)" >&2
-    rm -f "$target"
+    rm -f "$download_file"
     return 1
   fi
 
-  if ! chmod u+x "$target"; then
-    echo "Failed to make $target executable" >&2
+  if ! chmod u+x "$download_file"; then
+    echo "Failed to make $download_file executable" >&2
+    rm -f "$download_file"
+    return 1
+  fi
+  if ! mv -f "$download_file" "$target"; then
+    echo "Failed to replace $target" >&2
+    rm -f "$download_file"
     return 1
   fi
 

@@ -275,7 +275,15 @@ function bashunit::main::exec_tests() {
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
-      bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"
+      if bashunit::coverage::report_lcov "$BASHUNIT_COVERAGE_REPORT"; then
+        if ! bashunit::env::is_machine_output_enabled && ! bashunit::coverage::is_diff_enabled; then
+          echo ""
+          echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
+        fi
+      else
+        printf "Error: Coverage report could not be written: '%s'.\n" "$BASHUNIT_COVERAGE_REPORT" >&2
+        exit_code=1
+      fi
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT_COBERTURA" ]; then
@@ -283,7 +291,10 @@ function bashunit::main::exec_tests() {
     fi
 
     if [ -n "$BASHUNIT_COVERAGE_REPORT_HTML" ]; then
-      bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"
+      if ! bashunit::coverage::report_html "$BASHUNIT_COVERAGE_REPORT_HTML"; then
+        printf "Error: Coverage HTML report could not be written: '%s'.\n" "$BASHUNIT_COVERAGE_REPORT_HTML" >&2
+        exit_code=1
+      fi
     fi
 
     # Check minimum threshold

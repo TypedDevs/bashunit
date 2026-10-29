@@ -120,7 +120,38 @@ function test_fails_assert_files_equals() {
   rm "$actual"
 }
 
-# shellcheck disable=SC2155
+function provide_missing_comparison_files() {
+  local assertion
+  for assertion in assert_files_equals assert_files_not_equals; do
+    bashunit::data_set "$assertion" expected
+    bashunit::data_set "$assertion" actual
+    bashunit::data_set "$assertion" both
+  done
+}
+
+# @data_provider provide_missing_comparison_files
+function test_file_comparison_fails_when_a_file_is_missing() {
+  local assertion="$1" missing="$2"
+  local directory expected actual missing_path output
+  directory="$(bashunit::temp_dir)"
+  expected="$directory/expected"
+  actual="$directory/actual"
+  missing_path="$expected"
+  if [ "$missing" = actual ]; then
+    printf 'content\n' >"$expected"
+    missing_path="$actual"
+  elif [ "$missing" = expected ]; then
+    printf 'content\n' >"$actual"
+  fi
+
+  output="$("$assertion" "$expected" "$actual" 2>&1)"
+
+  assert_contains "$missing_path" "$output"
+  assert_contains "to exist but" "$output"
+  assert_not_contains "Files are equals" "$output"
+  assert_not_contains "diff:" "$output"
+}
+
 function test_successful_assert_files_not_equals() {
   local expected="/tmp/test_successful_assert_files_not_equals_1"
   local actual="/tmp/test_successful_assert_files_not_equals_2"

@@ -2,6 +2,43 @@
 # shellcheck external-sources=false
 # shellcheck disable=SC1091
 
+function provide_multiline_spy_arguments() {
+  bashunit::data_set $'first\nsecond'
+  bashunit::data_set $'first\x1dnsecond'
+  bashunit::data_set 'first\nsecond'
+  bashunit::data_set 'literal %0A %1E %25'
+  bashunit::data_set $'first\x1esecond'
+  bashunit::data_set $'\nfirst\nsecond\n'
+}
+
+# @data_provider provide_multiline_spy_arguments
+function test_spy_preserves_a_multiline_argument_as_one_call() {
+  bashunit::spy multiline_argument_spy
+  multiline_argument_spy "$1" tail
+
+  assert_have_been_called_times 1 multiline_argument_spy
+  assert_have_been_called_with multiline_argument_spy "$1" tail
+  assert_have_been_called_with_any multiline_argument_spy "$1" tail
+  assert_have_been_called_nth_with 1 multiline_argument_spy "$1" tail
+  assert_have_been_called_with_args multiline_argument_spy "$1" tail
+}
+
+function test_spy_failure_log_counts_a_multiline_argument_once() {
+  bashunit::spy multiline_log_spy
+  multiline_log_spy $'first\nsecond' tail
+  bashunit::spy::call_log_to_slot multiline_log_spy
+  local output=$_BASHUNIT_SPY_CALL_LOG_OUT
+
+  assert_contains "Recorded calls to 'multiline_log_spy' (1):" "$output"
+  assert_contains $'first\nsecond tail' "$output"
+  assert_not_contains '2:' "$output"
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      'Spy failure log counts a multiline argument once' unmatched 'but got ' $'first\nsecond tail' \
+      compared 'the only call' "$output")" \
+    "$(assert_have_been_called_with multiline_log_spy unmatched)"
+}
+
 function test_mock_ps_when_executing_a_script() {
   bashunit::mock ps cat ./tests/functional/fixtures/doubles_ps_output
 
@@ -169,6 +206,64 @@ function test_assert_not_called_still_passes_on_a_registered_spy() {
 
   assert_empty "$(assert_not_called spy_never_invoked)"
   assert_empty "$(assert_have_been_called_times 0 spy_never_invoked)"
+}
+
+function test_called_with_fails_when_the_spy_was_never_called() {
+  bashunit::spy never_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with fails when the spy was never called" "never_called_with" "to have been called" "once")" \
+    "$(assert_have_been_called_with never_called_with)"
+}
+
+function test_called_with_args_fails_when_the_spy_was_never_called() {
+  bashunit::spy never_called_with_args
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with args fails when the spy was never called" "never_called_with_args" "to have been called" "once")" \
+    "$(assert_have_been_called_with_args never_called_with_args)"
+}
+
+function test_called_with_fails_when_the_index_is_beyond_the_calls() {
+  bashunit::spy once_called_with
+  once_called_with x
+  bashunit::spy::call_log_to_slot once_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with fails when the index is beyond the calls" \
+      "expected call" "at index 5 but" "only called 1 times" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+    "$(assert_have_been_called_with once_called_with 5)"
+}
+
+function test_called_with_rejects_index_zero() {
+  bashunit::spy zero_index_called_with
+  zero_index_called_with
+  bashunit::spy::call_log_to_slot zero_index_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with rejects index zero" \
+      "expected call" "at index 0 but" "only called 1 times" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+    "$(assert_have_been_called_with zero_index_called_with 0)"
+}
+
+function test_called_nth_with_rejects_index_zero() {
+  bashunit::spy zero_index_called_nth
+  zero_index_called_nth x
+
+  assert_contains "assertion usage error" "$(assert_have_been_called_nth_with 0 zero_index_called_nth 2>&1)"
+}
+
+function test_call_assertions_pass_for_an_existing_call_without_arguments() {
+  bashunit::spy called_without_arguments
+  called_without_arguments
+
+  assert_empty "$(assert_have_been_called_with called_without_arguments)"
+  assert_empty "$(assert_have_been_called_with_args called_without_arguments)"
+  assert_empty "$(assert_have_been_called_nth_with 1 called_without_arguments)"
 }
 
 function test_failed_call_assertions_dump_the_recorded_calls() {
