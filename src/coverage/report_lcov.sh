@@ -9,8 +9,7 @@ function bashunit::coverage::report_lcov() {
     return 0
   fi
 
-  # Create output directory if needed
-  mkdir -p "$(dirname "$output_file")"
+  mkdir -p "$(dirname "$output_file")" || return 1
 
   # One awk invocation for the whole report: three forks and two Bash loops per
   # tracked file was 3133ms for 128 files against 262ms this way, and the awk
@@ -18,7 +17,7 @@ function bashunit::coverage::report_lcov() {
   # stays as the fallback for when the batch pass cannot run.
   if bashunit::coverage::write_batch_manifest "lcov-manifest"; then
     if [ -z "$_BASHUNIT_COVERAGE_MANIFEST_OUT" ]; then
-      echo "TN:" >"$output_file"
+      echo "TN:" >"$output_file" || return 1
       return 0
     fi
     if bashunit::coverage::awk_lcov_report "$_BASHUNIT_COVERAGE_MANIFEST_OUT" \
@@ -29,7 +28,7 @@ function bashunit::coverage::report_lcov() {
 
   # Generate LCOV format
   {
-    echo "TN:"
+    echo "TN:" || return 1
 
     while IFS= read -r file; do
       { [ -z "$file" ] || [ ! -f "$file" ]; } && continue
@@ -87,8 +86,8 @@ function bashunit::coverage::report_lcov() {
       # line calling the classifier per line: an 18,000-line file scan written
       # as a Bash loop is the shape perf-fork-budget.md says loses to awk
       # (#1059). One fork per file, not per line.
-      bashunit::coverage::awk_lcov_lines "$file"
-      echo "end_of_record"
+      bashunit::coverage::awk_lcov_lines "$file" || return 1
+      echo "end_of_record" || return 1
     done < <(bashunit::coverage::get_tracked_files)
   } >"$output_file"
 }
