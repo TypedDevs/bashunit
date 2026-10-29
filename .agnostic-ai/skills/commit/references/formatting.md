@@ -1,8 +1,8 @@
 # Formatting
 
 Match the surrounding 2-space style by hand and verify with `make lint`. There is
-no `shfmt` target, and **`shfmt -w .` must not be run**, it fights `.editorconfig`
-two ways:
+no `shfmt` target. `.agnostic-ai/rules/bash-style.md` forbids `shfmt -w` because it
+fights `.editorconfig` two ways:
 
 - `.editorconfig` sets `indent_size = unset` for `tests/acceptance/**.sh` and
   `src/console/header.sh`; shfmt reads `unset` as "use my default", which is tabs,

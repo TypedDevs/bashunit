@@ -3,6 +3,10 @@ version: 1
 requires: "0.87.0"
 builtins: []
 
+lint:
+  instructions-words: 1000
+  codex-chain-bytes: 24576
+
 targets:
   - claude
   - codex
