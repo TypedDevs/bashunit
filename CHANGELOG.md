@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Coverage report paths are checked before tests run, and LCOV or HTML write failures make the run fail instead of reporting success (#1412)
 - `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)
 - Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
