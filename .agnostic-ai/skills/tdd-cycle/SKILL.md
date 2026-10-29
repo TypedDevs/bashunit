@@ -1,6 +1,6 @@
 ---
 name: tdd-cycle
-description: Run complete TDD red-green-refactor cycle for a test
+description: Run a test's RED/GREEN/REFACTOR cycle.
 allowed-tools: read, edit, write, shell, Grep, Glob
 ---
 
@@ -13,6 +13,6 @@ Use `.tasks/YYYY-MM-DD-slug.md` for features, refactors, or multi-test work; ski
 1. **RED:** Write Arrange-Act-Assert, run `./bashunit <test-path>`, and verify failure proves the requested behavior is missing, rather than a syntax or setup error. Record the red bar and logbook entry when using a task file.
 2. **GREEN:** Implement only what this test requires. Run the focused test and require a pass. Check off the inventory entry and record the result.
 3. **REFACTOR:** Improve naming, structure, or duplication without changing behavior. Keep affected focused tests green; preserve other workers' changes. Record meaningful refactoring notes.
-4. Repeat until the acceptance scenario is complete. The main session runs the full quality gate once after the whole change set, before committing. Delegates run only assigned targeted checks.
+4. Repeat until the acceptance scenario is complete. The main session completes the checks selected under `.agnostic-ai/AGNOSTIC_AI.md` after the whole change set, before committing. Delegates run only assigned targeted checks.
 
 Never skip the demonstrated RED or add speculative behavior during GREEN. Keep the task inventory and logbook current when a task file is used.
