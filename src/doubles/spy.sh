@@ -44,9 +44,9 @@ _BASHUNIT_SPY_RAW_OUT=""
 
 function bashunit::spy::decode_raw_to_slot() {
   _BASHUNIT_SPY_RAW_OUT=$1
-  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//%0A/$'\n'}
-  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//%1E/$'\x1e'}
-  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//%25/%}
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]0A/$'\n'}
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]1E/$'\x1e'}
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]25/%}
 }
 
 
@@ -186,7 +186,7 @@ function bashunit::doubles::record_call() {
   shift 2
 
   local raw="$*"
-  raw=${raw//%/%25}
+  raw=${raw//[%]/%25}
   raw=${raw//$'\n'/%0A}
   raw=${raw//$'\x1e'/%1E}
   local serialized=""
