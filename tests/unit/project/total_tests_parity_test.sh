@@ -72,9 +72,8 @@ function test_static_and_sourced_counts_agree_under_an_exclude_filter() {
   assert_empty "$mismatches"
 }
 
-# A check that cannot fail proves nothing: the static path must actually be
-# claiming files, or the three tests above would pass over an empty set.
-function test_the_static_path_claims_most_of_the_suite() {
+# Provider-mapped files always need execution to count their rows.
+function test_the_static_path_claims_most_provider_free_files() {
   local file
   local claimed=0
   local total=0
@@ -83,8 +82,11 @@ function test_the_static_path_claims_most_of_the_suite() {
 
   while IFS= read -r file; do
     [ -z "$file" ] && continue
-    total=$((total + 1))
     bashunit::helper::build_provider_map "$file"
+    if [ "${#_BASHUNIT_PROVIDER_MAP_FNS[@]}" -ne 0 ]; then
+      continue
+    fi
+    total=$((total + 1))
     if bashunit::helper::_can_count_statically; then
       claimed=$((claimed + 1))
     fi
