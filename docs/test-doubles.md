@@ -325,6 +325,8 @@ function test_failure() {
 
 Reports an error if `spy` is not called with `expected`. When `call_index` is provided, the assertion checks the arguments of that specific call (starting at 1). Without `call_index` it checks the last invocation. Arguments are joined with spaces before comparison.
 
+A never-called spy fails; `call_index` starts at 1 and must refer to a recorded call.
+
 Only one call is compared, and the failure says which one (`compared 'the last of 2 calls'`). To match any recorded call, use [assert_have_been_called_with_any](#assert-have-been-called-with-any).
 
 ::: code-group
