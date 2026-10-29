@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
 - TAP reports keep test titles containing line breaks on a single result line (#1413)
 
 - `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)

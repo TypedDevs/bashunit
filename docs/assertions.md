@@ -1495,6 +1495,8 @@ function test_failure() {
 
 Reports an error if `expected` and `actual` are not equals.
 
+A missing file fails the assertion and the message names its path.
+
 - [assert_files_not_equals](#assert-files-not-equals) is the inverse of this assertion and takes the same arguments.
 
 ::: code-group
@@ -1867,6 +1869,8 @@ function test_failure() {
 > `assert_files_not_equals "expected" "actual"`
 
 Reports an error if `expected` and `actual` have the same contents.
+
+A missing file fails the assertion and the message names its path.
 
 - [assert_files_equals](#assert-files-equals) is the inverse of this assertion and takes the same arguments.
 
