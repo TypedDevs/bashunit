@@ -283,8 +283,15 @@ function assert_files_equals() {
 
   local expected="$1"
   local actual="$2"
+  local file
+  for file in "$expected" "$actual"; do
+    if [ ! -f "$file" ]; then
+      bashunit::assert::fail_with "" "$file" "to exist but" "do not exist"
+      return
+    fi
+  done
 
-  if [ "$(diff -u "$expected" "$actual")" != '' ]; then
+  if ! diff -q -- "$expected" "$actual" >/dev/null 2>&1; then
     bashunit::assert::fail_with "" "${expected}" "Compared" "${actual}" \
       "Diff" "$(diff -u "$expected" "$actual" | sed '1,2d')"
     return
@@ -298,10 +305,24 @@ function assert_files_not_equals() {
 
   local expected="$1"
   local actual="$2"
+  local file
+  for file in "$expected" "$actual"; do
+    if [ ! -f "$file" ]; then
+      bashunit::assert::fail_with "" "$file" "to exist but" "do not exist"
+      return
+    fi
+  done
 
-  if [ "$(diff -u "$expected" "$actual")" = '' ]; then
+  local diff_status=0
+  diff -q -- "$expected" "$actual" >/dev/null 2>&1 || diff_status=$?
+
+  if [ "$diff_status" -ne 1 ]; then
+    local reason="Files are equals"
+    if [ "$diff_status" -ne 0 ]; then
+      reason="Files could not be compared"
+    fi
     bashunit::assert::fail_with "" "${expected}" "Compared" "${actual}" \
-      "Diff" "Files are equals"
+      "Diff" "$reason"
     return
   fi
 

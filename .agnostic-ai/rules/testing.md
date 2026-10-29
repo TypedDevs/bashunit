@@ -12,7 +12,7 @@ Read sibling tests before writing a new fixture. Repository paths are relative t
 | Functional | `tests/functional/` | Real component interactions |
 | Acceptance | `tests/acceptance/` | CLI and end-to-end behavior |
 
-Files end in `_test.sh`; name tests for the behavior and trigger. Run the quality gate from `AGNOSTIC_AI.md` once when the change set is complete. Test success, failure and cleanup paths that the change affects; verify parallel behavior when state or workers change.
+Files end in `_test.sh`; name tests for the behavior and trigger. Select validation under `.agnostic-ai/AGNOSTIC_AI.md` when the change set is complete. Test success, failure and cleanup paths that the change affects; verify parallel behavior when state or workers change.
 
 ## Assertions and doubles
 

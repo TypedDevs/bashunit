@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+function set_up() {
+  export BASHUNIT_RERUN_CACHE_DIR="$(bashunit::temp_dir)"
+}
+
 function test_parallel_runs_do_not_start_a_spinner_without_visible_progress() {
   local dir
   dir="$(bashunit::temp_dir)"

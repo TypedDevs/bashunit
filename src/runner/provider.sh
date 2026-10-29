@@ -23,39 +23,34 @@ function bashunit::runner::parse_data_provider_args() {
     has_metachar=true
   fi
 
-  # An odd run of trailing backslashes escapes the `)` the eval below adds, so
-  # eval sees `args=(C:\)` -- unterminated, a SYNTAX error rather than a failed
-  # command. Inside a command substitution, which is how exec.sh calls this,
-  # that kills the subshell: no output, and the argument reaches the test unset
-  # instead of as `C:` (#1134). The fallback parser handles it, so skip eval.
+  # An odd trailing backslash escapes eval's closing parenthesis.
   local trailing="${input##*[!\\]}"
   if [ $((${#trailing} % 2)) -eq 1 ]; then
     has_metachar=true
   fi
 
-  # Try eval first (needed for $'...' from printf '%q'), unless metacharacters present
-  if [ "$has_metachar" = false ] && eval "args=($input)" 2>/dev/null; then
-    # Check if args has elements after eval
-    args_count=0
+  # Syntax errors in eval exit its shell; serialize there so expansions run only once.
+  if [ "$has_metachar" = false ] && (
+    local -a eval_args=()
+    local eval_args_count=0
+    eval "eval_args=($input)" 2>/dev/null || exit 1
     local _tmp arg
-    for _tmp in ${args+"${args[@]}"}; do args_count=$((args_count + 1)); done
-    if [ "$args_count" -gt 0 ]; then
-      # Successfully parsed - remove sentinel if present
-      local last_idx=$((args_count - 1))
-      if [ -z "${args[$last_idx]}" ]; then
-        unset 'args[$last_idx]'
-      fi
-      # Print args and return early
-      for arg in "${args[@]+"${args[@]}"}"; do
-        if [ "$output_format" = nul ]; then
-          printf '%s\0' "$arg"
-        else
-          encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
-          printf '%s\n' "$encoded_arg"
-        fi
-      done
-      return
+    for _tmp in ${eval_args+"${eval_args[@]}"}; do eval_args_count=$((eval_args_count + 1)); done
+    [ "$eval_args_count" -gt 0 ] || exit 1
+    local last_idx=$((eval_args_count - 1))
+    if [ -z "${eval_args[$last_idx]}" ]; then
+      unset 'eval_args[$last_idx]'
     fi
+    for arg in "${eval_args[@]+"${eval_args[@]}"}"; do
+      if [ "$output_format" = nul ]; then
+        printf '%s\0' "$arg"
+      else
+        encoded_arg="$(bashunit::helper::encode_base64 "${arg}")"
+        printf '%s\n' "$encoded_arg"
+      fi
+    done
+  ); then
+    return 0
   fi
 
   # Fallback: parse args from the input string into an array, respecting quotes and escapes
@@ -110,6 +105,9 @@ function bashunit::runner::parse_data_provider_args() {
       current_arg="$current_arg$char"
     fi
   done
+  if [ "$in_quotes" = true ]; then
+    return 2
+  fi
   args[args_count]="$current_arg"
   args_count=$((args_count + 1))
   # Remove all trailing empty strings

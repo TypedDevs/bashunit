@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 function bashunit::runner::cleanup_on_exit() {
-  if [ -f "${_BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE:-}" ]; then
+  if [ -f "${_BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE:-}" ] ||
+    [ -f "$_BASHUNIT_RUN_OUTPUT_DIR/interrupted" ]; then
     # A late group TERM must not abort cleanup; the watchdog still bounds it with KILL.
     trap '' TERM
   fi
@@ -87,27 +88,7 @@ function bashunit::runner::record_file_hook_failure() {
 
 _BASHUNIT_RUNNER_HOOK_FILE=""
 
-##
-# Names the file a hook's output is captured in, in _BASHUNIT_RUNNER_HOOK_FILE.
-#
-# A fixed path in the run dir, not a `temp_file`: minting one forked `mktemp`,
-# removing it forked `rm -f`, and the temp-owner marker `mktemp` leaves behind
-# made the EXIT trap `rm -rf` the test's temp files as well, even when the test
-# created none. Five forks per test in any file defining `set_up` or
-# `tear_down`, which cost 3.3x a hookless test (28.3ms vs 8.5ms) (#1345). The
-# `>` redirect truncates, so the name may be reused and nothing has to remove
-# it; the run-dir cleanup takes it with the rest at the end.
-#
-# The key has to survive concurrency, and a Bash 3 subshell inherits both `$$`
-# and the `RANDOM` state from its parent. So it is built the way result.sh
-# names `.result` files (#851): the folded file path, which keeps two files
-# sharing a basename apart (#959), plus the per-suite ordinal the dispatcher
-# assigns before forking, which keeps a file's parallel test workers apart.
-# The hook name closes the last gap, between a file hook and a test hook that
-# share an ordinal.
-#
-# Arguments: $1 - the hook name
-##
+# Reuse run-directory paths to avoid temporary-file processes for each hook.
 function bashunit::runner::hook_output_path() {
   if ! bashunit::env::ensure_run_output_dir; then
     _BASHUNIT_RUNNER_HOOK_FILE=/dev/null
@@ -128,7 +109,6 @@ function bashunit::runner::execute_file_hook() {
   local hook_output=""
   local status=0
   local hook_output_file
-  bashunit::runner::file_path_to_slot "$test_file"
   bashunit::runner::hook_output_path "$hook_name"
   hook_output_file=$_BASHUNIT_RUNNER_HOOK_FILE
 
@@ -194,7 +174,6 @@ function bashunit::runner::execute_file_hook() {
 
 function bashunit::runner::run_set_up() {
   bashunit::internal_log "run_set_up"
-  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'set_up'
 }
 
@@ -241,7 +220,6 @@ function bashunit::runner::run_set_up_before_script() {
 
 function bashunit::runner::run_tear_down() {
   bashunit::internal_log "run_tear_down"
-  bashunit::runner::file_path_to_slot "${1-}"
   bashunit::runner::execute_test_hook 'tear_down'
 }
 
@@ -344,11 +322,9 @@ function bashunit::runner::clear_mocks() {
   done
 }
 
-# The file whose tear_down_after_script this shell still owes, empty when it owes
-# none. --stop-on-failure exits from inside the test loop, so the loop's own
-# teardown call is never reached and the hook has to run from the exit path
-# instead (#1321).
+# File teardown stays pending until its dispatcher finishes or is interrupted.
 _BASHUNIT_FILE_TEARDOWN_PENDING=""
+_BASHUNIT_STOP_REQUESTED=false
 
 ##
 # Records that $1's file teardown is still owed by this shell.
@@ -385,48 +361,11 @@ function bashunit::runner::run_pending_file_teardown() {
 # below, which is the only frame that can reach them.
 _BASHUNIT_WORKER_TEST_PIDS=""
 
-##
-# The per-file worker's SIGTERM handler.
-#
-# Since #1320 the worker owns the file's tear_down_after_script, and nothing above
-# it can run the hook: several files are in flight under --parallel and the hook is
-# unset and redefined as the loop advances, so by interrupt time the parent no
-# longer holds the right function body (#1331).
-#
-# TERM only, and not INT. A shell sets SIGINT to SIG_IGN in a job it backgrounds,
-# and a signal ignored on entry can be neither trapped nor reset, so a `trap ...
-# INT` in here would be dead code -- measured the same on bash 3.2 and 5.3. Ctrl-C
-# reaches this frame as the SIGTERM that main::cleanup pkills it with.
-##
+# File workers receive TERM because background jobs may inherit ignored SIGINT.
 function bashunit::runner::cleanup_worker_on_signal() {
-  # Back to the default disposition first: the hook below is user code and may
-  # never return, and a handler that cannot itself be interrupted would leave no
-  # way out but SIGKILL, the same reasoning as main::cleanup.
   trap - TERM
-  # Whole group per test, so the signal reaches the body subshell AND the command
-  # it is blocked on. Signalling the body alone is not enough: bash defers a trap
-  # until the running foreground command returns, so a body sitting in the test's
-  # own `sleep` never reaches the EXIT trap where tear_down lives. The body is a
-  # great-grandchild of the runner under --parallel, which is why a single
-  # `pkill -P` from anywhere above cannot do this.
-  local test_pid
-  for test_pid in $_BASHUNIT_WORKER_TEST_PIDS; do
-    kill -TERM -"$test_pid" 2>/dev/null
-  done
-  # No `pkill -P $$` sweep to go with the loop. `$$` stays the runner's pid inside
-  # a subshell, so the sweep signalled the runner's children -- this worker among
-  # them -- and killed the handler before it reached the hook below. On bash 5 it
-  # lost that race every time. `$BASHPID` would name the worker, and it is Bash 4+.
-  #
-  # A file that opted out of per-test parallelism runs its bodies unforked, so it
-  # never reaches this handler while a test is running: the worker sits in a
-  # command substitution, and bash defers a trap until the running foreground
-  # command returns. Both hooks still run for such a file, when the body finishes
-  # rather than when the signal lands, so nothing is leaked and the interrupt just
-  # does not cut that test short.
-  #
-  # After the kills, so the per-test tear_down that each body's EXIT trap runs
-  # comes first, as it does in a normal run.
+  bashunit::runner::stop_active_test
+  bashunit::runner::stop_test_processes tree "$_BASHUNIT_WORKER_TEST_PIDS"
   bashunit::runner::run_pending_file_teardown || true
   exit 143
 }
