@@ -93,3 +93,17 @@ function test_singular_tag_is_still_function_scoped() {
   assert_same "" \
     "$(tags_for "$FIXTURE_TAGS_MAP" "test_no_tags")"
 }
+
+function test_tag_applies_to_keyword_only_definition() {
+  local file fn=test_keyword_only_tagged
+  file="$(bashunit::temp_file)"
+  printf '# @tag slow\nfunction %s\n{ :; }\n' "$fn" >"$file"
+  assert_same slow "$(tags_for "$file" "$fn")"
+}
+
+function test_tag_does_not_turn_a_bare_word_into_a_definition() {
+  local file fn=test_plain_word
+  file="$(bashunit::temp_file)"
+  printf '# @tag slow\n%s\n' "$fn" >"$file"
+  assert_empty "$(tags_for "$file" "$fn")"
+}
