@@ -886,6 +886,7 @@ function test_gha_annotates_a_flaky_test_as_a_warning() {
 }
 
 function test_tap_description_folds_line_breaks_to_spaces() {
+  local description=$'line one\nline two\rline three'
   assert_same 'line one line two line three' \
-    "$(bashunit::reports::__tap_description $'line one\nline two\rline three')"
+    "$(bashunit::reports::__tap_description "$description")"
 }
