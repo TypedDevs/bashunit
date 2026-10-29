@@ -204,8 +204,8 @@ shell since #817, the header count reads a return slot so the cache survives
 into the runner, plus the duplicate check), `perl` ×2 clock reads (start/end;
 no `EPOCHREALTIME` before Bash 5), 1 `base64` capability probe, 1 `mkdir`,
 1 `tput`. Per-test cost is fork-free, hooks included: `set_up`/`tear_down`
-capture their output in a run-dir file named from the folded file path and the
-per-suite ordinal, so no `mktemp` mints it and no `rm` removes it (#1345).
+capture their output in a run-dir file named from the file dispatch ordinal and
+the per-test ordinal, so no `mktemp` mints it and no `rm` removes it (#1345, #1416).
 
 **Cold start: 3 binary forks**, `uname` (OS detect), `tput` (snapshot width),
 `perl` (clock before Bash 5). It was 5 until #1124: `check_os::init` ran twice,
