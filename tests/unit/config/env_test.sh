@@ -393,6 +393,49 @@ function test_load_config_file_ignores_comments_and_blank_lines() {
   assert_same "value1" "$out"
 }
 
+function test_load_config_file_keeps_suite_options_out_of_parent_and_child_environments() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  cat >"$rc" <<'RC'
+[suite:unit]
+paths=tests
+parallel=true
+jobs=4
+[suite:acceptance]
+retry=2
+RC
+
+  local out
+  out=$(
+    unset paths parallel jobs retry
+    bashunit::env::load_config_file "$rc"
+    printf '%s|%s|%s|%s\n' "${paths+x}" "${parallel+x}" "${jobs+x}" "${retry+x}"
+    bash -c 'printf "%s|%s|%s|%s\n" "${paths+x}" "${parallel+x}" "${jobs+x}" "${retry+x}"'
+  )
+
+  assert_same $'|||\n|||' "$out"
+}
+
+function test_load_config_file_resumes_global_settings_after_other_section_headers() {
+  local rc
+  rc="$(bashunit::temp_file "rc")"
+  printf '%s\n' 'header=global-header' 'in_suite=true' 'BU_TEST_RC_BEFORE=before' \
+    '  [suite:unit]   ' 'paths=tests' '  [global]   ' \
+    'export BU_TEST_RC_AFTER="after section"' 'BU_TEST_RC_SPACES=  spaced  ' \
+    'BU_TEST_SECTION_PRECEDENCE=from-file' >"$rc"
+
+  local out
+  out=$(
+    unset BU_TEST_RC_BEFORE BU_TEST_RC_AFTER BU_TEST_RC_SPACES paths header in_suite
+    export BU_TEST_SECTION_PRECEDENCE=from-env
+    bashunit::env::load_config_file "$rc"
+    printf '%s|%s|%s|%s|%s|%s|%s' "${BU_TEST_RC_BEFORE:-}" "${BU_TEST_RC_AFTER:-}" \
+      "${BU_TEST_RC_SPACES:-}" "$BU_TEST_SECTION_PRECEDENCE" "${paths+x}" "${header:-}" "${in_suite:-}"
+  )
+
+  assert_same 'before|after section|  spaced  |from-env||global-header|true' "$out"
+}
+
 function test_load_config_file_strips_export_prefix_and_quotes() {
   local rc
   rc="$(bashunit::temp_file "rc")"

@@ -1,5 +1,6 @@
 name: shellcheck-after-edit
 description: Show ShellCheck diagnostics after editing shell files.
-on: after-edit
+event: PostToolUse
+matcher: "Edit|MultiEdit|Write|NotebookEdit|apply_patch"
 command: 'bash "$(git rev-parse --show-toplevel)/.agnostic-ai/scripts/shellcheck-after-edit.sh"'
 commandWindows: "bash ((git rev-parse --show-toplevel) + '/.agnostic-ai/scripts/shellcheck-after-edit.sh') codex; exit $LASTEXITCODE"

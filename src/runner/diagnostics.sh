@@ -13,13 +13,6 @@ function bashunit::runner::record_profile() {
   printf '%s\t%s\t%s\n' "$duration" "$test_name" "$test_file" >>"$PROFILE_OUTPUT_PATH"
 }
 
-##
-# Honours --stop-on-failure once a test has been recorded as failed. A parallel
-# worker raises the shared flag file (the dispatcher checks it between tests)
-# rather than exiting, since exiting would only kill the worker. A sequential
-# run exits with EXIT_CODE_STOP_ON_FAILURE, which main.sh's EXIT trap turns
-# into the final summary. No-op when the flag is off.
-##
 # Sets _BASHUNIT_RUNNER_RUNTIME_ERROR_OUT when a line of $1 is a real bash
 # diagnostic: one carrying the source-and-line prefix as well as a known
 # phrase. Split out so a text miss falls through to the exit-code check rather
@@ -72,7 +65,7 @@ function bashunit::runner::halt_if_stop_on_failure() {
   if bashunit::parallel::is_enabled; then
     bashunit::parallel::mark_stop_on_failure
   else
-    exit "$EXIT_CODE_STOP_ON_FAILURE"
+    _BASHUNIT_STOP_REQUESTED=true
   fi
 }
 

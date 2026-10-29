@@ -57,6 +57,9 @@ function bashunit::runner::load_test_files() {
 
   local test_file
   for test_file in "${files[@]+"${files[@]}"}"; do
+    if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
+      break
+    fi
     if [ ! -f "$test_file" ]; then
       continue
     fi
@@ -65,6 +68,7 @@ function bashunit::runner::load_test_files() {
     export BASHUNIT_CURRENT_SCRIPT_ID="$_BASHUNIT_HELPER_ID_OUT"
     scripts_ids[scripts_ids_count]="${BASHUNIT_CURRENT_SCRIPT_ID}"
     scripts_ids_count=$((scripts_ids_count + 1))
+    _BASHUNIT_RUNNER_FILE_SLOT=$scripts_ids_count
     _BASHUNIT_REPORTS_FILE_ORDINAL=$((_BASHUNIT_REPORTS_FILE_ORDINAL + 1))
     _BASHUNIT_REPORTS_CONTROL_RECORD_ORDINAL=0
     _BASHUNIT_RUNNER_RESULT_ORDINAL=0
@@ -264,7 +268,11 @@ function bashunit::runner::load_test_files() {
       # failing set_up stopped firing, so a broken hook passed on bash 5.
       bashunit::runner::call_test_functions "$test_file" "$_cached_fns"
       file_status=$?
-      bashunit::runner::run_tear_down_after_script "$test_file"
+      if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
+        bashunit::runner::run_pending_file_teardown
+      else
+        bashunit::runner::run_tear_down_after_script "$test_file"
+      fi
     fi
     # Sequential ran the hook just above; under --parallel the worker owns it.
     # Either way this shell owes it no longer.

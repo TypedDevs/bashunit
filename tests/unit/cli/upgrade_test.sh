@@ -37,6 +37,58 @@ function fake_download_empty() {
   : >"$output"
 }
 
+function fake_download_partial() {
+  printf 'partial binary\n' >"$2"
+  return 1
+}
+
+function provide_upgrade_replacement_results() {
+  bashunit::data_set fake_download_fail 1 previous
+  bashunit::data_set fake_download_partial 1 previous
+  bashunit::data_set fake_download_empty 1 previous
+  bashunit::data_set fake_download_success 0 fake
+}
+
+# @data_provider provide_upgrade_replacement_results
+function test_upgrade_replaces_the_previous_binary_only_after_a_valid_download() {
+  local downloader="$1" expected_status="$2" expected_output="$3"
+  printf '#!/usr/bin/env bash\necho previous\n' >"$WORK_DIR/bashunit"
+  chmod 755 "$WORK_DIR/bashunit"
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to "$downloader"
+  local status=0 output
+
+  output=$(
+    umask 022
+    bashunit::upgrade::upgrade 2>&1
+  ) || status=$?
+
+  assert_equals "$expected_status" "$status"
+  assert_file_exists "$WORK_DIR/bashunit"
+  assert_same "$expected_output" "$("$WORK_DIR/bashunit")"
+  if [ "$expected_status" -eq 0 ]; then
+    assert_not_empty "$(find "$WORK_DIR/bashunit" -perm 0755 -print)"
+  fi
+  if [ "$expected_status" -ne 0 ]; then
+    assert_contains 'Failed to download bashunit' "$output"
+  fi
+  local leftover
+  leftover=$(find "$WORK_DIR" -name 'bashunit.download.*' -print)
+  assert_empty "$leftover"
+}
+
+function test_upgrade_rejects_a_directory_at_the_binary_path() {
+  mkdir "$WORK_DIR/bashunit"
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_success
+  local status=0 output
+  output=$(bashunit::upgrade::upgrade 2>&1) || status=$?
+
+  assert_general_error "" "" "$status"
+  assert_contains 'not a file' "$output"
+  assert_empty "$(find "$WORK_DIR/bashunit" -type f -print)"
+}
+
 function fake_get_current_tag() {
   echo "$BASHUNIT_VERSION"
 }
