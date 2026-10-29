@@ -109,12 +109,6 @@ function bashunit::coverage::report_text() {
   if [ "${BASHUNIT_COVERAGE_SHOW_LINE_HITS:-false}" = "true" ]; then
     bashunit::coverage::report_text_line_hits
   fi
-
-  # Show report location if generated
-  if [ -n "$BASHUNIT_COVERAGE_REPORT" ]; then
-    echo ""
-    echo "Coverage report written to: $BASHUNIT_COVERAGE_REPORT"
-  fi
 }
 
 

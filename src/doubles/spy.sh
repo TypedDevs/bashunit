@@ -40,6 +40,14 @@ function bashunit::spy::times_to_slot() {
 
 _BASHUNIT_SPY_CALL_OUT=""
 _BASHUNIT_SPY_CALL_TOTAL_OUT=0
+_BASHUNIT_SPY_RAW_OUT=""
+
+function bashunit::spy::decode_raw_to_slot() {
+  _BASHUNIT_SPY_RAW_OUT=$1
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]0A/$'\n'}
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]1E/$'\x1e'}
+  _BASHUNIT_SPY_RAW_OUT=${_BASHUNIT_SPY_RAW_OUT//[%]25/%}
+}
 
 
 # Reads the params file $1 in a single pass: the recorded line for call $2 (the
@@ -114,6 +122,8 @@ function bashunit::spy::call_log_to_slot() {
         value=${value//$'\x1f'/ }
       else
         value=${line%%$'\x1e'*}
+        bashunit::spy::decode_raw_to_slot "$value"
+        value=$_BASHUNIT_SPY_RAW_OUT
       fi
       entries="$entries
       ${_BASHUNIT_COLOR_FAINT}${total}:${_BASHUNIT_COLOR_DEFAULT} ${value}"
@@ -176,6 +186,9 @@ function bashunit::doubles::record_call() {
   shift 2
 
   local raw="$*"
+  raw=${raw//[%]/%25}
+  raw=${raw//$'\n'/%0A}
+  raw=${raw//$'\x1e'/%1E}
   local serialized=""
   local arg
   for arg in "$@"; do
@@ -221,6 +234,7 @@ function bashunit::spy() {
     body_suffix="$exit_code_or_impl \"\$@\""
   fi
 
+  bashunit::doubles::save_original "$command"
   eval "function $command() {
     bashunit::doubles::record_call '$params_file' '$times_file' \"\$@\"
     $body_suffix
