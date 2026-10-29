@@ -14,6 +14,44 @@ function test_unsuccessful_assert_date_equals() {
     "$(assert_date_equals "1700000000" "1600000000")"
 }
 
+function test_unsuccessful_assert_date_equals_with_trailing_text() {
+  assert_same\
+    "$(bashunit::console_results::print_failed_test\
+      "Unsuccessful assert date equals with trailing text"\
+      "2024-01-01T10:00:00 nonsense" "to be" "a valid date")"\
+    "$(assert_date_equals "2024-01-01T10:00:00 nonsense" "2024-01-01T10:00:00")"
+}
+
+function test_successful_assert_date_equals_with_colon_offset() {
+  assert_empty "$(assert_date_equals "2024-01-01T10:00:00+0200" "2024-01-01T10:00:00+02:00")"
+  assert_empty "$(assert_date_equals "1704096000" "2024-01-01T10:00:00+02:00")"
+}
+
+function test_successful_assert_date_equals_with_negative_colon_offset() {
+  assert_empty "$(assert_date_equals "2024-01-01T10:00:00-0430" "2024-01-01T10:00:00-04:30")"
+  assert_empty "$(assert_date_equals "1704119400" "2024-01-01T10:00:00-04:30")"
+}
+
+function test_date_parser_rejects_trailing_text_in_each_supported_shape() {
+  local input actual code
+  for input in \
+    '2024-01-01 nonsense' \
+    '2024-01-01 10:00:00 nonsense' \
+    '2024-01-01T10:00:00+0200 nonsense' \
+    '2024-01-01T10:00:00+02:00 nonsense' \
+    '2024-01-01T10:00:00 nonsenseZ'; do
+    code=0
+    actual=$(bashunit::date::to_epoch "$input") || code=$?
+    assert_same 1 "$code"
+    assert_same "$input" "$actual"
+  done
+}
+
+function test_successful_assert_date_equals_preserves_explicit_timezone_epochs() {
+  assert_empty "$(assert_date_equals "1704096000" "2024-01-01T10:00:00+0200")"
+  assert_empty "$(assert_date_equals "1704103200" "2024-01-01T10:00:00Z")"
+}
+
 function test_successful_assert_date_before() {
   assert_empty "$(assert_date_before "1700000000" "1600000000")"
 }
