@@ -310,3 +310,19 @@ function test_assert_contains_ignore_case_folds_non_ascii() {
   assert_contains_ignore_case "ñü" "Test ÑÜ string"
   assert_contains_ignore_case "ÑÜ" "test ñü string"
 }
+
+function test_not_starts_with_joins_lines_and_keeps_the_test_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    'Not starts with joins lines and keeps the test label' $'abc\nzzz' 'to not start with' a)" \
+    "$(assert_string_not_starts_with a abc zzz)"
+}
+
+function test_not_starts_with_compares_a_prefix_across_argument_boundaries() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    'Not starts with compares a prefix across argument boundaries' \
+    $'line1\nline2' 'to not start with' $'line1\nline2')" \
+    "$(assert_string_not_starts_with $'line1\nline2' line1 line2)"
+  assert_empty "$(assert_string_not_starts_with x line1 line2)"
+}
