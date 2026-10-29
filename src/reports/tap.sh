@@ -23,6 +23,8 @@ function bashunit::reports::__tap_message() {
 ##
 function bashunit::reports::__tap_description() {
   local text="$1"
+  text="${text//$'\r'/ }"
+  text="${text//$'\n'/ }"
   text="${text//\\/\\\\}"
   # `[#]`, not `#`: Bash 3.0 reads the `#` right after `//` as the
   # anchor-to-start syntax with an empty pattern and prepends the replacement
