@@ -171,6 +171,64 @@ function test_assert_not_called_still_passes_on_a_registered_spy() {
   assert_empty "$(assert_have_been_called_times 0 spy_never_invoked)"
 }
 
+function test_called_with_fails_when_the_spy_was_never_called() {
+  bashunit::spy never_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with fails when the spy was never called" "never_called_with" "to have been called" "once")" \
+    "$(assert_have_been_called_with never_called_with)"
+}
+
+function test_called_with_args_fails_when_the_spy_was_never_called() {
+  bashunit::spy never_called_with_args
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with args fails when the spy was never called" "never_called_with_args" "to have been called" "once")" \
+    "$(assert_have_been_called_with_args never_called_with_args)"
+}
+
+function test_called_with_fails_when_the_index_is_beyond_the_calls() {
+  bashunit::spy once_called_with
+  once_called_with x
+  bashunit::spy::call_log_to_slot once_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with fails when the index is beyond the calls" \
+      "expected call" "at index 5 but" "only called 1 times" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+    "$(assert_have_been_called_with once_called_with 5)"
+}
+
+function test_called_with_rejects_index_zero() {
+  bashunit::spy zero_index_called_with
+  zero_index_called_with
+  bashunit::spy::call_log_to_slot zero_index_called_with
+
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Called with rejects index zero" \
+      "expected call" "at index 0 but" "only called 1 times" "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT")" \
+    "$(assert_have_been_called_with zero_index_called_with 0)"
+}
+
+function test_called_nth_with_rejects_index_zero() {
+  bashunit::spy zero_index_called_nth
+  zero_index_called_nth x
+
+  assert_contains "assertion usage error" "$(assert_have_been_called_nth_with 0 zero_index_called_nth 2>&1)"
+}
+
+function test_call_assertions_pass_for_an_existing_call_without_arguments() {
+  bashunit::spy called_without_arguments
+  called_without_arguments
+
+  assert_empty "$(assert_have_been_called_with called_without_arguments)"
+  assert_empty "$(assert_have_been_called_with_args called_without_arguments)"
+  assert_empty "$(assert_have_been_called_nth_with 1 called_without_arguments)"
+}
+
 function test_failed_call_assertions_dump_the_recorded_calls() {
   bashunit::spy spy_with_a_call_log
 
