@@ -15,6 +15,7 @@
 - Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
 - Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
 - Duplicate test functions are detected when the opening brace is on the next line instead of silently replacing the first definition (#1421)
+- `assert_string_not_starts_with` treats variadic haystack arguments as one newline-joined value and keeps failures labeled with the test's name (#1403)
 
 ### Changed
 

@@ -137,6 +137,14 @@ function test_unsuccessful_assert_string_not_starts_with() {
     "$(assert_string_not_starts_with "ho" "house")"
 }
 
+function test_unsuccessful_assert_string_not_starts_with_several_lines_keeps_the_test_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert string not starts with several lines keeps the test label" \
+      $'abc\nzzz' "to not start with" "a")" \
+    "$(assert_string_not_starts_with "a" "abc" "zzz")"
+}
+
 function test_successful_assert_string_ends_with() {
   assert_empty "$(assert_string_ends_with "bar" "foobar")"
 }
