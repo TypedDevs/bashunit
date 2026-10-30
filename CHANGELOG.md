@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- `install.sh` resolves relative destinations from the caller's directory and reports the resolved installation path (#1408)
 - `bashunit::unmock` restores a shell function replaced by a spy, mock, or mock sequence (#1401)
 - Spies keep a multiline argument in one recorded call, including call comparisons and failure logs (#1399)
 - Parallel results and hook output stay separate for test paths that differ by slashes and underscores (#1416)
