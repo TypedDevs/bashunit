@@ -175,6 +175,34 @@ function test_install_fails_loudly_on_unknown_version() {
   assert_file_not_exists "./tmp_install/bashunit"
 }
 
+function provide_mistyped_install_versions() {
+  bashunit::data_set v0.52.0
+  bashunit::data_set lib v0.52.0
+  bashunit::data_set v0.52.0 lib
+  bashunit::data_set 0.52
+  bashunit::data_set lib 0.52
+  bashunit::data_set 0.52 lib
+}
+
+# @data_provider provide_mistyped_install_versions
+function test_install_rejects_a_mistyped_version_before_downloading() {
+  mkdir shims
+  printf '#!/bin/sh\n: >"$INSTALL_DOWNLOAD_MARKER"\nexit 22\n' >shims/curl
+  chmod +x shims/curl
+  local invalid="$1" status=0 output
+  if [ "$invalid" = lib ]; then
+    invalid="$2"
+  fi
+
+  output=$(PATH="$SANDBOX/shims:$PATH" INSTALL_DOWNLOAD_MARKER="$SANDBOX/download.called" \
+    ./install.sh "$@" 2>&1) || status=$?
+
+  assert_general_error "" "" "$status"
+  assert_contains "unknown version '$invalid'" "$output"
+  assert_directory_not_exists "$SANDBOX/$invalid"
+  assert_file_not_exists "$SANDBOX/download.called"
+}
+
 function provide_install_replacement_results() {
   bashunit::data_set failure
   bashunit::data_set empty

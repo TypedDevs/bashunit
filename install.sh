@@ -153,6 +153,7 @@ function install() {
 # Defaults
 DIR="lib"
 VERSION="latest"
+LATEST_BASHUNIT_VERSION="0.52.0"
 
 # Checksum verification is on by default. Track whether the user set it
 # explicitly so we can be strict on opt-in and lenient on the default.
@@ -166,6 +167,17 @@ VERIFY_CHECKSUM="${BASHUNIT_VERIFY_CHECKSUM:-true}"
 function is_version() {
   regex_match "$1" '^[0-9]+\.[0-9]+\.[0-9]+$' || [[ "$1" == "latest" || "$1" == "beta" ]]
 }
+
+function looks_like_version() {
+  regex_match "$1" '^v?[0-9]+(\.[0-9]+){0,2}$'
+}
+
+for argument in "$@"; do
+  if looks_like_version "$argument" && ! is_version "$argument"; then
+    echo "Error: unknown version '$argument'. Use a release such as $LATEST_BASHUNIT_VERSION, 'latest' or 'beta'." >&2
+    exit 1
+  fi
+done
 
 # Parse arguments flexibly
 if [[ $# -eq 1 ]]; then
@@ -188,7 +200,6 @@ elif [[ $# -eq 2 ]]; then
 fi
 
 BASHUNIT_GIT_REPO="https://github.com/TypedDevs/bashunit"
-LATEST_BASHUNIT_VERSION="0.52.0"
 TAG="$LATEST_BASHUNIT_VERSION"
 
 # Validate the destination before touching the network. curl writes the binary
