@@ -919,8 +919,8 @@ function assert_string_not_starts_with() {
     bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
     return 2
   fi
-
   local IFS=$' \t\n'
+
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")
