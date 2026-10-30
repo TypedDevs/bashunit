@@ -913,15 +913,19 @@ function assert_string_starts_with() {
 }
 
 function assert_string_not_starts_with() {
+  local label_override=""
   bashunit::assert::should_skip && return 0
   if [ "$#" -lt 2 ]; then
     bashunit::assert::usage_error "${FUNCNAME[0]}" 2 "expected, actual" "$#"
     return 2
   fi
+  local IFS=$' \t\n'
 
   local expected="$1"
-  local actual="$2"
-  local label_override="${3:-}"
+  local -a actual_arr
+  actual_arr=("${@:2}")
+  bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
+  local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
   case "$actual" in
   "$expected"*)
