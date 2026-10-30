@@ -98,6 +98,61 @@ function test_successful_assert_matches() {
   assert_empty "$(assert_matches ".*Linu*" "GNU/Linux")"
 }
 
+function test_successful_assert_matches_with_leading_dash_pattern() {
+  assert_empty "$(assert_matches "-[0-9]+" "-5" 2>&1)"
+  assert_empty "$(assert_matches "-5 -6" $'-5\n-6' 2>&1)"
+}
+
+function test_unsuccessful_assert_matches_with_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert matches with leading dash pattern" "bar" "to match" "-x")" \
+    "$(assert_matches "-x" "bar" 2>&1)"
+}
+
+function test_unsuccessful_assert_not_matches_with_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert not matches with leading dash pattern" "-5" "to not match" "-5")" \
+    "$(assert_not_matches "-5" "-5" 2>&1)"
+}
+
+function test_regex_assertions_fail_when_the_pattern_is_invalid() {
+  local assertion output relation
+  for assertion in assert_matches assert_not_matches; do
+    relation="to match"
+    if [ "$assertion" = assert_not_matches ]; then
+      relation="to not match"
+    fi
+    output="$("$assertion" '[' text 2>&1)"
+    assert_same \
+      "$(bashunit::console_results::print_failed_test \
+        "Regex assertions fail when the pattern is invalid" "text" "$relation" '[')" "$output"
+  done
+}
+
+function test_invalid_regex_count_fails_without_pipe_diagnostics() {
+  local input=0123456789abcdef index
+  for ((index = 0; index < 14; index++)); do
+    input="$input$input"
+  done
+  local diagnostics status=0
+  diagnostics="$(bashunit::assert::_grep_count_to_slot '[' "$input" 2>&1)" || status=$?
+  assert_same 1 "$status"
+  assert_empty "$diagnostics"
+}
+
+function test_successful_assert_not_matches_with_leading_dash_pattern() {
+  assert_empty "$(assert_not_matches "-x" "bar" 2>&1)"
+}
+
+function test_unsuccessful_assert_not_matches_with_cross_line_leading_dash_pattern() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert not matches with cross line leading dash pattern" $'-5\n-6' "to not match" "-5 -6")" \
+    "$(assert_not_matches "-5 -6" $'-5\n-6' 2>&1)"
+}
+
 function test_unsuccessful_assert_matches() {
   assert_same \
     "$(bashunit::console_results::print_failed_test "Unsuccessful assert matches" "GNU/Linux" "to match" ".*Pinux*")" \
@@ -135,6 +190,14 @@ function test_unsuccessful_assert_string_not_starts_with() {
     "$(bashunit::console_results::print_failed_test \
     "Unsuccessful assert string not starts with" "house" "to not start with" "ho")" \
     "$(assert_string_not_starts_with "ho" "house")"
+}
+
+function test_unsuccessful_assert_string_not_starts_with_several_lines_keeps_the_test_label() {
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+      "Unsuccessful assert string not starts with several lines keeps the test label" \
+      $'abc\nzzz' "to not start with" "a")" \
+    "$(assert_string_not_starts_with "a" "abc" "zzz")"
 }
 
 function test_successful_assert_string_ends_with() {

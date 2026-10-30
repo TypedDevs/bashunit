@@ -1,5 +1,33 @@
 #!/usr/bin/env bash
 
+# Appends `line` to .env, leaves the file alone when it already holds it, and
+# comments an older, different `KEY=` out first. Commenting the line out and
+# appending an identical one made every re-init add a dead line, so a third
+# run left three (#1175); -Fx so a dot in the path is compared literally.
+function bashunit::init::write_env_line() {
+  local env_file=".env"
+  local line=$1
+  local key=${line%%=*}
+  if [ ! -f "$env_file" ]; then
+    printf '%s\n' "$line" >"$env_file"
+    echo "> Created $env_file"
+    return
+  fi
+  if grep -Fxq "$line" "$env_file"; then
+    echo "> $env_file already sets $key"
+    return
+  fi
+  if grep -q "^$key=" "$env_file"; then
+    if bashunit::check_os::is_macos; then
+      sed -i '' -e "s/^$key=/#&/" "$env_file"
+    else
+      sed -i -e "s/^$key=/#&/" "$env_file"
+    fi
+  fi
+  printf '%s\n' "$line" >>"$env_file"
+  echo "> Updated $env_file"
+}
+
 function bashunit::init::project() {
   local tests_dir="${1:-$BASHUNIT_DEFAULT_PATH}"
   mkdir -p "$tests_dir"
@@ -47,29 +75,19 @@ SH
     echo "> Created $workflow_file"
   fi
 
-  local env_file=".env"
-  local env_line="BASHUNIT_BOOTSTRAP=$bootstrap_file"
-  if [ -f "$env_file" ]; then
-    # Already pointing where this run would point it: leave the file alone.
-    # Commenting the line out and appending an identical one made every re-init
-    # add a dead line, so a third run left three (#1175). -Fx so a dot in the
-    # path is compared literally.
-    if grep -Fxq "$env_line" "$env_file"; then
-      echo "> $env_file already sets BASHUNIT_BOOTSTRAP"
-    else
-      if grep -q "^BASHUNIT_BOOTSTRAP=" "$env_file"; then
-        if bashunit::check_os::is_macos; then
-          sed -i '' -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"
-        else
-          sed -i -e "s/^BASHUNIT_BOOTSTRAP=/#&/" "$env_file"
-        fi
-      fi
-      echo "$env_line" >>"$env_file"
-      echo "> Updated $env_file"
-    fi
-  else
-    echo "$env_line" >"$env_file"
-    echo "> Created $env_file"
+  # .env is sourced as shell, so values are written double-quoted and the
+  # characters that are special inside double quotes are escaped: a directory
+  # with a space stays one assignment instead of turning into a command.
+  local quoted="$tests_dir"
+  quoted=${quoted//\\/\\\\}
+  quoted=${quoted//\"/\\\"}
+  quoted=${quoted//\$/\\\$}
+  quoted=${quoted//\`/\\\`}
+  bashunit::init::write_env_line "BASHUNIT_BOOTSTRAP=\"$quoted/bootstrap.sh\""
+  # A custom directory is otherwise invisible to the next bare `bashunit`,
+  # which searches BASHUNIT_DEFAULT_PATH ("tests").
+  if [ "$tests_dir" != "$BASHUNIT_DEFAULT_PATH" ]; then
+    bashunit::init::write_env_line "BASHUNIT_DEFAULT_PATH=\"$quoted\""
   fi
 
   echo "> bashunit initialized in $tests_dir"

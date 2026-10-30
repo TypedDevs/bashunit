@@ -147,6 +147,10 @@ function set_up_before_script() {
 
 If defined, `tear_down_after_script` runs once after the file finishes, including when `set_up_before_script` fails and prevents the tests from running. Use it to delete temporary files or release shared resources.
 
+An interrupted run (Ctrl-C, SIGTERM, or SIGHUP) still runs `tear_down` and `tear_down_after_script` and exits with status 1.
+
+On interruption, per-test teardown gets a two-second grace period before any remaining test processes are stopped.
+
 Like `set_up_before_script`, the execution is displayed with its duration:
 
 ```

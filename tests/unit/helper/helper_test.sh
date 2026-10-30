@@ -130,6 +130,21 @@ function test_check_duplicate_functions_with_duplicates() {
   assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }
 
+function test_check_duplicate_functions_with_the_brace_on_the_next_line() {
+  local file detail
+  file="$(bashunit::temp_file duplicate_next_line).sh"
+  printf 'function %s()\n{\n  :\n}\nfunction %s()\n{\n  :\n}\n' \
+    test_twice test_twice >"$file"
+
+  assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
+
+  detail=$(
+    bashunit::helper::check_duplicate_functions "$file" >/dev/null 2>&1 || true
+    bashunit::state::get_duplicated_function_details
+  )
+  assert_contains "test_twice (lines 1, 5)" "$detail"
+}
+
 function test_check_duplicate_functions_without_duplicates() {
   local file
   file="$(bashunit::current_dir)/../fixtures/no_duplicate_functions.sh"
@@ -423,6 +438,20 @@ function test_to_run_with_filter_matching_string_in_function_name() {
 
   assert_same "test_my_awesome_function test_your_awesome_function" \
     "$(bashunit::helper::get_functions_to_run "test" "awesome" "${functions[*]}")"
+}
+
+function test_filters_strip_only_a_leading_test_prefix() {
+  local functions filter
+  functions=(test_latest_version test_other)
+  for filter in latest_version test_latest_version version; do
+    assert_same test_latest_version "$(bashunit::helper::get_functions_to_run test "$filter" "${functions[*]}")"
+  done
+
+  BASHUNIT_EXCLUDE_FILTER=latest_version
+  assert_same test_other "$(bashunit::helper::get_functions_to_run test '' "${functions[*]}")"
+  BASHUNIT_EXCLUDE_FILTER=''
+  _BASHUNIT_CLI_EXCLUDE_FILTERS=(latest_version)
+  assert_same test_other "$(bashunit::helper::get_functions_to_run test '' "${functions[*]}")"
 }
 
 function test_interpolate_fn_name() {

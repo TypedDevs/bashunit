@@ -10,14 +10,14 @@ function bashunit::helper::check_duplicate_functions() {
     script="$BASHUNIT_WORKING_DIR/$script"
   fi
 
-  # One awk pass over the file finds each test-function definition and emits only
-  # the names seen more than once, folding the former grep + awk + sort + uniq
-  # chain into a single awk (#761). The END block insertion-sorts the (tiny,
-  # usually empty) duplicate list itself, so no `sort` fork is needed to keep
-  # the output deterministic.
+  # One awk pass over the file finds each test-function definition (the opening
+  # brace may sit on the next line) and emits only the names seen more than
+  # once, folding the former grep + awk + sort + uniq chain into a single awk
+  # (#761). The END block insertion-sorts the (tiny, usually empty) duplicate
+  # list itself, so no `sort` fork is needed to keep the output deterministic.
   local duplicates
   duplicates=$(awk '
-    /^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*\{/ {
+    /^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*(\{|$)/ {
       for (i = 1; i <= NF; i++) {
         if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
           name = $i
@@ -110,14 +110,14 @@ function bashunit::helper::name_matches_exclude_filter() {
   local IFS=','
   local __bu_excl
   for __bu_excl in ${BASHUNIT_EXCLUDE_FILTER:-}; do
-    __bu_excl=${__bu_excl/test_/}
+    __bu_excl=${__bu_excl#test_}
     if [ -n "$__bu_excl" ]; then
       case "$__bu_fn" in ${__bu_prefix}_*${__bu_excl}*) return 0 ;; esac
     fi
   done
 
   for __bu_excl in ${_BASHUNIT_CLI_EXCLUDE_FILTERS[@]+"${_BASHUNIT_CLI_EXCLUDE_FILTERS[@]}"}; do
-    __bu_excl=${__bu_excl/test_/}
+    __bu_excl=${__bu_excl#test_}
     if [ -n "$__bu_excl" ]; then
       case "$__bu_fn" in ${__bu_prefix}_*${__bu_excl}*) return 0 ;; esac
     fi
@@ -131,7 +131,7 @@ function bashunit::helper::name_matches_exclude_filter() {
 #
 function bashunit::helper::get_functions_to_run() {
   local prefix=$1
-  local filter=${2/test_/}
+  local filter=${2#test_}
   local function_names=$3
 
   local filtered_functions=""

@@ -12,7 +12,7 @@ Read sibling tests before writing a new fixture. Repository paths are relative t
 | Functional | `tests/functional/` | Real component interactions |
 | Acceptance | `tests/acceptance/` | CLI and end-to-end behavior |
 
-Files end in `_test.sh`; name tests for the behavior and trigger. Use targeted RED/GREEN checks during implementation, then the root quality gate once the complete change set is ready. Test success, failure and cleanup paths that the change affects; verify parallel behavior when state or workers change.
+Files end in `_test.sh`; name tests for the behavior and trigger. Select validation under `.agnostic-ai/AGNOSTIC_AI.md` when the change set is complete. Test success, failure and cleanup paths that the change affects; verify parallel behavior when state or workers change.
 
 ## Assertions and doubles
 
@@ -41,6 +41,6 @@ Use `assert_match_snapshot` or `assert_match_named_snapshot`; update snapshots d
 - Use `$(bashunit::temp_file)` or `$(bashunit::temp_dir)` for framework-cleaned fixtures. No shared fixed temporary paths or global state between tests.
 - Mock network calls and nondeterministic external dependencies. Tests must work under `./bashunit --parallel tests/`.
 - Embedded test-function definitions are scanned textually by the duplicate check, even inside strings. Give every embedded definition a unique name across its containing file; quote-state heuristics cannot safely hide them.
-- Strict CI uses `set -euo pipefail`: initialize arrays, guard optional elements, use `if` for conditional side effects, and isolate `extdebug` in a subshell. Simple output contains markers, so test rendering helpers rather than assuming full `print_line` output.
+- Strict CI (`make test/strict`) uses `set -euo pipefail`: initialize arrays, guard optional elements, use `if` for conditional side effects, and isolate `extdebug` in a subshell. Simple output contains markers, so test rendering helpers rather than assuming full `print_line` output.
 
 Start with `tests/unit/assert/`, `tests/functional/doubles_test.sh`, `tests/functional/provider_test.sh`, `tests/unit/runner/hooks_test.sh`, and `tests/acceptance/bashunit_test.sh`. Use `rg` to locate the matching function tests before adding a pattern.

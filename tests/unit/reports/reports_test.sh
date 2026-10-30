@@ -884,3 +884,9 @@ function test_gha_annotates_a_flaky_test_as_a_warning() {
   assert_contains "::warning" "$content"
   assert_contains "only after 2 retries" "$content"
 }
+
+function test_tap_description_folds_line_breaks_to_spaces() {
+  local description=$'line one\nline two\rline three'
+  assert_same 'line one line two line three' \
+    "$(bashunit::reports::__tap_description "$description")"
+}

@@ -6,7 +6,11 @@ if [ -n "${1:-}" ]; then
 fi
 
 project_root=$(git rev-parse --show-toplevel)
-files=$("$project_root/node_modules/.bin/agnostic-ai" hook paths) || exit 1
+agnostic_ai="$project_root/node_modules/.bin/agnostic-ai"
+if [ ! -x "$agnostic_ai" ]; then
+  agnostic_ai=$(command -v agnostic-ai) || exit 0
+fi
+files=$("$agnostic_ai" hook paths) || exit 1
 printf '%s\n' "$files" | while IFS= read -r file; do
   case "$file" in
     *.sh)

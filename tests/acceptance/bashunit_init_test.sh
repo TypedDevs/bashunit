@@ -64,8 +64,24 @@ function test_bashunit_init_updates_env() {
   assert_file_exists "custom/example_test.sh"
   assert_file_exists "custom/bootstrap.sh"
   assert_file_contains .env "#BASHUNIT_BOOTSTRAP=old/bootstrap.sh"
-  assert_file_contains .env "BASHUNIT_BOOTSTRAP=custom/bootstrap.sh"
+  assert_file_contains .env 'BASHUNIT_BOOTSTRAP="custom/bootstrap.sh"'
   popd >/dev/null
+}
+
+# A directory with a space is a valid project directory. `.env` is sourced as
+# shell, so an unquoted BASHUNIT_BOOTSTRAP turns the second word into a command
+# and the next run dies with "No such file or directory" naming a path the user
+# never typed.
+function test_bashunit_init_with_a_space_in_the_directory_runs_afterwards() {
+  pushd "$TMP_DIR" >/dev/null
+  "$BASHUNIT_PATH" init "my tests" >/dev/null
+
+  local output
+  output="$($BASHUNIT_PATH --no-color 2>&1)"
+  popd >/dev/null
+
+  assert_not_contains "No such file or directory" "$output"
+  assert_contains "1 passed" "$output"
 }
 
 # `bashunit init` is run more than once in practice -- re-scaffolding, or a
