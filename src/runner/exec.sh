@@ -279,8 +279,11 @@ function bashunit::runner::call_test_functions() {
   fi
 }
 
-# Result slots for the timeout-aware execution path (see run_with_timeout).
 _BASHUNIT_RUNNER_EXEC_OUT=""
+_BASHUNIT_RUNNER_ACTIVE_TEST_PID=""
+_BASHUNIT_RUNNER_ACTIVE_TEST_KIND=tree
+_BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID=""
+_BASHUNIT_RUNNER_PROCESS_TREE_OUT=""
 _BASHUNIT_RUNNER_TIMED_OUT="false"
 _BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE=""
 # The timeout in force for the test being run: the run-wide setting unless a
@@ -317,8 +320,11 @@ function bashunit::runner::execute_test_body() {
   # Single quotes below, so nothing expands until the trap fires, and then only
   # as an ordinary parameter expansion -- which does not re-scan its value.
   _BASHUNIT_RUNNER_EXIT_FILE=$test_file
+  # Mark cleanup entry with the exit status before a delayed TERM can run.
+  _BASHUNIT_RUNNER_CLEANING_UP=false
   # shellcheck disable=SC2154 # assigned inside the trap body, read by cleanup_on_exit (runner/hooks.sh)
-  trap 'exit_code=$?; bashunit::runner::cleanup_on_exit "$_BASHUNIT_RUNNER_EXIT_FILE" "$exit_code"' EXIT
+  trap 'exit_code=$? _BASHUNIT_RUNNER_CLEANING_UP=true
+    bashunit::runner::cleanup_on_exit "$_BASHUNIT_RUNNER_EXIT_FILE" "$exit_code"' EXIT
   # A timed-out test is killed by the watchdog's group SIGTERM (run_with_timeout).
   # Bash runs no EXIT trap for a fatal signal it does not have a trap for, so
   # tear_down was skipped and whatever set_up acquired for that test was leaked
@@ -328,7 +334,11 @@ function bashunit::runner::execute_test_body() {
   # Best effort on purpose: the watchdog SIGKILLs the group shortly after, so a
   # tear_down slower than that grace is cut off. A hook that never returns must
   # not outlive the timeout it is cleaning up after.
-  trap 'exit 143' TERM
+  trap 'if [ "$_BASHUNIT_RUNNER_CLEANING_UP" != true ] ||
+      { [ ! -f "$_BASHUNIT_RUN_OUTPUT_DIR/interrupted" ] &&
+        [ ! -f "${_BASHUNIT_RUNNER_TIMEOUT_MARKER_FILE:-}" ]; }; then
+      exit 143
+    fi' TERM
   bashunit::state::initialize_assertions_count
 
   if bashunit::env::is_login_shell_enabled; then
@@ -386,14 +396,163 @@ function bashunit::runner::execute_test_body() {
   "$fn_name" "$@" 2>&1
 }
 
-##
-# Prints an encoded subshell result for a test that timed out: empty assertion
-# counters and exit code 124 (the conventional "timed out" code, already mapped
-# by classify_kill_signal). The empty TEST_HOOK_MESSAGE/TITLE/OUTPUT fields would
-# base64-encode to an empty string anyway, so the line is emitted directly rather
-# than mutating the shared _BASHUNIT_* globals (it mirrors the layout produced by
-# bashunit::state::export_subshell_context). Bash 3.0+ compatible.
-##
+# Waiting on a background body lets the runner handle signals before that body returns.
+function bashunit::runner::run_without_timeout() {
+  _BASHUNIT_RUNNER_EXEC_OUT=""
+  local out_file="$_BASHUNIT_RUN_OUTPUT_DIR/sequential-test-output_${_BASHUNIT_REPORTS_FILE_ORDINAL:-0}"
+  if [ ! -d "$_BASHUNIT_RUN_OUTPUT_DIR" ] && ! bashunit::env::ensure_run_output_dir; then
+    bashunit::runner::capture_failure_to_slot 'Failed to capture test output: run directory is unavailable.'
+    return 1
+  fi
+  if ! { : >"$out_file"; } 2>/dev/null; then
+    bashunit::runner::capture_failure_to_slot 'Failed to capture test output: destination cannot be opened.'
+    return 1
+  fi
+  local capture_fd=9
+  while [ "$capture_fd" -le 63 ]; do
+    if ! { : <&"$capture_fd"; } 2>/dev/null; then break; fi
+    capture_fd=$((capture_fd + 1))
+  done
+  if [ "$capture_fd" -gt 63 ] || ! eval "exec $capture_fd<\"\$out_file\""; then
+    bashunit::runner::capture_failure_to_slot 'Failed to capture test output: reader cannot be opened.'
+    return 1
+  fi
+  _BASHUNIT_RUNNER_ACTIVE_TEST_KIND=tree
+  set +m
+  (bashunit::runner::execute_test_body "$@") <&0 >"$out_file" 2>&1 &
+  _BASHUNIT_RUNNER_ACTIVE_TEST_PID=$!
+  set +m
+  local status=0
+  wait "$_BASHUNIT_RUNNER_ACTIVE_TEST_PID" 2>/dev/null || status=$?
+  _BASHUNIT_RUNNER_ACTIVE_TEST_PID=""
+  local capture_chunk=""
+  while IFS= read -r -d '' -u "$capture_fd" capture_chunk; do
+    _BASHUNIT_RUNNER_EXEC_OUT="$_BASHUNIT_RUNNER_EXEC_OUT$capture_chunk"
+  done
+  _BASHUNIT_RUNNER_EXEC_OUT="$_BASHUNIT_RUNNER_EXEC_OUT$capture_chunk"
+  eval "exec $capture_fd<&-"
+  while [ "${_BASHUNIT_RUNNER_EXEC_OUT%$'\n'}" != "$_BASHUNIT_RUNNER_EXEC_OUT" ]; do
+    _BASHUNIT_RUNNER_EXEC_OUT=${_BASHUNIT_RUNNER_EXEC_OUT%$'\n'}
+  done
+  if [ "$status" -ne 0 ]; then
+    case "$_BASHUNIT_RUNNER_EXEC_OUT" in
+    *'##ASSERTIONS_FAILED='*'##TEST_EXIT_CODE='*) ;;
+    *)
+      bashunit::runner::capture_failure_to_slot 'Failed to capture test output: process returned no result.'
+      return 1
+      ;;
+    esac
+  fi
+  return "$status"
+}
+
+function bashunit::runner::capture_failure_to_slot() {
+  _BASHUNIT_RUNNER_EXEC_OUT="$1
+##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0\
+##ASSERTIONS_INCOMPLETE=0##ASSERTIONS_SNAPSHOT=0##TEST_EXIT_CODE=1\
+##TEST_HOOK_FAILURE=##TEST_HOOK_MESSAGE=##TEST_TITLE=##TEST_OUTPUT=##"
+}
+
+function bashunit::runner::process_tree_to_slot() {
+  local snapshot pid parent position=0 current
+  local -a pending=()
+  local IFS=$' \t\n'
+  _BASHUNIT_RUNNER_PROCESS_TREE_OUT=""
+  for pid in $1; do
+    case "$pid" in '' | *[!0-9]* | 0 | 1 | "$$") continue ;; esac
+    case " $_BASHUNIT_RUNNER_PROCESS_TREE_OUT " in *" $pid "*) continue ;; esac
+    pending[${#pending[@]}]=$pid
+    _BASHUNIT_RUNNER_PROCESS_TREE_OUT="$_BASHUNIT_RUNNER_PROCESS_TREE_OUT $pid"
+  done
+  [ -n "$_BASHUNIT_PS" ] || return 1
+  snapshot=$("$_BASHUNIT_PS" -e -o pid= -o ppid=) || return 1
+  while [ "$position" -lt "${#pending[@]}" ]; do
+    current=${pending[position]}
+    while read -r pid parent; do
+      if [ "$parent" = "$current" ]; then
+        case "$pid" in '' | *[!0-9]* | 0 | 1 | "$$") continue ;; esac
+        case " $_BASHUNIT_RUNNER_PROCESS_TREE_OUT " in *" $pid "*) continue ;; esac
+        pending[${#pending[@]}]=$pid
+        _BASHUNIT_RUNNER_PROCESS_TREE_OUT="$_BASHUNIT_RUNNER_PROCESS_TREE_OUT $pid"
+      fi
+    done <<PROCESSES
+$snapshot
+PROCESSES
+    position=$((position + 1))
+  done
+}
+
+function bashunit::runner::signal_test_processes() {
+  local signal="$1" kind="$2" targets="$3" pid
+  local IFS=$' \t\n'
+  for pid in $targets; do
+    case "$pid" in '' | *[!0-9]* | 0 | 1 | "$$") continue ;; esac
+    if [ "$kind" = group ]; then
+      builtin kill -"$signal" -"$pid" 2>/dev/null || builtin kill -"$signal" "$pid" 2>/dev/null || true
+    else
+      builtin kill -"$signal" "$pid" 2>/dev/null || true
+    fi
+  done
+}
+
+function bashunit::runner::stop_test_processes() {
+  local kind="$1" roots="$2" target_pids="$2" pid watchdog_pid cleanup_pending=false
+  local IFS=$' \t\n'
+  [ -n "$roots" ] || return 0
+  if bashunit::env::ensure_run_output_dir; then
+    : >"$_BASHUNIT_RUN_OUTPUT_DIR/interrupted"
+  fi
+  if [ "$kind" = tree ]; then
+    # Foreground bodies share the terminal group, so signal only their owned descendants.
+    bashunit::runner::process_tree_to_slot "$roots" || true
+    target_pids="$_BASHUNIT_RUNNER_PROCESS_TREE_OUT"
+  fi
+  set -m
+  (
+    local watchdog_target_pids="$target_pids"
+    exec 3>&- 5>&-
+    "$_BASHUNIT_SLEEP" 2
+    if [ "$kind" = tree ]; then
+      bashunit::runner::process_tree_to_slot "$watchdog_target_pids" || true
+      watchdog_target_pids="$_BASHUNIT_RUNNER_PROCESS_TREE_OUT"
+    fi
+    bashunit::runner::signal_test_processes KILL "$kind" "$watchdog_target_pids"
+  ) </dev/null >/dev/null 2>&1 &
+  watchdog_pid=$!
+  set +m
+  bashunit::runner::signal_test_processes TERM "$kind" "$target_pids"
+  for pid in $roots; do
+    wait "$pid" 2>/dev/null || true
+  done
+  for pid in $target_pids; do
+    if [ "$kind" = group ]; then
+      if builtin kill -0 -"$pid" 2>/dev/null; then cleanup_pending=true; fi
+    elif builtin kill -0 "$pid" 2>/dev/null; then
+      cleanup_pending=true
+    fi
+  done
+  if [ "$cleanup_pending" = false ]; then
+    if ! builtin kill -TERM -"$watchdog_pid" 2>/dev/null; then
+      pkill -P "$watchdog_pid" 2>/dev/null || true
+      builtin kill -TERM "$watchdog_pid" 2>/dev/null || true
+    fi
+  fi
+  wait "$watchdog_pid" 2>/dev/null || true
+}
+
+function bashunit::runner::stop_active_test() {
+  if [ -n "${_BASHUNIT_RUNNER_ACTIVE_TEST_PID:-}" ]; then
+    bashunit::runner::stop_test_processes "$_BASHUNIT_RUNNER_ACTIVE_TEST_KIND" "$_BASHUNIT_RUNNER_ACTIVE_TEST_PID"
+    _BASHUNIT_RUNNER_ACTIVE_TEST_PID=""
+  fi
+  if [ -n "${_BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID:-}" ]; then
+    bashunit::runner::process_tree_to_slot "$_BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID" || true
+    bashunit::runner::signal_test_processes KILL tree "$_BASHUNIT_RUNNER_PROCESS_TREE_OUT"
+    wait "$_BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID" 2>/dev/null || true
+    _BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID=""
+  fi
+}
+
 function bashunit::runner::build_timeout_result() {
   printf '%s' "##ASSERTIONS_FAILED=0##ASSERTIONS_PASSED=0##ASSERTIONS_SKIPPED=0\
 ##ASSERTIONS_INCOMPLETE=0##ASSERTIONS_SNAPSHOT=0##TEST_EXIT_CODE=124\
@@ -433,8 +592,10 @@ function bashunit::runner::run_with_timeout() {
   # group does not run its EXIT trap on normal completion, which would drop the
   # encoded assertion context.
   set -m
+  _BASHUNIT_RUNNER_ACTIVE_TEST_KIND=group
   (bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@") >"$out_file" 2>&1 &
   local test_pid=$!
+  _BASHUNIT_RUNNER_ACTIVE_TEST_PID=$test_pid
   (
     # The watchdog is the one process here that can outlive its parent: the
     # group kill below intermittently misses it, and a SIGKILLed run never
@@ -488,9 +649,11 @@ function bashunit::runner::run_with_timeout() {
     kill -KILL -"$test_pid" 2>/dev/null
   ) </dev/null >/dev/null 2>&1 &
   local watchdog_pid=$!
+  _BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID=$watchdog_pid
   set +m
 
   wait "$test_pid" 2>/dev/null
+  _BASHUNIT_RUNNER_ACTIVE_TEST_PID=""
   # Stop the watchdog by its pid AND its group. `set -m` does not reliably make a
   # backgrounded subshell a group leader in a non-interactive shell, so the
   # group-only kill intermittently misses, letting the watchdog sleep its full
@@ -499,6 +662,7 @@ function bashunit::runner::run_with_timeout() {
   kill -TERM "$watchdog_pid" 2>/dev/null
   kill -TERM -"$watchdog_pid" 2>/dev/null
   wait "$watchdog_pid" 2>/dev/null
+  _BASHUNIT_RUNNER_ACTIVE_WATCHDOG_PID=""
 
   if [ -f "$marker_file" ]; then
     _BASHUNIT_RUNNER_TIMED_OUT="true"
@@ -598,10 +762,12 @@ function bashunit::runner::run_test() {
         bashunit::runner::run_with_timeout "$test_file" "$fn_name" "$@"
         test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
         timed_out="$_BASHUNIT_RUNNER_TIMED_OUT"
-      else
+      elif bashunit::parallel::is_enabled && [ "${allow_test_parallel:-true}" = true ]; then
         test_execution_result=$(bashunit::runner::execute_test_body "$test_file" "$fn_name" "$@")
+      else
+        bashunit::runner::run_without_timeout "$test_file" "$fn_name" "$@"
+        test_execution_result="$_BASHUNIT_RUNNER_EXEC_OUT"
       fi
-
       local attempt_runtime_output="${test_execution_result%%##ASSERTIONS_*}"
       # Counts first: detect_runtime_error consults the exit code when the output
       # text is translated and matches nothing. extract_result_counts is a pure

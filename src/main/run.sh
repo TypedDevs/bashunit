@@ -79,8 +79,9 @@ function bashunit::main::exec_tests() {
     bashunit::internal_log "shard" "index:$_shard_index" "total:$_shard_total" "files:$test_files_count"
   fi
 
-  # Trap SIGINT (Ctrl-C) and call the cleanup function
-  trap 'bashunit::main::cleanup' SIGINT
+  trap 'bashunit::main::cleanup INT' SIGINT
+  trap 'bashunit::main::cleanup TERM' SIGTERM
+  trap 'bashunit::main::cleanup HUP' SIGHUP
 
   # Resolve parallel mode once now that --parallel/--no-parallel are parsed, so
   # the per-test is_enabled reads a global instead of re-checking env + OS.
@@ -396,16 +397,23 @@ function bashunit::main::exec_benchmarks() {
 }
 
 function bashunit::main::cleanup() {
-  # Back to the default disposition first: the teardown hook below is user code
-  # and may never return, and an interrupt handler that cannot itself be
-  # interrupted would leave no way out but SIGKILL. A second Ctrl-C now ends the
-  # process. Safe to reset because SIGINT was trappable on entry, or this handler
-  # would not be running.
-  trap - INT
-  printf "%sCaught Ctrl-C, killing all child processes...%s\n" \
-    "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  local signal="${1:-INT}"
+  # Reset handled signals before user teardown so a second signal can interrupt it.
+  trap - INT TERM HUP
+  if [ "$signal" = INT ]; then
+    printf "%sCaught Ctrl-C, killing all child processes...%s\n" \
+      "${_BASHUNIT_COLOR_SKIPPED}" "${_BASHUNIT_COLOR_DEFAULT}"
+  else
+    printf "%sCaught SIG%s, killing all child processes...%s\n" \
+      "${_BASHUNIT_COLOR_SKIPPED}" "$signal" "${_BASHUNIT_COLOR_DEFAULT}"
+  fi
+  if bashunit::env::ensure_run_output_dir; then
+    : >"$_BASHUNIT_RUN_OUTPUT_DIR/interrupted"
+  fi
+  bashunit::runner::stop_active_test
   # Kill all child processes of this script
   pkill -P $$
+  wait || true
   # After the kill, so the per-test tear_down that the test subshell's EXIT trap
   # runs comes first, as it does in a normal run. Before the temp-file sweep, so
   # a hook reading a bashunit::temp_file still finds it (#1323).
