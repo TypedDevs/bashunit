@@ -4,9 +4,16 @@
 
 ### Added
 
+- Homepage example with a Bash function, test, run command and passing output
 - Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
 
 ### Fixed
+
+#### Documentation
+
+- Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
+- Primary buttons use dark text in both themes, including hover and active states
+- Quickstart commands match install.sh, npm project and npm global installs
 
 #### Assertions and doubles
 
@@ -40,8 +47,9 @@
 
 ### Changed
 
-- Documentation uses shorter, clearer wording across guides, reference pages and release posts
-- Large provider and annotation maps use an index instead of scanning earlier entries, speeding up test files on Bash 3.0 and newer (#1392)
+- Common patterns appears under Writing Tests; Quickstart links to function and script testing recipes
+- Shortened guides, reference pages and release posts
+- Large provider and annotation maps use indexed lookups to speed up test files on Bash 3.0 and newer (#1392)
 
 ## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
 
