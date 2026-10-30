@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Coverage report paths are checked before tests run, and LCOV or HTML write failures make the run fail instead of reporting success (#1412)
 - `upgrade` keeps the installed binary when a download fails or returns an empty file (#1407)
 - `install.sh` keeps the installed binary when a download fails, is empty, or fails checksum verification (#1406)
 - `--debug` leaves an existing test file or directory as the test path instead of taking it as the trace file (#1405)
