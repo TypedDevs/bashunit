@@ -40,17 +40,98 @@ features:
     details: Run the same tests on Linux, macOS and Windows via WSL.
 ---
 
+<div class="home-example">
+
+## Test your first Bash function
+
+Install bashunit and create folders for your script and test:
+
+```bash
+curl -s https://bashunit.com/install.sh | bash
+mkdir -p src tests
+```
+
+Save these two files:
+
+::: code-group
+```bash [src/greet.sh]
+#!/usr/bin/env bash
+
+function greet() {
+  printf 'Hello, %s!\n' "${1:-world}"
+}
+```
+
+```bash [tests/greet_test.sh]
+#!/usr/bin/env bash
+
+function set_up() {
+  source src/greet.sh
+}
+
+function test_greet_by_name() {
+  assert_same "Hello, Bash!" "$(greet Bash)"
+}
+```
+:::
+
+Run your test:
+
+```bash
+./lib/bashunit tests/
+```
+
+A passing run reports:
+
+```text
+✓ Passed: Greet by name
+
+Tests:      1 passed, 1 total
+Assertions: 1 passed, 1 total
+```
+
+Continue with the [Quickstart](/quickstart) for other install methods and running options.
+
+</div>
+
+<style scoped>
+.home-example {
+  max-width: 760px;
+  margin: 64px auto 0;
+}
+</style>
+
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import VanillaTilt from 'vanilla-tilt';
+import { onMounted, onUnmounted } from 'vue';
+import VanillaTilt, { type HTMLVanillaTiltElement } from 'vanilla-tilt';
+
+let cleanupTilt = () => {};
 
 onMounted(() => {
-  const heroImage = document.querySelector('.VPHero .VPImage');
+  const heroImage = document.querySelector<HTMLVanillaTiltElement>('.VPHero .VPImage');
+  if (!heroImage) return;
 
-  VanillaTilt.init(heroImage, {
-    'full-page-listening': true,
-    reverse: true,
-    gyroscope: false
-  });
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const updateTilt = () => {
+    if (reducedMotion.matches) {
+      heroImage.vanillaTilt?.destroy();
+      return;
+    }
+
+    VanillaTilt.init(heroImage, {
+      'full-page-listening': true,
+      reverse: true,
+      gyroscope: false
+    });
+  };
+
+  updateTilt();
+  reducedMotion.addEventListener('change', updateTilt);
+  cleanupTilt = () => {
+    reducedMotion.removeEventListener('change', updateTilt);
+    heroImage.vanillaTilt?.destroy();
+  };
 });
+
+onUnmounted(() => cleanupTilt());
 </script>

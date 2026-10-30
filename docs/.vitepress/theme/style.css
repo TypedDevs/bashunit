@@ -12,6 +12,9 @@
 :root {
   --vp-font-family-base: Heebo, sans-serif;
   --vp-font-family-mono: Cousine, monospace;
+  --vp-button-brand-text: #171a1b;
+  --vp-button-brand-hover-text: #171a1b;
+  --vp-button-brand-active-text: #171a1b;
 }
 
 h1,

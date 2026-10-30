@@ -233,7 +233,7 @@ fi
 case "$INSTALL_TEST_DOWNLOAD_RESULT" in
   failure) printf 'partial download\n' >"$target"; exit 22 ;;
   empty) : >"$target" ;;
-  *) printf 'new binary\n' >"$target" ;;
+  *) printf '#!/bin/sh\nexit 0\n' >"$target" ;;
 esac
 SH
   chmod +x shims/curl
@@ -249,7 +249,7 @@ SH
 
   if [ "$result" = success ]; then
     assert_successful_code "" "" "$status"
-    assert_same 'new binary' "$(cat destination/bashunit)"
+    assert_same "$(printf '#!/bin/sh\nexit 0')" "$(cat destination/bashunit)"
     assert_is_file_executable destination/bashunit
     assert_not_empty "$(find destination/bashunit -perm 0744 -print)"
   else
