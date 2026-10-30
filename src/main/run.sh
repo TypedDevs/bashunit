@@ -311,7 +311,7 @@ function bashunit::main::exec_tests() {
   fi
 
   # Persist this run's failing tests so a later --rerun-failed can replay them.
-  bashunit::rerun::persist
+  bashunit::rerun::persist "$exit_code"
 
   # The rerun cache is read from the run dir above, so clean up only after it.
   bashunit::env::cleanup_run_output_dir

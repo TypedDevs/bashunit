@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- A green file or filtered subset preserves rerun-cache entries for tests it did not execute (#1418)
 - SIGTERM and SIGHUP run teardown hooks, stop parallel workers, and remove the run's scratch files before exiting with status 1 (#1417)
 - Sequential stop-on-failure runs write requested reports and the rerun cache for the tests that ran (#1415)
 - Include, inline, and exclusion filters preserve `test_` inside names such as `latest_version` (#1414)

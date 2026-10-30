@@ -900,6 +900,7 @@ WORKER_STDERR_OUTPUT_PREFIX="$_BASHUNIT_RUN_OUTPUT_DIR/worker-stderr"
 # Collects "<test_file>:<function_name>" for every failing test in a run so the
 # next --rerun-failed can replay just those. Shared across parallel subshells.
 RERUN_FAILED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-failed"
+RERUN_RAN_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/rerun-ran"
 # Collects every snapshot path a test resolved, so --snapshot-report-unused can
 # diff it against what is on disk. Appended from the test subshells, only when
 # the flag is on, so a normal run pays nothing.

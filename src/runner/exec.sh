@@ -685,6 +685,7 @@ function bashunit::runner::run_test() {
 
   bashunit::internal_log "Running test" "$fn_name" "$*"
   bashunit::runner::export_test_identity "$test_file" "$fn_name"
+  bashunit::rerun::record_ran "$test_file" "$fn_name"
 
   bashunit::state::reset_test_title
   bashunit::runner::apply_interpolated_title "$fn_name" "$@"
