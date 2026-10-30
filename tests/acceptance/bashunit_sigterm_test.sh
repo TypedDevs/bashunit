@@ -48,9 +48,12 @@ if pid == 0:
 status = None
 captured = bytearray()
 deadline = time.monotonic() + 5
+input_sent = False
 try:
-    os.write(terminal, b"entered\n")
     while time.monotonic() < deadline:
+        if not input_sent and os.path.isfile(sys.argv[3]) and os.path.getsize(sys.argv[3]) > 0:
+            os.write(terminal, b"entered\n")
+            input_sent = True
         readable, _, _ = select.select([terminal], [], [], 0.05)
         if readable:
             try:
@@ -92,6 +95,7 @@ finally:
 
 print(captured.decode("utf-8", errors="replace"))
 if status is None:
+    print("PTY timeout after terminal input" if input_sent else "PTY timeout before body readiness")
     sys.exit(124)
 if os.WIFEXITED(status):
     sys.exit(os.WEXITSTATUS(status))
@@ -99,6 +103,7 @@ sys.exit(128 + os.WTERMSIG(status))
 PY
   ) || status=$?
 
+  if [ "$status" -ne 0 ]; then printf '%s\n' "$output" >&2; fi
   assert_successful_code "" "" "$status"
   assert_contains '1 passed' "$output"
 }
