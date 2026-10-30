@@ -156,6 +156,7 @@ export default defineConfig({
         text: 'Writing Tests',
         collapsed: false,
         items: [
+          { text: 'Common patterns', link: '/common-patterns' },
           { text: 'Assertions', link: '/assertions' },
           { text: 'Custom asserts', link: '/custom-asserts' },
           { text: 'Data providers', link: '/data-providers' },
@@ -170,7 +171,6 @@ export default defineConfig({
           { text: 'Coverage', link: '/coverage' },
           { text: 'Benchmarks', link: '/benchmarks' },
           { text: 'Standalone', link: '/standalone' },
-          { text: 'Common patterns', link: '/common-patterns' },
           { text: 'Agentic coding', link: '/ai-agents' },
         ],
       }, {
