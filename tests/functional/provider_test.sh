@@ -220,6 +220,8 @@ function test_ansi_quoted_provider_values_keep_control_characters_next_to_metach
 }
 
 function test_ansi_quoted_parser_values_keep_carriage_returns_next_to_metacharacters() {
-  assert_same "Zmlyc3QNI2ZmZg==" "$(bashunit::runner::parse_data_provider_args "\$'first\\r#fff' ''")"
-  assert_same "Zmlyc3QNKHJvdW5kKQ==" "$(bashunit::runner::parse_data_provider_args "\$'first\\r(round)' ''")"
+  local hash_input="\$'first\\r#fff' ''"
+  local parentheses_input="\$'first\\r(round)' ''"
+  assert_same "Zmlyc3QNI2ZmZg==" "$(bashunit::runner::parse_data_provider_args "$hash_input")"
+  assert_same "Zmlyc3QNKHJvdW5kKQ==" "$(bashunit::runner::parse_data_provider_args "$parentheses_input")"
 }
