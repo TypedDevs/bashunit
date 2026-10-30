@@ -147,6 +147,8 @@ A missing literal path still fails with an error naming the path.
 | `-h, --help`                   | Show the test help                               |
 | `--coverage*`                  | Nine coverage flags, see [Coverage](#coverage)   |
 
+`--stop-on-failure` still writes requested reports and `.bashunit/last-failed` for the tests that ran.
+
 ### Debug tracing
 
 `--debug` enables shell tracing. The next argument is used as a trace file only when it names a path that does not exist and does not start with `-`. Existing files and directories remain test paths and are not overwritten.

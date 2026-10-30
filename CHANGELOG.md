@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Sequential stop-on-failure runs write requested reports and the rerun cache for the tests that ran (#1415)
 - Include, inline, and exclusion filters preserve `test_` inside names such as `latest_version` (#1414)
 - `.bashunitrc` suite options stay out of the environment, while global settings before and after suite sections still apply (#1410)
 - `install.sh` rejects prefixed or incomplete version numbers instead of treating them as directories (#1409)
