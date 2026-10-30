@@ -4,6 +4,7 @@
 
 ### Added
 
+- Homepage example with a Bash function, test, run command and passing output
 - Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
 
 ### Fixed
@@ -12,6 +13,9 @@
 - Generated workflows run test directories containing whitespace as a single path without requiring a committed `.env` (#1425)
 - Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422)
 - Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
+- Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
+- Primary buttons use dark text in both themes, including hover and active states
+- Quickstart commands match install.sh, npm project and npm global installs
 - A green file or filtered subset preserves rerun-cache entries for tests it did not execute (#1418)
 - SIGTERM and SIGHUP run teardown hooks, stop parallel workers, and remove the run's scratch files before exiting with status 1 (#1417)
 - Sequential stop-on-failure runs write requested reports and the rerun cache for the tests that ran (#1415)
@@ -39,8 +43,9 @@
 
 ### Changed
 
-- Documentation uses shorter, clearer wording across guides, reference pages and release posts
-- Large provider and annotation maps use an index instead of scanning earlier entries, speeding up test files on Bash 3.0 and newer (#1392)
+- Common patterns appears under Writing Tests; Quickstart links to function and script testing recipes
+- Shortened guides, reference pages and release posts
+- Large provider and annotation maps use indexed lookups to speed up test files on Bash 3.0 and newer (#1392)
 
 ## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
 
