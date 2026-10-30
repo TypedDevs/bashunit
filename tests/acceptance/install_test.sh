@@ -251,7 +251,9 @@ SH
     assert_successful_code "" "" "$status"
     assert_same "$(printf '#!/bin/sh\nexit 0')" "$(cat destination/bashunit)"
     assert_is_file_executable destination/bashunit
-    assert_not_empty "$(find destination/bashunit -perm 0744 -print)"
+    if ! bashunit::check_os::is_windows; then
+      assert_not_empty "$(find destination/bashunit -perm 0744 -print)"
+    fi
   else
     assert_general_error "" "" "$status"
     assert_same 'previous binary' "$(cat destination/bashunit)"
