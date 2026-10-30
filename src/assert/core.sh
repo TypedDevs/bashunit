@@ -547,6 +547,23 @@ function assert_not_contains() {
   bashunit::state::add_assertions_passed
 }
 
+_BASHUNIT_ASSERT_GREP_COUNT_OUT=0
+
+function bashunit::assert::_grep_count_to_slot() {
+  _BASHUNIT_ASSERT_GREP_COUNT_OUT=0
+  local count rc=0
+  count=$({ printf '%s' "$2" | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  [ "$rc" -le 1 ] || return 1
+
+  if [ "${count:-0}" -eq 0 ]; then
+    # Retry with newlines collapsed for cross-line patterns.
+    rc=0
+    count=$({ printf '%s' "$2" | tr '\n' ' ' | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+    [ "$rc" -le 1 ] || return 1
+  fi
+  _BASHUNIT_ASSERT_GREP_COUNT_OUT=${count:-0}
+}
+
 function assert_matches() {
   bashunit::assert::should_skip && return 0
   if [ "$#" -lt 2 ]; then
@@ -561,16 +578,10 @@ function assert_matches() {
   bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
-  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
-    # Retry with newlines collapsed for cross-line patterns
-    if [ "$(printf '%s' "$actual" | tr '\n' ' ' | "$GREP" -cE "$expected" || true)" -eq 0 ]; then
-      bashunit::helper::find_test_function_name_to_slot
-      bashunit::helper::normalize_test_function_name_to_slot "$_BASHUNIT_HELPER_TESTFN_OUT"
-      local label=$_BASHUNIT_HELPER_NORMALIZED_OUT
-      bashunit::assert::mark_failed
-      bashunit::console_results::print_failed_test "${label}" "${actual}" "to match" "${expected}"
-      return
-    fi
+  if ! bashunit::assert::_grep_count_to_slot "$expected" "$actual" ||
+    [ "$_BASHUNIT_ASSERT_GREP_COUNT_OUT" -eq 0 ]; then
+    bashunit::assert::fail_with "" "${actual}" "to match" "${expected}"
+    return
   fi
 
   bashunit::state::add_assertions_passed
@@ -591,9 +602,8 @@ function assert_not_matches() {
   bashunit::assert::join_to_slot "${actual_arr[@]+"${actual_arr[@]}"}"
   local actual=$_BASHUNIT_ASSERT_JOINED_OUT
 
-  # Check both line-by-line and with newlines collapsed for cross-line patterns
-  if [ "$(printf '%s' "$actual" | "$GREP" -cE "$expected" || true)" -gt 0 ] ||
-    [ "$(printf '%s' "$actual" | tr '\n' ' ' | "$GREP" -cE "$expected" || true)" -gt 0 ]; then
+  if ! bashunit::assert::_grep_count_to_slot "$expected" "$actual" ||
+    [ "$_BASHUNIT_ASSERT_GREP_COUNT_OUT" -gt 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to not match" "${expected}"
     return
   fi

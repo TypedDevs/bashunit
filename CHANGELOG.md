@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
 - `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
 - TAP reports keep test titles containing line breaks on a single result line (#1413)
 
