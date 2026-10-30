@@ -33,9 +33,12 @@ function bashunit::runner::parse_data_provider_args() {
   if [ "$has_metachar" = false ] && (
     local -a eval_args=()
     local eval_args_count=0
-    eval "eval_args=($input)" 2>/dev/null || exit 1
-    local _tmp arg
-    for _tmp in ${eval_args+"${eval_args[@]}"}; do eval_args_count=$((eval_args_count + 1)); done
+    local arg
+    # MSYS reparses compound array assignments and drops expanded carriage returns.
+    eval 'for arg in '"$input"'; do
+      eval_args[eval_args_count]="$arg"
+      eval_args_count=$((eval_args_count + 1))
+    done' 2>/dev/null || exit 1
     [ "$eval_args_count" -gt 0 ] || exit 1
     local last_idx=$((eval_args_count - 1))
     if [ -z "${eval_args[$last_idx]}" ]; then
