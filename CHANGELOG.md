@@ -9,37 +9,41 @@
 
 ### Fixed
 
-- Snapshots record and update literal `-n`, `-e`, `-E` and combined echo flag values correctly (#1402)
-- Generated workflows run test directories containing whitespace as a single path without requiring a committed `.env` (#1425)
-- Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422)
-- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
+#### Documentation
+
 - Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
 - Primary buttons use dark text in both themes, including hover and active states
 - Quickstart commands match install.sh, npm project and npm global installs
-- A green file or filtered subset preserves rerun-cache entries for tests it did not execute (#1418)
-- SIGTERM and SIGHUP run teardown hooks, stop parallel workers, and remove the run's scratch files before exiting with status 1 (#1417)
-- Sequential stop-on-failure runs write requested reports and the rerun cache for the tests that ran (#1415)
-- Include, inline, and exclusion filters preserve `test_` inside names such as `latest_version` (#1414)
-- `.bashunitrc` suite options stay out of the environment, while global settings before and after suite sections still apply (#1410)
-- `install.sh` rejects prefixed or incomplete version numbers instead of treating them as directories (#1409)
-- `install.sh` resolves relative destinations from the caller's directory and reports the resolved installation path (#1408)
-- `bashunit::unmock` restores a shell function replaced by a spy, mock, or mock sequence (#1401)
-- Spies keep a multiline argument in one recorded call, including call comparisons and failure logs (#1399)
-- Parallel results and hook output stay separate for test paths that differ by slashes and underscores (#1416)
-- Coverage report paths are checked before tests run, and LCOV or HTML write failures make the run fail instead of reporting success (#1412)
-- `upgrade` keeps the installed binary when a download fails or returns an empty file (#1407)
-- `install.sh` keeps the installed binary when a download fails, is empty, or fails checksum verification (#1406)
-- `--debug` leaves an existing test file or directory as the test path instead of taking it as the trace file (#1405)
-- Call argument assertions fail when the spy was never called or the requested call index does not exist (#1400)
-- `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
-- `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
-- TAP reports keep test titles containing line breaks on a single result line (#1413)
 
-- `init` writes the bootstrap path and a custom tests directory to `.env` quoted, so a directory with a space runs afterwards instead of breaking every next run (#1411)
+#### Assertions and doubles
+
+- Date assertions reject trailing text on macOS and parse colon-separated timezone offsets consistently across platforms (#1404)
+- `assert_string_not_starts_with` joins every haystack argument and uses the test name as its failure label, matching its siblings (#1403). `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
+- `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
+- Snapshots record and update literal `-n`, `-e`, `-E` and combined echo flag values correctly (#1402)
+- Spies keep multiline arguments in one recorded call, including comparisons and failure logs (#1399). Call argument assertions fail when the spy was never called or the requested call index does not exist (#1400)
+- `bashunit::unmock` restores shell functions replaced by spies, mocks or mock sequences (#1401)
+
+#### Setup and selection
+
+- `install.sh` and `upgrade` keep the installed binary when a download fails or is empty; installation also keeps it when checksum verification fails (#1406, #1407)
+- `install.sh` resolves relative destinations from the caller's directory, reports the resolved path (#1408), and rejects prefixed or incomplete version numbers instead of treating them as directories (#1409)
+- `init` quotes the bootstrap path and custom tests directory in `.env`, so paths containing spaces work on later runs (#1411). Generated workflows pass a tests directory containing whitespace as one path without requiring a committed `.env` (#1425)
+- `.bashunitrc` suite options stay out of the environment; global settings before and after suite sections still apply (#1410)
+- Include, inline and exclusion filters preserve `test_` inside names such as `latest_version` (#1414). `--debug` keeps an existing test file or directory as the test path instead of taking it as the trace file (#1405)
+
+#### Test discovery and execution
+
+- Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422). Duplicate definitions with an opening brace on the next line are reported instead of replacing the first definition (#1421)
+- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
+- SIGTERM and SIGHUP run teardown hooks, stop parallel workers and remove scratch files before exiting with status 1 (#1417)
+- Parallel results and hook output stay separate for paths that differ by slashes and underscores (#1416). Relative hidden paths are counted and keep separate results from matching visible paths (#1393)
+
+#### Reports and reruns
+
+- Sequential stop-on-failure runs write requested reports and the rerun cache for tests that ran (#1415). A green file or filtered subset preserves cache entries for tests it did not execute (#1418)
+- Coverage report paths are checked before tests run; LCOV or HTML write failures make the run fail (#1412). TAP reports keep test titles containing line breaks on one result line (#1413)
 - Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
-- Parallel runs count tests under relative hidden paths and keep their results separate from matching visible paths (#1393)
-- Duplicate test functions are detected when the opening brace is on the next line instead of silently replacing the first definition (#1421)
-- `assert_string_not_starts_with` treats variadic haystack arguments as one newline-joined value and keeps failures labeled with the test's name (#1403)
 
 ### Changed
 

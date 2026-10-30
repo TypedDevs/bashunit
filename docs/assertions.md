@@ -527,7 +527,7 @@ Inputs are automatically converted to epoch seconds. Supported formats:
 - ISO 8601 date: `2023-11-14`
 - ISO 8601 datetime: `2023-11-14T12:00:00`
 - ISO 8601 datetime with UTC Z: `2023-11-14T12:00:00Z`
-- ISO 8601 datetime with timezone offset: `2023-11-14T12:00:00+0100`
+- ISO 8601 datetime with timezone offset: `2023-11-14T12:00:00+0100` or `2023-11-14T12:00:00+01:00`
 - Space-separated datetime: `2023-11-14 12:00:00`
 
 You can mix formats in the same assertion (e.g., one epoch, one ISO).

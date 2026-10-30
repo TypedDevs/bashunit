@@ -1,15 +1,28 @@
 #!/usr/bin/env bash
 
+function bashunit::date::_bsd_to_epoch() {
+  local input="$1" format
+  local date_pattern='[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'
+  local time_pattern='[0-9][0-9]:[0-9][0-9]:[0-9][0-9]'
+  # shellcheck disable=SC2254 # Date-shape glob patterns must expand unquoted.
+  case "$input" in
+  $date_pattern"T"${time_pattern}[+-][0-9][0-9][0-9][0-9]) format="%Y-%m-%dT%H:%M:%S%z" ;;
+  $date_pattern"T"$time_pattern) format="%Y-%m-%dT%H:%M:%S" ;;
+  $date_pattern" "$time_pattern) format="%Y-%m-%d %H:%M:%S" ;;
+  $date_pattern)
+    input="$input 00:00:00"
+    format="%Y-%m-%d %H:%M:%S"
+    ;;
+  *) return 1 ;;
+  esac
+  # BSD date accepts an unparsed suffix, so validate the complete shape first.
+  date -j -f "$format" "$input" +%s 2>/dev/null
+}
+
 function bashunit::date::to_epoch() {
   local input="$1"
 
-  # An empty string is never a date, and it has to be rejected here rather than
-  # left to the cascade below, because the two date(1) implementations disagree
-  # about it: GNU reads `date -d ""` as "now" and exits 0, while on BSD/macOS
-  # -d is not even a valid option. Falling through therefore resolved two empty
-  # inputs to the same epoch and compared them equal on Linux while correctly
-  # failing on macOS. It also matched the all-digits fast path below vacuously
-  # (an empty string contains no non-digit characters).
+  # GNU date treats an empty input as now; date assertions must reject it.
   if [ -z "$input" ]; then
     echo "$input"
     return 1
@@ -24,6 +37,10 @@ function bashunit::date::to_epoch() {
     ;;
   esac
 
+  case "$input" in
+  *[+-][0-9][0-9]:[0-9][0-9]) input="${input%:??}${input##*:}" ;;
+  esac
+
   # Handle Z (UTC) suffix explicitly: BusyBox needs TZ=UTC, BSD needs +0000
   case "$input" in
   *Z)
@@ -34,7 +51,7 @@ function bashunit::date::to_epoch() {
     epoch=$(TZ=UTC date -d "$utc_input" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
     epoch=$(TZ=UTC date -d "$utc_norm" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
     # BSD: use +0000 offset which %z understands
-    epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "${utc_input}+0000" +%s 2>/dev/null) && { echo "$epoch"; return 0; }
+    epoch=$(bashunit::date::_bsd_to_epoch "${utc_input}+0000") && { echo "$epoch"; return 0; }
     echo "$input"
     return 1
     ;;
@@ -82,29 +99,13 @@ function bashunit::date::to_epoch() {
       return 0
     }
   fi
-  # Try BSD date (-j -f flag) with ISO 8601 datetime + timezone offset
-  epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S%z" "$input" +%s 2>/dev/null) && {
-    echo "$epoch"
-    return 0
-  }
-  # Try BSD date with ISO 8601 datetime format
-  epoch=$(date -j -f "%Y-%m-%dT%H:%M:%S" "$input" +%s 2>/dev/null) && {
-    echo "$epoch"
-    return 0
-  }
-  # Try BSD date with space-separated datetime format
-  epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "$input" +%s 2>/dev/null) && {
-    echo "$epoch"
-    return 0
-  }
-  # Try BSD date with date-only format (append midnight for deterministic results)
-  epoch=$(date -j -f "%Y-%m-%d %H:%M:%S" "$input 00:00:00" +%s 2>/dev/null) && {
+  epoch=$(bashunit::date::_bsd_to_epoch "$input") && {
     echo "$epoch"
     return 0
   }
 
   # Unsupported format
-  echo "$input"
+  echo "$1"
   return 1
 }
 
