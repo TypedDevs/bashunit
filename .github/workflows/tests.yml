@@ -208,7 +208,6 @@ jobs:
 
   windows-acceptance:
     name: "Windows - acceptance"
-    if: github.event_name == 'push'
     timeout-minutes: 10
     runs-on: windows-latest
     strategy:
