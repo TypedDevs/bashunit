@@ -323,33 +323,8 @@ function test_built_binary_contains_no_source_lines() {
   assert_equals "0" "$(grep -c '^source ' "$build_dir/bashunit")"
 }
 
-# The budget is a guard against the artifact growing without anyone noticing,
-# not a hard product limit. It was raised from 512000 to 557056 (544 KiB) in
-# #1045, to 589824 (576 KiB) in #1022, and to 622592 (608 KiB) in #1029, as the
-# bench reports and the baseline gate landed (590355 bytes measured). The #1045
-# alternatives to raising it were both worse:
-#
-#   as-is                518493 bytes   over
-#   strip blank lines    515249 bytes   still over — and unsafe, because a blank
-#                                       line inside a heredoc is content (#990)
-#   shfmt --minify       471673 bytes   reaches it, by stripping every bit of
-#                                       indentation out of the shipped artifact
-#
-# So: keep the artifact readable and move the line, with headroom for a few more
-# features. Raise it deliberately and record the number again when it is hit —
-# do not silence it.
-#
-# Raised again to 655360 (640 KiB) after the coverage rewrite: the report phase
-# and the capture path grew several embedded awk programs (#1084, #1088, #1090,
-# #1096, #1098, #1099), which are code and survive the comment strip. Measured
-# 622526 bytes at that point — 66 bytes under the old line, so the next change
-# of any size would have tripped it.
-#
-# Note this check needs shfmt and jq, and skips without them. It runs in the
-# Build & Verify workflow, which installs shfmt; the copy of the suite in the
-# Tests workflow skips it, as does a contributor without those tools. So a
-# green local run is not evidence the artifact is inside the budget (#1125).
-function test_built_binary_stays_below_640_kib() {
+# Signal-safe capture builds to 661767 bytes; keep the 32 KiB growth steps.
+function test_built_binary_stays_below_672_kib() {
   if ! build_optimizer_is_available; then
     bashunit::skip "shfmt and jq are required for standalone optimization"
     return
@@ -362,7 +337,7 @@ function test_built_binary_stays_below_640_kib() {
 
   local bytes
   bytes=$(wc -c <"$build_dir/bashunit" | tr -d ' ')
-  assert_less_or_equal_than 655360 "$bytes"
+  assert_less_or_equal_than 688128 "$bytes"
 }
 
 function test_build_assert_valid_syntax_rejects_broken_file() {
