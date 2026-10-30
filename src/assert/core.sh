@@ -921,7 +921,6 @@ function assert_string_not_starts_with() {
   fi
   local IFS=$' \t\n'
 
-  local IFS=$' \t\n'
   local expected="$1"
   local -a actual_arr
   actual_arr=("${@:2}")

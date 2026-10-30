@@ -9,7 +9,6 @@
 ### Fixed
 
 - Date assertions reject trailing text on macOS and parse colon-separated timezone offsets consistently across platforms (#1404)
-- `assert_string_not_starts_with` joins every haystack argument and keeps the test name as its failure label, like its siblings (#1403)
 - Snapshots record and update literal `-n`, `-e`, `-E` and combined echo flag values correctly (#1402)
 - Generated workflows run test directories containing whitespace as a single path without requiring a committed `.env` (#1425)
 - Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422)
