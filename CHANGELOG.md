@@ -4,52 +4,60 @@
 
 ### Added
 
-- Homepage example with a Bash function, test, run command and passing output
-- Blog posts for releases 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
-
-### Fixed
-
-#### Documentation
-
-- Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
-- Primary buttons use dark text in both themes, including hover and active states
-- Quickstart commands match install.sh, npm project and npm global installs
-
-#### Assertions and doubles
-
-- Date assertions reject trailing text on macOS and parse colon-separated timezone offsets consistently across platforms (#1404)
-- `assert_string_not_starts_with` joins every haystack argument and uses the test name as its failure label, matching its siblings (#1403). `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
-- `assert_files_equals` and `assert_files_not_equals` fail and name the missing path when either file does not exist (#1397)
-- Snapshots record and update literal `-n`, `-e`, `-E` and combined echo flag values correctly (#1402)
-- Spies keep multiline arguments in one recorded call, including comparisons and failure logs (#1399). Call argument assertions fail when the spy was never called or the requested call index does not exist (#1400)
-- `bashunit::unmock` restores shell functions replaced by spies, mocks or mock sequences (#1401)
-
-#### Setup and selection
-
-- `install.sh` and `upgrade` keep the installed binary when a download fails or is empty; installation also keeps it when checksum verification fails (#1406, #1407)
-- `install.sh` resolves relative destinations from the caller's directory, reports the resolved path (#1408), and rejects prefixed or incomplete version numbers instead of treating them as directories (#1409)
-- `init` quotes the bootstrap path and custom tests directory in `.env`, so paths containing spaces work on later runs (#1411). Generated workflows pass a tests directory containing whitespace as one path without requiring a committed `.env` (#1425)
-- `.bashunitrc` suite options stay out of the environment; global settings before and after suite sections still apply (#1410)
-- Include, inline and exclusion filters preserve `test_` inside names such as `latest_version` (#1414). `--debug` keeps an existing test file or directory as the test path instead of taking it as the trace file (#1405)
-
-#### Test discovery and execution
-
-- Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422). Duplicate definitions with an opening brace on the next line are reported instead of replacing the first definition (#1421)
-- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
-- SIGTERM and SIGHUP run teardown hooks, stop parallel workers and remove scratch files before exiting with status 1 (#1417)
-- Parallel results and hook output stay separate for paths that differ by slashes and underscores (#1416). Relative hidden paths are counted and keep separate results from matching visible paths (#1393)
-
-#### Reports and reruns
-
-- Sequential stop-on-failure runs write requested reports and the rerun cache for tests that ran (#1415). A green file or filtered subset preserves cache entries for tests it did not execute (#1418)
-- Coverage report paths are checked before tests run; LCOV or HTML write failures make the run fail (#1412). TAP reports keep test titles containing line breaks on one result line (#1413)
-- Failure source context stays inside a one-line test instead of listing the next function's assertions (#1420)
+- Homepage example covering a Bash function, test, run command and passing output
+- Release posts for 0.43.0 through 0.52.0, including the 0.50.1 cleanup patch
 
 ### Changed
 
-- Common patterns appears under Writing Tests; Quickstart links to function and script testing recipes
-- Shortened guides, reference pages and release posts
-- Large provider and annotation maps use indexed lookups to speed up test files on Bash 3.0 and newer (#1392)
+- Faster indexed lookups for large provider and annotation maps on Bash 3.0 and newer (#1392)
+- Common patterns moved under Writing Tests; Quickstart links to function and script testing recipes
+- Shorter guides, reference pages and release posts
+
+### Fixed
+
+#### Assertions and doubles
+
+- Date assertions reject trailing text on macOS and handle colon-separated timezone offsets consistently across platforms (#1404)
+- `assert_string_not_starts_with` joins all haystack arguments and labels failures with the test name, matching its siblings (#1403)
+- `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
+- `assert_files_equals` and `assert_files_not_equals` name missing paths and fail when either file is absent (#1397)
+- Snapshots record and update `-n`, `-e`, `-E` and combined echo flags literally (#1402)
+- Spies keep multiline arguments in one call, including comparisons and failure logs (#1399)
+- Call argument assertions reject uncalled spies and missing call indices (#1400)
+- `bashunit::unmock` restores functions replaced by spies, mocks or mock sequences (#1401)
+
+#### Setup and selection
+
+- `install.sh` and `upgrade` preserve installed binaries after failed or empty downloads; installation also preserves them after checksum failures (#1406, #1407)
+- `install.sh` resolves relative destinations from the caller's directory and reports the resolved path (#1408)
+- `install.sh` rejects prefixed or incomplete versions instead of treating them as directories (#1409)
+- `init` quotes bootstrap and test paths containing spaces in `.env`. Generated workflows preserve whitespace in test paths without a committed `.env` (#1411, #1425)
+- `.bashunitrc` suite options are not exported; global settings before and after suite sections still apply (#1410)
+- Include, inline and exclusion filters preserve `test_` within names such as `latest_version` (#1414)
+- `--debug` preserves existing test files and directories instead of treating them as trace files (#1405)
+
+#### Test discovery and execution
+
+- Annotations, tags, header counts and duplicate checks support functions without parentheses (#1422)
+- Duplicate checks catch definitions with next-line opening braces instead of losing the first definition (#1421)
+- Echo providers preserve `#` and parentheses, report malformed rows and keep later rows. Quoted values preserve carriage returns on Windows (#1419)
+- SIGTERM and SIGHUP run teardown hooks, stop parallel workers, remove scratch files and exit with status 1 (#1417)
+- Parallel results and hook output stay separate for paths differing by slashes and underscores (#1416)
+- Relative hidden paths are counted and keep separate results from matching visible paths (#1393)
+
+#### Reports and reruns
+
+- Sequential `--stop-on-failure` writes requested reports and updates the rerun cache for executed tests (#1415)
+- Passing file or filtered runs preserve failure-cache entries for unexecuted tests (#1418)
+- Coverage paths are checked before tests run; failed LCOV or HTML writes fail the run (#1412)
+- TAP keeps titles containing line breaks on one result line (#1413)
+- Failure source context stays within a one-line test instead of listing the next function's assertions (#1420)
+
+#### Documentation
+
+- Homepage logo respects reduced motion and stops tracking the pointer after navigation
+- Primary buttons use dark text in both themes, including hover and active states
+- Quickstart commands match `install.sh` and project or global npm installs
 
 ## [0.52.0](https://github.com/TypedDevs/bashunit/compare/0.51.0...0.52.0) - 2026-10-11
 
