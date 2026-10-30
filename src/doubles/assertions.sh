@@ -59,11 +59,24 @@ function assert_have_been_called_with() {
     return
   fi
 
-  # One pass yields both the compared line and the total, which the failure
-  # message needs — and costs no fork, unlike the tail/sed it replaces.
   bashunit::spy::read_call_to_slots "${!file_var-}" "$index"
-  local raw=${_BASHUNIT_SPY_CALL_OUT%%$'\x1e'*}
+  bashunit::spy::decode_raw_to_slot "${_BASHUNIT_SPY_CALL_OUT%%$'\x1e'*}"
+  local raw=$_BASHUNIT_SPY_RAW_OUT
   local total=$_BASHUNIT_SPY_CALL_TOTAL_OUT
+
+  if [ "$total" -eq 0 ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "$label" "$command" "to have been called" "once"
+    return
+  fi
+  if [ -n "$index" ] && { [ "$index" -lt 1 ] || [ "$index" -gt "$total" ]; }; then
+    bashunit::state::add_assertions_failed
+    bashunit::spy::call_log_to_slot "$command"
+    bashunit::console_results::print_failed_test "$label" \
+      "expected call" "at index ${index} but" "only called ${total} times" \
+      "" "" "$_BASHUNIT_SPY_CALL_LOG_OUT"
+    return
+  fi
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
@@ -99,6 +112,11 @@ function assert_have_been_called_with_args() {
   fi
 
   bashunit::spy::read_call_to_slots "${!file_var-}"
+  if [ "$_BASHUNIT_SPY_CALL_TOTAL_OUT" -eq 0 ]; then
+    bashunit::state::add_assertions_failed
+    bashunit::console_results::print_failed_test "$label" "$command" "to have been called" "once"
+    return
+  fi
   local actual=""
   case "$_BASHUNIT_SPY_CALL_OUT" in
   *$'\x1e'*) actual=${_BASHUNIT_SPY_CALL_OUT#*$'\x1e'} ;;
@@ -142,7 +160,8 @@ function assert_have_been_called_with_any() {
   if [ -f "${!file_var}" ]; then
     while IFS= read -r line; do
       total=$((total + 1))
-      if [ "${line%%$'\x1e'*}" = "$expected" ]; then
+      bashunit::spy::decode_raw_to_slot "${line%%$'\x1e'*}"
+      if [ "$_BASHUNIT_SPY_RAW_OUT" = "$expected" ]; then
         found=true
         break
       fi
@@ -210,10 +229,15 @@ function assert_have_been_called_nth_with() {
   case "$nth" in
   '' | *[!0-9]*)
     bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
-      "expects a numeric call index first (nth, command, expected_args), got '$nth'"
+      "expects a numeric call index starting at 1 first (nth, command, expected_args), got '$nth'"
     return 2
     ;;
   esac
+  if [ "$nth" -eq 0 ]; then
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a numeric call index starting at 1 first (nth, command, expected_args), got '$nth'"
+    return 2
+  fi
   local command=$2
   shift 2
   local expected="$*"
@@ -250,6 +274,8 @@ function assert_have_been_called_nth_with() {
 
   local raw
   IFS=$'\x1e' read -r raw _ <<<"$line" || true
+  bashunit::spy::decode_raw_to_slot "$raw"
+  raw=$_BASHUNIT_SPY_RAW_OUT
 
   if [ "$expected" != "$raw" ]; then
     bashunit::state::add_assertions_failed
