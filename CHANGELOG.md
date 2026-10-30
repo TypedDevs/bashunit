@@ -28,7 +28,7 @@
 #### Test discovery and execution
 
 - Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422). Duplicate definitions with an opening brace on the next line are reported instead of replacing the first definition (#1421)
-- Echo data providers preserve words containing `#` or parentheses and report malformed rows without dropping later rows (#1419)
+- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
 - SIGTERM and SIGHUP run teardown hooks, stop parallel workers and remove scratch files before exiting with status 1 (#1417)
 - Parallel results and hook output stay separate for paths that differ by slashes and underscores (#1416). Relative hidden paths are counted and keep separate results from matching visible paths (#1393)
 
