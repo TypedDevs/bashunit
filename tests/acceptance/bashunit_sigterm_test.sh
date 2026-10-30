@@ -48,7 +48,8 @@ if pid == 0:
 status = None
 captured = bytearray()
 started = time.monotonic()
-deadline = started + 5
+# Match the timeout acceptance fixture's 30-second body-readiness allowance.
+deadline = started + 30
 input_sent = False
 timings = {"input": None, "passed_summary": None, "last_output": None, "child_exit": None}
 try:
