@@ -9,6 +9,8 @@
 
 ### Fixed
 
+- Generated workflows run test directories containing whitespace as a single path without requiring a committed `.env` (#1425)
+- Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422)
 - Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
 - Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
 - Primary buttons use dark text in both themes, including hover and active states

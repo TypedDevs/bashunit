@@ -17,23 +17,18 @@ function bashunit::helper::check_duplicate_functions() {
   # list itself, so no `sort` fork is needed to keep the output deterministic.
   local duplicates
   duplicates=$(awk '
-    /^[[:space:]]*(function[[:space:]]+)?test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)[[:space:]]*(\{|$)/ {
-      for (i = 1; i <= NF; i++) {
-        if ($i ~ /^test[a-zA-Z_][a-zA-Z0-9_]*\(\)$/) {
-          name = $i
-          gsub(/\(\)/, "", name)
-          if (++seen[name] == 2) {
-            dup[name] = 1
-          }
-          # Recorded for every occurrence, the first included: the report needs
-          # both definitions to be worth anything.
-          if (lines[name] == "") {
-            lines[name] = FNR
-          } else {
-            lines[name] = lines[name] ", " FNR
-          }
-          break
-        }
+    /^[[:space:]]*function[[:space:]]+test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*(\(\)|\{|#|\(|$)/ ||
+    /^[[:space:]]*test[a-zA-Z_][a-zA-Z0-9_]*[[:space:]]*\(\)/ {
+      name = $0
+      sub(/^[[:space:]]*(function[[:space:]]+)?/, "", name)
+      sub(/[[:space:]({#].*/, "", name)
+      if (++seen[name] == 2) {
+        dup[name] = 1
+      }
+      if (lines[name] == "") {
+        lines[name] = FNR
+      } else {
+        lines[name] = lines[name] ", " FNR
       }
     }
     END {

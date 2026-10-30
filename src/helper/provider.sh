@@ -150,11 +150,12 @@ function bashunit::helper::build_provider_map() {
     # Any other comment keeps the block open, the same rule @tag follows.
     /^[[:space:]]*#/ { next }
     {
-      is_fn = match($0, /^[[:space:]]*(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)
+      is_fn = match($0, /^[[:space:]]*function[[:space:]]+[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*(\(\)|\{|#|\(|$)/) ||
+              match($0, /^[[:space:]]*[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)
       if (is_fn) {
         fn = $0
         sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
-        sub(/[[:space:]]*\(\).*/, "", fn)
+        sub(/[[:space:]({#].*/, "", fn)
       }
 
       # A definition at column 0 is one this scan can be sure the file defines
@@ -162,7 +163,7 @@ function bashunit::helper::build_provider_map() {
       # Anything that could define a function this scan cannot see -- eval,
       # a nested source, an indented (so conditional or nested) definition --
       # marks the file dynamic and sends the count back to sourcing.
-      if (match($0, /^(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/)) {
+      if (is_fn && $0 !~ /^[[:space:]]/) {
         # Accumulated, not emitted per definition: the read loop below runs
         # once per row, and a row per function cost about as much as counting
         # statically saved.

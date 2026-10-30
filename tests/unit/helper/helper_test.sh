@@ -145,6 +145,19 @@ function test_check_duplicate_functions_with_the_brace_on_the_next_line() {
   assert_contains "test_twice (lines 1, 5)" "$detail"
 }
 
+function test_check_duplicate_functions_with_a_comment_before_the_brace() {
+  local file detail
+  file="$(bashunit::temp_file duplicate_comment_line).sh"
+  printf 'function %s() # first\n{\n  :\n}\nfunction %s() # second\n{\n  :\n}\n' \
+    test_twice test_twice >"$file"
+
+  detail=$(
+    bashunit::helper::check_duplicate_functions "$file" >/dev/null 2>&1 || true
+    bashunit::state::get_duplicated_function_details
+  )
+  assert_contains "test_twice (lines 1, 5)" "$detail"
+}
+
 function test_check_duplicate_functions_without_duplicates() {
   local file
   file="$(bashunit::current_dir)/../fixtures/no_duplicate_functions.sh"
@@ -1065,4 +1078,18 @@ function test_no_exclude_filter_keeps_previous_behaviour() {
 
   assert_same "prefix_alpha prefix_beta" \
     "$(_with_exclude_filter "" "prefix" "" "${functions[*]}")"
+}
+
+function test_duplicate_keyword_only_definitions_are_reported() {
+  local file fn=test_duplicate_without_parens
+  file="$(bashunit::temp_file)"
+  printf 'function %s { :; }\nfunction %s\n{ :; }\n' "$fn" "$fn" >"$file"
+  assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
+}
+
+function test_duplicate_definitions_with_comments_and_subshell_bodies_are_reported() {
+  local file fn=test_duplicate_body_forms
+  file="$(bashunit::temp_file)"
+  printf 'function %s () # a note\n{ :; }\n%s() ( : )\n' "$fn" "$fn" >"$file"
+  assert_general_error "$(bashunit::helper::check_duplicate_functions "$file")"
 }

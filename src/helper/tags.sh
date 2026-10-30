@@ -89,10 +89,11 @@ function bashunit::helper::build_tags_map() {
       next
     }
     /^[[:space:]]*#/ { next }
-    /^[[:space:]]*(function[[:space:]]+)?[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/ {
+    /^[[:space:]]*function[[:space:]]+[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*(\(\)|\{|#|\(|$)/ ||
+    /^[[:space:]]*[A-Za-z_][A-Za-z0-9_:]*[[:space:]]*\(\)/ {
       fn = $0
       sub(/^[[:space:]]*(function[[:space:]]+)?/, "", fn)
-      sub(/[[:space:]]*\(\).*/, "", fn)
+      sub(/[[:space:]({#].*/, "", fn)
       # Buffered rather than printed here so a `# @tags` line placed below the
       # functions still applies to them (single pass, order preserved).
       order[n] = fn

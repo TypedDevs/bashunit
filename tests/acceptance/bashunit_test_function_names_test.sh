@@ -74,3 +74,33 @@ function test_real_3() { assert_same 1 1; }')
   assert_contains "test_real_3" "$output"
   assert_not_contains "testdata_path" "$output"
 }
+
+function provide_definition_annotation_modes() {
+  bashunit::data_set --no-parallel
+  bashunit::data_set --parallel
+}
+
+# @data_provider provide_definition_annotation_modes
+function test_mixed_definition_forms_keep_annotations_tags_and_header_counts() {
+  local fixture="$WORKDIR/mixed_test.sh"
+  printf '%s\n' 'function provide_keyword_rows() { bashunit::data_set one; bashunit::data_set two; }
+function test_keyword_with_parentheses() { assert_true true; }
+test_only_parentheses() { assert_true true; }
+# @data_provider provide_keyword_rows
+function test_keyword_provider { assert_same 1 "$#"; }
+# @skip not ready
+function test_keyword_skipped { assert_true false; }
+# @tag slow
+function test_keyword_tagged { assert_true true; }' >"$fixture"
+  local output
+  output=$("$BASHUNIT_BIN" "$1" --skip-env-file --no-color "$fixture" 2>&1)
+  assert_successful_code "$?"
+  assert_contains 'Tests: 6' "$output"
+  assert_contains '5 passed' "$output"
+  assert_contains '1 skipped' "$output"
+  assert_contains '6 total' "$output"
+  output=$("$BASHUNIT_BIN" "$1" --skip-env-file --no-color --tag slow "$fixture" 2>&1)
+  assert_successful_code "$?"
+  assert_contains '1 passed' "$output"
+  assert_contains '1 total' "$output"
+}

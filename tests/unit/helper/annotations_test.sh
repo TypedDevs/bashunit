@@ -300,3 +300,34 @@ ${FN}() { :; }"
   assert_empty "$(compgen -A variable _BASHUNIT_METADATA_ANNOT_)"
   assert_empty "$(compgen -A variable _BASHUNIT_METADATA_PROVIDER_)"
 }
+
+function test_keyword_only_definitions_keep_provider_and_runtime_annotations() {
+  build_map "# @timeout 7
+# @retry 2
+# @data_provider rows
+function ${FN} {
+  :
+}"
+  bashunit::helper::provider_for_function "$FN"
+  assert_same rows "$_BASHUNIT_PROVIDER_FN_OUT"
+  bashunit::helper::annotations_for_function "$FN"
+  assert_same 7 "$_BASHUNIT_ANNOT_TIMEOUT_OUT"
+  assert_same 2 "$_BASHUNIT_ANNOT_RETRY_OUT"
+  assert_same false "$_BASHUNIT_PROVIDER_MAP_DYNAMIC"
+}
+
+function test_keyword_only_definition_keeps_skip_reason() {
+  build_map "# @skip not ready
+function ${OTHER_FN}
+{
+  :
+}"
+  bashunit::helper::annotations_for_function "$OTHER_FN"
+  assert_same true "$_BASHUNIT_ANNOT_SKIP_OUT"
+  assert_same 'not ready' "$_BASHUNIT_ANNOT_REASON_OUT"
+}
+
+function test_indented_keyword_only_definition_keeps_dynamic_counting() {
+  build_map "  function ${FN} { :; }"
+  assert_same true "$_BASHUNIT_PROVIDER_MAP_DYNAMIC"
+}

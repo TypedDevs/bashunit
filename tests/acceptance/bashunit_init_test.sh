@@ -289,3 +289,37 @@ function test_a_healthy_env_flag_file_still_loads() {
   assert_same 0 "$ec"
   assert_contains "1 passed" "$output"
 }
+
+function provide_workflow_directories_with_whitespace() {
+  bashunit::data_set 'my tests'
+  bashunit::data_set $'my\ttests'
+  bashunit::data_set $'my\t${{ github.repository }}'
+  bashunit::data_set "my tests'\"; touch injected; #"
+}
+
+# @data_provider provide_workflow_directories_with_whitespace
+function test_generated_workflow_runs_the_whole_directory_without_an_env_file() {
+  local directory=$1 command output code=0
+  (cd "$TMP_DIR" && "$BASHUNIT_PATH" init "$directory") >/dev/null
+  command=$(awk '/^        run: \|$/ { getline; sub(/^          /, ""); print; exit }' \
+    "$TMP_DIR/.github/workflows/tests.yml")
+  assert_not_empty "$command"
+  assert_file_not_contains "$TMP_DIR/.github/workflows/tests.yml" '${{'
+  if [ -z "$command" ]; then
+    return
+  fi
+  mkdir -p "$TMP_DIR/lib"
+  printf '#!/usr/bin/env bash\nexec %q "$@"\n' "$BASHUNIT_PATH" >"$TMP_DIR/lib/bashunit"
+  chmod +x "$TMP_DIR/lib/bashunit"
+  rm "$TMP_DIR/.env"
+  output=$(cd "$TMP_DIR" && bash -c "$command" 2>&1) || code=$?
+  assert_same 0 "$code"
+  assert_contains '1 passed' "$output"
+  assert_file_not_exists "$TMP_DIR/injected"
+}
+
+function test_generated_workflow_keeps_the_existing_args_for_a_simple_directory() {
+  (cd "$TMP_DIR" && "$BASHUNIT_PATH" init custom) >/dev/null
+  assert_file_contains "$TMP_DIR/.github/workflows/tests.yml" '          args: custom'
+  assert_file_not_contains "$TMP_DIR/.github/workflows/tests.yml" '        run: |'
+}
