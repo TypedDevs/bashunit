@@ -47,13 +47,16 @@ if pid == 0:
 
 status = None
 captured = bytearray()
-deadline = time.monotonic() + 5
+started = time.monotonic()
+deadline = started + 5
 input_sent = False
+timings = {"input": None, "passed_summary": None, "last_output": None, "child_exit": None}
 try:
     while time.monotonic() < deadline:
         if not input_sent and os.path.isfile(sys.argv[3]) and os.path.getsize(sys.argv[3]) > 0:
             os.write(terminal, b"entered\n")
             input_sent = True
+            timings["input"] = round(time.monotonic() - started, 3)
         readable, _, _ = select.select([terminal], [], [], 0.05)
         if readable:
             try:
@@ -63,9 +66,14 @@ try:
                     raise
                 data = b""
             captured.extend(data)
+            if data:
+                timings["last_output"] = round(time.monotonic() - started, 3)
+            if timings["passed_summary"] is None and b" All tests passed " in captured:
+                timings["passed_summary"] = timings["last_output"]
         found, child_status = os.waitpid(pid, os.WNOHANG)
         if found:
             status = child_status
+            timings["child_exit"] = round(time.monotonic() - started, 3)
             while select.select([terminal], [], [], 0)[0]:
                 try:
                     data = os.read(terminal, 65536)
@@ -78,6 +86,28 @@ try:
                 captured.extend(data)
             break
 finally:
+    if status is None:
+        elapsed = time.monotonic() - started
+        import subprocess
+        print("PTY timings at %.3fs: %r" % (elapsed, timings))
+        try:
+            snapshot = subprocess.check_output(
+                ["ps", "-axo", "pid=,ppid=,pgid=,stat=,wchan=,comm="],
+                universal_newlines=True, timeout=1
+            ).splitlines()
+            rows = [row.split(None, 5) for row in snapshot]
+            owned = {pid}
+            while True:
+                descendants = {int(row[0]) for row in rows if int(row[1]) in owned}
+                if descendants.issubset(owned):
+                    break
+                owned.update(descendants)
+            print("PTY owned processes (PID PPID PGID STAT WCHAN COMM):")
+            for row in rows:
+                if int(row[0]) in owned:
+                    print(" ".join(row))
+        except (OSError, subprocess.SubprocessError, ValueError) as error:
+            print("PTY process snapshot unavailable: %s" % error)
     try:
         with open(sys.argv[3], encoding="ascii") as body_file:
             body_pid = int(body_file.read())
