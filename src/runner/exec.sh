@@ -215,14 +215,15 @@ function bashunit::runner::call_test_functions() {
       continue
     fi
 
-    local data
+    local data provider_row=0
     for data in "${provider_data[@]+"${provider_data[@]}"}"; do
       if [ "${_BASHUNIT_STOP_REQUESTED:-false}" = true ]; then
         break
       fi
+      provider_row=$((provider_row + 1))
       parsed_data=()
       parsed_data_count=0
-      local transport_error=""
+      local transport_error="" parse_error=false
       if ! bashunit::env::ensure_run_output_dir; then
         transport_error="argument storage could not be created"
       elif [ -z "$provider_arg_file" ] || [ ! -f "$provider_arg_file" ]; then
@@ -250,7 +251,12 @@ function bashunit::runner::call_test_functions() {
             transport_error="arguments could not be read"
           fi
         else
-          transport_error="arguments could not be written"
+          if [ "$?" -eq 2 ]; then
+            parse_error=true
+            transport_error="row $provider_row could not be parsed: $data"
+          else
+            transport_error="arguments could not be written"
+          fi
         fi
       fi
       if [ -n "$transport_error" ]; then
@@ -258,6 +264,13 @@ function bashunit::runner::call_test_functions() {
         _BASHUNIT_RUNNER_RESULT_ORDINAL=$_test_ordinal
         bashunit::runner::report_provider_error \
           "$script" "$fn_name" "data provider '$_BASHUNIT_PROVIDER_FN_OUT' $transport_error"
+        if [ "$parse_error" = true ]; then
+          bashunit::runner::halt_if_stop_on_failure
+          if bashunit::env::is_stop_on_failure_enabled; then
+            break
+          fi
+          continue
+        fi
         break
       fi
       _test_ordinal=$((_test_ordinal + 1))

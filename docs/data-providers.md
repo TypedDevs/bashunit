@@ -81,7 +81,9 @@ function provider_function() {
 
 > **Note**: The previous variant of using `echo` to define data within a data
 > provider is still supported but deprecated, as it does not support empty values or
-> values containing spaces. Use `bashunit::data_set` instead.
+> values containing spaces. Use `bashunit::data_set` instead. A `#` word or literal
+> parentheses no longer abort a row. An unclosed quote fails only that row,
+> with its provider name and row number; later rows still run.
 
 ## Interpolating arguments in test names
 

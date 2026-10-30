@@ -9,6 +9,7 @@
 
 ### Fixed
 
+- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
 - Homepage logo follows reduced-motion preferences and stops tracking the pointer after navigation
 - Primary buttons use dark text in both themes, including hover and active states
 - Quickstart commands match install.sh, npm project and npm global installs
