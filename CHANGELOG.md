@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- Include, inline, and exclusion filters preserve `test_` inside names such as `latest_version` (#1414)
 - `.bashunitrc` suite options stay out of the environment, while global settings before and after suite sections still apply (#1410)
 - `install.sh` rejects prefixed or incomplete version numbers instead of treating them as directories (#1409)
 - `install.sh` resolves relative destinations from the caller's directory and reports the resolved installation path (#1408)
