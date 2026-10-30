@@ -402,7 +402,7 @@ function bashunit::snapshot::initialize() {
   local path="$1"
   local content="$2"
   mkdir -p "$(dirname "$path")"
-  echo "$content" >"$path"
+  printf '%s\n' "$content" >"$path"
   bashunit::state::add_assertions_snapshot
 }
 
@@ -431,7 +431,7 @@ function bashunit::snapshot::update() {
     ;;
   esac
 
-  echo "$actual" >"$path"
+  printf '%s\n' "$actual" >"$path"
   bashunit::state::add_assertions_snapshot
   return 0
 }
