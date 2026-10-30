@@ -2183,6 +2183,9 @@ function test_failure() {
 > `assert_have_been_called_with "command" "expected_args" [nth]`
 
 Reports an error if the spied `command` was not called with `expected_args`. Checks the **last** call unless a trailing all-digits `nth` selects a specific one; the failure names the call it compared.
+
+A never-called spy fails; `nth` starts at 1 and must refer to a recorded call.
+
 Because `nth` is detected as a trailing all-digits argument, an expectation whose last
 argument is a number is read as the selector: `assert_have_been_called_with git commit -m 5`
 compares `commit -m` against call 5. Pass the expectation as one quoted string,
