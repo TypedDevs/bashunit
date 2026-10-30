@@ -145,6 +145,19 @@ function test_check_duplicate_functions_with_the_brace_on_the_next_line() {
   assert_contains "test_twice (lines 1, 5)" "$detail"
 }
 
+function test_check_duplicate_functions_with_a_comment_before_the_brace() {
+  local file detail
+  file="$(bashunit::temp_file duplicate_comment_line).sh"
+  printf 'function %s() # first\n{\n  :\n}\nfunction %s() # second\n{\n  :\n}\n' \
+    test_twice test_twice >"$file"
+
+  detail=$(
+    bashunit::helper::check_duplicate_functions "$file" >/dev/null 2>&1 || true
+    bashunit::state::get_duplicated_function_details
+  )
+  assert_contains "test_twice (lines 1, 5)" "$detail"
+}
+
 function test_check_duplicate_functions_without_duplicates() {
   local file
   file="$(bashunit::current_dir)/../fixtures/no_duplicate_functions.sh"
