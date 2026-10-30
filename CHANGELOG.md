@@ -8,6 +8,7 @@
 
 ### Fixed
 
+- `install.sh` keeps the installed binary when a download fails, is empty, or fails checksum verification (#1406)
 - `--debug` leaves an existing test file or directory as the test path instead of taking it as the trace file (#1405)
 - Call argument assertions fail when the spy was never called or the requested call index does not exist (#1400)
 - `assert_matches` and `assert_not_matches` accept patterns starting with `-` and fail when grep rejects a pattern (#1398)
