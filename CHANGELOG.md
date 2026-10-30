@@ -11,7 +11,7 @@
 - Snapshots record and update literal `-n`, `-e`, `-E` and combined echo flag values correctly (#1402)
 - Generated workflows run test directories containing whitespace as a single path without requiring a committed `.env` (#1425)
 - Annotations, tags, header counts and duplicate checks support functions declared without parentheses (#1422)
-- Echo data providers preserve words containing `#` or parentheses and report malformed rows without dropping later rows (#1419)
+- Echo data providers keep `#` and parentheses, and report malformed rows without dropping later rows. Quoted values keep carriage returns on Windows (#1419)
 - A green file or filtered subset preserves rerun-cache entries for tests it did not execute (#1418)
 - SIGTERM and SIGHUP run teardown hooks, stop parallel workers, and remove the run's scratch files before exiting with status 1 (#1417)
 - Sequential stop-on-failure runs write requested reports and the rerun cache for the tests that ran (#1415)

@@ -208,6 +208,8 @@ function test_echo_provider_keeps_hash_and_parentheses_words() {
 function provide_quoted_hash_and_parentheses() {
   bashunit::data_set hash $'first\v#fff'
   bashunit::data_set parentheses $'first\v(round)'
+  bashunit::data_set hash_cr $'first\r#fff'
+  bashunit::data_set parentheses_cr $'first\r(round)'
 }
 
 # @data_provider provide_quoted_hash_and_parentheses
@@ -216,6 +218,8 @@ function test_ansi_quoted_provider_values_keep_control_characters_next_to_metach
   case "$1" in
   hash) assert_same $'first\v#fff' "$2" ;;
   parentheses) assert_same $'first\v(round)' "$2" ;;
+  hash_cr) assert_same $'first\r#fff' "$2" ;;
+  parentheses_cr) assert_same $'first\r(round)' "$2" ;;
   esac
 }
 
