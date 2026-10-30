@@ -56,6 +56,7 @@ try:
         if not input_sent and os.path.isfile(sys.argv[3]) and os.path.getsize(sys.argv[3]) > 0:
             os.write(terminal, b"entered\n")
             input_sent = True
+            deadline = time.monotonic() + 5
             timings["input"] = round(time.monotonic() - started, 3)
         readable, _, _ = select.select([terminal], [], [], 0.05)
         if readable:
@@ -74,53 +75,41 @@ try:
         if found:
             status = child_status
             timings["child_exit"] = round(time.monotonic() - started, 3)
-            while select.select([terminal], [], [], 0)[0]:
-                try:
-                    data = os.read(terminal, 65536)
-                except OSError as error:
-                    if error.errno != errno.EIO:
-                        raise
-                    break
-                if not data:
-                    break
-                captured.extend(data)
             break
 finally:
     if status is None:
-        elapsed = time.monotonic() - started
-        import subprocess
-        print("PTY timings at %.3fs: %r" % (elapsed, timings))
-        try:
-            snapshot = subprocess.check_output(
-                ["ps", "-axo", "pid=,ppid=,pgid=,stat=,wchan=,comm="],
-                universal_newlines=True, timeout=1
-            ).splitlines()
-            rows = [row.split(None, 5) for row in snapshot]
-            owned = {pid}
-            while True:
-                descendants = {int(row[0]) for row in rows if int(row[1]) in owned}
-                if descendants.issubset(owned):
-                    break
-                owned.update(descendants)
-            print("PTY owned processes (PID PPID PGID STAT WCHAN COMM):")
-            for row in rows:
-                if int(row[0]) in owned:
-                    print(" ".join(row))
-        except (OSError, subprocess.SubprocessError, ValueError) as error:
-            print("PTY process snapshot unavailable: %s" % error)
-    try:
-        with open(sys.argv[3], encoding="ascii") as body_file:
-            body_pid = int(body_file.read())
-        if os.getsid(body_pid) == pid:
-            os.kill(body_pid, signal.SIGKILL)
-    except (OSError, ValueError):
-        pass
+        found, child_status = os.waitpid(pid, os.WNOHANG)
+        if found:
+            status = child_status
+            timings["child_exit"] = round(time.monotonic() - started, 3)
     if status is None:
+        print("PTY timings at %.3fs: %r" % (time.monotonic() - started, timings))
+        try:
+            with open(sys.argv[3], encoding="ascii") as body_file:
+                body_pid = int(body_file.read())
+            if os.getsid(body_pid) == pid:
+                os.kill(body_pid, signal.SIGKILL)
+        except (OSError, ValueError):
+            pass
         try:
             os.killpg(pid, signal.SIGKILL)
-        except ProcessLookupError:
-            pass
+        except OSError:
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
         os.waitpid(pid, 0)
+    else:
+        while select.select([terminal], [], [], 0)[0]:
+            try:
+                data = os.read(terminal, 65536)
+            except OSError as error:
+                if error.errno != errno.EIO:
+                    raise
+                break
+            if not data:
+                break
+            captured.extend(data)
     os.close(terminal)
 
 print(captured.decode("utf-8", errors="replace"))
