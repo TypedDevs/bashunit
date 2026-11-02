@@ -1,7 +1,7 @@
 ---
 name: fix-test
 description: Debug and fix failing tests systematically
-allowed-tools: read, edit, shell, Grep, Glob
+allowed-tools: [read, edit, shell, Grep, Glob]
 ---
 
 # Fix a failing test

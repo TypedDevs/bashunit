@@ -1,7 +1,7 @@
 ---
 name: fork-census
-description: Measure process costs for startup, test execution, reports, and coverage.
-allowed-tools: read, shell
+description: Measure process costs and fork budgets when changing startup, per-file, per-test, parallel workers, reporting, or coverage paths; use for fork census and performance comparisons.
+allowed-tools: [read, shell]
 ---
 
 # Fork census

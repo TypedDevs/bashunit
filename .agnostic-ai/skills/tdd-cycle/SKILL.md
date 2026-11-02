@@ -1,7 +1,7 @@
 ---
 name: tdd-cycle
-description: Run a test's RED/GREEN/REFACTOR cycle.
-allowed-tools: read, edit, write, shell, Grep, Glob
+description: Run complete TDD red-green-refactor cycle for a test
+allowed-tools: [read, edit, write, shell, Grep, Glob]
 ---
 
 # TDD cycle

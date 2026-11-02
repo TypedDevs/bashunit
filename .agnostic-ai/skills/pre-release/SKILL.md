@@ -1,7 +1,7 @@
 ---
 name: pre-release
 description: Run comprehensive pre-release validation checklist
-allowed-tools: read, shell, Grep, Glob
+allowed-tools: [read, shell, Grep, Glob]
 ---
 
 # Pre-release validation

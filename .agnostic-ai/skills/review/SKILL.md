@@ -2,7 +2,7 @@
 name: review
 description: Review a GitHub pull request, by default the current branch's
 argument-hint: "[#N]"
-allowed-tools: shell, read, Grep, Glob
+allowed-tools: [shell, read, Grep, Glob]
 ---
 
 # Review a pull request

@@ -2,7 +2,7 @@
 name: pr
 description: Push branch and create a GitHub PR with concise, issue-linked description
 argument-hint: "[#issue]"
-allowed-tools: shell, read, Grep, Glob
+allowed-tools: [shell, read, Grep, Glob]
 ---
 
 # Create a pull request

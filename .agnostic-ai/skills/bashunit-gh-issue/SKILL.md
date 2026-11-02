@@ -2,7 +2,7 @@
 name: bashunit-gh-issue
 description: Fetch GitHub issue, create branch, plan and implement with TDD, then open PR
 argument-hint: "<issue-number>"
-allowed-tools: shell, read, edit, write, Grep, Glob, Agent, WebFetch
+allowed-tools: [shell, read, edit, write, Grep, Glob, Agent, WebFetch]
 ---
 
 # Work a GitHub issue

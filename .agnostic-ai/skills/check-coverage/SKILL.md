@@ -1,7 +1,7 @@
 ---
 name: check-coverage
 description: Analyze test coverage and identify untested code paths
-allowed-tools: read, shell, Grep, Glob
+allowed-tools: [read, shell, Grep, Glob]
 ---
 
 # Check coverage

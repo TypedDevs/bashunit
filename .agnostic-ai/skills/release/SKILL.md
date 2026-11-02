@@ -2,7 +2,7 @@
 name: release
 description: Run pre-release validation and execute the release process
 argument-hint: "[version]"
-allowed-tools: shell, read, Grep, Glob
+allowed-tools: [shell, read, Grep, Glob]
 ---
 
 # Release

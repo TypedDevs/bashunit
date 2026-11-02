@@ -3,7 +3,7 @@ name: bashunit-gh-issues
 description: Work open unassigned or own GitHub issues one at a time.
 argument-hint: "[--limit N] [--label foo] [--dry-run]"
 disable-model-invocation: true
-allowed-tools: read, shell, Skill
+allowed-tools: [read, shell, Skill]
 ---
 
 # Process an issue queue

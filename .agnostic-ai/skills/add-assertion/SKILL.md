@@ -1,7 +1,7 @@
 ---
 name: add-assertion
-description: Add an assertion with comprehensive tests through TDD.
-allowed-tools: read, edit, write, shell, Grep, Glob
+description: Add new assertion function with comprehensive tests following TDD
+allowed-tools: [read, edit, write, shell, Grep, Glob]
 ---
 
 # Add an assertion
