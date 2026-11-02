@@ -4,7 +4,7 @@ scope: tests
 
 # Testing
 
-Read sibling tests before writing a new fixture. Repository paths are relative to the repository root.
+Read sibling tests before writing a new fixture.
 
 | Layer | Directory | Scope |
 |-------|-----------|-------|
@@ -16,7 +16,7 @@ Files end in `_test.sh`; name tests for the behavior and trigger. Select validat
 
 ## Assertions and doubles
 
-Assertions are bare functions (`assert_equals`, `assert_same`, `assert_contains`, `assert_not_contains`, `assert_successful_code`, `assert_general_error`, `assert_file_exists`, `assert_file_not_exists`). Helpers and doubles use `bashunit::*`. Inspect the matching assertion before guessing its signature. There is no `assert_fails`.
+Assertions are bare functions (`assert_equals`, `assert_same`, `assert_contains`, `assert_not_contains`, `assert_successful_code`, `assert_general_error`, `assert_file_exists`, `assert_file_not_exists`). Helpers and doubles use `bashunit::*`. Read the assertion before guessing its signature. There is no `assert_fails`.
 
 ```bash
 bashunit::spy function_name

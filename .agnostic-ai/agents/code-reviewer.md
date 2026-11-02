@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Review diffs for verified defects.
+description: Use before a push or PR to review a diff for verified defects.
 model: strong
 can: [read, shell]
 ---

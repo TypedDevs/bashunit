@@ -4,7 +4,7 @@ scope: src
 
 # Architecture map
 
-Repository paths are relative to the root. Module paths below are under `src/` unless stated otherwise. Use function names as anchors; verify the current caller before changing a path. The per-module ownership table is in `.agnostic-ai/skills/fork-census/references/module-map.md`.
+Module paths are under `src/` unless stated. Use function names as anchors; verify the current caller before changing a path. The per-module ownership table is in `.agnostic-ai/skills/fork-census/references/module-map.md`.
 
 ## Run lifecycle
 
@@ -18,7 +18,7 @@ Repository paths are relative to the root. Module paths below are under `src/` u
 ## Cross-cutting invariants
 
 - Follow `.agnostic-ai/rules/bash-style.md` for Bash 3.0 parsing and `.agnostic-ai/rules/return-slots.md` for return values. `local` is dynamically scoped; helper locals can shadow caller-named outputs.
-- Follow `.agnostic-ai/rules/perf-fork-budget.md` for process costs. Preserve the acceptance budgets rather than assuming every path has the same allowance.
+- Follow `.agnostic-ai/rules/perf-fork-budget.md` for process costs. Keep each path's acceptance budget; budgets differ.
 - Background file dispatch cannot return counters or flags through shell state. Put whole-file validation before dispatch or return failures through explicit results. Always test sequential and parallel modes when changing this boundary.
 - Use dispatcher ordinals for worker identity. Subshells share `$$`; `RANDOM` reseeding varies by platform and nesting and cannot guarantee uniqueness.
 - Framework binaries are pinned at startup (`$GREP`, `$MKTEMP`, `$CAT` in `config/env.sh`) so test doubles and PATH changes cannot hijack internal plumbing.

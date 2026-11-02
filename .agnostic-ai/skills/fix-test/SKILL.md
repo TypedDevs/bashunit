@@ -1,6 +1,6 @@
 ---
 name: fix-test
-description: Debug and fix failing tests systematically
+description: Use when a test fails and needs debugging.
 allowed-tools: [read, edit, shell, Grep, Glob]
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: add-assertion
-description: Add new assertion function with comprehensive tests following TDD
+description: Use to add a new assert_* function with tests.
 allowed-tools: [read, edit, write, shell, Grep, Glob]
 ---
 

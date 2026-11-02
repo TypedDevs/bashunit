@@ -1,6 +1,6 @@
 ---
 name: code-implementer
-description: Implement scoped Bash 3.0 changes with focused checks.
+description: Use to implement a scoped Bash 3.0 change with focused checks.
 model: balanced
 can: [read, shell, edit, write]
 ---

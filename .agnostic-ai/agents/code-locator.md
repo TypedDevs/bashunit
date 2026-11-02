@@ -1,6 +1,6 @@
 ---
 name: code-locator
-description: Find definitions, callers, and references.
+description: Use to find where something is defined, who calls it, or every reference.
 model: fast
 can: [read, shell]
 ---

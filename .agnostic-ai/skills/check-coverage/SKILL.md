@@ -1,6 +1,6 @@
 ---
 name: check-coverage
-description: Analyze test coverage and identify untested code paths
+description: Use to check test coverage or find untested code paths.
 allowed-tools: [read, shell, Grep, Glob]
 ---
 

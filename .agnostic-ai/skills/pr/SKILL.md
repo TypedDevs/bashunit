@@ -1,6 +1,6 @@
 ---
 name: pr
-description: Push branch and create a GitHub PR with concise, issue-linked description
+description: Use to push the branch and open a GitHub PR.
 argument-hint: "[#issue]"
 allowed-tools: [shell, read, Grep, Glob]
 ---
