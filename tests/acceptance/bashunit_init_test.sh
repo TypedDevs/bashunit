@@ -1,15 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck disable=SC2317
 
-# This file must keep exactly ONE skipped test. bashunit_summary_output_test.sh
-# runs it to demonstrate --show-skipped and asserts the wording "There was 1
-# skipped test:", so a second skip turns that into "There were 2" and fails.
-#
-# A conditional skip is the dangerous kind: a permission test set up with
-# `chmod 000` is a no-op for root, so it runs locally and skips only on the
-# Bash 3.0 CI image -- green here, five jobs red there (#1264). Put those in
-# their own file; bashunit_bootstrap_diagnosis_test.sh exists for that.
-
 set -euo pipefail
 
 BASHUNIT_PATH="$PWD/bashunit"

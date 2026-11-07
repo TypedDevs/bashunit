@@ -9,15 +9,19 @@ function set_up_before_script() {
 function test_bashunit_when_a_test_fail_verbose_output_env() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  local output exit_code=0
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_when_a_test_fail_verbose_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)"
+  local output exit_code=0
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file" --detailed)" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_different_verbose_snapshots_matches() {
@@ -32,15 +36,19 @@ function test_different_verbose_snapshots_matches() {
 function test_bashunit_when_a_test_fail_simple_output_env() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")"
+  local output exit_code=0
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE_SIMPLE" "$test_file")" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_when_a_test_fail_simple_output_option() {
   local test_file=./tests/acceptance/fixtures/test_bashunit_when_a_test_fail.sh
 
-  assert_match_snapshot "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)"
+  local output exit_code=0
+  output="$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file" --simple)" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_with_multiple_failing_tests() {

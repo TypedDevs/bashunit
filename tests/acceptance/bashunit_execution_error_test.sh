@@ -36,9 +36,10 @@ function test_bashunit_when_a_execution_error() {
   bashunit::todo "Add snapshots with regex to assert this test (part of the error message is localized)"
   bashunit::todo "Add snapshots with simple/verbose modes as in bashunit_pass_test and bashunit_fail_test"
 
-  local actual="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
+  local actual exit_code=0
+  actual="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
   assert_contains "$fixture_start" "$actual"
   assert_contains "invalid_function_name" "$actual"
   assert_contains "$fixture_end" "$actual"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "" "" "$exit_code"
 }
