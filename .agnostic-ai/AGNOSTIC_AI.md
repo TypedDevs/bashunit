@@ -13,7 +13,7 @@ Preserve Bash 3.0 parsing and public APIs; follow sibling tests/code. Update doc
 Main selects checks by changed behavior/risk and reuses unchanged passes. Small fixes: affected tests, ShellCheck, `make lint`; strict mode for options, errors, hooks, or workers. Cross-cutting runtime changes/releases need:
 
 ```bash
-BASHUNIT_PARALLEL_JOBS=4 make test
+BASHUNIT_PARALLEL_JOBS=4 make test/parallel
 BASHUNIT_PARALLEL_JOBS=4 make test/strict
 make sa
 make lint

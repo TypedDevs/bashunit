@@ -10,12 +10,15 @@ function set_up_before_script() {
   JQ_AVAILABLE=false
   # `|| true` so a jq-less box means "skip", not "hook failed" (#836)
   { command -v jq >/dev/null 2>&1 && JQ_AVAILABLE=true; } || true
+
+  # Several tests check different parts of the same sequential run.
+  JSON_STDOUT=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$FIXTURE" 2>/dev/null || true)
+  JUNIT_STDOUT=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" 2>/dev/null || true)
 }
 
 function test_output_json_emits_a_valid_json_document_on_stdout() {
   if [ "$JQ_AVAILABLE" = false ]; then bashunit::skip "jq required"; return; fi
-  local stdout
-  stdout=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$FIXTURE" 2>/dev/null || true)
+  local stdout="$JSON_STDOUT"
 
   assert_successful_code "$(printf '%s' "$stdout" | jq empty 2>&1)"
   assert_same "2" "$(printf '%s' "$stdout" | jq '.summary.total')"
@@ -23,8 +26,7 @@ function test_output_json_emits_a_valid_json_document_on_stdout() {
 }
 
 function test_output_json_stdout_carries_no_console_decoration() {
-  local stdout
-  stdout=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$FIXTURE" 2>/dev/null || true)
+  local stdout="$JSON_STDOUT"
 
   assert_not_contains "Running" "$stdout"
   assert_not_contains "Tests:" "$stdout"
@@ -32,8 +34,7 @@ function test_output_json_stdout_carries_no_console_decoration() {
 }
 
 function test_output_junit_emits_xml_on_stdout() {
-  local stdout
-  stdout=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" 2>/dev/null || true)
+  local stdout="$JUNIT_STDOUT"
 
   assert_contains "<?xml" "$stdout"
   assert_contains "<testsuites" "$stdout"
@@ -74,10 +75,7 @@ function test_output_junit_starts_with_the_xml_declaration_under_parallel() {
 # which landed in front of the document: `bashunit --output junit` -- the plain
 # documented command -- produced XML no parser accepts.
 function test_output_junit_starts_with_the_xml_declaration_sequentially() {
-  local output
-  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" 2>/dev/null || true)
-
-  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${output%%$'\n'*}"
+  assert_same '<?xml version="1.0" encoding="UTF-8"?>' "${JUNIT_STDOUT%%$'\n'*}"
 }
 
 # Asserting the first line is not the same as asserting a parser accepts it.
@@ -87,7 +85,7 @@ function test_output_junit_is_well_formed_xml() {
   fi
   local file
   file="$(bashunit::temp_file)"
-  ./bashunit --no-parallel --env "$TEST_ENV_FILE" --output junit "$FIXTURE" >"$file" 2>/dev/null || true
+  printf '%s\n' "$JUNIT_STDOUT" >"$file"
 
   local errors
   errors=$(xmllint --noout "$file" 2>&1) || true
@@ -99,10 +97,7 @@ function test_output_junit_is_well_formed_xml() {
 # the defect stayed invisible on that side. Assert the document starts where it
 # should rather than only that it parses.
 function test_output_json_starts_with_the_document_sequentially() {
-  local output
-  output=$(./bashunit --no-parallel --env "$TEST_ENV_FILE" --output json "$FIXTURE" 2>/dev/null || true)
-
-  assert_same "{" "${output%%$'\n'*}"
+  assert_same "{" "${JSON_STDOUT%%$'\n'*}"
 }
 
 # Regression guard for #1004: the rows are collected inside the per-test worker,

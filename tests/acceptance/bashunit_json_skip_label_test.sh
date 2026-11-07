@@ -12,6 +12,7 @@ set -euo pipefail
 
 function set_up_before_script() {
   BASHUNIT_BIN="$(pwd)/bashunit"
+  NOJQ_PATH="$(_path_without_jq "$(bashunit::temp_dir nojq)")"
 }
 
 function set_up() {
@@ -20,22 +21,15 @@ function set_up() {
 
 # A PATH holding everything the framework needs except jq. Symlinking the real
 # directories keeps the run working; dropping one name is the whole point.
-function _path_without_jq() {
-  local dir="$WORKDIR/nojq"
-  mkdir -p "$dir"
-  local p b
-  for p in /bin/* /usr/bin/*; do
-    b="${p##*/}"
-    [ "$b" = "jq" ] && continue
-    ln -sf "$p" "$dir/$b" 2>/dev/null || true
-  done
+function _path_without_jq() { # $1 = dir
+  local dir="$1"
+  ln -sf /bin/* /usr/bin/* "$dir" 2>/dev/null || true
+  rm -f "$dir/jq"
   echo "$dir"
 }
 
 function _run_without_jq() { # $1 = test file
-  local nojq
-  nojq="$(_path_without_jq)"
-  (cd "$WORKDIR" && PATH="$nojq" "$BASHUNIT_BIN" --no-parallel "$1" 2>&1 | strip_ansi) || true
+  (cd "$WORKDIR" && PATH="$NOJQ_PATH" "$BASHUNIT_BIN" --no-parallel "$1" 2>&1 | strip_ansi) || true
 }
 
 function test_a_skipped_json_test_is_named_after_the_test() {

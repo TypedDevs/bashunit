@@ -16,9 +16,8 @@ function test_bashunit_when_set_up_before_script_errors() {
   local assertions_summary="Assertions: 0 failed, 0 total"
 
   local actual_raw
-  set +e
-  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
-  set -e
+  local exit_code=0
+  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
 
   local actual
   actual="$(printf "%s" "$actual_raw" | strip_ansi)"
@@ -28,7 +27,7 @@ function test_bashunit_when_set_up_before_script_errors() {
   assert_contains "$message_line" "$actual"
   assert_contains "$tests_summary" "$actual"
   assert_contains "$assertions_summary" "$actual"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_when_set_up_before_script_with_failing_command() {
@@ -42,9 +41,8 @@ function test_bashunit_when_set_up_before_script_with_failing_command() {
   local assertions_summary="Assertions: 0 failed, 0 total"
 
   local actual_raw
-  set +e
-  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
-  set -e
+  local exit_code=0
+  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
 
   local actual
   actual="$(printf "%s" "$actual_raw" | strip_ansi)"
@@ -54,7 +52,7 @@ function test_bashunit_when_set_up_before_script_with_failing_command() {
   assert_contains "$message_line" "$actual"
   assert_contains "$tests_summary" "$actual"
   assert_contains "$assertions_summary" "$actual"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_bashunit_when_set_up_before_script_fails_with_multiple_tests() {
@@ -69,9 +67,8 @@ function test_bashunit_when_set_up_before_script_fails_with_multiple_tests() {
   local assertions_summary="Assertions: 0 failed, 0 total"
 
   local actual_raw
-  set +e
-  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
-  set -e
+  local exit_code=0
+  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
 
   local actual
   actual="$(printf "%s" "$actual_raw" | strip_ansi)"
@@ -81,7 +78,7 @@ function test_bashunit_when_set_up_before_script_fails_with_multiple_tests() {
   assert_contains "$message_line" "$actual"
   assert_contains "$tests_summary" "$actual"
   assert_contains "$assertions_summary" "$actual"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "" "" "$exit_code"
 }
 
 function test_tear_down_after_script_runs_when_set_up_before_script_fails() {
@@ -127,9 +124,8 @@ test_bashunit_when_setup_before_script_with_intermediate_failing_command.sh
   local assertions_summary="Assertions: 0 failed, 0 total"
 
   local actual_raw
-  set +e
-  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")"
-  set -e
+  local exit_code=0
+  actual_raw="$(./bashunit --no-parallel --detailed --env "$TEST_ENV_FILE" "$test_file")" || exit_code=$?
 
   local actual
   actual="$(printf "%s" "$actual_raw" | strip_ansi)"
@@ -139,5 +135,5 @@ test_bashunit_when_setup_before_script_with_intermediate_failing_command.sh
   assert_contains "$message_line" "$actual"
   assert_contains "$tests_summary" "$actual"
   assert_contains "$assertions_summary" "$actual"
-  assert_general_error "$(./bashunit --no-parallel --env "$TEST_ENV_FILE" "$test_file")"
+  assert_general_error "" "" "$exit_code"
 }

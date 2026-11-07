@@ -12,6 +12,7 @@
 
 function set_up_before_script() {
   ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+  PARITY_MISMATCHES="$(_parity_mismatches)"
 }
 
 # Both counts for every repo test file, compared in a shell that has sourced
@@ -20,56 +21,62 @@ function set_up_before_script() {
 # whichever file is currently running -- every file would come out four tests
 # short, and a real mismatch would hide in the noise.
 #
-# Reports each offender, so a failure names the file instead of just a number.
-# Arguments: $1 - the --filter value
+# One walk checks every case, since sourcing each file is the slow part. Each
+# offender is reported as "<case> <file>: ..." so a failure names the file.
 function _parity_mismatches() {
-  local filter=$1
-
   (
     cd "$ROOT_DIR" || return 1
     find tests -name '*[tT]est.sh' -type f -print0 |
       xargs -0 bash -c '
         BASHUNIT_ROOT_DIR="$PWD"
-        export BASHUNIT_ROOT_DIR
+        export BASHUNIT_ROOT_DIR BASHUNIT_EXCLUDE_FILTER
         # find_total_tests needs "data_set", so globals come first.
         # shellcheck source=/dev/null
         source src/api/globals.sh
         # shellcheck source=/dev/null
         source src/helper/index.sh
-        filter=$1
-        shift
+
+        function compare() { # $1 = case, $2 = file, $3 = filter
+          bashunit::helper::_count_tests_statically "$3"
+          static=$_BASHUNIT_HELPER_FILE_COUNT_OUT
+          bashunit::helper::_count_tests_by_sourcing "$2" "$3"
+          sourced=$_BASHUNIT_HELPER_FILE_COUNT_OUT
+          if [ "$static" != "$sourced" ]; then
+            echo "$1 $2: static=$static sourced=$sourced"
+          fi
+        }
+
         for file in "$@"; do
           bashunit::helper::build_provider_map "$file"
           bashunit::helper::_can_count_statically || continue
-          bashunit::helper::_count_tests_statically "$filter"
-          static=$_BASHUNIT_HELPER_FILE_COUNT_OUT
-          bashunit::helper::_count_tests_by_sourcing "$file" "$filter"
-          sourced=$_BASHUNIT_HELPER_FILE_COUNT_OUT
-          if [ "$static" != "$sourced" ]; then
-            echo "$file: static=$static sourced=$sourced"
-          fi
+          BASHUNIT_EXCLUDE_FILTER=""
+          compare all "$file" ""
+          compare filter "$file" "should"
+          BASHUNIT_EXCLUDE_FILTER="should"
+          compare exclude "$file" ""
         done
-      ' bash "$filter"
+      ' bash
   )
 }
 
+# Prints the mismatches of one case.
+function _mismatches_of() { # $1 = case
+  local line
+  while IFS= read -r line; do
+    case "$line" in "$1 "*) echo "$line" ;; esac
+  done <<<"$PARITY_MISMATCHES"
+}
+
 function test_static_and_sourced_counts_agree_on_every_test_file() {
-  assert_empty "$(_parity_mismatches "")"
+  assert_empty "$(_mismatches_of all)"
 }
 
 function test_static_and_sourced_counts_agree_under_a_filter() {
-  assert_empty "$(_parity_mismatches "should")"
+  assert_empty "$(_mismatches_of filter)"
 }
 
 function test_static_and_sourced_counts_agree_under_an_exclude_filter() {
-  local original=${BASHUNIT_EXCLUDE_FILTER:-}
-  export BASHUNIT_EXCLUDE_FILTER="should"
-
-  local mismatches
-  mismatches="$(_parity_mismatches "")"
-
-  export BASHUNIT_EXCLUDE_FILTER="$original"
-  assert_empty "$mismatches"
+  assert_empty "$(_mismatches_of exclude)"
 }
 
 # Provider-mapped files always need execution to count their rows.

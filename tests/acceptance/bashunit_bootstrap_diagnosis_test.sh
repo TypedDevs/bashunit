@@ -7,11 +7,6 @@ set -euo pipefail
 # different causes and it was true of one: a directory *is* readable -- the
 # check that rejects it is -f, not -r -- a missing path is not there at all,
 # and /dev/null is readable but not a regular file (#1262).
-#
-# These live apart from bashunit_init_test.sh on purpose: the unreadable case
-# can only be set up with chmod, which is a no-op for root, so it skips on the
-# Bash 3.0 CI image -- and bashunit_summary_output_test.sh asserts that file
-# has exactly one skipped test.
 
 BASHUNIT_PATH="$PWD/bashunit"
 

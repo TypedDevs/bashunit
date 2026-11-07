@@ -12,6 +12,7 @@
 - Faster indexed lookups for large provider and annotation maps on Bash 3.0 and newer (#1392)
 - Common patterns moved under Writing Tests; Quickstart links to function and script testing recipes
 - Shorter guides, reference pages and release posts
+- Faster project test suite: fewer repeated bashunit runs, and contributor docs use `make test/parallel`
 
 ### Fixed
 

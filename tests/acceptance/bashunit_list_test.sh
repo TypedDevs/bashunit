@@ -16,26 +16,27 @@ TAGGED="$FIXTURES_PATH/tagged.sh"
 ORDER="$FIXTURES_PATH/order.sh"
 MULTITAG="$FIXTURES_PATH/multitag.sh"
 
-function test_list_prints_every_test_as_file_and_function() {
-  local output
-  output="$(./bashunit --list "$ALPHA" 2>/dev/null)"
+# Several tests check different parts of the same `--list "$ALPHA"` run.
+function set_up_before_script() {
+  local stderr_file
+  stderr_file="$(bashunit::temp_file)"
+  ALPHA_LIST_EXIT=0
+  ALPHA_LIST="$(./bashunit --list "$ALPHA" 2>"$stderr_file")" || ALPHA_LIST_EXIT=$?
+  ALPHA_LIST_STDERR="$(cat "$stderr_file")"
+}
 
+function test_list_prints_every_test_as_file_and_function() {
   assert_same "\
 $ALPHA::test_alpha_one
-$ALPHA::test_alpha_two" "$output"
+$ALPHA::test_alpha_two" "$ALPHA_LIST"
 }
 
 function test_list_exits_zero() {
-  ./bashunit --list "$ALPHA" >/dev/null 2>&1
-
-  assert_successful_code $?
+  assert_successful_code "" "" "$ALPHA_LIST_EXIT"
 }
 
 function test_list_reports_the_count_on_stderr() {
-  local stderr
-  stderr="$(./bashunit --list "$ALPHA" 2>&1 >/dev/null)"
-
-  assert_same "2 tests" "$stderr"
+  assert_same "2 tests" "$ALPHA_LIST_STDERR"
 }
 
 # A query, not a run: an empty selection is not an error the way "No tests
@@ -55,14 +56,13 @@ function test_an_empty_selection_still_exits_zero() {
 }
 
 function test_dry_run_is_an_alias_of_list() {
-  local listed dry
-  listed="$(./bashunit --list "$ALPHA" 2>/dev/null)"
+  local dry
   dry="$(./bashunit --dry-run "$ALPHA" 2>/dev/null)"
 
   # Without this both sides are empty when the flag is unknown, and the
   # comparison passes while proving nothing.
   assert_not_empty "$dry"
-  assert_same "$listed" "$dry"
+  assert_same "$ALPHA_LIST" "$dry"
 }
 
 function test_list_respects_the_filter() {
