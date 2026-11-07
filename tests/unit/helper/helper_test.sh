@@ -875,73 +875,38 @@ function test_find_total_tests_sources_a_file_that_defines_functions_dynamically
 }
 
 function test_parse_file_path_filter_plain_path() {
-  local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh") || true
+  bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh"
 
-  local file_path filter
-  {
-    read -r file_path || true
-    read -r filter || true
-  } <<<"$result"
-
-  assert_same "tests/unit/example_test.sh" "$file_path"
-  assert_same "" "$filter"
+  assert_same "tests/unit/example_test.sh" "$_BASHUNIT_HELPER_PARSED_PATH_OUT"
+  assert_same "" "$_BASHUNIT_HELPER_PARSED_FILTER_OUT"
 }
 
 function test_parse_file_path_filter_with_double_colon() {
-  local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh::test_my_function") || true
+  bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh::test_my_function"
 
-  local file_path filter
-  {
-    read -r file_path || true
-    read -r filter || true
-  } <<<"$result"
-
-  assert_same "tests/unit/example_test.sh" "$file_path"
-  assert_same "test_my_function" "$filter"
+  assert_same "tests/unit/example_test.sh" "$_BASHUNIT_HELPER_PARSED_PATH_OUT"
+  assert_same "test_my_function" "$_BASHUNIT_HELPER_PARSED_FILTER_OUT"
 }
 
 function test_parse_file_path_filter_with_line_number() {
-  local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:42") || true
+  bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:42"
 
-  local file_path filter
-  {
-    read -r file_path || true
-    read -r filter || true
-  } <<<"$result"
-
-  assert_same "tests/unit/example_test.sh" "$file_path"
-  assert_same "__line__:42" "$filter"
+  assert_same "tests/unit/example_test.sh" "$_BASHUNIT_HELPER_PARSED_PATH_OUT"
+  assert_same "__line__:42" "$_BASHUNIT_HELPER_PARSED_FILTER_OUT"
 }
 
 function test_parse_file_path_filter_colon_followed_by_non_number() {
-  local result
-  result=$(bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:foo") || true
+  bashunit::helper::parse_file_path_filter "tests/unit/example_test.sh:foo"
 
-  local file_path filter
-  {
-    read -r file_path || true
-    read -r filter || true
-  } <<<"$result"
-
-  assert_same "tests/unit/example_test.sh:foo" "$file_path"
-  assert_same "" "$filter"
+  assert_same "tests/unit/example_test.sh:foo" "$_BASHUNIT_HELPER_PARSED_PATH_OUT"
+  assert_same "" "$_BASHUNIT_HELPER_PARSED_FILTER_OUT"
 }
 
 function test_parse_file_path_filter_with_colon_in_path() {
-  local result
-  result=$(bashunit::helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func") || true
+  bashunit::helper::parse_file_path_filter "/path/to:weird/example_test.sh::test_func"
 
-  local file_path filter
-  {
-    read -r file_path || true
-    read -r filter || true
-  } <<<"$result"
-
-  assert_same "/path/to:weird/example_test.sh" "$file_path"
-  assert_same "test_func" "$filter"
+  assert_same "/path/to:weird/example_test.sh" "$_BASHUNIT_HELPER_PARSED_PATH_OUT"
+  assert_same "test_func" "$_BASHUNIT_HELPER_PARSED_FILTER_OUT"
 }
 
 function test_find_function_at_line_first_function() {

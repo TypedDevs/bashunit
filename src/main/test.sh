@@ -615,13 +615,15 @@ function bashunit::main::cmd_test() {
     else
       # Test mode: process file paths and extract inline filters
       _BASHUNIT_MAIN_PATHS_GIVEN=true
+      # No `< <(...)` in this loop: Bash 3.x keeps each process substitution's
+      # descriptor until the function returns, and Apple's Bash 3.2 corrupts
+      # its heap near 256 of them (#1461).
       local arg
       for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
         local parsed_path parsed_filter
-        {
-          read -r parsed_path
-          read -r parsed_filter
-        } < <(bashunit::helper::parse_file_path_filter "$arg")
+        bashunit::helper::parse_file_path_filter "$arg"
+        parsed_path=$_BASHUNIT_HELPER_PARSED_PATH_OUT
+        parsed_filter=$_BASHUNIT_HELPER_PARSED_FILTER_OUT
 
         # If an inline filter was found, store it
         if [ -n "$parsed_filter" ]; then
@@ -633,11 +635,13 @@ function bashunit::main::cmd_test() {
         # file rather than the whole argument (#1263). Shared with `bench`.
         bashunit::main::require_existing_path_or_exit "$parsed_path"
 
-        local file
+        local file files
+        files=$(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh') || true
         while IFS= read -r file; do
+          [ -n "$file" ] || continue
           args[args_count]="$file"
           args_count=$((args_count + 1))
-        done < <(bashunit::helper::find_files_recursive "$parsed_path" '*[tT]est.sh')
+        done <<<"$files"
       done
 
       # Resolve line number filter to function name

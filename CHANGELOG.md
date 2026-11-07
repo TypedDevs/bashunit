@@ -44,6 +44,7 @@
 - SIGTERM and SIGHUP run teardown hooks, stop parallel workers, remove scratch files and exit with status 1 (#1417)
 - Parallel results and hook output stay separate for paths differing by slashes and underscores (#1416)
 - Relative hidden paths are counted and keep separate results from matching visible paths (#1393)
+- Passing many test files by name no longer leaks two open files per path, which crashed macOS Bash 3.2 at about 126 files (#1461)
 
 #### Reports and reruns
 
