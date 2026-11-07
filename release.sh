@@ -547,7 +547,7 @@ function release::sandbox::run() {
   # Commit changes (confirmations skipped in sandbox)
   release::log_info "Creating release commit..."
   git add "${RELEASE_FILES[@]}"
-  git commit -m "release: $VERSION" -n
+  git commit -m "release: $VERSION"
   release::log_success "Created commit"
   # Annotated + inline message: gpgsign-safe and never opens an editor.
   git tag -a -m "$VERSION" "$VERSION"
@@ -945,7 +945,7 @@ function release::git_commit_and_tag() {
   fi
 
   git add "${RELEASE_FILES[@]}"
-  git commit -m "release: $new_version" -n
+  git commit -m "release: $new_version"
   release::log_success "Created commit"
 
   local major_tag
