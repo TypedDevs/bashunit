@@ -40,3 +40,18 @@ function test_a_sequential_run_does_not_leak_a_descriptor_per_file() {
   assert_contains "$FILE_COUNT passed" "$output"
   assert_not_contains "risky" "$output"
 }
+
+# Each path argument used to cost two descriptors before discovery started, so
+# `make test`, which passes every file by name, crashed Apple's Bash 3.2 at
+# about 126 files (#1461).
+function test_explicit_file_arguments_do_not_leak_a_descriptor_each() {
+  local output
+  output=$(
+    cd "$WORKDIR"
+    ulimit -n "$FD_LIMIT" 2>/dev/null || true
+    "$BASHUNIT_BIN" --no-parallel --skip-env-file ./*_test.sh 2>&1
+  ) || true
+
+  assert_contains "$FILE_COUNT passed" "$output"
+  assert_not_contains "risky" "$output"
+}

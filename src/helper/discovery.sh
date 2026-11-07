@@ -426,8 +426,12 @@ function bashunit::helper::get_function_line_number() {
 #   - path::function_name (filter by function name)
 #   - path:line_number (filter by line number)
 # Arguments: $1 - eg: "tests/test.sh::test_foo" or "tests/test.sh:123"
-# Returns: two lines: first is file path, second is filter (or empty)
+# Sets: _BASHUNIT_HELPER_PARSED_PATH_OUT and _BASHUNIT_HELPER_PARSED_FILTER_OUT
+#   (empty when there is no filter)
 #
+_BASHUNIT_HELPER_PARSED_PATH_OUT=""
+_BASHUNIT_HELPER_PARSED_FILTER_OUT=""
+
 function bashunit::helper::parse_file_path_filter() {
   local input="$1"
   local file_path=""
@@ -461,8 +465,8 @@ function bashunit::helper::parse_file_path_filter() {
     ;;
   esac
 
-  echo "$file_path"
-  echo "$filter"
+  _BASHUNIT_HELPER_PARSED_PATH_OUT=$file_path
+  _BASHUNIT_HELPER_PARSED_FILTER_OUT=$filter
 }
 
 

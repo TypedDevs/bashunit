@@ -130,7 +130,7 @@ function bashunit::main::cmd_bench() {
 
   # Expand positional arguments
   if [ "$raw_args_count" -gt 0 ]; then
-    local arg file
+    local arg file files
     for arg in "${raw_args[@]+"${raw_args[@]}"}"; do
       # Same rule as `test`: a path that is not on disk is a wrong invocation,
       # while a file holding no bench_ function is an empty selection and keeps
@@ -138,10 +138,13 @@ function bashunit::main::cmd_bench() {
       # disagreed about a missing path; #1263 gave `test` a second answer, and
       # this is what keeps `bench` alongside it.
       bashunit::main::require_existing_path_or_exit "$arg"
+      # A here-string, not `< <(...)`, for the reason in cmd_test (#1461).
+      files=$(bashunit::helper::find_files_recursive "$arg" '*[bB]ench.sh') || true
       while IFS= read -r file; do
+        [ -n "$file" ] || continue
         args[args_count]="$file"
         args_count=$((args_count + 1))
-      done < <(bashunit::helper::find_files_recursive "$arg" '*[bB]ench.sh')
+      done <<<"$files"
     done
   fi
 
