@@ -28,21 +28,21 @@ function test_bashunit_assert_subcommand_without_prefix() {
 
 # Test help functionality
 function test_bashunit_assert_subcommand_help_short() {
-  local output
-  output=$(./bashunit assert -h 2>&1)
+  local output exit_code=0
+  output=$(./bashunit assert -h 2>&1) || exit_code=$?
 
   assert_contains "Usage: bashunit assert" "$output"
   assert_contains "Run standalone assertion" "$output"
-  assert_successful_code "$(./bashunit assert -h)"
+  assert_successful_code "" "" "$exit_code"
 }
 
 function test_bashunit_assert_subcommand_help_long() {
-  local output
-  output=$(./bashunit assert --help 2>&1)
+  local output exit_code=0
+  output=$(./bashunit assert --help 2>&1) || exit_code=$?
 
   assert_contains "Usage: bashunit assert" "$output"
   assert_contains "Single assertion:" "$output"
-  assert_successful_code "$(./bashunit assert --help)"
+  assert_successful_code "" "" "$exit_code"
 }
 
 # Test assert subcommand is in main help

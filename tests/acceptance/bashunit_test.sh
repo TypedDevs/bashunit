@@ -6,23 +6,31 @@ function test_bashunit_should_display_version() {
   fixture=$(printf "\e[1m\e[32mbashunit\e[0m - %s" "$BASHUNIT_VERSION")
 
   bashunit::todo "Add snapshots with regex to assert this test (part of the output changes every version)"
-  assert_contains "$fixture" "$(./bashunit --version)"
-  assert_successful_code "$(./bashunit --version)"
+  local output exit_code=0
+  output="$(./bashunit --version)" || exit_code=$?
+  assert_contains "$fixture" "$output"
+  assert_successful_code "" "" "$exit_code"
 }
 
 function test_bashunit_should_display_help() {
-  assert_match_snapshot "$(./bashunit --help)"
-  assert_successful_code "$(./bashunit --help)"
+  local output exit_code=0
+  output="$(./bashunit --help)" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_successful_code "" "" "$exit_code"
 }
 
 function test_bashunit_should_display_all_assert_docs() {
-  assert_match_snapshot "$(./bashunit doc)"
-  assert_successful_code "$(./bashunit doc)"
+  local output exit_code=0
+  output="$(./bashunit doc)" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_successful_code "" "" "$exit_code"
 }
 
 function test_bashunit_should_display_filtered_assert_docs() {
-  assert_match_snapshot "$(./bashunit doc equals)"
-  assert_successful_code "$(./bashunit doc equals)"
+  local output exit_code=0
+  output="$(./bashunit doc equals)" || exit_code=$?
+  assert_match_snapshot "$output"
+  assert_successful_code "" "" "$exit_code"
 }
 
 function test_built_binary_should_display_docs_without_file_access() {
