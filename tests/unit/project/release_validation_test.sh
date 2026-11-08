@@ -17,6 +17,30 @@ function set_up_before_script() {
   source "$RELEASE_SCRIPT_DIR/release.sh"
 }
 
+function test_release_preflight_uses_repository_api_when_homepage_is_unavailable() {
+  bashunit::mock curl 28
+  bashunit::mock gh true
+  bashunit::spy gh
+
+  local status=0
+  release::preflight::check_network || status=$?
+
+  assert_equals 0 "$status"
+  assert_have_been_called_with gh api "repos/${GITHUB_REPO_PATH}"
+}
+
+function test_release_preflight_rejects_unavailable_repository_api() {
+  bashunit::mock curl true
+  bashunit::mock gh false
+
+  local status=0
+  local output
+  output=$(release::preflight::check_network 2>&1) || status=$?
+
+  assert_equals 1 "$status"
+  assert_contains "Cannot access GitHub API for ${GITHUB_REPO_PATH}" "$output"
+}
+
 ##########################
 # release::validate_semver tests
 ##########################
