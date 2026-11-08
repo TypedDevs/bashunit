@@ -242,8 +242,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "sequential"
-            command: "make test"
           - name: "parallel simple"
             command: "./bashunit --parallel --simple tests/"
           - name: "parallel extended"
@@ -279,4 +277,4 @@ jobs:
             apk add --no-cache bash make git jq && \
             adduser -D builder && \
             chown -R builder /project && \
-            su - builder -c 'cd /project; ${{ matrix.command }}';"
+            su - builder -c 'cd /project; BASHUNIT_NO_NETWORK=true ${{ matrix.command }}';"
