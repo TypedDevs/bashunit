@@ -153,7 +153,7 @@ function install() {
 # Defaults
 DIR="lib"
 VERSION="latest"
-LATEST_BASHUNIT_VERSION="0.52.0"
+LATEST_BASHUNIT_VERSION="0.53.0"
 
 # Checksum verification is on by default. Track whether the user set it
 # explicitly so we can be strict on opt-in and lenient on the default.

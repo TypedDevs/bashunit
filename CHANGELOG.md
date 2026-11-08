@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
+
 ### Added
 
 - Homepage example covering a Bash function, test, run command and passing output
