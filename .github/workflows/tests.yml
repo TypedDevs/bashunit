@@ -12,6 +12,9 @@ on:
     branches:
       - main
 
+env:
+  BASHUNIT_NO_NETWORK: 'true'
+
 concurrency:
   group: tests-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
