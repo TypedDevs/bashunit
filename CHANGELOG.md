@@ -16,6 +16,8 @@
 
 ### Fixed
 
+- Release preflight checks the repository API through the authenticated GitHub CLI instead of requiring access to the GitHub homepage
+
 #### Assertions and doubles
 
 - Date assertions reject trailing text on macOS and handle colon-separated timezone offsets consistently across platforms (#1404)
