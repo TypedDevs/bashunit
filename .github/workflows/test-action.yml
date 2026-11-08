@@ -6,9 +6,9 @@ on:
       - 'action.yml'
       - 'install.sh'
       - '.github/workflows/test-action.yml'
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
 
 concurrency:
   group: test-action-${{ github.workflow }}-${{ github.ref }}
