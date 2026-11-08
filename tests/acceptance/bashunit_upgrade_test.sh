@@ -69,7 +69,7 @@ function test_upgrade_when_a_new_version_found() {
   fi
 
   local output
-  output="$($TMP_BIN upgrade 2>&1)"
+  output="$($TMP_BIN upgrade 2>&1)" || true
 
   # Real-network test: skip on the non-regression outcomes (no output, tag/download
   # failure, or a no-op when latest already equals the built version) so a flaky
@@ -88,7 +88,7 @@ function test_upgrade_when_a_new_version_found() {
 
   # Guard: skip version check if binary is non-functional after download (network flake)
   local version
-  version="$($TMP_BIN --version 2>/dev/null)"
+  version="$($TMP_BIN --version 2>/dev/null)" || true
   if [[ -z "$version" ]]; then
     bashunit::skip "binary non-functional after upgrade (transient network failure)" && return
   fi

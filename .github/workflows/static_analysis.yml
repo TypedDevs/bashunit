@@ -21,10 +21,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run ShellCheck
-        uses: ludeeus/action-shellcheck@master
+      - name: Install ShellCheck
         env:
-          SHELLCHECK_OPTS: -e SC1091 -e SC2155 -e SC2016
-        with:
-          ignore_names: test_bashunit_when_syntax_error.bash
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          os=$(uname -s | tr '[:upper:]' '[:lower:]')
+          arch=$(uname -m)
+          case "$arch" in arm64) arch=aarch64 ;; esac
+          version=v0.11.0
+          archive="shellcheck-${version}.${os}.${arch}.tar.xz"
+          gh release download "$version" --repo koalaman/shellcheck \
+            --pattern "$archive" --dir "$RUNNER_TEMP"
+          tar -xf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/shellcheck-$version" >> "$GITHUB_PATH"
 
+      - name: Run ShellCheck
+        run: make sa

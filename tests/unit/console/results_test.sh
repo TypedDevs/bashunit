@@ -1,60 +1,14 @@
 #!/usr/bin/env bash
 
-# Helper to set both mock and actual variable for state values
-function set_state_value() {
-  local getter_name=$1
-  local value=$2
-  local var_name
-
-  # Extract variable name from getter function name
-  case "$getter_name" in
-  bashunit::state::get_tests_passed) var_name="_BASHUNIT_TESTS_PASSED" ;;
-  bashunit::state::get_tests_failed) var_name="_BASHUNIT_TESTS_FAILED" ;;
-  bashunit::state::get_tests_skipped) var_name="_BASHUNIT_TESTS_SKIPPED" ;;
-  bashunit::state::get_tests_incomplete) var_name="_BASHUNIT_TESTS_INCOMPLETE" ;;
-  bashunit::state::get_tests_snapshot) var_name="_BASHUNIT_TESTS_SNAPSHOT" ;;
-  bashunit::state::get_tests_risky) var_name="_BASHUNIT_TESTS_RISKY" ;;
-  bashunit::state::get_assertions_passed) var_name="_BASHUNIT_ASSERTIONS_PASSED" ;;
-  bashunit::state::get_assertions_failed) var_name="_BASHUNIT_ASSERTIONS_FAILED" ;;
-  bashunit::state::get_assertions_skipped) var_name="_BASHUNIT_ASSERTIONS_SKIPPED" ;;
-  bashunit::state::get_assertions_incomplete) var_name="_BASHUNIT_ASSERTIONS_INCOMPLETE" ;;
-  bashunit::state::get_assertions_snapshot) var_name="_BASHUNIT_ASSERTIONS_SNAPSHOT" ;;
-  bashunit::state::is_duplicated_test_functions_found) var_name="_BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND" ;;
-  bashunit::state::get_duplicated_function_names) var_name="_BASHUNIT_DUPLICATED_FUNCTION_NAMES" ;;
-  bashunit::state::get_file_with_duplicated_function_names)
-    var_name="_BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES"
-    ;;
-  esac
-
-  # Set the actual variable
-  eval "$var_name='$value'"
-  # Mock the getter function
-  bashunit::mock "$getter_name" echo "$value"
-}
-
-function mock_all_state_getters() {
-  set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-  set_state_value "bashunit::state::get_duplicated_function_names" ""
-  set_state_value "bashunit::state::get_file_with_duplicated_function_names" ""
-  set_state_value "bashunit::state::get_tests_passed" "0"
-  set_state_value "bashunit::state::get_tests_failed" "0"
-  set_state_value "bashunit::state::get_tests_skipped" "0"
-  set_state_value "bashunit::state::get_tests_incomplete" "0"
-  set_state_value "bashunit::state::get_tests_snapshot" "0"
-  set_state_value "bashunit::state::get_tests_risky" "0"
-  set_state_value "bashunit::state::get_assertions_passed" "0"
-  set_state_value "bashunit::state::get_assertions_failed" "0"
-  set_state_value "bashunit::state::get_assertions_skipped" "0"
-  set_state_value "bashunit::state::get_assertions_incomplete" "0"
-  set_state_value "bashunit::state::get_assertions_snapshot" "0"
-
-  # Also set actual state variables for direct access optimization
+function reset_result_state() {
+  export BASHUNIT_OUTPUT_FORMAT=""
   _BASHUNIT_TESTS_PASSED=0
   _BASHUNIT_TESTS_FAILED=0
   _BASHUNIT_TESTS_SKIPPED=0
   _BASHUNIT_TESTS_INCOMPLETE=0
   _BASHUNIT_TESTS_SNAPSHOT=0
   _BASHUNIT_TESTS_RISKY=0
+  _BASHUNIT_TESTS_FLAKY=0
   _BASHUNIT_ASSERTIONS_PASSED=0
   _BASHUNIT_ASSERTIONS_FAILED=0
   _BASHUNIT_ASSERTIONS_SKIPPED=0
@@ -62,17 +16,14 @@ function mock_all_state_getters() {
   _BASHUNIT_ASSERTIONS_SNAPSHOT=0
   _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND=false
   _BASHUNIT_DUPLICATED_FUNCTION_NAMES=""
+  _BASHUNIT_DUPLICATED_FUNCTION_DETAILS=""
   _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES=""
 }
 
 function test_not_render_passed_when_no_passed_tests_nor_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_passed" "0"
-    set_state_value "bashunit::state::get_assertions_passed" "0"
-    _BASHUNIT_TESTS_PASSED=0
-    _BASHUNIT_ASSERTIONS_PASSED=0
+    reset_result_state
 
     bashunit::console_results::render_result || true
   )
@@ -84,9 +35,8 @@ function test_not_render_passed_when_no_passed_tests_nor_assertions() {
 function test_render_passed_when_passed_tests() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_passed" "32"
-    set_state_value "bashunit::state::get_assertions_passed" "0"
+    reset_result_state
+    _BASHUNIT_TESTS_PASSED="32"
 
     bashunit::console_results::render_result || true
   )
@@ -98,9 +48,8 @@ function test_render_passed_when_passed_tests() {
 function test_render_passed_when_passed_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_passed" "0"
-    set_state_value "bashunit::state::get_assertions_passed" "24"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_PASSED="24"
 
     bashunit::console_results::render_result || true
   )
@@ -112,9 +61,7 @@ function test_render_passed_when_passed_assertions() {
 function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_skipped" "0"
-    set_state_value "bashunit::state::get_assertions_skipped" "0"
+    reset_result_state
 
     bashunit::console_results::render_result || true
   )
@@ -126,9 +73,8 @@ function test_not_render_skipped_when_no_skipped_tests_nor_assertions() {
 function test_render_skipped_when_skipped_tests() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_skipped" "11"
-    set_state_value "bashunit::state::get_assertions_skipped" "0"
+    reset_result_state
+    _BASHUNIT_TESTS_SKIPPED="11"
 
     bashunit::console_results::render_result || true
   )
@@ -140,9 +86,8 @@ function test_render_skipped_when_skipped_tests() {
 function test_render_skipped_when_skipped_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_skipped" "0"
-    set_state_value "bashunit::state::get_assertions_skipped" "12"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_SKIPPED="12"
 
     bashunit::console_results::render_result || true
   )
@@ -154,9 +99,7 @@ function test_render_skipped_when_skipped_assertions() {
 function test_not_render_incomplete_when_no_incomplete_tests_nor_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_incomplete" "0"
-    set_state_value "bashunit::state::get_assertions_incomplete" "0"
+    reset_result_state
 
     bashunit::console_results::render_result || true
   )
@@ -168,9 +111,8 @@ function test_not_render_incomplete_when_no_incomplete_tests_nor_assertions() {
 function test_render_incomplete_when_incomplete_tests() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_incomplete" "15"
-    set_state_value "bashunit::state::get_assertions_incomplete" "0"
+    reset_result_state
+    _BASHUNIT_TESTS_INCOMPLETE="15"
 
     bashunit::console_results::render_result || true
   )
@@ -182,9 +124,8 @@ function test_render_incomplete_when_incomplete_tests() {
 function test_render_incomplete_when_incomplete_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_incomplete" "0"
-    set_state_value "bashunit::state::get_assertions_incomplete" "20"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_INCOMPLETE="20"
 
     bashunit::console_results::render_result || true
   )
@@ -196,9 +137,7 @@ function test_render_incomplete_when_incomplete_assertions() {
 function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_snapshot" "0"
-    set_state_value "bashunit::state::get_assertions_snapshot" "0"
+    reset_result_state
 
     bashunit::console_results::render_result || true
   )
@@ -210,9 +149,8 @@ function test_not_render_snapshot_when_no_snapshot_tests_nor_assertions() {
 function test_render_snapshot_when_snapshot_tests() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_snapshot" "16"
-    set_state_value "bashunit::state::get_assertions_snapshot" "0"
+    reset_result_state
+    _BASHUNIT_TESTS_SNAPSHOT="16"
 
     bashunit::console_results::render_result || true
   )
@@ -224,9 +162,8 @@ function test_render_snapshot_when_snapshot_tests() {
 function test_render_snapshot_when_snapshot_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_snapshot" "0"
-    set_state_value "bashunit::state::get_assertions_snapshot" "17"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_SNAPSHOT="17"
 
     bashunit::console_results::render_result || true
   )
@@ -238,9 +175,7 @@ function test_render_snapshot_when_snapshot_assertions() {
 function test_not_render_failed_when_not_failed_tests_nor_assertions() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_assertions_failed" "0"
+    reset_result_state
 
     bashunit::console_results::render_result || true
   )
@@ -253,9 +188,8 @@ function test_render_failed_when_failed_tests() {
   set +e
 
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_failed" "42"
-    set_state_value "bashunit::state::get_assertions_failed" "0"
+    reset_result_state
+    _BASHUNIT_TESTS_FAILED="42"
 
     bashunit::console_results::render_result || true
   )
@@ -269,9 +203,8 @@ function test_render_failed_when_failed_assertions() {
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_assertions_failed" "666"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_FAILED="666"
 
     bashunit::console_results::render_result || true
   )
@@ -285,12 +218,12 @@ function test_total_tests_is_the_sum_of_passed_skipped_incomplete_snapshot_and_f
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_tests_passed" "4"
-    set_state_value "bashunit::state::get_tests_skipped" "5"
-    set_state_value "bashunit::state::get_tests_incomplete" "7"
-    set_state_value "bashunit::state::get_tests_snapshot" "11"
-    set_state_value "bashunit::state::get_tests_failed" "2"
+    reset_result_state
+    _BASHUNIT_TESTS_PASSED="4"
+    _BASHUNIT_TESTS_SKIPPED="5"
+    _BASHUNIT_TESTS_INCOMPLETE="7"
+    _BASHUNIT_TESTS_SNAPSHOT="11"
+    _BASHUNIT_TESTS_FAILED="2"
 
     bashunit::console_results::render_result || true
   )
@@ -303,12 +236,12 @@ function test_total_asserts_is_the_sum_of_passed_skipped_incomplete_snapshot_and
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::get_assertions_passed" "4"
-    set_state_value "bashunit::state::get_assertions_skipped" "5"
-    set_state_value "bashunit::state::get_assertions_incomplete" "7"
-    set_state_value "bashunit::state::get_assertions_snapshot" "11"
-    set_state_value "bashunit::state::get_assertions_failed" "2"
+    reset_result_state
+    _BASHUNIT_ASSERTIONS_PASSED="4"
+    _BASHUNIT_ASSERTIONS_SKIPPED="5"
+    _BASHUNIT_ASSERTIONS_INCOMPLETE="7"
+    _BASHUNIT_ASSERTIONS_SNAPSHOT="11"
+    _BASHUNIT_ASSERTIONS_FAILED="2"
 
     bashunit::console_results::render_result || true
   )
@@ -427,10 +360,10 @@ function test_render_file_with_duplicated_functions_if_found_true() {
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "true"
-    set_state_value "bashunit::state::get_duplicated_function_names" "duplicate_function_name"
-    set_state_value "bashunit::state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
+    reset_result_state
+    _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND="true"
+    _BASHUNIT_DUPLICATED_FUNCTION_NAMES="duplicate_function_name"
+    _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES="duplicate_file_name.sh"
 
     # 2>&1 >/dev/null: the abort is a diagnostic and goes to stderr, so that
     # `--output json|junit` keeps stdout for the document alone.
@@ -447,10 +380,9 @@ function test_not_render_file_with_duplicated_functions_if_found_false() {
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_duplicated_function_names" "duplicate_function_name"
-    set_state_value "bashunit::state::get_file_with_duplicated_function_names" "duplicate_file_name.sh"
+    reset_result_state
+    _BASHUNIT_DUPLICATED_FUNCTION_NAMES="duplicate_function_name"
+    _BASHUNIT_FILE_WITH_DUPLICATED_FUNCTION_NAMES="duplicate_file_name.sh"
 
     bashunit::console_results::render_result || true
   )
@@ -465,13 +397,13 @@ function test_only_render_error_result_when_some_duplicated_fails() {
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "true"
-    set_state_value "bashunit::state::get_tests_failed" "1"
-    set_state_value "bashunit::state::get_tests_incomplete" "4"
-    set_state_value "bashunit::state::get_tests_snapshot" "7"
-    set_state_value "bashunit::state::get_tests_skipped" "2"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_DUPLICATED_TEST_FUNCTIONS_FOUND="true"
+    _BASHUNIT_TESTS_FAILED="1"
+    _BASHUNIT_TESTS_INCOMPLETE="4"
+    _BASHUNIT_TESTS_SNAPSHOT="7"
+    _BASHUNIT_TESTS_SKIPPED="2"
+    _BASHUNIT_TESTS_PASSED="3"
 
     # Both streams: the abort itself now goes to stderr, while the assertions
     # below are about what is NOT rendered -- which would pass vacuously if
@@ -493,13 +425,12 @@ function test_only_render_error_result_when_some_test_fails() {
 
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_tests_failed" "1"
-    set_state_value "bashunit::state::get_tests_incomplete" "4"
-    set_state_value "bashunit::state::get_tests_snapshot" "7"
-    set_state_value "bashunit::state::get_tests_skipped" "2"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_TESTS_FAILED="1"
+    _BASHUNIT_TESTS_INCOMPLETE="4"
+    _BASHUNIT_TESTS_SNAPSHOT="7"
+    _BASHUNIT_TESTS_SKIPPED="2"
+    _BASHUNIT_TESTS_PASSED="3"
 
     bashunit::console_results::render_result || true
   )
@@ -516,13 +447,11 @@ function test_only_render_error_result_when_some_test_fails() {
 function test_only_render_incomplete_result_when_no_test_fails_and_some_incomplete() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_tests_incomplete" "4"
-    set_state_value "bashunit::state::get_tests_snapshot" "7"
-    set_state_value "bashunit::state::get_tests_skipped" "2"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_TESTS_INCOMPLETE="4"
+    _BASHUNIT_TESTS_SNAPSHOT="7"
+    _BASHUNIT_TESTS_SKIPPED="2"
+    _BASHUNIT_TESTS_PASSED="3"
 
     bashunit::console_results::render_result || true
   )
@@ -539,13 +468,10 @@ function test_only_render_incomplete_result_when_no_test_fails_and_some_incomple
 function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_some_skipped() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_tests_incomplete" "0"
-    set_state_value "bashunit::state::get_tests_snapshot" "7"
-    set_state_value "bashunit::state::get_tests_skipped" "2"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_TESTS_SNAPSHOT="7"
+    _BASHUNIT_TESTS_SKIPPED="2"
+    _BASHUNIT_TESTS_PASSED="3"
 
     bashunit::console_results::render_result || true
   )
@@ -562,13 +488,9 @@ function test_only_render_skipped_result_when_no_test_fails_nor_incomplete_and_s
 function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_skipped_and_some_snapshot() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_tests_incomplete" "0"
-    set_state_value "bashunit::state::get_tests_snapshot" "7"
-    set_state_value "bashunit::state::get_tests_skipped" "0"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_TESTS_SNAPSHOT="7"
+    _BASHUNIT_TESTS_PASSED="3"
 
     bashunit::console_results::render_result || true
   )
@@ -585,13 +507,8 @@ function test_only_render_snapshot_result_when_no_test_fails_nor_incomplete_nor_
 function test_only_render_success_result_when_all_tests_passes() {
   local render_result
   render_result=$(
-    mock_all_state_getters
-    set_state_value "bashunit::state::is_duplicated_test_functions_found" "false"
-    set_state_value "bashunit::state::get_tests_failed" "0"
-    set_state_value "bashunit::state::get_tests_incomplete" "0"
-    set_state_value "bashunit::state::get_tests_snapshot" "0"
-    set_state_value "bashunit::state::get_tests_skipped" "0"
-    set_state_value "bashunit::state::get_tests_passed" "3"
+    reset_result_state
+    _BASHUNIT_TESTS_PASSED="3"
 
     bashunit::console_results::render_result || true
   )
@@ -608,7 +525,7 @@ function test_only_render_success_result_when_all_tests_passes() {
 function test_no_tests_found() {
   local render_result
   render_result=$(
-    mock_all_state_getters
+    reset_result_state
     bashunit::console_results::render_result || true
   )
 

@@ -94,7 +94,7 @@ function test_install_downloads_the_latest_version() {
   local installed_bashunit="./lib/bashunit"
   local output
 
-  output="$(./install.sh)"
+  output="$(./install.sh)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -105,7 +105,7 @@ function test_install_downloads_the_latest_version() {
 
   # Guard: skip version check if binary is non-functional after download (network flake)
   local version
-  version="$("$installed_bashunit" --version 2>/dev/null)"
+  version="$("$installed_bashunit" --version 2>/dev/null)" || true
   if [[ -z "$version" ]]; then
     bashunit::skip "binary non-functional after install (transient network failure)" && return
   fi
@@ -123,7 +123,7 @@ function test_install_downloads_in_given_folder() {
   local installed_bashunit="./tmp_deps/bashunit"
   local output
 
-  output="$(./install.sh tmp_deps)"
+  output="$(./install.sh tmp_deps)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -134,7 +134,7 @@ function test_install_downloads_in_given_folder() {
 
   # Guard: skip version check if binary is non-functional after download (network flake)
   local version
-  version="$("$installed_bashunit" --version 2>/dev/null)"
+  version="$("$installed_bashunit" --version 2>/dev/null)" || true
   if [[ -z "$version" ]]; then
     bashunit::skip "binary non-functional after install (transient network failure)" && return
   fi
@@ -152,7 +152,7 @@ function test_install_downloads_in_nested_folder() {
   local installed_bashunit="./tmp_install/nested/bashunit"
   local output
 
-  output="$(./install.sh tmp_install/nested)"
+  output="$(./install.sh tmp_install/nested)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -292,7 +292,7 @@ function test_install_verifies_checksum_when_enabled() {
   fi
 
   local output
-  output="$(BASHUNIT_VERIFY_CHECKSUM=true ./install.sh tmp_install 0.37.0 2>&1)"
+  output="$(BASHUNIT_VERIFY_CHECKSUM=true ./install.sh tmp_install 0.37.0 2>&1)" || true
 
   if [ ! -f "./tmp_install/bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -320,7 +320,7 @@ function test_install_verifies_checksum_by_default() {
   fi
 
   local output
-  output="$(./install.sh tmp_install 0.38.0 2>&1)"
+  output="$(./install.sh tmp_install 0.38.0 2>&1)" || true
 
   if [ ! -f "./tmp_install/bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -345,7 +345,7 @@ function test_install_downloads_the_given_version() {
   local installed_bashunit="./tmp_lib/bashunit"
   local output
 
-  output="$(./install.sh tmp_lib 0.9.0)"
+  output="$(./install.sh tmp_lib 0.9.0)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -372,7 +372,7 @@ function test_install_downloads_the_given_version_without_dir() {
 
   local installed_bashunit="./lib/bashunit"
   local output
-  output="$(./install.sh 0.19.0)"
+  output="$(./install.sh 0.19.0)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return
@@ -413,7 +413,7 @@ function test_install_downloads_the_non_stable_beta_version() {
   local installed_bashunit="./tmp_deps/bashunit"
   local output
 
-  output="$(./install.sh tmp_deps beta)"
+  output="$(./install.sh tmp_deps beta)" || true
 
   if [ ! -f "$installed_bashunit" ]; then
     bashunit::skip "transient download failure" && return

@@ -106,6 +106,7 @@ function test_unsuccessful_assert_is_directory_readable_when_a_file_is_given() {
 
 function test_unsuccessful_assert_is_directory_readable_without_execution_permission() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
@@ -125,6 +126,7 @@ function test_unsuccessful_assert_is_directory_readable_without_execution_permis
 
 function test_unsuccessful_assert_is_directory_readable_without_read_permission() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
@@ -144,6 +146,7 @@ function test_unsuccessful_assert_is_directory_readable_without_read_permission(
 
 function test_successful_assert_is_directory_not_readable_without_read_permission() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
@@ -160,6 +163,7 @@ function test_successful_assert_is_directory_not_readable_without_read_permissio
 
 function test_successful_assert_is_directory_not_readable_without_execution_permission() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
@@ -190,6 +194,7 @@ function test_successful_assert_is_directory_writable() {
 
 function test_unsuccessful_assert_is_directory_writable() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
@@ -217,6 +222,7 @@ function test_unsuccessful_assert_is_directory_writable_when_a_file_is_given() {
 
 function test_successful_assert_is_directory_not_writable() {
   if [[ "$_BASHUNIT_OS" == "Windows" || $_BASHUNIT_DISTRO = "Alpine" ]]; then
+    bashunit::skip "directory permissions are not supported on this platform"
     return
   fi
 
