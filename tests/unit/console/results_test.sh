@@ -703,34 +703,57 @@ function test_snapshot_line_diff_handles_extra_actual_lines() {
   assert_contains "+ extra" "$output"
 }
 
-function test_test_location_suffix_when_set() {
+# Without the test on the stack (hooks, runtime errors) the footer falls back to
+# the resolved definition line.
+function test_test_location_falls_back_to_the_resolved_location() {
   local original=${_BASHUNIT_TEST_LOCATION:-}
+  local original_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
   export _BASHUNIT_TEST_LOCATION="tests/foo_test.sh:42"
+  _BASHUNIT_TEST_LOCATION_FN="test_not_on_the_stack"
 
-  local output
-  output="$(bashunit::console_results::test_location_suffix)"
+  bashunit::console_results::test_location_to_slot
 
-  assert_contains "tests/foo_test.sh:42" "$output"
+  assert_contains "at tests/foo_test.sh:42" "$_BASHUNIT_CONSOLE_LOCATION_OUT"
 
   export _BASHUNIT_TEST_LOCATION="$original"
+  _BASHUNIT_TEST_LOCATION_FN="$original_fn"
 }
 
 # The suffix resolves the location on demand now (#1346), so "unknown" means
 # the inputs are gone too -- clearing only the cached value would just make it
 # resolve the test that is running.
-function test_test_location_suffix_empty_when_unset() {
+function test_test_location_empty_when_unset() {
   local original=${_BASHUNIT_TEST_LOCATION:-}
   local original_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
   unset _BASHUNIT_TEST_LOCATION
   unset _BASHUNIT_TEST_LOCATION_FN
 
-  local output
-  output="$(bashunit::console_results::test_location_suffix)"
+  bashunit::console_results::test_location_to_slot
 
-  assert_empty "$output"
+  assert_empty "$_BASHUNIT_CONSOLE_LOCATION_OUT"
 
   export _BASHUNIT_TEST_LOCATION="$original"
   export _BASHUNIT_TEST_LOCATION_FN="$original_fn"
+}
+
+function _location_helper_for_test() {
+  bashunit::console_results::test_location_to_slot
+}
+
+function test_test_location_names_the_test_body_line_and_the_helper() {
+  local original_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+  local original_file=${_BASHUNIT_TEST_LOCATION_FILE:-}
+  _BASHUNIT_TEST_LOCATION_FN="test_test_location_names_the_test_body_line_and_the_helper"
+  _BASHUNIT_TEST_LOCATION_FILE="tests/foo_test.sh"
+
+  local call_line=$((LINENO + 1))
+  _location_helper_for_test
+  local out=$_BASHUNIT_CONSOLE_LOCATION_OUT
+
+  _BASHUNIT_TEST_LOCATION_FN="$original_fn"
+  _BASHUNIT_TEST_LOCATION_FILE="$original_file"
+  assert_contains "at tests/foo_test.sh:$call_line" "$out"
+  assert_contains "in _location_helper_for_test at tests/foo_test.sh:" "$out"
 }
 
 # --- print_tap_line -----------------------------------------------------------

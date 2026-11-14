@@ -7,7 +7,7 @@ function bashunit::assert::mark_failed() {
   # and leaving the guard clear lets the rest of the composed assertion run.
   if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
     if bashunit::assert::once_is_absorbing; then
-      _BASHUNIT_ASSERT_ONCE_FAILED=1
+      bashunit::assert::once_record_failure
       return 0
     fi
   fi

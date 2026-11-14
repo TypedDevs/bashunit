@@ -29,6 +29,9 @@ _BASHUNIT_ASSERT_ONCE_IN_ACTUAL=""
 # Name of the test that opened the marker, resolved while its frame is still on
 # the stack. The end-of-test flush runs from the EXIT trap, where it is not.
 _BASHUNIT_ASSERT_ONCE_TEST_LABEL=""
+# Footer of the first absorbed failure, resolved while its frames are on the
+# stack. The flush runs later, from the next assertion or the EXIT trap.
+_BASHUNIT_ASSERT_ONCE_FOOTER=""
 
 ##
 # Whether an inner assertion should be absorbed by an open marker right now.
@@ -50,13 +53,22 @@ function bashunit::assert::once_is_absorbing() {
   return 1
 }
 
+# Marks the open marker failed, keeping the footer of its first failure.
+function bashunit::assert::once_record_failure() {
+  if [ "$_BASHUNIT_ASSERT_ONCE_FAILED" -eq 0 ]; then
+    bashunit::console_results::test_location_to_slot
+    _BASHUNIT_ASSERT_ONCE_FOOTER=$_BASHUNIT_CONSOLE_LOCATION_OUT
+  fi
+  _BASHUNIT_ASSERT_ONCE_FAILED=1
+}
+
 ##
 # Records the first absorbed failure message, kept as the fallback for a marker
 # that declared no label of its own.
 # Arguments: $1 - expected, $2 - failure condition message, $3 - actual
 ##
 function bashunit::assert::once_absorb_message() {
-  _BASHUNIT_ASSERT_ONCE_FAILED=1
+  bashunit::assert::once_record_failure
 
   if [ -n "$_BASHUNIT_ASSERT_ONCE_IN_EXPECTED$_BASHUNIT_ASSERT_ONCE_IN_ACTUAL" ]; then
     return 0
@@ -98,8 +110,10 @@ function bashunit::assert::once_flush() {
     actual=$_BASHUNIT_ASSERT_ONCE_IN_ACTUAL
   fi
 
+  _BASHUNIT_CONSOLE_LOCATION_PINNED=$_BASHUNIT_ASSERT_ONCE_FOOTER
   bashunit::assert::fail_with \
     "$_BASHUNIT_ASSERT_ONCE_TEST_LABEL" "$expected" "$condition" "$actual"
+  _BASHUNIT_CONSOLE_LOCATION_PINNED=""
 }
 
 # Clears any marker so it cannot leak from one test into the next.
@@ -114,6 +128,7 @@ function bashunit::assert::once_reset() {
   _BASHUNIT_ASSERT_ONCE_IN_CONDITION=""
   _BASHUNIT_ASSERT_ONCE_IN_ACTUAL=""
   _BASHUNIT_ASSERT_ONCE_TEST_LABEL=""
+  _BASHUNIT_ASSERT_ONCE_FOOTER=""
 }
 
 ##

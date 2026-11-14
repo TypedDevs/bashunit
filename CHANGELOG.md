@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- The `at <file>:<line>` line under a failure names the failing line in the test body instead of the test definition, and adds `in <helper> at <file>:<line>` when the assertion sits in a helper (#1466)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added
