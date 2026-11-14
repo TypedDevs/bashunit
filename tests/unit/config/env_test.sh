@@ -663,6 +663,9 @@ function test_secure_temp_root_accepts_an_existing_directory_of_the_user() {
 }
 
 function test_secure_temp_root_refuses_a_symbolic_link() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "ln -s copies instead of linking on Git Bash" && return
+  fi
   local base
   base="$(bashunit::temp_dir)"
   mkdir "$base/elsewhere"
