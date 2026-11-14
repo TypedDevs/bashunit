@@ -64,6 +64,11 @@ function bashunit::upgrade::upgrade() {
     return 1
   fi
 
+  if ! bashunit::upgrade::verify_checksum "$url" "$download_file" "$latest_tag"; then
+    rm -f "$download_file"
+    return 1
+  fi
+
   if ! chmod u+x "$download_file"; then
     echo "Failed to make $download_file executable" >&2
     rm -f "$download_file"
@@ -76,4 +81,63 @@ function bashunit::upgrade::upgrade() {
   fi
 
   echo "> bashunit upgraded successfully to latest version $latest_tag"
+}
+
+function bashunit::upgrade::sha256() {
+  if command -v shasum >/dev/null 2>&1; then
+    shasum -a 256 "$1" | awk '{print $1}'
+  elif command -v sha256sum >/dev/null 2>&1; then
+    sha256sum "$1" | awk '{print $1}'
+  fi
+}
+
+##
+# Same rules as install.sh: BASHUNIT_VERIFY_CHECKSUM unset verifies and only
+# warns when verification is impossible, `true` also fails then, `false` skips.
+##
+function bashunit::upgrade::cannot_verify() {
+  if [ "${BASHUNIT_VERIFY_CHECKSUM:-}" = "true" ]; then
+    echo "Failed to verify the download: $1" >&2
+    return 1
+  fi
+  echo "> Skipping checksum verification: $1" >&2
+}
+
+function bashunit::upgrade::verify_checksum() {
+  local url=$1 download_file=$2 tag=$3
+  if [ "${BASHUNIT_VERIFY_CHECKSUM:-}" = "false" ]; then
+    return 0
+  fi
+
+  local actual
+  actual=$(bashunit::upgrade::sha256 "$download_file")
+  if [ -z "$actual" ]; then
+    bashunit::upgrade::cannot_verify "no sha256 tool (shasum or sha256sum) is available"
+    return
+  fi
+
+  local checksum_url="${url%/bashunit}/checksum"
+  local checksum_file expected="" rest
+  if ! checksum_file=$("$MKTEMP" "${download_file}.checksum.XXXXXX"); then
+    bashunit::upgrade::cannot_verify "could not create a file for the checksum"
+    return
+  fi
+  if bashunit::io::download_to "$checksum_url" "$checksum_file" 2>/dev/null; then
+    read -r expected rest <"$checksum_file" || true
+  fi
+  rm -f "$checksum_file"
+
+  if [ -z "$expected" ]; then
+    bashunit::upgrade::cannot_verify "could not download the checksum from $checksum_url"
+    return
+  fi
+
+  if [ "$actual" != "$expected" ]; then
+    echo "Failed to upgrade: checksum mismatch for bashunit $tag" >&2
+    echo "  expected: $expected" >&2
+    echo "  actual:   $actual" >&2
+    return 1
+  fi
+
+  echo "> Checksum verified ($actual)"
 }

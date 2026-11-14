@@ -1637,9 +1637,12 @@ bashunit upgrade
 ```
 ```[Output]
 > Upgrading bashunit to latest version
+> Checksum verified (<sha256>)
 > bashunit upgraded successfully to latest version <x.y.z>
 ```
 :::
+
+The download is checked against the release `checksum` asset before it replaces the installed binary, with the same `BASHUNIT_VERIFY_CHECKSUM` rules as [`install.sh`](/installation#install-sh): a mismatch always stops the upgrade, `true` also stops it when the checksum cannot be checked, and `false` skips the check.
 
 ## Global Options
 

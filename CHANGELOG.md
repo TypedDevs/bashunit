@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- `upgrade` verifies the download against the release checksum before replacing the installed binary, following the `BASHUNIT_VERIFY_CHECKSUM` rules of `install.sh` (#1472)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added

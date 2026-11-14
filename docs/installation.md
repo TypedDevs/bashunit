@@ -406,7 +406,7 @@ For the `install.sh`, GitHub Action and bashdep routes, upgrade the binary in pl
 ./lib/bashunit upgrade
 ```
 
-It downloads the newest release over the same file, and prints
+It downloads the newest release, checks its checksum, then replaces the same file. It prints
 `> You are already on latest version` when there is nothing to do.
 
 Package-manager installs update through their own manager instead: `brew upgrade bashunit`,

@@ -25,10 +25,45 @@ function fake_download_fail() {
   return 1
 }
 
+FAKE_BINARY='#!/usr/bin/env bash
+echo fake'
+
+function _fake_sha256() {
+  if command -v shasum >/dev/null 2>&1; then
+    printf '%s\n' "$FAKE_BINARY" | shasum -a 256 | awk '{print $1}'
+  else
+    printf '%s\n' "$FAKE_BINARY" | sha256sum | awk '{print $1}'
+  fi
+}
+
 function fake_download_success() {
-  local _url="$1"
+  local url="$1"
   local output="$2"
-  printf '#!/usr/bin/env bash\necho fake\n' >"$output"
+  case "$url" in
+  */checksum) printf '%s  bashunit\n' "$(_fake_sha256)" >"$output" ;;
+  *) printf '%s\n' "$FAKE_BINARY" >"$output" ;;
+  esac
+}
+
+function fake_download_bad_checksum() {
+  local url="$1"
+  local output="$2"
+  case "$url" in
+  */checksum) printf '%s  bashunit\n' "0000000000000000000000000000000000000000000000000000000000000000" >"$output" ;;
+  *) printf '%s\n' "$FAKE_BINARY" >"$output" ;;
+  esac
+}
+
+function fake_download_no_checksum() {
+  local url="$1"
+  local output="$2"
+  case "$url" in
+  */checksum)
+    echo "curl: (22) The requested URL returned error: 404" >&2
+    return 22
+    ;;
+  *) printf '%s\n' "$FAKE_BINARY" >"$output" ;;
+  esac
 }
 
 function fake_download_empty() {
@@ -167,4 +202,75 @@ function test_upgrade_skips_when_already_on_latest() {
   assert_contains "You are already on latest version" "$output"
   assert_not_contains "Failed to download" "$output"
   assert_not_contains "upgraded successfully" "$output"
+}
+
+function _install_previous_binary() {
+  printf '#!/usr/bin/env bash\necho previous\n' >"$WORK_DIR/bashunit"
+  chmod 755 "$WORK_DIR/bashunit"
+}
+
+function test_upgrade_keeps_the_previous_binary_when_the_checksum_does_not_match() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_bad_checksum
+
+  local status=0 output
+  output="$(bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "checksum mismatch for bashunit 9.9.9" "$output"
+  assert_not_contains "upgraded successfully" "$output"
+  assert_same "previous" "$("$WORK_DIR/bashunit")"
+  assert_empty "$(find "$WORK_DIR" -name 'bashunit.download.*' -print)"
+}
+
+function test_upgrade_reports_a_verified_checksum() {
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_success
+
+  local output
+  output="$(bashunit::upgrade::upgrade 2>&1)"
+
+  assert_contains "Checksum verified" "$output"
+  assert_same "fake" "$("$WORK_DIR/bashunit")"
+}
+
+function test_upgrade_warns_and_continues_when_the_checksum_asset_is_missing() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_no_checksum
+
+  local status=0 output
+  output="$(unset BASHUNIT_VERIFY_CHECKSUM; bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 0 "$status"
+  assert_contains "Skipping checksum verification" "$output"
+  assert_same "fake" "$("$WORK_DIR/bashunit")"
+}
+
+function test_upgrade_fails_on_a_missing_checksum_when_verification_is_required() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_no_checksum
+
+  local status=0 output
+  output="$(BASHUNIT_VERIFY_CHECKSUM=true bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "could not download the checksum" "$output"
+  assert_same "previous" "$("$WORK_DIR/bashunit")"
+  assert_empty "$(find "$WORK_DIR" -name 'bashunit.download.*' -print)"
+}
+
+function test_upgrade_skips_the_checksum_when_verification_is_disabled() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_bad_checksum
+
+  local status=0 output
+  output="$(BASHUNIT_VERIFY_CHECKSUM=false bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 0 "$status"
+  assert_not_contains "Checksum verified" "$output"
+  assert_same "fake" "$("$WORK_DIR/bashunit")"
 }
