@@ -246,6 +246,6 @@ function bashunit::spy() {
   # never heard of.
   export -f bashunit::doubles::record_call
 
-  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+  _BASHUNIT_MOCKED_FUNCTIONS=("${_BASHUNIT_MOCKED_FUNCTIONS[@]+"${_BASHUNIT_MOCKED_FUNCTIONS[@]}"}" "$command")
 }
 

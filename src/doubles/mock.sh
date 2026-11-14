@@ -3,6 +3,8 @@
 # Mocks: replacing a command's behaviour, and the registry the runner unwinds after each test.
 
 declare -a _BASHUNIT_MOCKED_FUNCTIONS=()
+declare -a _BASHUNIT_MOCK_OUTPUT_COMMANDS=()
+_BASHUNIT_MOCK_OUTPUT_NEXT=0
 
 function bashunit::unmock() {
   local command=$1
@@ -36,7 +38,11 @@ function bashunit::unmock() {
 
   local times_file_var="_BASHUNIT_SPY_${variable}_TIMES_FILE"
   local params_file_var="_BASHUNIT_SPY_${variable}_PARAMS_FILE"
-  unset "_BASHUNIT_MOCK_${variable}_OUTPUT"
+  for i in "${!_BASHUNIT_MOCK_OUTPUT_COMMANDS[@]}"; do
+    if [ "${_BASHUNIT_MOCK_OUTPUT_COMMANDS[$i]}" = "$command" ]; then
+      unset "_BASHUNIT_MOCK_OUTPUT_${i}" "_BASHUNIT_MOCK_OUTPUT_COMMANDS[$i]"
+    fi
+  done
   local sequence_file_var="_BASHUNIT_MOCK_${variable}_SEQUENCE_FILE"
   [ -f "${!sequence_file_var-}" ] && rm -f "${!sequence_file_var}"
   unset "$sequence_file_var"
@@ -137,15 +143,16 @@ function bashunit::mock() {
     # back instead of running its `$`, backticks and quotes as shell code.
     # Escaping it into the eval instead is quadratic on Bash 3.2.
     local output_var
-    bashunit::helper::normalize_variable_name_to_slot "$command"
-    output_var="_BASHUNIT_MOCK_${_BASHUNIT_HELPER_VARNAME_OUT}_OUTPUT"
+    output_var="_BASHUNIT_MOCK_OUTPUT_${_BASHUNIT_MOCK_OUTPUT_NEXT}"
+    _BASHUNIT_MOCK_OUTPUT_COMMANDS[_BASHUNIT_MOCK_OUTPUT_NEXT]=$command
+    _BASHUNIT_MOCK_OUTPUT_NEXT=$((_BASHUNIT_MOCK_OUTPUT_NEXT + 1))
     export "$output_var=$($CAT)"
     eval "function $command() { builtin printf '%s\\n' \"\$$output_var\"; }"
   fi
 
   export -f "${command?}"
 
-  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+  _BASHUNIT_MOCKED_FUNCTIONS=("${_BASHUNIT_MOCKED_FUNCTIONS[@]+"${_BASHUNIT_MOCKED_FUNCTIONS[@]}"}" "$command")
 }
 
 
@@ -235,5 +242,5 @@ function bashunit::mock_sequence() {
   # never heard of.
   export -f bashunit::doubles::record_call
 
-  _BASHUNIT_MOCKED_FUNCTIONS[${#_BASHUNIT_MOCKED_FUNCTIONS[@]}]="$command"
+  _BASHUNIT_MOCKED_FUNCTIONS=("${_BASHUNIT_MOCKED_FUNCTIONS[@]+"${_BASHUNIT_MOCKED_FUNCTIONS[@]}"}" "$command")
 }

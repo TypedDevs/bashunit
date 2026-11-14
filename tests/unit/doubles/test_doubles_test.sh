@@ -430,3 +430,32 @@ function test_mock_here_string_reaches_child_bash() {
 
   assert_same 'child says "$hi"' "$(bash -c 'child_1470')"
 }
+
+function test_mock_here_string_keeps_distinct_names_after_normalization() {
+  bashunit::mock output-collision-1470 <<<first
+  bashunit::mock output_collision_1470 <<<second
+
+  assert_same first "$(output-collision-1470)"
+  assert_same second "$(output_collision_1470)"
+  assert_same first "$(bash -c 'output-collision-1470')"
+
+  bashunit::unmock output-collision-1470
+  assert_same second "$(output_collision_1470)"
+}
+
+function test_unmock_restores_a_surviving_mock_after_another_is_added() {
+  function sparse_remaining_1470() { echo original; }
+  bashunit::mock sparse_first_1470 <<<first
+  local output_var="_BASHUNIT_MOCK_OUTPUT_${_BASHUNIT_MOCK_OUTPUT_NEXT}"
+  bashunit::mock sparse_remaining_1470 <<<second
+  bashunit::unmock sparse_first_1470
+  bashunit::mock sparse_other_1470 <<<third
+
+  bashunit::unmock sparse_remaining_1470
+
+  assert_same original "$(sparse_remaining_1470)"
+  local status=0
+  declare -p "$output_var" >/dev/null 2>&1 || status=$?
+  assert_same 1 "$status"
+  assert_same third "$(sparse_other_1470)"
+}
