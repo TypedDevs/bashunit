@@ -341,3 +341,17 @@ function test_assert_equals_distinguishes_an_escape_sequence_from_the_character(
       'a\tb' "but got " "ab")" \
     "$(assert_equals 'a\tb' "$with_real_tab")"
 }
+
+function test_assert_matches_an_empty_value_against_an_empty_pattern() {
+  assert_empty "$(assert_matches '^$' "" 2>&1)"
+  assert_empty "$(assert_matches '.*' "" 2>&1)"
+}
+
+function test_assert_not_matches_fails_when_an_empty_value_matches() {
+  assert_assertion_fails assert_not_matches '^$' ""
+}
+
+function test_assert_matches_still_fails_for_an_empty_value_that_does_not_match() {
+  assert_assertion_fails assert_matches 'x' ""
+  assert_empty "$(assert_not_matches 'x' "" 2>&1)"
+}

@@ -565,7 +565,13 @@ _BASHUNIT_ASSERT_GREP_COUNT_OUT=0
 function bashunit::assert::_grep_count_to_slot() {
   _BASHUNIT_ASSERT_GREP_COUNT_OUT=0
   local count rc=0
-  count=$({ printf '%s' "$2" | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  # An empty value gives grep no line at all, so nothing could ever match it,
+  # not even `^$`. One empty line lets the pattern decide.
+  if [ -z "$2" ]; then
+    count=$({ printf '\n' | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  else
+    count=$({ printf '%s' "$2" | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  fi
   [ "$rc" -le 1 ] || return 1
 
   if [ "${count:-0}" -eq 0 ]; then

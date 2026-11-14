@@ -16,6 +16,7 @@
 
 - `bashunit::mock` with a here-string or here-document returns the text literally instead of running its `$`, backticks and quotes as shell code (#1470)
 - Without `TMPDIR`, scratch files go to a private per-user `/tmp/bashunit-<uid>` instead of a shared `/tmp/bashunit`, so a second user can run bashunit and nobody can redirect another user's files; a scratch directory that is a link, is owned by someone else, or is writable by another user stops the run, also under a shared `TMPDIR` (#1471)
+- `assert_matches` and `assert_not_matches` treat an empty value as one empty line, so `^$` and `.*` match it (#1474)
 
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
