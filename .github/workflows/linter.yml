@@ -22,3 +22,6 @@ jobs:
       - name: Run Linter
         run: editorconfig-checker
 
+      - name: Validate pre-commit hook manifest
+        run: pipx run pre-commit==4.7.0 validate-manifest .pre-commit-hooks.yaml
+

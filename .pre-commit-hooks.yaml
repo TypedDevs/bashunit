@@ -1,0 +1,8 @@
+- id: bashunit
+  name: bashunit
+  description: Run your bashunit test suite.
+  entry: bashunit
+  language: script
+  types: [shell]
+  pass_filenames: false
+  require_serial: true
