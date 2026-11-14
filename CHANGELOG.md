@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- `assert_matches` and `assert_not_matches` treat an empty value as one empty line, so `^$` and `.*` match it (#1474)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added
