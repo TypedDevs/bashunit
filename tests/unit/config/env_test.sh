@@ -637,6 +637,93 @@ function test_create_scratch_dirs_fails_loudly_when_a_directory_cannot_be_create
   assert_contains "$base/blocker/run" "$output"
 }
 
+# --- secure_temp_root ---------------------------------------------------------
+
+function test_secure_temp_root_creates_a_private_directory() {
+  local root
+  root="$(bashunit::temp_dir)/root"
+
+  bashunit::env::secure_temp_root "$root"
+
+  assert_directory_exists "$root"
+  if ! bashunit::check_os::is_windows; then
+    assert_file_permissions 700 "$root"
+  fi
+}
+
+function test_secure_temp_root_accepts_an_existing_directory_of_the_user() {
+  local root
+  root="$(bashunit::temp_dir)/root"
+  mkdir "$root"
+
+  local status=0
+  bashunit::env::secure_temp_root "$root" || status=$?
+
+  assert_same 0 "$status"
+}
+
+function test_secure_temp_root_refuses_a_symbolic_link() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "ln -s copies instead of linking on Git Bash" && return
+  fi
+  local base
+  base="$(bashunit::temp_dir)"
+  mkdir "$base/elsewhere"
+  ln -s "$base/elsewhere" "$base/root"
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root "$base/root" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "refusing to use the scratch directory" "$output"
+  assert_contains "$base/root" "$output"
+}
+
+function test_secure_temp_root_refuses_a_regular_file() {
+  local base
+  base="$(bashunit::temp_dir)"
+  printf 'not a directory\n' >"$base/root"
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root "$base/root" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "refusing to use the scratch directory" "$output"
+}
+
+function test_secure_temp_root_refuses_a_directory_owned_by_another_user() {
+  if bashunit::check_os::is_windows || [ "$EUID" -eq 0 ]; then
+    bashunit::skip "needs a directory owned by another account" && return
+  fi
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root /usr 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "refusing to use the scratch directory /usr" "$output"
+}
+
+function test_secure_temp_root_reports_a_directory_it_cannot_create() {
+  local base
+  base="$(bashunit::temp_dir)"
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root "$base/missing/root" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "cannot create the scratch directory: $base/missing/root" "$output"
+}
+
+function test_default_temp_root_is_per_user_without_tmpdir() {
+  TMPDIR='' bashunit::env::default_temp_root
+  assert_same "/tmp/bashunit-$EUID" "$_BASHUNIT_ENV_TEMP_ROOT_OUT"
+}
+
+function test_default_temp_root_follows_tmpdir() {
+  TMPDIR=/some/where bashunit::env::default_temp_root
+  assert_same "/some/where" "$_BASHUNIT_ENV_TEMP_ROOT_OUT"
+}
+
 function _gha_annotations_decision() {
   if bashunit::env::should_print_gha_annotations; then echo "print"; else echo "quiet"; fi
 }
@@ -721,4 +808,27 @@ function test_gha_annotations_never_wins_over_github_actions() {
   )
 
   assert_same "quiet" "$decision"
+}
+
+function test_secure_temp_root_refuses_writable_existing_roots_with_linked_children() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "Git Bash does not enforce Unix permissions" && return
+  fi
+  local base mode status output
+  base="$(bashunit::temp_dir)"
+  mkdir "$base/elsewhere"
+  printf '%s\n' 'function test_scratch_redirect_1471() { bashunit::temp_file; }' >"$base/check_test.sh"
+
+  for mode in 775 777; do
+    mkdir -p "$base/$mode/bashunit"
+    chmod "$mode" "$base/$mode/bashunit"
+    ln -s "$base/elsewhere" "$base/$mode/bashunit/tmp"
+    ln -s "$base/elsewhere" "$base/$mode/bashunit/run"
+    status=0
+    output="$(TMPDIR="$base/$mode" bash ./bashunit "$base/check_test.sh" 2>&1)" || status=$?
+
+    assert_same 1 "$status"
+    assert_contains 'refusing to use the scratch directory' "$output"
+    assert_empty "$(ls -A "$base/elsewhere")"
+  done
 }
