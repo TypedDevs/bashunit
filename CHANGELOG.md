@@ -6,6 +6,10 @@
 
 - A `bashunit` hook for the pre-commit framework: a failing test blocks the commit (#1467)
 
+### Changed
+
+- The globals guide shows how to load files and run tests relative to the test file's own directory (#1468)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added
