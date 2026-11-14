@@ -17,3 +17,13 @@ This is a guide to knowing the steps to create a new release.
 1. Commit and push
 1. Rebase `latest` branch from the newly created tag and push
     1. This will trigger "build and deploy" the docs
+
+## Changelog archive
+
+Keep [CHANGELOG.md](../CHANGELOG.md) focused on the current block of ten minor versions. The current block starts at 0.50.0.
+
+Before releasing 0.60.0, move all completed releases below 0.60.0 to the top of [docs/CHANGELOG-archive.md](../docs/CHANGELOG-archive.md), below its introduction. Repeat at 0.70.0, 0.80.0, and each later multiple of ten minor versions. Start a new block for a new major version too.
+
+Keep `Unreleased` and the new release notes in the main changelog. Move whole release sections, including patch releases, in newest-first order. Preserve their dates and comparison links, update relative links for the archive location, and update the archive introduction and current block noted here.
+
+Prepare the archive change in a PR before running `./release.sh`.
