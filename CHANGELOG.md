@@ -17,6 +17,7 @@
 - `bashunit::mock` with a here-string or here-document returns the text literally instead of running its `$`, backticks and quotes as shell code (#1470)
 - Without `TMPDIR`, scratch files go to a private per-user `/tmp/bashunit-<uid>` instead of a shared `/tmp/bashunit`, so a second user can run bashunit and nobody can redirect another user's files; a scratch directory that is a link, is owned by someone else, or is writable by another user stops the run, also under a shared `TMPDIR` (#1471)
 - `assert_matches` and `assert_not_matches` treat an empty value as one empty line, so `^$` and `.*` match it (#1474)
+- `assert_less_than`, `assert_greater_than` and their `_or_equal_` forms compare decimals, and report a non-numeric value once as a usage error instead of a raw bash error and a second failure. `assert_array_length` and `assert_line_count` reject a non-numeric expected value the same way (#1473)
 
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
