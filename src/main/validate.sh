@@ -170,9 +170,19 @@ function bashunit::main::option_takes_value() {
 # Arguments: $1 - path, $2 - setting name
 ##
 function bashunit::main::refuse_shell_script_or_exit() {
-  case "$1" in
+  # Drop an inline filter (`a_test.sh::test_name`, `a_test.sh:12`) first.
+  local script=${1%%::*}
+  case "$script" in
+  *:*)
+    case "${script##*:}" in
+    '' | *[!0-9]*) ;;
+    *) script=${script%:*} ;;
+    esac
+    ;;
+  esac
+  case "$script" in
   *.sh | *.bash)
-    if [ -f "$1" ]; then
+    if [ -f "$script" ]; then
       printf "%sError: %s needs a report file, got the shell script '%s'.%s\n" \
         "$_BASHUNIT_COLOR_FAILED" "${2:-path}" "$1" "$_BASHUNIT_COLOR_DEFAULT" >&2
       exit 1
