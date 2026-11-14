@@ -638,7 +638,7 @@ developer actually looks at first:
 ✗ Failed: Sums two numbers
     Expected '4'
     but got  '5'
-    at tests/math_test.sh:42
+    at tests/math_test.sh:44
 ```
 ```
 
@@ -667,7 +667,7 @@ Inside GitHub Actions, bashunit annotates failing tests on the pull request by
 itself. No flag, no configuration:
 
 ```
-::error file=tests/math_test.sh,line=42,title=Sums two numbers::✗ Failed: Sums two numbers%0A    Expected '4'%0A    but got  '5'%0A    at tests/math_test.sh:42
+::error file=tests/math_test.sh,line=42,title=Sums two numbers::✗ Failed: Sums two numbers%0A    Expected '4'%0A    but got  '5'%0A    at tests/math_test.sh:44
 ```
 
 GitHub parses workflow commands from the **job log**, so the annotations go to

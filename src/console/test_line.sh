@@ -41,19 +41,67 @@ function bashunit::console_results::print_successful_test() {
 }
 
 
+_BASHUNIT_CONSOLE_LOCATION_OUT=""
+# Set by the bashunit::assert_once flush to the footer of the failure it
+# reports, which happened earlier than the flush.
+_BASHUNIT_CONSOLE_LOCATION_PINNED=""
+
 ##
-# Returns a faint "    at <file>:<line>" suffix (preceded by a newline) pointing
-# at the currently running test function, or an empty string when the location
-# is unknown. Used to append source context to failure output.
+# Writes the failure footer into _BASHUNIT_CONSOLE_LOCATION_OUT: "at" names the
+# line in the running test's body, "in" the helper the assertion sits in.
+# Frames named bashunit::* or assert* count as the assertion, so a custom
+# assertion is not reported as a helper. Without the test on the stack (hooks,
+# runtime errors) it falls back to the definition line.
 ##
-function bashunit::console_results::test_location_suffix() {
-  bashunit::runner::ensure_test_location
-  local location=${_BASHUNIT_TEST_LOCATION:-}
-  if [ -z "$location" ]; then
+function bashunit::console_results::test_location_to_slot() {
+  if [ -n "$_BASHUNIT_CONSOLE_LOCATION_PINNED" ]; then
+    _BASHUNIT_CONSOLE_LOCATION_OUT=$_BASHUNIT_CONSOLE_LOCATION_PINNED
+    return 0
+  fi
+  _BASHUNIT_CONSOLE_LOCATION_OUT=""
+  local test_fn=${_BASHUNIT_TEST_LOCATION_FN:-}
+  local test_frame=0 helper_frame=0 i
+  if [ -n "$test_fn" ]; then
+    for ((i = 1; i < ${#FUNCNAME[@]}; i++)); do
+      case "${FUNCNAME[$i]}" in
+      "$test_fn")
+        test_frame=$i
+        break
+        ;;
+      bashunit::* | assert* | source) ;;
+      *)
+        if [ "$helper_frame" -eq 0 ]; then
+          helper_frame=$i
+        fi
+        ;;
+      esac
+    done
+  fi
+
+  local faint=$_BASHUNIT_COLOR_FAINT default=$_BASHUNIT_COLOR_DEFAULT
+  if [ "$test_frame" -eq 0 ]; then
+    bashunit::runner::ensure_test_location
+    if [ -n "${_BASHUNIT_TEST_LOCATION:-}" ]; then
+      _BASHUNIT_CONSOLE_LOCATION_OUT=$'\n'"    ${faint}at ${_BASHUNIT_TEST_LOCATION}${default}"
+    fi
     return 0
   fi
 
-  printf "\n    ${_BASHUNIT_COLOR_FAINT}at %s${_BASHUNIT_COLOR_DEFAULT}" "$location"
+  local test_source=${BASH_SOURCE[$test_frame]}
+  local test_file=${_BASHUNIT_TEST_LOCATION_FILE:-$test_source}
+  _BASHUNIT_CONSOLE_LOCATION_OUT=$'\n'"    ${faint}at ${test_file}:${BASH_LINENO[$((test_frame - 1))]}${default}"
+
+  if [ "$helper_frame" -eq 0 ]; then
+    return 0
+  fi
+  local helper_name=${FUNCNAME[$helper_frame]}
+  local helper_file=${BASH_SOURCE[$helper_frame]}
+  local helper_line=${BASH_LINENO[$((helper_frame - 1))]}
+  if [ "$helper_file" = "$test_source" ]; then
+    helper_file=$test_file
+  fi
+  local helper_footer="    ${faint}in ${helper_name} at ${helper_file}:${helper_line}${default}"
+  _BASHUNIT_CONSOLE_LOCATION_OUT="$_BASHUNIT_CONSOLE_LOCATION_OUT"$'\n'"$helper_footer"
 }
 
 
@@ -76,7 +124,8 @@ ${_BASHUNIT_COLOR_FAILED}✗ Failed${_BASHUNIT_COLOR_DEFAULT}: %s
 ${_BASHUNIT_COLOR_BOLD}'%s'${_BASHUNIT_COLOR_DEFAULT}\n" \
     "${test_name}" "${failure_message}")"
 
-  line="$line$(bashunit::console_results::test_location_suffix)"
+  bashunit::console_results::test_location_to_slot
+  line="$line$_BASHUNIT_CONSOLE_LOCATION_OUT"
 
   bashunit::console_results::print_line "failure" "$line"
 }
@@ -151,7 +200,8 @@ $(bashunit::console_results::render_diff "$_expected_file" "$_actual_file")"
 $details"
   fi
 
-  line="$line$(bashunit::console_results::test_location_suffix)"
+  bashunit::console_results::test_location_to_slot
+  line="$line$_BASHUNIT_CONSOLE_LOCATION_OUT"
 
   bashunit::console_results::print_line "failed" "$line"
 }
@@ -266,7 +316,8 @@ function bashunit::console_results::print_error_test() {
     done <<<"$raw_output"
   fi
 
-  line="$line$(bashunit::console_results::test_location_suffix)"
+  bashunit::console_results::test_location_to_slot
+  line="$line$_BASHUNIT_CONSOLE_LOCATION_OUT"
 
   bashunit::console_results::print_line "error" "$line"
 }

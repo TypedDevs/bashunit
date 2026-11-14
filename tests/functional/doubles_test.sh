@@ -177,16 +177,21 @@ function test_assert_not_called_fails_when_the_command_was_never_spied() {
 
 function test_call_assertions_fail_when_the_command_was_never_spied() {
   local label="Call assertions fail when the command was never spied"
-  local expected
-  expected="$(bashunit::console_results::print_failed_test "$label" \
-    "never_spied_command" "was never registered as a spy; call it first with" \
-    "bashunit::spy never_spied_command")"
-
-  assert_same "$expected" "$(assert_have_been_called never_spied_command)"
-  assert_same "$expected" "$(assert_have_been_called_times 0 never_spied_command)"
-  assert_same "$expected" "$(assert_have_been_called_with never_spied_command "x")"
-  assert_same "$expected" "$(assert_have_been_called_with_args never_spied_command "x")"
-  assert_same "$expected" "$(assert_have_been_called_nth_with 1 never_spied_command "x")"
+  local assertion
+  local args=()
+  for assertion in assert_have_been_called assert_have_been_called_times \
+    assert_have_been_called_with assert_have_been_called_with_args assert_have_been_called_nth_with; do
+    case "$assertion" in
+    assert_have_been_called) args=(never_spied_command) ;;
+    assert_have_been_called_times) args=(0 never_spied_command) ;;
+    assert_have_been_called_nth_with) args=(1 never_spied_command x) ;;
+    *) args=(never_spied_command x) ;;
+    esac
+    assert_same \
+      "$(bashunit::console_results::print_failed_test "$label" \
+        "never_spied_command" "was never registered as a spy; call it first with" \
+        "bashunit::spy never_spied_command")" "$("$assertion" "${args[@]}")"
+  done
 }
 
 function test_call_assertions_fail_after_the_spy_was_unmocked() {

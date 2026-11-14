@@ -382,14 +382,12 @@ function test_assert_have_never_been_called_fails_when_the_command_ran() {
 # against the renderer rather than the captured text, because --simple mode
 # prints a one-char marker and would make an assert_contains here vacuous.
 function test_assert_have_never_been_called_fails_for_a_command_that_was_never_spied() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert have never been called fails for a command that was never spied" \
     "a_command_nobody_spied" \
     "was never registered as a spy; call it first with" \
-    "bashunit::spy a_command_nobody_spied")"
-
-  assert_same "$expected" "$(assert_have_never_been_called a_command_nobody_spied)"
+    "bashunit::spy a_command_nobody_spied")" \
+    "$(assert_have_never_been_called a_command_nobody_spied)"
 }
 
 function test_mock_here_string_keeps_quotes_and_dollar_signs() {

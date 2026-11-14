@@ -51,6 +51,7 @@ function bashunit::assert::_capture() {
   local before_once_in_expected=$_BASHUNIT_ASSERT_ONCE_IN_EXPECTED
   local before_once_in_condition=$_BASHUNIT_ASSERT_ONCE_IN_CONDITION
   local before_once_in_actual=$_BASHUNIT_ASSERT_ONCE_IN_ACTUAL
+  local before_once_footer=$_BASHUNIT_ASSERT_ONCE_FOOTER
   bashunit::assert::once_reset
 
   # Run the inner assertion unguarded: had an earlier assertion in this test
@@ -94,6 +95,7 @@ function bashunit::assert::_capture() {
   _BASHUNIT_ASSERT_ONCE_IN_EXPECTED=$before_once_in_expected
   _BASHUNIT_ASSERT_ONCE_IN_CONDITION=$before_once_in_condition
   _BASHUNIT_ASSERT_ONCE_IN_ACTUAL=$before_once_in_actual
+  _BASHUNIT_ASSERT_ONCE_FOOTER=$before_once_footer
   _BASHUNIT_ASSERT_ONCE_ACTIVE=$before_once_active
 }
 
