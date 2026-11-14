@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Fixed
+
+- `bashunit::mock` with a here-string or here-document returns the text literally instead of running its `$`, backticks and quotes as shell code (#1470)
+
+### Changed
+
+- Mock text that escaped `\"`, `\$` or `\\` to get around #1470 now prints the backslashes; remove them. Text that relied on expanding `$1` or variables when the mock is called needs the `bashunit::mock <command> <implementation>` form (#1470)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added

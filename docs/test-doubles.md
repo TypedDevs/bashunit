@@ -31,6 +31,8 @@ Replace a callable's output with a here-string for a single line:
 bashunit::mock uname <<< "Linux"
 ```
 
+The text is returned as written: quotes, `$`, backticks and `$(...)` are printed, not run. Trailing blank lines are dropped. To build the output when the mock is called, from its arguments or variables, use the `bashunit::mock <command> <implementation>` form above.
+
 For multi-line output rely on a here-document:
 
 ```bash
