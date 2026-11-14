@@ -875,18 +875,15 @@ function bashunit::env::default_temp_root() {
   _BASHUNIT_ENV_TEMP_ROOT_OUT="${TMPDIR:-/tmp/bashunit-${EUID:-0}}"
 }
 
-##
-# Creates a scratch base with mode 0700 and refuses one that is a link or is
-# not owned by the current user. Git Bash fakes ownership, so Windows only
-# gets the link check.
-# Arguments: $1 base directory
-# Returns: 0 when the base is safe to use, 1 otherwise (message on stderr)
-##
+# Git Bash does not enforce Unix ownership or permissions.
 function bashunit::env::secure_temp_root() {
   local root=$1
+  local created=false mode=""
 
   if [ ! -e "$root" ] && [ ! -L "$root" ]; then
-    mkdir -m 700 "$root" 2>/dev/null || true
+    if mkdir -m 700 "$root" 2>/dev/null; then
+      created=true
+    fi
     if [ ! -e "$root" ] && [ ! -L "$root" ]; then
       printf 'bashunit: cannot create the scratch directory: %s\n' "$root" >&2
       printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
@@ -894,10 +891,18 @@ function bashunit::env::secure_temp_root() {
     fi
   fi
 
-  if [ -L "$root" ] || [ ! -d "$root" ] ||
+  local unsafe_mode=false
+  if ! bashunit::check_os::is_windows && [ "$created" = false ]; then
+    mode="$(LC_ALL=C command ls -ld "$root" 2>/dev/null)" || mode=""
+    case "$mode" in
+    ?????w* | ????????w* | '') unsafe_mode=true ;;
+    esac
+  fi
+
+  if [ -L "$root" ] || [ ! -d "$root" ] || [ "$unsafe_mode" = true ] ||
     { ! bashunit::check_os::is_windows && [ ! -O "$root" ]; }; then
-    printf 'bashunit: refusing to use the scratch directory %s: it must be a directory you own, not a link.\n' \
-      "$root" >&2
+    printf 'bashunit: refusing to use the scratch directory %s: %s\n' "$root" \
+      'it must be owned by you, not linked or writable by others.' >&2
     printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
     return 1
   fi

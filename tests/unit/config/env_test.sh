@@ -809,3 +809,26 @@ function test_gha_annotations_never_wins_over_github_actions() {
 
   assert_same "quiet" "$decision"
 }
+
+function test_secure_temp_root_refuses_writable_existing_roots_with_linked_children() {
+  if bashunit::check_os::is_windows; then
+    bashunit::skip "Git Bash does not enforce Unix permissions" && return
+  fi
+  local base mode status output
+  base="$(bashunit::temp_dir)"
+  mkdir "$base/elsewhere"
+  printf '%s\n' 'function test_scratch_redirect_1471() { bashunit::temp_file; }' >"$base/check_test.sh"
+
+  for mode in 775 777; do
+    mkdir -p "$base/$mode/bashunit"
+    chmod "$mode" "$base/$mode/bashunit"
+    ln -s "$base/elsewhere" "$base/$mode/bashunit/tmp"
+    ln -s "$base/elsewhere" "$base/$mode/bashunit/run"
+    status=0
+    output="$(TMPDIR="$base/$mode" bash ./bashunit "$base/check_test.sh" 2>&1)" || status=$?
+
+    assert_same 1 "$status"
+    assert_contains 'refusing to use the scratch directory' "$output"
+    assert_empty "$(ls -A "$base/elsewhere")"
+  done
+}
