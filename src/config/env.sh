@@ -893,7 +893,7 @@ function bashunit::env::secure_temp_root() {
 
   local unsafe_mode=false
   if ! bashunit::check_os::is_windows && [ "$created" = false ]; then
-    mode="$(LC_ALL=C command ls -ld "$root" 2>/dev/null)" || mode=""
+    mode="$(command ls -ld "$root" 2>/dev/null)" || mode=""
     case "$mode" in
     ?????w* | ????????w* | '') unsafe_mode=true ;;
     esac
