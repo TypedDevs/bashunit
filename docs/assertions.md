@@ -60,7 +60,18 @@ A **single** argument keeps its older meaning: it is run as one command word, so
 `assert_true "test -d /tmp"` looks for a command with that whole name and fails
 with `unknown command`. Quote the whole thing only with an `eval` prefix —
 `assert_true "eval test -d /tmp"` — or, better, drop the quotes and use the form
-above.
+above. The failure message says so when the quoted argument contains a space.
+
+A compound check with `&&` or `||` needs the `eval` prefix, because the separate
+arguments form runs a single command:
+
+```bash
+assert_true 'eval [ -f "$file" ] && grep -q foo "$file"'
+```
+
+Use single quotes around the whole string, as above. `eval` expands it, so with
+double quotes a variable is expanded twice and a path holding `$` or `$(...)`
+breaks or runs.
 
 Prefer a specific assertion such as `assert_directory_exists` when one exists for the check.
 
@@ -340,7 +351,7 @@ function test_failure() {
 ## assert_line_count
 > `assert_line_count "count" "haystack"...`
 
-Reports an error if `haystack` does not contain `count` lines.
+Reports an error if `haystack` does not contain `count` lines. `count` must be a whole number.
 
 A literal `\n` (backslash followed by `n`) counts as a line break too, so
 `assert_line_count 2 'one\ntwo'` passes even though the value holds no real newline.
@@ -365,6 +376,8 @@ function test_failure() {
 > `assert_less_than "expected" "actual"`
 
 Reports an error if `actual` is not less than `expected`.
+
+Both values must be numbers: integers or decimals, with an optional sign, such as `-3`, `08` or `2.5`. Surrounding whitespace is ignored, so the padded output of `wc -l` works. Any other value, including an empty string, stops the test with a usage error. The same applies to `assert_less_or_equal_than`, `assert_greater_than` and `assert_greater_or_equal_than`.
 
 - [assert_greater_than](#assert-greater-than) is the inverse of this assertion and takes the same arguments.
 
@@ -789,7 +802,7 @@ function test_failure() {
 ## assert_array_length
 > `assert_array_length "expected_length" "array"`
 
-Reports an error if `array` does not have exactly `expected_length` elements.
+Reports an error if `array` does not have exactly `expected_length` elements. `expected_length` must be a whole number.
 
 ::: code-group
 ```bash [Example]

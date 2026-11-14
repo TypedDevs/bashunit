@@ -24,7 +24,44 @@ Internal messages use the `[INTERNAL]` prefix. Control them with `BASHUNIT_INTER
 
 ## bashunit::current_dir
 
-> `bashunit::current_dir`: Gets the current directory name.
+> `bashunit::current_dir`: Gets the directory of the file that calls it.
+
+bashunit runs every test file from the directory where you started it, so a relative path such as `./lib.sh` depends on where you ran the command. Call `bashunit::current_dir` from a test file to work relative to that file instead. It works at file level and inside tests.
+
+The path follows how you passed the test path: `tests/unit` for `bashunit tests/`, `./tests/unit` for `bashunit ./tests/`, and an absolute path for an absolute argument. A relative result is relative to the directory where bashunit started.
+
+To load a file or read a fixture that sits next to the test:
+
+```bash
+source "$(bashunit::current_dir)/lib.sh"
+
+function test_greeting() {
+  assert_file_exists "$(bashunit::current_dir)/fixtures/input.txt"
+  assert_same "hello" "$(greeting)"
+}
+```
+
+This is the recommended recipe. You can also run the whole file from its own directory, by changing into it once before the tests:
+
+```bash
+function set_up_before_script() {
+  cd "$(bashunit::current_dir)" || return
+}
+
+function test_fixture_is_next_to_the_test() {
+  assert_file_exists ./fixtures/input.txt
+}
+```
+
+bashunit returns to the original directory after each file, so the `cd` does not carry over to the next test file.
+
+::: warning Limits of the `cd` recipe
+Some features resolve paths against the directory where bashunit started, so they break after the `cd`:
+
+- **Snapshots** are stored in a nested folder such as `tests/unit/tests/unit/snapshots/`. A snapshot that already exists is not found, so the first run records a new one instead of comparing. Do not use the `cd` recipe in files that call `assert_match_snapshot`.
+- **Coverage** stops counting the files the test sources.
+- `bashunit::current_dir` still returns the original relative path, so after the `cd` use `./...` paths instead.
+:::
 
 ## bashunit::current_filename
 
@@ -59,6 +96,8 @@ The file is automatically deleted when bashunit completes.
 > `bashunit::temp_dir <?prefix>`: creates a temporal directory
 
 The directory is automatically deleted when bashunit completes.
+
+Temporary files and directories live under `$TMPDIR/bashunit`. When `TMPDIR` is not set, bashunit uses `/tmp/bashunit-<user id>/bashunit`. It creates these directories so only you can read them, and stops with an error if one is a link, belongs to another user, or lets another user write to it.
 
 ## bashunit::is_command_available
 

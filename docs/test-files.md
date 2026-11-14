@@ -170,6 +170,24 @@ function tear_down_after_script() {
 ```
 :::
 
+## Where a failure happened
+
+The `at <file>:<line>` line under a failure names the line in the test body that failed. When the failing assertion sits in a helper function, one more line names the helper and the assertion's line inside it:
+
+```[Output]
+✗ Failed: Login works
+    Expected '200'
+    but got  '500'
+    at tests/login_test.sh:12
+    in check_logged_in at tests/helpers.sh:4
+```
+
+A custom assertion whose name starts with `assert` counts as the assertion, not as a helper. The `1) <file>:<line>` header in the failure summary, and the `line` field in reports and annotations, keep the line where the test function is defined. Hook errors and runtime errors also point at that line.
+
+With `bashunit::assert_once`, the footer names the first failure the custom assertion absorbed.
+
+For an assertion split over several lines with `\`, Bash 3 names one of its later lines and Bash 4 and newer name the first one. Keep an assertion on one line when a snapshot records its failure.
+
 ## Syntax errors in test files
 
 If a test file contains a Bash syntax error, **bashunit** records a failing

@@ -67,7 +67,18 @@ function assert_array_contains() {
 function assert_array_length() {
   bashunit::assert::should_skip && return 0
 
-  local expected="$1"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  case "$expected" in
+  '' | *[!0-9]*)
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a whole number for the expected length, got '$1'"
+    return 2
+    ;;
+  esac
+  while [ "${#expected}" -gt 1 ]; do
+    case "$expected" in 0*) expected=${expected#0} ;; *) break ;; esac
+  done
   shift
 
   # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,

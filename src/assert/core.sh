@@ -7,7 +7,7 @@ function bashunit::assert::mark_failed() {
   # and leaving the guard clear lets the rest of the composed assertion run.
   if [ "${_BASHUNIT_ASSERT_ONCE_ACTIVE:-0}" -eq 1 ]; then
     if bashunit::assert::once_is_absorbing; then
-      _BASHUNIT_ASSERT_ONCE_FAILED=1
+      bashunit::assert::once_record_failure
       return 0
     fi
   fi
@@ -155,6 +155,7 @@ function bashunit::assert::_run_bool_subject() {
 }
 
 _BASHUNIT_ASSERT_EXIT_DESC_OUT=""
+_BASHUNIT_ASSERT_EVAL_HINT="(pass the command and its arguments unquoted, or prefix the string with 'eval ')"
 
 ##
 # Describes a failing exit code for assert_true / assert_false. 127 and 126 are
@@ -170,11 +171,23 @@ _BASHUNIT_ASSERT_EXIT_DESC_OUT=""
 # Failed and Error. That constraint is gone -- the classifier now requires a
 # shell diagnostic's source-and-line prefix as well (#992). The phrasing stays
 # as it is because it is already documented and released, not because it must.
-# Arguments: $1 - exit code, $2 - the command as written
+# A single argument with whitespace in it is almost always a quoted compound
+# command, which runs only with the `eval ` prefix, so 127 says how to fix it.
+# Arguments: $1 - exit code, $2 - the command as written, $3 - argument count
 ##
 function bashunit::assert::_describe_exit_code() {
   case "$1" in
-  127) _BASHUNIT_ASSERT_EXIT_DESC_OUT="unknown command: $2" ;;
+  127)
+    _BASHUNIT_ASSERT_EXIT_DESC_OUT="unknown command: $2"
+    if [ "${3:-0}" -eq 1 ]; then
+      case "$2" in
+      eval\ *) ;;
+      *[[:space:]]*)
+        _BASHUNIT_ASSERT_EXIT_DESC_OUT="$_BASHUNIT_ASSERT_EXIT_DESC_OUT $_BASHUNIT_ASSERT_EVAL_HINT"
+        ;;
+      esac
+    fi
+    ;;
   126) _BASHUNIT_ASSERT_EXIT_DESC_OUT="not executable: $2" ;;
   *) _BASHUNIT_ASSERT_EXIT_DESC_OUT="exit code: $1" ;;
   esac
@@ -209,7 +222,7 @@ function assert_true() {
   actual="$*"
 
   if [ "$exit_code" -ne 0 ]; then
-    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual" "$#"
     bashunit::handle_bool_assertion_failure \
       "command or function with zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
   else
@@ -250,7 +263,7 @@ function assert_false() {
   # nothing, so those are failures here as well as in assert_true.
   case "$exit_code" in
   0 | 126 | 127)
-    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual" "$#"
     bashunit::handle_bool_assertion_failure \
       "command or function with non-zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
     ;;
@@ -552,7 +565,13 @@ _BASHUNIT_ASSERT_GREP_COUNT_OUT=0
 function bashunit::assert::_grep_count_to_slot() {
   _BASHUNIT_ASSERT_GREP_COUNT_OUT=0
   local count rc=0
-  count=$({ printf '%s' "$2" | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  # An empty value gives grep no line at all, so nothing could ever match it,
+  # not even `^$`. One empty line lets the pattern decide.
+  if [ -z "$2" ]; then
+    count=$({ printf '\n' | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  else
+    count=$({ printf '%s' "$2" | "$GREP" -cE -e "$1"; } 2>/dev/null) || rc=$?
+  fi
   [ "$rc" -le 1 ] || return 1
 
   if [ "${count:-0}" -eq 0 ]; then
@@ -988,6 +1007,65 @@ function assert_string_not_ends_with() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# Validates the two operands of a numeric comparison.
+# Arguments: $1 - assertion name, $2 - expected, $3 - actual
+# Returns: 0 when both are numbers, 1 after emitting a usage error otherwise
+##
+function bashunit::assert::_validate_compare_args() {
+  if ! bashunit::assert::_is_numeric "$2" || ! bashunit::assert::_is_numeric "$3"; then
+    bashunit::assert::usage_error_detail "$1" \
+      "expects numeric expected and actual values, got '$2', '$3'"
+    return 1
+  fi
+}
+
+_BASHUNIT_ASSERT_TRIMMED_OUT=""
+
+##
+# Strips surrounding whitespace, which `[ -lt ]` always accepted: macOS `wc -l`
+# pads its count with spaces.
+##
+function bashunit::assert::_trim_to_slot() {
+  local value=$1
+  value="${value#"${value%%[![:space:]]*}"}"
+  _BASHUNIT_ASSERT_TRIMMED_OUT="${value%"${value##*[![:space:]]}"}"
+}
+
+##
+# The slow path of the four ordering assertions, for operands `[` rejected:
+# decimals, integers wider than 64 bits, and invalid input. Trims surrounding
+# whitespace first, since `[` accepts the padded output of macOS `wc -l`.
+# Arguments: $1 - assertion name, $2 - expected, $3 - actual, $4 - lt|le|gt|ge
+#            (how actual must compare to expected)
+# Returns: 0 when the assertion holds, 1 when it does not, 2 on a usage error
+##
+function bashunit::assert::_check_order() {
+  bashunit::assert::_trim_to_slot "$2"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_trim_to_slot "$3"
+  local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_validate_compare_args "$1" "$expected" "$actual" || return 2
+
+  local holds=0
+  case "$4" in
+  lt) [ "$actual" -lt "$expected" ] ;;
+  le) [ "$actual" -le "$expected" ] ;;
+  gt) [ "$actual" -gt "$expected" ] ;;
+  ge) [ "$actual" -ge "$expected" ] ;;
+  esac 2>/dev/null || holds=$?
+  if [ "$holds" -lt 2 ]; then
+    return "$holds"
+  fi
+
+  case "$4" in
+  lt) ! bashunit::math::is_le "$expected" "$actual" ;;
+  le) bashunit::math::is_le "$actual" "$expected" ;;
+  gt) ! bashunit::math::is_le "$actual" "$expected" ;;
+  ge) bashunit::math::is_le "$expected" "$actual" ;;
+  esac
+}
+
 function assert_less_than() {
   bashunit::assert::should_skip && return 0
   if [ "$#" -lt 2 ]; then
@@ -999,7 +1077,21 @@ function assert_less_than() {
   local actual="$2"
   local label_override="${3:-}"
 
-  if ! [ "$actual" -lt "$expected" ]; then
+  # Short unsigned integers, nearly every call, go straight to `[`; every
+  # extra command or redirect here is paid on each assertion. The rest (signs,
+  # decimals, padding, 19+ digits, invalid input) takes the helper.
+  local holds=0
+  case "$expected:$actual" in
+  :* | *: | *[!0-9:]* | *:*:* | ????????????????????*)
+    bashunit::assert::_check_order assert_less_than "$expected" "$actual" lt || holds=$?
+    if [ "$holds" -eq 2 ]; then
+      return 2
+    fi
+    ;;
+  *) [ "$actual" -lt "$expected" ] || holds=1 ;;
+  esac
+
+  if [ "$holds" -ne 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less than" "${expected}"
     return
   fi
@@ -1018,7 +1110,21 @@ function assert_less_or_equal_than() {
   local actual="$2"
   local label_override="${3:-}"
 
-  if ! [ "$actual" -le "$expected" ]; then
+  # Short unsigned integers, nearly every call, go straight to `[`; every
+  # extra command or redirect here is paid on each assertion. The rest (signs,
+  # decimals, padding, 19+ digits, invalid input) takes the helper.
+  local holds=0
+  case "$expected:$actual" in
+  :* | *: | *[!0-9:]* | *:*:* | ????????????????????*)
+    bashunit::assert::_check_order assert_less_or_equal_than "$expected" "$actual" le || holds=$?
+    if [ "$holds" -eq 2 ]; then
+      return 2
+    fi
+    ;;
+  *) [ "$actual" -le "$expected" ] || holds=1 ;;
+  esac
+
+  if [ "$holds" -ne 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less or equal than" "${expected}"
     return
   fi
@@ -1037,7 +1143,21 @@ function assert_greater_than() {
   local actual="$2"
   local label_override="${3:-}"
 
-  if ! [ "$actual" -gt "$expected" ]; then
+  # Short unsigned integers, nearly every call, go straight to `[`; every
+  # extra command or redirect here is paid on each assertion. The rest (signs,
+  # decimals, padding, 19+ digits, invalid input) takes the helper.
+  local holds=0
+  case "$expected:$actual" in
+  :* | *: | *[!0-9:]* | *:*:* | ????????????????????*)
+    bashunit::assert::_check_order assert_greater_than "$expected" "$actual" gt || holds=$?
+    if [ "$holds" -eq 2 ]; then
+      return 2
+    fi
+    ;;
+  *) [ "$actual" -gt "$expected" ] || holds=1 ;;
+  esac
+
+  if [ "$holds" -ne 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater than" "${expected}"
     return
   fi
@@ -1056,7 +1176,21 @@ function assert_greater_or_equal_than() {
   local actual="$2"
   local label_override="${3:-}"
 
-  if ! [ "$actual" -ge "$expected" ]; then
+  # Short unsigned integers, nearly every call, go straight to `[`; every
+  # extra command or redirect here is paid on each assertion. The rest (signs,
+  # decimals, padding, 19+ digits, invalid input) takes the helper.
+  local holds=0
+  case "$expected:$actual" in
+  :* | *: | *[!0-9:]* | *:*:* | ????????????????????*)
+    bashunit::assert::_check_order assert_greater_or_equal_than "$expected" "$actual" ge || holds=$?
+    if [ "$holds" -eq 2 ]; then
+      return 2
+    fi
+    ;;
+  *) [ "$actual" -ge "$expected" ] || holds=1 ;;
+  esac
+
+  if [ "$holds" -ne 0 ]; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater or equal than" "${expected}"
     return
   fi
@@ -1277,7 +1411,18 @@ function assert_line_count() {
   fi
   local IFS=$' \t\n'
 
-  local expected="$1"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  case "$expected" in
+  '' | *[!0-9]*)
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a whole number for the expected count, got '$1'"
+    return 2
+    ;;
+  esac
+  while [ "${#expected}" -gt 1 ]; do
+    case "$expected" in 0*) expected=${expected#0} ;; *) break ;; esac
+  done
   local -a input_arr
   input_arr=("${@:2}")
   local label_override=""

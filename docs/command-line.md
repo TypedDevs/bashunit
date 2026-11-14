@@ -609,6 +609,8 @@ bashunit test tests/ --report-json report.json
 
 The JUnit XML groups results into one `<testsuite>` per test file, each with its own counts, time and timestamp. Every `<testcase>` carries `classname` (the file path in dotted form, e.g. `tests.unit.assert.core_test`), `name`, `file` and `time`; a failure's `message` attribute holds the first informative line of the real assertion message with the full text in the element body, and the test's captured output travels in `<system-out>`. That is the shape Jenkins, GitLab, Azure and `dorny/test-reporter` group and de-duplicate by.
 
+A report path that names an existing `.sh` or `.bash` file stops the run before any test. It almost always means the value was left out, as in `--report-json tests/a_test.sh`, and writing the report would overwrite the test.
+
 ### Markdown summary
 
 > `bashunit test --report-md <file>`
@@ -636,7 +638,7 @@ developer actually looks at first:
 ✗ Failed: Sums two numbers
     Expected '4'
     but got  '5'
-    at tests/math_test.sh:42
+    at tests/math_test.sh:44
 ```
 ```
 
@@ -665,7 +667,7 @@ Inside GitHub Actions, bashunit annotates failing tests on the pull request by
 itself. No flag, no configuration:
 
 ```
-::error file=tests/math_test.sh,line=42,title=Sums two numbers::✗ Failed: Sums two numbers%0A    Expected '4'%0A    but got  '5'%0A    at tests/math_test.sh:42
+::error file=tests/math_test.sh,line=42,title=Sums two numbers::✗ Failed: Sums two numbers%0A    Expected '4'%0A    but got  '5'%0A    at tests/math_test.sh:44
 ```
 
 GitHub parses workflow commands from the **job log**, so the annotations go to
@@ -1637,9 +1639,12 @@ bashunit upgrade
 ```
 ```[Output]
 > Upgrading bashunit to latest version
+> Checksum verified (<sha256>)
 > bashunit upgraded successfully to latest version <x.y.z>
 ```
 :::
+
+The download is checked against the release `checksum` asset before it replaces the installed binary, with the same `BASHUNIT_VERIFY_CHECKSUM` rules as [`install.sh`](/installation#install-sh): a mismatch always stops the upgrade, `true` also stops it when the checksum cannot be checked, and `false` skips the check.
 
 ## Global Options
 

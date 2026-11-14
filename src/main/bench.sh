@@ -40,25 +40,16 @@ function bashunit::main::cmd_bench() {
     --baseline-update)
       BASHUNIT_BENCH_BASELINE_UPDATE="$2"
       export -n BASHUNIT_BENCH_BASELINE_UPDATE
-      bashunit::main::require_writable_path_or_exit \
-        "$BASHUNIT_BENCH_BASELINE_UPDATE" "BASHUNIT_BENCH_BASELINE_UPDATE"
       shift
       ;;
     --report-json)
       BASHUNIT_BENCH_REPORT_JSON="$2"
       export -n BASHUNIT_BENCH_REPORT_JSON
-      # require_writable_path_or_exit, not the creatable variant: these writers
-      # do not mkdir their directory, and the creatable check rejects a target
-      # that already exists (its ancestor walk stops on the file itself).
-      bashunit::main::require_writable_path_or_exit \
-        "$BASHUNIT_BENCH_REPORT_JSON" "BASHUNIT_BENCH_REPORT_JSON"
       shift
       ;;
     --report-junit)
       BASHUNIT_BENCH_REPORT_JUNIT="$2"
       export -n BASHUNIT_BENCH_REPORT_JUNIT
-      bashunit::main::require_writable_path_or_exit \
-        "$BASHUNIT_BENCH_REPORT_JUNIT" "BASHUNIT_BENCH_REPORT_JUNIT"
       shift
       ;;
     -s | --simple)
@@ -126,6 +117,17 @@ function bashunit::main::cmd_bench() {
       ;;
     esac
     shift
+  done
+
+  # Checked after parsing so the matching environment variables are covered.
+  # require_writable_path_or_exit, not the creatable variant: these writers do
+  # not mkdir their directory, and the creatable check rejects a target that
+  # already exists (its ancestor walk stops on the file itself).
+  local report_setting
+  for report_setting in BASHUNIT_BENCH_BASELINE_UPDATE BASHUNIT_BENCH_REPORT_JSON BASHUNIT_BENCH_REPORT_JUNIT; do
+    if [ -n "${!report_setting:-}" ]; then
+      bashunit::main::require_writable_path_or_exit "${!report_setting}" "$report_setting"
+    fi
   done
 
   # Expand positional arguments

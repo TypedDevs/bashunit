@@ -42,37 +42,29 @@ function test_unsuccessful_return_assert_exit_code() {
 # integer. The exit-code assertions must read that as "did not match" and fail;
 # reading it as "matched" would count a bogus assertion as passed.
 function test_assert_exit_code_fails_when_the_expected_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Assert exit code fails when the expected code is not an integer" "0" "to be" "not-a-number")"
-
-  assert_same "$expected" "$(assert_exit_code "not-a-number" "" "0" 2>/dev/null)"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Assert exit code fails when the expected code is not an integer" "0" "to be" "not-a-number")" \
+    "$(assert_exit_code "not-a-number" "" "0" 2>/dev/null)"
 }
 
 function test_assert_exit_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Assert exit code fails when the actual code is not an integer" "not-a-number" "to be" "0")"
-
-  assert_same "$expected" "$(assert_exit_code "0" "" "not-a-number" 2>/dev/null)"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Assert exit code fails when the actual code is not an integer" "not-a-number" "to be" "0")" \
+    "$(assert_exit_code "0" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_assert_unsuccessful_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert unsuccessful code fails when the actual code is not an integer" \
-    "not-a-number" "to be non-zero" "but was 0")"
-
-  assert_same "$expected" "$(assert_unsuccessful_code "" "" "not-a-number" 2>/dev/null)"
+    "not-a-number" "to be non-zero" "but was 0")" \
+    "$(assert_unsuccessful_code "" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_assert_successful_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert successful code fails when the actual code is not an integer" \
-    "not-a-number" "to be exactly" "0")"
-
-  assert_same "$expected" "$(assert_successful_code "" "" "not-a-number" 2>/dev/null)"
+    "not-a-number" "to be exactly" "0")" \
+    "$(assert_successful_code "" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_successful_assert_successful_code() {
@@ -106,10 +98,9 @@ function test_unsuccessful_assert_unsuccessful_code() {
     return 0
   }
 
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"
-  assert_same "$expected" "$(assert_unsuccessful_code "$(fake_function)")"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")" \
+    "$(assert_unsuccessful_code "$(fake_function)")"
 }
 
 function test_successful_assert_less_than() {
@@ -313,4 +304,99 @@ function test_assert_within_delta_compares_mixed_precision_operands() {
 
 function test_assert_within_delta_handles_negative_operands() {
   assert_within_delta "-2.5" "-2.4" "0.2"
+}
+
+function test_comparisons_accept_decimals() {
+  assert_empty "$(assert_greater_than "1.5" "2.5" 2>&1)"
+  assert_empty "$(assert_less_than "2.5" "1.5" 2>&1)"
+  assert_empty "$(assert_greater_or_equal_than "2.50" "2.5" 2>&1)"
+  assert_empty "$(assert_less_or_equal_than "-0.5" "-1" 2>&1)"
+  assert_assertion_fails assert_greater_than "2.5" "1.5"
+  assert_assertion_fails assert_less_than "1.5" "2.5"
+}
+
+function test_comparisons_keep_negative_and_zero_padded_integers() {
+  assert_empty "$(assert_less_than "0" "-5" 2>&1)"
+  assert_empty "$(assert_greater_than "-10" "-5" 2>&1)"
+  assert_empty "$(assert_greater_than "7" "08" 2>&1)"
+  assert_empty "$(assert_less_than "09" "8" 2>&1)"
+}
+
+function provide_invalid_comparison_inputs() {
+  bashunit::data_set assert_greater_than 1 abc "expects numeric expected and actual values, got '1', 'abc'"
+  bashunit::data_set assert_greater_than "" "" "expects numeric expected and actual values, got '', ''"
+  bashunit::data_set assert_less_than x 1 "expects numeric expected and actual values, got 'x', '1'"
+  bashunit::data_set assert_less_or_equal_than 1 1.2.3 "expects numeric expected and actual values, got '1', '1.2.3'"
+  bashunit::data_set assert_greater_or_equal_than 1 "" "expects numeric expected and actual values, got '1', ''"
+}
+
+# @data_provider provide_invalid_comparison_inputs
+function test_comparisons_reject_non_numeric_input_as_usage_errors() {
+  local assertion=$1
+  local expected=$2
+  local actual=$3
+  local expected_detail=$4
+  local output exit_code=0
+
+  output=$("$assertion" "$expected" "$actual" 2>&1) || exit_code=$?
+
+  assert_same 2 "$exit_code"
+  assert_same "bashunit: assertion usage error: $assertion $expected_detail" "$output"
+}
+
+function provide_invalid_count_inputs() {
+  bashunit::data_set assert_array_length abc "expects a whole number for the expected length, got 'abc'"
+  bashunit::data_set assert_array_length -1 "expects a whole number for the expected length, got '-1'"
+  bashunit::data_set assert_line_count abc "expects a whole number for the expected count, got 'abc'"
+  bashunit::data_set assert_line_count 1.5 "expects a whole number for the expected count, got '1.5'"
+}
+
+# @data_provider provide_invalid_count_inputs
+function test_count_assertions_reject_a_non_numeric_expected_value() {
+  local assertion=$1
+  local expected=$2
+  local expected_detail=$3
+  local output exit_code=0
+
+  output=$("$assertion" "$expected" "a" 2>&1) || exit_code=$?
+
+  assert_same 2 "$exit_code"
+  assert_same "bashunit: assertion usage error: $assertion $expected_detail" "$output"
+}
+
+function test_comparisons_accept_whitespace_padded_numbers() {
+  assert_empty "$(assert_less_than 100 "      45" 2>&1)"
+  assert_empty "$(assert_greater_than " 40" $'94\n' 2>&1)"
+  assert_empty "$(assert_array_length " 2" a b 2>&1)"
+  assert_empty "$(assert_line_count "  1" "a" 2>&1)"
+}
+
+function test_comparisons_handle_integers_wider_than_64_bits() {
+  assert_empty "$(assert_greater_than 1 99999999999999999999 2>&1)"
+  assert_empty "$(assert_less_than 99999999999999999999 1 2>&1)"
+  assert_empty "$(assert_greater_or_equal_than 9223372036854775808 9223372036854775808 2>&1)"
+  assert_assertion_fails assert_greater_than 99999999999999999999 1
+}
+
+function test_count_assertions_accept_a_zero_padded_expected_value() {
+  assert_empty "$(assert_array_length 02 a b 2>&1)"
+  assert_empty "$(assert_line_count 02 $'a\nb' 2>&1)"
+}
+
+function test_array_length_does_not_wrap_a_large_expected_value() {
+  assert_assertion_fails assert_array_length 18446744073709551618 a b
+}
+
+function test_line_count_does_not_wrap_a_large_expected_value() {
+  assert_assertion_fails assert_line_count 18446744073709551618 $'a\nb'
+}
+
+function test_comparisons_keep_large_integer_precision_without_bc() {
+  bashunit::mock bashunit::dependencies::has_bc false
+  assert_empty "$(assert_greater_than 9007199254740992000 9007199254740992001 2>&1)"
+  assert_empty "$(assert_less_than 9007199254740992001 9007199254740992000 2>&1)"
+  assert_assertion_fails assert_less_or_equal_than 9007199254740992000 9007199254740992001
+  assert_assertion_fails assert_greater_or_equal_than 9007199254740992001 9007199254740992000
+  assert_empty "$(assert_greater_than -9007199254740992001 -9007199254740992000 2>&1)"
+  assert_empty "$(assert_less_than -9007199254740992000 -9007199254740992001 2>&1)"
 }

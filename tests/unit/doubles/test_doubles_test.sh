@@ -382,12 +382,78 @@ function test_assert_have_never_been_called_fails_when_the_command_ran() {
 # against the renderer rather than the captured text, because --simple mode
 # prints a one-char marker and would make an assert_contains here vacuous.
 function test_assert_have_never_been_called_fails_for_a_command_that_was_never_spied() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert have never been called fails for a command that was never spied" \
     "a_command_nobody_spied" \
     "was never registered as a spy; call it first with" \
-    "bashunit::spy a_command_nobody_spied")"
+    "bashunit::spy a_command_nobody_spied")" \
+    "$(assert_have_never_been_called a_command_nobody_spied)"
+}
 
-  assert_same "$expected" "$(assert_have_never_been_called a_command_nobody_spied)"
+function test_mock_here_string_keeps_quotes_and_dollar_signs() {
+  bashunit::mock curl_json_1470 <<<'{"ok": true, "price": "$5"}'
+
+  assert_same '{"ok": true, "price": "$5"}' "$(curl_json_1470)"
+}
+
+function test_mock_here_string_does_not_run_command_substitutions() {
+  local marker
+  marker="$(bashunit::temp_dir)/created_by_mock"
+  bashunit::mock ps_exec_1470 <<<"run \$(touch '$marker') and \`touch '$marker'\` done"
+
+  assert_same "run \$(touch '$marker') and \`touch '$marker'\` done" "$(ps_exec_1470)"
+  assert_file_not_exists "$marker"
+}
+
+function test_mock_quoted_heredoc_returns_text_literally() {
+  bashunit::mock log_1470 <<'TEXT'
+line one $HOME
+  indented `id` "q" 'single'
+C:\new\table -n
+TEXT
+
+  assert_same 'line one $HOME
+  indented `id` "q" '"'single'"'
+C:\new\table -n' "$(log_1470)"
+}
+
+function test_mock_here_string_starting_with_a_dash_is_printed() {
+  bashunit::mock flag_1470 <<<"-n"
+
+  assert_same "-n" "$(flag_1470)"
+}
+
+function test_mock_here_string_reaches_child_bash() {
+  bashunit::mock child_1470 <<<'child says "$hi"'
+
+  assert_same 'child says "$hi"' "$(bash -c 'child_1470')"
+}
+
+function test_mock_here_string_keeps_distinct_names_after_normalization() {
+  bashunit::mock output-collision-1470 <<<first
+  bashunit::mock output_collision_1470 <<<second
+
+  assert_same first "$(output-collision-1470)"
+  assert_same second "$(output_collision_1470)"
+  assert_same first "$(bash -c 'output-collision-1470')"
+
+  bashunit::unmock output-collision-1470
+  assert_same second "$(output_collision_1470)"
+}
+
+function test_unmock_restores_a_surviving_mock_after_another_is_added() {
+  function sparse_remaining_1470() { echo original; }
+  bashunit::mock sparse_first_1470 <<<first
+  local output_var="_BASHUNIT_MOCK_OUTPUT_${_BASHUNIT_MOCK_OUTPUT_NEXT}"
+  bashunit::mock sparse_remaining_1470 <<<second
+  bashunit::unmock sparse_first_1470
+  bashunit::mock sparse_other_1470 <<<third
+
+  bashunit::unmock sparse_remaining_1470
+
+  assert_same original "$(sparse_remaining_1470)"
+  local status=0
+  declare -p "$output_var" >/dev/null 2>&1 || status=$?
+  assert_same 1 "$status"
+  assert_same third "$(sparse_other_1470)"
 }

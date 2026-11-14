@@ -15,10 +15,10 @@ function test_successful_assert_file_exists() {
 function test_unsuccessful_assert_file_exists() {
   local a_file="a_random_file_that_will_not_exist"
 
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")"
-  assert_same "$expected" "$(assert_file_exists "$a_file")"
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert file exists" "$a_file" "to exist but" "do not exist")" \
+    "$(assert_file_exists "$a_file")"
 }
 
 function test_assert_file_exists_should_not_work_with_folders() {
@@ -53,10 +53,10 @@ function test_successful_assert_is_file() {
 function test_unsuccessful_assert_is_file() {
   local a_file="a_random_file_that_will_not_exist"
 
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")"
-  assert_same "$expected" "$(assert_is_file "$a_file")"
+  assert_same \
+    "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert is file" "$a_file" "to be a file" "but is not a file")" \
+    "$(assert_is_file "$a_file")"
 }
 
 function test_unsuccessful_assert_is_file_when_a_folder_is_given() {

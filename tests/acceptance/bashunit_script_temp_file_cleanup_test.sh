@@ -5,8 +5,8 @@
 function test_script_temp_files_are_cleaned_up_after_test_run() {
   local mode="$1"
   local fixture_file="tests/acceptance/fixtures/script_with_setup_temp_file.sh"
-  local temp_base_dir="${TMPDIR:-/tmp}/bashunit/tmp"
-  local parallel_temp_base_dir="${TMPDIR:-/tmp}/bashunit/parallel/${_BASHUNIT_OS:-Unknown}"
+  local temp_base_dir="$BASHUNIT_TEMP_DIR"
+  local parallel_temp_base_dir="$_BASHUNIT_TEMP_ROOT/bashunit/parallel/${_BASHUNIT_OS:-Unknown}"
   local output
 
   if [[ "$mode" == "parallel" ]]; then

@@ -6,6 +6,22 @@
 
 - A `bashunit` hook for the pre-commit framework: a failing test blocks the commit (#1467)
 
+### Changed
+
+- The globals guide shows how to load files and run tests relative to the test file's own directory (#1468)
+- `assert_true` and `assert_false` suggest the `eval ` prefix when a quoted argument with spaces is not a command (#1469)
+- Mock text that escaped `\"`, `\$` or `\\` to get around #1470 now prints the backslashes; remove them. Text that relied on expanding `$1` or variables when the mock is called needs the `bashunit::mock <command> <implementation>` form (#1470)
+
+### Fixed
+
+- `bashunit::mock` with a here-string or here-document returns the text literally instead of running its `$`, backticks and quotes as shell code (#1470)
+- Without `TMPDIR`, scratch files go to a private per-user `/tmp/bashunit-<uid>` instead of a shared `/tmp/bashunit`, so a second user can run bashunit and nobody can redirect another user's files; a scratch directory that is a link, is owned by someone else, or is writable by another user stops the run, also under a shared `TMPDIR` (#1471)
+- `assert_matches` and `assert_not_matches` treat an empty value as one empty line, so `^$` and `.*` match it (#1474)
+- `assert_less_than`, `assert_greater_than` and their `_or_equal_` forms compare decimals, and report a non-numeric value once as a usage error instead of a raw bash error and a second failure. `assert_array_length` and `assert_line_count` reject a non-numeric expected value the same way (#1473)
+- `upgrade` verifies the download against the release checksum before replacing the installed binary, following the `BASHUNIT_VERIFY_CHECKSUM` rules of `install.sh` (#1472)
+- A report or coverage flag that names an existing shell script, usually because its value was left out, stops the run instead of overwriting the test file (#1475)
+- The `at <file>:<line>` line under a failure names the failing line in the test body instead of the test definition, and adds `in <helper> at <file>:<line>` when the assertion sits in a helper (#1466)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added
