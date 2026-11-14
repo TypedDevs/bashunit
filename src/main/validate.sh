@@ -163,7 +163,26 @@ function bashunit::main::option_takes_value() {
 }
 
 
+##
+# Exits when a report path names an existing shell script. A report flag whose
+# value was left out takes the next argument, usually a test file, and the
+# report used to overwrite it.
+# Arguments: $1 - path, $2 - setting name
+##
+function bashunit::main::refuse_shell_script_or_exit() {
+  case "$1" in
+  *.sh | *.bash)
+    if [ -f "$1" ]; then
+      printf "%sError: %s needs a report file, got the shell script '%s'.%s\n" \
+        "$_BASHUNIT_COLOR_FAILED" "${2:-path}" "$1" "$_BASHUNIT_COLOR_DEFAULT" >&2
+      exit 1
+    fi
+    ;;
+  esac
+}
+
 function bashunit::main::require_writable_path_or_exit() {
+  bashunit::main::refuse_shell_script_or_exit "$1" "${2:-}"
   local path=$1
   local parent=${1%/*}
   [ "$parent" = "$1" ] && parent="."
@@ -189,6 +208,7 @@ function bashunit::main::require_writable_path_or_exit() {
 
 # Writers may create missing ancestors, but cannot create a directory through a regular file.
 function bashunit::main::require_creatable_path_or_exit() {
+  bashunit::main::refuse_shell_script_or_exit "$1" "${2:-}"
   local path=$1
   if [ "${3:-file}" = file ] && [ -f "$path" ] && [ -w "$path" ]; then
     return 0

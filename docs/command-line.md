@@ -609,6 +609,8 @@ bashunit test tests/ --report-json report.json
 
 The JUnit XML groups results into one `<testsuite>` per test file, each with its own counts, time and timestamp. Every `<testcase>` carries `classname` (the file path in dotted form, e.g. `tests.unit.assert.core_test`), `name`, `file` and `time`; a failure's `message` attribute holds the first informative line of the real assertion message with the full text in the element body, and the test's captured output travels in `<system-out>`. That is the shape Jenkins, GitLab, Azure and `dorny/test-reporter` group and de-duplicate by.
 
+A report path that names an existing `.sh` or `.bash` file stops the run before any test. It almost always means the value was left out, as in `--report-json tests/a_test.sh`, and writing the report would overwrite the test.
+
 ### Markdown summary
 
 > `bashunit test --report-md <file>`

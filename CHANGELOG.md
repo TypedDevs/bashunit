@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- A report or coverage flag that names an existing shell script, usually because its value was left out, stops the run instead of overwriting the test file (#1475)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added
