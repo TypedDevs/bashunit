@@ -207,11 +207,11 @@ function test_assert_true_reports_a_bracket_expression_as_not_found() {
 }
 
 function test_assert_true_hints_at_eval_for_a_quoted_compound_command() {
-  assert_assertion_fails_with "prefix the string with 'eval '" assert_true "[ -d /tmp ] && true"
+  assert_assertion_fails_with "prefix the string with 'eval '" assert_true "[ -n x ] && true"
 }
 
 function test_assert_false_hints_at_eval_for_a_quoted_compound_command() {
-  assert_assertion_fails_with "prefix the string with 'eval '" assert_false "[ -d /nope ] || false"
+  assert_assertion_fails_with "prefix the string with 'eval '" assert_false "[ -z x ] || false"
 }
 
 function test_assert_true_does_not_hint_at_eval_when_the_prefix_is_there() {
