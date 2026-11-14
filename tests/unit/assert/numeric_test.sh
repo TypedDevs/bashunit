@@ -391,3 +391,21 @@ function test_count_assertions_accept_a_zero_padded_expected_value() {
   assert_empty "$(assert_array_length 02 a b 2>&1)"
   assert_empty "$(assert_line_count 02 $'a\nb' 2>&1)"
 }
+
+function test_array_length_does_not_wrap_a_large_expected_value() {
+  assert_assertion_fails assert_array_length 18446744073709551618 a b
+}
+
+function test_line_count_does_not_wrap_a_large_expected_value() {
+  assert_assertion_fails assert_line_count 18446744073709551618 $'a\nb'
+}
+
+function test_comparisons_keep_large_integer_precision_without_bc() {
+  bashunit::mock bashunit::dependencies::has_bc false
+  assert_empty "$(assert_greater_than 9007199254740992000 9007199254740992001 2>&1)"
+  assert_empty "$(assert_less_than 9007199254740992001 9007199254740992000 2>&1)"
+  assert_assertion_fails assert_less_or_equal_than 9007199254740992000 9007199254740992001
+  assert_assertion_fails assert_greater_or_equal_than 9007199254740992001 9007199254740992000
+  assert_empty "$(assert_greater_than -9007199254740992001 -9007199254740992000 2>&1)"
+  assert_empty "$(assert_less_than -9007199254740992000 -9007199254740992001 2>&1)"
+}

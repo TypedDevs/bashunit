@@ -1028,6 +1028,17 @@ function bashunit::assert::_check_order() {
   local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
   bashunit::assert::_validate_compare_args "$1" "$expected" "$actual" || return 2
 
+  local holds=0
+  case "$4" in
+  lt) [ "$actual" -lt "$expected" ] ;;
+  le) [ "$actual" -le "$expected" ] ;;
+  gt) [ "$actual" -gt "$expected" ] ;;
+  ge) [ "$actual" -ge "$expected" ] ;;
+  esac 2>/dev/null || holds=$?
+  if [ "$holds" -lt 2 ]; then
+    return "$holds"
+  fi
+
   case "$4" in
   lt) ! bashunit::math::is_le "$expected" "$actual" ;;
   le) bashunit::math::is_le "$actual" "$expected" ;;
@@ -1390,7 +1401,9 @@ function assert_line_count() {
     return 2
     ;;
   esac
-  expected=$((10#$expected))
+  while [ "${#expected}" -gt 1 ]; do
+    case "$expected" in 0*) expected=${expected#0} ;; *) break ;; esac
+  done
   local -a input_arr
   input_arr=("${@:2}")
   local label_override=""

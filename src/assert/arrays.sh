@@ -76,7 +76,9 @@ function assert_array_length() {
     return 2
     ;;
   esac
-  expected=$((10#$expected))
+  while [ "${#expected}" -gt 1 ]; do
+    case "$expected" in 0*) expected=${expected#0} ;; *) break ;; esac
+  done
   shift
 
   # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
