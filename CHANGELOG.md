@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- `assert_less_than`, `assert_greater_than` and their `_or_equal_` forms compare decimals, and report a non-numeric value once as a usage error instead of a raw bash error and a second failure. `assert_array_length` and `assert_line_count` reject a non-numeric expected value the same way (#1473)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added

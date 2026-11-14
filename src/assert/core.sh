@@ -988,6 +988,42 @@ function assert_string_not_ends_with() {
   bashunit::state::add_assertions_passed
 }
 
+##
+# Validates the two operands of a numeric comparison.
+# Arguments: $1 - assertion name, $2 - expected, $3 - actual
+# Returns: 0 when both are numbers, 1 after emitting a usage error otherwise
+##
+function bashunit::assert::_validate_compare_args() {
+  if ! bashunit::assert::_is_numeric "$2" || ! bashunit::assert::_is_numeric "$3"; then
+    bashunit::assert::usage_error_detail "$1" \
+      "expects numeric expected and actual values, got '$2', '$3'"
+    return 1
+  fi
+}
+
+_BASHUNIT_ASSERT_TRIMMED_OUT=""
+
+##
+# Strips surrounding whitespace, which `[ -lt ]` always accepted: macOS `wc -l`
+# pads its count with spaces.
+##
+function bashunit::assert::_trim_to_slot() {
+  local value=$1
+  value="${value#"${value%%[![:space:]]*}"}"
+  _BASHUNIT_ASSERT_TRIMMED_OUT="${value%"${value##*[![:space:]]}"}"
+}
+
+##
+# $1 <= $2 for two validated numbers. Integers keep the plain test; decimals go
+# through the fixed-point comparison the range assertions use.
+##
+function bashunit::assert::_is_le() {
+  case "${1#-}${2#-}" in
+  *[!0-9]*) bashunit::math::is_le "$1" "$2" ;;
+  *) [ "$1" -le "$2" ] ;;
+  esac
+}
+
 function assert_less_than() {
   bashunit::assert::should_skip && return 0
   if [ "$#" -lt 2 ]; then
@@ -995,11 +1031,15 @@ function assert_less_than() {
     return 2
   fi
 
-  local expected="$1"
-  local actual="$2"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_trim_to_slot "$2"
+  local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
   local label_override="${3:-}"
 
-  if ! [ "$actual" -lt "$expected" ]; then
+  bashunit::assert::_validate_compare_args "${FUNCNAME[0]}" "$expected" "$actual" || return 2
+
+  if bashunit::assert::_is_le "$expected" "$actual"; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less than" "${expected}"
     return
   fi
@@ -1014,11 +1054,15 @@ function assert_less_or_equal_than() {
     return 2
   fi
 
-  local expected="$1"
-  local actual="$2"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_trim_to_slot "$2"
+  local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
   local label_override="${3:-}"
 
-  if ! [ "$actual" -le "$expected" ]; then
+  bashunit::assert::_validate_compare_args "${FUNCNAME[0]}" "$expected" "$actual" || return 2
+
+  if ! bashunit::assert::_is_le "$actual" "$expected"; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be less or equal than" "${expected}"
     return
   fi
@@ -1033,11 +1077,15 @@ function assert_greater_than() {
     return 2
   fi
 
-  local expected="$1"
-  local actual="$2"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_trim_to_slot "$2"
+  local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
   local label_override="${3:-}"
 
-  if ! [ "$actual" -gt "$expected" ]; then
+  bashunit::assert::_validate_compare_args "${FUNCNAME[0]}" "$expected" "$actual" || return 2
+
+  if bashunit::assert::_is_le "$actual" "$expected"; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater than" "${expected}"
     return
   fi
@@ -1052,11 +1100,15 @@ function assert_greater_or_equal_than() {
     return 2
   fi
 
-  local expected="$1"
-  local actual="$2"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  bashunit::assert::_trim_to_slot "$2"
+  local actual=$_BASHUNIT_ASSERT_TRIMMED_OUT
   local label_override="${3:-}"
 
-  if ! [ "$actual" -ge "$expected" ]; then
+  bashunit::assert::_validate_compare_args "${FUNCNAME[0]}" "$expected" "$actual" || return 2
+
+  if ! bashunit::assert::_is_le "$expected" "$actual"; then
     bashunit::assert::fail_with "${label_override:-}" "${actual}" "to be greater or equal than" "${expected}"
     return
   fi
@@ -1277,7 +1329,15 @@ function assert_line_count() {
   fi
   local IFS=$' \t\n'
 
-  local expected="$1"
+  bashunit::assert::_trim_to_slot "$1"
+  local expected=$_BASHUNIT_ASSERT_TRIMMED_OUT
+  case "$expected" in
+  '' | *[!0-9]*)
+    bashunit::assert::usage_error_detail "${FUNCNAME[0]}" \
+      "expects a whole number for the expected count, got '$1'"
+    return 2
+    ;;
+  esac
   local -a input_arr
   input_arr=("${@:2}")
   local label_override=""
