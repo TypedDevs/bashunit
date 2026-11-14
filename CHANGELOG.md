@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- A `bashunit` hook for the pre-commit framework: a failing test blocks the commit (#1467)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added

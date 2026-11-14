@@ -398,6 +398,24 @@ https://github.com/TypedDevs/bashunit/blob/main/.github/workflows/test-action.ym
 bashunit's `tests.yml` runs the in-repo entrypoint instead, so it is not an install example.
 :::
 
+## pre-commit
+
+If your project manages git hooks with [pre-commit](https://pre-commit.com), add bashunit as a hook:
+
+```yaml-vue
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/TypedDevs/bashunit
+    rev: {{ pkg.version }}
+    hooks:
+      - id: bashunit
+        args: [tests/, --parallel] # optional, bashunit's own defaults otherwise
+```
+
+The hook runs when a commit stages at least one shell file, and a failing test blocks the commit.
+It runs your whole suite rather than only the staged files, because a change to a source file can break a test that was not touched.
+The hook is available from the release after 0.53.0.
+
 ## Updating
 
 For the `install.sh`, GitHub Action and bashdep routes, upgrade the binary in place:
