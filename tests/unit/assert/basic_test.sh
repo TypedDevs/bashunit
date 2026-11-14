@@ -202,8 +202,40 @@ function test_assert_true_reports_a_bracket_expression_as_not_found() {
     "$(bashunit::console_results::print_failed_test \
       "Assert true reports a bracket expression as not found" \
       "command or function with zero exit code" "but got " \
-      "unknown command: [ -d /tmp ]")" \
+      "unknown command: [ -d /tmp ] $_BASHUNIT_ASSERT_EVAL_HINT")" \
     "$(assert_true "[ -d /tmp ]")"
+}
+
+function test_assert_true_hints_at_eval_for_a_quoted_compound_command() {
+  assert_assertion_fails_with "prefix the string with 'eval '" assert_true "[ -n x ] && true"
+}
+
+function test_assert_false_hints_at_eval_for_a_quoted_compound_command() {
+  assert_assertion_fails_with "prefix the string with 'eval '" assert_false "[ -z x ] || false"
+}
+
+function test_assert_true_does_not_hint_at_eval_when_the_prefix_is_there() {
+  bashunit::assert::_describe_exit_code 127 "eval definitely_missing_cmd --flag" 1
+  assert_same "unknown command: eval definitely_missing_cmd --flag" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+}
+
+function test_exit_description_hints_at_eval_only_for_one_argument_with_spaces() {
+  bashunit::assert::_describe_exit_code 127 "[ -d /tmp ]" 1
+  assert_same "unknown command: [ -d /tmp ] (pass the command and its arguments unquoted, \
+or prefix the string with 'eval ')" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+
+  bashunit::assert::_describe_exit_code 127 "missing_cmd" 1
+  assert_same "unknown command: missing_cmd" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+
+  bashunit::assert::_describe_exit_code 127 "missing_cmd --flag" 2
+  assert_same "unknown command: missing_cmd --flag" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+
+  bashunit::assert::_describe_exit_code 1 "[ -d /tmp ]" 1
+  assert_same "exit code: 1" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
+}
+
+function test_assert_true_eval_prefix_runs_a_compound_command() {
+  assert_empty "$(assert_true "eval [ -d /tmp ] && [ -n x ]")"
 }
 
 # assert_false only failed when the exit code was 0, so a command that does not
