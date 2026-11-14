@@ -379,3 +379,15 @@ function test_comparisons_accept_whitespace_padded_numbers() {
   assert_empty "$(assert_array_length " 2" a b 2>&1)"
   assert_empty "$(assert_line_count "  1" "a" 2>&1)"
 }
+
+function test_comparisons_handle_integers_wider_than_64_bits() {
+  assert_empty "$(assert_greater_than 1 99999999999999999999 2>&1)"
+  assert_empty "$(assert_less_than 99999999999999999999 1 2>&1)"
+  assert_empty "$(assert_greater_or_equal_than 9223372036854775808 9223372036854775808 2>&1)"
+  assert_assertion_fails assert_greater_than 99999999999999999999 1
+}
+
+function test_count_assertions_accept_a_zero_padded_expected_value() {
+  assert_empty "$(assert_array_length 02 a b 2>&1)"
+  assert_empty "$(assert_line_count 02 $'a\nb' 2>&1)"
+}

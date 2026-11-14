@@ -76,6 +76,7 @@ function assert_array_length() {
     return 2
     ;;
   esac
+  expected=$((10#$expected))
   shift
 
   # Use $# / $* rather than building an array: on Bash 3.0 under `set -u`,
