@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Without `TMPDIR`, scratch files go to a private per-user `/tmp/bashunit-<uid>` instead of a shared `/tmp/bashunit`, so a second user can run bashunit and nobody can redirect another user's files; a link or a directory owned by someone else stops the run (#1471)
+
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
 ### Added

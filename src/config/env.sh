@@ -865,9 +865,44 @@ function bashunit::env::print_verbose() {
 }
 
 EXIT_CODE_STOP_ON_FAILURE=4
+
+##
+# The base for every scratch path. Without TMPDIR it is per user: a single
+# shared /tmp/bashunit belonged to whoever ran bashunit first, which locked
+# every other account out and let its owner redirect their files (#1471).
+##
+function bashunit::env::default_temp_root() {
+  _BASHUNIT_ENV_TEMP_ROOT_OUT="${TMPDIR:-/tmp/bashunit-${EUID:-0}}"
+}
+
+##
+# Creates the per-user base with mode 0700 and refuses one that is a link or
+# is not owned by the current user. Git Bash fakes ownership, so Windows only
+# gets the link check.
+# Arguments: $1 base directory
+# Returns: 0 when the base is safe to use, 1 otherwise (message on stderr)
+##
+function bashunit::env::secure_temp_root() {
+  local root=$1
+
+  if [ ! -e "$root" ] && [ ! -L "$root" ]; then
+    mkdir -m 700 "$root" 2>/dev/null || true
+  fi
+
+  if [ -L "$root" ] || [ ! -d "$root" ] ||
+    { ! bashunit::check_os::is_windows && [ ! -O "$root" ]; }; then
+    printf 'bashunit: refusing to use the scratch directory %s: it must be a directory you own, not a link.\n' \
+      "$root" >&2
+    printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
+    return 1
+  fi
+}
+
+bashunit::env::default_temp_root
+_BASHUNIT_TEMP_ROOT=$_BASHUNIT_ENV_TEMP_ROOT_OUT
 # Use a unique directory per run to avoid conflicts when bashunit is invoked
 # recursively or multiple instances are executed in parallel.
-TEMP_DIR_PARALLEL_TEST_SUITE="${TMPDIR:-/tmp}/bashunit/parallel/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
+TEMP_DIR_PARALLEL_TEST_SUITE="$_BASHUNIT_TEMP_ROOT/bashunit/parallel/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
 TEMP_FILE_PARALLEL_STOP_ON_FAILURE="$TEMP_DIR_PARALLEL_TEST_SUITE/.stop-on-failure"
 TERMINAL_WIDTH="$(bashunit::env::find_terminal_width)"
 CAT="$(command -v cat)"
@@ -883,7 +918,7 @@ _BASHUNIT_SLEEP="$(type -P sleep 2>/dev/null || true)"
 # creates the file lazily) or guards reads with `[ -s ... ]`, so the files need
 # not be pre-created. The random suffix keeps the directory unique across
 # recursive and parallel invocations, matching TEMP_DIR_PARALLEL_TEST_SUITE.
-_BASHUNIT_RUN_OUTPUT_DIR="${TMPDIR:-/tmp}/bashunit/run/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
+_BASHUNIT_RUN_OUTPUT_DIR="$_BASHUNIT_TEMP_ROOT/bashunit/run/${_BASHUNIT_OS:-Unknown}/$(bashunit::random_str 8)"
 # Set once if the directory above is found missing during a run, so the warning
 # is printed a single time rather than per file (#1137).
 _BASHUNIT_RUN_DIR_VANISHED=false
@@ -908,7 +943,7 @@ SNAPSHOT_USED_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/snapshots-used"
 REPORTS_OUTPUT_PATH="$_BASHUNIT_RUN_OUTPUT_DIR/reports"
 
 # Shared temp directory, initialized once at startup for performance.
-BASHUNIT_TEMP_DIR="${TMPDIR:-/tmp}/bashunit/tmp"
+BASHUNIT_TEMP_DIR="$_BASHUNIT_TEMP_ROOT/bashunit/tmp"
 
 ##
 # Creates both scratch directories in a single `mkdir -p` fork.
@@ -942,6 +977,9 @@ function bashunit::env::create_scratch_dirs() {
   done
 }
 
+if [ -z "${TMPDIR:-}" ]; then
+  bashunit::env::secure_temp_root "$_BASHUNIT_TEMP_ROOT" || exit 1
+fi
 bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" || exit 1
 
 ##
