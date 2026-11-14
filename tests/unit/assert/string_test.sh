@@ -67,10 +67,9 @@ function test_assert_contains_ignore_case_folds_ascii_on_either_implementation()
 }
 
 function test_unsuccessful_assert_contains_ignore_case() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")"
-  assert_same "$expected" "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert contains ignore case" "GNU/LINUX" "to contain" "Unix")" \
+    "$(assert_contains_ignore_case "Unix" "GNU/LINUX")"
 }
 
 function test_successful_assert_contains() {
@@ -88,10 +87,9 @@ function test_successful_assert_not_contains() {
 }
 
 function test_unsuccessful_assert_not_contains() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")"
-  assert_same "$expected" "$(assert_not_contains "Linux" "GNU/Linux")"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not contains" "GNU/Linux" "to not contain" "Linux")" \
+    "$(assert_not_contains "Linux" "GNU/Linux")"
 }
 
 function test_successful_assert_matches() {
@@ -118,16 +116,15 @@ function test_unsuccessful_assert_not_matches_with_leading_dash_pattern() {
 }
 
 function test_regex_assertions_fail_when_the_pattern_is_invalid() {
-  local assertion output relation
+  local assertion relation
   for assertion in assert_matches assert_not_matches; do
     relation="to match"
     if [ "$assertion" = assert_not_matches ]; then
       relation="to not match"
     fi
-    output="$("$assertion" '[' text 2>&1)"
     assert_same \
       "$(bashunit::console_results::print_failed_test \
-        "Regex assertions fail when the pattern is invalid" "text" "$relation" '[')" "$output"
+        "Regex assertions fail when the pattern is invalid" "text" "$relation" '[')" "$("$assertion" '[' text 2>&1)"
   done
 }
 
@@ -164,10 +161,9 @@ function test_successful_assert_not_matches() {
 }
 
 function test_unsuccessful_assert_not_matches() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")"
-  assert_same "$expected" "$(assert_not_matches ".*Linu*" "GNU/Linux")"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert not matches" "GNU/Linux" "to not match" ".*Linu*")" \
+    "$(assert_not_matches ".*Linu*" "GNU/Linux")"
 }
 
 function test_successful_assert_string_starts_with() {

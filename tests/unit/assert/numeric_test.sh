@@ -42,37 +42,29 @@ function test_unsuccessful_return_assert_exit_code() {
 # integer. The exit-code assertions must read that as "did not match" and fail;
 # reading it as "matched" would count a bogus assertion as passed.
 function test_assert_exit_code_fails_when_the_expected_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Assert exit code fails when the expected code is not an integer" "0" "to be" "not-a-number")"
-
-  assert_same "$expected" "$(assert_exit_code "not-a-number" "" "0" 2>/dev/null)"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Assert exit code fails when the expected code is not an integer" "0" "to be" "not-a-number")" \
+    "$(assert_exit_code "not-a-number" "" "0" 2>/dev/null)"
 }
 
 function test_assert_exit_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Assert exit code fails when the actual code is not an integer" "not-a-number" "to be" "0")"
-
-  assert_same "$expected" "$(assert_exit_code "0" "" "not-a-number" 2>/dev/null)"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Assert exit code fails when the actual code is not an integer" "not-a-number" "to be" "0")" \
+    "$(assert_exit_code "0" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_assert_unsuccessful_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert unsuccessful code fails when the actual code is not an integer" \
-    "not-a-number" "to be non-zero" "but was 0")"
-
-  assert_same "$expected" "$(assert_unsuccessful_code "" "" "not-a-number" 2>/dev/null)"
+    "not-a-number" "to be non-zero" "but was 0")" \
+    "$(assert_unsuccessful_code "" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_assert_successful_code_fails_when_the_actual_code_is_not_an_integer() {
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
+  assert_same "$(bashunit::console_results::print_failed_test \
     "Assert successful code fails when the actual code is not an integer" \
-    "not-a-number" "to be exactly" "0")"
-
-  assert_same "$expected" "$(assert_successful_code "" "" "not-a-number" 2>/dev/null)"
+    "not-a-number" "to be exactly" "0")" \
+    "$(assert_successful_code "" "" "not-a-number" 2>/dev/null)"
 }
 
 function test_successful_assert_successful_code() {
@@ -106,10 +98,9 @@ function test_unsuccessful_assert_unsuccessful_code() {
     return 0
   }
 
-  local expected
-  expected="$(bashunit::console_results::print_failed_test \
-    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")"
-  assert_same "$expected" "$(assert_unsuccessful_code "$(fake_function)")"
+  assert_same "$(bashunit::console_results::print_failed_test \
+    "Unsuccessful assert unsuccessful code" "0" "to be non-zero" "but was 0")" \
+    "$(assert_unsuccessful_code "$(fake_function)")"
 }
 
 function test_successful_assert_less_than() {

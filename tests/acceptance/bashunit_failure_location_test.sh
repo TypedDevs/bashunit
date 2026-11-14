@@ -166,3 +166,25 @@ function test_failure_location_of_assert_once_in_a_loop_names_the_failing_iterat
   assert_contains "    in check_user at $file:3" "$output"
   assert_not_contains "in check_user at $file:2" "$output"
 }
+
+function test_failure_location_of_assert_once_survives_an_assertion_capture() {
+  local dir file output
+  dir="$(bashunit::temp_dir)"
+  file="$dir/once_capture.sh"
+  _write_location_fixture "$file" \
+    'function check_location_capture() {' \
+    '  bashunit::assert_once' \
+    '  assert_equals 1 2' \
+    '  assert_assertion_fails assert_equals 1 2' \
+    '}' \
+    'function test_once_location_capture() {' \
+    '  check_location_capture' \
+    '  assert_equals 1 1' \
+    '}'
+
+  output="$(./bashunit --skip-env-file --no-parallel --no-color "$file" 2>&1 || true)"
+
+  assert_contains "    at $file:7" "$output"
+  assert_contains "    in check_location_capture at $file:3" "$output"
+  assert_not_contains "at $file:8" "$output"
+}
