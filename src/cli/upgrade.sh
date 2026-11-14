@@ -92,11 +92,12 @@ function bashunit::upgrade::sha256() {
 }
 
 ##
-# Same rules as install.sh: BASHUNIT_VERIFY_CHECKSUM unset verifies and only
-# warns when verification is impossible, `true` also fails then, `false` skips.
+# Same rules as install.sh: unset verifies and only warns when verification is
+# impossible; set to anything (even empty) also fails then; a value other than
+# `true` (or empty) skips verification.
 ##
 function bashunit::upgrade::cannot_verify() {
-  if [ "${BASHUNIT_VERIFY_CHECKSUM:-}" = "true" ]; then
+  if [ -n "${BASHUNIT_VERIFY_CHECKSUM+x}" ]; then
     echo "Failed to verify the download: $1" >&2
     return 1
   fi
@@ -105,7 +106,7 @@ function bashunit::upgrade::cannot_verify() {
 
 function bashunit::upgrade::verify_checksum() {
   local url=$1 download_file=$2 tag=$3
-  if [ "${BASHUNIT_VERIFY_CHECKSUM:-}" = "false" ]; then
+  if [ "${BASHUNIT_VERIFY_CHECKSUM:-true}" != "true" ]; then
     return 0
   fi
 

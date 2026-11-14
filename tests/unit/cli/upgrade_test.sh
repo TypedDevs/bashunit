@@ -3,6 +3,7 @@
 # shellcheck disable=SC2329 # Test functions are invoked indirectly by bashunit
 
 function set_up() {
+  unset BASHUNIT_VERIFY_CHECKSUM
   WORK_DIR="$(mktemp -d)"
   export BASHUNIT_INSTALL_DIR="$WORK_DIR"
 }
@@ -273,4 +274,53 @@ function test_upgrade_skips_the_checksum_when_verification_is_disabled() {
   assert_same 0 "$status"
   assert_not_contains "Checksum verified" "$output"
   assert_same "fake" "$("$WORK_DIR/bashunit")"
+}
+
+function test_upgrade_fails_on_a_missing_checksum_when_the_variable_is_set_but_empty() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_no_checksum
+
+  local status=0 output
+  output="$(BASHUNIT_VERIFY_CHECKSUM='' bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_same "previous" "$("$WORK_DIR/bashunit")"
+}
+
+function test_upgrade_skips_the_checksum_for_any_value_other_than_true() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_bad_checksum
+
+  local status=0
+  BASHUNIT_VERIFY_CHECKSUM=no bashunit::upgrade::upgrade >/dev/null 2>&1 || status=$?
+
+  assert_same 0 "$status"
+  assert_same "fake" "$("$WORK_DIR/bashunit")"
+}
+
+function fake_sha256_missing() {
+  return 0
+}
+
+function test_upgrade_warns_when_no_sha256_tool_is_available() {
+  _install_previous_binary
+  bashunit::mock bashunit::helper::get_latest_tag fake_get_latest_tag
+  bashunit::mock bashunit::io::download_to fake_download_success
+  bashunit::mock bashunit::upgrade::sha256 fake_sha256_missing
+
+  local status=0 output
+  output="$(bashunit::upgrade::upgrade 2>&1)" || status=$?
+
+  assert_same 0 "$status"
+  assert_contains "no sha256 tool" "$output"
+  assert_same "fake" "$("$WORK_DIR/bashunit")"
+}
+
+function test_upgrade_and_install_read_the_same_checksum_variable_rules() {
+  assert_file_contains install.sh 'if [ -n "${BASHUNIT_VERIFY_CHECKSUM+x}" ]; then'
+  assert_file_contains install.sh 'VERIFY_CHECKSUM="${BASHUNIT_VERIFY_CHECKSUM:-true}"'
+  assert_file_contains src/cli/upgrade.sh 'if [ -n "${BASHUNIT_VERIFY_CHECKSUM+x}" ]; then'
+  assert_file_contains src/cli/upgrade.sh 'if [ "${BASHUNIT_VERIFY_CHECKSUM:-true}" != "true" ]; then'
 }
