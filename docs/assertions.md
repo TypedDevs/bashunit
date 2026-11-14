@@ -60,7 +60,18 @@ A **single** argument keeps its older meaning: it is run as one command word, so
 `assert_true "test -d /tmp"` looks for a command with that whole name and fails
 with `unknown command`. Quote the whole thing only with an `eval` prefix —
 `assert_true "eval test -d /tmp"` — or, better, drop the quotes and use the form
-above.
+above. The failure message says so when the quoted argument contains a space.
+
+A compound check with `&&` or `||` needs the `eval` prefix, because the separate
+arguments form runs a single command:
+
+```bash
+assert_true 'eval [ -f "$file" ] && grep -q foo "$file"'
+```
+
+Use single quotes around the whole string, as above. `eval` expands it, so with
+double quotes a variable is expanded twice and a path holding `$` or `$(...)`
+breaks or runs.
 
 Prefer a specific assertion such as `assert_directory_exists` when one exists for the check.
 

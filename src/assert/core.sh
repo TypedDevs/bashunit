@@ -155,6 +155,7 @@ function bashunit::assert::_run_bool_subject() {
 }
 
 _BASHUNIT_ASSERT_EXIT_DESC_OUT=""
+_BASHUNIT_ASSERT_EVAL_HINT="(pass the command and its arguments unquoted, or prefix the string with 'eval ')"
 
 ##
 # Describes a failing exit code for assert_true / assert_false. 127 and 126 are
@@ -170,11 +171,23 @@ _BASHUNIT_ASSERT_EXIT_DESC_OUT=""
 # Failed and Error. That constraint is gone -- the classifier now requires a
 # shell diagnostic's source-and-line prefix as well (#992). The phrasing stays
 # as it is because it is already documented and released, not because it must.
-# Arguments: $1 - exit code, $2 - the command as written
+# A single argument with whitespace in it is almost always a quoted compound
+# command, which runs only with the `eval ` prefix, so 127 says how to fix it.
+# Arguments: $1 - exit code, $2 - the command as written, $3 - argument count
 ##
 function bashunit::assert::_describe_exit_code() {
   case "$1" in
-  127) _BASHUNIT_ASSERT_EXIT_DESC_OUT="unknown command: $2" ;;
+  127)
+    _BASHUNIT_ASSERT_EXIT_DESC_OUT="unknown command: $2"
+    if [ "${3:-0}" -eq 1 ]; then
+      case "$2" in
+      eval\ *) ;;
+      *[[:space:]]*)
+        _BASHUNIT_ASSERT_EXIT_DESC_OUT="$_BASHUNIT_ASSERT_EXIT_DESC_OUT $_BASHUNIT_ASSERT_EVAL_HINT"
+        ;;
+      esac
+    fi
+    ;;
   126) _BASHUNIT_ASSERT_EXIT_DESC_OUT="not executable: $2" ;;
   *) _BASHUNIT_ASSERT_EXIT_DESC_OUT="exit code: $1" ;;
   esac
@@ -209,7 +222,7 @@ function assert_true() {
   actual="$*"
 
   if [ "$exit_code" -ne 0 ]; then
-    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual" "$#"
     bashunit::handle_bool_assertion_failure \
       "command or function with zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
   else
@@ -250,7 +263,7 @@ function assert_false() {
   # nothing, so those are failures here as well as in assert_true.
   case "$exit_code" in
   0 | 126 | 127)
-    bashunit::assert::_describe_exit_code "$exit_code" "$actual"
+    bashunit::assert::_describe_exit_code "$exit_code" "$actual" "$#"
     bashunit::handle_bool_assertion_failure \
       "command or function with non-zero exit code" "$_BASHUNIT_ASSERT_EXIT_DESC_OUT"
     ;;
