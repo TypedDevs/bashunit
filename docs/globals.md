@@ -60,7 +60,7 @@ The file is automatically deleted when bashunit completes.
 
 The directory is automatically deleted when bashunit completes.
 
-Temporary files and directories live under `$TMPDIR/bashunit`. When `TMPDIR` is not set, bashunit uses `/tmp/bashunit-<user id>`, created so only you can read it, and stops with an error if that path is a link or belongs to another user.
+Temporary files and directories live under `$TMPDIR/bashunit`. When `TMPDIR` is not set, bashunit uses `/tmp/bashunit-<user id>/bashunit`. It creates these directories so only you can read them, and stops with an error if one is a link or belongs to another user.
 
 ## bashunit::is_command_available
 

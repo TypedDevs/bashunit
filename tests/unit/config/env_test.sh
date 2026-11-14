@@ -688,6 +688,29 @@ function test_secure_temp_root_refuses_a_regular_file() {
   assert_contains "refusing to use the scratch directory" "$output"
 }
 
+function test_secure_temp_root_refuses_a_directory_owned_by_another_user() {
+  if bashunit::check_os::is_windows || [ "$EUID" -eq 0 ]; then
+    bashunit::skip "needs a directory owned by another account" && return
+  fi
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root /usr 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "refusing to use the scratch directory /usr" "$output"
+}
+
+function test_secure_temp_root_reports_a_directory_it_cannot_create() {
+  local base
+  base="$(bashunit::temp_dir)"
+
+  local status=0 output
+  output="$(bashunit::env::secure_temp_root "$base/missing/root" 2>&1)" || status=$?
+
+  assert_same 1 "$status"
+  assert_contains "cannot create the scratch directory: $base/missing/root" "$output"
+}
+
 function test_default_temp_root_is_per_user_without_tmpdir() {
   TMPDIR='' bashunit::env::default_temp_root
   assert_same "/tmp/bashunit-$EUID" "$_BASHUNIT_ENV_TEMP_ROOT_OUT"

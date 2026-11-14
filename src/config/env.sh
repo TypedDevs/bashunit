@@ -876,8 +876,8 @@ function bashunit::env::default_temp_root() {
 }
 
 ##
-# Creates the per-user base with mode 0700 and refuses one that is a link or
-# is not owned by the current user. Git Bash fakes ownership, so Windows only
+# Creates a scratch base with mode 0700 and refuses one that is a link or is
+# not owned by the current user. Git Bash fakes ownership, so Windows only
 # gets the link check.
 # Arguments: $1 base directory
 # Returns: 0 when the base is safe to use, 1 otherwise (message on stderr)
@@ -887,6 +887,11 @@ function bashunit::env::secure_temp_root() {
 
   if [ ! -e "$root" ] && [ ! -L "$root" ]; then
     mkdir -m 700 "$root" 2>/dev/null || true
+    if [ ! -e "$root" ] && [ ! -L "$root" ]; then
+      printf 'bashunit: cannot create the scratch directory: %s\n' "$root" >&2
+      printf 'bashunit: set TMPDIR to a writable location and try again.\n' >&2
+      return 1
+    fi
   fi
 
   if [ -L "$root" ] || [ ! -d "$root" ] ||
@@ -977,9 +982,12 @@ function bashunit::env::create_scratch_dirs() {
   done
 }
 
+# A TMPDIR shared between accounts (TMPDIR=/tmp in some CI images) has the same
+# problem one level down, so the bashunit directory is checked either way.
 if [ -z "${TMPDIR:-}" ]; then
   bashunit::env::secure_temp_root "$_BASHUNIT_TEMP_ROOT" || exit 1
 fi
+bashunit::env::secure_temp_root "$_BASHUNIT_TEMP_ROOT/bashunit" || exit 1
 bashunit::env::create_scratch_dirs "$_BASHUNIT_RUN_OUTPUT_DIR" "$BASHUNIT_TEMP_DIR" || exit 1
 
 ##
