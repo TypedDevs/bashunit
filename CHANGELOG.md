@@ -10,6 +10,11 @@
 
 - The globals guide shows how to load files and run tests relative to the test file's own directory (#1468)
 - `assert_true` and `assert_false` suggest the `eval ` prefix when a quoted argument with spaces is not a command (#1469)
+- Mock text that escaped `\"`, `\$` or `\\` to get around #1470 now prints the backslashes; remove them. Text that relied on expanding `$1` or variables when the mock is called needs the `bashunit::mock <command> <implementation>` form (#1470)
+
+### Fixed
+
+- `bashunit::mock` with a here-string or here-document returns the text literally instead of running its `$`, backticks and quotes as shell code (#1470)
 
 ## [0.53.0](https://github.com/TypedDevs/bashunit/compare/0.52.0...0.53.0) - 2026-11-08
 
